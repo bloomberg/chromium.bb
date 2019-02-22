@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -84,7 +85,9 @@ void TrayContainer::UpdateLayout() {
     std::swap(horizontal_margin, vertical_margin);
 
   auto layout = std::make_unique<views::BoxLayout>(
-      orientation, gfx::Insets(vertical_margin, horizontal_margin), 0);
+      orientation, gfx::Insets(vertical_margin, horizontal_margin),
+      features::IsSystemTrayUnifiedEnabled() ? kUnifiedTraySpacingBetweenIcons
+                                             : 0);
   layout->set_minimum_cross_axis_size(kTrayItemSize);
   views::View::SetLayoutManager(std::move(layout));
 

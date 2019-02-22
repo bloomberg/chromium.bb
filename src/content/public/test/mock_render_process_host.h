@@ -136,6 +136,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   resource_coordinator::ProcessResourceCoordinator*
   GetProcessResourceCoordinator() override;
   void CreateURLLoaderFactory(
+      const url::Origin& origin,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;

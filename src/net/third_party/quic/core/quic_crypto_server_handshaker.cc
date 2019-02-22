@@ -305,8 +305,8 @@ void QuicCryptoServerHandshaker::FinishSendServerConfigUpdate(
   }
 
   QUIC_DVLOG(1) << "Server: Sending server config update: "
-                << message.DebugString(Perspective::IS_SERVER);
-  const QuicData& data = message.GetSerialized(Perspective::IS_SERVER);
+                << message.DebugString();
+  const QuicData& data = message.GetSerialized();
   stream_->WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
                              nullptr);
 

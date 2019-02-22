@@ -1361,6 +1361,22 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
 }
 
 void LayoutTableSection::ComputeOverflowFromDescendants() {
+  auto old_self_visual_overflow_rect = SelfVisualOverflowRect();
+  overflow_.reset();
+  overflowing_cells_.clear();
+  force_full_paint_ = false;
+
+  ComputeVisualOverflowFromDescendants();
+
+  // Overflow rect contributes to the visual rect, so if it has changed then we
+  // need to signal a possible paint invalidation.
+  if (old_self_visual_overflow_rect != SelfVisualOverflowRect())
+    SetShouldCheckForPaintInvalidation();
+
+  ComputeLayoutOverflowFromDescendants();
+}
+
+void LayoutTableSection::ComputeVisualOverflowFromDescendants() {
   // These 2 variables are used to balance the memory consumption vs the paint
   // time on big sections with overflowing cells:
   // 1. For small sections, don't track overflowing cells because for them the
@@ -1380,15 +1396,12 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
           ? 0
           : kMaxOverflowingCellRatioForPartialPaint * total_cell_count;
 
-  overflow_.reset();
-  overflowing_cells_.clear();
-  force_full_paint_ = false;
 #if DCHECK_IS_ON()
   bool has_overflowing_cell = false;
 #endif
 
   for (auto* row = FirstRow(); row; row = row->NextRow()) {
-    AddOverflowFromChild(*row);
+    AddVisualOverflowFromChild(*row);
 
     for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
       // Let the section's self visual overflow cover the cell's whole collapsed
@@ -1427,25 +1440,30 @@ void LayoutTableSection::ComputeOverflowFromDescendants() {
 #endif
 }
 
-bool LayoutTableSection::RecalcOverflowAfterStyleChange() {
-  if (!ChildNeedsOverflowRecalcAfterStyleChange())
+void LayoutTableSection::ComputeLayoutOverflowFromDescendants() {
+  for (auto* row = FirstRow(); row; row = row->NextRow())
+    AddLayoutOverflowFromChild(*row);
+}
+
+bool LayoutTableSection::RecalcOverflow() {
+  if (!ChildNeedsOverflowRecalc())
     return false;
-  ClearChildNeedsOverflowRecalcAfterStyleChange();
+  ChildNeedsOverflowRecalc();
   unsigned total_rows = grid_.size();
   bool children_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
     LayoutTableRow* row_layouter = RowLayoutObjectAt(r);
-    if (!row_layouter ||
-        !row_layouter->ChildNeedsOverflowRecalcAfterStyleChange())
+    if (!row_layouter || !row_layouter->ChildNeedsOverflowRecalc())
       continue;
-    row_layouter->ClearChildNeedsOverflowRecalcAfterStyleChange();
+    row_layouter->ClearChildNeedsLayoutOverflowRecalc();
+    row_layouter->ClearChildNeedsVisualOverflowRecalc();
     bool row_children_overflow_changed = false;
     unsigned n_cols = NumCols(r);
     for (unsigned c = 0; c < n_cols; c++) {
       auto* cell = OriginatingCellAt(r, c);
       if (!cell)
         continue;
-      row_children_overflow_changed |= cell->RecalcOverflowAfterStyleChange();
+      row_children_overflow_changed |= cell->RecalcOverflow();
     }
     if (row_children_overflow_changed)
       row_layouter->ComputeOverflow();

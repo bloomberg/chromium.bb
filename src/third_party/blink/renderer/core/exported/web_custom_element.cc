@@ -31,12 +31,31 @@
 #include "third_party/blink/public/web/web_custom_element.h"
 
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 
 namespace blink {
 
 void WebCustomElement::AddEmbedderCustomElementName(const WebString& name) {
-  V0CustomElement::AddEmbedderCustomElementName(name);
+  CustomElement::AddEmbedderCustomElementName(name);
+}
+
+namespace {
+
+int g_embedder_names_allowed_count = 0;
+
+}  // namespace
+
+WebCustomElement::EmbedderNamesAllowedScope::EmbedderNamesAllowedScope() {
+  g_embedder_names_allowed_count++;
+}
+
+WebCustomElement::EmbedderNamesAllowedScope::~EmbedderNamesAllowedScope() {
+  DCHECK_GT(g_embedder_names_allowed_count, 0);
+  g_embedder_names_allowed_count--;
+}
+
+bool WebCustomElement::EmbedderNamesAllowedScope::IsAllowed() {
+  return g_embedder_names_allowed_count;
 }
 
 }  // namespace blink

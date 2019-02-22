@@ -110,6 +110,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection is going away according to the peer.
   virtual void OnGoAway(const QuicGoAwayFrame& frame) = 0;
 
+  // Called when |message| has been received.
+  virtual void OnMessageReceived(QuicStringPiece message) = 0;
+
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
   virtual void OnConnectionClosed(QuicErrorCode error,
@@ -255,6 +258,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // Called when a BlockedFrame has been parsed.
   virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}
 
+  // Called when a MessageFrame has been parsed.
+  virtual void OnMessageFrame(const QuicMessageFrame& frame) {}
+
   // Called when a public reset packet has been received.
   virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
 
@@ -287,10 +293,6 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   // the config.
   virtual void OnRttChanged(QuicTime::Delta rtt) const {}
 };
-
-// QuicConnections currently use around 1KB of polymorphic types which would
-// ordinarily be on the heap. Instead, store them inline in an arena.
-using QuicConnectionArena = QuicOneBlockArena<1024>;
 
 class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {
  public:
@@ -465,11 +467,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool last_range) override;
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override;
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override;
+  bool OnAckFrameEnd(QuicPacketNumber start) override;
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
   bool OnPaddingFrame(const QuicPaddingFrame& frame) override;
   bool OnPingFrame(const QuicPingFrame& frame) override;
@@ -485,6 +489,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override;
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override;
+  bool OnMessageFrame(const QuicMessageFrame& frame) override;
   void OnPacketComplete() override;
   bool IsValidStatelessResetToken(QuicUint128 token) const override;
   void OnAuthenticatedIetfStatelessResetPacket(
@@ -713,6 +719,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Set long header type of next sending packets.
   void SetLongHeaderType(QuicLongHeaderType type);
 
+  // Tries to send |message| and returns the message status.
+  virtual MessageStatus SendMessage(QuicMessageId message_id,
+                                    QuicStringPiece message);
+
+  // Returns the largest payload that will fit into a single MESSAGE frame.
+  QuicPacketLength GetLargestMessagePayload() const;
+
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
@@ -738,6 +751,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   EncryptionLevel encryption_level() const { return encryption_level_; }
+  EncryptionLevel last_decrypted_level() const {
+    return last_decrypted_packet_level_;
+  }
 
   const QuicSocketAddress& last_packet_source_address() const {
     return last_packet_source_address_;
@@ -774,6 +790,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
   void set_donot_retransmit_old_window_updates(bool value) {
     donot_retransmit_old_window_updates_ = value;
+  }
+
+  bool deprecate_post_process_after_data() const {
+    return deprecate_post_process_after_data_;
   }
 
  protected:
@@ -987,6 +1007,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |acked_new_packet| is true if a previously-unacked packet was acked.
   void PostProcessAfterAckFrame(bool send_stop_waiting, bool acked_new_packet);
 
+  // Called when an ACK is received to set the path degrading alarm or
+  // retransmittable on wire alarm.
+  void MaybeSetPathDegradingAlarm(bool acked_new_packet);
+
   // Updates the release time into the future.
   void UpdateReleaseTimeIntoFuture();
 
@@ -1104,10 +1128,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool ack_queued_;
   // How many retransmittable packets have arrived without sending an ack.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
-  // Whether there were missing packets in the last sent ack.
-  // TODO(ianswett): Deprecate with
-  // quic_reloadable_flag_quic_ack_reordered_packets.
-  bool last_ack_had_missing_packets_;
   // How many consecutive packets have arrived without sending an ack.
   QuicPacketCount num_packets_received_since_last_ack_sent_;
   // Indicates how many consecutive times an ack has arrived which indicates
@@ -1175,16 +1195,17 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Statistics for this session.
   QuicConnectionStats stats_;
 
-  // The time that we got a packet for this connection.
+  // Timestamps used for timeouts.
+  // The time of the first retransmittable packet that was sent after the most
+  // recently received packet.
+  QuicTime time_of_first_packet_sent_after_receiving_;
+  // The time that a packet is received for this connection. Initialized to
+  // connection creation time.
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
   // The time the previous ack-instigating packet was received and processed.
   QuicTime time_of_previous_received_packet_;
-
-  // The the send time of the first retransmittable packet sent after
-  // |time_of_last_received_packet_|.
-  QuicTime last_send_for_timeout_;
 
   // Sent packet manager which tracks the status of packets sent by this
   // connection and contains the send and receive algorithms to determine when
@@ -1298,12 +1319,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
 
-  // Latched value of quic_reloadable_flag_quic_ack_reordered_packets.
-  const bool ack_reordered_packets_;
-
-  // Latched value of quic_reloadable_flag_quic_retransmissions_app_limited.
-  const bool retransmissions_app_limited_;
-
   // Latched value of
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
   bool donot_retransmit_old_window_updates_;
@@ -1311,6 +1326,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent
   const bool notify_debug_visitor_on_connectivity_probing_sent_;
+
+  // Latched value of quic_reloadable_flag_quic_move_post_process_after_data.
+  const bool deprecate_post_process_after_data_;
 };
 
 }  // namespace quic

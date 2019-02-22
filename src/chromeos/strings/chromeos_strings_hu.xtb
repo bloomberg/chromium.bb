@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1510238584712386396">Indító</translation>
+<translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
+<translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2083960536266308407">Semmi nem található a képernyőn</translation>
+<translation id="2338501278241028356">Kapcsolja be a Bluetooth-t a közeli eszközök felfedezéséhez</translation>
+<translation id="2805756323405976993">Alkalmazások</translation>
+<translation id="2872961005593481000">Leállítás</translation>
+<translation id="3147142846278915599">Indító (alkalmazások szinkronizálása…)</translation>
 <translation id="5212543919916444558">Nem találok semmi olyat a képernyőn, amellyel kapcsolatban segíthetnék.
 Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
-<translation id="6674412557034343536">időzítés leállítása</translation>
-<translation id="8626219642120025691">Időzítés kész</translation>
+<translation id="5222676887888702881">Kijelentkezés</translation>
+<translation id="5457599981699367932">Böngészés vendégként</translation>
+<translation id="54609108002486618">Kezelt</translation>
+<translation id="5832805196449965646">Személy hozzáadása</translation>
+<translation id="5895138241574237353">Újraindítás</translation>
+<translation id="7222902781030499995">Időzítő megállítása</translation>
+<translation id="7658239707568436148">Mégse</translation>
+<translation id="7837740436429729974">Az idő lejárt</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Feloldás</translation>
 </translationbundle>

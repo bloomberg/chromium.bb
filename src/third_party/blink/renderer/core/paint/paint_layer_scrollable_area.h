@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
@@ -196,11 +197,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
     static void ResetRelayoutNeeded();
 
    private:
+    static HeapVector<Member<PaintLayerScrollableArea>>& NeedsRelayoutList();
+
     static int count_;
     static SubtreeLayoutScope* layout_scope_;
     static bool relayout_needed_;
-    static PersistentHeapVector<Member<PaintLayerScrollableArea>>*
-        needs_relayout_;
   };
 
   // If a FreezeScrollbarScope object is alive, updateAfterLayout() will not
@@ -235,9 +236,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
    private:
     static void ClampScrollableAreas();
+    static HeapVector<Member<PaintLayerScrollableArea>>& NeedsClampList();
 
     static int count_;
-    static PersistentHeapVector<Member<PaintLayerScrollableArea>>* needs_clamp_;
   };
 
   // FIXME: We should pass in the LayoutBox but this opens a window

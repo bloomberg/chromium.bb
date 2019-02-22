@@ -154,8 +154,8 @@ def _create_diff_groups_map(diff_function_inputs, root_group):
                 field.property_name for field in root_group.all_fields], \
                 "The field '{}' isn't a defined field on ComputedStyle. " \
                 "Please check that there's an entry for '{}' in" \
-                "CSSProperties.json5 or " \
-                "ComputedStyleExtraFields.json5".format(name, name)
+                "css_properties.json5 or " \
+                "computed_style_extra_fields.json5".format(name, name)
         diff_functions_map[entry['name'].original] = _create_diff_groups(
             entry['fields_to_diff'], entry['methods_to_diff'],
             entry['predicates_to_test'], root_group)
@@ -500,17 +500,17 @@ class ComputedStyleBaseWriter(json5_generator.Writer):
 
         self._input_files = json5_file_paths
 
-        # Reads CSSProperties.json5, ComputedStyleFieldAliases.json5 and
-        # ComputedStyleExtraFields.json5
+        # Reads css_properties.json5, computed_style_field_aliases.json5 and
+        # computed_style_extra_fields.json5
         self._css_properties = css_properties.CSSProperties(
             json5_file_paths[0:3])
 
         # We sort the enum values based on each value's position in
-        # the keywords as listed in CSSProperties.json5. This will ensure that
+        # the keywords as listed in css_properties.json5. This will ensure that
         # if there is a continuous
-        # segment in CSSProperties.json5 matching the segment in this enum then
+        # segment in css_properties.json5 matching the segment in this enum then
         # the generated enum will have the same order and continuity as
-        # CSSProperties.json5 and we can get the longest continuous segment.
+        # css_properties.json5 and we can get the longest continuous segment.
         # Thereby reduce the switch case statement to the minimum.
         properties = keyword_utils.sort_keyword_properties_by_canonical_order(
             self._css_properties.longhands,

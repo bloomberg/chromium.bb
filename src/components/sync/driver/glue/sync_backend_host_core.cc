@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/sync/base/get_session_name.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 #include "components/sync/engine/cycle/commit_counters.h"
@@ -247,6 +249,9 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
       DLOG(WARNING) << "Notification has invalid id: "
                     << ObjectIdToString(object_id);
     } else {
+      UMA_HISTOGRAM_ENUMERATION("Sync.InvalidationPerModelType",
+                                ModelTypeToHistogramInt(type),
+                                static_cast<int>(MODEL_TYPE_COUNT));
       SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
       for (Invalidation invalidation : invalidation_set) {
@@ -308,8 +313,8 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   args.service_url = params.service_url;
   args.enable_local_sync_backend = params.enable_local_sync_backend;
   args.local_sync_backend_folder = params.local_sync_backend_folder;
-  args.post_factory =
-      params.http_factory_getter.Run(&release_request_context_signal_);
+  args.post_factory = std::move(params.http_factory_getter)
+                          .Run(&release_request_context_signal_);
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
   args.post_factory->Init(params.sync_user_agent,
@@ -403,7 +408,7 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
              registrar_->GetLastConfiguredTypes(), js_backend_,
              debug_info_listener_,
              base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-             sync_manager_->cache_guid());
+             sync_manager_->cache_guid(), GetSessionNameBlocking());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();

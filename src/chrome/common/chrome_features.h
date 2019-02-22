@@ -55,6 +55,11 @@ extern const base::Feature kAssetDownloadSuggestionsFeature;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
 
+#if defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAutoFetchOnNetErrorPage;
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAutomaticTabDiscarding;
@@ -77,15 +82,10 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBookmarkApps;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBrowserHangFixesExperiment;
 
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kBrowserTouchBar;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kBundledConnectionHelpFeature;
 
 #if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kDialogTouchBar;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
@@ -109,9 +109,6 @@ extern const base::Feature kClickToOpenPDFPlaceholder;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kClipboardContentSetting;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kCloseButtonsInactiveTabs;
-
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kContentFullscreen;
 #endif
@@ -132,6 +129,9 @@ extern const base::Feature kDesktopPWAWindowing;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsLinkCapturing;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsStayInWindow;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDisallowUnsafeHttpDownloads;
@@ -262,8 +262,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kNativeNotifications;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNetworkPrediction;
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -271,11 +269,7 @@ extern const char kNewNetErrorPageUIAlternateParameterName[];
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kNewNetErrorPageUIAlternateContentList[];
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentListAutoDownload[];
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kNewNetErrorPageUIAlternateContentPreview[];
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kNewNetErrorPageUIAlternateContentPreviewAutoDownload[];
 #endif
 
 #if defined(OS_POSIX)
@@ -328,21 +322,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNupPrinting;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPushMessagingBackgroundMode;
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSafeSearchUrlReporting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
-
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kShowAllDialogsWithViewsToolkit;
-#endif
 
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -374,8 +358,15 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSupervisedUserCommittedInterstitials;
 
 #if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSysInternals;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSlideTopChromeWithPageScrolls;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSysInternals;
 #endif
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSystemWebApps;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
@@ -403,17 +394,10 @@ extern const base::Feature kAdaptiveScreenBrightnessLogging;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUserActivityEventLogging;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kUserActivityPrediction;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUseSameCacheForMedia;
-
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kVoiceSearchOnLocalNtp;
-#endif
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kArcCupsApi;

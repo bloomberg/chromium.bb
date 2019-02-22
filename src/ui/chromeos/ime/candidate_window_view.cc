@@ -39,7 +39,7 @@ class CandidateWindowBorder : public views::BubbleBorder {
  public:
   explicit CandidateWindowBorder(gfx::NativeView parent)
       : views::BubbleBorder(views::BubbleBorder::TOP_CENTER,
-                            views::BubbleBorder::NO_SHADOW,
+                            views::BubbleBorder::BIG_SHADOW,
                             gfx::kPlaceholderColor),
         parent_(parent),
         offset_(0) {

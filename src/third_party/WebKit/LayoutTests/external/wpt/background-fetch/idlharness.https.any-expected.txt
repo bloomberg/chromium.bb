@@ -22,8 +22,9 @@ PASS BackgroundFetchRegistration interface: attribute uploadTotal
 PASS BackgroundFetchRegistration interface: attribute uploaded
 PASS BackgroundFetchRegistration interface: attribute downloadTotal
 PASS BackgroundFetchRegistration interface: attribute downloaded
-PASS BackgroundFetchRegistration interface: attribute state
+PASS BackgroundFetchRegistration interface: attribute result
 PASS BackgroundFetchRegistration interface: attribute failureReason
+PASS BackgroundFetchRegistration interface: attribute recordsAvailable
 PASS BackgroundFetchRegistration interface: attribute onprogress
 PASS BackgroundFetchRegistration interface: operation abort()
 FAIL BackgroundFetchRegistration interface: operation match(RequestInfo, CacheQueryOptions) assert_own_property: interface prototype object missing non-static operation expected property "match" missing

@@ -14,6 +14,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -396,6 +397,11 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   return gr_context_->get();
 }
 
+gpu::SharedImageInterface*
+ContextProviderCommandBuffer::SharedImageInterface() {
+  return command_buffer_->channel()->shared_image_interface();
+}
+
 viz::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
@@ -428,8 +434,9 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   CheckValidThreadOrLockAcquired();
   if (!command_buffer_ || !command_buffer_->channel()) {
-    static const gpu::GpuFeatureInfo default_gpu_feature_info;
-    return default_gpu_feature_info;
+    static const base::NoDestructor<gpu::GpuFeatureInfo>
+        default_gpu_feature_info;
+    return *default_gpu_feature_info;
   }
   return command_buffer_->channel()->gpu_feature_info();
 }

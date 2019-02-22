@@ -324,7 +324,7 @@ FileList* DataTransfer::files() const {
   if (!CanReadData())
     return files;
 
-  for (size_t i = 0; i < data_object_->length(); ++i) {
+  for (uint32_t i = 0; i < data_object_->length(); ++i) {
     if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
       Blob* blob = data_object_->Item(i)->GetAsFile();
       if (blob && blob->IsFile())
@@ -640,7 +640,7 @@ bool DataTransfer::HasFileOfType(const String& type) const {
   if (!CanReadTypes())
     return false;
 
-  for (size_t i = 0; i < data_object_->length(); ++i) {
+  for (uint32_t i = 0; i < data_object_->length(); ++i) {
     if (data_object_->Item(i)->Kind() == DataObjectItem::kFileKind) {
       Blob* blob = data_object_->Item(i)->GetAsFile();
       if (blob && blob->IsFile() &&

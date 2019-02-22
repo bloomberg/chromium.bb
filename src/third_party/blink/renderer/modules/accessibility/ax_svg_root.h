@@ -46,7 +46,7 @@ class AXSVGRoot final : public AXLayoutObject {
 
   void SetParent(AXObject*) override;
 
-  AccessibilityRole DetermineAccessibilityRole() override;
+  ax::mojom::Role DetermineAccessibilityRole() override;
   bool ComputeAccessibilityIsIgnored(IgnoredReasons*) const override;
 
  private:

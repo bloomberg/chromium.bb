@@ -193,7 +193,7 @@ bool DOMTokenList::replace(const AtomicString& token,
   bool found_old_token = false;
   bool found_new_token = false;
   bool did_update = false;
-  for (size_t i = 0; i < token_set_.size(); ++i) {
+  for (wtf_size_t i = 0; i < token_set_.size(); ++i) {
     const AtomicString& existing_token = token_set_[i];
     if (found_old_token) {
       if (existing_token == new_token) {

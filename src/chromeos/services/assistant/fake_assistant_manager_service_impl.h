@@ -42,7 +42,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void StartCachedScreenContextInteraction() override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartVoiceInteraction() override;
-  void StopActiveInteraction() override;
+  void StopActiveInteraction(bool cancel_conversation) override;
   void SendTextQuery(const std::string& query) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
@@ -53,6 +53,7 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
 
  private:
   State state_ = State::STOPPED;

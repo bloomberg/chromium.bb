@@ -13,11 +13,11 @@
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
@@ -39,21 +39,6 @@ namespace {
 const GLsizei kWidth = 10;
 const GLsizei kHeight = 20;
 const GLint kImageId = 1;
-
-class MockMemoryTracker : public gles2::MemoryTracker {
- public:
-  MockMemoryTracker() {}
-
-  void TrackMemoryAllocatedChange(uint64_t delta) override {}
-  uint64_t GetSize() const override { return 0; }
-
-  uint64_t ClientTracingId() const override { return 0; }
-  int ClientId() const override { return 0; }
-  uint64_t ShareGroupTracingGUID() const override { return 0; }
-
- private:
-  ~MockMemoryTracker() override = default;
-};
 
 }  // namespace
 
@@ -584,7 +569,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         &framebuffer_completeness_cache_, feature_info,
         false /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
-        gpu_feature_info, &discardable_manager_);
+        gpu_feature_info, &discardable_manager_, &shared_image_manager_);
   }
   void TearDown() override {
     context_state_ = nullptr;
@@ -637,6 +622,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
   gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
+  SharedImageManager shared_image_manager_;
   scoped_refptr<gles2::ContextGroup> group_;
 };
 

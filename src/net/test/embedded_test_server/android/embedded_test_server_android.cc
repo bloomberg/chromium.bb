@@ -56,8 +56,9 @@ EmbeddedTestServerAndroid::~EmbeddedTestServerAndroid() {
 }
 
 jboolean EmbeddedTestServerAndroid::Start(JNIEnv* env,
-                                          const JavaParamRef<jobject>& jobj) {
-  return test_server_.Start();
+                                          const JavaParamRef<jobject>& jobj,
+                                          jint port) {
+  return test_server_.Start(static_cast<int>(port));
 }
 
 ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetRootCertPemPath(

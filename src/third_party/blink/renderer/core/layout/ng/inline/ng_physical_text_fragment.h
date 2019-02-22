@@ -110,7 +110,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
-  NGPhysicalOffsetRect SelfInkOverflow() const;
+  NGPhysicalOffsetRect SelfInkOverflow() const { return self_ink_overflow_; }
 
   NGTextEndEffect EndEffect() const {
     return static_cast<NGTextEndEffect>(end_effect_);
@@ -152,6 +152,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
 
+  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
+
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
   const String text_;
@@ -159,7 +161,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Start and end offset of the parent block text.
   const unsigned start_offset_;
   const unsigned end_offset_;
-
+  NGPhysicalOffsetRect self_ink_overflow_;
   const scoped_refptr<const ShapeResult> shape_result_;
 
   const unsigned line_orientation_ : 2;  // NGLineOrientation

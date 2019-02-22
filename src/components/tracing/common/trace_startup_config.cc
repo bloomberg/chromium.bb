@@ -39,7 +39,8 @@ const base::FilePath::CharType kAndroidTraceConfigFile[] =
     FILE_PATH_LITERAL("/data/local/chrome-trace-config.json");
 
 const char kDefaultStartupCategories[] =
-    "startup,browser,toplevel,EarlyJava,cc,Java,navigation,loading,gpu,-*";
+    "startup,browser,toplevel,EarlyJava,cc,Java,navigation,loading,gpu,"
+    "disabled-by-default-cpu_profiler,-*";
 #else
 const char kDefaultStartupCategories[] =
     "benchmark,toplevel,startup,disabled-by-default-file,disabled-by-default-"

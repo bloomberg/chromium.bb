@@ -21,6 +21,8 @@
 // https://drafts.csswg.org/cssom/#the-stylesheetlist-interface
 
 [
+    RaisesException=Constructor,
+    Constructor(sequence<CSSStyleSheet> sheets),
     Exposed=Window
 ] interface StyleSheetList {
     [Measure] getter StyleSheet? item(unsigned long index);

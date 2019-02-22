@@ -213,11 +213,12 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
 
   basic_info->Append(NewDescriptionValuePair(
       "Driver D3D12 feature level",
-      D3dFeaturelevelToString(gpu_info.d3d12_feature_level)));
+      D3dFeaturelevelToString(
+          gpu_info.dx12_vulkan_version_info.d3d12_feature_level)));
 
-  basic_info->Append(
-      NewDescriptionValuePair("Driver Vulkan API version",
-                              VulkanVersionToString(gpu_info.vulkan_version)));
+  basic_info->Append(NewDescriptionValuePair(
+      "Driver Vulkan API version",
+      VulkanVersionToString(gpu_info.dx12_vulkan_version_info.vulkan_version)));
 #endif
 
   basic_info->Append(

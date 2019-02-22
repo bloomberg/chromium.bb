@@ -72,42 +72,11 @@ std::vector<std::string> GetExplicitPatternsAsStrings(
       extension.permissions_data()->active_permissions().explicit_hosts());
 }
 
-scoped_refptr<const Extension> CreateExtensionWithPermissions(
-    const URLPatternSet& scriptable_hosts,
-    const URLPatternSet& explicit_hosts,
-    Manifest::Location location,
-    const std::string& name) {
-  ListBuilder scriptable_host_list;
-  for (const auto& pattern : scriptable_hosts)
-    scriptable_host_list.Append(pattern.GetAsString());
-
-  ListBuilder explicit_host_list;
-  for (const auto& pattern : explicit_hosts)
-    explicit_host_list.Append(pattern.GetAsString());
-
-  DictionaryBuilder script;
-  script.Set("matches", scriptable_host_list.Build())
-      .Set("js", ListBuilder().Append("foo.js").Build());
-
-  return ExtensionBuilder()
-      .SetLocation(location)
-      .SetManifest(DictionaryBuilder()
-                       .Set("name", name)
-                       .Set("description", "foo")
-                       .Set("manifest_version", 2)
-                       .Set("version", "0.1.2.3")
-                       .Set("content_scripts",
-                            ListBuilder().Append(script.Build()).Build())
-                       .Set("permissions", explicit_host_list.Build())
-                       .Build())
-      .SetID(crx_file::id_util::GenerateId(name))
-      .Build();
-}
-
 class RuntimeHostPermissionsEnabledScope {
  public:
   RuntimeHostPermissionsEnabledScope() {
-    feature_list_.InitAndEnableFeature(features::kRuntimeHostPermissions);
+    feature_list_.InitAndEnableFeature(
+        extensions_features::kRuntimeHostPermissions);
   }
   ~RuntimeHostPermissionsEnabledScope() {}
 
@@ -145,14 +114,12 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
   for (const auto& test_case : test_cases) {
     std::string test_case_name = base::JoinString(test_case, ",");
     SCOPED_TRACE(test_case_name);
-    URLPatternSet patterns;
-    for (const auto& pattern : test_case)
-      patterns.AddPattern(URLPattern(URLPattern::SCHEME_ALL, pattern));
-    scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-        patterns, patterns, Manifest::INTERNAL, test_case_name);
-
-    const std::vector<std::string> patterns_strings =
-        GetPatternsAsStrings(patterns);
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder(test_case_name)
+            .AddPermissions(test_case)
+            .AddContentScript("foo.js", test_case)
+            .SetLocation(Manifest::INTERNAL)
+            .Build();
 
     PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
@@ -163,9 +130,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
 
     // By default, all permissions are granted.
     EXPECT_THAT(GetScriptablePatternsAsStrings(*extension),
-                testing::UnorderedElementsAreArray(patterns_strings));
+                testing::UnorderedElementsAreArray(test_case));
     EXPECT_THAT(GetExplicitPatternsAsStrings(*extension),
-                testing::UnorderedElementsAreArray(patterns_strings));
+                testing::UnorderedElementsAreArray(test_case));
     EXPECT_TRUE(
         permissions_data->withheld_permissions().scriptable_hosts().is_empty());
     EXPECT_TRUE(
@@ -184,10 +151,10 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
     EXPECT_THAT(
         GetPatternsAsStrings(
             permissions_data->withheld_permissions().scriptable_hosts()),
-        testing::UnorderedElementsAreArray(patterns_strings));
+        testing::UnorderedElementsAreArray(test_case));
     EXPECT_THAT(GetPatternsAsStrings(
                     permissions_data->withheld_permissions().explicit_hosts()),
-                testing::UnorderedElementsAreArray(patterns_strings));
+                testing::UnorderedElementsAreArray(test_case));
 
     // Finally, re-grant the withheld permissions.
     modifier.SetWithholdHostPermissions(false);
@@ -195,9 +162,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantAndWithholdHostPermissions) {
     // We should be back to our initial state - all requested permissions are
     // granted.
     EXPECT_THAT(GetScriptablePatternsAsStrings(*extension),
-                testing::UnorderedElementsAreArray(patterns_strings));
+                testing::UnorderedElementsAreArray(test_case));
     EXPECT_THAT(GetExplicitPatternsAsStrings(*extension),
-                testing::UnorderedElementsAreArray(patterns_strings));
+                testing::UnorderedElementsAreArray(test_case));
     EXPECT_TRUE(
         permissions_data->withheld_permissions().scriptable_hosts().is_empty());
     EXPECT_TRUE(
@@ -211,11 +178,12 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   // Permissions can only be withheld with the appropriate feature turned on.
   auto enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
 
-  URLPatternSet all_hosts_patterns(
-      {URLPattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern)});
-
-  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_hosts_patterns, all_hosts_patterns, Manifest::INTERNAL, "a");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("a")
+          .AddPermission(URLPattern::kAllUrlsPattern)
+          .AddContentScript("foo.js", {URLPattern::kAllUrlsPattern})
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   PermissionsUpdater updater(profile());
   updater.InitializePermissions(extension.get());
   const PermissionsData* permissions_data = extension->permissions_data();
@@ -262,11 +230,12 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   // Permissions can only be withheld with the appropriate feature turned on.
   RuntimeHostPermissionsEnabledScope enabled_scope;
 
-  URLPatternSet all_hosts_patterns(
-      {URLPattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern)});
-
-  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_hosts_patterns, all_hosts_patterns, Manifest::INTERNAL, "extension");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddPermission(URLPattern::kAllUrlsPattern)
+          .AddContentScript("foo.js", {URLPattern::kAllUrlsPattern})
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
   ScriptingPermissionsModifier modifier(profile(), extension);
@@ -781,10 +750,11 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GetSiteAccess_IgnorePaths) {
   RuntimeHostPermissionsEnabledScope enabled_scope;
   InitializeEmptyExtensionService();
 
-  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      URLPatternSet({URLPattern(UserScript::ValidUserScriptSchemes(),
-                                "https://www.example.com/foo")}),
-      URLPatternSet(), Manifest::INTERNAL, "extension");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension")
+          .AddContentScript("foo.js", {"https://www.example.com/foo"})
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   InitializeExtensionPermissions(profile(), *extension);
 
   ScriptingPermissionsModifier modifier(profile(), extension.get());

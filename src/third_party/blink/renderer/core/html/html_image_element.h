@@ -59,6 +59,9 @@ class CORE_EXPORT HTMLImageElement final
  public:
   class ViewportChangeListener;
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   static HTMLImageElement* Create(Document&);
   static HTMLImageElement* Create(Document&, const CreateElementFlags);
   static HTMLImageElement* CreateForJSConstructor(Document&);
@@ -109,6 +112,9 @@ class CORE_EXPORT HTMLImageElement final
   void setWidth(unsigned);
 
   IntSize GetOverriddenIntrinsicSize() const;
+  bool IsDefaultIntrinsicSize() const {
+    return is_default_overridden_intrinsic_size_;
+  }
 
   int x() const;
   int y() const;
@@ -221,8 +227,6 @@ class CORE_EXPORT HTMLImageElement final
   void NotifyViewportChanged();
   void CreateMediaQueryListIfDoesNotExist();
 
-  void ParseIntrinsicSizeAttribute(const String& value);
-
   Member<HTMLImageLoader> image_loader_;
   Member<ViewportChangeListener> listener_;
   Member<HTMLFormElement> form_;
@@ -235,6 +239,7 @@ class CORE_EXPORT HTMLImageElement final
   unsigned is_fallback_image_ : 1;
   bool should_invert_color_;
   bool sizes_set_width_;
+  bool is_default_overridden_intrinsic_size_;
 
   ReferrerPolicy referrer_policy_;
 

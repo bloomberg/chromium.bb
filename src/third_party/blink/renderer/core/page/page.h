@@ -30,23 +30,21 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
-#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -55,13 +53,15 @@ class BrowserControls;
 class ChromeClient;
 class ContextMenuController;
 class Document;
-class DOMRectList;
 class DragCaret;
 class DragController;
 class FocusController;
 class Frame;
 class LinkHighlights;
+class LocalFrame;
+class LocalFrameView;
 class OverscrollController;
+class PageOverlay;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
@@ -70,6 +70,7 @@ class PointerLockController;
 class ScopedPagePauser;
 class ScrollingCoordinator;
 class ScrollbarTheme;
+class SecurityOrigin;
 class Settings;
 class ConsoleMessageStorage;
 class TopDocumentRootScrollerController;
@@ -113,7 +114,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void CloseSoon();
   bool IsClosing() const { return is_closing_; }
 
-  using PageSet = PersistentHeapHashSet<WeakMember<Page>>;
+  using PageSet = HeapHashSet<WeakMember<Page>>;
 
   // Return the current set of full-fledged, ordinary pages.
   // Each created and owned by a WebView.
@@ -152,9 +153,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // depends on this will generally have to be rewritten to propagate any
   // necessary state through all renderer processes for that page and/or
   // coordinate/rely on the browser process to help dispatch/coordinate work.
-  LocalFrame* DeprecatedLocalMainFrame() const {
-    return ToLocalFrame(main_frame_);
-  }
+  LocalFrame* DeprecatedLocalMainFrame() const;
 
   void DocumentDetached(Document*);
 
@@ -184,8 +183,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SetValidationMessageClientForTesting(ValidationMessageClient*);
 
   ScrollingCoordinator* GetScrollingCoordinator();
-
-  DOMRectList* NonFastScrollableRectsForTesting(const LocalFrame*);
 
   Settings& GetSettings() const { return *settings_; }
 

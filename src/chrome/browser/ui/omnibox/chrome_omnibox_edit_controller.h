@@ -21,7 +21,8 @@ class ChromeOmniboxEditController : public OmniboxEditController {
   void OnAutocompleteAccept(const GURL& destination_url,
                             WindowOpenDisposition disposition,
                             ui::PageTransition transition,
-                            AutocompleteMatchType::Type type) override;
+                            AutocompleteMatchType::Type type,
+                            base::TimeTicks match_selection_timestamp) override;
   void OnInputInProgress(bool in_progress) override;
 
   // Returns the WebContents of the currently active tab.

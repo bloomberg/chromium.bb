@@ -34,7 +34,7 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='hoverable'",
       "position": [8, 0],
-      "bounds": [211, 100],
+      "bounds": [216, 100],
       "backgroundColor": "#90EE90"
     }
   ],

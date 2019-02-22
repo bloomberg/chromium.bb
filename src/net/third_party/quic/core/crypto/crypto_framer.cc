@@ -58,13 +58,12 @@ CryptoFramer::~CryptoFramer() {}
 
 // static
 std::unique_ptr<CryptoHandshakeMessage> CryptoFramer::ParseMessage(
-    QuicStringPiece in,
-    Perspective perspective) {
+    QuicStringPiece in) {
   OneShotVisitor visitor;
   CryptoFramer framer;
 
   framer.set_visitor(&visitor);
-  if (!framer.ProcessInput(in, perspective) || visitor.error() ||
+  if (!framer.ProcessInput(in) || visitor.error() ||
       framer.InputBytesRemaining()) {
     return nullptr;
   }
@@ -80,13 +79,16 @@ const QuicString& CryptoFramer::error_detail() const {
   return error_detail_;
 }
 
-bool CryptoFramer::ProcessInput(QuicStringPiece input,
-                                Perspective perspective) {
+bool CryptoFramer::ProcessInput(QuicStringPiece input, EncryptionLevel level) {
+  return ProcessInput(input);
+}
+
+bool CryptoFramer::ProcessInput(QuicStringPiece input) {
   DCHECK_EQ(QUIC_NO_ERROR, error_);
   if (error_ != QUIC_NO_ERROR) {
     return false;
   }
-  error_ = Process(input, perspective);
+  error_ = Process(input);
   if (error_ != QUIC_NO_ERROR) {
     DCHECK(!error_detail_.empty());
     visitor_->OnError(this);
@@ -127,8 +129,7 @@ void CryptoFramer::ForceHandshake() {
 
 // static
 QuicData* CryptoFramer::ConstructHandshakeMessage(
-    const CryptoHandshakeMessage& message,
-    Perspective perspective) {
+    const CryptoHandshakeMessage& message) {
   size_t num_entries = message.tag_value_map().size();
   size_t pad_length = 0;
   bool need_pad_tag = false;
@@ -169,7 +170,7 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
 
   uint32_t end_offset = 0;
   // Tags and offsets
-  for (QuicTagValueMap::const_iterator it = message.tag_value_map().begin();
+  for (auto it = message.tag_value_map().begin();
        it != message.tag_value_map().end(); ++it) {
     if (it->first == kPAD && need_pad_tag) {
       // Existing PAD tags are only checked when padding needs to be added
@@ -204,7 +205,7 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
   }
 
   // Values
-  for (QuicTagValueMap::const_iterator it = message.tag_value_map().begin();
+  for (auto it = message.tag_value_map().begin();
        it != message.tag_value_map().end(); ++it) {
     if (it->first > kPAD && need_pad_value) {
       need_pad_value = false;
@@ -238,8 +239,7 @@ void CryptoFramer::Clear() {
   state_ = STATE_READING_TAG;
 }
 
-QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
-                                    Perspective perspective) {
+QuicErrorCode CryptoFramer::Process(QuicStringPiece input) {
   // Add this data to the buffer.
   buffer_.append(input.data(), input.length());
   QuicDataReader reader(buffer_.data(), buffer_.length(), HOST_BYTE_ORDER);

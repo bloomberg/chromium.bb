@@ -25,6 +25,7 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -184,6 +185,16 @@ static NSString* gUserAgentProduct = nil;
     [self resetWebStateWithSessionStorage:nil];
   }
   return self;
+}
+
+- (BOOL)allowsBackForwardNavigationGestures {
+  return _webState->GetWebViewProxy().allowsBackForwardNavigationGestures;
+}
+
+- (void)setAllowsBackForwardNavigationGestures:
+    (BOOL)allowsBackForwardNavigationGestures {
+  _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
 }
 
 - (void)dealloc {
@@ -434,9 +445,10 @@ static NSString* gUserAgentProduct = nil;
 - (void)addScriptCommandHandler:(id<CWVScriptCommandHandler>)handler
                   commandPrefix:(NSString*)commandPrefix {
   CWVWebView* __weak weakSelf = self;
-  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& content, const GURL& mainDocumentURL,
-            bool userInteracting, bool isMainFrame) {
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^bool(
+          const base::DictionaryValue& content, const GURL& mainDocumentURL,
+          bool userInteracting, bool isMainFrame, web::WebFrame* senderFrame) {
         NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
         CWVScriptCommand* command = [[CWVScriptCommand alloc]
             initWithContent:nsContent
@@ -497,11 +509,15 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
+  web::WebFramesManager* framesManager =
+      web::WebFramesManager::FromWebState(_webState.get());
+  [JSSuggestionManager setWebFramesManager:framesManager];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager
                                      JSSuggestionManager:JSSuggestionManager];
 }
+
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #pragma mark - Preserving and Restoring State
@@ -548,6 +564,10 @@ static NSString* gUserAgentProduct = nil;
     [_webState->GetView() removeFromSuperview];
   }
 
+  BOOL allowsBackForwardNavigationGestures =
+      _webState &&
+      _webState->GetWebViewProxy().allowsBackForwardNavigationGestures;
+
   web::WebState::CreateParams webStateCreateParams(_configuration.browserState);
   if (sessionStorage) {
     _webState = web::WebState::CreateWithStorageSession(webStateCreateParams,
@@ -577,6 +597,9 @@ static NSString* gUserAgentProduct = nil;
   for (const auto& pair : _scriptCommandCallbacks) {
     _webState->AddScriptCommandCallback(pair.second, pair.first);
   }
+
+  _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =
+      allowsBackForwardNavigationGestures;
 
   _scrollView.proxy = _webState.get()->GetWebViewProxy().scrollViewProxy;
 

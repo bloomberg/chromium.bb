@@ -98,20 +98,20 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   DCHECK(surface);
   DCHECK(surface->HasActiveFrame());
-  if (last_activated_surface_id_ != surface->surface_id()) {
+
+  const LocalSurfaceId& local_surface_id =
+      surface->surface_id().local_surface_id();
+  const LocalSurfaceId& last_activated_local_surface_id =
+      last_activated_surface_id_.local_surface_id();
+
+  if (!last_activated_surface_id_.is_valid() ||
+      local_surface_id > last_activated_local_surface_id) {
     if (last_activated_surface_id_.is_valid()) {
-      const LocalSurfaceId& local_surface_id =
-          surface->surface_id().local_surface_id();
-      const LocalSurfaceId& last_activated_local_surface_id =
-          last_activated_surface_id_.local_surface_id();
       CHECK_GE(local_surface_id.parent_sequence_number(),
                last_activated_local_surface_id.parent_sequence_number());
       CHECK_GE(local_surface_id.child_sequence_number(),
                last_activated_local_surface_id.child_sequence_number());
-      CHECK(local_surface_id.parent_sequence_number() >
-                last_activated_local_surface_id.parent_sequence_number() ||
-            local_surface_id.child_sequence_number() >
-                last_activated_local_surface_id.child_sequence_number());
+
       Surface* prev_surface =
           surface_manager_->GetSurfaceForId(last_activated_surface_id_);
       DCHECK(prev_surface);
@@ -119,6 +119,12 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
       surface_manager_->DestroySurface(prev_surface->surface_id());
     }
     last_activated_surface_id_ = surface->surface_id();
+  } else if (surface->surface_id() < last_activated_surface_id_) {
+    // We can get into a situation where a child-initiated synchronization is
+    // deferred until after a parent-initiated synchronization happens resulting
+    // in activations happening out of order. In that case, we simply discard
+    // the stale surface.
+    surface_manager_->DestroySurface(surface->surface_id());
   }
 
   DCHECK(surface->HasActiveFrame());
@@ -126,7 +132,7 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   // Check if this is a display root surface and the SurfaceId is changing.
   if (is_root_ && (!referenced_local_surface_id_ ||
                    *referenced_local_surface_id_ !=
-                       surface->surface_id().local_surface_id())) {
+                       last_activated_surface_id_.local_surface_id())) {
     UpdateDisplayRootReference(surface);
   }
 }
@@ -392,6 +398,14 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     // to determine the freshness of a surface at aggregation time.
     const LocalSurfaceId& last_created_local_surface_id =
         last_created_surface_id_.local_surface_id();
+    bool last_surface_has_dependent_frame =
+        prev_surface && prev_surface->HasDependentFrame();
+
+    bool child_initiated_synchronization_event =
+        last_created_local_surface_id.is_valid() &&
+        local_surface_id.child_sequence_number() >
+            last_created_local_surface_id.child_sequence_number();
+
     // Neither sequence numbers of the LocalSurfaceId can decrease and at least
     // one must increase.
     bool monotonically_increasing_id =
@@ -401,8 +415,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
              last_created_local_surface_id.child_sequence_number()) &&
         (local_surface_id.parent_sequence_number() >
              last_created_local_surface_id.parent_sequence_number() ||
-         local_surface_id.child_sequence_number() >
-             last_created_local_surface_id.child_sequence_number());
+         child_initiated_synchronization_event);
 
     if (!surface_info.is_valid() || !monotonically_increasing_id) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
@@ -410,11 +423,25 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
       return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
     }
 
-    current_surface = CreateSurface(surface_info);
+    // If the last Surface doesn't have a dependent frame, and this frame
+    // corresponds to a child-initiated synchronization event then defer this
+    // Surface until a dependent frame arrives. This throttles child submission
+    // of CompositorFrames to the parent's embedding rate.
+    const bool block_activation_on_parent =
+        child_initiated_synchronization_event &&
+        !last_surface_has_dependent_frame;
+
+    current_surface = CreateSurface(surface_info, block_activation_on_parent);
     last_created_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }
+
+  const int64_t trace_id = ~frame.metadata.begin_frame_ack.trace_id;
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"),
+                         "Event.Pipeline", TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "ReceiveHitTestData");
 
   // QueueFrame can fail in unit tests, so SubmitHitTestRegionList has to be
   // called before that.
@@ -564,10 +591,12 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 }
 
 Surface* CompositorFrameSinkSupport::CreateSurface(
-    const SurfaceInfo& surface_info) {
+    const SurfaceInfo& surface_info,
+    bool block_activation_on_parent) {
   return surface_manager_->CreateSurface(
       weak_factory_.GetWeakPtr(), surface_info,
-      frame_sink_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
+      frame_sink_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_,
+      block_activation_on_parent);
 }
 
 SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(

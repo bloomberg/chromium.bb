@@ -107,6 +107,8 @@ class SnapshotTabHelperTest : public PlatformTest {
     CGRect frame = {CGPointZero, kWebStateViewSize};
     UIView* view = [[UIView alloc] initWithFrame:frame];
     view.backgroundColor = [UIColor redColor];
+    web_state_superview_ = [[UIView alloc] initWithFrame:frame];
+    [web_state_superview_ addSubview:view];
     web_state_.SetView(view);
   }
 
@@ -139,6 +141,8 @@ class SnapshotTabHelperTest : public PlatformTest {
   TabHelperSnapshotGeneratorDelegate* delegate_ = nil;
   NSString* snapshot_session_id_ = nil;
   web::TestWebState web_state_;
+  // The webState's view needs a superview so a snapshot can be taken.
+  UIView* web_state_superview_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SnapshotTabHelperTest);

@@ -111,14 +111,20 @@ bool CollectImages(SkCommandLineFlags::StringArray images, SkTArray<SkString>* o
 
     static const char* const exts[] = {
         "bmp", "gif", "jpg", "jpeg", "png", "webp", "ktx", "astc", "wbmp", "ico",
+#if !defined(SK_BUILD_FOR_WIN)
         "BMP", "GIF", "JPG", "JPEG", "PNG", "WEBP", "KTX", "ASTC", "WBMP", "ICO",
+#endif
 #ifdef SK_HAS_HEIF_LIBRARY
         "heic",
+#if !defined(SK_BUILD_FOR_WIN)
         "HEIC",
+#endif
 #endif
 #ifdef SK_CODEC_DECODES_RAW
         "arw", "cr2", "dng", "nef", "nrw", "orf", "raf", "rw2", "pef", "srw",
+#if !defined(SK_BUILD_FOR_WIN)
         "ARW", "CR2", "DNG", "NEF", "NRW", "ORF", "RAF", "RW2", "PEF", "SRW",
+#endif
 #endif
     };
 
@@ -167,6 +173,7 @@ DEFINE_string(pr, "all",
               "[~]small [~]tess] [~]all");
 
 DEFINE_bool(disableExplicitAlloc, false, "Disable explicit allocation of GPU resources");
+DEFINE_bool(reduceOpListSplitting, false, "Improve opList sorting");
 
 void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
     static std::unique_ptr<SkExecutor> gGpuExecutor = (0 != FLAGS_gpuThreads)
@@ -181,5 +188,9 @@ void SetCtxOptionsFromCommonFlags(GrContextOptions* ctxOptions) {
         ctxOptions->fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kNo;
         // Can't have sorting enabled when explicit allocation is disabled.
         ctxOptions->fSortRenderTargets = GrContextOptions::Enable::kNo;
+    }
+
+    if (FLAGS_reduceOpListSplitting) {
+        ctxOptions->fReduceOpListSplitting = GrContextOptions::Enable::kYes;
     }
 }

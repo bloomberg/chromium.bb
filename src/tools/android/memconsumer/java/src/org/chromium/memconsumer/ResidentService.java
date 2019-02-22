@@ -26,7 +26,7 @@ public class ResidentService extends Service {
     private static final int RESIDENT_NOTIFICATION_ID = 1;
 
     private final IBinder mBinder = new ServiceBinder();
-    private boolean mIsInForeground = false;
+    private boolean mIsInForeground;
 
     @Override
     public IBinder onBind(Intent intent) {

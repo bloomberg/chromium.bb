@@ -132,21 +132,23 @@ source_set("unit_tests") {
 js_compile_bundle("chrome_bundle_all_frames") {
   closure_entry_point = "__crWeb.chromeBundleAllFrames"
   sources = [
+    "//components/autofill/ios/browser/resources/autofill_controller.js",
+    "//components/autofill/ios/browser/resources/suggestion_controller.js",
+    "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
+    "//components/autofill/ios/form_util/resources/form_handlers.js",
     "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
+    "resources/print.js",
   ]
 }
 
 js_compile_bundle("chrome_bundle_main_frame") {
   closure_entry_point = "__crWeb.chromeBundleMainFrame"
   sources = [
-    "//components/autofill/ios/browser/resources/autofill_controller.js",
-    "//components/autofill/ios/form_util/resources/fill.js",
     "//components/password_manager/ios/resources/password_controller.js",
     "resources/chrome_bundle_main_frame.js",
     "resources/image_fetch.js",
-    "resources/print.js",
   ]
 
   deps = [
@@ -306,6 +308,7 @@ source_set("eg_tests") {
     "progress_indicator_egtest.mm",
     "push_and_replace_state_navigation_egtest.mm",
     "stop_loading_egtest.mm",
+    "tab_order_egtest.mm",
     "visible_url_egtest.mm",
     "window_open_by_dom_egtest.mm",
   ]

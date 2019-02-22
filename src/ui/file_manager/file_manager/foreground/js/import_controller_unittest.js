@@ -38,8 +38,10 @@ var MESSAGES = {
   CLOUD_IMPORT_EMPTY_SCAN_BUTTON_LABEL: 'No new media',
   CLOUD_IMPORT_INSUFFICIENT_SPACE_BUTTON_LABEL: 'Not enough space!',
   CLOUD_IMPORT_SCANNING_BUTTON_LABEL: 'Scanning... ...!',
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
   DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
+  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
 };
 
 // Set up string assets.
@@ -332,8 +334,7 @@ function testClickDestination_ShowsDestinationAfterImportStarted(callback) {
             return mediaImporter.importResolver.promise.then(
                 function() {
                   widget.click(importer.ClickSource.DESTINATION);
-                  return
-                    environment.showImportDestinationResolver.promise;
+                  return environment.showImportDestinationResolver.promise;
                 });
           });
 
@@ -480,10 +481,13 @@ TestImportRunner.prototype.assertImportsStarted = function(expected) {
  * @constructor
  * @implements {importer.CommandInput}
  *
+ * @param {!VolumeManager} volumeManager
  * @param {!VolumeInfo} volumeInfo
  * @param {!DirectoryEntry} directory
  */
-TestControllerEnvironment = function(volumeInfo, directory) {
+TestControllerEnvironment = function(volumeManager, volumeInfo, directory) {
+  this.volumeManager = volumeManager;
+
   /** @private {!VolumeInfo} */
   this.volumeInfo_ = volumeInfo;
 
@@ -693,7 +697,7 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
       fileNames);
 
   environment = new TestControllerEnvironment(
-      sourceVolume,
+      volumeManager, sourceVolume,
       sourceVolume.fileSystem.entries[currentDirectory]);
 
   return new importer.ImportController(

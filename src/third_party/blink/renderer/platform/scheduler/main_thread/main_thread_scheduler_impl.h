@@ -132,6 +132,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // entries. This is initialized early with all valid entries. Entries that
     // aren't valid task types, i.e. non-frame level, are base::nullopt.
     FrameTaskTypeToQueueTraitsArray frame_task_types_to_queue_traits;
+
+    bool disable_expensive_task_blocking;
+    bool disable_non_touchstart_input_heuristics;
+    bool disable_touchstart_input_heuristics;
   };
 
   static const char* UseCaseToString(UseCase use_case);
@@ -156,8 +160,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   ~MainThreadSchedulerImpl() override;
 
   // WebThreadScheduler implementation:
-  std::unique_ptr<WebThread> CreateMainThread() override;
+  std::unique_ptr<Thread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  // Note: this is also shared by the ThreadScheduler interface.
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CleanupTaskRunner() override;
   std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -199,11 +204,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
   // ThreadScheduler implementation:
-  void PostIdleTask(const base::Location&, WebThread::IdleTask) override;
+  void PostIdleTask(const base::Location&, Thread::IdleTask) override;
   void PostNonNestableIdleTask(const base::Location&,
-                               WebThread::IdleTask) override;
+                               Thread::IdleTask) override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  // IPCTaskRunner() is implemented above in the WebThreadScheduler section.
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
@@ -360,12 +366,12 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void OnTaskStarted(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void OnTaskCompleted(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   bool IsAudioPlaying() const;
@@ -715,19 +721,19 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // trigger a priority update.
   bool ShouldUpdateTaskQueuePriorities(Policy new_policy) const;
 
-  static void RunIdleTask(WebThread::IdleTask, base::TimeTicks deadline);
+  static void RunIdleTask(Thread::IdleTask, base::TimeTicks deadline);
 
   // Probabilistically record all task metadata for the current task.
   // If task belongs to a per-frame queue, this task is attributed to
   // a particular Page, otherwise it's attributed to all Pages in the process.
   void RecordTaskUkm(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   UkmRecordingStatus RecordTaskUkmImpl(
       MainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
       FrameSchedulerImpl* frame_scheduler,
       bool precise_attribution);

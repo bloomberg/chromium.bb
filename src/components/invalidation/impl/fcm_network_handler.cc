@@ -6,6 +6,7 @@
 
 #include "base/base64url.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -13,6 +14,7 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/status.h"
 #include "components/invalidation/public/invalidator_state.h"
 
 using instance_id::InstanceID;
@@ -43,6 +45,32 @@ std::string GetValueFromMessage(const gcm::IncomingMessage& message,
   return value;
 }
 
+InvalidationParsingStatus ParseIncommingMessage(
+    const gcm::IncomingMessage& message,
+    std::string* payload,
+    std::string* private_topic,
+    std::string* public_topic,
+    std::string* version) {
+  *payload = GetValueFromMessage(message, kPayloadKey);
+  *version = GetValueFromMessage(message, kVersionKey);
+
+  // Version must always be there.
+  if (version->empty())
+    return InvalidationParsingStatus::kVersionEmpty;
+
+  *public_topic = GetValueFromMessage(message, kPublicTopic);
+
+  // Public topic must always be there.
+  if (public_topic->empty())
+    return InvalidationParsingStatus::kPublicTopicEmpty;
+
+  *private_topic = message.sender_id;
+  if (private_topic->empty())
+    return InvalidationParsingStatus::kPrivateTopicEmpty;
+
+  return InvalidationParsingStatus::kSuccess;
+}
+
 }  // namespace
 
 FCMNetworkHandler::FCMNetworkHandler(
@@ -62,9 +90,12 @@ void FCMNetworkHandler::StartListening() {
   // Being the listener is pre-requirement for token operations.
   gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
 
+  // TODO(https://crbug.com/882887): Switch to a lazy subscription when they are
+  // supported by the GCM driver.
   instance_id_driver_->GetInstanceID(kInvalidationsAppId)
       ->GetToken(kInvalidationGCMSenderId, kGCMScope,
                  /*options=*/std::map<std::string, std::string>(),
+                 /*is_lazy=*/false,
                  base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -114,9 +145,12 @@ void FCMNetworkHandler::ScheduleNextTokenValidation() {
 void FCMNetworkHandler::StartTokenValidation() {
   DCHECK(IsListening());
 
+  // TODO(https://crbug.com/882887): Switch to a lazy subscription when they are
+  // supported by the GCM driver.
   instance_id_driver_->GetInstanceID(kInvalidationsAppId)
       ->GetToken(kInvalidationGCMSenderId, kGCMScope,
                  std::map<std::string, std::string>(),
+                 /*is_lazy=*/false,
                  base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
                             weak_ptr_factory_.GetWeakPtr()));
 }
@@ -155,25 +189,19 @@ void FCMNetworkHandler::OnStoreReset() {}
 void FCMNetworkHandler::OnMessage(const std::string& app_id,
                                   const gcm::IncomingMessage& message) {
   DCHECK_EQ(app_id, kInvalidationsAppId);
-  std::string payload = GetValueFromMessage(message, kPayloadKey);
-  std::string version = GetValueFromMessage(message, kVersionKey);
+  std::string payload;
+  std::string private_topic;
+  std::string public_topic;
+  std::string version;
 
-  // Version must always be there.
-  if (version.empty())
-    return;
+  InvalidationParsingStatus status = ParseIncommingMessage(
+      message, &payload, &private_topic, &public_topic, &version);
+  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.FCMMessageStatus", status);
 
-  std::string public_topic = GetValueFromMessage(message, kPublicTopic);
-
-  // Public topic must always be there.
-  if (public_topic.empty())
-    return;
-
-  // TODO(melandory): check if content is empty and report.
-  // TODO(melandory): report histogram in case of success.
-
-  std::string private_topic = message.sender_id;
   UpdateGcmChannelState(true);
-  DeliverIncomingMessage(payload, private_topic, public_topic, version);
+
+  if (status == InvalidationParsingStatus::kSuccess)
+    DeliverIncomingMessage(payload, private_topic, public_topic, version);
 }
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {

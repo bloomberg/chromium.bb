@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -17,6 +18,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -104,10 +106,18 @@ DemoModeApp GetAppFromWindow(const aura::Window* window) {
   if (app_id == extension_misc::kChromeAppId)
     return DemoModeApp::kBrowser;
 
-  // If the window is the "browser" type, having an app ID other than
-  // kChromeAppId indicates a hosted/bookmark app.
+  auto is_default = [](const std::string& app_id) {
+    if (!features::IsUsingWindowService())
+      return app_id.empty();
+
+    return base::StartsWith(app_id, ShelfWindowWatcher::kDefaultShelfIdPrefix,
+                            base::CompareCase::SENSITIVE);
+  };
+
+  // If the window is the "browser" type, having an app ID other than the
+  // default indicates a hosted/bookmark app.
   if (app_type == ash::AppType::CHROME_APP ||
-      (app_type == ash::AppType::BROWSER && app_id.size())) {
+      (app_type == ash::AppType::BROWSER && !is_default(app_id))) {
     return GetAppFromAppId(app_id);
   }
 

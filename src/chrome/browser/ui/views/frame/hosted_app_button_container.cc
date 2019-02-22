@@ -73,14 +73,17 @@ int HorizontalPaddingBetweenItems() {
 const char HostedAppButtonContainer::kViewClassName[] =
     "HostedAppButtonContainer";
 
-const base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay =
-    base::TimeDelta::FromMilliseconds(750);
+constexpr base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeInDuration;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginPauseDuration;
+constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
+const base::TimeDelta HostedAppButtonContainer::kOriginTotalDuration =
+    kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
 
-class HostedAppButtonContainer::ContentSettingsContainer
-    : public views::View,
-      public ContentSettingImageView::Delegate {
+class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
  public:
-  explicit ContentSettingsContainer(BrowserView* browser_view);
+  explicit ContentSettingsContainer(
+      ContentSettingImageView::Delegate* delegate);
   ~ContentSettingsContainer() override = default;
 
   void UpdateContentSettingViewsVisibility() {
@@ -128,45 +131,14 @@ class HostedAppButtonContainer::ContentSettingsContainer
     PreferredSizeChanged();
   }
 
-  // ContentSettingsImageView::Delegate:
-  content::WebContents* GetContentSettingWebContents() override {
-    return browser_view_->GetActiveWebContents();
-  }
-  ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
-      override {
-    return browser_view_->browser()->content_setting_bubble_model_delegate();
-  }
-  void OnContentSettingImageBubbleShown(
-      ContentSettingImageModel::ImageType type) const override {
-    UMA_HISTOGRAM_ENUMERATION(
-        "HostedAppFrame.ContentSettings.ImagePressed", type,
-        ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
-  }
-
   // Owned by the views hierarchy.
   std::vector<ContentSettingImageView*> content_setting_views_;
-
-  BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
 };
 
-views::View* HostedAppButtonContainer::GetContentSettingContainerForTesting() {
-  return content_settings_container_;
-}
-
-const std::vector<ContentSettingImageView*>&
-HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
-  return content_settings_container_->GetContentSettingViewsForTesting();
-}
-
 HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
-    BrowserView* browser_view)
-    : browser_view_(browser_view) {
-  DCHECK(
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view->browser()));
-
+    ContentSettingImageView::Delegate* delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -179,7 +151,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
     auto image_view = std::make_unique<ContentSettingImageView>(
-        std::move(model), this,
+        std::move(model), delegate,
         views::NativeWidgetAura::GetWindowTitleFontList());
     // Padding around content setting icons.
     constexpr int kContentSettingIconInteriorPadding = 4;
@@ -201,7 +173,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
       active_color_(active_color),
       inactive_color_(inactive_color),
       hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
-      content_settings_container_(new ContentSettingsContainer(browser_view)),
+      content_settings_container_(new ContentSettingsContainer(this)),
       page_action_icon_container_view_(new PageActionIconContainerView(
           {PageActionIconType::kFind, PageActionIconType::kZoom},
           GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
@@ -216,6 +188,9 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
+  DCHECK(
+      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view_->browser()));
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,
@@ -286,54 +261,6 @@ int HostedAppButtonContainer::LayoutInContainer(int leading_x,
   return bounds().x();
 }
 
-bool HostedAppButtonContainer::ShouldAnimate() const {
-  return !g_animation_disabled_for_testing &&
-         !browser_view_->immersive_mode_controller()->IsEnabled();
-}
-
-void HostedAppButtonContainer::StartTitlebarAnimation() {
-  if (!ShouldAnimate())
-    return;
-
-  hosted_app_origin_text_->StartSlideAnimation();
-  app_menu_button_->StartHighlightAnimation(
-      HostedAppOriginText::AnimationDuration());
-  icon_fade_in_delay_.Start(
-      FROM_HERE, HostedAppOriginText::AnimationDuration(), this,
-      &HostedAppButtonContainer::FadeInContentSettingIcons);
-}
-
-void HostedAppButtonContainer::FadeInContentSettingIcons() {
-  content_settings_container_->FadeIn();
-}
-
-void HostedAppButtonContainer::DisableAnimationForTesting() {
-  g_animation_disabled_for_testing = true;
-}
-
-void HostedAppButtonContainer::UpdateChildrenColor() {
-  SkColor color = paint_as_active_ ? active_color_ : inactive_color_;
-  hosted_app_origin_text_->SetTextColor(color);
-  content_settings_container_->SetIconColor(color);
-  page_action_icon_container_view_->SetIconColor(color);
-  app_menu_button_->SetIconColor(color);
-}
-
-void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
-  PreferredSizeChanged();
-}
-
-void HostedAppButtonContainer::OnImmersiveRevealStarted() {
-  // Don't wait for the fade in animation to make content setting icons visible
-  // once in immersive mode.
-  content_settings_container_->EnsureVisible();
-}
-
-void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
-  // Changes to layout need to be taken into account by the frame view.
-  PreferredSizeChanged();
-}
-
 const char* HostedAppButtonContainer::GetClassName() const {
   return kViewClassName;
 }
@@ -356,6 +283,36 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
   DCHECK_EQ(browser_view_->browser(), browser);
   return std::make_unique<HostedAppToolbarActionsBar>(delegate, browser,
                                                       main_bar);
+}
+
+SkColor HostedAppButtonContainer::GetContentSettingInkDropColor() const {
+  return GetIconColor();
+}
+
+content::WebContents* HostedAppButtonContainer::GetContentSettingWebContents() {
+  return browser_view_->GetActiveWebContents();
+}
+
+ContentSettingBubbleModelDelegate*
+HostedAppButtonContainer::GetContentSettingBubbleModelDelegate() {
+  return browser_view_->browser()->content_setting_bubble_model_delegate();
+}
+
+void HostedAppButtonContainer::OnContentSettingImageBubbleShown(
+    ContentSettingImageModel::ImageType type) const {
+  UMA_HISTOGRAM_ENUMERATION(
+      "HostedAppFrame.ContentSettings.ImagePressed", type,
+      ContentSettingImageModel::ImageType::NUM_IMAGE_TYPES);
+}
+
+void HostedAppButtonContainer::OnImmersiveRevealStarted() {
+  // Don't wait for the fade in animation to make content setting icons visible
+  // once in immersive mode.
+  content_settings_container_->EnsureVisible();
+}
+
+SkColor HostedAppButtonContainer::GetPageActionInkDropColor() const {
+  return GetIconColor();
 }
 
 content::WebContents*
@@ -414,4 +371,68 @@ void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
         FROM_HERE, kTitlebarAnimationDelay, this,
         &HostedAppButtonContainer::StartTitlebarAnimation);
   }
+}
+
+gfx::Size HostedAppButtonContainer::CalculatePreferredSize() const {
+  // Prefer height consistency over accommodating edge case icons that may bump
+  // up the container height (e.g. extension action icons with badges).
+  // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
+  // this container and turn this into a DCHECK that the conatiner height is the
+  // same as the app menu button height.
+  return gfx::Size(views::View::CalculatePreferredSize().width(),
+                   app_menu_button_->GetPreferredSize().height());
+}
+
+void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
+void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
+  // Changes to layout need to be taken into account by the frame view.
+  PreferredSizeChanged();
+}
+
+bool HostedAppButtonContainer::ShouldAnimate() const {
+  return !g_animation_disabled_for_testing &&
+         !browser_view_->immersive_mode_controller()->IsEnabled();
+}
+
+void HostedAppButtonContainer::StartTitlebarAnimation() {
+  if (!ShouldAnimate())
+    return;
+
+  hosted_app_origin_text_->StartFadeAnimation();
+  app_menu_button_->StartHighlightAnimation();
+  icon_fade_in_delay_.Start(
+      FROM_HERE, kOriginTotalDuration, this,
+      &HostedAppButtonContainer::FadeInContentSettingIcons);
+}
+
+void HostedAppButtonContainer::FadeInContentSettingIcons() {
+  content_settings_container_->FadeIn();
+}
+
+void HostedAppButtonContainer::DisableAnimationForTesting() {
+  g_animation_disabled_for_testing = true;
+}
+
+views::View* HostedAppButtonContainer::GetContentSettingContainerForTesting() {
+  return content_settings_container_;
+}
+
+const std::vector<ContentSettingImageView*>&
+HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
+  return content_settings_container_->GetContentSettingViewsForTesting();
+}
+
+SkColor HostedAppButtonContainer::GetIconColor() const {
+  return paint_as_active_ ? active_color_ : inactive_color_;
+}
+
+void HostedAppButtonContainer::UpdateChildrenColor() {
+  SkColor icon_color = GetIconColor();
+  hosted_app_origin_text_->SetTextColor(icon_color);
+  content_settings_container_->SetIconColor(icon_color);
+  page_action_icon_container_view_->SetIconColor(icon_color);
+  app_menu_button_->SetColor(icon_color);
 }

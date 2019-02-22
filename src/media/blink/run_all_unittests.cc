@@ -12,7 +12,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/blink.h"
 
 #if defined(OS_ANDROID)
@@ -40,22 +39,20 @@ class BlinkPlatformWithTaskEnvironment : public blink::Platform {
  public:
   BlinkPlatformWithTaskEnvironment()
       : main_thread_scheduler_(
-            blink::scheduler::CreateWebMainThreadSchedulerForTests()),
-        main_thread_(main_thread_scheduler_->CreateMainThread()) {}
+            blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler()) {
+  }
 
   ~BlinkPlatformWithTaskEnvironment() override {
     main_thread_scheduler_->Shutdown();
   }
 
-  blink::WebThread* CurrentThread() override {
-    CHECK(main_thread_->IsCurrentThread());
-    return main_thread_.get();
+  blink::scheduler::WebThreadScheduler* GetMainThreadScheduler() {
+    return main_thread_scheduler_.get();
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
-  std::unique_ptr<blink::WebThread> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkPlatformWithTaskEnvironment);
 };
@@ -82,7 +79,8 @@ static int RunTests(base::TestSuite* test_suite) {
 
   BlinkPlatformWithTaskEnvironment platform_;
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(&platform_, &empty_registry, platform_.CurrentThread());
+  blink::Initialize(&platform_, &empty_registry,
+                    platform_.GetMainThreadScheduler());
 
   return test_suite->Run();
 }

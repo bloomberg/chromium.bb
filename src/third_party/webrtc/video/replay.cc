@@ -19,18 +19,20 @@
 #include "call/call.h"
 #include "common_video/libyuv/include/webrtc_libyuv.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
+#include "media/engine/internaldecoderfactory.h"
 #include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/file.h"
 #include "rtc_base/flags.h"
-#include "rtc_base/json.h"
 #include "rtc_base/string_to_number.h"
+#include "rtc_base/strings/json.h"
 #include "rtc_base/timeutils.h"
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/sleep.h"
 #include "test/call_test.h"
 #include "test/encoder_settings.h"
 #include "test/fake_decoder.h"
+#include "test/function_video_decoder_factory.h"
 #include "test/gtest.h"
 #include "test/null_transport.h"
 #include "test/rtp_file_reader.h"
@@ -241,12 +243,14 @@ class VideoReceiveStreamConfigDeserializer final {
     auto receive_config = VideoReceiveStream::Config(transport);
     for (const auto decoder_json : json["decoders"]) {
       VideoReceiveStream::Decoder decoder;
-      decoder.payload_name = decoder_json["payload_name"].asString();
+      decoder.video_format =
+          SdpVideoFormat(decoder_json["payload_name"].asString());
       decoder.payload_type = decoder_json["payload_type"].asInt64();
       for (const auto& params_json : decoder_json["codec_params"]) {
         std::vector<std::string> members = params_json.getMemberNames();
         RTC_CHECK_EQ(members.size(), 1);
-        decoder.codec_params[members[0]] = params_json[members[0]].asString();
+        decoder.video_format.parameters[members[0]] =
+            params_json[members[0]].asString();
       }
       receive_config.decoders.push_back(decoder);
     }
@@ -328,6 +332,7 @@ class RtpReplayer final {
     test::NullTransport transport;
     std::vector<std::unique_ptr<rtc::VideoSinkInterface<VideoFrame>>> sinks;
     std::vector<VideoReceiveStream*> receive_streams;
+    std::unique_ptr<VideoDecoderFactory> decoder_factory;
   };
 
   // Loads multiple configurations from the provided configuration file.
@@ -348,6 +353,7 @@ class RtpReplayer final {
       return nullptr;
     }
 
+    stream_state->decoder_factory = absl::make_unique<InternalDecoderFactory>();
     size_t config_count = 0;
     for (const auto& json : json_configs) {
       // Create the configuration and parse the JSON into the config.
@@ -355,9 +361,9 @@ class RtpReplayer final {
           &(stream_state->transport), json);
       // Instantiate the underlying decoder.
       for (auto& decoder : receive_config.decoders) {
-        decoder.decoder = test::CreateMatchingDecoder(decoder.payload_type,
-                                                      decoder.payload_name)
-                              .decoder;
+        decoder = test::CreateMatchingDecoder(decoder.payload_type,
+                                              decoder.video_format.name);
+        decoder.decoder_factory = stream_state->decoder_factory.get();
       }
       // Create a window for this config.
       std::stringstream window_title;
@@ -415,13 +421,19 @@ class RtpReplayer final {
     VideoReceiveStream::Decoder decoder;
     decoder =
         test::CreateMatchingDecoder(flags::MediaPayloadType(), flags::Codec());
-    if (!flags::DecoderBitstreamFilename().empty()) {
+    if (flags::DecoderBitstreamFilename().empty()) {
+      stream_state->decoder_factory =
+          absl::make_unique<InternalDecoderFactory>();
+    } else {
       // Replace decoder with file writer if we're writing the bitstream to a
       // file instead.
-      delete decoder.decoder;
-      decoder.decoder = new DecoderBitstreamFileWriter(
-          flags::DecoderBitstreamFilename().c_str());
+      stream_state->decoder_factory =
+          absl::make_unique<test::FunctionVideoDecoderFactory>([]() {
+            return absl::make_unique<DecoderBitstreamFileWriter>(
+                flags::DecoderBitstreamFilename().c_str());
+          });
     }
+    decoder.decoder_factory = stream_state->decoder_factory.get();
     receive_config.decoders.push_back(decoder);
 
     stream_state->receive_streams.emplace_back(

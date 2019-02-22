@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
-#include "third_party/blink/public/web/web_popup_type.h"
+#include "content/public/common/widget_type.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -50,7 +50,6 @@ class RenderWidgetHelper
 
   // IO THREAD ONLY -----------------------------------------------------------
   void CreateNewWidget(int opener_id,
-                       blink::WebPopupType popup_type,
                        mojom::WidgetPtr,
                        int* route_id);
   void CreateNewFullscreenWidget(int opener_id,
@@ -67,8 +66,7 @@ class RenderWidgetHelper
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int32_t opener_id,
                           int32_t route_id,
-                          mojom::WidgetPtrInfo widget,
-                          blink::WebPopupType popup_type);
+                          mojom::WidgetPtrInfo widget);
 
   // Called on the UI thread to create a fullscreen widget.
   void OnCreateFullscreenWidgetOnUI(int32_t opener_id,

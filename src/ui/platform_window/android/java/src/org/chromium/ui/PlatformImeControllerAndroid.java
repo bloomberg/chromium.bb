@@ -18,13 +18,13 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("ui")
 class PlatformImeControllerAndroid {
-    private int mInputType = 0;
-    private int mInputFlags = 0;
+    private int mInputType;
+    private int mInputFlags;
     private String mText = "";
-    private int mSelectionStart = 0;
-    private int mSelectionEnd = 0;
-    private int mCompositionStart = 0;
-    private int mCompositionEnd = 0;
+    private int mSelectionStart;
+    private int mSelectionEnd;
+    private int mCompositionStart;
+    private int mCompositionEnd;
 
     private final PlatformWindowAndroid mWindow;
     private final long mNativeHandle;

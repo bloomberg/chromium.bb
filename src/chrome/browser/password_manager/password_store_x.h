@@ -39,6 +39,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     FAILED,
     // All the data is in the temporary encrypted loginDB.
     COPIED_ALL,
+    // The standard login database is encrypted.
+    LOGIN_DB_REPLACED,
   };
 
   // NativeBackends more or less implement the PaswordStore interface, but
@@ -105,9 +107,11 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
 
   // |backend| may be NULL in which case this PasswordStoreX will act the same
   // as PasswordStoreDefault. |login_db| is the default location and does not
-  // use encryption. |encrypted_login_db_file| is a separate file and is used
-  // for the migration to encryption.
+  // use encryption. |login_db_file| is the location of |login_db|.
+  // |encrypted_login_db_file| is a separate file and is used for the migration
+  // to encryption.
   PasswordStoreX(std::unique_ptr<password_manager::LoginDatabase> login_db,
+                 base::FilePath login_db_file,
                  base::FilePath encrypted_login_db_file,
                  std::unique_ptr<NativeBackend> backend,
                  PrefService* prefs);
@@ -172,17 +176,27 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // necessary.) Returns < 0 on failure.
   ssize_t MigrateToNativeBackend();
 
+  // Moves the passwords from the backend to a temporary login database, using
+  // encryption, and then moves them over to the standard location. This
+  // operation can take a significant amount of time.
+  void MigrateToEncryptedLoginDB();
+
   // Synchronously copies everything from the |backend_| to |login_db|. Returns
   // COPIED_ALL on success and FAILED on error.
-  MigrationToLoginDBStep MigrateToLoginDB(
+  MigrationToLoginDBStep CopyBackendToLoginDB(
       password_manager::LoginDatabase* login_db);
+
+  // Update |migration_to_login_db_step_| and |migration_step_pref_|.
+  void UpdateMigrationToLoginDBStep(MigrationToLoginDBStep step);
 
   // Update |migration_step_pref_|. It must be executed on the preference's
   // thread.
-  void UpdateMigrationToLoginStep(MigrationToLoginDBStep step);
+  void UpdateMigrationPref(MigrationToLoginDBStep step);
 
   // The native backend in use, or NULL if none.
   std::unique_ptr<NativeBackend> backend_;
+  // The location of the PasswordStoreDefault's database.
+  const base::FilePath login_db_file_;
   // A second login database, which will hold encrypted values during migration.
   const base::FilePath encrypted_login_db_file_;
   // Whether we have already attempted migration to the native store.

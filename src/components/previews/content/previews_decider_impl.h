@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
@@ -33,10 +34,6 @@ class Clock;
 
 namespace blacklist {
 class OptOutStore;
-}
-
-namespace net {
-class URLRequest;
 }
 
 namespace previews {
@@ -110,22 +107,38 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
   // PreviewsDecider implementation:
-  bool ShouldAllowPreview(const net::URLRequest& request,
+  bool ShouldAllowPreview(PreviewsUserData* previews_data,
+                          const GURL& url,
+                          bool is_reload,
                           PreviewsType type) const override;
   bool ShouldAllowPreviewAtECT(
-      const net::URLRequest& request,
+      PreviewsUserData* previews_data,
+      const GURL& url,
+      bool is_reload,
       PreviewsType type,
       net::EffectiveConnectionType effective_connection_type_threshold,
-      const std::vector<std::string>& host_blacklist_from_server,
-      bool ignore_long_term_black_list_rules) const override;
-  bool IsURLAllowedForPreview(const net::URLRequest& request,
+      const std::vector<std::string>& host_blacklist_from_finch,
+      bool is_server_preview) const override;
+  bool IsURLAllowedForPreview(PreviewsUserData* previews_data,
+                              const GURL& url,
                               PreviewsType type) const override;
 
-  void LoadResourceHints(const net::URLRequest& request) override;
+  // Set whether ignoring the long term blacklist rules is allowed for calls to
+  // ShouldAllowPreviewAtECT that have |can_ignore_long_term_black_list_rules|
+  // set to true.
+  void SetIgnoreLongTermBlackListForServerPreviews(
+      bool ignore_long_term_blacklist_for_server_previews);
+
+  void LoadResourceHints(const GURL& url) override;
+
+  void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
 
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();
+
+  void SetEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type);
 
  protected:
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
@@ -144,20 +157,22 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:
-  // Whether the preview |type| should be allowed to be considered for |request|
+  // Whether the preview |type| should be allowed to be considered for |url|
   // subject to any server provided optimization hints. This is meant for
   // checking the initial navigation URL. Returns ALLOWED if no reason found
   // to deny the preview for consideration.
   PreviewsEligibilityReason ShouldAllowPreviewPerOptimizationHints(
-      const net::URLRequest& request,
+      PreviewsUserData* previews_data,
+      const GURL& url,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
-  // Whether |request| is allowed for |type| according to server provided
+  // Whether |url| is allowed for |type| according to server provided
   // optimization hints, if available. This is meant for checking the committed
   // navigation URL against any specific hint details.
-  PreviewsEligibilityReason IsURLAllowedForPreviewByOptmizationHints(
-      const net::URLRequest& request,
+  PreviewsEligibilityReason IsURLAllowedForPreviewByOptimizationHints(
+      PreviewsUserData* previews_data,
+      const GURL& url,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
@@ -176,7 +191,19 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // Whether the decisions made by PreviewsBlackList should be ignored or not.
   // This can be changed by chrome://interventions-internals to test/debug the
   // behavior of Previews decisions.
+  // This is related to a test flag and should only be true when the user has
+  // set it in flags. See previews::IsPreviewsBlacklistIgnoredViaFlag.
   bool blacklist_ignored_;
+
+  // Whether ignoring the blacklist is allowed for calls to
+  // ShouldAllowPreviewAtECT that have
+  // |is_server_preview| true.
+  bool ignore_long_term_blacklist_for_server_previews_ = false;
+
+  // The estimate of how slow a user's connection is. Used for triggering
+  // Previews.
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   base::Clock* clock_;
 
@@ -191,6 +218,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   PreviewsIsEnabledCallback is_enabled_callback_;
 
   uint64_t page_id_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<PreviewsDeciderImpl> weak_factory_;
 

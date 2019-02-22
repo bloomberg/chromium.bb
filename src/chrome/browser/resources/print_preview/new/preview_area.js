@@ -82,10 +82,11 @@ Polymer({
         'settings.fitToPage.value, settings.headerFooter.value, ' +
         'settings.layout.value, settings.ranges.value, ' +
         'settings.selectionOnly.value, settings.scaling.value, ' +
-        'settings.pagesPerSheet.value, settings.rasterize.value, destination)',
+        'settings.rasterize.value, destination)',
     'onMarginsChanged_(settings.margins.value)',
     'onCustomMarginsChanged_(settings.customMargins.value)',
     'onMediaSizeChanged_(settings.mediaSize.value)',
+    'onPagesPerSheetChanged_(settings.pagesPerSheet.value)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
   ],
 
@@ -243,19 +244,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether the system dialog button should be shown.
-   * @private
-   */
-  displaySystemDialogButton_: function() {
-    return this.previewState ==
-        print_preview_new.PreviewAreaState.INVALID_SETTINGS ||
-        this.previewState ==
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING ||
-        this.previewState ==
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
-  },
-
-  /**
    * @return {boolean} Whether the "learn more" link to the cloud print help
    *     page should be shown.
    * @private
@@ -272,22 +260,28 @@ Polymer({
   currentMessage_: function() {
     switch (this.previewState) {
       case print_preview_new.PreviewAreaState.NO_PLUGIN:
-        return this.i18n('noPlugin');
+        return this.i18nAdvanced('noPlugin');
       case print_preview_new.PreviewAreaState.LOADING:
-        return this.i18n('loading');
+        return this.i18nAdvanced('loading');
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
         return '';
       // <if expr="is_macosx">
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
-        return this.i18n('openingPDFInPreview');
+        return this.i18nAdvanced('openingPDFInPreview');
       // </if>
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
-        return this.i18n('invalidPrinterSettings');
+        return this.i18nAdvanced('invalidPrinterSettings', {
+          substitutions: [],
+          tags: ['BR'],
+        });
       case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
-        return this.i18n('previewFailed');
+        return this.i18nAdvanced('previewFailed');
       case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
-        return this.i18n('unsupportedCloudPrinter');
+        return this.i18nAdvanced('unsupportedCloudPrinter', {
+          substitutions: [],
+          tags: ['BR'],
+        });
       default:
         return '';
     }
@@ -614,6 +608,21 @@ Polymer({
       this.onSettingsChanged_();
     }
     this.lastMediaSize_ = newValue;
+  },
+
+  /** @private */
+  onPagesPerSheetChanged_: function() {
+    const pagesPerSheet =
+        /** @type {number} */ (this.getSettingValue('pagesPerSheet'));
+
+    if (pagesPerSheet == 1 ||
+        this.getSettingValue('margins') ==
+            print_preview.ticket_items.MarginsTypeValue.DEFAULT) {
+      this.onSettingsChanged_();
+    } else {
+      this.setSetting(
+          'margins', print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+    }
   },
 
   /**

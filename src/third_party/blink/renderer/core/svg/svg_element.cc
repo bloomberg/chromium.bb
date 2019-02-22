@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/svg_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -81,6 +82,10 @@ void SVGElement::DetachLayoutTree(const AttachContext& context) {
   Element::DetachLayoutTree(context);
   if (SVGElement* element = CorrespondingElement())
     element->RemoveInstanceMapping(this);
+  // To avoid a noncollectable Blink GC reference cycle, we must clear the
+  // ComputedStyle here. See http://crbug.com/878032#c11
+  if (HasSVGRareData())
+    SvgRareData()->ClearOverriddenComputedStyle();
 }
 
 void SVGElement::AttachLayoutTree(AttachContext& context) {
@@ -636,9 +641,10 @@ void SVGElement::RemoveInstanceMapping(SVGElement* instance) {
 }
 
 static HeapHashSet<WeakMember<SVGElement>>& EmptyInstances() {
-  DEFINE_STATIC_LOCAL(HeapHashSet<WeakMember<SVGElement>>, empty_instances,
+  DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement>>>,
+                      empty_instances,
                       (new HeapHashSet<WeakMember<SVGElement>>));
-  return empty_instances;
+  return *empty_instances;
 }
 
 const HeapHashSet<WeakMember<SVGElement>>& SVGElement::InstancesForElement()
@@ -689,8 +695,7 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
   if (!event_name.IsNull()) {
     SetAttributeEventListener(
         event_name,
-        CreateAttributeEventListener(this, params.name, params.new_value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(this, params.name, params.new_value));
     return;
   }
 
@@ -887,7 +892,7 @@ static bool HasLoadListener(Element* element) {
         element->GetEventListeners(EventTypeNames::load);
     if (!entry)
       continue;
-    for (size_t i = 0; i < entry->size(); ++i) {
+    for (wtf_size_t i = 0; i < entry->size(); ++i) {
       if (entry->at(i).Capture())
         return true;
     }
@@ -1244,9 +1249,9 @@ void SVGElement::AddReferenceTo(SVGElement* target_element) {
 SVGElementSet& SVGElement::GetDependencyTraversalVisitedSet() {
   // This strong reference is safe, as it is guaranteed that this set will be
   // emptied at the end of recursion in NotifyIncomingReferences.
-  DEFINE_STATIC_LOCAL(SVGElementSet, invalidating_dependencies,
+  DEFINE_STATIC_LOCAL(Persistent<SVGElementSet>, invalidating_dependencies,
                       (new SVGElementSet));
-  return invalidating_dependencies;
+  return *invalidating_dependencies;
 }
 
 void SVGElement::RebuildAllIncomingReferences() {
@@ -1309,11 +1314,6 @@ void SVGElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_rare_data_);
   visitor->Trace(class_name_);
   Element::Trace(visitor);
-}
-
-const AtomicString& SVGElement::EventParameterName() {
-  DEFINE_STATIC_LOCAL(const AtomicString, evt_string, ("evt"));
-  return evt_string;
 }
 
 }  // namespace blink

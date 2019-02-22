@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/url_request/url_request_status.h"
@@ -19,12 +20,15 @@
 class OAuthMultiloginResult {
  public:
   OAuthMultiloginResult();
+  OAuthMultiloginResult(const OAuthMultiloginResult& other);
   ~OAuthMultiloginResult();
 
   std::vector<net::CanonicalCookie> cookies() const { return cookies_; }
 
-  // Returns true in case of success and false when there is a parse error.
-  static bool CreateOAuthMultiloginResultFromString(
+  // Parses cookies and status from JSON response. Maps status to
+  // GoogleServiceAuthError::State values or returns UNEXPECTED_SERVER_RESPONSE
+  // if JSON string cannot be parsed.
+  static GoogleServiceAuthError CreateOAuthMultiloginResultFromString(
       const std::string& data,
       OAuthMultiloginResult* result);
 
@@ -36,6 +40,11 @@ class OAuthMultiloginResult {
   // Response body that has a form of JSON contains protection characters
   // against XSSI that have to be removed. See go/xssi.
   static base::StringPiece StripXSSICharacters(const std::string& data);
+
+  // Maps status in JSON response to one of the GoogleServiceAuthError state
+  // values.
+  static GoogleServiceAuthError TryParseStatusFromValue(
+      base::DictionaryValue* dictionary_value);
 };
 
 #endif  // GOOGLE_APIS_GAIA_OAUTH_MULTILOGIN_RESULT_H_

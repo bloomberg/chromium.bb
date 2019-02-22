@@ -50,8 +50,9 @@ const char kOnResume[] = "ttsEngine.onResume";
 
 namespace {
 
-void WarnIfMissingPauseOrResumeListener(
-    Profile* profile, EventRouter* event_router, std::string extension_id) {
+void WarnIfMissingPauseOrResumeListener(Profile* profile,
+                                        EventRouter* event_router,
+                                        std::string extension_id) {
   bool has_onpause = event_router->ExtensionHasEventListener(
       extension_id, tts_engine_events::kOnPause);
   bool has_onresume = event_router->ExtensionHasEventListener(
@@ -60,8 +61,8 @@ void WarnIfMissingPauseOrResumeListener(
     return;
 
   extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(profile)
-          ->GetBackgroundHostForExtension(extension_id);
+      extensions::ProcessManager::Get(profile)->GetBackgroundHostForExtension(
+          extension_id);
   host->host_contents()->GetMainFrame()->AddMessageToConsole(
       content::CONSOLE_MESSAGE_LEVEL_WARNING,
       constants::kErrorMissingPauseOrResume);
@@ -84,7 +85,7 @@ TtsExtensionEngine* TtsExtensionEngine::GetInstance() {
 }
 
 void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
-    std::vector<VoiceData>* out_voices) {
+                                   std::vector<VoiceData>* out_voices) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   EventRouter* event_router = EventRouter::Get(profile);
   DCHECK(event_router);
@@ -98,10 +99,10 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
   for (iter = extensions.begin(); iter != extensions.end(); ++iter) {
     const Extension* extension = iter->get();
 
-    if (!event_router->ExtensionHasEventListener(
-            extension->id(), tts_engine_events::kOnSpeak) ||
-        !event_router->ExtensionHasEventListener(
-            extension->id(), tts_engine_events::kOnStop)) {
+    if (!event_router->ExtensionHasEventListener(extension->id(),
+                                                 tts_engine_events::kOnSpeak) ||
+        !event_router->ExtensionHasEventListener(extension->id(),
+                                                 tts_engine_events::kOnStop)) {
       continue;
     }
 
@@ -125,17 +126,9 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
       result_voice.lang = voice.lang;
       result_voice.remote = voice.remote;
       result_voice.extension_id = extension->id();
-      if (voice.gender == constants::kGenderMale)
-        result_voice.gender = TTS_GENDER_MALE;
-      else if (voice.gender == constants::kGenderFemale)
-        result_voice.gender = TTS_GENDER_FEMALE;
-      else
-        result_voice.gender = TTS_GENDER_NONE;
 
-      for (std::set<std::string>::const_iterator iter =
-               voice.event_types.begin();
-           iter != voice.event_types.end();
-           ++iter) {
+      for (auto iter = voice.event_types.begin();
+           iter != voice.event_types.end(); ++iter) {
         result_voice.events.insert(TtsEventTypeFromString(*iter));
       }
 
@@ -150,8 +143,7 @@ void TtsExtensionEngine::GetVoices(content::BrowserContext* browser_context,
   }
 }
 
-void TtsExtensionEngine::Speak(Utterance* utterance,
-                               const VoiceData& voice) {
+void TtsExtensionEngine::Speak(Utterance* utterance, const VoiceData& voice) {
   // See if the engine supports the "end" event; if so, we can keep the
   // utterance around and track it. If not, we're finished with this
   // utterance now.
@@ -211,8 +203,8 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
       std::move(args), profile);
-  EventRouter::Get(profile)
-      ->DispatchEventToExtension(utterance->extension_id(), std::move(event));
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->extension_id(),
+                                                      std::move(event));
 }
 
 void TtsExtensionEngine::Stop(Utterance* utterance) {
@@ -221,8 +213,8 @@ void TtsExtensionEngine::Stop(Utterance* utterance) {
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_STOP, tts_engine_events::kOnStop,
       std::move(args), profile);
-  EventRouter::Get(profile)
-      ->DispatchEventToExtension(utterance->extension_id(), std::move(event));
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->extension_id(),
+                                                      std::move(event));
 }
 
 void TtsExtensionEngine::Pause(Utterance* utterance) {
@@ -263,8 +255,7 @@ bool TtsExtensionEngine::LoadBuiltInTtsExtension(
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extension_service);
-  extension_service->component_loader()
-      ->AddChromeOsSpeechSynthesisExtension();
+  extension_service->component_loader()->AddChromeOsSpeechSynthesisExtension();
   return true;
 #else
   return false;
@@ -294,8 +285,6 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
         continue;
       }
     }
-    if (voice_data->HasKey(constants::kGenderKey))
-      voice_data->GetString(constants::kGenderKey, &voice.gender);
     if (voice_data->HasKey(constants::kRemoteKey))
       voice_data->GetBoolean(constants::kRemoteKey, &voice.remote);
     if (voice_data->HasKey(constants::kExtensionIdKey)) {

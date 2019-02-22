@@ -5,7 +5,9 @@
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 
 #include "ash/public/cpp/window_properties.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace {
 
@@ -71,38 +73,49 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == aura::client::kTitleShownKey) {
     root_window->SetProperty(aura::client::kTitleShownKey,
                              window->GetProperty(aura::client::kTitleShownKey));
+  } else if (key == aura::client::kTopViewInset) {
+    root_window->SetProperty(aura::client::kTopViewInset,
+                             window->GetProperty(aura::client::kTopViewInset));
+
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
-  } else if (key == kFrameBackButtonStateKey) {
-    root_window->SetProperty(kFrameBackButtonStateKey,
-                             window->GetProperty(kFrameBackButtonStateKey));
   } else if (key == kFrameActiveColorKey) {
     root_window->SetProperty(kFrameActiveColorKey,
                              window->GetProperty(kFrameActiveColorKey));
   } else if (key == kFrameInactiveColorKey) {
     root_window->SetProperty(kFrameInactiveColorKey,
                              window->GetProperty(kFrameInactiveColorKey));
-  } else if (key == kFrameImageActiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageActiveKey);
-  } else if (key == kFrameImageInactiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageInactiveKey);
-  } else if (key == kFrameImageOverlayActiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageOverlayActiveKey);
-  } else if (key == kFrameImageOverlayInactiveKey) {
-    MirrorOwnedProperty(window, root_window, kFrameImageOverlayInactiveKey);
-  } else if (key == kFrameImageYInsetKey) {
-    root_window->SetProperty(kFrameImageYInsetKey,
-                             window->GetProperty(kFrameImageYInsetKey));
-  } else if (key == kFrameIsThemedByHostedAppKey) {
-    root_window->SetProperty(kFrameIsThemedByHostedAppKey,
-                             window->GetProperty(kFrameIsThemedByHostedAppKey));
-  } else if (key == kFrameTextColorKey) {
-    root_window->SetProperty(kFrameTextColorKey,
-                             window->GetProperty(kFrameTextColorKey));
-  } else if (key == kHideCaptionButtonsInTabletModeKey) {
+  } else if (key == kImmersiveImpliedByFullscreen) {
     root_window->SetProperty(
-        kHideCaptionButtonsInTabletModeKey,
-        window->GetProperty(kHideCaptionButtonsInTabletModeKey));
+        kImmersiveImpliedByFullscreen,
+        window->GetProperty(kImmersiveImpliedByFullscreen));
+  } else if (key == kImmersiveIsActive) {
+    root_window->SetProperty(kImmersiveIsActive,
+                             window->GetProperty(kImmersiveIsActive));
+  } else if (key == kImmersiveTopContainerBoundsInScreen) {
+    MirrorOwnedProperty(window, root_window,
+                        kImmersiveTopContainerBoundsInScreen);
+  } else if (key == kImmersiveWindowType) {
+    root_window->SetProperty(kImmersiveWindowType,
+                             window->GetProperty(kImmersiveWindowType));
+  } else if (key == ui::kChildAXTreeID) {
+    MirrorOwnedProperty(window, root_window, ui::kChildAXTreeID);
+  } else if (key == wm::kWindowVisibilityAnimationDurationKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationDurationKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationDurationKey));
+  } else if (key == wm::kWindowVisibilityAnimationTransitionKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationTransitionKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationTransitionKey));
+  } else if (key == wm::kWindowVisibilityAnimationTypeKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationTypeKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationTypeKey));
+  } else if (key == wm::kWindowVisibilityAnimationVerticalPositionKey) {
+    root_window->SetProperty(
+        wm::kWindowVisibilityAnimationVerticalPositionKey,
+        window->GetProperty(wm::kWindowVisibilityAnimationVerticalPositionKey));
   }
 }
 

@@ -3026,6 +3026,25 @@ TEST_F(SchedulerTest, InvalidateLayerTreeFrameSinkWhenCannotDraw) {
   EXPECT_FALSE(scheduler_->RedrawPending());
 }
 
+TEST_F(SchedulerTest, NeedsPrepareTilesInvalidates) {
+  // This is to test that SetNeedsPrepareTiles causes invalidates even if
+  // CanDraw is false.
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetCanDraw(false);
+
+  scheduler_->SetNeedsPrepareTiles();
+  EXPECT_ACTIONS("AddObserver(this)");
+  client_->Reset();
+
+  // Do not invalidate in next BeginFrame.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
   SetUpScheduler(EXTERNAL_BFS);
 
@@ -4140,6 +4159,24 @@ TEST_F(SchedulerTest, NoInvalidationForAnimateOnlyFrames) {
   client_->Reset();
   task_runner_->RunTasksWhile(client_->InsideBeginImplFrame(true));
   EXPECT_ACTIONS();
+}
+
+TEST_F(SchedulerTest, SendEarlyDidNotProduceFrameIfIdle) {
+  SetUpScheduler(EXTERNAL_BFS);
+  scheduler_->SetNeedsBeginMainFrame();
+
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+  auto begin_main_frame_args = client_->last_begin_main_frame_args();
+  EXPECT_NE(client_->last_begin_frame_ack().sequence_number,
+            begin_main_frame_args.sequence_number);
+
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
+  scheduler_->BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  EXPECT_EQ(client_->last_begin_frame_ack().sequence_number,
+            begin_main_frame_args.sequence_number);
 }
 
 }  // namespace

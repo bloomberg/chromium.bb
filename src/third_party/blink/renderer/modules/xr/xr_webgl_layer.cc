@@ -311,6 +311,12 @@ void XRWebGLLayer::OnResize() {
   viewports_dirty_ = true;
 }
 
+void XRWebGLLayer::HandleBackgroundImage(
+    const gpu::MailboxHolder& mailbox_holder,
+    const IntSize& size) {
+  OverwriteColorBufferFromMailboxTexture(mailbox_holder, size);
+}
+
 scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   return drawing_buffer_->TransferToStaticBitmapImage(out_release_callback);

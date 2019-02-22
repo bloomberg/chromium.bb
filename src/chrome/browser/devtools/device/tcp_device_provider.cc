@@ -10,13 +10,19 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
+#include "chrome/browser/net/system_network_context_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace {
 
@@ -30,31 +36,34 @@ static void RunSocketCallback(
   callback.Run(result, std::move(socket));
 }
 
-class ResolveHostAndOpenSocket final {
+class ResolveHostAndOpenSocket final
+    : public network::mojom::ResolveHostClient {
  public:
   ResolveHostAndOpenSocket(const net::HostPortPair& address,
-                           const AdbClientSocket::SocketCallback& callback)
-      : callback_(callback) {
-    host_resolver_ = net::HostResolver::CreateDefaultResolver(nullptr);
-    net::HostResolver::RequestInfo request_info(address);
-    int result = host_resolver_->Resolve(
-        request_info, net::DEFAULT_PRIORITY, &address_list_,
-        base::Bind(&ResolveHostAndOpenSocket::OnResolved,
-                   base::Unretained(this)),
-        &request_, net::NetLogWithSource());
-    if (result != net::ERR_IO_PENDING)
-      OnResolved(result);
+                           const AdbClientSocket::SocketCallback& callback,
+                           network::mojom::HostResolverPtr* host_resolver)
+      : callback_(callback), binding_(this) {
+    network::mojom::ResolveHostClientPtr client_ptr;
+    binding_.Bind(mojo::MakeRequest(&client_ptr));
+    binding_.set_connection_error_handler(
+        base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
+                       base::Unretained(this), net::ERR_FAILED, base::nullopt));
+
+    (*host_resolver)->ResolveHost(address, nullptr, std::move(client_ptr));
   }
 
  private:
-  void OnResolved(int result) {
-    if (result < 0) {
+  // network::mojom::ResolveHostClient implementation:
+  void OnComplete(
+      int result,
+      const base::Optional<net::AddressList>& resolved_addresses) override {
+    if (result != net::OK) {
       RunSocketCallback(callback_, nullptr, result);
       delete this;
       return;
     }
     std::unique_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
-        address_list_, NULL, NULL, net::NetLogSource()));
+        resolved_addresses.value(), nullptr, nullptr, net::NetLogSource()));
     net::StreamSocket* socket_ptr = socket.get();
     net::CompletionCallback on_connect =
         base::Bind(&RunSocketCallback, callback_, base::Passed(&socket));
@@ -64,10 +73,8 @@ class ResolveHostAndOpenSocket final {
     delete this;
   }
 
-  std::unique_ptr<net::HostResolver> host_resolver_;
-  std::unique_ptr<net::HostResolver::Request> request_;
-  net::AddressList address_list_;
   AdbClientSocket::SocketCallback callback_;
+  mojo::Binding<network::mojom::ResolveHostClient> binding_;
 };
 
 }  // namespace
@@ -123,7 +130,14 @@ void TCPDeviceProvider::OpenSocket(const std::string& serial,
   int port;
   base::StringToInt(socket_name, &port);
   net::HostPortPair host_port(serial, port);
-  new ResolveHostAndOpenSocket(host_port, callback);
+
+  // OpenSocket() is run on the devtools ADB thread, while TCPDeviceProvider is
+  // created on the UI thread, so do any initialization of |host_resolver_|
+  // here.
+  if (!host_resolver_) {
+    InitializeHostResolver();
+  }
+  new ResolveHostAndOpenSocket(host_port, callback, &host_resolver_);
 }
 
 void TCPDeviceProvider::ReleaseDevice(const std::string& serial) {
@@ -137,4 +151,20 @@ void TCPDeviceProvider::set_release_callback_for_test(
 }
 
 TCPDeviceProvider::~TCPDeviceProvider() {
+}
+
+void TCPDeviceProvider::InitializeHostResolver() {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&TCPDeviceProvider::InitializeHostResolverOnUI, this,
+                     mojo::MakeRequest(&host_resolver_)));
+  host_resolver_.set_connection_error_handler(base::BindOnce(
+      &TCPDeviceProvider::InitializeHostResolver, base::Unretained(this)));
+}
+
+void TCPDeviceProvider::InitializeHostResolverOnUI(
+    network::mojom::HostResolverRequest request) {
+  g_browser_process->system_network_context_manager()
+      ->GetContext()
+      ->CreateHostResolver(std::move(request));
 }

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/load_complete_listener.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -65,6 +66,7 @@ class TabStrip;
 class ToolbarButtonProvider;
 class ToolbarView;
 class TopContainerView;
+class TopControlsSlideControllerTest;
 class WebContentsCloseHandler;
 
 namespace extensions {
@@ -108,8 +110,7 @@ class BrowserView : public BrowserWindow,
   BrowserView();
   ~BrowserView() override;
 
-  // Takes ownership of |browser|.
-  void Init(Browser* browser);
+  void Init(std::unique_ptr<Browser> browser);
 
   void set_frame(BrowserFrame* frame) { frame_ = frame; }
   BrowserFrame* frame() const { return frame_; }
@@ -142,17 +143,15 @@ class BrowserView : public BrowserWindow,
   Browser* browser() { return browser_.get(); }
   const Browser* browser() const { return browser_.get(); }
 
+  const TopControlsSlideController* top_controls_slide_controller() const {
+    return top_controls_slide_controller_.get();
+  }
+
   // Initializes (or re-initializes) the status bubble.  We try to only create
   // the bubble once and re-use it for the life of the browser, but certain
   // events (such as changing enabling/disabling Aero on Win) can force a need
   // to change some of the bubble's creation parameters.
   void InitStatusBubble();
-
-  // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
-  // These differ from |toolbar_.bounds()| in that they match where the toolbar
-  // background image is drawn -- slightly outside the "true" bounds
-  // horizontally. Note that this returns the bounds for the toolbar area.
-  gfx::Rect GetToolbarBounds() const;
 
   // Returns the constraining bounding box that should be used to lay out the
   // FindBar within. This is _not_ the size of the find bar, just the bounding
@@ -173,6 +172,9 @@ class BrowserView : public BrowserWindow,
 
   // Container for the tabstrip, toolbar, etc.
   TopContainerView* top_container() { return top_container_; }
+
+  // Container for the web contents.
+  views::View* contents_container() { return contents_container_; }
 
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
@@ -218,10 +220,6 @@ class BrowserView : public BrowserWindow,
   // not incognito or a guest session.
   bool IsRegularOrGuestSession() const;
 
-  // Returns whether or not a client edge (the border around the web content)
-  // should be laid out and drawn.
-  bool HasClientEdge() const;
-
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false
@@ -244,6 +242,14 @@ class BrowserView : public BrowserWindow,
   bool IsBrowserTypeNormal() const {
     return browser_->is_type_tabbed();
   }
+
+  // Returns true if the top browser controls (a.k.a. top-chrome UIs) are
+  // allowed to slide up and down with the gesture scrolls on the current tab's
+  // page.
+  bool IsTopControlsSlideBehaviorEnabled() const;
+
+  // Returns the current shown ratio of the top browser controls.
+  float GetTopControlsSlideBehaviorShownRatio() const;
 
   // See ImmersiveModeController for description.
   ImmersiveModeController* immersive_mode_controller() const {
@@ -282,6 +288,12 @@ class BrowserView : public BrowserWindow,
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override;
   gfx::NativeWindow GetNativeWindow() const override;
+  void SetTopControlsShownRatio(content::WebContents* web_contents,
+                                float ratio) override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
+  int GetTopControlsHeight() const override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
   void BookmarkBarStateChanged(
@@ -381,6 +393,7 @@ class BrowserView : public BrowserWindow,
   FindBar* CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
+  void ShowHatsBubbleFromAppMenuButton() override;
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params,
@@ -530,6 +543,7 @@ class BrowserView : public BrowserWindow,
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
   // interface to keep these two classes decoupled and testable.
   friend class BrowserViewLayoutDelegateImpl;
+  friend class TopControlsSlideControllerTest;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, AccessibleWindowTitle);
 
@@ -768,6 +782,9 @@ class BrowserView : public BrowserWindow,
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
   bool force_location_bar_focus_ = false;
+
+  // This is non-null on Chrome OS only.
+  std::unique_ptr<TopControlsSlideController> top_controls_slide_controller_;
 
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 

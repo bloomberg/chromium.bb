@@ -68,8 +68,10 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   if (displaying_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise
     // paint nothing.
+    DCHECK(paint_info.PaintContainer());
     ImagePainter(layout_video_)
-        .PaintIntoRect(context, replaced_rect, content_rect);
+        .PaintIntoRect(context, replaced_rect, content_rect,
+                       paint_info.PaintContainer()->Layer());
   } else {
     PaintFlags video_flags = context.FillFlags();
     video_flags.setColor(SK_ColorBLACK);

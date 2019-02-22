@@ -286,7 +286,7 @@ class FooRemover : public Foo {
   void Observe(int x) override {
     std::vector<Foo*> tmp;
     tmp.swap(foos_);
-    for (std::vector<Foo*>::iterator it = tmp.begin(); it != tmp.end(); ++it) {
+    for (auto it = tmp.begin(); it != tmp.end(); ++it) {
       list_->RemoveObserver(*it);
     }
   }
@@ -513,8 +513,9 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
   // TaskScheduler can safely use |barrier|.
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  CreateSequencedTaskRunnerWithTraits({})->PostTask(
-      FROM_HERE, base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+  CreateSequencedTaskRunnerWithTraits({MayBlock()})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
                                 observer_list, Unretained(&observer)));
   TaskScheduler::GetInstance()->FlushForTesting();
 

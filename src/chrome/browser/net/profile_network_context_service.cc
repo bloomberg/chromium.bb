@@ -14,14 +14,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/chrome_accept_language_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -29,9 +33,27 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif
+
+namespace {
+
+std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
+  std::vector<std::string> strings;
+  for (const base::Value& value : *list) {
+    DCHECK(value.is_string());
+    strings.push_back(value.GetString());
+  }
+  return strings;
+}
+
+}  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
@@ -57,6 +79,27 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
   // Observe content settings so they can be synced to the network service.
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
+
+  pref_change_registrar_.Init(profile_prefs);
+
+  // When any of the following CT preferences change, we schedule an update
+  // to aggregate the actual update using a |ct_policy_update_timer_|.
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTRequiredHosts,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedHosts,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedSPKIs,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
+      base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
+                          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
@@ -68,7 +111,11 @@ ProfileNetworkContextService::CreateNetworkContext(
   network::mojom::NetworkContextPtr network_context;
   PartitionInfo partition_info(in_memory, relative_partition_path);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    content::GetNetworkService()->CreateNetworkContext(
+        MakeRequest(&network_context),
+        CreateNetworkContextParams(in_memory, relative_partition_path));
+  } else {
     // The corresponding |profile_io_data_network_contexts_| may already be
     // initialized if SetUpProfileIODataNetworkContext was called first.
     auto iter = profile_io_data_network_contexts_.find(partition_info);
@@ -86,12 +133,11 @@ ProfileNetworkContextService::CreateNetworkContext(
       // and NetworkContexts can't be destroyed without destroying the profile.
       profile_io_data_network_contexts_.erase(iter);
     }
-    return network_context;
   }
 
-  content::GetNetworkService()->CreateNetworkContext(
-      MakeRequest(&network_context),
-      CreateNetworkContextParams(in_memory, relative_partition_path));
+  std::vector<network::mojom::NetworkContext*> contexts{network_context.get()};
+  UpdateCTPolicyForContexts(contexts);
+
   return network_context;
 }
 
@@ -188,6 +234,51 @@ void ProfileNetworkContextService::UpdateReferrersEnabled() {
           enable_referrers_.GetValue()));
 }
 
+void ProfileNetworkContextService::UpdateCTPolicyForContexts(
+    const std::vector<network::mojom::NetworkContext*>& contexts) {
+  auto* prefs = profile_->GetPrefs();
+  const base::ListValue* ct_required =
+      prefs->GetList(certificate_transparency::prefs::kCTRequiredHosts);
+  const base::ListValue* ct_excluded =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedHosts);
+  const base::ListValue* ct_excluded_spkis =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedSPKIs);
+  const base::ListValue* ct_excluded_legacy_spkis =
+      prefs->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
+
+  std::vector<std::string> required(TranslateStringArray(ct_required));
+  std::vector<std::string> excluded(TranslateStringArray(ct_excluded));
+  std::vector<std::string> excluded_spkis(
+      TranslateStringArray(ct_excluded_spkis));
+  std::vector<std::string> excluded_legacy_spkis(
+      TranslateStringArray(ct_excluded_legacy_spkis));
+
+  for (auto* context : contexts) {
+    context->SetCTPolicy(required, excluded, excluded_spkis,
+                         excluded_legacy_spkis);
+  }
+}
+
+void ProfileNetworkContextService::UpdateCTPolicy() {
+  std::vector<network::mojom::NetworkContext*> contexts;
+  content::BrowserContext::ForEachStoragePartition(
+      profile_,
+      base::BindRepeating(
+          [](std::vector<network::mojom::NetworkContext*>* contexts_ptr,
+             content::StoragePartition* storage_partition) {
+            contexts_ptr->push_back(storage_partition->GetNetworkContext());
+          },
+          &contexts));
+
+  UpdateCTPolicyForContexts(contexts);
+}
+
+void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
+  ct_policy_update_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0),
+                                this,
+                                &ProfileNetworkContextService::UpdateCTPolicy);
+}
+
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
@@ -219,6 +310,19 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       network::mojom::CookieManagerParams::New();
   network_context_params->cookie_manager_params->block_third_party_cookies =
       block_third_party_cookies_.GetValue();
+  network_context_params->cookie_manager_params
+      ->secure_origin_cookies_allowed_schemes.push_back(
+          content::kChromeUIScheme);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network_context_params->cookie_manager_params
+        ->matching_scheme_cookies_allowed_schemes.push_back(
+            extensions::kExtensionScheme);
+  }
+  network_context_params->cookie_manager_params
+      ->third_party_cookies_allowed_schemes.push_back(
+          extensions::kExtensionScheme);
+#endif
 
   ContentSettingsForOneType settings;
   HostContentSettingsMapFactory::GetForProfile(profile_)->GetSettingsForOneType(
@@ -286,6 +390,17 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
+
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
+    auto* drp_settings =
+        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
+    if (drp_settings) {
+      network::mojom::CustomProxyConfigClientPtrInfo config_client_info;
+      network_context_params->custom_proxy_config_client_request =
+          mojo::MakeRequest(&config_client_info);
+      drp_settings->SetCustomProxyConfigClient(std::move(config_client_info));
+    }
+  }
 
   return network_context_params;
 }

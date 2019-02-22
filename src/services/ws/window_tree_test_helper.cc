@@ -95,9 +95,10 @@ void WindowTreeTestHelper::SetClientArea(
                               additional_client_areas);
 }
 
-void WindowTreeTestHelper::SetHitTestMask(aura::Window* window,
-                                          base::Optional<gfx::Rect> mask) {
-  window_tree_->SetHitTestMask(TransportIdForWindow(window), mask);
+void WindowTreeTestHelper::SetHitTestInsets(aura::Window* window,
+                                            const gfx::Insets& mouse,
+                                            const gfx::Insets& touch) {
+  window_tree_->SetHitTestInsets(TransportIdForWindow(window), mouse, touch);
 }
 
 void WindowTreeTestHelper::SetWindowProperty(aura::Window* window,

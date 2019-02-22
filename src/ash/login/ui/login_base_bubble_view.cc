@@ -4,6 +4,8 @@
 
 #include "ash/login/ui/login_base_bubble_view.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -24,6 +26,10 @@ constexpr int kBubbleBottomMarginDp = 18;
 }  // namespace
 
 LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
+    : LoginBaseBubbleView(anchor_view, nullptr) {}
+
+LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
+                                         aura::Window* parent_window)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::NONE) {
   set_margins(gfx::Insets(kBubbleTopMarginDp, kBubbleHorizontalMarginDp,
                           kBubbleBottomMarginDp, kBubbleHorizontalMarginDp));
@@ -34,9 +40,24 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
   // Layer rendering is needed for animation.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
+  set_parent_window(parent_window);
 }
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;
+
+void LoginBaseBubbleView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
+  // This case only gets called if the bubble has no anchor and no parent
+  // container was specified. In this case, the parent container should default
+  // to MenuContainer, so that login bubbles are visible over the shelf and
+  // virtual keyboard. Shell may be null in tests.
+  if (!params->parent && Shell::HasInstance()) {
+    params->parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                         kShellWindowId_MenuContainer);
+  }
+}
 
 int LoginBaseBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;

@@ -91,6 +91,7 @@ void shader_module::BuildDefIndex() {
             case spv::OpTypeReserveId:
             case spv::OpTypeQueue:
             case spv::OpTypePipe:
+            case spv::OpTypeAccelerationStructureNVX:
                 def_index[insn.word(1)] = insn.offset();
                 break;
 
@@ -130,11 +131,47 @@ void shader_module::BuildDefIndex() {
     }
 }
 
+unsigned ExecutionModelToShaderStageFlagBits(unsigned mode) {
+    switch (mode) {
+        case spv::ExecutionModelVertex:
+            return VK_SHADER_STAGE_VERTEX_BIT;
+        case spv::ExecutionModelTessellationControl:
+            return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+        case spv::ExecutionModelTessellationEvaluation:
+            return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        case spv::ExecutionModelGeometry:
+            return VK_SHADER_STAGE_GEOMETRY_BIT;
+        case spv::ExecutionModelFragment:
+            return VK_SHADER_STAGE_FRAGMENT_BIT;
+        case spv::ExecutionModelGLCompute:
+            return VK_SHADER_STAGE_COMPUTE_BIT;
+        case spv::ExecutionModelRayGenerationNVX:
+            return VK_SHADER_STAGE_RAYGEN_BIT_NVX;
+        case spv::ExecutionModelAnyHitNVX:
+            return VK_SHADER_STAGE_ANY_HIT_BIT_NVX;
+        case spv::ExecutionModelClosestHitNVX:
+            return VK_SHADER_STAGE_CLOSEST_HIT_BIT_NVX;
+        case spv::ExecutionModelMissNVX:
+            return VK_SHADER_STAGE_MISS_BIT_NVX;
+        case spv::ExecutionModelIntersectionNVX:
+            return VK_SHADER_STAGE_INTERSECTION_BIT_NVX;
+        case spv::ExecutionModelCallableNVX:
+            return VK_SHADER_STAGE_CALLABLE_BIT_NVX;
+        case spv::ExecutionModelTaskNV:
+            return VK_SHADER_STAGE_TASK_BIT_NV;
+        case spv::ExecutionModelMeshNV:
+            return VK_SHADER_STAGE_MESH_BIT_NV;
+        default:
+            return 0;
+    }
+}
+
 static spirv_inst_iter FindEntrypoint(shader_module const *src, char const *name, VkShaderStageFlagBits stageBits) {
     for (auto insn : *src) {
         if (insn.opcode() == spv::OpEntryPoint) {
             auto entrypointName = (char const *)&insn.word(3);
-            auto entrypointStageBits = 1u << insn.word(1);
+            auto executionModel = insn.word(1);
+            auto entrypointStageBits = ExecutionModelToShaderStageFlagBits(executionModel);
 
             if (!strcmp(entrypointName, name) && (entrypointStageBits & stageBits)) {
                 return insn;
@@ -218,6 +255,10 @@ static void DescribeTypeInner(std::ostringstream &ss, shader_module const *src, 
             ss << "arr[" << GetConstantValue(src, insn.word(3)) << "] of ";
             DescribeTypeInner(ss, src, insn.word(2));
             break;
+        case spv::OpTypeRuntimeArray:
+            ss << "runtime arr[] of ";
+            DescribeTypeInner(ss, src, insn.word(2));
+            break;
         case spv::OpTypePointer:
             ss << "ptr to " << StorageClassName(insn.word(2)) << " ";
             DescribeTypeInner(ss, src, insn.word(3));
@@ -244,6 +285,9 @@ static void DescribeTypeInner(std::ostringstream &ss, shader_module const *src, 
         case spv::OpTypeImage:
             ss << "image(dim=" << insn.word(3) << ", sampled=" << insn.word(7) << ")";
             break;
+        case spv::OpTypeAccelerationStructureNVX:
+            ss << "accelerationStruture";
+            break;
         default:
             ss << "oddtype";
             break;
@@ -268,6 +312,8 @@ static bool TypesMatch(shader_module const *a, shader_module const *b, unsigned 
     auto b_insn = b->get_def(b_type);
     assert(a_insn != a->end());
     assert(b_insn != b->end());
+
+    // Ignore runtime-sized arrays-- they cannot appear in these interfaces.
 
     if (a_arrayed && a_insn.opcode() == spv::OpTypeArray) {
         return TypesMatch(a, b, a_insn.word(2), b_type, false, b_arrayed, relaxed);
@@ -409,6 +455,7 @@ static unsigned GetFormatType(VkFormat fmt) {
 }
 
 // characterizes a SPIR-V type appearing in an interface to a FF stage, for comparison to a VkFormat's characterization above.
+// also used for input attachments, as we statically know their format.
 static unsigned GetFundamentalType(shader_module const *src, unsigned type) {
     auto insn = src->get_def(type);
     assert(insn != src->end());
@@ -419,15 +466,13 @@ static unsigned GetFundamentalType(shader_module const *src, unsigned type) {
         case spv::OpTypeFloat:
             return FORMAT_TYPE_FLOAT;
         case spv::OpTypeVector:
-            return GetFundamentalType(src, insn.word(2));
         case spv::OpTypeMatrix:
-            return GetFundamentalType(src, insn.word(2));
         case spv::OpTypeArray:
+        case spv::OpTypeRuntimeArray:
+        case spv::OpTypeImage:
             return GetFundamentalType(src, insn.word(2));
         case spv::OpTypePointer:
             return GetFundamentalType(src, insn.word(3));
-        case spv::OpTypeImage:
-            return GetFundamentalType(src, insn.word(2));
 
         default:
             return 0;
@@ -647,8 +692,9 @@ static bool IsWritableDescriptorType(shader_module const *module, uint32_t type_
     auto type = module->get_def(type_id);
 
     // Strip off any array or ptrs. Where we remove array levels, adjust the  descriptor count for each dimension.
-    while (type.opcode() == spv::OpTypeArray || type.opcode() == spv::OpTypePointer) {
-        if (type.opcode() == spv::OpTypeArray) {
+    while (type.opcode() == spv::OpTypeArray || type.opcode() == spv::OpTypePointer || type.opcode() == spv::OpTypeRuntimeArray) {
+        if (type.opcode() == spv::OpTypeArray || type.opcode() == spv::OpTypeRuntimeArray) {
+            // Element type
             type = module->get_def(type.word(2));
         } else {
             if (type.word(2) == spv::StorageClassStorageBuffer) {
@@ -777,6 +823,7 @@ static bool ValidateViAgainstVsInputs(debug_report_data const *report_data, VkPi
         bool b_at_end = inputs.size() == 0 || it_b == inputs.end();
         auto a_first = a_at_end ? 0 : it_a->first;
         auto b_first = b_at_end ? 0 : it_b->first.first;
+
         if (!a_at_end && (b_at_end || a_first < b_first)) {
             if (!used &&
                 log_msg(report_data, VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
@@ -834,6 +881,7 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
 
     auto it_a = outputs.begin();
     auto it_b = color_attachments.begin();
+    bool used = false;
 
     // Walk attachment list and outputs together
 
@@ -849,11 +897,14 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
         } else if (!b_at_end && (a_at_end || it_a->first.first > it_b->first)) {
             // Only complain if there are unmasked channels for this attachment. If the writemask is 0, it's acceptable for the
             // shader to not produce a matching output.
-            if (pipeline->attachments[it_b->first].colorWriteMask != 0) {
-                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
-                                HandleToUint64(fs->vk_shader_module), kVUID_Core_Shader_InputNotProduced,
-                                "Attachment %d not written by fragment shader", it_b->first);
+            if (!used) {
+                if (pipeline->attachments[it_b->first].colorWriteMask != 0) {
+                    skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT,
+                                    HandleToUint64(fs->vk_shader_module), kVUID_Core_Shader_InputNotProduced,
+                                    "Attachment %d not written by fragment shader", it_b->first);
+                }
             }
+            used = false;
             it_b++;
         } else {
             unsigned output_type = GetFundamentalType(fs, it_a->second.type_id);
@@ -869,11 +920,87 @@ static bool ValidateFsOutputsAgainstRenderPass(debug_report_data const *report_d
 
             // OK!
             it_a++;
-            it_b++;
+            used = true;
         }
     }
 
     return skip;
+}
+
+// For PointSize analysis we need to know if the variable decorated with the PointSize built-in was actually written to.
+// This function examines instructions in the static call tree for a write to this variable.
+static bool IsPointSizeWritten(shader_module const *src, spirv_inst_iter builtin_instr, spirv_inst_iter entrypoint) {
+    auto type = builtin_instr.opcode();
+    uint32_t target_id = builtin_instr.word(1);
+    bool init_complete = false;
+
+    if (type == spv::OpMemberDecorate) {
+        // Built-in is part of a structure -- examine instructions up to first function body to get initial IDs
+        auto insn = entrypoint;
+        while (!init_complete && (insn.opcode() != spv::OpFunction)) {
+            switch (insn.opcode()) {
+                case spv::OpTypePointer:
+                    if ((insn.word(3) == target_id) && (insn.word(2) == spv::StorageClassOutput)) {
+                        target_id = insn.word(1);
+                    }
+                    break;
+                case spv::OpVariable:
+                    if (insn.word(1) == target_id) {
+                        target_id = insn.word(2);
+                        init_complete = true;
+                    }
+                    break;
+            }
+            insn++;
+        }
+    }
+
+    if (!init_complete && (type == spv::OpMemberDecorate)) return false;
+
+    bool found_write = false;
+    std::unordered_set<uint32_t> worklist;
+    worklist.insert(entrypoint.word(2));
+
+    // Follow instructions in call graph looking for writes to target
+    while (!worklist.empty() && !found_write) {
+        auto id_iter = worklist.begin();
+        auto id = *id_iter;
+        worklist.erase(id_iter);
+
+        auto insn = src->get_def(id);
+        if (insn == src->end()) {
+            continue;
+        }
+
+        if (insn.opcode() == spv::OpFunction) {
+            // Scan body of function looking for other function calls or items in our ID chain
+            while (++insn, insn.opcode() != spv::OpFunctionEnd) {
+                switch (insn.opcode()) {
+                    case spv::OpAccessChain:
+                        if (insn.word(3) == target_id) {
+                            if (type == spv::OpMemberDecorate) {
+                                auto value = GetConstantValue(src, insn.word(4));
+                                if (value == builtin_instr.word(2)) {
+                                    target_id = insn.word(2);
+                                }
+                            } else {
+                                target_id = insn.word(2);
+                            }
+                        }
+                        break;
+                    case spv::OpStore:
+                        if (insn.word(1) == target_id) {
+                            found_write = true;
+                        }
+                        break;
+                    case spv::OpFunctionCall:
+                        worklist.insert(insn.word(3));
+                        break;
+                }
+            }
+        }
+    }
+    return found_write;
 }
 
 // For some analyses, we need to know about all ids referenced by the static call tree of a particular entrypoint. This is
@@ -1079,11 +1206,12 @@ static bool ValidateSpecializationOffsets(debug_report_data const *report_data, 
     return skip;
 }
 
-static bool DescriptorTypeMatch(shader_module const *module, uint32_t type_id, VkDescriptorType descriptor_type,
-                                unsigned &descriptor_count) {
+// TODO (jbolz): Can this return a const reference?
+static std::set<uint32_t> TypeToDescriptorTypeSet(shader_module const *module, uint32_t type_id, unsigned &descriptor_count) {
     auto type = module->get_def(type_id);
     bool is_storage_buffer = false;
     descriptor_count = 1;
+    std::set<uint32_t> ret;
 
     // Strip off any array or ptrs. Where we remove array levels, adjust the  descriptor count for each dimension.
     while (type.opcode() == spv::OpTypeArray || type.opcode() == spv::OpTypePointer || type.opcode() == spv::OpTypeRuntimeArray) {
@@ -1107,36 +1235,45 @@ static bool DescriptorTypeMatch(shader_module const *module, uint32_t type_id, V
                 if (insn.opcode() == spv::OpDecorate && insn.word(1) == type.word(1)) {
                     if (insn.word(2) == spv::DecorationBlock) {
                         if (is_storage_buffer) {
-                            return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
-                                   descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                            ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+                            ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
+                            return ret;
                         } else {
-                            return descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
-                                   descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                            ret.insert(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+                            ret.insert(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+                            ret.insert(VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT);
+                            return ret;
                         }
                     } else if (insn.word(2) == spv::DecorationBufferBlock) {
-                        return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
-                               descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+                        ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
+                        return ret;
                     }
                 }
             }
 
             // Invalid
-            return false;
+            return ret;
         }
 
         case spv::OpTypeSampler:
-            return descriptor_type == VK_DESCRIPTOR_TYPE_SAMPLER || descriptor_type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            ret.insert(VK_DESCRIPTOR_TYPE_SAMPLER);
+            ret.insert(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            return ret;
 
-        case spv::OpTypeSampledImage:
-            if (descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER) {
-                // Slight relaxation for some GLSL historical madness: samplerBuffer doesn't really have a sampler, and a texel
-                // buffer descriptor doesn't really provide one. Allow this slight mismatch.
-                auto image_type = module->get_def(type.word(2));
-                auto dim = image_type.word(3);
-                auto sampled = image_type.word(7);
-                return dim == spv::DimBuffer && sampled == 1;
+        case spv::OpTypeSampledImage: {
+            // Slight relaxation for some GLSL historical madness: samplerBuffer doesn't really have a sampler, and a texel
+            // buffer descriptor doesn't really provide one. Allow this slight mismatch.
+            auto image_type = module->get_def(type.word(2));
+            auto dim = image_type.word(3);
+            auto sampled = image_type.word(7);
+            if (dim == spv::DimBuffer && sampled == 1) {
+                ret.insert(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER);
+                return ret;
             }
-            return descriptor_type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        }
+            ret.insert(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            return ret;
 
         case spv::OpTypeImage: {
             // Many descriptor types backing image types-- depends on dimension and whether the image will be used with a sampler.
@@ -1145,25 +1282,42 @@ static bool DescriptorTypeMatch(shader_module const *module, uint32_t type_id, V
             auto sampled = type.word(7);
 
             if (dim == spv::DimSubpassData) {
-                return descriptor_type == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+                ret.insert(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT);
+                return ret;
             } else if (dim == spv::DimBuffer) {
                 if (sampled == 1) {
-                    return descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                    ret.insert(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER);
+                    return ret;
                 } else {
-                    return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+                    ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER);
+                    return ret;
                 }
             } else if (sampled == 1) {
-                return descriptor_type == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE ||
-                       descriptor_type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                ret.insert(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+                ret.insert(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                return ret;
             } else {
-                return descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                ret.insert(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+                return ret;
             }
         }
+        case spv::OpTypeAccelerationStructureNVX:
+            ret.insert(VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NVX);
+            return ret;
 
             // We shouldn't really see any other junk types -- but if we do, they're a mismatch.
         default:
-            return false;  // Mismatch
+            return ret;  // Matches nothing
     }
+}
+
+static std::string string_descriptorTypes(const std::set<uint32_t> &descriptor_types) {
+    std::stringstream ss;
+    for (auto it = descriptor_types.begin(); it != descriptor_types.end(); ++it) {
+        if (ss.tellp()) ss << ", ";
+        ss << string_VkDescriptorType(VkDescriptorType(*it));
+    }
+    return ss.str();
 }
 
 static bool RequireFeature(debug_report_data const *report_data, VkBool32 feature, char const *feature_name) {
@@ -1194,14 +1348,33 @@ static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const
     bool skip = false;
 
     auto report_data = GetReportData(dev_data);
-    auto const &enabledFeatures = GetEnabledFeatures(dev_data);
+    auto const &features = GetEnabledFeatures(dev_data);
     auto const &extensions = GetDeviceExtensions(dev_data);
-    auto const &descriptorIndexingFeatures = GetEnabledDescriptorIndexingFeatures(dev_data);
+
+    struct FeaturePointer {
+        // Callable object to test if this feature is enabled in the given aggregate feature struct
+        const std::function<VkBool32(const DeviceFeatures &)> IsEnabled;
+
+        // Test if feature pointer is populated
+        explicit operator bool() const { return static_cast<bool>(IsEnabled); }
+
+        // Default and nullptr constructor to create an empty FeaturePointer
+        FeaturePointer() : IsEnabled(nullptr) {}
+        FeaturePointer(std::nullptr_t ptr) : IsEnabled(nullptr) {}
+
+        // Constructors to populate FeaturePointer based on given pointer to member
+        FeaturePointer(VkBool32 VkPhysicalDeviceFeatures::*ptr)
+            : IsEnabled([=](const DeviceFeatures &features) { return features.core.*ptr; }) {}
+        FeaturePointer(VkBool32 VkPhysicalDeviceDescriptorIndexingFeaturesEXT::*ptr)
+            : IsEnabled([=](const DeviceFeatures &features) { return features.descriptor_indexing.*ptr; }) {}
+        FeaturePointer(VkBool32 VkPhysicalDevice8BitStorageFeaturesKHR::*ptr)
+            : IsEnabled([=](const DeviceFeatures &features) { return features.eight_bit_storage.*ptr; }) {}
+    };
 
     struct CapabilityInfo {
         char const *name;
-        VkBool32 const *feature;
-        bool const *extension;
+        FeaturePointer feature;
+        bool DeviceExtensions::*extension;
     };
 
     // clang-format off
@@ -1219,67 +1392,58 @@ static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const
 
         // Capabilities that are optionally supported, but require a feature to
         // be enabled on the device
-        {spv::CapabilityGeometry, {"VkPhysicalDeviceFeatures::geometryShader", &enabledFeatures->geometryShader}},
-        {spv::CapabilityTessellation, {"VkPhysicalDeviceFeatures::tessellationShader", &enabledFeatures->tessellationShader}},
-        {spv::CapabilityFloat64, {"VkPhysicalDeviceFeatures::shaderFloat64", &enabledFeatures->shaderFloat64}},
-        {spv::CapabilityInt64, {"VkPhysicalDeviceFeatures::shaderInt64", &enabledFeatures->shaderInt64}},
-        {spv::CapabilityTessellationPointSize, {"VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize", &enabledFeatures->shaderTessellationAndGeometryPointSize}},
-        {spv::CapabilityGeometryPointSize, {"VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize", &enabledFeatures->shaderTessellationAndGeometryPointSize}},
-        {spv::CapabilityImageGatherExtended, {"VkPhysicalDeviceFeatures::shaderImageGatherExtended", &enabledFeatures->shaderImageGatherExtended}},
-        {spv::CapabilityStorageImageMultisample, {"VkPhysicalDeviceFeatures::shaderStorageImageMultisample", &enabledFeatures->shaderStorageImageMultisample}},
-        {spv::CapabilityUniformBufferArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderUniformBufferArrayDynamicIndexing", &enabledFeatures->shaderUniformBufferArrayDynamicIndexing}},
-        {spv::CapabilitySampledImageArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderSampledImageArrayDynamicIndexing", &enabledFeatures->shaderSampledImageArrayDynamicIndexing}},
-        {spv::CapabilityStorageBufferArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing", &enabledFeatures->shaderStorageBufferArrayDynamicIndexing}},
-        {spv::CapabilityStorageImageArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderStorageImageArrayDynamicIndexing", &enabledFeatures->shaderStorageBufferArrayDynamicIndexing}},
-        {spv::CapabilityClipDistance, {"VkPhysicalDeviceFeatures::shaderClipDistance", &enabledFeatures->shaderClipDistance}},
-        {spv::CapabilityCullDistance, {"VkPhysicalDeviceFeatures::shaderCullDistance", &enabledFeatures->shaderCullDistance}},
-        {spv::CapabilityImageCubeArray, {"VkPhysicalDeviceFeatures::imageCubeArray", &enabledFeatures->imageCubeArray}},
-        {spv::CapabilitySampleRateShading, {"VkPhysicalDeviceFeatures::sampleRateShading", &enabledFeatures->sampleRateShading}},
-        {spv::CapabilitySparseResidency, {"VkPhysicalDeviceFeatures::shaderResourceResidency", &enabledFeatures->shaderResourceResidency}},
-        {spv::CapabilityMinLod, {"VkPhysicalDeviceFeatures::shaderResourceMinLod", &enabledFeatures->shaderResourceMinLod}},
-        {spv::CapabilitySampledCubeArray, {"VkPhysicalDeviceFeatures::imageCubeArray", &enabledFeatures->imageCubeArray}},
-        {spv::CapabilityImageMSArray, {"VkPhysicalDeviceFeatures::shaderStorageImageMultisample", &enabledFeatures->shaderStorageImageMultisample}},
-        {spv::CapabilityStorageImageExtendedFormats, {"VkPhysicalDeviceFeatures::shaderStorageImageExtendedFormats", &enabledFeatures->shaderStorageImageExtendedFormats}},
-        {spv::CapabilityInterpolationFunction, {"VkPhysicalDeviceFeatures::sampleRateShading", &enabledFeatures->sampleRateShading}},
-        {spv::CapabilityStorageImageReadWithoutFormat, {"VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat", &enabledFeatures->shaderStorageImageReadWithoutFormat}},
-        {spv::CapabilityStorageImageWriteWithoutFormat, {"VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat", &enabledFeatures->shaderStorageImageWriteWithoutFormat}},
-        {spv::CapabilityMultiViewport, {"VkPhysicalDeviceFeatures::multiViewport", &enabledFeatures->multiViewport}},
+        {spv::CapabilityGeometry, {"VkPhysicalDeviceFeatures::geometryShader", &VkPhysicalDeviceFeatures::geometryShader}},
+        {spv::CapabilityTessellation, {"VkPhysicalDeviceFeatures::tessellationShader", &VkPhysicalDeviceFeatures::tessellationShader}},
+        {spv::CapabilityFloat64, {"VkPhysicalDeviceFeatures::shaderFloat64", &VkPhysicalDeviceFeatures::shaderFloat64}},
+        {spv::CapabilityInt64, {"VkPhysicalDeviceFeatures::shaderInt64", &VkPhysicalDeviceFeatures::shaderInt64}},
+        {spv::CapabilityTessellationPointSize, {"VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize", &VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize}},
+        {spv::CapabilityGeometryPointSize, {"VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize", &VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize}},
+        {spv::CapabilityImageGatherExtended, {"VkPhysicalDeviceFeatures::shaderImageGatherExtended", &VkPhysicalDeviceFeatures::shaderImageGatherExtended}},
+        {spv::CapabilityStorageImageMultisample, {"VkPhysicalDeviceFeatures::shaderStorageImageMultisample", &VkPhysicalDeviceFeatures::shaderStorageImageMultisample}},
+        {spv::CapabilityUniformBufferArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderUniformBufferArrayDynamicIndexing", &VkPhysicalDeviceFeatures::shaderUniformBufferArrayDynamicIndexing}},
+        {spv::CapabilitySampledImageArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderSampledImageArrayDynamicIndexing", &VkPhysicalDeviceFeatures::shaderSampledImageArrayDynamicIndexing}},
+        {spv::CapabilityStorageBufferArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing", &VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing}},
+        {spv::CapabilityStorageImageArrayDynamicIndexing, {"VkPhysicalDeviceFeatures::shaderStorageImageArrayDynamicIndexing", &VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing}},
+        {spv::CapabilityClipDistance, {"VkPhysicalDeviceFeatures::shaderClipDistance", &VkPhysicalDeviceFeatures::shaderClipDistance}},
+        {spv::CapabilityCullDistance, {"VkPhysicalDeviceFeatures::shaderCullDistance", &VkPhysicalDeviceFeatures::shaderCullDistance}},
+        {spv::CapabilityImageCubeArray, {"VkPhysicalDeviceFeatures::imageCubeArray", &VkPhysicalDeviceFeatures::imageCubeArray}},
+        {spv::CapabilitySampleRateShading, {"VkPhysicalDeviceFeatures::sampleRateShading", &VkPhysicalDeviceFeatures::sampleRateShading}},
+        {spv::CapabilitySparseResidency, {"VkPhysicalDeviceFeatures::shaderResourceResidency", &VkPhysicalDeviceFeatures::shaderResourceResidency}},
+        {spv::CapabilityMinLod, {"VkPhysicalDeviceFeatures::shaderResourceMinLod", &VkPhysicalDeviceFeatures::shaderResourceMinLod}},
+        {spv::CapabilitySampledCubeArray, {"VkPhysicalDeviceFeatures::imageCubeArray", &VkPhysicalDeviceFeatures::imageCubeArray}},
+        {spv::CapabilityImageMSArray, {"VkPhysicalDeviceFeatures::shaderStorageImageMultisample", &VkPhysicalDeviceFeatures::shaderStorageImageMultisample}},
+        {spv::CapabilityStorageImageExtendedFormats, {"VkPhysicalDeviceFeatures::shaderStorageImageExtendedFormats", &VkPhysicalDeviceFeatures::shaderStorageImageExtendedFormats}},
+        {spv::CapabilityInterpolationFunction, {"VkPhysicalDeviceFeatures::sampleRateShading", &VkPhysicalDeviceFeatures::sampleRateShading}},
+        {spv::CapabilityStorageImageReadWithoutFormat, {"VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat", &VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat}},
+        {spv::CapabilityStorageImageWriteWithoutFormat, {"VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat", &VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat}},
+        {spv::CapabilityMultiViewport, {"VkPhysicalDeviceFeatures::multiViewport", &VkPhysicalDeviceFeatures::multiViewport}},
 
-        // XXX TODO: Descriptor indexing capability enums are not yet available in the spirv-tools we fetch.
-#define CapabilityShaderNonUniformEXT 5301
-#define CapabilityRuntimeDescriptorArrayEXT 5302
-#define CapabilityInputAttachmentArrayDynamicIndexingEXT 5303
-#define CapabilityUniformTexelBufferArrayDynamicIndexingEXT 5304
-#define CapabilityStorageTexelBufferArrayDynamicIndexingEXT 5305
-#define CapabilityUniformBufferArrayNonUniformIndexingEXT 5306
-#define CapabilitySampledImageArrayNonUniformIndexingEXT 5307
-#define CapabilityStorageBufferArrayNonUniformIndexingEXT 5308
-#define CapabilityStorageImageArrayNonUniformIndexingEXT 5309
-#define CapabilityInputAttachmentArrayNonUniformIndexingEXT 5310
-#define CapabilityUniformTexelBufferArrayNonUniformIndexingEXT 5311
-#define CapabilityStorageTexelBufferArrayNonUniformIndexingEXT 5312
-        {CapabilityShaderNonUniformEXT, {VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, nullptr, &extensions->vk_ext_descriptor_indexing}},
-        {CapabilityRuntimeDescriptorArrayEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::runtimeDescriptorArray", &descriptorIndexingFeatures->runtimeDescriptorArray}},
-        {CapabilityInputAttachmentArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayDynamicIndexing", &descriptorIndexingFeatures->shaderInputAttachmentArrayDynamicIndexing}},
-        {CapabilityUniformTexelBufferArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayDynamicIndexing", &descriptorIndexingFeatures->shaderUniformTexelBufferArrayDynamicIndexing}},
-        {CapabilityStorageTexelBufferArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayDynamicIndexing", &descriptorIndexingFeatures->shaderStorageTexelBufferArrayDynamicIndexing}},
-        {CapabilityUniformBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformBufferArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderUniformBufferArrayNonUniformIndexing}},
-        {CapabilitySampledImageArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderSampledImageArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderSampledImageArrayNonUniformIndexing}},
-        {CapabilityStorageBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageBufferArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderStorageBufferArrayNonUniformIndexing}},
-        {CapabilityStorageImageArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageImageArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderStorageImageArrayNonUniformIndexing}},
-        {CapabilityInputAttachmentArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderInputAttachmentArrayNonUniformIndexing}},
-        {CapabilityUniformTexelBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderUniformTexelBufferArrayNonUniformIndexing}},
-        {CapabilityStorageTexelBufferArrayNonUniformIndexingEXT , {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayNonUniformIndexing", &descriptorIndexingFeatures->shaderStorageTexelBufferArrayNonUniformIndexing}},
+        {spv::CapabilityShaderNonUniformEXT, {VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_ext_descriptor_indexing}},
+        {spv::CapabilityRuntimeDescriptorArrayEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::runtimeDescriptorArray", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::runtimeDescriptorArray}},
+        {spv::CapabilityInputAttachmentArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayDynamicIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayDynamicIndexing}},
+        {spv::CapabilityUniformTexelBufferArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayDynamicIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayDynamicIndexing}},
+        {spv::CapabilityStorageTexelBufferArrayDynamicIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayDynamicIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayDynamicIndexing}},
+        {spv::CapabilityUniformBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformBufferArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformBufferArrayNonUniformIndexing}},
+        {spv::CapabilitySampledImageArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderSampledImageArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderSampledImageArrayNonUniformIndexing}},
+        {spv::CapabilityStorageBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageBufferArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageBufferArrayNonUniformIndexing}},
+        {spv::CapabilityStorageImageArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageImageArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageImageArrayNonUniformIndexing}},
+        {spv::CapabilityInputAttachmentArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderInputAttachmentArrayNonUniformIndexing}},
+        {spv::CapabilityUniformTexelBufferArrayNonUniformIndexingEXT, {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderUniformTexelBufferArrayNonUniformIndexing}},
+        {spv::CapabilityStorageTexelBufferArrayNonUniformIndexingEXT , {"VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayNonUniformIndexing", &VkPhysicalDeviceDescriptorIndexingFeaturesEXT::shaderStorageTexelBufferArrayNonUniformIndexing}},
 
         // Capabilities that require an extension
-        {spv::CapabilityDrawParameters, {VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, nullptr, &extensions->vk_khr_shader_draw_parameters}},
-        {spv::CapabilityGeometryShaderPassthroughNV, {VK_NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME, nullptr, &extensions->vk_nv_geometry_shader_passthrough}},
-        {spv::CapabilitySampleMaskOverrideCoverageNV, {VK_NV_SAMPLE_MASK_OVERRIDE_COVERAGE_EXTENSION_NAME, nullptr, &extensions->vk_nv_sample_mask_override_coverage}},
-        {spv::CapabilityShaderViewportIndexLayerEXT, {VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME, nullptr, &extensions->vk_ext_shader_viewport_index_layer}},
-        {spv::CapabilityShaderViewportIndexLayerNV, {VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, nullptr, &extensions->vk_nv_viewport_array2}},
-        {spv::CapabilityShaderViewportMaskNV, {VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, nullptr, &extensions->vk_nv_viewport_array2}},
-        {spv::CapabilitySubgroupBallotKHR, {VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME, nullptr, &extensions->vk_ext_shader_subgroup_ballot }},
-        {spv::CapabilitySubgroupVoteKHR, {VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME, nullptr, &extensions->vk_ext_shader_subgroup_vote }},
+        {spv::CapabilityDrawParameters, {VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_khr_shader_draw_parameters}},
+        {spv::CapabilityGeometryShaderPassthroughNV, {VK_NV_GEOMETRY_SHADER_PASSTHROUGH_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_nv_geometry_shader_passthrough}},
+        {spv::CapabilitySampleMaskOverrideCoverageNV, {VK_NV_SAMPLE_MASK_OVERRIDE_COVERAGE_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_nv_sample_mask_override_coverage}},
+        {spv::CapabilityShaderViewportIndexLayerEXT, {VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_ext_shader_viewport_index_layer}},
+        {spv::CapabilityShaderViewportIndexLayerNV, {VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_nv_viewport_array2}},
+        {spv::CapabilityShaderViewportMaskNV, {VK_NV_VIEWPORT_ARRAY2_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_nv_viewport_array2}},
+        {spv::CapabilitySubgroupBallotKHR, {VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_ext_shader_subgroup_ballot }},
+        {spv::CapabilitySubgroupVoteKHR, {VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME, nullptr, &DeviceExtensions::vk_ext_shader_subgroup_vote }},
+
+        {spv::CapabilityStorageBuffer8BitAccess , {"VkPhysicalDevice8BitStorageFeaturesKHR::storageBuffer8BitAccess", &VkPhysicalDevice8BitStorageFeaturesKHR::storageBuffer8BitAccess, &DeviceExtensions::vk_khr_8bit_storage}},
+        {spv::CapabilityUniformAndStorageBuffer8BitAccess , {"VkPhysicalDevice8BitStorageFeaturesKHR::uniformAndStorageBuffer8BitAccess", &VkPhysicalDevice8BitStorageFeaturesKHR::uniformAndStorageBuffer8BitAccess, &DeviceExtensions::vk_khr_8bit_storage}},
+        {spv::CapabilityStoragePushConstant8 , {"VkPhysicalDevice8BitStorageFeaturesKHR::storagePushConstant8", &VkPhysicalDevice8BitStorageFeaturesKHR::storagePushConstant8, &DeviceExtensions::vk_khr_8bit_storage}},
     };
     // clang-format on
 
@@ -1290,10 +1454,10 @@ static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const
                 auto it = capabilities.find(insn.word(1));
                 if (it != capabilities.end()) {
                     if (it->second.feature) {
-                        skip |= RequireFeature(report_data, *(it->second.feature), it->second.name);
+                        skip |= RequireFeature(report_data, it->second.feature.IsEnabled(*features), it->second.name);
                     }
                     if (it->second.extension) {
-                        skip |= RequireExtension(report_data, *(it->second.extension), it->second.name);
+                        skip |= RequireExtension(report_data, extensions->*(it->second.extension), it->second.name);
                     }
                 }
             } else if (1 < n) {  // key occurs multiple times, at least one must be enabled
@@ -1305,13 +1469,13 @@ static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const
                 for (auto it = caps.first; it != caps.second; ++it) {
                     if (it->second.feature) {
                         needs_feature = true;
-                        has_feature = has_feature || *(it->second.feature);
+                        has_feature = has_feature || it->second.feature.IsEnabled(*features);
                         feature_names += it->second.name;
                         feature_names += " ";
                     }
                     if (it->second.extension) {
                         needs_ext = true;
-                        has_ext = has_ext || *(it->second.extension);
+                        has_ext = has_ext || extensions->*(it->second.extension);
                         extension_names += it->second.name;
                         extension_names += " ";
                     }
@@ -1335,11 +1499,11 @@ static bool ValidateShaderCapabilities(layer_data *dev_data, shader_module const
                  * stage */
                 break;
             case VK_SHADER_STAGE_FRAGMENT_BIT:
-                skip |= RequireFeature(report_data, enabledFeatures->fragmentStoresAndAtomics, "fragmentStoresAndAtomics");
+                skip |= RequireFeature(report_data, features->core.fragmentStoresAndAtomics, "fragmentStoresAndAtomics");
                 break;
             default:
                 skip |=
-                    RequireFeature(report_data, enabledFeatures->vertexPipelineStoresAndAtomics, "vertexPipelineStoresAndAtomics");
+                    RequireFeature(report_data, features->core.vertexPipelineStoresAndAtomics, "vertexPipelineStoresAndAtomics");
                 break;
         }
     }
@@ -1353,6 +1517,7 @@ static uint32_t DescriptorTypeToReqs(shader_module const *module, uint32_t type_
     while (true) {
         switch (type.opcode()) {
             case spv::OpTypeArray:
+            case spv::OpTypeRuntimeArray:
             case spv::OpTypeSampledImage:
                 type = module->get_def(type.word(2));
                 break;
@@ -1364,20 +1529,40 @@ static uint32_t DescriptorTypeToReqs(shader_module const *module, uint32_t type_
                 auto arrayed = type.word(5);
                 auto msaa = type.word(6);
 
+                uint32_t bits = 0;
+                switch (GetFundamentalType(module, type.word(2))) {
+                    case FORMAT_TYPE_FLOAT:
+                        bits = DESCRIPTOR_REQ_COMPONENT_TYPE_FLOAT;
+                        break;
+                    case FORMAT_TYPE_UINT:
+                        bits = DESCRIPTOR_REQ_COMPONENT_TYPE_UINT;
+                        break;
+                    case FORMAT_TYPE_SINT:
+                        bits = DESCRIPTOR_REQ_COMPONENT_TYPE_SINT;
+                        break;
+                    default:
+                        break;
+                }
+
                 switch (dim) {
                     case spv::Dim1D:
-                        return arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_1D_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_1D;
+                        bits |= arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_1D_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_1D;
+                        return bits;
                     case spv::Dim2D:
-                        return (msaa ? DESCRIPTOR_REQ_MULTI_SAMPLE : DESCRIPTOR_REQ_SINGLE_SAMPLE) |
-                               (arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_2D_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_2D);
+                        bits |= msaa ? DESCRIPTOR_REQ_MULTI_SAMPLE : DESCRIPTOR_REQ_SINGLE_SAMPLE;
+                        bits |= arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_2D_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_2D;
+                        return bits;
                     case spv::Dim3D:
-                        return DESCRIPTOR_REQ_VIEW_TYPE_3D;
+                        bits |= DESCRIPTOR_REQ_VIEW_TYPE_3D;
+                        return bits;
                     case spv::DimCube:
-                        return arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_CUBE_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_CUBE;
+                        bits |= arrayed ? DESCRIPTOR_REQ_VIEW_TYPE_CUBE_ARRAY : DESCRIPTOR_REQ_VIEW_TYPE_CUBE;
+                        return bits;
                     case spv::DimSubpassData:
-                        return msaa ? DESCRIPTOR_REQ_MULTI_SAMPLE : DESCRIPTOR_REQ_SINGLE_SAMPLE;
+                        bits |= msaa ? DESCRIPTOR_REQ_MULTI_SAMPLE : DESCRIPTOR_REQ_SINGLE_SAMPLE;
+                        return bits;
                     default:  // buffer, etc.
-                        return 0;
+                        return bits;
                 }
             }
             default:
@@ -1398,7 +1583,7 @@ static VkDescriptorSetLayoutBinding const *GetDescriptorBinding(PIPELINE_LAYOUT_
 }
 
 static void ProcessExecutionModes(shader_module const *src, spirv_inst_iter entrypoint, PIPELINE_STATE *pipeline) {
-    auto entrypoint_id = entrypoint.word(1);
+    auto entrypoint_id = entrypoint.word(2);
     bool is_point_mode = false;
 
     for (auto insn : *src) {
@@ -1430,9 +1615,64 @@ static void ProcessExecutionModes(shader_module const *src, spirv_inst_iter entr
     if (is_point_mode) pipeline->topology_at_rasterizer = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 }
 
+// If PointList topology is specified in the pipeline, verify that a shader geometry stage writes PointSize
+//    o If there is only a vertex shader : gl_PointSize must be written when using points
+//    o If there is a geometry or tessellation shader:
+//        - If shaderTessellationAndGeometryPointSize feature is enabled:
+//            * gl_PointSize must be written in the final geometry stage
+//        - If shaderTessellationAndGeometryPointSize feature is disabled:
+//            * gl_PointSize must NOT be written and a default of 1.0 is assumed
+bool ValidatePointListShaderState(const layer_data *dev_data, const PIPELINE_STATE *pipeline, shader_module const *src,
+                                  spirv_inst_iter entrypoint, VkShaderStageFlagBits stage) {
+    if (pipeline->topology_at_rasterizer != VK_PRIMITIVE_TOPOLOGY_POINT_LIST) {
+        return false;
+    }
+
+    bool pointsize_written = false;
+    bool skip = false;
+
+    // Search for PointSize built-in decorations
+    std::vector<uint32_t> pointsize_builtin_offsets;
+    spirv_inst_iter insn = entrypoint;
+    while (!pointsize_written && (insn.opcode() != spv::OpFunction)) {
+        if (insn.opcode() == spv::OpMemberDecorate) {
+            if (insn.word(3) == spv::DecorationBuiltIn) {
+                if (insn.word(4) == spv::BuiltInPointSize) {
+                    pointsize_written = IsPointSizeWritten(src, insn, entrypoint);
+                }
+            }
+        } else if (insn.opcode() == spv::OpDecorate) {
+            if (insn.word(2) == spv::DecorationBuiltIn) {
+                if (insn.word(3) == spv::BuiltInPointSize) {
+                    pointsize_written = IsPointSizeWritten(src, insn, entrypoint);
+                }
+            }
+        }
+
+        insn++;
+    }
+
+    if ((stage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT || stage == VK_SHADER_STAGE_GEOMETRY_BIT) &&
+        !GetEnabledFeatures(dev_data)->core.shaderTessellationAndGeometryPointSize) {
+        if (pointsize_written) {
+            skip |= log_msg(GetReportData(dev_data), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                            HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_PointSizeBuiltInOverSpecified,
+                            "Pipeline topology is set to POINT_LIST and geometry or tessellation shaders write PointSize which "
+                            "is prohibited when the shaderTessellationAndGeometryPointSize feature is not enabled.");
+        }
+    } else if (!pointsize_written) {
+        skip |=
+            log_msg(GetReportData(dev_data), VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                    HandleToUint64(pipeline->pipeline), kVUID_Core_Shader_MissingPointSizeBuiltIn,
+                    "Pipeline topology is set to POINT_LIST, but PointSize is not written to in the shader corresponding to %s.",
+                    string_VkShaderStageFlagBits(stage));
+    }
+    return skip;
+}
+
 static bool ValidatePipelineShaderStage(layer_data *dev_data, VkPipelineShaderStageCreateInfo const *pStage,
-                                        PIPELINE_STATE *pipeline, shader_module const **out_module,
-                                        spirv_inst_iter *out_entrypoint) {
+                                        PIPELINE_STATE *pipeline, shader_module const **out_module, spirv_inst_iter *out_entrypoint,
+                                        bool check_point_size) {
     bool skip = false;
     auto module = *out_module = GetShaderModuleState(dev_data, pStage->module);
     auto report_data = GetReportData(dev_data);
@@ -1463,6 +1703,9 @@ static bool ValidatePipelineShaderStage(layer_data *dev_data, VkPipelineShaderSt
     skip |= ValidateSpecializationOffsets(report_data, pStage);
     skip |= ValidatePushConstantUsage(report_data, pipeline->pipeline_layout.push_constant_ranges.get(), module, accessible_ids,
                                       pStage->stage);
+    if (check_point_size && !pipeline->graphicsPipelineCI.pRasterizationState->rasterizerDiscardEnable) {
+        skip |= ValidatePointListShaderState(dev_data, pipeline, module, entrypoint, pStage->stage);
+    }
 
     // Validate descriptor use
     for (auto use : descriptor_uses) {
@@ -1473,30 +1716,29 @@ static bool ValidatePipelineShaderStage(layer_data *dev_data, VkPipelineShaderSt
         // Verify given pipelineLayout has requested setLayout with requested binding
         const auto &binding = GetDescriptorBinding(&pipeline->pipeline_layout, use.first);
         unsigned required_descriptor_count;
+        std::set<uint32_t> descriptor_types = TypeToDescriptorTypeSet(module, use.second.type_id, required_descriptor_count);
 
         if (!binding) {
             skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
                             kVUID_Core_Shader_MissingDescriptor,
-                            "Shader uses descriptor slot %u.%u (used as type `%s`) but not declared in pipeline layout",
-                            use.first.first, use.first.second, DescribeType(module, use.second.type_id).c_str());
+                            "Shader uses descriptor slot %u.%u (expected `%s`) but not declared in pipeline layout",
+                            use.first.first, use.first.second, string_descriptorTypes(descriptor_types).c_str());
         } else if (~binding->stageFlags & pStage->stage) {
             skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT, 0,
                             kVUID_Core_Shader_DescriptorNotAccessibleFromStage,
-                            "Shader uses descriptor slot %u.%u (used as type `%s`) but descriptor not accessible from stage %s",
-                            use.first.first, use.first.second, DescribeType(module, use.second.type_id).c_str(),
-                            string_VkShaderStageFlagBits(pStage->stage));
-        } else if (!DescriptorTypeMatch(module, use.second.type_id, binding->descriptorType, required_descriptor_count)) {
+                            "Shader uses descriptor slot %u.%u but descriptor not accessible from stage %s", use.first.first,
+                            use.first.second, string_VkShaderStageFlagBits(pStage->stage));
+        } else if (descriptor_types.find(binding->descriptorType) == descriptor_types.end()) {
             skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
                             kVUID_Core_Shader_DescriptorTypeMismatch,
-                            "Type mismatch on descriptor slot %u.%u (used as type `%s`) but descriptor of type %s", use.first.first,
-                            use.first.second, DescribeType(module, use.second.type_id).c_str(),
+                            "Type mismatch on descriptor slot %u.%u (expected `%s`) but descriptor of type %s", use.first.first,
+                            use.first.second, string_descriptorTypes(descriptor_types).c_str(),
                             string_VkDescriptorType(binding->descriptorType));
         } else if (binding->descriptorCount < required_descriptor_count) {
             skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
                             kVUID_Core_Shader_DescriptorTypeMismatch,
-                            "Shader expects at least %u descriptors for binding %u.%u (used as type `%s`) but only %u provided",
-                            required_descriptor_count, use.first.first, use.first.second,
-                            DescribeType(module, use.second.type_id).c_str(), binding->descriptorCount);
+                            "Shader expects at least %u descriptors for binding %u.%u but only %u provided",
+                            required_descriptor_count, use.first.first, use.first.second, binding->descriptorCount);
         }
     }
 
@@ -1597,6 +1839,26 @@ static bool ValidateInterfaceBetweenStages(debug_report_data const *report_data,
     return skip;
 }
 
+static inline uint32_t DetermineFinalGeomStage(PIPELINE_STATE *pipeline, VkGraphicsPipelineCreateInfo *pCreateInfo) {
+    uint32_t stage_mask = 0;
+    if (pipeline->topology_at_rasterizer == VK_PRIMITIVE_TOPOLOGY_POINT_LIST) {
+        for (uint32_t i = 0; i < pCreateInfo->stageCount; i++) {
+            stage_mask |= pCreateInfo->pStages[i].stage;
+        }
+        // Determine which shader in which PointSize should be written (the final geometry stage)
+        if (stage_mask & VK_SHADER_STAGE_MESH_BIT_NV) {
+            stage_mask = VK_SHADER_STAGE_MESH_BIT_NV;
+        } else if (stage_mask & VK_SHADER_STAGE_GEOMETRY_BIT) {
+            stage_mask = VK_SHADER_STAGE_GEOMETRY_BIT;
+        } else if (stage_mask & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+            stage_mask = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+        } else if (stage_mask & VK_SHADER_STAGE_VERTEX_BIT) {
+            stage_mask = VK_SHADER_STAGE_VERTEX_BIT;
+        }
+    }
+    return stage_mask;
+}
+
 // Validate that the shaders used by the given pipeline and store the active_slots
 //  that are actually used by the pipeline into pPipeline->active_slots
 bool ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE *pipeline) {
@@ -1605,16 +1867,19 @@ bool ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE 
     int fragment_stage = GetShaderStageId(VK_SHADER_STAGE_FRAGMENT_BIT);
     auto report_data = GetReportData(dev_data);
 
-    shader_module const *shaders[5];
+    shader_module const *shaders[32];
     memset(shaders, 0, sizeof(shaders));
-    spirv_inst_iter entrypoints[5];
+    spirv_inst_iter entrypoints[32];
     memset(entrypoints, 0, sizeof(entrypoints));
     bool skip = false;
+
+    uint32_t pointlist_stage_mask = DetermineFinalGeomStage(pipeline, pCreateInfo);
 
     for (uint32_t i = 0; i < pCreateInfo->stageCount; i++) {
         auto pStage = &pCreateInfo->pStages[i];
         auto stage_id = GetShaderStageId(pStage->stage);
-        skip |= ValidatePipelineShaderStage(dev_data, pStage, pipeline, &shaders[stage_id], &entrypoints[stage_id]);
+        skip |= ValidatePipelineShaderStage(dev_data, pStage, pipeline, &shaders[stage_id], &entrypoints[stage_id],
+                                            (pointlist_stage_mask == pStage->stage));
     }
 
     // if the shader stages are no good individually, cross-stage validation is pointless.
@@ -1665,7 +1930,16 @@ bool ValidateComputePipeline(layer_data *dev_data, PIPELINE_STATE *pipeline) {
     shader_module const *module;
     spirv_inst_iter entrypoint;
 
-    return ValidatePipelineShaderStage(dev_data, &pCreateInfo->stage, pipeline, &module, &entrypoint);
+    return ValidatePipelineShaderStage(dev_data, &pCreateInfo->stage, pipeline, &module, &entrypoint, false);
+}
+
+bool ValidateRaytracingPipelineNVX(layer_data *dev_data, PIPELINE_STATE *pipeline) {
+    auto pCreateInfo = pipeline->raytracingPipelineCI.ptr();
+
+    shader_module const *module;
+    spirv_inst_iter entrypoint;
+
+    return ValidatePipelineShaderStage(dev_data, pCreateInfo->pStages, pipeline, &module, &entrypoint, false);
 }
 
 uint32_t ValidationCache::MakeShaderHash(VkShaderModuleCreateInfo const *smci) { return XXH32(smci->pCode, smci->codeSize, 0); }
@@ -1704,11 +1978,18 @@ bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreat
         }
 
         // Use SPIRV-Tools validator to try and catch any issues with the module itself
-        spv_context ctx = spvContextCreate(SPV_ENV_VULKAN_1_0);
+        spv_target_env spirv_environment = SPV_ENV_VULKAN_1_0;
+        if (GetApiVersion(dev_data) >= VK_API_VERSION_1_1) {
+            spirv_environment = SPV_ENV_VULKAN_1_1;
+        }
+        spv_context ctx = spvContextCreate(spirv_environment);
         spv_const_binary_t binary{pCreateInfo->pCode, pCreateInfo->codeSize / sizeof(uint32_t)};
         spv_diagnostic diag = nullptr;
-
-        spv_valid = spvValidate(ctx, &binary, &diag);
+        spv_validator_options options = spvValidatorOptionsCreate();
+        if (GetDeviceExtensions(dev_data)->vk_khr_relaxed_block_layout) {
+            spvValidatorOptionsSetRelaxBlockLayout(options, true);
+        }
+        spv_valid = spvValidateWithOptions(ctx, options, &binary, &diag);
         if (spv_valid != SPV_SUCCESS) {
             if (!have_glsl_shader || (pCreateInfo->pCode[0] == spv::MagicNumber)) {
                 skip |=
@@ -1722,6 +2003,7 @@ bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreat
             }
         }
 
+        spvValidatorOptionsDestroy(options);
         spvDiagnosticDestroy(diag);
         spvContextDestroy(ctx);
     }

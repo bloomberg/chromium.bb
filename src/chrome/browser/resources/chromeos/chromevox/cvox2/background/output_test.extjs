@@ -220,8 +220,7 @@ TEST_F('OutputE2ETest', 'Headings', function() {
   });
 });
 
-// Flaky, see https://crbug.com/876145.
-TEST_F('OutputE2ETest', 'DISABLED_Audio', function() {
+TEST_F('OutputE2ETest', 'Audio', function() {
   this.runWithLoadedTree('<audio src="foo.mp3" controls></audio>',
     function(root) {
       var el = root.find({role: 'button'});
@@ -230,19 +229,18 @@ TEST_F('OutputE2ETest', 'DISABLED_Audio', function() {
           .withoutHints()
           .withSpeechAndBraille(range, null, 'navigate');
 
-      checkSpeechOutput('play|Button|begin playback|audio|Tool bar',
+      checkSpeechOutput('play|Disabled|Button|audio|Tool bar',
           [
             {value: new Output.EarconAction('BUTTON'), start: 0, end: 4},
-            {value: 'description', start: 12, end: 26},
-            {value: 'name', start: 27, end: 32},
-            {value: 'role', start: 33, end: 41}
+            {value: 'name', start: 21, end: 26},
+            {value: 'role', start: 27, end: 35}
           ],
           o);
 
       checkBrailleOutput(
-          'play btn begin playback audio tlbar',
-          [{value: new Output.NodeSpan(el), start: 0, end: 23},
-           {value: new Output.NodeSpan(el.parent), start: 24, end: 35}],
+          'play xx btn audio tlbar',
+          [{value: new Output.NodeSpan(el), start: 0, end: 11},
+           {value: new Output.NodeSpan(el.parent), start: 12, end: 23}],
           o);
 
       // TODO(dmazzoni/dtseng): Replace with a query.
@@ -974,5 +972,26 @@ TEST_F('OutputE2ETest', 'TextFieldObeysRoleDescription', function() {
     o = new Output().withRichSpeechAndBraille(cursors.Range.fromNode(region));
     assertEquals('circle', o.speechOutputForTest.string_);
     assertEquals('circle', o.brailleOutputForTest.string_);
+  });
+});
+
+TEST_F('ChromeVoxOutputE2ETest', 'ARCListItem', function() {
+  this.runWithLoadedTree(function(root) {/*!
+    <div role="listitem">
+      <p>storage</p>
+      <p>128 GB</p>
+    </div>
+  */}, function(root) {
+    var listitem = root.find({role: RoleType.LIST_ITEM});
+    Object.defineProperty(listitem, 'clickable', {
+      get: () => true
+    });
+    assertTrue(AutomationPredicate.leaf(listitem));
+    assertFalse(AutomationPredicate.container(listitem));
+
+    var o = new Output().withRichSpeechAndBraille(cursors.Range.fromNode(listitem));
+    assertEquals('storage 128 GB|List item|Press Search+Space to activate.',
+                 o.speechOutputForTest.string_);
+    assertEquals('storage 128 GB lstitm', o.brailleOutputForTest.string_);
   });
 });

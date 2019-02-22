@@ -7,21 +7,18 @@
 
 #include "base/profiler/native_stack_sampler.h"
 #include "base/threading/platform_thread.h"
+#include "components/tracing/common/stack_unwinder_android.h"
 
 namespace tracing {
-
-class StackUnwinderAndroid;
 
 // On Android the sampling implementation is delegated and this class just
 // stores a callback to the real implementation.
 class NativeStackSamplerAndroid : public base::NativeStackSampler {
  public:
-  // StackUnwinderAndroid supports sampling only one thread per process. So, the
-  // client should ensure that no other code is using the unwinder in the
-  // process. The caller must also ensure that |unwinder| is initialized for
-  // sampling.
-  NativeStackSamplerAndroid(base::PlatformThreadId thread_id,
-                            const StackUnwinderAndroid* unwinder);
+  // StackUnwinderAndroid only supports sampling one thread at a time. So, the
+  // clients of this class must ensure synchronization between multiple
+  // instances of the sampler.
+  NativeStackSamplerAndroid(base::PlatformThreadId thread_id);
   ~NativeStackSamplerAndroid() override;
 
   // StackSamplingProfiler::NativeStackSampler:
@@ -32,7 +29,7 @@ class NativeStackSamplerAndroid : public base::NativeStackSampler {
 
  private:
   base::PlatformThreadId tid_;
-  const StackUnwinderAndroid* unwinder_;
+  StackUnwinderAndroid unwinder_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeStackSamplerAndroid);
 };

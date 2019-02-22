@@ -35,11 +35,11 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
 
     public ResponseStep mResponseStep = ResponseStep.NOTHING;
 
-    public int mRedirectCount = 0;
-    public boolean mOnErrorCalled = false;
-    public boolean mOnCanceledCalled = false;
+    public int mRedirectCount;
+    public boolean mOnErrorCalled;
+    public boolean mOnCanceledCalled;
 
-    public int mHttpResponseDataLength = 0;
+    public int mHttpResponseDataLength;
     public String mResponseAsString = "";
 
     private static final int READ_BUFFER_SIZE = 32 * 1024;
@@ -51,7 +51,7 @@ public class TestUrlRequestCallback extends UrlRequest.Callback {
     private boolean mCallbackExceptionThrown;
 
     // Whether to permit calls on the network thread.
-    private boolean mAllowDirectExecutor = false;
+    private boolean mAllowDirectExecutor;
 
     // Conditionally fail on certain steps.
     private FailureType mFailureType = FailureType.NONE;

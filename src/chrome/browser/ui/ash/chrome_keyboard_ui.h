@@ -8,10 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/common/media_stream_request.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ime/text_input_type.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 class ChromeKeyboardWebContents;
@@ -58,7 +55,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   aura::Window* GetKeyboardWindow() override;
   bool HasKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
-  void SetController(keyboard::KeyboardController* controller) override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;
   void ResetInsets() override;
@@ -102,8 +98,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   std::unique_ptr<ChromeKeyboardWebContents> keyboard_contents_;
   std::unique_ptr<ui::Shadow> shadow_;
-
-  std::unique_ptr<keyboard::KeyboardControllerObserver> observer_;
   std::unique_ptr<WindowBoundsChangeObserver> window_bounds_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardUI);

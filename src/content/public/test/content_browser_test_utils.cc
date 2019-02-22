@@ -4,16 +4,21 @@
 
 #include "content/public/test/content_browser_test_utils.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,12 +49,8 @@ GURL GetTestUrl(const char* dir, const char* file) {
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
                                                 const GURL& url,
                                                 int number_of_navigations) {
-  WaitForLoadStop(window->web_contents());
-  TestNavigationObserver same_tab_observer(window->web_contents(),
-                                           number_of_navigations);
-
-  window->LoadURL(url);
-  same_tab_observer.Wait();
+  NavigateToURLBlockUntilNavigationsComplete(window->web_contents(), url,
+                                             number_of_navigations);
 }
 
 void ReloadBlockUntilNavigationsComplete(Shell* window,
@@ -85,11 +86,7 @@ void LoadDataWithBaseURL(Shell* window,
 }
 
 bool NavigateToURL(Shell* window, const GURL& url) {
-  NavigateToURLBlockUntilNavigationsComplete(window, url, 1);
-  if (!IsLastCommittedEntryOfPageType(window->web_contents(), PAGE_TYPE_NORMAL))
-    return false;
-
-  return window->web_contents()->GetLastCommittedURL() == url;
+  return NavigateToURL(window->web_contents(), url);
 }
 
 bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
@@ -130,8 +127,8 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
   base::RunLoop run_loop;
-  BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           [](MediaStreamManager* media_stream_manager,
              base::Closure quit_closure) {

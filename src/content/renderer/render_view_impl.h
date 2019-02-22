@@ -27,8 +27,6 @@
 #include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/navigation_gesture.h"
-#include "content/common/view_message_enums.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
@@ -40,7 +38,6 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_owner_delegate.h"
-#include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -79,21 +76,30 @@ class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
-struct FileChooserParams;
 
 namespace mojom {
 class CreateViewParams;
 }
 
+// RenderViewImpl (the implementation of RenderView) is the renderer process
+// object that owns the blink frame tree.
 //
-// RenderView is an object that manages a WebView object, and provides a
-// communication interface with an embedding application process.
+// Each top-level web container has a frame tree, and thus a RenderViewImpl.
+// Typically such a container is a browser tab, or a tab-less window. It can
+// also be other cases such as a background page or extension.
 //
-// DEPRECATED: RenderViewImpl is being removed as part of the SiteIsolation
-// project. New code should be added to RenderFrameImpl instead.
+// Under site isolation, frames in the main frame's tree may be moved out
+// to a separate frame tree (possibly in another process), leaving remote
+// placeholders behind. Each such frame tree also includes a RenderViewImpl as
+// the owner of it. Thus a tab may have multiple RenderViewImpls, one for the
+// main frame, and one for each other frame tree generated.
 //
-// For context, please see https://crbug.com/467770 and
-// https://www.chromium.org/developers/design-documents/site-isolation.
+// The RenderViewImpl manages a WebView object from blink, which hosts the
+// web page and a blink frame tree. If the main frame (root of the tree) is
+// a local frame for this view, then it also manages a RenderWidget for the
+// main frame.
+//
+// TODO(419087): That RenderWidget should be managed by the main frame itself.
 class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                                       public blink::WebViewClient,
                                       public RenderWidgetOwnerDelegate,
@@ -147,29 +153,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Returns the StatsCollectionObserver associated with this view, or NULL
-  // if one wasn't created;
-  StatsCollectionObserver* GetStatsCollectionObserver() {
-    return stats_collection_observer_.get();
-  }
-
-  // Adds the given file chooser request to the file_chooser_completion_ queue
-  // (see that var for more) and requests the chooser be displayed if there are
-  // no other waiting items in the queue.
-  //
-  // Returns true if the chooser was successfully scheduled. False means we
-  // didn't schedule anything.
-  bool ScheduleFileChooser(const FileChooserParams& params,
-                           blink::WebFileChooserCompletion* completion);
-
 #if defined(OS_ANDROID)
   void DismissDateTimeDialog();
 #endif
-
-  bool is_loading() const { return frames_in_progress_ != 0; }
-
-  void FrameDidStartLoading(blink::WebFrame* frame);
-  void FrameDidStopLoading(blink::WebFrame* frame);
 
   // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
@@ -226,8 +212,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
                              blink::WebSandboxFlags sandbox_flags) override;
-  blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator,
-                                blink::WebPopupType popup_type) override;
+  blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator) override;
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   bool EnumerateChosenDirectory(
@@ -247,7 +232,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   bool CanUpdateLayout() override;
   void DidUpdateMainFrameLayout() override;
   blink::WebString AcceptLanguages() override;
-  void NavigateBackForwardSoon(int offset) override;
+  void NavigateBackForwardSoon(int offset, bool has_user_gesture) override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
   void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
@@ -266,7 +251,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // date and time input fields using MULTIPLE_FIELDS_UI
   bool OpenDateTimeChooser(const blink::WebDateTimeChooserParams&,
                            blink::WebDateTimeChooserCompletion*) override;
-  virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
 
   // RenderView implementation -------------------------------------------------
@@ -287,10 +271,11 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
                                      const std::string& value) override;
   void ClearEditCommands() override;
   const std::string& GetAcceptLanguages() const override;
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
+  virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
   void ConvertViewportToWindowViaWidget(blink::WebRect* rect) override;
   gfx::RectF ElementBoundsInWindow(const blink::WebElement& element) override;
@@ -392,7 +377,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
-  void SetBackgroundOpaqueForWidget(bool opaque) override;
   bool SupportsMultipleWindowsForWidget() override;
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override;
@@ -408,7 +392,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void ScrollFocusedNodeIntoViewForWidget() override;
   void DidReceiveSetFocusEventForWidget() override;
   void DidChangeFocusForWidget() override;
-  GURL GetURLForGraphicsContext3DForWidget() override;
   void DidCommitCompositorFrameForWidget() override;
   void DidCompletePageScaleAnimationForWidget() override;
   void ResizeWebWidgetForWidget(
@@ -448,9 +431,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
   void OnClosePage();
-#if defined(OS_MACOSX)
-  void OnClose();
-#endif
 
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
@@ -470,7 +450,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
-  void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
   void OnPausePageScheduledTasks(bool paused);
 
@@ -517,13 +496,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // this object.
   base::ObserverList<RenderViewObserver>::Unchecked& observers() {
     return observers_;
-  }
-
-  NavigationGesture navigation_gesture() {
-    return navigation_gesture_;
-  }
-  void set_navigation_gesture(NavigationGesture gesture) {
-    navigation_gesture_ = gesture;
   }
 
 // Platform specific theme preferences if any are updated here.
@@ -581,10 +553,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   // Loading state -------------------------------------------------------------
 
-  // The gesture that initiated the current navigation.
-  // TODO(nasko): Move to RenderFrame, as this is per-frame state.
-  NavigationGesture navigation_gesture_ = NavigationGestureUnknown;
-
   // Timer used to delay the updating of nav state (see
   // StartNavStateSyncTimerIfNecessary).
   base::OneShotTimer nav_state_sync_timer_;
@@ -604,12 +572,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // processes.  We won't know about them until the next navigation in this
   // process.
   int history_list_length_ = 0;
-
-  // Counter to track how many frames have sent start notifications but not stop
-  // notifications.
-  // TODO(avi): Remove this once FrameDidStartLoading/FrameDidStopLoading are
-  // gone.
-  int frames_in_progress_ = 0;
 
   // UI state ------------------------------------------------------------------
 
@@ -642,7 +604,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Cache the old browser controls state constraints. Used when updating
   // current value only without altering the constraints.
   BrowserControlsState top_controls_constraints_ = BROWSER_CONTROLS_STATE_BOTH;
@@ -692,10 +654,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   base::ObserverList<RenderViewObserver>::Unchecked observers_;
-
-  // NOTE: stats_collection_observer_ should be the last members because their
-  // constructors call the AddObservers method of RenderViewImpl.
-  std::unique_ptr<StatsCollectionObserver> stats_collection_observer_;
 
   blink::WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 

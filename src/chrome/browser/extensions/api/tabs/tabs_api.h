@@ -145,7 +145,6 @@ class TabsUpdateFunction : public UIThreadExtensionFunction {
   ~TabsUpdateFunction() override {}
   bool UpdateURL(const std::string& url,
                  int tab_id,
-                 bool* is_async,
                  std::string* error);
   ResponseValue GetResult();
 
@@ -235,9 +234,6 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 
  protected:
   ~ExecuteCodeInTabFunction() override;
-
-  // ExtensionFunction:
-  bool HasPermission() override;
 
   // Initializes |execute_tab_id_| and |details_|.
   InitResult Init() override;

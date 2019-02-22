@@ -1,9 +1,23 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1510238584712386396">લૉન્ચર</translation>
+<translation id="1734367976349034509">આ ઉપકરણ એન્ટરપ્રાઇઝ દ્વારા સંચાલિત થાય છે</translation>
+<translation id="2049639323467105390">આ ઉપકરણને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલું છે.</translation>
 <translation id="2083960536266308407">સ્ક્રીન પર કંઈ મળ્યું નથી</translation>
+<translation id="2338501278241028356">નજીકનાં ડિવાઇસ શોધવા માટે Bluetooth ચાલુ કરો</translation>
+<translation id="2805756323405976993">એપ્સ</translation>
+<translation id="2872961005593481000">શટ ડાઉન કરો</translation>
+<translation id="3147142846278915599">લોન્ચર (એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે..)</translation>
 <translation id="5212543919916444558">મને તમારી સ્ક્રીન પર એવી કોઈપણ વસ્તુ મળી નથી કે જેમાં હું તમારી સહાય કરી શકું. મને કંઈપણ પૂછવા માટે માઇકને ટૅપ કરી જુઓ.</translation>
-<translation id="6674412557034343536">ટાઇમર રોકો</translation>
-<translation id="8626219642120025691">ટાઇમર પૂરું થયું</translation>
+<translation id="5222676887888702881">સાઇન આઉટ</translation>
+<translation id="5457599981699367932">અતિથિ તરીકે બ્રાઉઝ કરો</translation>
+<translation id="54609108002486618">મેનેજ કરેલું</translation>
+<translation id="5832805196449965646">વ્યક્તિ ઉમેરો</translation>
+<translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
+<translation id="7222902781030499995">ટાઇમર રોકો</translation>
+<translation id="7658239707568436148">રદ કરો</translation>
+<translation id="7837740436429729974">સમય સમાપ્ત</translation>
 <translation id="8898978413391960553">00:00 સેકન્ડ</translation>
+<translation id="9111102763498581341">અનલોક કરો</translation>
 </translationbundle>

@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chromecast/chromecast_buildflags.h"
@@ -83,17 +84,19 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   virtual media::VideoModeSwitcher* GetVideoModeSwitcher();
 
+  // Returns the task runner that must be used for media IO.
+  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
+
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // Gets object for enforcing video resolution policy restrictions.
   virtual media::VideoResolutionPolicy* GetVideoResolutionPolicy();
-
-  // Returns the task runner that must be used for media IO.
-  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
   // Creates a CmaBackendFactory.
   virtual media::CmaBackendFactory* GetCmaBackendFactory();
 
   media::MediaResourceTracker* media_resource_tracker();
+
+  void ResetMediaResourceTracker();
 
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 
@@ -192,6 +195,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
   bool ShouldEnableStrictSiteIsolation() override;
+  std::vector<std::unique_ptr<content::NavigationThrottle>>
+  CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory();
@@ -236,6 +241,14 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // with OS for this).
   std::unique_ptr<MemoryPressureControllerImpl> memory_pressure_controller_;
 #endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+  // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.
+  std::unique_ptr<base::Thread> media_thread_;
+
+  // Tracks usage of media resource by e.g. CMA pipeline, CDM.
+  media::MediaResourceTracker* media_resource_tracker_ = nullptr;
+#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;

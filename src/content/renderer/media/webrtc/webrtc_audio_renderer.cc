@@ -26,11 +26,6 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "media/audio/win/core_audio_util_win.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -515,7 +510,7 @@ void WebRtcAudioRenderer::UpdateSourceVolume(
   // set to 0.0.
   float volume = 0.0f;
 
-  SourcePlayingStates::iterator entry = source_playing_states_.find(source);
+  auto entry = source_playing_states_.find(source);
   if (entry != source_playing_states_.end()) {
     PlayingStates& states = entry->second;
     for (PlayingStates::const_iterator it = states.begin();
@@ -566,13 +561,12 @@ bool WebRtcAudioRenderer::RemovePlayingState(
     PlayingState* state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!state->playing());
-  SourcePlayingStates::iterator found = source_playing_states_.find(source);
+  auto found = source_playing_states_.find(source);
   if (found == source_playing_states_.end())
     return false;
 
   PlayingStates& array = found->second;
-  PlayingStates::iterator state_it =
-      std::find(array.begin(), array.end(), state);
+  auto state_it = std::find(array.begin(), array.end(), state);
   if (state_it == array.end())
     return false;
 
@@ -625,8 +619,7 @@ void WebRtcAudioRenderer::OnPlayStateRemoved(PlayingState* state) {
        it != source_playing_states_.end();) {
     PlayingStates& states = it->second;
     // We cannot use RemovePlayingState as it might invalidate |it|.
-    states.erase(std::remove(states.begin(), states.end(), state),
-                 states.end());
+    base::Erase(states, state);
     if (states.empty())
       it = source_playing_states_.erase(it);
     else
@@ -662,7 +655,8 @@ void WebRtcAudioRenderer::PrepareSink() {
     UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputSampleRate", asr,
                               media::kAudioSampleRateMax + 1);
   } else {
-    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected", sample_rate);
+    UMA_HISTOGRAM_COUNTS_1M("WebRTC.AudioOutputSampleRateUnexpected",
+                            sample_rate);
   }
 
   // Calculate the frames per buffer for the source, i.e. the WebRTC client. We

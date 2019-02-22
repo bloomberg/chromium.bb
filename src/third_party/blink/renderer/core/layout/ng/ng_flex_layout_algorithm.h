@@ -21,7 +21,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                                NGFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFlexLayoutAlgorithm(NGBlockNode, const NGConstraintSpace&, NGBreakToken*);
+  NGFlexLayoutAlgorithm(NGBlockNode,
+                        const NGConstraintSpace&,
+                        const NGBreakToken*);
 
   scoped_refptr<NGLayoutResult> Layout() override;
 

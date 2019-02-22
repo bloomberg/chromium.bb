@@ -12,6 +12,7 @@
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "third_party/zlib/zlib.h"
@@ -37,8 +38,8 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     scoped_refptr<base::RefCountedString> str =
         base::RefCountedString::TakeString(&tmp);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(completion_callback_, std::move(metadata),
                        base::RetainedRef(str)));
   }
@@ -106,8 +107,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
       file_ = nullptr;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
   }
 

@@ -71,6 +71,7 @@ class QuicClientPromisedInfoTest : public QuicTest {
         session_(connection_, &push_promise_index_),
         body_("hello world"),
         promise_id_(kInvalidStreamId) {
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_.Initialize();
 
     headers_[":status"] = "200";
@@ -78,7 +79,7 @@ class QuicClientPromisedInfoTest : public QuicTest {
 
     stream_ = QuicMakeUnique<QuicSpdyClientStream>(
         QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
-        &session_);
+        &session_, BIDIRECTIONAL);
     stream_visitor_ = QuicMakeUnique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
 

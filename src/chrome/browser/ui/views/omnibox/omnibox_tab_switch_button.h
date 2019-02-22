@@ -17,7 +17,10 @@ class SlideAnimation;
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
   OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
-                         OmniboxResultView* result_view);
+                         OmniboxResultView* result_view,
+                         const base::string16& hint,
+                         const base::string16& hint_short,
+                         const gfx::VectorIcon& icon);
 
   ~OmniboxTabSwitchButton() override;
 
@@ -42,6 +45,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // Called to indicate button has been focused.
   void ProvideFocusHint();
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Consults the parent views to see if the button is selected.
@@ -79,6 +83,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // The text to be displayed when we reach |goal_width_|.
   base::string16 goal_text_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
+
+  // Label strings for hint text and its short version (may be same).
+  base::string16 hint_;
+  base::string16 hint_short_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };

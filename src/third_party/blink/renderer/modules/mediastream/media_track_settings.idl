@@ -40,12 +40,20 @@ dictionary MediaTrackSettings {
     DOMString         focusMode;
     sequence<Point2D> pointsOfInterest;
     double            exposureCompensation;
+    double            exposureTime;
     double            colorTemperature;
     double            iso;
     double            brightness;
     double            contrast;
     double            saturation;
     double            sharpness;
+    double            focusDistance;
     double            zoom;
     boolean           torch;
+
+    // Screen Capture API
+    // https://w3c.github.io/mediacapture-screen-share
+    [RuntimeEnabled=GetDisplayMedia] DOMString displaySurface;
+    [RuntimeEnabled=GetDisplayMedia] boolean logicalSurface;
+    [RuntimeEnabled=GetDisplayMedia] DOMString cursor;
 };

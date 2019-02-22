@@ -10,6 +10,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "url/url_util.h"
@@ -88,6 +89,11 @@ void RegisterContentSchemes(bool lock_schemes) {
 
   for (auto& scheme : schemes.empty_document_schemes)
     url::AddEmptyDocumentScheme(scheme.c_str());
+
+#if defined(OS_ANDROID)
+  if (schemes.allow_non_standard_schemes_in_origins)
+    url::EnableNonStandardSchemesForAndroidWebView();
+#endif
 
   // Prevent future modification of the scheme lists. This is to prevent
   // accidental creation of data races in the program. Add*Scheme aren't

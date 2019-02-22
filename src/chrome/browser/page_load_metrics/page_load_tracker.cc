@@ -93,8 +93,8 @@ PageEndReason EndReasonForPageTransition(ui::PageTransition transition) {
 
 void LogAbortChainSameURLHistogram(int aborted_chain_size_same_url) {
   if (aborted_chain_size_same_url > 0) {
-    UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeSameURL,
-                         aborted_chain_size_same_url);
+    UMA_HISTOGRAM_COUNTS_1M(internal::kAbortChainSizeSameURL,
+                            aborted_chain_size_same_url);
   }
 }
 
@@ -257,8 +257,8 @@ void PageLoadTracker::LogAbortChainHistograms(
   // navigation. In the other cases, the current navigation is the final
   // navigation (which commits).
   if (!final_navigation) {
-    UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeNoCommit,
-                         aborted_chain_size_ + 1);
+    UMA_HISTOGRAM_COUNTS_1M(internal::kAbortChainSizeNoCommit,
+                            aborted_chain_size_ + 1);
     LogAbortChainSameURLHistogram(aborted_chain_size_same_url_ + 1);
     return;
   }
@@ -274,12 +274,12 @@ void PageLoadTracker::LogAbortChainHistograms(
       final_navigation->GetPageTransition();
   switch (EndReasonForPageTransition(committed_transition)) {
     case END_RELOAD:
-      UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeReload,
-                           aborted_chain_size_);
+      UMA_HISTOGRAM_COUNTS_1M(internal::kAbortChainSizeReload,
+                              aborted_chain_size_);
       return;
     case END_FORWARD_BACK:
-      UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeForwardBack,
-                           aborted_chain_size_);
+      UMA_HISTOGRAM_COUNTS_1M(internal::kAbortChainSizeForwardBack,
+                              aborted_chain_size_);
       return;
     // TODO(csharrison): Refactor this code so it is based on the WillStart*
     // code path instead of the committed load code path. Then, for every abort
@@ -288,8 +288,8 @@ void PageLoadTracker::LogAbortChainHistograms(
     // previous behavior.
     case END_CLIENT_REDIRECT:
     case END_NEW_NAVIGATION:
-      UMA_HISTOGRAM_COUNTS(internal::kAbortChainSizeNewNavigation,
-                           aborted_chain_size_);
+      UMA_HISTOGRAM_COUNTS_1M(internal::kAbortChainSizeNewNavigation,
+                              aborted_chain_size_);
       return;
     default:
       NOTREACHED()
@@ -353,6 +353,13 @@ void PageLoadTracker::DidCommitSameDocumentNavigation(
     content::NavigationHandle* navigation_handle) {
   for (const auto& observer : observers_) {
     observer->OnCommitSameDocumentNavigation(navigation_handle);
+  }
+}
+
+void PageLoadTracker::DidInternalNavigationAbort(
+    content::NavigationHandle* navigation_handle) {
+  for (const auto& observer : observers_) {
+    observer->OnDidInternalNavigationAbort(navigation_handle);
   }
 }
 

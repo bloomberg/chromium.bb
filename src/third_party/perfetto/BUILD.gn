@@ -13,6 +13,11 @@
 # limitations under the License.
 
 import("gn/perfetto.gni")
+if (!build_with_chromium) {
+  import("//gn/standalone/android.gni")
+} else {
+  import("//build/config/android/config.gni")
+}
 
 # For use_libfuzzer.
 if (!build_with_chromium) {
@@ -26,6 +31,11 @@ declare_args() {
   # are monolithic and don't use a common shared library. This is mainly to
   # avoid LD_LIBRARY_PATH dances when testing locally.
   monolithic_binaries = false
+
+  # libunwindstack requires API level 26 or newer.
+  should_build_heapprofd =
+      !build_with_chromium && is_clang && (is_linux || is_android) &&
+      (!is_android || android_api_level >= 26 || build_with_android)
 }
 assert(!monolithic_binaries || !build_with_android)
 
@@ -107,13 +117,17 @@ executable("perfetto_unittests") {
     deps += [
       "src/ipc:unittests",
       "src/perfetto_cmd:unittests",
-      "src/profiling/memory:unittests",
       "src/traced/probes:unittests",
       "src/traced/probes/filesystem:unittests",
       "src/traced/probes/ftrace:unittests",
       "tools/ftrace_proto_gen:unittests",
       "tools/sanitizers_unittests",
     ]
+  }
+  if (should_build_heapprofd) {
+    # Restrict to clang, as libunwindstack and its dependencies is never
+    # built using GCC in the Android tree.
+    deps += [ "src/profiling/memory:unittests" ]
   }
   if (build_standalone && !is_android) {
     deps += [ "src/trace_processor:unittests" ]
@@ -248,7 +262,7 @@ if (build_with_chromium) {
   }
 }
 
-if (use_libfuzzer && !build_with_chromium) {
+if (!build_with_chromium) {
   group("fuzzers") {
     testonly = true
     deps = [

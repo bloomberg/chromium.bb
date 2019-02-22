@@ -47,9 +47,6 @@ namespace service_manager {
 
 namespace {
 
-const char kCapability_UserID[] = "service_manager:user_id";
-const char kCapability_ClientProcess[] = "service_manager:client_process";
-const char kCapability_InstanceName[] = "service_manager:instance_name";
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
 
 bool Succeeded(mojom::ConnectResult result) {
@@ -577,12 +574,11 @@ class ServiceManager::Instance
       const Identity& target) {
     if (service && pid_receiver_request &&
         (service->is_bound() || pid_receiver_request->is_pending())) {
-      if (!HasCapability(GetConnectionSpec(), kCapability_ClientProcess)) {
+      if (!options_.can_create_other_service_instances) {
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
-                   << "service_manager{client_process} capability "
-                   << "class.";
+                   << "'can_create_other_service_instances' option.";
         return mojom::ConnectResult::ACCESS_DENIED;
       }
 
@@ -614,25 +610,24 @@ class ServiceManager::Instance
         options_.instance_sharing ==
             catalog::ServiceOptions::InstanceSharingType::
                 SHARED_INSTANCE_ACROSS_USERS ||
-        HasCapability(connection_spec, kCapability_UserID);
+        options_.can_connect_to_other_services_as_any_user;
 
     if (!skip_user_check && target.user_id() != identity_.user_id() &&
         target.user_id() != mojom::kRootUserID) {
       LOG(ERROR) << "Instance: " << identity_.name()
                  << " running as: " << identity_.user_id()
                  << " attempting to connect to: " << target.name()
-                 << " as: " << target.user_id() << " without "
-                 << " the service:service_manager{user_id} capability.";
+                 << " as: " << target.user_id() << " without"
+                 << " the 'can_connect_to_other_services_as_any_user' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
-    if (!target.instance().empty() &&
-        target.instance() != target.name() &&
-        !HasCapability(connection_spec, kCapability_InstanceName)) {
-      LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
-                 << "connect to " << target.name()
-                 << " using Instance name: " << target.instance()
-                 << " without the "
-                 << "service_manager{instance_name} capability.";
+    if (!target.instance().empty() && target.instance() != target.name() &&
+        !options_.can_connect_to_other_services_with_any_instance_name) {
+      LOG(ERROR)
+          << "Instance: " << identity_.name() << " attempting to"
+          << " connect to " << target.name()
+          << " using Instance name: " << target.instance() << " without the"
+          << " 'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
 
@@ -950,12 +945,13 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
       catalog::ServiceOptions::InstanceSharingType::SINGLETON;
   const Identity original_target(params->target());
 
-  // Services that request "all_users" class from the Service Manager are
+  // Services that have "shared_instance_across_users" value of
+  // "instance_sharing" option are
   // allowed to field connection requests from any user. They also run with a
   // synthetic user id generated here. The user id provided via Connect() is
-  // ignored. Additionally services with the "all_users" class are not tied to
-  // the lifetime of the service that started them, instead they are owned by
-  // the Service Manager.
+  // ignored. Additionally services with the "shared_instance_across_users"
+  // value are not tied to the lifetime of the service that started them,
+  // instead they are owned by the Service Manager.
   Identity source_identity_for_creation;
 
   InstanceType instance_type;

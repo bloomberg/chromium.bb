@@ -57,6 +57,7 @@ class BackdropController : public ShellObserver,
   void OnWindowStackingChanged(aura::Window* window);
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    mojom::WindowStateType old_type);
+  void OnDisplayMetricsChanged();
 
   void SetBackdropDelegate(std::unique_ptr<BackdropDelegate> delegate);
 
@@ -64,9 +65,12 @@ class BackdropController : public ShellObserver,
   // the other windows in the container.
   void UpdateBackdrop();
 
+  aura::Window* backdrop_window() { return backdrop_window_; }
+
   // ShellObserver:
   void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
+  void OnOverviewModeEnding() override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
   void OnSplitViewModeStarting() override;
@@ -89,6 +93,8 @@ class BackdropController : public ShellObserver,
   void EnsureBackdropWidget();
 
   void UpdateAccessibilityMode();
+
+  void Layout();
 
   // Returns the current visible top level window in the container.
   aura::Window* GetTopmostWindowWithBackdrop();
@@ -128,8 +134,10 @@ class BackdropController : public ShellObserver,
   std::unique_ptr<ui::EventHandler> backdrop_event_handler_;
   ui::EventHandler* original_event_handler_ = nullptr;
 
-  // If true, the |RestackOrHideWindow| might recurse.
-  bool in_restacking_ = false;
+  // If true, skip updating background. Used to avoid recursive update
+  // when updating the window stack, or delay hiding the backdrop
+  // in overview mode.
+  bool pause_update_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackdropController);
 };

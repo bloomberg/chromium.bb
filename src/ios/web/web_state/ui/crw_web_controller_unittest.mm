@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -79,6 +78,8 @@ namespace {
 
 // Syntactically invalid URL per rfc3986.
 const char kInvalidURL[] = "http://%3";
+
+const char kTestDataURL[] = "data:text/html,";
 
 const char kTestURLString[] = "http://www.google.com/";
 const char kTestAppSpecificURL[] = "testwebui://test/";
@@ -241,6 +242,8 @@ class CRWWebControllerTest : public WebTestWithWebController,
                        context:nullptr];
     [[result stub] removeObserver:web_controller() forKeyPath:OCMOCK_ANY];
     [[result stub] evaluateJavaScript:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+    // CRWWebController sets this property to NO by default.
+    [[result stub] setAllowsBackForwardNavigationGestures:NO];
 
     return result;
   }
@@ -332,6 +335,15 @@ TEST_P(CRWWebControllerTest, AbortNativeUrlNavigation) {
 
   EXPECT_FALSE(observer.did_start_navigation_info());
   EXPECT_FALSE(observer.did_finish_navigation_info());
+}
+
+// Tests allowsBackForwardNavigationGestures default value and setting this
+// property to YES.
+TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
+  OCMExpect([mock_web_view_ setAllowsBackForwardNavigationGestures:YES]);
+  EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
+  web_controller().allowsBackForwardNavigationGestures = YES;
+  EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
 }
 
 INSTANTIATE_TEST_CASES(CRWWebControllerTest);
@@ -538,9 +550,9 @@ TEST_P(CRWWebControllerPageScrollStateTest,
   [web_controller() restoreStateFromHistory];
 
   // |-restoreStateFromHistory| is async; wait for its completion.
-  base::test::ios::WaitUntilCondition(^bool() {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  });
+  }));
 
   ASSERT_EQ(original_zoom_state,
             web_controller().pageDisplayState.zoom_state());
@@ -568,9 +580,9 @@ TEST_P(CRWWebControllerPageScrollStateTest,
   [web_controller() restoreStateFromHistory];
 
   // |-restoreStateFromHistory| is async; wait for its completion.
-  base::test::ios::WaitUntilCondition(^bool() {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return web_controller().pageDisplayState.scroll_state().offset_x() == 1.0;
-  });
+  }));
 
   PageZoomState final_zoom_state =
       web_controller().pageDisplayState.zoom_state();
@@ -659,22 +671,25 @@ TEST_P(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 
 INSTANTIATE_TEST_CASES(CRWWebControllerJSExecutionTest);
 
-// Test fixture to test that DownloadControllerDelegate::OnDownloadCreated
-// callback is trigerred if CRWWebController can not display the response.
-class CRWWebControllerDownloadTest : public CRWWebControllerTest {
+// Test fixture to test decidePolicyForNavigationResponse:decisionHandler:
+// delegate method.
+class CRWWebControllerResponseTest : public CRWWebControllerTest {
  protected:
-  CRWWebControllerDownloadTest() : delegate_(download_controller()) {}
+  CRWWebControllerResponseTest() : download_delegate_(download_controller()) {}
 
   // Calls webView:decidePolicyForNavigationResponse:decisionHandler: callback
   // and waits for decision handler call. Returns false if decision handler call
   // times out.
   bool CallDecidePolicyForNavigationResponseWithResponse(
       NSURLResponse* response,
-      BOOL for_main_frame) WARN_UNUSED_RESULT {
+      BOOL for_main_frame,
+      BOOL can_show_mime_type,
+      WKNavigationResponsePolicy* out_policy) WARN_UNUSED_RESULT {
     CRWFakeWKNavigationResponse* navigation_response =
         [[CRWFakeWKNavigationResponse alloc] init];
     navigation_response.response = response;
     navigation_response.forMainFrame = for_main_frame;
+    navigation_response.canShowMIMEType = can_show_mime_type;
 
     // Call decidePolicyForNavigationResponse and wait for decisionHandler's
     // callback.
@@ -687,6 +702,7 @@ class CRWWebControllerDownloadTest : public CRWWebControllerTest {
     [navigation_delegate_ webView:mock_web_view_
         decidePolicyForNavigationResponse:navigation_response
                           decisionHandler:^(WKNavigationResponsePolicy policy) {
+                            *out_policy = policy;
                             callback_called = true;
                           }];
     return WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
@@ -698,12 +714,93 @@ class CRWWebControllerDownloadTest : public CRWWebControllerTest {
     return DownloadController::FromBrowserState(GetBrowserState());
   }
 
-  FakeDownloadControllerDelegate delegate_;
+  FakeDownloadControllerDelegate download_delegate_;
 };
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
+// renderer-initiated navigations in main frame for http: URLs.
+TEST_P(CRWWebControllerResponseTest, AllowRendererInitiatedResponse) {
+  // Simulate regular navigation response with text/html MIME type.
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestURLString)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyCancel;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
+
+  // Verify that download task was not created for html response.
+  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
+// renderer-initiated navigations in iframe for data: URLs.
+TEST_P(CRWWebControllerResponseTest,
+       AllowRendererInitiatedDataUrlResponseInIFrame) {
+  // Simulate data:// url response with text/html MIME type.
+  SetWebViewURL(@(kTestDataURL));
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestDataURL)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyCancel;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/NO, /*can_show_mime_type=*/YES, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
+
+  // Verify that download task was not created for html response.
+  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: blocks
+// rendering data URLs for renderer-initiated navigations in main frame to
+// prevent abusive behavior (crbug.com/890558).
+TEST_P(CRWWebControllerResponseTest,
+       BlockRendererInitiatedDataUrlResponseInMainFrame) {
+  // Simulate data:// url response with text/html MIME type.
+  SetWebViewURL(@(kTestDataURL));
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestDataURL)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+
+  // Verify that download task was not created for html response.
+  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
+
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
+// rendering data URLs for browser-initiated navigations in main frame.
+TEST_P(CRWWebControllerResponseTest,
+       AllowBrowserInitiatedDataUrlResponseInMainFrame) {
+  // Simulate data:// url response with text/html MIME type.
+  GURL url(kTestDataURL);
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+  SetWebViewURL(@(kTestDataURL));
+  NSURLResponse* response = [[NSHTTPURLResponse alloc]
+       initWithURL:[NSURL URLWithString:@(kTestDataURL)]
+        statusCode:200
+       HTTPVersion:nil
+      headerFields:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyCancel;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/YES, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
+
+  // Verify that download task was not created for html response.
+  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+}
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
 // the DownloadTask for NSURLResponse.
-TEST_P(CRWWebControllerDownloadTest, CreationWithNSURLResponse) {
+TEST_P(CRWWebControllerResponseTest, DownloadWithNSURLResponse) {
   // Simulate download response.
   int64_t content_length = 10;
   NSURLResponse* response =
@@ -711,12 +808,15 @@ TEST_P(CRWWebControllerDownloadTest, CreationWithNSURLResponse) {
                                 MIMEType:@(kTestMimeType)
                    expectedContentLength:content_length
                         textEncodingName:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
-      response, /*for_main_frame=*/YES));
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
-  DownloadTask* task = delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -730,7 +830,7 @@ TEST_P(CRWWebControllerDownloadTest, CreationWithNSURLResponse) {
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
 // the DownloadTask for NSHTTPURLResponse.
-TEST_P(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
+TEST_P(CRWWebControllerResponseTest, DownloadWithNSHTTPURLResponse) {
   // Simulate download response.
   const char kContentDisposition[] = "attachment; filename=download.test";
   NSURLResponse* response = [[NSHTTPURLResponse alloc]
@@ -740,12 +840,15 @@ TEST_P(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
       headerFields:@{
         @"content-disposition" : @(kContentDisposition),
       }];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
-      response, /*for_main_frame=*/YES));
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
-  DownloadTask* task = delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -759,7 +862,7 @@ TEST_P(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
 // the DownloadTask for NSHTTPURLResponse and iframes.
-TEST_P(CRWWebControllerDownloadTest, IFrameCreationWithNSHTTPURLResponse) {
+TEST_P(CRWWebControllerResponseTest, IFrameDownloadWithNSHTTPURLResponse) {
   // Simulate download response.
   const char kContentDisposition[] = "attachment; filename=download.test";
   NSURLResponse* response = [[NSHTTPURLResponse alloc]
@@ -769,12 +872,15 @@ TEST_P(CRWWebControllerDownloadTest, IFrameCreationWithNSHTTPURLResponse) {
       headerFields:@{
         @"content-disposition" : @(kContentDisposition),
       }];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
   ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
-      response, /*for_main_frame=*/NO));
+      response, /*for_main_frame=*/NO, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
-  DownloadTask* task = delegate_.alive_download_tasks()[0].second.get();
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  DownloadTask* task =
+      download_delegate_.alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -784,22 +890,6 @@ TEST_P(CRWWebControllerDownloadTest, IFrameCreationWithNSHTTPURLResponse) {
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task->GetTransitionType(),
       ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME));
-}
-
-// Tests that webView:decidePolicyForNavigationResponse:decisionHandler: does
-// not create the DownloadTask for unsupported data:// URLs.
-TEST_P(CRWWebControllerDownloadTest, DataUrlResponse) {
-  // Simulate download response.
-  NSURLResponse* response =
-      [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"data:data"]
-                                  statusCode:200
-                                 HTTPVersion:nil
-                                headerFields:nil];
-  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
-      response, /*for_main_frame=*/YES));
-
-  // Verify that download task was not created.
-  EXPECT_TRUE(delegate_.alive_download_tasks().empty());
 }
 
 // Tests |currentURLWithTrustLevel:| method.
@@ -826,7 +916,7 @@ TEST_P(CRWWebControllerTest, CurrentUrlWithTrustLevel) {
   EXPECT_EQ(kAbsolute, trust_level);
 }
 
-INSTANTIATE_TEST_CASES(CRWWebControllerDownloadTest);
+INSTANTIATE_TEST_CASES(CRWWebControllerResponseTest);
 
 // Test fixture to test decidePolicyForNavigationAction:decisionHandler:
 // decisionHandler's callback result.
@@ -1230,70 +1320,6 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
 };
 
 INSTANTIATE_TEST_CASES(CRWWebControllerWebProcessTest);
-
-// Test fixture for -[CRWWebController loadCurrentURLIfNecessary] method.
-class LoadIfNecessaryTest : public WebTest, public ProgrammaticTestMixin {
- protected:
-  void SetUp() override {
-    ProgrammaticTestMixin::SetUp();
-    WebTest::SetUp();
-    web_state_ = std::make_unique<WebStateImpl>(
-        WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-  }
-
-  void TearDown() override {
-    WebTest::TearDown();
-    web_state_.reset();
-  }
-
-  std::unique_ptr<WebStateImpl> web_state_;
-
- private:
-  // Returns file:// URL which point to a test html file with "pony" text.
-  GURL GetTestFileUrl() {
-    base::FilePath path;
-    base::PathService::Get(base::DIR_MODULE, &path);
-    path = path.Append(
-        FILE_PATH_LITERAL("ios/testing/data/http_server_files/pony.html"));
-    return GURL(base::StringPrintf("file://%s", path.value().c_str()));
-  }
-  // Returns session storage with a single committed entry with |GetTestFileUrl|
-  // url.
-  CRWSessionStorage* GetTestSessionStorage() {
-    CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
-    result.lastCommittedItemIndex = 0;
-    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
-    [item setVirtualURL:GetTestFileUrl()];
-    [result setItemStorages:@[ item ]];
-    return result;
-  }
-};
-
-// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
-// re-enabling web usage.
-TEST_P(LoadIfNecessaryTest, RestoredFromHistory) {
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-};
-
-// Tests that |loadCurrentURLIfNecessary| restores the page after disabling and
-// re-enabling web usage.
-TEST_P(LoadIfNecessaryTest, DisableAndReenableWebUsage) {
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-
-  // Disable and re-enable web usage.
-  web_state_->SetWebUsageEnabled(false);
-  web_state_->SetWebUsageEnabled(true);
-
-  // |loadCurrentURLIfNecessary| should restore the page.
-  ASSERT_FALSE(test::IsWebViewContainingText(web_state_.get(), "pony"));
-  [web_state_->GetWebController() loadCurrentURLIfNecessary];
-  EXPECT_TRUE(test::WaitForWebViewContainingText(web_state_.get(), "pony"));
-};
-
-INSTANTIATE_TEST_CASES(LoadIfNecessaryTest);
 
 #undef INSTANTIATE_TEST_CASES
 

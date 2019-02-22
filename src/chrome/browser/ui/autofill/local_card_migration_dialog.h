@@ -14,8 +14,7 @@ namespace autofill {
 // dialogs.
 class LocalCardMigrationDialog {
  public:
-  virtual void ShowDialog(
-      base::OnceClosure user_accepted_migration_closure) = 0;
+  virtual void ShowDialog() = 0;
   virtual void CloseDialog() = 0;
   virtual void OnMigrationFinished() = 0;
 

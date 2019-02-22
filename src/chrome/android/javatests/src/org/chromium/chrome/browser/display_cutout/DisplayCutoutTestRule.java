@@ -20,11 +20,11 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
@@ -138,7 +138,7 @@ public class DisplayCutoutTestRule<T extends ChromeActivity> extends ChromeActiv
     private TestDisplayCutoutController mTestController;
 
     /** Tracks whether the current tab is fullscreen. */
-    private boolean mIsTabFullscreen = false;
+    private boolean mIsTabFullscreen;
 
     /** The {@link Tab} we are running the test in. */
     private Tab mTab;

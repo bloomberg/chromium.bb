@@ -54,11 +54,6 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
   virtual void OnWindowTreeHostStackAtTop(
       WindowTreeHostMus* window_tree_host) = 0;
 
-  // Called to signal to the window manager to take an action.
-  virtual void OnWindowTreeHostPerformWmAction(
-      WindowTreeHostMus* window_tree_host,
-      const std::string& action) = 0;
-
   // Called to start a move loop, where the window manager will take over
   // moving a window during a drag.
   virtual void OnWindowTreeHostPerformWindowMove(

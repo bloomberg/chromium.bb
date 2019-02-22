@@ -76,7 +76,6 @@ js_type_check("closure_compile") {
     ":shortcut_util",
     ":sidebar",
     ":toolbar",
-    ":view_manager",
   ]
 }
 
@@ -240,8 +239,8 @@ js_library("manager") {
     ":service",
     ":sidebar",
     ":toolbar",
-    ":view_manager",
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
+    "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
@@ -352,12 +351,4 @@ js_library("toolbar") {
     "//ui/webui/resources/js:util",
   ]
   externs_list = [ "$externs_path/metrics_private.js" ]
-}
-
-js_library("view_manager") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-  ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }

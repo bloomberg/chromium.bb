@@ -49,7 +49,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost(SiteInstance* site_instance,
                       RenderViewHostImpl* render_view_host,
                       RenderFrameHostDelegate* delegate,
-                      RenderWidgetHostDelegate* rwh_delegate,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
@@ -156,8 +155,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Like PrepareForCommit, but with the socket address when needed.
   // TODO(clamy): Have NavigationSimulator make the relevant calls directly and
   // remove this function.
-  void PrepareForCommitWithSocketAddress(
-      const net::HostPortPair& socket_address);
+  void PrepareForCommitDeprecatedForNavigationSimulator(
+      const net::HostPortPair& socket_address,
+      bool is_signed_exchange_inner_response);
 
   // This method does the same as PrepareForCommit.
   // PlzNavigate: Beyond doing the same as PrepareForCommit, this method will
@@ -205,7 +205,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   const ModificationCallback& callback);
 
   void PrepareForCommitInternal(const GURL& redirect_url,
-                                const net::HostPortPair& socket_address);
+                                const net::HostPortPair& socket_address,
+                                bool is_signed_exchange_inner_response);
 
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();

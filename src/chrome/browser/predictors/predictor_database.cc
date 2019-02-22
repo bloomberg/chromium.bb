@@ -84,7 +84,7 @@ PredictorDatabaseInternal::PredictorDatabaseInternal(
   // This db does not use [meta] table, store mmap status data elsewhere.
   db_->set_mmap_alt_status();
 
-  is_loading_predictor_enabled_ = IsLoadingPredictorEnabled(profile, nullptr);
+  is_loading_predictor_enabled_ = IsLoadingPredictorEnabled(profile);
 }
 
 PredictorDatabaseInternal::~PredictorDatabaseInternal() {

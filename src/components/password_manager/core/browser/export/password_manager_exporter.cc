@@ -163,8 +163,8 @@ void PasswordManagerExporter::OnPasswordsExported(
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
                               ExportPasswordsResult::SUCCESS,
                               ExportPasswordsResult::COUNT);
-    UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
-                         password_count_);
+    UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ExportedPasswordsPerUserInCSV",
+                            password_count_);
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
                destination_.DirName().BaseName().AsUTF8Unsafe());

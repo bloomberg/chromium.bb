@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
 
-source_set("public") {
+jumbo_source_set("public") {
   sources = [
     "event_constants.cc",
     "event_constants.h",
@@ -37,7 +39,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/android_deps:android_support_annotations_java",
     ]
 
     srcjar_deps = [ ":public_java_enums_srcjar" ]

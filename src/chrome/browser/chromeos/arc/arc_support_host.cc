@@ -567,10 +567,6 @@ bool ArcSupportHost::Initialize() {
   return true;
 }
 
-void ArcSupportHost::OnDisplayAdded(const display::Display& new_display) {}
-
-void ArcSupportHost::OnDisplayRemoved(const display::Display& old_display) {}
-
 void ArcSupportHost::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t changed_metrics) {
   if (!message_host_)

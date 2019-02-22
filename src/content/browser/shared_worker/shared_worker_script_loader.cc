@@ -62,6 +62,10 @@ SharedWorkerScriptLoader::SharedWorkerScriptLoader(
 
 SharedWorkerScriptLoader::~SharedWorkerScriptLoader() = default;
 
+base::WeakPtr<SharedWorkerScriptLoader> SharedWorkerScriptLoader::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void SharedWorkerScriptLoader::Start() {
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
@@ -82,13 +86,11 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
   DCHECK(interceptor);
 
-  // TODO(nhiroki): Create SubresourceLoaderParams for intercepting subresource
-  // requests and populating the "controller" field in ServiceWorkerContainer,
-  // and send the params to the renderer when we create the SharedWorker.
-  // Note that we shouldn't try the next interceptor if this interceptor
-  // provides SubresourceLoaderParams. See comments on
-  // NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() for
-  // details.
+  // Create SubresourceLoaderParams for intercepting subresource requests and
+  // populating the "controller" field in ServiceWorkerContainer. This can be
+  // null if the interceptor is not interested in this request.
+  subresource_loader_params_ =
+      interceptor->MaybeCreateSubresourceLoaderParams();
 
   if (single_request_handler) {
     // The interceptor elected to handle the request. Use it.
@@ -103,12 +105,19 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
     return;
   }
 
+  // We shouldn't try the remaining interceptors if this interceptor provides
+  // SubresourceLoaderParams. For details, see comments on
+  // NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams().
+  if (subresource_loader_params_)
+    interceptor_index_ = interceptors_.size();
+
   // Continue until all the interceptors are tried.
   Start();
 }
 
 void SharedWorkerScriptLoader::LoadFromNetwork(
     bool reset_subresource_loader_params) {
+  default_loader_used_ = true;
   network::mojom::URLLoaderClientPtr client;
   if (url_loader_client_binding_)
     url_loader_client_binding_.Unbind();
@@ -235,6 +244,28 @@ void SharedWorkerScriptLoader::OnComplete(
   if (status.error_code == net::OK)
     service_worker_provider_host_->CompleteSharedWorkerPreparation();
   client_->OnComplete(status);
+}
+
+bool SharedWorkerScriptLoader::MaybeCreateLoaderForResponse(
+    const network::ResourceResponseHead& response,
+    network::mojom::URLLoaderPtr* response_url_loader,
+    network::mojom::URLLoaderClientRequest* response_client_request,
+    ThrottlingURLLoader* url_loader) {
+  DCHECK(default_loader_used_);
+  for (auto& interceptor : interceptors_) {
+    bool skip_other_interceptors = false;
+    if (interceptor->MaybeCreateLoaderForResponse(
+            response, response_url_loader, response_client_request, url_loader,
+            &skip_other_interceptors)) {
+      // Both ServiceWorkerRequestHandler and AppCacheRequestHandler don't set
+      // skip_other_interceptors.
+      DCHECK(!skip_other_interceptors);
+      subresource_loader_params_ =
+          interceptor->MaybeCreateSubresourceLoaderParams();
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace content

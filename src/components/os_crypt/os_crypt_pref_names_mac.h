@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_OS_CRYPT_OS_CRYPT_PREF_NAMES_MAC_H_
 #define COMPONENTS_OS_CRYPT_OS_CRYPT_PREF_NAMES_MAC_H_
 
-#include "build/build_config.h"
+#include "base/component_export.h"
 
 namespace os_crypt {
 namespace prefs {
@@ -20,7 +20,12 @@ namespace prefs {
 // encryption key is generated or successfully retrieved. If this flag is set to
 // true and Chrome couldn't get the encryption key from the Keychain, encryption
 // should be temporarily unavailable instead of generating a new key.
-extern const char kKeyCreated[];
+COMPONENT_EXPORT(OS_CRYPT) extern const char kKeyCreated[];
+
+// The number of times Chrome prevented overwriting the encryption key in a row.
+// Initial value is zero and is reset back to zero once the key is successfully
+// retrieved from the Keychain.
+COMPONENT_EXPORT(OS_CRYPT) extern const char kKeyOverwritingPreventions[];
 
 }  // namespace prefs
 }  // namespace os_crypt

@@ -403,7 +403,7 @@
     "stories": [
       "intent:coldish:bbc"
     ], 
-    "name": "experimental.startup.mobile"
+    "name": "startup.mobile"
   }, 
   {
     "repeat": 1, 

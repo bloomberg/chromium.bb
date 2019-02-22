@@ -52,8 +52,6 @@ using update_client::UpdateQueryParams;
 
 namespace extensions {
 
-const char ExtensionDownloader::kBlacklistAppID[] = "com.google.crx.blacklist";
-
 namespace {
 
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
@@ -89,7 +87,6 @@ const int kMaxOAuth2Attempts = 3;
 
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
-const char kDefaultInstallLocation[] = "";
 const char kReinstallInstallSource[] = "reinstall";
 
 const char kGoogleDotCom[] = "google.com";
@@ -294,32 +291,13 @@ void ExtensionDownloader::DoStartAllPending() {
   ReportStats();
   url_stats_ = URLStats();
 
-  for (FetchMap::iterator it = fetches_preparing_.begin();
-       it != fetches_preparing_.end();
+  for (auto it = fetches_preparing_.begin(); it != fetches_preparing_.end();
        ++it) {
     std::vector<std::unique_ptr<ManifestFetchData>>& list = it->second;
     for (size_t i = 0; i < list.size(); ++i)
       StartUpdateCheck(std::move(list[i]));
   }
   fetches_preparing_.clear();
-}
-
-void ExtensionDownloader::StartBlacklistUpdate(
-    const std::string& version,
-    const ManifestFetchData::PingData& ping_data,
-    int request_id) {
-  // Note: it is very important that we use the https version of the update
-  // url here to avoid DNS hijacking of the blacklist, which is not validated
-  // by a public key signature like .crx files are.
-  std::unique_ptr<ManifestFetchData> blacklist_fetch(
-      CreateManifestFetchData(extension_urls::GetWebstoreUpdateUrl(),
-                              request_id, ManifestFetchData::BACKGROUND));
-  DCHECK(blacklist_fetch->base_url().SchemeIsCryptographic());
-  blacklist_fetch->AddExtension(kBlacklistAppID, version, &ping_data,
-                                std::string(), kDefaultInstallSource,
-                                kDefaultInstallLocation,
-                                ManifestFetchData::FetchPriority::BACKGROUND);
-  StartUpdateCheck(std::move(blacklist_fetch));
 }
 
 void ExtensionDownloader::SetWebstoreAuthenticationCapabilities(
@@ -413,7 +391,7 @@ bool ExtensionDownloader::AddExtensionData(
 
   // Find or create a ManifestFetchData to add this extension to.
   bool added = false;
-  FetchMap::iterator existing_iter =
+  auto existing_iter =
       fetches_preparing_.find(std::make_pair(request_id, update_url));
   if (existing_iter != fetches_preparing_.end() &&
       !existing_iter->second.empty()) {
@@ -489,7 +467,7 @@ void ExtensionDownloader::StartUpdateCheck(
   } else {
     UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
                              fetch_data->extension_ids().size());
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Extensions.UpdateCheckUrlLength",
         fetch_data->full_url().possibly_invalid_spec().length());
 
@@ -670,23 +648,7 @@ void ExtensionDownloader::HandleManifestResults(
     const std::string& extension_id = update->extension_id;
 
     GURL crx_url = update->crx_url;
-    if (extension_id != kBlacklistAppID) {
-      NotifyUpdateFound(extension_id, update->version);
-    } else {
-      // The URL of the blacklist file is returned by the server and we need to
-      // be sure that we continue to be able to reliably detect whether a URL
-      // references a blacklist file.
-      DCHECK(extension_urls::IsBlacklistUpdateUrl(crx_url)) << crx_url;
-
-      // Force https (crbug.com/129587).
-      if (!crx_url.SchemeIsCryptographic()) {
-        url::Replacements<char> replacements;
-        std::string scheme("https");
-        replacements.SetScheme(scheme.c_str(),
-                               url::Component(0, scheme.size()));
-        crx_url = crx_url.ReplaceComponents(replacements);
-      }
-    }
+    NotifyUpdateFound(extension_id, update->version);
     FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
         update->extension_id, crx_url, update->package_hash, update->version,
         fetch_data->request_ids()));
@@ -1080,9 +1042,7 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
     const std::set<std::string>& extension_ids,
     const std::set<int>& request_ids,
     ExtensionDownloaderDelegate::Error error) {
-  for (std::set<std::string>::const_iterator it = extension_ids.begin();
-       it != extension_ids.end();
-       ++it) {
+  for (auto it = extension_ids.cbegin(); it != extension_ids.cend(); ++it) {
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[*it];
     delegate_->OnExtensionDownloadFailed(*it, error, ping, request_ids);
     ping_results_.erase(*it);

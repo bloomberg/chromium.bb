@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -94,7 +95,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::DoFetchEnrollmentToken() {
                          g_browser_process->system_network_context_manager()
                              ->GetSharedURLLoaderFactory()));
 
-  fetch_request_job_->SetDMToken(dm_token_);
+  fetch_request_job_->SetAuthData(policy::DMAuth::FromDMToken(dm_token_));
   fetch_request_job_->SetClientID(GetClientId());
   em::ActiveDirectoryEnrollPlayUserRequest* enroll_request =
       fetch_request_job_->GetRequest()

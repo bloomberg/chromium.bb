@@ -270,7 +270,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
 }
@@ -346,7 +346,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
             sync_service()->GetTransportState());
   // Sync-the-feature is still not active, but rather pending confirmation.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
   EXPECT_TRUE(sync_service()->IsSyncConfirmationNeeded());
 
   // Marking first setup complete will let ProfileSyncService reconfigure the
@@ -358,7 +358,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StartFirstTime) {
 
   // This should have fully enabled sync.
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
@@ -508,7 +508,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, StopSync) {
   sync_service()->RequestStop(syncer::SyncService::KEEP_DATA);
 
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StopSync) {
@@ -533,7 +533,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, StopSync) {
 
   // Sync-the-feature is still considered off.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, DisableSync) {
@@ -552,7 +552,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, DisableSync) {
   sync_service()->RequestStop(syncer::SyncService::CLEAR_DATA);
 
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, DisableSync) {
@@ -576,7 +576,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, DisableSync) {
 
   // Sync-the-feature is still considered off.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 // Test that we can recover from a case where a bug in the code resulted in
@@ -661,7 +661,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, SwitchManaged) {
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // The service should stop when switching to managed mode.
   Mock::VerifyAndClearExpectations(data_type_manager);
@@ -675,7 +675,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, SwitchManaged) {
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
   // When switching back to unmanaged, the state should change but sync should
@@ -692,7 +692,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest, SwitchManaged) {
   EXPECT_EQ(syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, SwitchManaged) {
@@ -712,7 +712,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, SwitchManaged) {
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // The service should stop when switching to managed mode.
   Mock::VerifyAndClearExpectations(data_type_manager);
@@ -727,7 +727,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, SwitchManaged) {
   EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
   // When switching back to unmanaged, Sync-the-transport should start up
@@ -750,7 +750,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest, SwitchManaged) {
             sync_service()->GetTransportState());
   // Sync-the-feature is still considered off.
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_FALSE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
@@ -840,7 +840,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      /*success=*/true);
+      "test-session-name", /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
@@ -867,7 +867,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   // CONFIGURING.
   EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // Finally, once the DataTypeManager says it's done with configuration, Sync
   // is actually fully up and running.
@@ -878,7 +878,7 @@ TEST_F(ProfileSyncServiceWithoutStandaloneTransportStartupTest,
   sync_service()->OnConfigureDone(configure_result);
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 }
 
 TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest,
@@ -925,7 +925,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest,
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      /*success=*/true);
+      "test-session-name", /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             sync_service()->GetTransportState());
@@ -952,7 +952,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest,
   // CONFIGURING.
   EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 
   // Finally, once the DataTypeManager says it's done with configuration, Sync
   // is actually fully up and running.
@@ -963,7 +963,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportStartupTest,
   sync_service()->OnConfigureDone(configure_result);
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  EXPECT_TRUE(sync_service()->IsSyncActive());
+  EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
 }
 #endif  // OS_CHROMEOS
 
@@ -1004,7 +1004,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
   sync_service()->OnEngineInitialized(
       syncer::ModelTypeSet(), syncer::WeakHandle<syncer::JsBackend>(),
       syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), "test-guid",
-      /*success=*/true);
+      "test-session-name", /*success=*/true);
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURING));
   EXPECT_EQ(syncer::SyncService::TransportState::CONFIGURING,

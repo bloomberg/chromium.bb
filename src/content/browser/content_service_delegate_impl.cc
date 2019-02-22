@@ -5,7 +5,10 @@
 #include "content/browser/content_service_delegate_impl.h"
 
 #include "base/macros.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/content/navigable_contents_delegate.h"
 #include "services/content/service.h"
@@ -17,14 +20,19 @@ namespace {
 // Bridge between Content Service navigable contents delegation API and a
 // WebContentsImpl.
 class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
+                                      public WebContentsDelegate,
                                       public WebContentsObserver {
  public:
-  explicit NavigableContentsDelegateImpl(BrowserContext* browser_context,
-                                         mojom::NavigableContentsClient* client)
-      : client_(client) {
-    WebContents::CreateParams params(browser_context);
-    web_contents_ = WebContents::Create(params);
+  explicit NavigableContentsDelegateImpl(
+      BrowserContext* browser_context,
+      const mojom::NavigableContentsParams& params,
+      mojom::NavigableContentsClient* client)
+      : client_(client),
+        enable_view_auto_resize_(params.enable_view_auto_resize) {
+    WebContents::CreateParams create_params(browser_context);
+    web_contents_ = WebContents::Create(create_params);
     WebContentsObserver::Observe(web_contents_.get());
+    web_contents_->SetDelegate(this);
   }
 
   ~NavigableContentsDelegateImpl() override {
@@ -37,17 +45,47 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     return web_contents_->GetNativeView();
   }
 
-  void Navigate(const GURL& url) override {
-    NavigationController::LoadURLParams params(url);
-    params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
-    web_contents_->GetController().LoadURLWithParams(params);
+  void Navigate(const GURL& url,
+                content::mojom::NavigateParamsPtr params) override {
+    NavigationController::LoadURLParams load_url_params(url);
+    load_url_params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+    load_url_params.should_clear_history_list =
+        params->should_clear_session_history;
+    web_contents_->GetController().LoadURLWithParams(load_url_params);
+  }
+
+  // WebContentsDelegate:
+  void ResizeDueToAutoResize(WebContents* web_contents,
+                             const gfx::Size& new_size) override {
+    DCHECK_EQ(web_contents, web_contents_.get());
+    client_->DidAutoResizeView(new_size);
   }
 
   // WebContentsObserver:
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override {
+    if (enable_view_auto_resize_ && web_contents_->GetRenderWidgetHostView()) {
+      web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
+          gfx::Size(1, 1), gfx::Size(INT_MAX, INT_MAX));
+    }
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    client_->DidFinishNavigation(
+        navigation_handle->GetURL(), navigation_handle->IsInMainFrame(),
+        navigation_handle->IsErrorPage(),
+        navigation_handle->GetResponseHeaders()
+            ? base::MakeRefCounted<net::HttpResponseHeaders>(
+                  navigation_handle->GetResponseHeaders()->raw_headers())
+            : nullptr);
+  }
+
   void DidStopLoading() override { client_->DidStopLoading(); }
 
   std::unique_ptr<WebContents> web_contents_;
   mojom::NavigableContentsClient* const client_;
+
+  const bool enable_view_auto_resize_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsDelegateImpl);
 };
@@ -82,9 +120,10 @@ void ContentServiceDelegateImpl::WillDestroyServiceInstance(
 
 std::unique_ptr<content::NavigableContentsDelegate>
 ContentServiceDelegateImpl::CreateNavigableContentsDelegate(
+    const mojom::NavigableContentsParams& params,
     mojom::NavigableContentsClient* client) {
   return std::make_unique<NavigableContentsDelegateImpl>(browser_context_,
-                                                         client);
+                                                         params, client);
 }
 
 }  // namespace content

@@ -19,7 +19,6 @@
 
 #include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
 
-#include "third_party/blink/public/platform/site_engagement.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -32,7 +31,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
@@ -129,27 +127,6 @@ void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, navigator_vibrate_histogram,
                       ("Vibration.Context", NavigatorVibrationType::kEnumMax));
   navigator_vibrate_histogram.Count(type);
-
-  switch (frame.GetDocument()->GetEngagementLevel()) {
-    case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementNone);
-      break;
-    case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMinimal);
-      break;
-    case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementLow);
-      break;
-    case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMedium);
-      break;
-    case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementHigh);
-      break;
-    case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(&frame, WebFeature::kNavigatorVibrateEngagementMax);
-      break;
-  }
 }
 
 VibrationController* NavigatorVibration::Controller(LocalFrame& frame) {

@@ -9,8 +9,9 @@
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
-#include "components/password_manager/sync/browser/sync_credentials_filter.h"
+#include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -40,6 +41,8 @@ class PasswordFormManagerForUI;
 @property(readonly) password_manager::PasswordManager* passwordManager;
 
 @property(readonly, nonatomic) const GURL& lastCommittedURL;
+
+@property(readonly, nonatomic) ukm::SourceId ukmSourceId;
 
 @end
 
@@ -106,14 +109,6 @@ class IOSChromePasswordManagerClient
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
   std::unique_ptr<password_manager::LogManager> log_manager_;
-
-  // The URL to which the ukm_source_id_ was bound.
-  GURL ukm_source_url_;
-
-  // If ukm_source_url_ == delegate_.lastCommittedURL, this stores a
-  // ukm::SourceId that is bound to the last committed navigation of the tab
-  // owning this ChromePasswordManagerClient.
-  ukm::SourceId ukm_source_id_;
 
   // Recorder of metrics that is associated with the last committed navigation
   // of the tab owning this ChromePasswordManagerClient. May be unset at

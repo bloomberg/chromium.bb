@@ -245,9 +245,9 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
     const RequestStage stage = static_cast<RequestStage>(i);
     url_request->set_site_for_cookies(url_empty);
     WebRequestInfo request_info1(url_request.get());
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(
+    EXPECT_TRUE(third_party_attribute->IsFulfilled(
         WebRequestData(&request_info1, stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(
+    EXPECT_FALSE(first_party_attribute->IsFulfilled(
         WebRequestData(&request_info1, stage)));
 
     url_request->set_site_for_cookies(url_b);

@@ -24,10 +24,12 @@ class PdfNupConverter : public printing::mojom::PdfNupConverter {
   void NupPageConvert(
       uint32_t pages_per_sheet,
       const gfx::Size& page_size,
+      const gfx::Rect& printable_area,
       std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions,
       NupPageConvertCallback callback) override;
   void NupDocumentConvert(uint32_t pages_per_sheet,
                           const gfx::Size& page_size,
+                          const gfx::Rect& printable_area,
                           base::ReadOnlySharedMemoryRegion src_pdf_region,
                           NupDocumentConvertCallback callback) override;
   void SetWebContentsURL(const GURL& url) override;

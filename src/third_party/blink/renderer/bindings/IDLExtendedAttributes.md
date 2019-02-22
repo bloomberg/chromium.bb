@@ -135,7 +135,9 @@ Extended attributes are generally not inherited: only extended attributes on the
 These are defined in the [ECMAScript-specific extended attributes](http://heycam.github.io/webidl/#es-extended-attributes) section of the [Web IDL spec](http://heycam.github.io/webidl/), and alter the binding behavior.
 
 *** note
-Unsupported: `[ImplicitThis]`, `[LenientThis]`, `[NamedPropertiesObject]`, `[TreatNonCallableAsNull]`
+Unsupported: `[LenientThis]`
+
+Undocumented: `[TreatNonObjectAsNull]`
 ***
 
 ### [CEReactions] _(m, a)_
@@ -485,6 +487,34 @@ interface Window {
 }
 ```
 
+### [Serializable] _(i)_
+
+Standard: [Serializable](https://html.spec.whatwg.org/multipage/structured-data.html#serializable)
+
+Summary: Serializable objects support being serialized, and later deserialized, for persistence in storage APIs or for passing with `postMessage()`.
+
+```webidl
+[Serializable] interface Blob {
+    ...
+};
+```
+
+This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it. Code to perform the serialization/deserialization must be added to `V8ScriptValueSerializer` for types in `core/` or `V8ScriptValueDeserializerForModules` for types in `modules/`.
+
+### [Transferable] _(i)_
+
+Standard: [Transferable](https://html.spec.whatwg.org/multipage/structured-data.html#transferable)
+
+Summary: Transferable objects support being transferred across Realms with `postMessage()`.
+
+```webidl
+[Transferable] interface MessagePort {
+    ...
+};
+```
+
+This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it. Code to perform the transfer steps must be added to `V8ScriptValueSerializer` for types in `core/` or `V8ScriptValueDeserializerForModules` for types in `modules/`.
+
 ### [TreatNullAs] _(a,p)_
 
 Standard: [TreatNullAs](https://heycam.github.io/webidl/#TreatNullAs)
@@ -508,12 +538,11 @@ Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
 
 Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
-Usage: Can be specified on methods, attributes or interfaces:
+Usage: Can be specified on interface methods or non-static interface attributes:
 
 ```webidl
 [Unforgeable] void func();
 [Unforgeable] attribute DOMString str;
-[Unforgeable] interface XXX { ... };
 ```
 
 By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
@@ -1634,8 +1663,12 @@ Added to members of a partial interface definition (and implemented interfaces w
 **FIXME:** The following need documentation:
 ***
 
-* `[PerWorldBindings]` :: interacts with `[LogActivity]`
+* `[ImmutablePrototype]`
+* `[LegacyInterfaceTypeChecking]`
+* `[LogAllWorlds]`
 * `[OverrideBuiltins]` :: used on named accessors
+* `[PerWorldBindings]` :: interacts with `[LogActivity]`
+* `[WebAgentAPI]`
 
 -------------
 

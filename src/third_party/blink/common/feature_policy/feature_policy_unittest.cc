@@ -1209,8 +1209,8 @@ TEST_F(FeaturePolicyTest, TestSandboxedPolicyCanBePropagated) {
   // However, it will not pass that on to any other origin
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  url::Origin sandboxed_origin_1 = url::Origin();
-  url::Origin sandboxed_origin_2 = url::Origin();
+  url::Origin sandboxed_origin_1 = origin_a_.DeriveNewOpaqueOrigin();
+  url::Origin sandboxed_origin_2 = sandboxed_origin_1.DeriveNewOpaqueOrigin();
   ParsedFeaturePolicy frame_policy_1 = {
       {{kDefaultSelfFeature, true, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 = CreateFromParentWithFramePolicy(

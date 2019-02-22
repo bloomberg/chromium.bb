@@ -41,16 +41,14 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.suggestions.TileView.Style;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 
 import java.util.ArrayList;
@@ -62,7 +60,6 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@DisableFeatures({ChromeFeatureList.NTP_MODERN_LAYOUT})
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
@@ -87,7 +84,7 @@ public class TileGroupUnitTest {
 
         mImageFetcher = new FakeImageFetcher();
         mTileRenderer = new TileRenderer(
-                RuntimeEnvironment.application, Style.CLASSIC, TILE_TITLE_LINES, mImageFetcher);
+                RuntimeEnvironment.application, TileStyle.MODERN, TILE_TITLE_LINES, mImageFetcher);
         mMostVisitedSites = new FakeMostVisitedSites();
 
         doAnswer(invocation -> {
@@ -284,8 +281,8 @@ public class TileGroupUnitTest {
         // Render them to the layout.
         tileGrid.refreshData();
         assertThat(layout.getChildCount(), is(2));
-        assertThat(((TileView) layout.getChildAt(0)).getUrl(), is(URLS[0]));
-        assertThat(((TileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
+        assertThat(((SuggestionsTileView) layout.getChildAt(0)).getUrl(), is(URLS[0]));
+        assertThat(((SuggestionsTileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
     }
 
     /** Check for https://crbug.com/703628: don't crash on duplicated URLs. */
@@ -319,10 +316,10 @@ public class TileGroupUnitTest {
         // Initialise the layout with views whose URLs don't match the ones of the new tiles.
         TileGridViewHolder tileGrid = setupView(tileGroup);
         TileGridLayout layout = (TileGridLayout) tileGrid.itemView;
-        TileView view1 = mock(TileView.class);
+        SuggestionsTileView view1 = mock(SuggestionsTileView.class);
         layout.addView(view1);
 
-        TileView view2 = mock(TileView.class);
+        SuggestionsTileView view2 = mock(SuggestionsTileView.class);
         layout.addView(view2);
 
         // The tiles should be updated, the old ones removed.
@@ -343,11 +340,11 @@ public class TileGroupUnitTest {
 
         // Initialise the layout with views whose URLs match the ones of the new tiles.
         TileGridLayout layout = new TileGridLayout(RuntimeEnvironment.application, null);
-        TileView view1 = mock(TileView.class);
+        SuggestionsTileView view1 = mock(SuggestionsTileView.class);
         when(view1.getData()).thenReturn(sites.get(0));
         layout.addView(view1);
 
-        TileView view2 = mock(TileView.class);
+        SuggestionsTileView view2 = mock(SuggestionsTileView.class);
         when(view2.getData()).thenReturn(sites.get(1));
         layout.addView(view2);
 

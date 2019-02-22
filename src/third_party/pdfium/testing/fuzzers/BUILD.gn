@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("../../pdfium.gni")
 
 config("fuzzer_config") {
@@ -35,6 +36,7 @@ group("fuzzers") {
     ":pdf_psengine_fuzzer_src",
     ":pdf_streamparser_fuzzer_src",
     ":pdf_xml_fuzzer_src",
+    ":pdfium_fuzzer_src",
   ]
   if (pdf_enable_xfa) {
     deps += [
@@ -44,6 +46,7 @@ group("fuzzers") {
       ":pdf_css_fuzzer_src",
       ":pdf_fm2js_fuzzer_src",
       ":pdf_formcalc_fuzzer_src",
+      ":pdfium_xfa_fuzzer_src",
     ]
     if (pdf_enable_xfa_bmp) {
       deps += [ ":pdf_codec_bmp_fuzzer_src" ]
@@ -63,11 +66,15 @@ group("fuzzers") {
   }
 }
 
-template("pdfium_fuzzer") {
-  source_set(target_name) {
-    sources = invoker.sources + [ "pdf_fuzzer_init.cc" ]
+template("pdfium_public_fuzzer") {
+  jumbo_source_set(target_name) {
+    sources = invoker.sources + [
+                "pdfium_fuzzer_helper.cc",
+                "pdfium_fuzzer_helper.h",
+              ]
     deps = [
-      "../..:pdfium",
+      "../../:pdfium",
+      "../../:test_support",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -78,6 +85,34 @@ template("pdfium_fuzzer") {
       "//build/config/compiler:no_chromium_code",
       ":fuzzer_config",
     ]
+    if (pdf_enable_v8) {
+      configs += [ "//v8:external_startup_data" ]
+      deps += [
+        "//v8",
+        "//v8:v8_libplatform",
+      ]
+    }
+  }
+}
+
+template("pdfium_fuzzer") {
+  jumbo_source_set(target_name) {
+    sources = invoker.sources + [ "pdf_fuzzer_init.cc" ]
+    deps = [
+      "../../:pdfium",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    testonly = true
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      ":fuzzer_config",
+    ]
+    if (pdf_enable_v8) {
+      configs += [ "//v8:external_startup_data" ]
+    }
   }
 }
 
@@ -175,6 +210,12 @@ if (pdf_enable_xfa) {
       "pdf_formcalc_fuzzer.cc",
     ]
   }
+
+  pdfium_public_fuzzer("pdfium_xfa_fuzzer_src") {
+    sources = [
+      "pdfium_xfa_fuzzer.cc",
+    ]
+  }
 }
 
 pdfium_fuzzer("pdf_cmap_fuzzer_src") {
@@ -249,5 +290,11 @@ pdfium_fuzzer("pdf_streamparser_fuzzer_src") {
 pdfium_fuzzer("pdf_xml_fuzzer_src") {
   sources = [
     "pdf_xml_fuzzer.cc",
+  ]
+}
+
+pdfium_public_fuzzer("pdfium_fuzzer_src") {
+  sources = [
+    "pdfium_fuzzer.cc",
   ]
 }

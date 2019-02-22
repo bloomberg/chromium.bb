@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 30b8c0dc2aff7acc22e563a2f7c8afa98ad742cc
+Revision: 91781418bc4eb79e357687094811bab6430b10b2
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -37,3 +37,4 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 Local Modifications:
  - codereview.settings has been excluded.
  - thread_log_messages.cc (using ThreadLocalStorage::Slot instead of StaticSlot)
+ - Add an additional rpath for crashpad_handler on Mac in component builds.

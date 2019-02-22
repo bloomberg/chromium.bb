@@ -78,8 +78,11 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
 
   mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
 
+  // TODO(https://crbug.com/843117): Store the
+  // base::ReadOnlySharedMemoryRegion instead after migrating the
+  // media::VideoCaptureDeviceClient to the new shared memory API.
   using ClientBufferMap =
-      base::flat_map<int32_t, base::ReadOnlySharedMemoryRegion>;
+      base::flat_map<int32_t, media::mojom::VideoBufferHandlePtr>;
   // Stores the buffer handler on OnBufferCreated(). |buffer_id| is the key.
   ClientBufferMap client_buffers_;
 
@@ -89,6 +92,15 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
 
   // The callback to deliver the received frame.
   FrameDeliverCallback frame_deliver_callback_;
+
+  // TODO(https://crbug.com/843117): Remove the MappingMap after migrating
+  // media::VideoCaptureDeviceClient to the new shared memory API.
+  using MappingAndSize = std::pair<mojo::ScopedSharedBufferMapping, uint32_t>;
+  using MappingMap = base::flat_map<int32_t, MappingAndSize>;
+  // Stores the mapped buffers and their size. Each buffer is added the first
+  // time the mapping is done or a larger size is requested.
+  // |buffer_id| is the key to this map.
+  MappingMap mapped_buffers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

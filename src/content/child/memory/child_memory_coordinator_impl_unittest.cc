@@ -11,8 +11,8 @@
 #include <memory>
 
 #include "base/memory/memory_coordinator_client_registry.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +44,7 @@ class ChildMemoryCoordinatorImplTest : public testing::Test,
                                        public ChildMemoryCoordinatorDelegate {
  public:
   ChildMemoryCoordinatorImplTest()
-      : message_loop_(new base::MessageLoop) {
+      : task_environment_(new base::test::ScopedTaskEnvironment) {
     auto parent = coordinator_handle_.Bind();
     coordinator_impl_ = CreateChildMemoryCoordinator(std::move(parent), this);
     // Needs to run loop to initalize mojo pointers including |child_| in
@@ -84,7 +84,7 @@ class ChildMemoryCoordinatorImplTest : public testing::Test,
   bool on_trim_memory_called_ = false;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   MockMemoryCoordinatorHandle coordinator_handle_;
   std::unique_ptr<ChildMemoryCoordinatorImpl> coordinator_impl_;
 

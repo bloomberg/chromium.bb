@@ -167,7 +167,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
       override {
     changes_.emplace_back(cookie, cause);
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
  private:

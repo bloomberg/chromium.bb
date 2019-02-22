@@ -4,6 +4,8 @@
 
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
 
+#include <algorithm>
+
 #include "ash/assistant/util/animation_util.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -89,6 +91,10 @@ void AssistantProgressIndicator::InitLayout() {
   }
 }
 
+const char* AssistantProgressIndicator::GetClassName() const {
+  return "AssistantProgressIndicator";
+}
+
 void AssistantProgressIndicator::AddedToWidget() {
   VisibilityChanged(/*starting_from=*/this, /*is_visible=*/visible());
 }
@@ -118,7 +124,8 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
     return;
   }
 
-  using namespace assistant::util;
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateTransformElement;
 
   // The animation performs scaling on the child views. In order to give the
   // illusion that scaling is being performed about the center of the view as

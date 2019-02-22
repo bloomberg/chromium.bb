@@ -305,6 +305,8 @@ int CentralFreeList::FetchFromOneSpans(int N, void **start, void **end) {
     tcmalloc::DLL_Remove(span);
     tcmalloc::DLL_Prepend(&empty_, span);
     Event(span, 'E', 0);
+  } else {
+    FL_SetPrevious(curr, NULL);
   }
 
   *start = span->objects;

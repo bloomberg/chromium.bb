@@ -104,7 +104,7 @@ class QUIC_EXPORT QuicTlsAdapter : public CryptoMessageParser {
 
   QuicErrorCode error() const override;
   const QuicString& error_detail() const override;
-  bool ProcessInput(QuicStringPiece input, Perspective perspective) override;
+  bool ProcessInput(QuicStringPiece input, EncryptionLevel level) override;
   size_t InputBytesRemaining() const override;
 
   BIO* bio() { return bio_.get(); }

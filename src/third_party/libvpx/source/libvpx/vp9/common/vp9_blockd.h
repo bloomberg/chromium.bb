@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VP9_COMMON_VP9_BLOCKD_H_
-#define VP9_COMMON_VP9_BLOCKD_H_
+#ifndef VPX_VP9_COMMON_VP9_BLOCKD_H_
+#define VPX_VP9_COMMON_VP9_BLOCKD_H_
 
 #include "./vpx_config.h"
 
@@ -60,12 +60,6 @@ typedef struct {
 #define GOLDEN_FRAME 2
 #define ALTREF_FRAME 3
 #define MAX_REF_FRAMES 4
-
-#define LAST2_FRAME 4
-#define LAST3_FRAME 5
-#define BWDREF_FRAME 6
-#define ALTREF2_FRAME 7
-#define LAST_REF_FRAMES 3
 
 typedef int8_t MV_REFERENCE_FRAME;
 
@@ -292,4 +286,4 @@ void vp9_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 }  // extern "C"
 #endif
 
-#endif  // VP9_COMMON_VP9_BLOCKD_H_
+#endif  // VPX_VP9_COMMON_VP9_BLOCKD_H_

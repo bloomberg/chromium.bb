@@ -601,7 +601,7 @@ void AppListFolderView::UpdatePreferredBounds() {
 
 int AppListFolderView::GetYOffsetForFolder() {
   auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled())
+  if (!keyboard_controller->IsEnabled())
     return 0;
 
   // This view should be on top of on-screen keyboard to prevent the folder
@@ -813,7 +813,7 @@ void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
                                      const ui::Event& event_flags) {
-  CloseFolderPage();
+  contents_view_->Back();
 }
 
 void AppListFolderView::GiveBackFocusToSearchBox() {

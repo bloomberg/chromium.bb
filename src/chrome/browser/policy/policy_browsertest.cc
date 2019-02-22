@@ -169,6 +169,7 @@
 #include "components/variations/variations_params_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_manager.h"
@@ -187,6 +188,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -203,6 +205,8 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mojo/type_converters.h"
 #include "extensions/browser/api/messaging/messaging_delegate.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -407,15 +411,15 @@ class MakeRequestFail {
   // Sets up the filter on IO thread such that requests to |host| fail.
   explicit MakeRequestFail(const std::string& host) : host_(host) {
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                    base::BindOnce(MakeRequestFailOnIO, host_),
-                                    run_loop.QuitClosure());
+    base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
+                                     base::BindOnce(MakeRequestFailOnIO, host_),
+                                     run_loop.QuitClosure());
     run_loop.Run();
   }
   ~MakeRequestFail() {
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(UndoMakeRequestFailOnIO, host_), run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -787,8 +791,8 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(chrome_browser_net::SetUrlRequestMocksEnabled, true));
     if (extension_service()->updater()) {
       extension_service()->updater()->SetExtensionCacheForTesting(
@@ -828,8 +832,8 @@ class PolicyTest : public InProcessBrowserTest {
       return;
     }
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &net::TransportSecurityState::SetShouldRequireCTForTesting,
             required));
@@ -844,8 +848,8 @@ class PolicyTest : public InProcessBrowserTest {
     void OnScreenshotCompleted(
         ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
-      BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                      base::DoNothing(), std::move(done_));
+      base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
+                                       base::DoNothing(), std::move(done_));
     }
 
     ~QuitMessageLoopAfterScreenshot() override {}
@@ -2507,9 +2511,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ProcessManager* manager =
       extensions::ProcessManager::Get(browser()->profile());
   extensions::ProcessManager::FrameSet all_frames = manager->GetAllFrames();
-  for (extensions::ProcessManager::FrameSet::const_iterator iter =
-           all_frames.begin();
-       iter != all_frames.end();) {
+  for (auto iter = all_frames.begin(); iter != all_frames.end();) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(*iter);
     ASSERT_TRUE(web_contents);
@@ -3953,8 +3955,8 @@ class RestoreOnStartupPolicyTest
   }
 
   void SetUpOnMainThread() override {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
                        arraysize(kRestoredURLs)));
   }
@@ -4379,8 +4381,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4412,8 +4414,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4437,8 +4439,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4470,8 +4472,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -4578,6 +4580,28 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
                std::move(disabled_urls), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL("/simple.html"));
+
+  // There should be no interstitial after the page loads.
+  EXPECT_FALSE(IsShowingInterstitial(tab));
+  EXPECT_EQ(base::UTF8ToUTF16("OK"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  // Now ensure that this setting still works after a network process crash.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess) ||
+      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess)) {
+    return;
+  }
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL("/title1.html"));
+
+  SimulateNetworkServiceCrash();
+  SetShouldRequireCTForTesting(&required);
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));
@@ -4832,9 +4856,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                        PasswordProtectionWarningTriggerNotLoggedIn) {
   MockPasswordProtectionService mock_service(
       g_browser_process->safe_browsing_service(), browser()->profile());
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
 
   // If user is not signed-in, |GetPasswordProtectionWarningTriggerPref(...)|
   // should return |PASSWORD_PROTECTION_OFF| unless specified by policy.
@@ -4871,9 +4892,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
   MockPasswordProtectionService mock_service(
       g_browser_process->safe_browsing_service(), browser()->profile());
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
 
   // If user is a Gmail user, |GetPasswordProtectionWarningTriggerPref(...)|
   // should return |PHISHING_REUSE| unless specified by policy.
@@ -4912,9 +4930,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
   EXPECT_CALL(mock_service, GetSyncAccountType())
       .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
                                  PasswordReuseEvent::GSUITE));
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   PolicyMap policies;
 
@@ -4945,9 +4960,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGSuite) {
 // Test that when safe browsing whitelist domains are set by policy, safe
 // browsing service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetSafeBrowsingDomainsPref(..) should return empty list.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -4993,9 +5005,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
 // Test that when password protection login URLs are set by policy, password
 // protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetPasswordProtectionLoginURLsPref(..) should return empty list.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
@@ -5039,9 +5048,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
 // Test that when password protection change password URL is set by policy,
 // password protection service gets the correct value.
 IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
   // |GetEnterpriseChangePasswordURL(..) should return default GAIA change
   // password URL.
@@ -5388,8 +5394,8 @@ void ComponentUpdaterPolicyTest::UpdateComponent(
 }
 
 void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(action, base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(action, base::Unretained(this)));
 }
 
 void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {
@@ -6285,6 +6291,52 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
             std::make_unique<base::Value>(3));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
+  const GURL kTestUrl("https://foo.com:443");
+  scoped_refptr<device::UsbDevice> device =
+      base::MakeRefCounted<device::MockUsbDevice>(0, 0, "Google", "Gizmo",
+                                                  "123ABC");
+  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+
+  // Expect the default permission value to be empty.
+  auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
+  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+
+  // Update policy to add an entry to the permission value to allow |kTestUrl|
+  // to access the device described by |device_info|.
+  PolicyMap policies;
+
+  base::Value device_value(base::Value::Type::DICTIONARY);
+  device_value.SetKey("vendor_id", base::Value(0));
+  device_value.SetKey("product_id", base::Value(0));
+
+  base::Value devices_value(base::Value::Type::LIST);
+  devices_value.GetList().push_back(std::move(device_value));
+
+  base::Value url_patterns_value(base::Value::Type::LIST);
+  url_patterns_value.GetList().emplace_back(base::Value("https://[*.]foo.com"));
+
+  base::Value entry(base::Value::Type::DICTIONARY);
+  entry.SetKey("devices", std::move(devices_value));
+  entry.SetKey("url_patterns", std::move(url_patterns_value));
+
+  auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
+  policy_value->GetList().push_back(std::move(entry));
+
+  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
+            std::move(policy_value));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+
+  // Remove the policy to ensure that it can be dynamically updated.
+  SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
+            std::make_unique<base::Value>(base::Value::Type::LIST));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
 }
 
 // Similar to PolicyTest but sets the WebAppInstallForceList policy before the

@@ -1396,10 +1396,6 @@ GLES2CopySubTextureCHROMIUM(GLuint source_id,
       yoffset, x, y, width, height, unpack_flip_y, unpack_premultiply_alpha,
       unpack_unmultiply_alpha);
 }
-void GL_APIENTRY GLES2CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                    GLuint dest_id) {
-  gles2::GetGLContext()->CompressedCopyTextureCHROMIUM(source_id, dest_id);
-}
 void GL_APIENTRY GLES2DrawArraysInstancedANGLE(GLenum mode,
                                                GLint first,
                                                GLsizei count,
@@ -1832,6 +1828,9 @@ GLES2FramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                              GLsizei numViews) {
   gles2::GetGLContext()->FramebufferTextureMultiviewLayeredANGLE(
       target, attachment, texture, level, baseViewIndex, numViews);
+}
+void GL_APIENTRY GLES2MaxShaderCompilerThreadsKHR(GLuint count) {
+  gles2::GetGLContext()->MaxShaderCompilerThreadsKHR(count);
 }
 
 namespace gles2 {
@@ -2879,10 +2878,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glCopySubTextureCHROMIUM),
     },
     {
-        "glCompressedCopyTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glCompressedCopyTextureCHROMIUM),
-    },
-    {
         "glDrawArraysInstancedANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glDrawArraysInstancedANGLE),
     },
@@ -3210,6 +3205,10 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glFramebufferTextureMultiviewLayeredANGLE",
         reinterpret_cast<GLES2FunctionPointer>(
             glFramebufferTextureMultiviewLayeredANGLE),
+    },
+    {
+        "glMaxShaderCompilerThreadsKHR",
+        reinterpret_cast<GLES2FunctionPointer>(glMaxShaderCompilerThreadsKHR),
     },
     {
         nullptr, nullptr,

@@ -5,6 +5,7 @@
 #ifndef SERVICES_CONTENT_NAVIGABLE_CONTENTS_DELEGATE_H_
 #define SERVICES_CONTENT_NAVIGABLE_CONTENTS_DELEGATE_H_
 
+#include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -31,7 +32,7 @@ class NavigableContentsDelegate {
   virtual gfx::NativeView GetNativeView() = 0;
 
   // Navigates the content object to a new URL.
-  virtual void Navigate(const GURL& url) = 0;
+  virtual void Navigate(const GURL& url, mojom::NavigateParamsPtr params) = 0;
 };
 
 }  // namespace content

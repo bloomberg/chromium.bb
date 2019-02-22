@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 
@@ -33,7 +33,7 @@ class RemoveRequestsTask : public Task {
   // Step for early termination, that builds failure result.
   void CompleteEarly(ItemActionStatus status);
   // Step 2. Processes update result, calls callback.
-  void CompleteWithResult(std::unique_ptr<UpdateRequestsResult> result);
+  void CompleteWithResult(UpdateRequestsResult result);
 
   // Store that this task updates.
   RequestQueueStore* store_;

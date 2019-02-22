@@ -74,6 +74,10 @@ class DriveNotificationManager : public KeyedService,
   // Restarts the polling timer. Used for polling-based notification.
   void RestartPollingTimer();
 
+  // Restarts the batch notification timer. Used for batching together XMPP
+  // notifications so we can smooth out the traffic on the drive backends.
+  void RestartBatchTimer();
+
   // Notifies the observers that it's time to check for updates.
   // |source| indicates where the notification comes from.
   void NotifyObserversToUpdate(NotificationSource source,
@@ -111,7 +115,7 @@ class DriveNotificationManager : public KeyedService,
   // This timer is used to batch together invalidations. The invalidation
   // service can send many invalidations for the same id in rapid succession,
   // batching them together and removing duplicates is an optimzation.
-  std::unique_ptr<base::RetainingOneShotTimer> batch_timer_;
+  base::OneShotTimer batch_timer_;
 
   // The batch of invalidation id's that we've seen from the invaliation
   // service, will be reset when when send the invalidations to the observers.

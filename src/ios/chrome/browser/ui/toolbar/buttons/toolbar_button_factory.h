@@ -45,8 +45,6 @@
 - (ToolbarButton*)forwardButton;
 // Tab Grid ToolbarButton.
 - (ToolbarTabGridButton*)tabGridButton;
-// StackView ToolbarButton.
-- (ToolbarButton*)stackViewButton;
 // Tools Menu ToolbarButton.
 - (ToolbarToolsMenuButton*)toolsMenuButton;
 // Share ToolbarButton.
@@ -57,23 +55,10 @@
 - (ToolbarButton*)stopButton;
 // Bookmark ToolbarButton.
 - (ToolbarButton*)bookmarkButton;
-// VoiceSearch ToolbarButton.
-- (ToolbarButton*)voiceSearchButton;
-// ContractToolbar ToolbarButton.
-- (ToolbarButton*)contractButton;
 // ToolbarButton to focus the omnibox.
 - (ToolbarButton*)omniboxButton;
-// LocationBar LeadingButton. Currently used for the incognito icon when the
-// Toolbar is expanded on incognito mode. It can return nil.
-- (ToolbarButton*)locationBarLeadingButton;
 // Button to cancel the edit of the location bar.
 - (UIButton*)cancelButton;
-
-// Returns images for Voice Search in an array representing the NORMAL/PRESSED
-// state
-- (NSArray<UIImage*>*)voiceSearchImages;
-// Returns images for TTS in an array representing the NORMAL/PRESSED states.
-- (NSArray<UIImage*>*)TTSImages;
 
 @end
 

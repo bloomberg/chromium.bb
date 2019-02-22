@@ -94,6 +94,16 @@ const HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
   return &search2->second;
 }
 
+int32_t HitTestManager::GetActiveFrameIndex(const SurfaceId& id) const {
+  Surface* surface = surface_manager_->GetSurfaceForId(id);
+  return surface->GetActiveFrameIndex();
+}
+
+int64_t HitTestManager::GetTraceId(const SurfaceId& id) const {
+  Surface* surface = surface_manager_->GetSurfaceForId(id);
+  return surface->GetActiveFrame().metadata.begin_frame_ack.trace_id;
+}
+
 bool HitTestManager::ValidateHitTestRegionList(
     const SurfaceId& surface_id,
     HitTestRegionList* hit_test_region_list) {

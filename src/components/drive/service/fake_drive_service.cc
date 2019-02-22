@@ -34,10 +34,7 @@
 
 using google_apis::AboutResource;
 using google_apis::AboutResourceCallback;
-using google_apis::AppList;
-using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
-using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
@@ -53,7 +50,6 @@ using google_apis::FileListCallback;
 using google_apis::FileResource;
 using google_apis::FileResourceCallback;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_BAD_REQUEST;
 using google_apis::HTTP_CREATED;
 using google_apis::HTTP_FORBIDDEN;
@@ -264,12 +260,10 @@ FakeDriveService::FakeDriveService()
       change_list_load_count_(0),
       directory_load_count_(0),
       about_resource_load_count_(0),
-      app_list_load_count_(0),
       blocked_file_list_load_count_(0),
       start_page_token_load_count_(0),
       offline_(false),
       never_return_all_file_list_(false),
-      share_url_base_("https://share_url/"),
       weak_ptr_factory_(this) {
   UpdateLatestChangelistId(largest_changestamp_, std::string());
   about_resource_->set_quota_bytes_total(9876543210);
@@ -279,47 +273,6 @@ FakeDriveService::FakeDriveService()
 
 FakeDriveService::~FakeDriveService() {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-bool FakeDriveService::LoadAppListForDriveApi(
-    const std::string& relative_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Load JSON data, which must be a dictionary.
-  std::unique_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
-  CHECK_EQ(base::Value::Type::DICTIONARY, value->type());
-  app_info_value_.reset(
-      static_cast<base::DictionaryValue*>(value.release()));
-  return !!app_info_value_;
-}
-
-void FakeDriveService::AddApp(const std::string& app_id,
-                              const std::string& app_name,
-                              const std::string& product_id,
-                              const std::string& create_url,
-                              bool is_removable) {
-  if (app_json_template_.empty()) {
-    base::FilePath path =
-        test_util::GetTestFilePath("drive/applist_app_template.json");
-    CHECK(base::ReadFileToString(path, &app_json_template_));
-  }
-
-  std::string app_json = app_json_template_;
-  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$AppId", app_id);
-  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$AppName", app_name);
-  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$ProductId", product_id);
-  base::ReplaceSubstringsAfterOffset(&app_json, 0, "$CreateUrl", create_url);
-  base::ReplaceSubstringsAfterOffset(
-      &app_json, 0, "$Removable", is_removable ? "true" : "false");
-
-  JSONStringValueDeserializer json(app_json);
-  std::string error_message;
-  std::unique_ptr<base::Value> value(json.Deserialize(nullptr, &error_message));
-  CHECK_EQ(base::Value::Type::DICTIONARY, value->type());
-
-  base::ListValue* item_list;
-  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
-  item_list->Append(std::move(value));
 }
 
 void FakeDriveService::AddTeamDrive(const std::string& id,
@@ -342,39 +295,6 @@ void FakeDriveService::AddTeamDrive(const std::string& id,
 
   const EntryInfo* new_entry = AddNewTeamDriveEntry(id, name);
   DCHECK(new_entry);
-}
-
-void FakeDriveService::RemoveAppByProductId(const std::string& product_id) {
-  base::ListValue* item_list;
-  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
-  for (size_t i = 0; i < item_list->GetSize(); ++i) {
-    base::DictionaryValue* item;
-    CHECK(item_list->GetDictionary(i, &item));
-    const char kKeyProductId[] = "productId";
-    std::string item_product_id;
-    if (item->GetStringWithoutPathExpansion(kKeyProductId, &item_product_id) &&
-        product_id == item_product_id) {
-      item_list->Remove(i, nullptr);
-      return;
-    }
-  }
-}
-
-bool FakeDriveService::HasApp(const std::string& app_id) const {
-  base::ListValue* item_list;
-  CHECK(app_info_value_->GetListWithoutPathExpansion("items", &item_list));
-  for (size_t i = 0; i < item_list->GetSize(); ++i) {
-    base::DictionaryValue* item;
-    CHECK(item_list->GetDictionary(i, &item));
-    const char kKeyId[] = "id";
-    std::string item_id;
-    if (item->GetStringWithoutPathExpansion(kKeyId, &item_id) &&
-        item_id == app_id) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void FakeDriveService::SetQuotaValue(int64_t used, int64_t total) {
@@ -702,31 +622,6 @@ CancelCallback FakeDriveService::GetFileResource(
   return CancelCallback();
 }
 
-CancelCallback FakeDriveService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& /* embed_origin */,
-    const GetShareUrlCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(callback);
-
-  if (offline_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, DRIVE_NO_CONNECTION, GURL()));
-    return CancelCallback();
-  }
-
-  EntryInfo* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, entry->share_url));
-    return CancelCallback();
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, HTTP_NOT_FOUND, GURL()));
-  return CancelCallback();
-}
-
 CancelCallback FakeDriveService::GetAboutResource(
     const AboutResourceCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -775,26 +670,6 @@ CancelCallback FakeDriveService::GetStartPageToken(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(callback, HTTP_SUCCESS, std::move(start_page_token)));
-  return CancelCallback();
-}
-
-CancelCallback FakeDriveService::GetAppList(const AppListCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(callback);
-  DCHECK(app_info_value_);
-
-  if (offline_) {
-    std::unique_ptr<AppList> null;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, DRIVE_NO_CONNECTION, std::move(null)));
-    return CancelCallback();
-  }
-
-  ++app_list_load_count_;
-  std::unique_ptr<AppList> app_list(AppList::CreateFrom(*app_info_value_));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, std::move(app_list)));
   return CancelCallback();
 }
 
@@ -1224,6 +1099,10 @@ CancelCallback FakeDriveService::InitiateUploadNewFile(
                     "",  // etag
                     title);
 
+  if (title == "never-sync.txt") {
+    return CancelCallback();
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, session_url));
   return CancelCallback();
@@ -1451,64 +1330,6 @@ CancelCallback FakeDriveService::MultipartUploadExistingFile(
       resource_id,
       options,
       base::Bind(&CallResumeUpload::Run, base::Owned(call_resume_upload)));
-  return CancelCallback();
-}
-
-CancelCallback FakeDriveService::AuthorizeApp(
-    const std::string& resource_id,
-    const std::string& app_id,
-    const AuthorizeAppCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(callback);
-
-  if (entries_.count(resource_id) == 0) {
-    callback.Run(google_apis::HTTP_NOT_FOUND, GURL());
-    return CancelCallback();
-  }
-
-  callback.Run(HTTP_SUCCESS,
-               GURL(base::StringPrintf(open_url_format_.c_str(),
-                                       resource_id.c_str(),
-                                       app_id.c_str())));
-  return CancelCallback();
-}
-
-CancelCallback FakeDriveService::UninstallApp(
-    const std::string& app_id,
-    const google_apis::EntryActionCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(callback);
-
-  if (offline_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, google_apis::DRIVE_NO_CONNECTION));
-    return CancelCallback();
-  }
-
-  // Find app_id from app_info_value_ and delete.
-  base::ListValue* items = nullptr;
-  if (!app_info_value_->GetList("items", &items)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, google_apis::HTTP_NOT_FOUND));
-    return CancelCallback();
-  }
-
-  for (size_t i = 0; i < items->GetSize(); ++i) {
-    base::DictionaryValue* item = nullptr;
-    std::string id;
-    if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
-        id == app_id) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, items->Remove(i, nullptr)
-                                       ? google_apis::HTTP_NO_CONTENT
-                                       : google_apis::HTTP_NOT_FOUND));
-      return CancelCallback();
-    }
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, google_apis::HTTP_NOT_FOUND));
   return CancelCallback();
 }
 
@@ -1742,6 +1563,19 @@ google_apis::DriveApiErrorCode FakeDriveService::GetFileVisibility(
   return HTTP_SUCCESS;
 }
 
+google_apis::DriveApiErrorCode FakeDriveService::SetFileAsSharedWithMe(
+    const std::string& resource_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  EntryInfo* entry = FindEntryByResourceId(resource_id);
+  if (!entry)
+    return HTTP_NOT_FOUND;
+
+  entry->change_resource.mutable_file()->set_shared_with_me_date(
+      base::Time::Now());
+  return HTTP_SUCCESS;
+}
+
 void FakeDriveService::AddChangeObserver(ChangeObserver* change_observer) {
   change_observers_.AddObserver(change_observer);
 }
@@ -1869,9 +1703,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
     *new_file->mutable_parents() = parents;
   }
 
-  new_entry->share_url = net::AppendOrReplaceQueryParameter(
-      share_url_base_, "name", title);
-
   AddNewChangestamp(new_change, team_drive_id);
   UpdateETag(new_file);
 
@@ -1908,9 +1739,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewTeamDriveEntry(
   team_drive->set_id(team_drive_id);
   team_drive->set_name(team_drive_name);
   change.set_team_drive(std::move(team_drive));
-
-  new_entry->share_url = net::AppendOrReplaceQueryParameter(
-      share_url_base_, "name", team_drive_name);
 
   AddNewChangestamp(&change, std::string());
 

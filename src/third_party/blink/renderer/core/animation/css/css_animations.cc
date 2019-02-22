@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -98,7 +99,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
 
   // Construct and populate the style for each keyframe
   PropertySet specified_properties_for_use_counter;
-  for (size_t i = 0; i < style_keyframes.size(); ++i) {
+  for (wtf_size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
     StringKeyframe* keyframe = StringKeyframe::Create();
     const Vector<double>& offsets = style_keyframe->Keys();
@@ -129,23 +130,16 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     }
     keyframes.push_back(keyframe);
     // The last keyframe specified at a given offset is used.
-    for (size_t j = 1; j < offsets.size(); ++j) {
+    for (wtf_size_t j = 1; j < offsets.size(); ++j) {
       keyframes.push_back(
           ToStringKeyframe(keyframe->CloneWithOffset(offsets[j])));
     }
   }
 
-  DEFINE_STATIC_LOCAL(SparseHistogram, property_histogram,
-                      ("WebCore.Animation.CSSProperties"));
   for (const CSSProperty* property : specified_properties_for_use_counter) {
     DCHECK(isValidCSSPropertyID(property->PropertyID()));
     UseCounter::CountAnimatedCSS(element_for_scoping->GetDocument(),
                                  property->PropertyID());
-
-    // TODO(crbug.com/458925): Remove legacy histogram and counts
-    property_histogram.Sample(
-        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
-            property->PropertyID()));
   }
 
   // Merge duplicate keyframes.
@@ -153,8 +147,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
                    [](const Member<Keyframe>& a, const Member<Keyframe>& b) {
                      return a->CheckedOffset() < b->CheckedOffset();
                    });
-  size_t target_index = 0;
-  for (size_t i = 1; i < keyframes.size(); i++) {
+  wtf_size_t target_index = 0;
+  for (wtf_size_t i = 1; i < keyframes.size(); i++) {
     if (keyframes[i]->CheckedOffset() ==
         keyframes[target_index]->CheckedOffset()) {
       for (const auto& property : keyframes[i]->Properties()) {
@@ -280,30 +274,39 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
   bool transform_zoom_changed =
       old_style->HasCurrentTransformAnimation() &&
       old_style->EffectiveZoom() != style.EffectiveZoom();
-  for (auto& entry : element_animations->Animations()) {
-    Animation& animation = *entry.key;
+
+  const auto& snapshot = [&](AnimationEffect* effect) {
     const KeyframeEffectModelBase* keyframe_effect =
-        GetKeyframeEffectModelBase(animation.effect());
+        GetKeyframeEffectModelBase(effect);
     if (!keyframe_effect)
-      continue;
+      return false;
 
     if ((transform_zoom_changed || was_viewport_resized) &&
         (keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTransform())) ||
          keyframe_effect->Affects(PropertyHandle(GetCSSPropertyTranslate()))))
       keyframe_effect->InvalidateCompositorKeyframesSnapshot();
 
-    bool update_compositor_keyframes = false;
     if (keyframe_effect->SnapshotAllCompositorKeyframesIfNecessary(
             element, style, parent_style)) {
-      update_compositor_keyframes = true;
+      return true;
     } else if (keyframe_effect->HasSyntheticKeyframes() &&
                keyframe_effect->SnapshotNeutralCompositorKeyframes(
                    element, *old_style, style, parent_style)) {
-      update_compositor_keyframes = true;
+      return true;
     }
+    return false;
+  };
 
-    if (update_compositor_keyframes)
+  for (auto& entry : element_animations->Animations()) {
+    Animation& animation = *entry.key;
+    if (snapshot(animation.effect()))
       update.UpdateCompositorKeyframes(&animation);
+  }
+
+  for (auto& entry : element_animations->GetWorkletAnimations()) {
+    WorkletAnimationBase& animation = *entry;
+    if (snapshot(animation.GetEffect()))
+      animation.InvalidateCompositingState();
   }
 }
 
@@ -342,14 +345,14 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
   if (animation_data && style.Display() != EDisplay::kNone) {
     const Vector<AtomicString>& name_list = animation_data->NameList();
-    for (size_t i = 0; i < name_list.size(); ++i) {
+    for (wtf_size_t i = 0; i < name_list.size(); ++i) {
       AtomicString name = name_list[i];
       if (name == CSSAnimationData::InitialName())
         continue;
 
       // Find n where this is the nth occurence of this animation name.
-      size_t name_index = 0;
-      for (size_t j = 0; j < i; j++) {
+      wtf_size_t name_index = 0;
+      for (wtf_size_t j = 0; j < i; j++) {
         if (name_list[j] == name)
           name_index++;
       }
@@ -370,10 +373,10 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
         continue;  // Cancel the animation if there's no style rule for it.
 
       const RunningAnimation* existing_animation = nullptr;
-      size_t existing_animation_index = 0;
+      wtf_size_t existing_animation_index = 0;
 
       if (css_animations) {
-        for (size_t i = 0; i < css_animations->running_animations_.size();
+        for (wtf_size_t i = 0; i < css_animations->running_animations_.size();
              i++) {
           const RunningAnimation& running_animation =
               *css_animations->running_animations_[i];
@@ -427,7 +430,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
     }
   }
 
-  for (size_t i = 0; i < cancel_running_animation_flags.size(); i++) {
+  for (wtf_size_t i = 0; i < cancel_running_animation_flags.size(); i++) {
     if (cancel_running_animation_flags[i]) {
       DCHECK(css_animations && !is_animation_style_change);
       update.CancelAnimation(
@@ -486,7 +489,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   // https://code.google.com/p/chromium/issues/detail?id=339847
   DisableCompositingQueryAsserts disabler;
 
-  for (size_t paused_index :
+  for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
     Animation& animation = *running_animations_[paused_index]->animation;
     if (animation.Paused())
@@ -510,9 +513,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     running_animations_[entry.index]->Update(entry);
   }
 
-  const Vector<size_t>& cancelled_indices =
+  const Vector<wtf_size_t>& cancelled_indices =
       pending_update_.CancelledAnimationIndices();
-  for (size_t i = cancelled_indices.size(); i-- > 0;) {
+  for (wtf_size_t i = cancelled_indices.size(); i-- > 0;) {
     DCHECK(i == cancelled_indices.size() - 1 ||
            cancelled_indices[i] < cancelled_indices[i + 1]);
     Animation& animation =
@@ -613,13 +616,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
     UseCounter::CountAnimatedCSS(element->GetDocument(),
                                  property.GetCSSProperty().PropertyID());
-
-    // TODO(crbug.com/458925): Remove legacy histogram and counts
-    DEFINE_STATIC_LOCAL(SparseHistogram, property_histogram,
-                        ("WebCore.Animation.CSSProperties"));
-    property_histogram.Sample(
-        UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
-            property.GetCSSProperty().PropertyID()));
   }
   ClearPendingUpdate();
 }
@@ -757,7 +753,9 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   // last one since we iterate over them in order.
 
   Timing timing = state.transition_data.ConvertToTiming(transition_index);
-  if (timing.start_delay + timing.iteration_duration <= 0) {
+  // CSS Transitions always have a valid duration (i.e. the value 'auto' is not
+  // supported), so iteration_duration will always be set.
+  if (timing.start_delay + timing.iteration_duration->InSecondsF() <= 0) {
     // We may have started a transition in a prior CSSTransitionData update,
     // this CSSTransitionData update needs to override them.
     // TODO(alancutter): Just iterate over the CSSTransitionDatas in reverse and
@@ -779,7 +777,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
                    interrupted_transition->reversing_shortening_factor) +
                       (1 - interrupted_transition->reversing_shortening_factor),
                   0.0, 1.0);
-      timing.iteration_duration *= reversing_shortening_factor;
+      timing.iteration_duration.value() *= reversing_shortening_factor;
       if (timing.start_delay < 0) {
         timing.start_delay *= reversing_shortening_factor;
       }
@@ -790,8 +788,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   double start_keyframe_offset = 0;
 
   if (timing.start_delay > 0) {
-    timing.iteration_duration += timing.start_delay;
-    start_keyframe_offset = timing.start_delay / timing.iteration_duration;
+    timing.iteration_duration.value() +=
+        AnimationTimeDelta::FromSecondsD(timing.start_delay);
+    start_keyframe_offset =
+        timing.start_delay / timing.iteration_duration->InSecondsF();
     timing.start_delay = 0;
   }
 
@@ -819,10 +819,10 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (property.GetCSSProperty().IsCompositableProperty()) {
-    AnimatableValue* from = CSSAnimatableValueFactory::Create(
-        property.GetCSSProperty(), state.old_style);
-    AnimatableValue* to = CSSAnimatableValueFactory::Create(
-        property.GetCSSProperty(), state.style);
+    AnimatableValue* from =
+        CSSAnimatableValueFactory::Create(property, state.old_style);
+    AnimatableValue* to =
+        CSSAnimatableValueFactory::Create(property, state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
@@ -926,7 +926,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
         update,  animating_element,  *old_style,        style,
         nullptr, active_transitions, listed_properties, *transition_data};
 
-    for (size_t transition_index = 0;
+    for (wtf_size_t transition_index = 0;
          transition_index < transition_data->PropertyList().size();
          ++transition_index) {
       const CSSTransitionData::TransitionProperty& transition_property =
@@ -1160,16 +1160,16 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   if (current_phase == AnimationEffect::kPhaseActive &&
       previous_phase_ == current_phase &&
       previous_iteration_ != current_iteration) {
-    // We fire only a single event for all iterations thast terminate
+    // We fire only a single event for all iterations that terminate
     // between a single pair of samples. See http://crbug.com/275263. For
     // compatibility with the existing implementation, this event uses
     // the elapsedTime for the first iteration in question.
-    DCHECK(!std::isnan(animation_node.SpecifiedTiming().iteration_duration));
-    const double elapsed_time =
-        animation_node.SpecifiedTiming().iteration_duration *
+    const AnimationTimeDelta elapsed_time =
+        animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_ + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  EventTypeNames::animationiteration, elapsed_time);
+                  EventTypeNames::animationiteration,
+                  elapsed_time.InSecondsF());
   }
 
   if (current_phase == AnimationEffect::kPhaseAfter &&
@@ -1202,7 +1202,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
             ? property_.CustomPropertyName()
             : property_.GetCSSProperty().GetPropertyNameString();
     const Timing& timing = animation_node.SpecifiedTiming();
-    double elapsed_time = timing.iteration_duration;
+    double elapsed_time = timing.iteration_duration->InSecondsF();
     const AtomicString& event_type = EventTypeNames::transitionend;
     String pseudo_element =
         PseudoElement::PseudoElementNameForEvents(GetPseudoId());

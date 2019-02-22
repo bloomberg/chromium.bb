@@ -115,7 +115,10 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   graceful_shutdown_helper_->OnSequenceManagerDeleted();
 
   main_thread_only().selector.SetTaskQueueSelectorObserver(nullptr);
-  controller_->RemoveNestingObserver(this);
+
+  // In some tests a NestingObserver may not have been registered.
+  if (main_thread_only().nesting_observer_registered_)
+    controller_->RemoveNestingObserver(this);
 }
 
 SequenceManagerImpl::AnyThread::AnyThread() = default;
@@ -148,12 +151,18 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
           message_loop, DefaultTickClock::GetInstance())));
 }
 
+void SequenceManagerImpl::BindToMessageLoop(MessageLoop* message_loop) {
+  controller_->SetMessageLoop(message_loop);
+  CompleteInitializationOnBoundThread();
+}
+
 void SequenceManagerImpl::BindToCurrentThread() {
   associated_thread_->BindToCurrentThread();
 }
 
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
+  main_thread_only().nesting_observer_registered_ = true;
 }
 
 void SequenceManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
@@ -453,8 +462,7 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) {
   return delay_till_next_task;
 }
 
-void SequenceManagerImpl::WillQueueTask(
-    internal::TaskQueueImpl::Task* pending_task) {
+void SequenceManagerImpl::WillQueueTask(Task* pending_task) {
   controller_->WillQueueTask(pending_task);
 }
 
@@ -716,6 +724,17 @@ SequenceManagerImpl::GetGracefulQueueShutdownHelper() const {
 
 WeakPtr<SequenceManagerImpl> SequenceManagerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+bool SequenceManagerImpl::SetCrashKeysAndCheckIsTaskCancelled(
+    const PendingTask& task) const {
+#if !defined(OS_NACL)
+  debug::SetCrashKeyString(main_thread_only().file_name_crash_key,
+                           task.posted_from.file_name());
+  debug::SetCrashKeyString(main_thread_only().function_name_crash_key,
+                           task.posted_from.function_name());
+#endif  // OS_NACL
+  return task.task.IsCancelled();
 }
 
 void SequenceManagerImpl::SetDefaultTaskRunner(

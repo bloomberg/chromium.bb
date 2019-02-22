@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 
+#include <limits>
+
+#include "base/auto_reset.h"
+#include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -28,8 +32,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
-#include <limits>
-
 namespace blink {
 
 namespace {
@@ -49,12 +51,11 @@ void CollectUpgradeCandidateInNode(Node& root,
     CollectUpgradeCandidateInNode(element, candidates);
 }
 
-}  // anonymous namespace
-
 // Returns true if |name| is invalid.
-static bool ThrowIfInvalidName(const AtomicString& name,
-                               ExceptionState& exception_state) {
-  if (CustomElement::IsValidName(name))
+bool ThrowIfInvalidName(const AtomicString& name,
+                        bool allow_embedder_names,
+                        ExceptionState& exception_state) {
+  if (CustomElement::IsValidName(name, allow_embedder_names))
     return false;
   exception_state.ThrowDOMException(
       DOMExceptionCode::kSyntaxError,
@@ -63,9 +64,9 @@ static bool ThrowIfInvalidName(const AtomicString& name,
 }
 
 // Returns true if |name| is valid.
-static bool ThrowIfValidName(const AtomicString& name,
-                             ExceptionState& exception_state) {
-  if (!CustomElement::IsValidName(name))
+bool ThrowIfValidName(const AtomicString& name,
+                      ExceptionState& exception_state) {
+  if (!CustomElement::IsValidName(name, false))
     return false;
   exception_state.ThrowDOMException(
       DOMExceptionCode::kNotSupportedError,
@@ -73,24 +74,7 @@ static bool ThrowIfValidName(const AtomicString& name,
   return true;
 }
 
-class CustomElementRegistry::ElementDefinitionIsRunning final {
-  STACK_ALLOCATED();
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ElementDefinitionIsRunning);
-
- public:
-  ElementDefinitionIsRunning(bool& flag) : flag_(flag) {
-    DCHECK(!flag_);
-    flag_ = true;
-  }
-
-  ~ElementDefinitionIsRunning() {
-    DCHECK(flag_);
-    flag_ = false;
-  }
-
- private:
-  bool& flag_;
-};
+}  // namespace
 
 CustomElementRegistry* CustomElementRegistry::Create(
     const LocalDOMWindow* owner) {
@@ -122,20 +106,17 @@ void CustomElementRegistry::Trace(blink::Visitor* visitor) {
 CustomElementDefinition* CustomElementRegistry::define(
     ScriptState* script_state,
     const AtomicString& name,
-    const ScriptValue& constructor,
+    V8CustomElementConstructor* constructor,
     const ElementDefinitionOptions& options,
     ExceptionState& exception_state) {
-  CSSStyleSheet* style_sheet = nullptr;
-  if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
-      options.hasStyle())
-    style_sheet = options.style();
-  ScriptCustomElementDefinitionBuilder builder(script_state, this, style_sheet,
-                                               constructor, exception_state);
-  return define(name, builder, options, exception_state);
+  ScriptCustomElementDefinitionBuilder builder(script_state, this, constructor,
+                                               exception_state);
+  return DefineInternal(script_state, name, builder, options, exception_state);
 }
 
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
-CustomElementDefinition* CustomElementRegistry::define(
+CustomElementDefinition* CustomElementRegistry::DefineInternal(
+    ScriptState* script_state,
     const AtomicString& name,
     CustomElementDefinitionBuilder& builder,
     const ElementDefinitionOptions& options,
@@ -144,7 +125,9 @@ CustomElementDefinition* CustomElementRegistry::define(
   if (!builder.CheckConstructorIntrinsics())
     return nullptr;
 
-  if (ThrowIfInvalidName(name, exception_state))
+  const bool allow_embedder_names =
+      WebCustomElement::EmbedderNamesAllowedScope::IsAllowed();
+  if (ThrowIfInvalidName(name, allow_embedder_names, exception_state))
     return nullptr;
 
   if (NameIsDefined(name) || V0NameIsDefined(name)) {
@@ -184,9 +167,6 @@ CustomElementDefinition* CustomElementRegistry::define(
     local_name = extends;
   }
 
-  // TODO(dominicc): Add a test where the prototype getter destroys
-  // the context.
-
   // 8. If this CustomElementRegistry's element definition is
   // running flag is set, then throw a "NotSupportedError"
   // DOMException and abort these steps.
@@ -200,13 +180,9 @@ CustomElementDefinition* CustomElementRegistry::define(
   {
     // 9. Set this CustomElementRegistry's element definition is
     // running flag.
-    ElementDefinitionIsRunning defining(element_definition_is_running_);
+    base::AutoReset<bool> defining(&element_definition_is_running_, true);
 
-    // 10.1-2
-    if (!builder.CheckPrototype())
-      return nullptr;
-
-    // 10.3-6
+    // 10. Run the following substeps while catching any exceptions: ...
     if (!builder.RememberOriginalProperties())
       return nullptr;
 
@@ -214,7 +190,17 @@ CustomElementDefinition* CustomElementRegistry::define(
     // the above steps threw an exception or not: Unset this
     // CustomElementRegistry's element definition is running
     // flag."
-    // (ElementDefinitionIsRunning destructor does this.)
+    // (|defining|'s destructor does this.)
+  }
+
+  // During step 10, property getters might have detached the frame. Abort in
+  // the case.
+  if (!script_state->ContextIsValid()) {
+    // Intentionally do not throw an exception so that, when Blink will support
+    // detached frames, the behavioral change whether Blink throws or not will
+    // not be observable from author.
+    // TODO(yukishiino): Support detached frames.
+    return nullptr;
   }
 
   CustomElementDescriptor descriptor(name, local_name);
@@ -225,6 +211,10 @@ CustomElementDefinition* CustomElementRegistry::define(
   CustomElementDefinition* definition = builder.Build(descriptor, id);
   CHECK(!exception_state.HadException());
   CHECK(definition->Descriptor() == descriptor);
+  if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
+      options.hasStyles())
+    definition->SetDefaultStyleSheets(options.styles());
+
   definitions_.emplace_back(definition);
   NameIdMap::AddResult result = name_id_map_.insert(descriptor.GetName(), id);
   CHECK(result.is_new_entry);
@@ -240,6 +230,7 @@ CustomElementDefinition* CustomElementRegistry::define(
     entry->value->Resolve();
     when_defined_promise_map_.erase(entry);
   }
+
   return definition;
 }
 
@@ -324,7 +315,7 @@ ScriptPromise CustomElementRegistry::whenDefined(
     ScriptState* script_state,
     const AtomicString& name,
     ExceptionState& exception_state) {
-  if (ThrowIfInvalidName(name, exception_state))
+  if (ThrowIfInvalidName(name, false, exception_state))
     return ScriptPromise();
   CustomElementDefinition* definition = DefinitionForName(name);
   if (definition)
@@ -371,7 +362,8 @@ void CustomElementRegistry::upgrade(Node* root) {
 
   // 2. For each candidate of candidates, try to upgrade candidate.
   for (auto& candidate : candidates) {
-    CustomElement::TryToUpgrade(candidate);
+    CustomElement::TryToUpgrade(candidate,
+                                true /* upgrade_invisible_elements */);
   }
 }
 

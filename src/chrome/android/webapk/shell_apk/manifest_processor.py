@@ -27,6 +27,8 @@ def _AppendParsedVariables(initial_variable_list, variables_arg, error_func):
     if '=' not in v:
       error_func('--variables argument must contain "=": ' + v)
     name, _, value = v.partition('=')
+    if value == "false":
+      value = False
     variables[name] = value
   return variables
 

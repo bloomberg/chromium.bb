@@ -14,7 +14,12 @@
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
+
+namespace ui {
+class GestureEvent;
+}  // namespace ui
 
 namespace ws {
 class WindowService;
@@ -82,6 +87,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
+  // Invoked when the app list is closed.
+  virtual void ViewClosed() = 0;
+
   // Gets the wallpaper prominent colors.
   using GetWallpaperProminentColorsCallback =
       base::OnceCallback<void(const std::vector<SkColor>&)>;
@@ -108,6 +116,16 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                         ui::MenuSourceType source_type) = 0;
+
+  // Forwards events to the home launcher gesture handler and returns true if
+  // they have been processed.
+  virtual bool ProcessHomeLauncherGesture(
+      ui::GestureEvent* event,
+      const gfx::Point& screen_location) = 0;
+
+  // Checks if we are allowed to process events on the app list main view and
+  // its descendants.
+  virtual bool CanProcessEventsOnApplistViews() = 0;
 
   virtual ws::WindowService* GetWindowService() = 0;
 };

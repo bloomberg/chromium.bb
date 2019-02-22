@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -82,7 +82,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST)
 bool CanAccessNvidiaDeviceFile() {
   bool res = true;
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   if (access("/dev/nvidiactl", R_OK) != 0) {
     DVLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
     res = false;
@@ -183,20 +183,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif  // OS_WIN
   }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_preferences_.enable_vulkan) {
-    vulkan_implementation_ = gpu::CreateVulkanImplementation();
-    if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance()) {
-      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
-      vulkan_implementation_ = nullptr;
-    }
-    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
-  }
-#else
-  gpu_preferences_.enable_vulkan = false;
-#endif
-
   sandbox_helper_->PreSandboxStartup();
 
   bool attempted_startsandbox = false;
@@ -218,8 +204,25 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
   params.single_process = false;
-  params.using_mojo = features::IsOzoneDrmMojo();
+  params.using_mojo =
+      features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
+                                        ->GetPlatformProperties()
+                                        .requires_mojo;
   ui::OzonePlatform::InitializeForGPU(params);
+#endif
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_preferences_.enable_vulkan) {
+    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+    if (!vulkan_implementation_ ||
+        !vulkan_implementation_->InitializeVulkanInstance()) {
+      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
+      vulkan_implementation_ = nullptr;
+    }
+    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
+  }
+#else
+  gpu_preferences_.enable_vulkan = false;
 #endif
 
   if (!use_swiftshader) {
@@ -365,12 +368,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-#if defined(OS_CHROMEOS)
   params.using_mojo =
-      features::IsMultiProcessMash() || features::IsOzoneDrmMojo();
-#else
-  params.using_mojo = features::IsOzoneDrmMojo();
-#endif
+      features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
+                                        ->GetPlatformProperties()
+                                        .requires_mojo;
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif

@@ -36,6 +36,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_frame_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -299,17 +300,6 @@ bool ChromeExtensionsRendererClient::ShouldFork(blink::WebLocalFrame* frame,
     return true;
   }
 
-  // If this is a reload, check whether it has the wrong process type.  We
-  // should send it to the browser if it's an extension URL (e.g., hosted app)
-  // in a normal process, or if it's a process for an extension that has been
-  // uninstalled.  Without --site-per-process mode, we never fork processes for
-  // subframes, so this check only makes sense for top-level frames.
-  // TODO(alexmos,nasko): Figure out how this check should work when reloading
-  // subframes in --site-per-process mode.
-  if (!frame->Parent() && GURL(frame->GetDocument().Url()) == url) {
-    if (is_extension_url != IsStandaloneExtensionProcess())
-      return true;
-  }
   return false;
 }
 
@@ -327,16 +317,16 @@ ChromeExtensionsRendererClient::CreateBrowserPluginDelegate(
 }
 
 // static
-bool ChromeExtensionsRendererClient::IsPluginHandledByMimeHandlerView(
+bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
     const std::string& mime_type,
     const content::WebPluginInfo& plugin_info,
     int32_t element_instance_id) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
-  // TODO(ekaramad): Implement the renderer side logic here
-  // (https://crbug.com/659750).
-  return false;
+  return extensions::MimeHandlerViewFrameContainer::Create(
+      plugin_element, resource_url, mime_type, plugin_info,
+      element_instance_id);
 }
 
 // static

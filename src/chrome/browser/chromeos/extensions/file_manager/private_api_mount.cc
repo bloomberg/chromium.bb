@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -135,9 +136,9 @@ void FileManagerPrivateAddMountFunction::RunAfterGetDriveFile(
   }
 
   file_system->IsCacheFileMarkedAsMounted(
-      drive_path, base::Bind(&FileManagerPrivateAddMountFunction::
-                                 RunAfterIsCacheFileMarkedAsMounted,
-                             this, drive_path, cache_path));
+      drive_path, base::BindOnce(&FileManagerPrivateAddMountFunction::
+                                     RunAfterIsCacheFileMarkedAsMounted,
+                                 this, drive_path, cache_path));
 }
 
 void FileManagerPrivateAddMountFunction::RunAfterIsCacheFileMarkedAsMounted(
@@ -167,10 +168,9 @@ void FileManagerPrivateAddMountFunction::RunAfterIsCacheFileMarkedAsMounted(
   }
   file_system->MarkCacheFileAsMounted(
       drive_path,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted,
-          this,
-          drive_path.BaseName()));
+          this, drive_path.BaseName()));
 }
 
 void FileManagerPrivateAddMountFunction::RunAfterMarkCacheFileAsMounted(
@@ -245,6 +245,10 @@ bool FileManagerPrivateRemoveMountFunction::RunAsync() {
       }
       break;
     }
+    case file_manager::VOLUME_TYPE_CROSTINI:
+      file_manager::VolumeManager::Get(GetProfile())
+          ->RemoveSshfsCrostiniVolume(volume->mount_path());
+      break;
     default:
       // Requested unmounting a device which is not unmountable.
       return false;
@@ -312,9 +316,10 @@ void FileManagerPrivateMarkCacheAsMountedFunction::RunAfterGetDriveFile(
   // doesn't give bad side effect.
   if (is_mounted) {
     file_system->MarkCacheFileAsMounted(
-        drive_path, base::Bind(&FileManagerPrivateMarkCacheAsMountedFunction::
-                                   RunAfterMarkCacheFileAsMounted,
-                               this));
+        drive_path,
+        base::BindOnce(&FileManagerPrivateMarkCacheAsMountedFunction::
+                           RunAfterMarkCacheFileAsMounted,
+                       this));
   } else {
     file_system->MarkCacheFileAsUnmounted(
         cache_path, base::Bind(&FileManagerPrivateMarkCacheAsMountedFunction::

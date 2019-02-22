@@ -196,6 +196,26 @@ void NotifyResourceTransferSizeUpdate(
   render_frame->DidReceiveTransferSizeUpdate(request_id, transfer_size_diff);
 }
 
+#if defined(OS_ANDROID)
+void NotifyUpdateUserGestureCarryoverInfo(int render_frame_id) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      RenderThreadImpl::DeprecatedGetMainTaskRunner();
+  if (!task_runner->BelongsToCurrentThread()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(NotifyUpdateUserGestureCarryoverInfo, render_frame_id));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->GetFrameHost()->UpdateUserGestureCarryoverInfo();
+}
+#endif
+
 // Returns true if the headers indicate that this resource should always be
 // revalidated or not cached.
 bool AlwaysAccessNetwork(
@@ -261,7 +281,7 @@ ResourceDispatcher::~ResourceDispatcher() {
 
 ResourceDispatcher::PendingRequestInfo*
 ResourceDispatcher::GetPendingRequestInfo(int request_id) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return nullptr;
   return it->second.get();
@@ -495,6 +515,7 @@ void ResourceDispatcher::OnRequestComplete(
   }
 
   network::URLLoaderCompletionStatus renderer_status(status);
+  // TODO(toyoshim): Consider to convert status.cors_preflight_timing_info here.
   if (status.completion_time.is_null()) {
     // No completion timestamp is provided, leave it as is.
   } else if (request_info->remote_request_start.is_null() ||
@@ -528,7 +549,7 @@ void ResourceDispatcher::OnRequestComplete(
 bool ResourceDispatcher::RemovePendingRequest(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;
 
@@ -559,7 +580,7 @@ bool ResourceDispatcher::RemovePendingRequest(
 void ResourceDispatcher::Cancel(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DLOG(ERROR) << "unknown request";
     return;
@@ -716,6 +737,13 @@ int ResourceDispatcher::StartAsync(
     base::OnceClosure* continue_navigation_function) {
   CheckSchemeForReferrerPolicy(*request);
 
+#if defined(OS_ANDROID)
+  if (request->resource_type != RESOURCE_TYPE_MAIN_FRAME &&
+      request->has_user_gesture) {
+    NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
+  }
+#endif
+
   bool override_url_loader =
       !!response_override_params &&
       !!response_override_params->url_loader_client_endpoints;
@@ -735,10 +763,23 @@ int ResourceDispatcher::StartAsync(
             request_id, this, loading_task_runner,
             true /* bypass_redirect_checks */, request->url);
 
-    DCHECK(continue_navigation_function);
-    *continue_navigation_function =
-        base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
-                       weak_factory_.GetWeakPtr(), request_id);
+    if (request->resource_type == RESOURCE_TYPE_SHARED_WORKER) {
+      // For shared workers, immediately post a task for continuing loading
+      // because shared workers don't have the concept of the navigation commit
+      // and |continue_navigation_function| is never called.
+      // TODO(nhiroki): Unify this case with the navigation case for code
+      // health.
+      loading_task_runner->PostTask(
+          FROM_HERE, base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                                    weak_factory_.GetWeakPtr(), request_id));
+    } else {
+      // For navigations, |continue_navigation_function| is called after the
+      // navigation commit.
+      DCHECK(continue_navigation_function);
+      *continue_navigation_function =
+          base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                         weak_factory_.GetWeakPtr(), request_id);
+    }
     return request_id;
   }
 
@@ -752,7 +793,8 @@ int ResourceDispatcher::StartAsync(
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
   // MojoLoading is the only IPC code path.
-  if (request->fetch_request_context_type != REQUEST_CONTEXT_TYPE_FETCH) {
+  if (request->fetch_request_context_type !=
+      static_cast<int>(blink::mojom::RequestContextType::FETCH)) {
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
     if (blink::ServiceWorkerUtils::IsServicificationEnabled())

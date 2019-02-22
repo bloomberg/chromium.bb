@@ -41,6 +41,15 @@ void FeatureStateManager::NotifyFeatureStatesChange(
     observer.OnFeatureStatesChange(feature_states_map);
 }
 
+std::ostream& operator<<(std::ostream& stream,
+                         const FeatureStateManager::FeatureStatesMap& map) {
+  stream << "{" << std::endl;
+  for (const auto& item : map)
+    stream << "  " << item.first << ": " << item.second << "," << std::endl;
+  stream << "}";
+  return stream;
+}
+
 }  // namespace multidevice_setup
 
 }  // namespace chromeos

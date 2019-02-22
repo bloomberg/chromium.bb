@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -23,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -75,6 +77,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1285,8 +1288,8 @@ void SAMLPolicyTest::GetCookies() {
       user_manager::UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SAMLPolicyTest::GetCookiesOnIOThread,
                      base::Unretained(this),
                      scoped_refptr<net::URLRequestContextGetter>(
@@ -1306,8 +1309,7 @@ void SAMLPolicyTest::GetCookiesOnIOThread(
 void SAMLPolicyTest::StoreCookieList(const base::Closure& callback,
                                      const net::CookieList& cookie_list) {
   cookie_list_ = cookie_list;
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   callback);
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {
@@ -1510,10 +1512,37 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
   session_start_waiter.Wait();
 }
 
+// A specialization of SAMLPolicyTest which doesn't pass the command-line switch
+// forcing the WebUI login, thus allowing views-based login.
+class SAMLPolicyViewsBasedLoginTest : public SAMLPolicyTest {
+ public:
+  SAMLPolicyViewsBasedLoginTest() = default;
+  ~SAMLPolicyViewsBasedLoginTest() override = default;
+
+ protected:
+  // OobeBaseTest:
+  bool ShouldForceWebUiLogin() override {
+    // Allow the Views-based login to be used.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SAMLPolicyViewsBasedLoginTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SAMLPolicyViewsBasedLoginTest,
+                       PRE_TestLoginMediaPermission) {
+  // Mark OOBE completed to go directly to the sign-in screen - this is
+  // currently needed to trigger the views-based login UI.
+  StartupUtils::MarkOobeCompleted();
+}
+
 // Ensure that the permission status of getUserMedia requests from SAML login
 // pages is controlled by the kLoginVideoCaptureAllowedUrls pref rather than the
 // underlying user content setting.
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyViewsBasedLoginTest,
+                       TestLoginMediaPermission) {
+  EXPECT_TRUE(ash::features::IsViewsLoginEnabled());
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
 
   const GURL url1("https://google.com");
@@ -1523,28 +1552,22 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
   WaitForSigninScreen();
 
   content::WebContents* web_contents = GetLoginUI()->GetWebContents();
+  content::WebContentsDelegate* web_contents_delegate =
+      web_contents->GetDelegate();
 
   // Mic should always be blocked.
-  EXPECT_FALSE(
-      MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents->GetMainFrame(), url1,
-          content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetMainFrame(), url1, content::MEDIA_DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the whitelist, otherwise blocked.
-  EXPECT_TRUE(
-      MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents->GetMainFrame(), url1,
-          content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetMainFrame(), url1, content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
-  EXPECT_TRUE(
-      MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents->GetMainFrame(), url2,
-          content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetMainFrame(), url2, content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
-  EXPECT_FALSE(
-      MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents->GetMainFrame(), url3,
-          content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetMainFrame(), url3, content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
   // Camera should be blocked in the login screen, even if it's allowed via
   // content setting.
@@ -1555,10 +1578,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
                                       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
                                       std::string(), CONTENT_SETTING_ALLOW);
 
-  EXPECT_FALSE(
-      MediaCaptureDevicesDispatcher::GetInstance()->CheckMediaAccessPermission(
-          web_contents->GetMainFrame(), url3,
-          content::MEDIA_DEVICE_VIDEO_CAPTURE));
+  EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
+      web_contents->GetMainFrame(), url3, content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 }  // namespace chromeos

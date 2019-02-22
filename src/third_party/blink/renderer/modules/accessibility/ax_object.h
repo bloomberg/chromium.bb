@@ -8,12 +8,14 @@
  *
  * 1.  Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
- *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
+ * 2.
+ * Redistributiothird_party/blink/renderer/modules/exported/web_ax_object.ccns
+ * in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other
+ * materials provided with the distribution. 3.  Neither the name of Apple
+ * Computer, Inc. ("Apple") nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific
+ * prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -45,8 +47,10 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/accessibility/ax_enums.mojom-blink.h"
 
 class SkMatrix44;
 
@@ -80,7 +84,7 @@ class AXSparseAttributeClient {
 };
 
 class IgnoredReason {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   AXIgnoredReason reason;
@@ -111,13 +115,13 @@ class NameSourceRelatedObject
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
 class NameSource {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   String text;
   bool superseded = false;
   bool invalid = false;
-  AXNameFrom type = kAXNameFromUninitialized;
+  ax::mojom::NameFrom type = ax::mojom::NameFrom::kUninitialized;
   const QualifiedName& attribute;
   AtomicString attribute_value;
   AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
@@ -133,13 +137,13 @@ class NameSource {
 };
 
 class DescriptionSource {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   String text;
   bool superseded = false;
   bool invalid = false;
-  AXDescriptionFrom type = kAXDescriptionFromUninitialized;
+  ax::mojom::DescriptionFrom type = ax::mojom::DescriptionFrom::kUninitialized;
   const QualifiedName& attribute;
   AtomicString attribute_value;
   AXTextFromNativeHTML native_source = kAXTextFromNativeHTMLUninitialized;
@@ -167,7 +171,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
   struct AXSelection {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     // The deepest descendant in which the range starts.
     // (nullptr means the current object.)
     Persistent<AXObject> anchor_object;
@@ -456,15 +460,17 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsAXSVGRoot() const { return false; }
 
   // Check object role or purpose.
-  virtual AccessibilityRole RoleValue() const { return role_; }
+  virtual ax::mojom::Role RoleValue() const { return role_; }
   bool IsARIATextControl() const;
   virtual bool IsARIARow() const { return false; }
   virtual bool IsAnchor() const { return false; }
   bool IsButton() const;
-  bool IsCanvas() const { return RoleValue() == kCanvasRole; }
-  bool IsCheckbox() const { return RoleValue() == kCheckBoxRole; }
+  bool IsCanvas() const { return RoleValue() == ax::mojom::Role::kCanvas; }
+  bool IsCheckbox() const { return RoleValue() == ax::mojom::Role::kCheckBox; }
   bool IsCheckboxOrRadio() const { return IsCheckbox() || IsRadioButton(); }
-  bool IsColorWell() const { return RoleValue() == kColorWellRole; }
+  bool IsColorWell() const {
+    return RoleValue() == ax::mojom::Role::kColorWell;
+  }
   virtual bool IsControl() const { return false; }
   virtual bool IsEmbeddedObject() const { return false; }
   virtual bool IsFieldset() const { return false; }
@@ -494,31 +500,40 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsPasswordField() const { return false; }
   virtual bool IsPasswordFieldAndShouldHideValue() const;
   bool IsPresentational() const {
-    return RoleValue() == kNoneRole || RoleValue() == kPresentationalRole;
+    return RoleValue() == ax::mojom::Role::kNone ||
+           RoleValue() == ax::mojom::Role::kPresentational;
   }
   virtual bool IsProgressIndicator() const { return false; }
-  bool IsRadioButton() const { return RoleValue() == kRadioButtonRole; }
-  bool IsRange() const {
-    return RoleValue() == kProgressIndicatorRole ||
-           RoleValue() == kScrollBarRole || RoleValue() == kSliderRole ||
-           RoleValue() == kSpinButtonRole || IsMoveableSplitter();
+  bool IsRadioButton() const {
+    return RoleValue() == ax::mojom::Role::kRadioButton;
   }
-  bool IsScrollbar() const { return RoleValue() == kScrollBarRole; }
+  bool IsRange() const {
+    return RoleValue() == ax::mojom::Role::kProgressIndicator ||
+           RoleValue() == ax::mojom::Role::kScrollBar ||
+           RoleValue() == ax::mojom::Role::kSlider ||
+           RoleValue() == ax::mojom::Role::kSpinButton || IsMoveableSplitter();
+  }
+  bool IsScrollbar() const {
+    return RoleValue() == ax::mojom::Role::kScrollBar;
+  }
   virtual bool IsSlider() const { return false; }
   virtual bool IsNativeSlider() const { return false; }
   virtual bool IsMoveableSplitter() const { return false; }
-  virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
-  bool IsTabItem() const { return RoleValue() == kTabRole; }
+  virtual bool IsSpinButton() const {
+    return RoleValue() == ax::mojom::Role::kSpinButton;
+  }
+  bool IsTabItem() const { return RoleValue() == ax::mojom::Role::kTab; }
   virtual bool IsTextControl() const { return false; }
   bool IsTextObject() const;
-  bool IsTree() const { return RoleValue() == kTreeRole; }
+  bool IsTree() const { return RoleValue() == ax::mojom::Role::kTree; }
   virtual bool IsVirtualObject() const { return false; }
-  bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
+  bool IsWebArea() const {
+    return RoleValue() == ax::mojom::Role::kRootWebArea;
+  }
 
   // Check object state.
   virtual bool IsAutofillAvailable() { return false; }
   virtual bool IsClickable() const;
-  virtual bool IsCollapsed() const { return false; }
   virtual AccessibilityExpanded IsExpanded() const {
     return kExpandedUndefined;
   }
@@ -577,7 +592,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Retrieves the accessible name of the object, an enum indicating where the
   // name was derived from, and a list of objects that were used to derive the
   // name, if any.
-  virtual String GetName(AXNameFrom&, AXObjectVector* name_objects) const;
+  virtual String GetName(ax::mojom::NameFrom&,
+                         AXObjectVector* name_objects) const;
 
   typedef HeapVector<NameSource> NameSources;
   // Retrieves the accessible name of the object and a list of all potential
@@ -589,16 +605,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // accessible description of the object, which is secondary to |name|, an enum
   // indicating where the description was derived from, and a list of objects
   // that were used to derive the description, if any.
-  virtual String Description(AXNameFrom,
-                             AXDescriptionFrom&,
+  virtual String Description(ax::mojom::NameFrom,
+                             ax::mojom::DescriptionFrom&,
                              AXObjectVector* description_objects) const {
     return String();
   }
 
   // Same as above, but returns a list of all potential sources for the
   // description, indicating which were used.
-  virtual String Description(AXNameFrom,
-                             AXDescriptionFrom&,
+  virtual String Description(ax::mojom::NameFrom,
+                             ax::mojom::DescriptionFrom&,
                              DescriptionSources*,
                              AXRelatedObjectVector*) const {
     return String();
@@ -607,14 +623,14 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Takes the result of nameFrom and descriptionFrom from calling |name| and
   // |description|, above, and retrieves the placeholder of the object, if
   // present and if it wasn't already exposed by one of the two functions above.
-  virtual String Placeholder(AXNameFrom) const { return String(); }
+  virtual String Placeholder(ax::mojom::NameFrom) const { return String(); }
 
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;
   virtual String TextAlternative(bool recursive,
                                  bool in_aria_labelled_by_traversal,
                                  AXObjectSet& visited,
-                                 AXNameFrom& name_from,
+                                 ax::mojom::NameFrom& name_from,
                                  AXRelatedObjectVector* related_objects,
                                  NameSources* name_sources) const {
     return String();
@@ -662,10 +678,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXObject* InPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation Orientation() const;
   virtual String GetText() const { return String(); }
-  virtual AccessibilityTextDirection GetTextDirection() const {
-    return kAccessibilityTextDirectionLTR;
+  virtual ax::mojom::TextDirection GetTextDirection() const {
+    return ax::mojom::TextDirection::kLtr;
   }
-  virtual AXTextPosition GetTextPosition() const { return kAXTextPositionNone; }
+  virtual ax::mojom::TextPosition GetTextPosition() const {
+    return ax::mojom::TextPosition::kNone;
+  }
   virtual int TextLength() const { return 0; }
   virtual TextStyle GetTextStyle() const { return kTextStyleNone; }
   virtual AXObjectVector RadioButtonsInGroup() const {
@@ -694,13 +712,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void GetWordBoundaries(Vector<AXRange>&) const;
 
   // Properties of interactive elements.
-  AXDefaultActionVerb Action() const;
-  AccessibilityCheckedState CheckedState() const;
-  virtual AriaCurrentState GetAriaCurrentState() const {
-    return kAriaCurrentStateUndefined;
+  ax::mojom::DefaultActionVerb Action() const;
+  ax::mojom::CheckedState CheckedState() const;
+  virtual ax::mojom::AriaCurrentState GetAriaCurrentState() const {
+    return ax::mojom::AriaCurrentState::kNone;
   }
-  virtual InvalidState GetInvalidState() const {
-    return kInvalidStateUndefined;
+  virtual ax::mojom::InvalidState GetInvalidState() const {
+    return ax::mojom::InvalidState::kNone;
   }
   // Only used when invalidState() returns InvalidStateOther.
   virtual String AriaInvalidValue() const { return String(); }
@@ -713,14 +731,16 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual AXRestriction Restriction() const;
 
   // ARIA attributes.
-  virtual AccessibilityRole DetermineAccessibilityRole();
-  AccessibilityRole DetermineAriaRoleAttribute() const;
-  virtual AccessibilityRole AriaRoleAttribute() const;
+  virtual ax::mojom::Role DetermineAccessibilityRole();
+  ax::mojom::Role DetermineAriaRoleAttribute() const;
+  virtual ax::mojom::Role AriaRoleAttribute() const;
   virtual AXObject* ActiveDescendant() { return nullptr; }
   virtual String AriaAutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
   virtual void AriaDescribedbyElements(AXObjectVector&) const {}
-  virtual AXHasPopup HasPopup() const { return kAXHasPopupFalse; }
+  virtual ax::mojom::HasPopup HasPopup() const {
+    return ax::mojom::HasPopup::kFalse;
+  }
   virtual bool IsEditable() const { return false; }
   bool IsEditableRoot() const;
   virtual bool ComputeIsEditableRoot() const { return false; }
@@ -728,8 +748,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsRichlyEditable() const { return false; }
   bool AriaCheckedIsPresent() const;
   bool AriaPressedIsPresent() const;
-  bool SupportsARIAActiveDescendant() const;
-  bool SupportsARIAAttributes() const;
+  bool HasGlobalARIAAttribute() const;
   bool SupportsARIAExpanded() const;
   virtual bool SupportsARIADragging() const { return false; }
   virtual bool SupportsARIADropping() const { return false; }
@@ -836,6 +855,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void DetachFromParent() { parent_ = nullptr; }
   virtual AXObject* ScrollBar(AccessibilityOrientation) { return nullptr; }
   virtual void AddAccessibleNodeChildren();
+  virtual void SelectedOptions(AXObjectVector&) const {}
 
   // Properties of the object's owning document or page.
   virtual double EstimatedLoadingProgress() const { return 0; }
@@ -891,8 +911,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual unsigned AriaRowIndex() const;
   virtual int AriaColumnCount() const;
   virtual int AriaRowCount() const;
-  virtual SortDirection GetSortDirection() const {
-    return kSortDirectionUndefined;
+  virtual ax::mojom::SortDirection GetSortDirection() const {
+    return ax::mojom::SortDirection::kNone;
   }
 
   // For a row or column.
@@ -965,13 +985,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void LineBreaks(Vector<int>&) const {}
 
   // Static helper functions.
-  static bool IsARIAControl(AccessibilityRole);
-  static bool IsARIAInput(AccessibilityRole);
+  static bool IsARIAControl(ax::mojom::Role);
+  static bool IsARIAInput(ax::mojom::Role);
   // Is this a widget that requires container widget.
   bool IsSubWidget() const;
-  static AccessibilityRole AriaRoleToWebCoreRole(const String&);
-  static const AtomicString& RoleName(AccessibilityRole);
-  static const AtomicString& InternalRoleName(AccessibilityRole);
+  static ax::mojom::Role AriaRoleToWebCoreRole(const String&);
+  static const AtomicString& RoleName(ax::mojom::Role);
+  static const AtomicString& InternalRoleName(ax::mojom::Role);
   static void AccessibleNodeListToElementVector(const AccessibleNodeList&,
                                                 HeapVector<Member<Element>>&);
 
@@ -988,8 +1008,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   AXID id_;
   AXObjectVector children_;
   mutable bool have_children_;
-  AccessibilityRole role_;
-  AccessibilityRole aria_role_;
+  ax::mojom::Role role_;
+  ax::mojom::Role aria_role_;
   mutable AXObjectInclusion last_known_is_ignored_value_;
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
@@ -999,11 +1019,15 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static String RecursiveTextAlternative(const AXObject&,
                                          bool in_aria_labelled_by_traversal,
                                          AXObjectSet& visited);
+  static String RecursiveTextAlternative(const AXObject&,
+                                         bool in_aria_labelled_by_traversal,
+                                         AXObjectSet& visited,
+                                         ax::mojom::NameFrom& name_from);
   bool IsHiddenForTextAlternativeCalculation() const;
   String AriaTextAlternative(bool recursive,
                              bool in_aria_labelled_by_traversal,
                              AXObjectSet& visited,
-                             AXNameFrom&,
+                             ax::mojom::NameFrom&,
                              AXRelatedObjectVector*,
                              NameSources*,
                              bool* found_text_alternative) const;
@@ -1027,8 +1051,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   bool CanReceiveAccessibilityFocus() const;
   bool NameFromContents(bool recursive) const;
+  bool NameFromSelectedOption(bool recursive) const;
 
-  AccessibilityRole ButtonRoleType() const;
+  ax::mojom::Role ButtonRoleType() const;
 
   virtual LayoutObject* LayoutObjectForRelativeBounds() const {
     return nullptr;
@@ -1079,7 +1104,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   static bool IsNativeCheckboxInMixedState(const Node*);
   static bool IncludesARIAWidgetRole(const String&);
   static bool HasInteractiveARIAAttribute(const Element&);
-  AccessibilityRole RemapAriaRoleDueToParent(AccessibilityRole) const;
+  ax::mojom::Role RemapAriaRoleDueToParent(ax::mojom::Role) const;
   unsigned ComputeAriaColumnIndex() const;
   unsigned ComputeAriaRowIndex() const;
 

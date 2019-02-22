@@ -134,9 +134,9 @@ class ChromeDownloadManagerDelegate
   virtual safe_browsing::DownloadProtectionService*
       GetDownloadProtectionService();
 
-  // Called to show a file picker
-  virtual void ShowFilePicker(
-      const std::string& guid,
+  // Show file picker for |download|.
+  virtual void ShowFilePickerForDownload(
+      download::DownloadItem* download,
       const base::FilePath& suggested_path,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
@@ -185,6 +185,12 @@ class ChromeDownloadManagerDelegate
                            RequestConfirmation_Android);
 
   typedef std::vector<content::DownloadIdCallback> IdCallbackVector;
+
+  // Called to show a file picker for download with |guid|
+  void ShowFilePicker(
+      const std::string& guid,
+      const base::FilePath& suggested_path,
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
   // content::NotificationObserver implementation.
   void Observe(int type,

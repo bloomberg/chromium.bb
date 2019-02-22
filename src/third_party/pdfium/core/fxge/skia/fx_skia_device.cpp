@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/fxge/skia/fx_skia_device.h"
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -25,7 +27,6 @@
 #include "core/fxge/dib/cfx_bitmapcomposer.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/dib/cfx_imagestretcher.h"
-#include "core/fxge/skia/fx_skia_device.h"
 #include "third_party/base/logging.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -503,15 +504,23 @@ void ClipAngledGradient(const SkPoint pts[2],
   }
   if (minPerpPtIndex < 0 && maxPerpPtIndex < 0)  // nothing's outside
     return;
+
   // determine if negative distances are before start or after end
   SkPoint beforeStart = {pts[0].fX * 2 - pts[1].fX, pts[0].fY * 2 - pts[1].fY};
   bool beforeNeg = LineSide(startPerp, beforeStart) < 0;
-  const SkPoint& startEdgePt =
-      clipStart ? pts[0] : beforeNeg ? rectPts[minPerpPtIndex]
-                                     : rectPts[maxPerpPtIndex];
-  const SkPoint& endEdgePt = clipEnd ? pts[1] : beforeNeg
-                                                    ? rectPts[maxPerpPtIndex]
-                                                    : rectPts[minPerpPtIndex];
+
+  int noClipStartIndex = maxPerpPtIndex;
+  int noClipEndIndex = minPerpPtIndex;
+  if (beforeNeg)
+    std::swap(noClipStartIndex, noClipEndIndex);
+  if ((!clipStart && noClipStartIndex < 0) ||
+      (!clipEnd && noClipEndIndex < 0)) {
+    return;
+  }
+
+  const SkPoint& startEdgePt = clipStart ? pts[0] : rectPts[noClipStartIndex];
+  const SkPoint& endEdgePt = clipEnd ? pts[1] : rectPts[noClipEndIndex];
+
   // find the corners that bound the gradient
   SkScalar minDist = SK_ScalarMax;
   SkScalar maxDist = SK_ScalarMin;
@@ -726,7 +735,7 @@ class SkiaState {
                                ? SkPath::kEvenOdd_FillType
                                : SkPath::kWinding_FillType);
       if (pDrawState)
-        m_drawState.Copy(*pDrawState);
+        m_drawState = *pDrawState;
       m_fillColor = fill_color;
       m_strokeColor = stroke_color;
       m_blendType = blend_type;
@@ -1131,20 +1140,13 @@ class SkiaState {
 
   bool DashChanged(const CFX_GraphStateData* pState,
                    const CFX_GraphStateData& refState) const {
-    bool dashArray = pState && pState->m_DashArray;
-    if (!dashArray && !refState.m_DashArray)
+    bool dashArray = pState && !pState->m_DashArray.empty();
+    if (!dashArray && refState.m_DashArray.empty())
       return false;
-    if (!dashArray || !refState.m_DashArray)
+    if (!dashArray || refState.m_DashArray.empty())
       return true;
-    if (pState->m_DashPhase != refState.m_DashPhase ||
-        pState->m_DashCount != refState.m_DashCount) {
-      return true;
-    }
-    for (int index = 0; index < pState->m_DashCount; ++index) {
-      if (pState->m_DashArray[index] != refState.m_DashArray[index])
-        return true;
-    }
-    return true;
+    return pState->m_DashPhase != refState.m_DashPhase ||
+           pState->m_DashArray != refState.m_DashArray;
   }
 
   void AdjustClip(int limit) {
@@ -1468,16 +1470,16 @@ void CFX_SkiaDeviceDriver::PaintStroke(SkPaint* spaint,
   float width =
       SkTMax(pGraphState->m_LineWidth,
              SkTMin(deviceUnits[0].length(), deviceUnits[1].length()));
-  if (pGraphState->m_DashArray) {
-    int count = (pGraphState->m_DashCount + 1) / 2;
+  if (!pGraphState->m_DashArray.empty()) {
+    size_t count = (pGraphState->m_DashArray.size() + 1) / 2;
     std::unique_ptr<SkScalar, FxFreeDeleter> intervals(
         FX_Alloc2D(SkScalar, count, sizeof(SkScalar)));
     // Set dash pattern
-    for (int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
       float on = pGraphState->m_DashArray[i * 2];
       if (on <= 0.000001f)
         on = 1.f / 10;
-      float off = i * 2 + 1 == pGraphState->m_DashCount
+      float off = i * 2 + 1 == pGraphState->m_DashArray.size()
                       ? on
                       : pGraphState->m_DashArray[i * 2 + 1];
       if (off < 0)
@@ -2231,7 +2233,7 @@ bool CFX_SkiaDeviceDriver::GetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap,
       return true;
 
     pBack->CompositeBitmap(0, 0, pBack->GetWidth(), pBack->GetHeight(),
-                           m_pBitmap, 0, 0);
+                           m_pBitmap, 0, 0, FXDIB_BLEND_NORMAL, nullptr, false);
   } else {
     pBack = m_pBitmap->Clone(&rect);
     if (!pBack)

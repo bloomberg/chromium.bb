@@ -5,15 +5,21 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
 
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
+#include "third_party/blink/renderer/platform/graphics/mutator_client.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
+class AnimationWorkletMutatorDispatcherImpl;
 class Document;
+class MainThreadMutatorClient;
 class WorkletAnimationBase;
 
 // Handles AnimationWorklet animations on the main-thread.
@@ -27,16 +33,17 @@ class WorkletAnimationBase;
 // For more details on AnimationWorklet, see the spec:
 // https://wicg.github.io/animation-worklet
 class CORE_EXPORT WorkletAnimationController
-    : public GarbageCollectedFinalized<WorkletAnimationController> {
+    : public GarbageCollectedFinalized<WorkletAnimationController>,
+      public MutatorClient {
  public:
   WorkletAnimationController(Document*);
-  virtual ~WorkletAnimationController();
+  ~WorkletAnimationController() override;
 
   void AttachAnimation(WorkletAnimationBase&);
   void DetachAnimation(WorkletAnimationBase&);
   void InvalidateAnimation(WorkletAnimationBase&);
 
-  void UpdateAnimationCompositingStates();
+  void UpdateAnimationStates();
   void UpdateAnimationTimings(TimingUpdateReason);
 
   // Should be called whenever the compositing state changes for a Node which is
@@ -45,11 +52,25 @@ class CORE_EXPORT WorkletAnimationController
   // correct ElementId for the scroll source.
   void ScrollSourceCompositingStateChanged(Node*);
 
+  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+  EnsureMainThreadMutatorDispatcher(
+      scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
+  void SetMutationUpdate(
+      std::unique_ptr<AnimationWorkletOutput> output) override;
   void Trace(blink::Visitor*);
 
  private:
+  void MutateAnimations();
+  std::unique_ptr<AnimationWorkletDispatcherInput> CollectAnimationStates();
+  void ApplyAnimationTimings(TimingUpdateReason reason);
+
   HeapHashSet<Member<WorkletAnimationBase>> pending_animations_;
-  HeapHashSet<Member<WorkletAnimationBase>> compositor_animations_;
+  HeapHashMap<int, Member<WorkletAnimationBase>> animations_;
+
+  // TODO(yigu): The following proxy is needed for platform/ to access this
+  // class. We should bypass it eventually.
+  std::unique_ptr<MainThreadMutatorClient> main_thread_mutator_client_;
+  scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   Member<Document> document_;
 };

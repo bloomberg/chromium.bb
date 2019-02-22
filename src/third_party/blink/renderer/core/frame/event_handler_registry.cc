@@ -46,7 +46,7 @@ LocalFrame* GetLocalFrameForTarget(EventTarget* target) {
 EventHandlerRegistry::EventHandlerRegistry(LocalFrame& frame) : frame_(frame) {}
 
 EventHandlerRegistry::~EventHandlerRegistry() {
-  for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
+  for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     CheckConsistency(handler_class);
   }
@@ -195,11 +195,11 @@ void EventHandlerRegistry::DidMoveIntoPage(EventTarget& target) {
 
   // This code is not efficient at all.
   Vector<AtomicString> event_types = target.EventTypes();
-  for (size_t i = 0; i < event_types.size(); ++i) {
+  for (wtf_size_t i = 0; i < event_types.size(); ++i) {
     EventListenerVector* listeners = target.GetEventListeners(event_types[i]);
     if (!listeners)
       continue;
-    for (unsigned count = listeners->size(); count > 0; --count) {
+    for (wtf_size_t count = listeners->size(); count > 0; --count) {
       EventHandlerClass handler_class;
       if (!EventTypeToClass(event_types[i], (*listeners)[count - 1].Options(),
                             &handler_class))
@@ -218,7 +218,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
   bool handlers_changed[kEventHandlerClassCount];
   bool target_set_changed[kEventHandlerClassCount];
 
-  for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
+  for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
 
     EventTargetSet* targets = &targets_[handler_class];
@@ -228,7 +228,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
         UpdateEventHandlerInternal(kRemoveAll, handler_class, &target);
   }
 
-  for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
+  for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     if (handlers_changed[i]) {
       bool has_handlers = targets_[handler_class].Contains(&target);
@@ -344,7 +344,7 @@ void EventHandlerRegistry::Trace(blink::Visitor* visitor) {
 
 void EventHandlerRegistry::ClearWeakMembers(Visitor* visitor) {
   Vector<UntracedMember<EventTarget>> dead_targets;
-  for (size_t i = 0; i < kEventHandlerClassCount; ++i) {
+  for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     const EventTargetSet* targets = &targets_[handler_class];
     for (const auto& event_target : *targets) {
@@ -357,13 +357,13 @@ void EventHandlerRegistry::ClearWeakMembers(Visitor* visitor) {
       }
     }
   }
-  for (size_t i = 0; i < dead_targets.size(); ++i)
+  for (wtf_size_t i = 0; i < dead_targets.size(); ++i)
     DidRemoveAllEventHandlers(*dead_targets[i]);
 }
 
 void EventHandlerRegistry::DocumentDetached(Document& document) {
   // Remove all event targets under the detached document.
-  for (size_t handler_class_index = 0;
+  for (int handler_class_index = 0;
        handler_class_index < kEventHandlerClassCount; ++handler_class_index) {
     EventHandlerClass handler_class =
         static_cast<EventHandlerClass>(handler_class_index);
@@ -386,7 +386,7 @@ void EventHandlerRegistry::DocumentDetached(Document& document) {
         NOTREACHED();
       }
     }
-    for (size_t i = 0; i < targets_to_remove.size(); ++i)
+    for (wtf_size_t i = 0; i < targets_to_remove.size(); ++i)
       UpdateEventHandlerInternal(kRemoveAll, handler_class,
                                  targets_to_remove[i]);
   }

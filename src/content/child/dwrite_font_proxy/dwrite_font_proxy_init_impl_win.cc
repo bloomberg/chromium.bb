@@ -26,8 +26,10 @@ namespace content {
 
 namespace {
 
-mswr::ComPtr<DWriteFontCollectionProxy> g_font_collection;
-mswr::ComPtr<FontFallback> g_font_fallback;
+// Created on demand and then kept around until process exit.
+DWriteFontCollectionProxy* g_font_collection = nullptr;
+FontFallback* g_font_fallback = nullptr;
+
 base::RepeatingCallback<mojom::DWriteFontProxyPtrInfo(void)>*
     g_connection_callback_override = nullptr;
 
@@ -67,11 +69,13 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   mswr::ComPtr<IDWriteFactory2> factory2;
 
   if (SUCCEEDED(factory.As(&factory2)) && factory2.Get()) {
-    FontFallback::Create(&g_font_fallback, g_font_collection.Get());
+    if (g_font_fallback)
+      g_font_fallback->Release();
+    FontFallback::Create(&g_font_fallback, g_font_collection);
   }
 
   sk_sp<SkFontMgr> skia_font_manager = SkFontMgr_New_DirectWrite(
-      factory.Get(), g_font_collection.Get(), g_font_fallback.Get());
+      factory.Get(), g_font_collection, g_font_fallback);
   blink::WebFontRendering::SetSkiaFontManager(skia_font_manager);
 
   SetDefaultSkiaFactory(std::move(skia_font_manager));
@@ -83,7 +87,7 @@ void InitializeDWriteFontProxy(service_manager::Connector* connector) {
   // instead fall back on WebKit's fallback logic, we don't use Skia's font
   // fallback if IDWriteFontFallback is not available.
   // This flag can be removed when Win8.0 and earlier are no longer supported.
-  bool fallback_available = g_font_fallback.Get() != nullptr;
+  bool fallback_available = g_font_fallback != nullptr;
   DCHECK_EQ(fallback_available,
             base::win::GetVersion() > base::win::VERSION_WIN8);
   blink::WebFontRendering::SetUseSkiaFontFallback(fallback_available);

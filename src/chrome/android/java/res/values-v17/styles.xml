@@ -42,6 +42,10 @@
         <item name="android:windowSharedElementExitTransition" tools:targetApi="21">@transition/move_image</item>
     </style>
     <style name="MainTheme" parent="MainThemeBase" />
+    <style name="TranslucentMainTheme" parent="MainThemeBase">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
 
     <style name="MainButtonStyle" parent="ButtonCompatBorderless">
         <item name="android:textAppearance">@style/BlueButtonText2</item>
@@ -95,19 +99,10 @@
         <item name="android:windowBackground">@null</item>
         <item name="android:windowDisablePreview">true</item>
     </style>
-    <style name="TextAppearance.WebappSplashScreenText" parent="BlackHeadline1">
-        <item name="android:textSize">24sp</item>
-        <item name="android:fontFamily">sans-serif-condensed</item>
-    </style>
-    <style name="WebappSplashScreenTextTheme">
-        <item name="android:ellipsize">end</item>
-        <item name="android:gravity">center</item>
-        <item name="android:maxLines">2</item>
-        <item name="android:textAppearance">@style/TextAppearance.WebappSplashScreenText</item>
-    </style>
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:windowBackground">@drawable/popup_bg</item>
+        <item name="android:windowTitleStyle">@style/AlertDialogTitleStyle</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
 
         <!--  Overriding AppCompat values -->
@@ -115,6 +110,10 @@
         <item name="colorControlActivated">@color/light_active_color</item>
         <item name="colorControlNormal">@color/light_normal_color</item>
         <item name="colorPrimary">@color/light_active_color</item>
+    </style>
+
+    <style name="AlertDialogTitleStyle" parent="RtlOverlay.DialogWindowTitle.AppCompat">
+        <item name="android:textAppearance">@style/BlackHeadline</item>
     </style>
 
     <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
@@ -162,7 +161,7 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
-      <item name="titleTextStyle">@style/BlackHeadline1</item>
+      <item name="titleTextStyle">@style/BlackHeadline</item>
     </style>
     <style name="TextAppearance.PreferenceMediumText">
         <item name="android:textSize">18sp</item>
@@ -208,9 +207,6 @@
         <item name="android:paddingEnd">8dp</item>
     </style>
     <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
-    <style name="DeprecationWarningPreferenceTheme" parent="PreferencesTheme">
-        <item name="android:textAppearance">@style/BlackBodyDefault</item>
-    </style>
     <style name="PreferenceSpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
@@ -220,21 +216,6 @@
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:background">@color/modern_grey_600</item>
     </style>
-
-    <!-- Dividers -->
-    <style name="HorizontalDivider">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">@dimen/divider_height</item>
-        <item name="android:background">?android:attr/listDivider</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-    <style name="VerticalDivider">
-        <item name="android:layout_width">@dimen/divider_height</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:background">?android:attr/listDivider</item>
-        <item name="android:importantForAccessibility">no</item>
-    </style>
-
 
     <style name="ThemeWithActionBarBase" parent="Theme.AppCompat.Light">
         <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
@@ -267,7 +248,7 @@
         <item name="actionBarStyle">@style/ManageSpaceActionBarModern</item>
     </style>
     <style name="ManageSpaceActionBarModern" parent="PreferenceActionBarModern">
-        <item name="titleTextStyle">@style/WhiteHeadline1</item>
+        <item name="titleTextStyle">@style/WhiteHeadline</item>
     </style>
     <style name="ManageSpaceActivityButton">
       <item name="android:layout_width">wrap_content</item>
@@ -319,7 +300,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:scaleType">center</item>
-        <item name="chrometint">@color/dark_mode_tint</item>
+        <item name="tint">@color/dark_mode_tint</item>
     </style>
     <style name="OverflowMenuAnim">
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
@@ -416,7 +397,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">center</item>
         <item name="android:lineSpacingMultiplier">1.4</item>
-        <item name="android:textAppearance">@style/BlackHeadline1</item>
+        <item name="android:textAppearance">@style/BlackHeadline</item>
     </style>
 
     <!-- Web Notifications -->
@@ -495,6 +476,9 @@
         <item name="windowActionBar">false</item>
     </style>
     <style name="DialogWhenLarge" parent="DialogWhenLargeBase" />
+    <style name="DimmingDialog" parent="DialogWhenLargeBase">
+        <item name="android:windowLightNavigationBar" tools:targetApi="28">false</item>
+    </style>
 
     <style name="SigninAlertDialogTheme" parent="AlertDialogTheme">
         <item name="buttonBarButtonStyle">@style/SigninDialogButtonStyle</item>
@@ -578,12 +562,13 @@
     <style name="LocationBarActionButton" parent="LocationBarButton">
         <item name="android:layout_width">@dimen/location_bar_icon_width</item>
         <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingStart">4dp</item>
         <item name="android:scaleType">center</item>
         <item name="android:layout_gravity">end</item>
-        <item name="chrometint">@color/dark_mode_tint</item>
+        <item name="tint">@color/dark_mode_tint</item>
     </style>
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
-        <item name="titleTextAppearance">@style/BlackHeadline1</item>
+        <item name="titleTextAppearance">@style/BlackHeadline</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:background">@color/modern_primary_color</item>
     </style>
@@ -602,10 +587,19 @@
         <item name="android:layout_width">43dp</item>
         <item name="android:paddingEnd">3.5dp</item>
     </style>
+    <style name="BottomToolbarButton" parent="ToolbarButton">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
     <style name="AppMenuItem">
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
+    </style>
+    <style name="TextAppearance.UpdateMenuItem">
+        <item name="android:textColor">@color/update_menu_item_text_color</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
     </style>
     <style name="SadTabBodyText">
         <item name="android:textAppearance">@style/BlackBody</item>
@@ -622,6 +616,7 @@
         <item name="android:paddingEnd">0dp</item>
         <item name="android:textAppearance">@style/BlueLink2</item>
     </style>
+    <style name="NavigationPopupDialog" parent="Widget.AppCompat.Light.ListPopupWindow" />
 
     <!-- New Tab Page -->
     <style name="NewTabPageRecyclerView">
@@ -672,15 +667,6 @@
         <item name="android:textColor">@color/chip_text_color</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
-    <style name="DownloadHomeStatusText">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:minHeight">18dp</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
-        <item name="android:ellipsize">start</item>
-        <item name="android:singleLine">true</item>
-    </style>
     <style name="DateView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -689,63 +675,6 @@
         <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
         <item name="android:layout_marginEnd">@dimen/list_item_default_margin</item>
         <item name="android:textAppearance">@style/BlackBody</item>
-    </style>
-    <style name="DownloadTitleStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_alignParentTop">true</item>
-        <item name="android:layout_alignParentStart">true</item>
-        <item name="android:paddingEnd">16dp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackTitle1</item>
-    </style>
-    <style name="DownloadDescriptionStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_alignParentBottom">true</item>
-        <item name="android:layout_alignParentStart">true</item>
-        <item name="android:layout_marginEnd">16dp</item>
-        <item name="android:layout_marginTop">0dp</item>
-        <item name="android:textAlignment">viewStart</item>
-        <item name="android:ellipsize">start</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/BlackBody</item>
-    </style>
-    <style name="DownloadIconView" parent="@style/ListItemStartIcon">
-        <item name="android:background">@color/light_active_color</item>
-    </style>
-    <style name="DownloadNewBadgeStyle">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@color/light_active_color</item>
-        <item name="android:layout_marginStart">-8dp</item>
-        <item name="android:layout_marginTop">-2dp</item>
-        <item name="android:paddingStart">6dp</item>
-        <item name="android:paddingEnd">6dp</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:text">@string/prefetch_badge_new</item>
-        <item name="android:textAppearance">@style/TextAppearance.DownloadNewBadge</item>
-    </style>
-    <style name="TextAppearance.DownloadNewBadge">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">@dimen/text_size_small</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textAllCaps">true</item>
-    </style>
-
-    <!-- Download Home V2 -->
-    <style name="DownloadItemText">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:maxLines">1</item>
-        <item name="android:ellipsize">end</item>
-        <item name="android:singleLine">true</item>
-    </style>
-    <style name="DownloadItemSelectionView">
-        <item name="android:layout_width">24dp</item>
-        <item name="android:layout_height">24dp</item>
-        <item name="android:layout_marginStart">8dp</item>
-        <item name="android:layout_marginTop">8dp</item>
     </style>
 
     <!-- Data Reduction -->
@@ -777,7 +706,7 @@
     <style name="DataUsageBreakdownSavedColumnItem" parent="DataUsageBreakdownColumnItem">
         <item name="android:textAppearance">@style/BlueLink3</item>
     </style>
-    <style name="TextAppearance.DataReductionHeadline" parent="BlackHeadline1">
+    <style name="TextAppearance.DataReductionHeadline" parent="BlackHeadline">
         <item name="android:textColor">@color/default_text_color_link</item>
     </style>
 
@@ -794,8 +723,6 @@
         <item name="android:textAppearance">@style/BlueButtonText1</item>
         <item name="android:padding">16dp</item>
       </style>
-    <!-- TODO(https://crbug.com/850138): Confirm with UX whether this should be a one-off text
-         appearance or a pre-defined text appearance. -->
     <style name="TextAppearance.IncognitoNewTabLearnMoreLinkModern">
         <item name="android:textColor">@color/modern_blue_300</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
@@ -810,17 +737,25 @@
     <!-- Content and Site Suggestions -->
     <style name="SuggestionCardModern">
         <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
-        <item name="android:background">@drawable/content_card_modern_background</item>
+        <item name="android:background">@drawable/hairline_border_card_background</item>
         <item name="android:foreground">@drawable/button_borderless_compat</item>
     </style>
+    <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
+     for these requires updating the NTP article suggestions thumbnail size as well. -->
     <style name="SuggestionCardTitleModern" parent="BlackTitle1">
         <item name="android:ellipsize">end</item>
         <item name="leading">20sp</item>
+    </style>
+    <style name="ContextualSuggestionCardTitleModern" parent="SuggestionCardTitleModern">
+        <item name="leading">@dimen/text_size_large_leading</item>
     </style>
     <style name="SuggestionCardBodyModern" parent="BlackBody">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:ellipsize">end</item>
         <item name="leading">16sp</item>
+    </style>
+    <style name="ContextualSuggestionCardBodyModern" parent="SuggestionCardBodyModern">
+        <item name="leading">@dimen/text_size_medium_leading</item>
     </style>
     <style name="SuggestionCardAction">
         <item name="android:minHeight">48dp</item>

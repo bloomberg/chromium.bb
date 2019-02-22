@@ -30,6 +30,26 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
       public ExternalBeginFrameSourceClient,
       public DisplayClient {
  public:
+  // This class is used to handle the graphics pipeline related metrics
+  // reporting.
+  class PipelineReporting {
+   public:
+    PipelineReporting(BeginFrameArgs args, base::TimeTicks now);
+    ~PipelineReporting();
+
+    void Report();
+
+    int64_t trace_id() const { return trace_id_; }
+
+   private:
+    // The trace id of a BeginFrame which is used to track its progress on the
+    // client side.
+    int64_t trace_id_;
+
+    // The time stamp for the begin frame to arrive on client side.
+    base::TimeTicks frame_time_;
+  };
+
   // The underlying Display, FrameSinkManagerImpl, and LocalSurfaceIdAllocator
   // must outlive this class.
   DirectLayerTreeFrameSink(
@@ -103,6 +123,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
+  // Use this map to record the time when client received the BeginFrameArgs.
+  base::flat_map<int64_t, PipelineReporting> pipeline_reporting_frame_times_;
   base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);

@@ -11,25 +11,21 @@
 #define SkDraw_DEFINED
 
 #include "SkCanvas.h"
-#include "SkGlyphRun.h"
+#include "SkGlyphRunPainter.h"
 #include "SkMask.h"
 #include "SkPaint.h"
 #include "SkPixmap.h"
 #include "SkStrokeRec.h"
 #include "SkVertices.h"
-#include "SkScalerContext.h"
 
 class SkBitmap;
 class SkClipStack;
 class SkBaseDevice;
 class SkBlitter;
-class SkGlyphRun;
-class SkGlyphRunList;
 class SkMatrix;
 class SkPath;
 class SkRegion;
 class SkRasterClip;
-struct SkDrawProcs;
 struct SkRect;
 class SkRRect;
 
@@ -64,9 +60,6 @@ public:
     void    drawBitmap(const SkBitmap&, const SkMatrix&, const SkRect* dstOrNull,
                        const SkPaint&) const;
     void    drawSprite(const SkBitmap&, int x, int y, const SkPaint&) const;
-    void    drawPosText(const char text[], size_t byteLength,
-                        const SkScalar pos[], int scalarsPerPosition,
-                        const SkPoint& offset, const SkPaint&, const SkSurfaceProps*) const;
     void    drawGlyphRunList(const SkGlyphRunList& glyphRunList,
                              SkGlyphRunListPainter* glyphPainter) const;
     void    drawVertices(SkVertices::VertexMode mode, int vertexCount,
@@ -151,9 +144,6 @@ private:
      */
     bool SK_WARN_UNUSED_RESULT
     computeConservativeLocalClipBounds(SkRect* bounds) const;
-
-    /** Returns the current setting for using fake gamma and contrast. */
-    SkScalerContextFlags SK_WARN_UNUSED_RESULT scalerContextFlags() const;
 
 public:
     SkPixmap        fDst;

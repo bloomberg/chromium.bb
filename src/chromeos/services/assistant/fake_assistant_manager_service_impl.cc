@@ -53,7 +53,8 @@ void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
-void FakeAssistantManagerServiceImpl::StopActiveInteraction() {}
+void FakeAssistantManagerServiceImpl::StopActiveInteraction(
+    bool cancel_conversation) {}
 
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
@@ -72,6 +73,9 @@ void FakeAssistantManagerServiceImpl::DismissNotification(
 
 void FakeAssistantManagerServiceImpl::CacheScreenContext(
     CacheScreenContextCallback callback) {}
+
+void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
+    bool spoken_feedback_enabled) {}
 
 }  // namespace assistant
 }  // namespace chromeos

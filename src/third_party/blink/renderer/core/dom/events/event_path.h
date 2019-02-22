@@ -56,13 +56,13 @@ class CORE_EXPORT EventPath final
   HeapVector<NodeEventContext>& NodeEventContexts() {
     return node_event_contexts_;
   }
-  NodeEventContext& operator[](size_t index) {
+  NodeEventContext& operator[](wtf_size_t index) {
     return node_event_contexts_[index];
   }
-  const NodeEventContext& operator[](size_t index) const {
+  const NodeEventContext& operator[](wtf_size_t index) const {
     return node_event_contexts_[index];
   }
-  NodeEventContext& at(size_t index) { return node_event_contexts_[index]; }
+  NodeEventContext& at(wtf_size_t index) { return node_event_contexts_[index]; }
   NodeEventContext& Last() { return node_event_contexts_[size() - 1]; }
 
   WindowEventContext& GetWindowEventContext() {
@@ -72,7 +72,7 @@ class CORE_EXPORT EventPath final
   void EnsureWindowEventContext();
 
   bool IsEmpty() const { return node_event_contexts_.IsEmpty(); }
-  size_t size() const { return node_event_contexts_.size(); }
+  wtf_size_t size() const { return node_event_contexts_.size(); }
 
   void AdjustForRelatedTarget(Node&, EventTarget* related_target);
   void AdjustForTouchEvent(const TouchEvent&);
@@ -98,7 +98,7 @@ class CORE_EXPORT EventPath final
   void CalculateAdjustedTargets();
   void CalculateTreeOrderAndSetNearestAncestorClosedTree();
 
-  void Shrink(size_t new_size) {
+  void Shrink(wtf_size_t new_size) {
     DCHECK(!window_event_context_);
     node_event_contexts_.Shrink(new_size);
   }

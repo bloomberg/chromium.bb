@@ -11,9 +11,8 @@ class ConfirmInfoBarDelegate;
 
 @interface ConfirmInfoBarController : InfoBarController
 
-- (instancetype)init NS_UNAVAILABLE;
-
-- (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)delegate;
+- (instancetype)initWithInfoBarDelegate:(ConfirmInfoBarDelegate*)infoBarDelegate
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

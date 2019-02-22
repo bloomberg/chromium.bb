@@ -57,16 +57,20 @@
  * @typedef {(node: TreeNode, unit: string) => GetSizeResult} GetSize
  */
 
-/** Abberivated keys used by FileEntrys in the JSON data file. */
+/**
+ * Abberivated keys used by FileEntrys in the JSON data file. These must match
+ * _COMPACT_*_KEY variables in html_report.py.
+ */
 const _KEYS = Object.freeze({
-  SOURCE_PATH: /** @type {'p'} */ ('p'),
   COMPONENT_INDEX: /** @type {'c'} */ ('c'),
+  SOURCE_PATH: /** @type {'p'} */ ('p'),
   FILE_SYMBOLS: /** @type {'s'} */ ('s'),
-  SYMBOL_NAME: /** @type {'n'} */ ('n'),
   SIZE: /** @type {'b'} */ ('b'),
-  TYPE: /** @type {'t'} */ ('t'),
   COUNT: /** @type {'u'} */ ('u'),
   FLAGS: /** @type {'f'} */ ('f'),
+  SYMBOL_NAME: /** @type {'n'} */ ('n'),
+  NUM_ALIASES: /** @type {'a'} */ ('a'),
+  TYPE: /** @type {'t'} */ ('t'),
 });
 
 /** Abberivated keys used by FileEntrys in the JSON data file. */
@@ -80,6 +84,7 @@ const _FLAGS = Object.freeze({
   CLONE: 2 ** 6,
   HOT: 2 ** 7,
   COVERAGE: 2 ** 8,
+  UNCOMPRESSED: 2 ** 9,
 });
 
 /**

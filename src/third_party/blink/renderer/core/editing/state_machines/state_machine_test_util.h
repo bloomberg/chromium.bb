@@ -27,7 +27,7 @@ class GraphemeStateMachineTestBase : public testing::Test {
   Vector<UChar32> AsCodePoints(Args... args) {
     UChar32 code_points[] = {args...};
     Vector<UChar32> result(sizeof...(args));
-    for (size_t index = 0; index < sizeof...(args); ++index)
+    for (wtf_size_t index = 0; index < sizeof...(args); ++index)
       result[index] = code_points[index];
     return result;
   }

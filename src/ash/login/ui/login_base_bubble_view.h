@@ -14,10 +14,16 @@ namespace ash {
 // Base bubble view for login screen bubbles.
 class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView {
  public:
+  // Without specifying a parent_window, the bubble will default to being in the
+  // same container as anchor_view.
   explicit LoginBaseBubbleView(views::View* anchor_view);
+  explicit LoginBaseBubbleView(views::View* anchor_view,
+                               gfx::NativeView parent_window);
   ~LoginBaseBubbleView() override;
 
   // views::BubbleDialogDelegateView:
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override;
   int GetDialogButtons() const override;
 
   // views::View:

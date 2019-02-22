@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/toolbar/toolbar_field_trial.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
@@ -49,7 +50,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -163,11 +163,10 @@ void OmniboxViewViews::Init() {
     SetReadOnly(true);
 
   if (location_bar_view_) {
-    if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-      InstallPlaceholderText();
-      scoped_template_url_service_observer_.Add(
-          model()->client()->GetTemplateURLService());
-    }
+    InstallPlaceholderText();
+    scoped_template_url_service_observer_.Add(
+        model()->client()->GetTemplateURLService());
+
     // Initialize the popup view using the same font.
     popup_view_.reset(
         new OmniboxPopupContentsView(this, model(), location_bar_view_));
@@ -262,7 +261,7 @@ void OmniboxViewViews::Update() {
   const security_state::SecurityLevel old_security_level = security_level_;
   UpdateSecurityLevel();
 
-  if (model()->ResetDisplayUrls()) {
+  if (model()->ResetDisplayTexts()) {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
@@ -578,10 +577,13 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     saved_temporary_selection_ = GetSelectedRange();
 
   // Get friendly accessibility label.
+  bool is_tab_switch_button_focused =
+      model()->popup_model()->selected_line_state() ==
+      OmniboxPopupModel::TAB_SWITCH;
   friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
       match, display_text, model()->popup_model()->selected_line(),
-      model()->result().size(), &friendly_suggestion_text_prefix_length_);
-
+      model()->result().size(), is_tab_switch_button_focused,
+      &friendly_suggestion_text_prefix_length_);
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
 #if defined(OS_MACOSX)
@@ -628,11 +630,18 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
-  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeAndSubdomainsEnabled())
+  // Early exit if no steady state elision features are enabled.
+  if (!toolbar::features::IsHideSteadyStateUrlSchemeEnabled() &&
+      !toolbar::features::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
     return false;
+  }
 
   // No need to update the text if the user is already inputting text.
   if (model()->user_input_in_progress())
+    return false;
+
+  // Don't unelide if we are currently displaying Query in Omnibox search terms.
+  if (model()->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */))
     return false;
 
   // If everything is selected, the user likely does not intend to edit the URL.
@@ -673,10 +682,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  // Update the text to the full unelided URL. The caret is positioned at 0, as
-  // otherwise we will spuriously scroll the text to the end of the new string.
-  model()->SetUserText(full_url);
-  SetWindowTextAndCaretPos(full_url, 0, false, false);
+  model()->SetUserTextToURLForEditing();
   SelectRange(gfx::Range(start, end));
   return true;
 }
@@ -755,7 +761,8 @@ void OmniboxViewViews::ShowVirtualKeyboardIfEnabled() {
 
 void OmniboxViewViews::HideImeIfNeeded() {
   if (auto* input_method = GetInputMethod()) {
-    input_method->GetInputMethodKeyboardController()->DismissVirtualKeyboard();
+    if (auto* keyboard = input_method->GetInputMethodKeyboardController())
+      keyboard->DismissVirtualKeyboard();
   }
 }
 
@@ -1018,7 +1025,7 @@ void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
   // TODO(tommycli): This does not seem like it should be necessary.
   // Investigate why it's needed and see if we can remove it.
-  model()->ResetDisplayUrls();
+  model()->ResetDisplayTexts();
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
@@ -1066,7 +1073,7 @@ void OmniboxViewViews::OnBlur() {
   // favor of some other View in the same Widget.
   if (GetWidget() && GetWidget()->IsActive() &&
       model()->user_input_in_progress() &&
-      text() == model()->GetCurrentPermanentUrlText()) {
+      text() == model()->GetPermanentDisplayText()) {
     RevertAll();
   }
 
@@ -1084,7 +1091,7 @@ void OmniboxViewViews::OnBlur() {
   // the Omnibox as well. Investigate moving this into the OmniboxEditModel.
   if (!model()->user_input_in_progress() && model()->popup_model() &&
       model()->popup_model()->IsOpen() &&
-      text() != model()->GetCurrentPermanentUrlText()) {
+      text() != model()->GetPermanentDisplayText()) {
     RevertAll();
   } else {
     CloseOmniboxPopup();
@@ -1238,18 +1245,21 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (model()->popup_model()->SelectedLineHasTabMatch() &&
           model()->popup_model()->selected_line_state() ==
               OmniboxPopupModel::TAB_SWITCH) {
-        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+        popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                               event.time_stamp());
       } else {
         if (alt || (shift && command)) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                               false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB, false,
+                               event.time_stamp());
         } else if (command) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                               false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB, false,
+                               event.time_stamp());
         } else if (shift) {
-          model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW, false);
+          model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW, false,
+                               event.time_stamp());
         } else {
-          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+          model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false,
+                               event.time_stamp());
         }
       }
       return true;
@@ -1267,6 +1277,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_UP:
+#if defined(OS_MACOSX)
+      if (shift)
+        return false;
+#endif
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_UP)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_UP);
         return true;
@@ -1274,6 +1288,10 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DOWN:
+#if defined(OS_MACOSX)
+      if (shift)
+        return false;
+#endif
       if (IsTextEditCommandEnabled(ui::TextEditCommand::MOVE_DOWN)) {
         ExecuteTextEditCommand(ui::TextEditCommand::MOVE_DOWN);
         return true;
@@ -1377,7 +1395,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
             model()->popup_model()->SelectedLineHasTabMatch() &&
             model()->popup_model()->selected_line_state() ==
                 OmniboxPopupModel::TAB_SWITCH) {
-          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB);
+          popup_view_->OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB,
+                                 event.time_stamp());
           return true;
         }
       }
@@ -1407,7 +1426,7 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardType clipboard_type) {
   model()->AdjustTextForCopy(GetSelectedRange().GetMin(), &selected_text, &url,
                              &write_url);
   if (IsSelectAll())
-    UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
+    UMA_HISTOGRAM_COUNTS_1M(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
   ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_type);
   scoped_clipboard_writer.WriteText(selected_text);

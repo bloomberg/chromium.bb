@@ -18,7 +18,7 @@ public class IdentityService extends Service {
         public String getRuntimeHostBrowserPackageName() {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {
-                return WebApkUtils.getHostBrowserPackageName(getApplicationContext());
+                return HostBrowserUtils.getHostBrowserPackageName(getApplicationContext());
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }

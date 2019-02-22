@@ -34,7 +34,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 
   ~TestingCallStackProfileBuilder() override;
 
-  const SampledProfile& sampled_profile() { return sampled_profile_; }
+  const SampledProfile& test_sampled_profile() { return test_sampled_profile_; }
 
  protected:
   // Overridden for testing.
@@ -42,7 +42,7 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 
  private:
   // The completed profile.
-  SampledProfile sampled_profile_;
+  SampledProfile test_sampled_profile_;
 };
 
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
@@ -54,44 +54,10 @@ TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
 
 void TestingCallStackProfileBuilder::PassProfilesToMetricsProvider(
     SampledProfile sampled_profile) {
-  sampled_profile_ = std::move(sampled_profile);
+  test_sampled_profile_ = std::move(sampled_profile);
 }
 
 }  // namespace
-
-TEST(CallStackProfileBuilderTest, SetProcessMilestone) {
-  auto profile_builder =
-      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
-
-  // The default milestone is 0.
-  profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(std::vector<Frame>());
-
-  CallStackProfileBuilder::SetProcessMilestone(1);
-  profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(std::vector<Frame>());
-
-  profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
-
-  const SampledProfile& proto = profile_builder->sampled_profile();
-
-  ASSERT_TRUE(proto.has_call_stack_profile());
-  const CallStackProfile& profile = proto.call_stack_profile();
-
-  ASSERT_EQ(2, profile.deprecated_sample_size());
-
-  uint32_t process_milestones = 0;
-  for (int i = 0; i < profile.deprecated_sample(0).process_phase().size(); ++i)
-    process_milestones |=
-        1U << profile.deprecated_sample(0).process_phase().Get(i);
-  EXPECT_EQ(0U, process_milestones);
-
-  process_milestones = 0;
-  for (int i = 0; i < profile.deprecated_sample(1).process_phase().size(); ++i)
-    process_milestones |=
-        1U << profile.deprecated_sample(1).process_phase().Get(i);
-  EXPECT_EQ(1U << 1, process_milestones);
-}
 
 TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   // Set up a mock completed callback which will be run once.
@@ -129,7 +95,7 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
 
-  const SampledProfile& proto = profile_builder->sampled_profile();
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
 
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
@@ -141,29 +107,33 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(2, profile.deprecated_sample_size());
-  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_module_id_index());
-  EXPECT_EQ(0, profile.deprecated_sample(0).frame(0).module_id_index());
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(1, profile.deprecated_sample(0).frame(1).module_id_index());
-  ASSERT_EQ(1, profile.deprecated_sample(1).frame_size());
-  ASSERT_TRUE(profile.deprecated_sample(1).frame(0).has_module_id_index());
-  EXPECT_EQ(2, profile.deprecated_sample(1).frame(0).module_id_index());
+  ASSERT_EQ(2, profile.stack_size());
+  ASSERT_EQ(2, profile.stack(0).frame_size());
+  ASSERT_TRUE(profile.stack(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.stack(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.stack(0).frame(1).has_module_id_index());
+  EXPECT_EQ(1, profile.stack(0).frame(1).module_id_index());
+  ASSERT_EQ(1, profile.stack(1).frame_size());
+  ASSERT_TRUE(profile.stack(1).frame(0).has_module_id_index());
+  EXPECT_EQ(2, profile.stack(1).frame(0).module_id_index());
 
   ASSERT_EQ(3, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
-  ASSERT_EQ("1", profile.module_id(0).build_id());
+  EXPECT_EQ("1", profile.module_id(0).build_id());
   ASSERT_TRUE(profile.module_id(0).has_name_md5_prefix());
-  ASSERT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
+  EXPECT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
   ASSERT_TRUE(profile.module_id(1).has_build_id());
-  ASSERT_EQ("2", profile.module_id(1).build_id());
+  EXPECT_EQ("2", profile.module_id(1).build_id());
   ASSERT_TRUE(profile.module_id(1).has_name_md5_prefix());
-  ASSERT_EQ(module_md5, profile.module_id(1).name_md5_prefix());
+  EXPECT_EQ(module_md5, profile.module_id(1).name_md5_prefix());
   ASSERT_TRUE(profile.module_id(2).has_build_id());
-  ASSERT_EQ("3", profile.module_id(2).build_id());
+  EXPECT_EQ("3", profile.module_id(2).build_id());
   ASSERT_TRUE(profile.module_id(2).has_name_md5_prefix());
-  ASSERT_EQ(module_md5, profile.module_id(2).name_md5_prefix());
+  EXPECT_EQ(module_md5, profile.module_id(2).name_md5_prefix());
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+  EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+  EXPECT_EQ(1, profile.stack_sample(1).stack_index());
 
   ASSERT_TRUE(profile.has_profile_duration_ms());
   EXPECT_EQ(500, profile.profile_duration_ms());
@@ -171,7 +141,7 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   EXPECT_EQ(100, profile.sampling_period_ms());
 }
 
-TEST(CallStackProfileBuilderTest, SamplesDeduped) {
+TEST(CallStackProfileBuilderTest, StacksDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
@@ -191,19 +161,14 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
 
   std::vector<Frame> frames = {frame1, frame2};
 
-  // Two samples are completed with the same frames. They also have the same
-  // process milestone therefore they are deduped to one.
-  CallStackProfileBuilder::SetProcessMilestone(0);
-
-  profile_builder->RecordAnnotations();
+  // Two stacks are completed with the same frames therefore they are deduped
+  // to one.
   profile_builder->OnSampleCompleted(frames);
-
-  profile_builder->RecordAnnotations();
   profile_builder->OnSampleCompleted(frames);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
-  const SampledProfile& proto = profile_builder->sampled_profile();
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
 
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
@@ -213,10 +178,14 @@ TEST(CallStackProfileBuilderTest, SamplesDeduped) {
   ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
 
   ASSERT_TRUE(proto.has_call_stack_profile());
-  ASSERT_EQ(1, proto.call_stack_profile().deprecated_sample_size());
+  const CallStackProfile& profile = proto.call_stack_profile();
+  ASSERT_EQ(1, profile.stack_size());
+  ASSERT_EQ(2, profile.stack_sample_size());
+  EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+  EXPECT_EQ(0, profile.stack_sample(1).stack_index());
 }
 
-TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
+TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
@@ -234,21 +203,16 @@ TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
   Module module2 = {module_base_address2, "2", module_path};
   Frame frame2 = {module_base_address2 + 0x10, module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<Frame> frames1 = {frame1};
+  std::vector<Frame> frames2 = {frame2};
 
-  // Two samples are completed with the same frames but different process
-  // milestones. They are considered as different samples threfore not deduped.
-  CallStackProfileBuilder::SetProcessMilestone(2);
-  profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(frames);
-
-  CallStackProfileBuilder::SetProcessMilestone(4);
-  profile_builder->RecordAnnotations();
-  profile_builder->OnSampleCompleted(frames);
+  // Two stacks are completed with the different frames therefore not deduped.
+  profile_builder->OnSampleCompleted(frames1);
+  profile_builder->OnSampleCompleted(frames2);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
-  const SampledProfile& proto = profile_builder->sampled_profile();
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
 
   ASSERT_TRUE(proto.has_process());
   ASSERT_EQ(BROWSER_PROCESS, proto.process());
@@ -258,7 +222,11 @@ TEST(CallStackProfileBuilderTest, SamplesNotDeduped) {
   ASSERT_EQ(SampledProfile::PROCESS_STARTUP, proto.trigger_event());
 
   ASSERT_TRUE(proto.has_call_stack_profile());
-  ASSERT_EQ(2, proto.call_stack_profile().deprecated_sample_size());
+  const CallStackProfile& profile = proto.call_stack_profile();
+  ASSERT_EQ(2, profile.stack_size());
+  ASSERT_EQ(2, profile.stack_sample_size());
+  EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+  EXPECT_EQ(1, profile.stack_sample(1).stack_index());
 }
 
 TEST(CallStackProfileBuilderTest, Modules) {
@@ -285,27 +253,30 @@ TEST(CallStackProfileBuilderTest, Modules) {
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
-  const SampledProfile& proto = profile_builder->sampled_profile();
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(1, profile.deprecated_sample_size());
-  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
+  ASSERT_EQ(1, profile.stack_sample_size());
+  EXPECT_EQ(0, profile.stack_sample(0).stack_index());
 
-  ASSERT_FALSE(profile.deprecated_sample(0).frame(0).has_module_id_index());
-  ASSERT_FALSE(profile.deprecated_sample(0).frame(0).has_address());
+  ASSERT_EQ(1, profile.stack_size());
+  ASSERT_EQ(2, profile.stack(0).frame_size());
 
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(0, profile.deprecated_sample(0).frame(1).module_id_index());
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_address());
-  EXPECT_EQ(0x10ULL, profile.deprecated_sample(0).frame(1).address());
+  ASSERT_FALSE(profile.stack(0).frame(0).has_module_id_index());
+  ASSERT_FALSE(profile.stack(0).frame(0).has_address());
+
+  ASSERT_TRUE(profile.stack(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.stack(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.stack(0).frame(1).has_address());
+  EXPECT_EQ(0x10ULL, profile.stack(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
-  ASSERT_EQ("2", profile.module_id(0).build_id());
+  EXPECT_EQ("2", profile.module_id(0).build_id());
   ASSERT_TRUE(profile.module_id(0).has_name_md5_prefix());
-  ASSERT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
+  EXPECT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
 }
 
 TEST(CallStackProfileBuilderTest, DedupModules) {
@@ -333,31 +304,34 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
-  const SampledProfile& proto = profile_builder->sampled_profile();
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
 
   ASSERT_TRUE(proto.has_call_stack_profile());
   const CallStackProfile& profile = proto.call_stack_profile();
 
-  ASSERT_EQ(1, profile.deprecated_sample_size());
-  ASSERT_EQ(2, profile.deprecated_sample(0).frame_size());
+  ASSERT_EQ(1, profile.stack_sample_size());
+  EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+
+  ASSERT_EQ(1, profile.stack_size());
+  ASSERT_EQ(2, profile.stack(0).frame_size());
 
   // Since module1 and module2 have the same base address, they are considered
   // the same module and therefore deduped.
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_module_id_index());
-  EXPECT_EQ(0, profile.deprecated_sample(0).frame(0).module_id_index());
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(0).has_address());
-  EXPECT_EQ(0x10ULL, profile.deprecated_sample(0).frame(0).address());
+  ASSERT_TRUE(profile.stack(0).frame(0).has_module_id_index());
+  EXPECT_EQ(0, profile.stack(0).frame(0).module_id_index());
+  ASSERT_TRUE(profile.stack(0).frame(0).has_address());
+  EXPECT_EQ(0x10ULL, profile.stack(0).frame(0).address());
 
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_module_id_index());
-  EXPECT_EQ(0, profile.deprecated_sample(0).frame(1).module_id_index());
-  ASSERT_TRUE(profile.deprecated_sample(0).frame(1).has_address());
-  EXPECT_EQ(0x20ULL, profile.deprecated_sample(0).frame(1).address());
+  ASSERT_TRUE(profile.stack(0).frame(1).has_module_id_index());
+  EXPECT_EQ(0, profile.stack(0).frame(1).module_id_index());
+  ASSERT_TRUE(profile.stack(0).frame(1).has_address());
+  EXPECT_EQ(0x20ULL, profile.stack(0).frame(1).address());
 
   ASSERT_EQ(1, profile.module_id().size());
   ASSERT_TRUE(profile.module_id(0).has_build_id());
-  ASSERT_EQ("1", profile.module_id(0).build_id());
+  EXPECT_EQ("1", profile.module_id(0).build_id());
   ASSERT_TRUE(profile.module_id(0).has_name_md5_prefix());
-  ASSERT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
+  EXPECT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
 }
 
 }  // namespace metrics

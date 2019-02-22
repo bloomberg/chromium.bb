@@ -36,7 +36,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/switches.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
@@ -241,11 +240,9 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   static_assert(sizeof(*pos) == 2 * sizeof(*run_buffer.pos), "");
   memcpy(run_buffer.pos, pos, glyph_count * sizeof(*pos));
 
-  // TODO(vmpstr): In order to OOP raster this, we would have to plumb PaintFont
-  // here instead of |flags_|.
   canvas_skia_->drawTextBlob(
       base::MakeRefCounted<cc::PaintTextBlob>(builder.make(),
-                                              std::vector<cc::PaintTypeface>{}),
+                                              std::vector<sk_sp<SkTypeface>>{}),
       0, 0, flags_);
 }
 
@@ -356,14 +353,6 @@ std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
   if (typesetter == Typesetter::NATIVE)
     return std::make_unique<RenderTextMac>();
 
-  if (typesetter == Typesetter::HARFBUZZ)
-    return CreateHarfBuzzInstance();
-
-  static const bool use_native =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHarfBuzzRenderText);
-  if (use_native)
-    return std::make_unique<RenderTextMac>();
 #endif  // defined(OS_MACOSX)
   return CreateHarfBuzzInstance();
 }

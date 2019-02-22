@@ -152,7 +152,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
   def testRunGeneratorCmd(self):
     """Test the specialized command to run programs in chroot."""
     expected_cmd = ['cmd', 'bar', 'jo nes']
-    original_environ = os.environ.copy()
     gen = self._GetStdGenerator(work_dir='/foo')
 
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
@@ -174,9 +173,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
     # Run the test verification.
     self.mox.ReplayAll()
     gen._RunGeneratorCmd(expected_cmd)
-
-    # Demonstrate that the PATH was restored.
-    self.assertEqual(os.environ, original_environ)
 
   def testBuildArg(self):
     """Make sure the function semantics is satisfied."""

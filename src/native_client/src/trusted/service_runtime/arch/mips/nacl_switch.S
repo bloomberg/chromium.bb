@@ -25,7 +25,9 @@
 
 DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClStartSwitch):
 
+  .set push
   .set noreorder
+  .set noat
 
   /*
    * A new untrusted thread is started, so we clear even callee saved
@@ -120,4 +122,4 @@ DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSwitch):
   jr  $t9
   nop
 
-  .set reorder
+  .set pop

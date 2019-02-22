@@ -55,6 +55,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
                                        uint32_t framerate) override;
   void Destroy() override;
   void Flush(FlushCallback flush_callback) override;
+  bool IsFlushSupported() override;
 
  private:
   // Auto-destroy reference for BitstreamBuffer, for tracking buffers passed to
@@ -91,7 +92,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   };
 
   enum {
-    kDefaultFramerate = 30,
     // These are rather subjectively tuned.
     kInputBufferCount = 2,
     kOutputBufferCount = 2,
@@ -193,8 +193,8 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(VideoCodecProfile output_profile);
 
-  // Initialize device controls with default values.
-  bool InitControls();
+  // Initialize device controls with |config| or default values.
+  bool InitControls(const Config& config);
 
   // Create the buffers we need.
   bool CreateInputBuffers();
@@ -289,6 +289,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
+
+  // Indicates whether the V4L2 device supports flush.
+  // This is set in Initialize().
+  bool is_flush_supported_;
 
   // Image processor, if one is in use.
   std::unique_ptr<ImageProcessor> image_processor_;

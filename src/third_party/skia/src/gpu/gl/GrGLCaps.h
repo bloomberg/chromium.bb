@@ -391,13 +391,17 @@ public:
         return fRequiresFlushBetweenNonAndInstancedDraws;
     }
 
-    // Returns the observed maximum number of instances the driver can handle in a single call to
-    // glDrawArraysInstanced without crashing, or 'pendingInstanceCount' if this
-    // workaround is not necessary.
+    // Some Adreno drivers refuse to ReadPixels from an MSAA buffer that has stencil attached.
+    bool detachStencilFromMSAABuffersBeforeReadPixels() const {
+        return fDetachStencilFromMSAABuffersBeforeReadPixels;
+    }
+
+    // Returns the observed maximum number of instances the driver can handle in a single draw call
+    // without crashing, or 'pendingInstanceCount' if this workaround is not necessary.
     // NOTE: the return value may be larger than pendingInstanceCount.
-    int maxInstancesPerDrawArraysWithoutCrashing(int pendingInstanceCount) const {
-        return fMaxInstancesPerDrawArraysWithoutCrashing ? fMaxInstancesPerDrawArraysWithoutCrashing
-                                                         : pendingInstanceCount;
+    int maxInstancesPerDrawWithoutCrashing(int pendingInstanceCount) const {
+        return (fMaxInstancesPerDrawWithoutCrashing)
+                ? fMaxInstancesPerDrawWithoutCrashing : pendingInstanceCount;
     }
 
     bool canCopyTexSubImage(GrPixelConfig dstConfig, bool dstHasMSAARenderBuffer,
@@ -522,7 +526,8 @@ private:
     bool fUseDrawInsteadOfAllRenderTargetWrites : 1;
     bool fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines : 1;
     bool fRequiresFlushBetweenNonAndInstancedDraws : 1;
-    int fMaxInstancesPerDrawArraysWithoutCrashing;
+    bool fDetachStencilFromMSAABuffersBeforeReadPixels : 1;
+    int fMaxInstancesPerDrawWithoutCrashing;
 
     uint32_t fBlitFramebufferFlags;
 

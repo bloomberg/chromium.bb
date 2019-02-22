@@ -18,6 +18,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/examples/animated_image_view_example.h"
 #include "ui/views/examples/box_layout_example.h"
 #include "ui/views/examples/bubble_example.h"
 #include "ui/views/examples/button_example.h"
@@ -58,6 +59,7 @@ namespace {
 // Creates the default set of examples.
 ExampleVector CreateExamples() {
   ExampleVector examples;
+  examples.push_back(std::make_unique<AnimatedImageViewExample>());
   examples.push_back(std::make_unique<BoxLayoutExample>());
   examples.push_back(std::make_unique<BubbleExample>());
   examples.push_back(std::make_unique<ButtonExample>());
@@ -131,11 +133,11 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-  ExamplesWindowContents(Operation operation, ExampleVector examples)
+  ExamplesWindowContents(base::OnceClosure on_close, ExampleVector examples)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
-        operation_(operation) {
+        on_close_(std::move(on_close)) {
     instance_ = this;
     combobox_->set_listener(this);
     combobox_model_.SetExamples(std::move(examples));
@@ -188,8 +190,8 @@ class ExamplesWindowContents : public WidgetDelegateView,
   }
   void WindowClosing() override {
     instance_ = NULL;
-    if (operation_ == QUIT_ON_CLOSE)
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (on_close_)
+      std::move(on_close_).Run();
   }
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(800, 300);
@@ -212,7 +214,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   Combobox* combobox_;
   View* example_shown_;
   Label* status_label_;
-  const Operation operation_;
+  base::OnceClosure on_close_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };
@@ -220,7 +222,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
-void ShowExamplesWindow(Operation operation,
+void ShowExamplesWindow(base::OnceClosure on_close,
                         gfx::NativeWindow window_context,
                         ExampleVector extra_examples) {
   if (ExamplesWindowContents::instance()) {
@@ -230,7 +232,7 @@ void ShowExamplesWindow(Operation operation,
     Widget* widget = new Widget;
     Widget::InitParams params;
     params.delegate =
-        new ExamplesWindowContents(operation, std::move(examples));
+        new ExamplesWindowContents(std::move(on_close), std::move(examples));
     params.context = window_context;
     widget->Init(params);
     widget->Show();

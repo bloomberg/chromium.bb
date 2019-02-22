@@ -34,6 +34,7 @@
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -50,6 +51,7 @@ struct WebEmbeddedWorkerStartData {
 
   WebURL script_url;
   WebString user_agent;
+  mojom::ScriptType script_type;
   PauseAfterDownloadMode pause_after_download_mode;
   // Whether to pause the initialization and wait for debugger to attach
   // before proceeding. This technique allows debugging worker startup.

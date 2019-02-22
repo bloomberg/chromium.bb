@@ -11,10 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -398,31 +396,5 @@ INSTANTIATE_TEST_CASE_P(
                     NamePartsAreEmptyTestCase{"Marion", "", "", "", false},
                     NamePartsAreEmptyTestCase{"", "Mitchell", "", "", false},
                     NamePartsAreEmptyTestCase{"", "", "Morrison", "", false}));
-
-struct CompanyNameEnabledDisabledTest : public testing::TestWithParam<bool> {
-  CompanyNameEnabledDisabledTest() : feature_state(GetParam()) {
-    feature_list_.InitWithFeatureState(features::kAutofillEnableCompanyName,
-                                       feature_state);
-  }
-
-  const bool feature_state;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_P(CompanyNameEnabledDisabledTest, GetInfo) {
-  SCOPED_TRACE(feature_state ? "Enabled" : "Disabled");
-  const char kCompanyName[] = "Google";
-  CompanyInfo company;
-  company.SetInfo(AutofillType(COMPANY_NAME), ASCIIToUTF16(kCompanyName),
-                  "en-US");
-  EXPECT_EQ(ASCIIToUTF16(feature_state ? kCompanyName : ""),
-            company.GetInfo(AutofillType(COMPANY_NAME), "en-US"));
-}
-
-INSTANTIATE_TEST_CASE_P(ContactInfoTest,
-                        CompanyNameEnabledDisabledTest,
-                        testing::Bool());
 
 }  // namespace autofill

@@ -9,10 +9,10 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 namespace views {
 namespace test {
@@ -82,9 +82,8 @@ ui::EventSink* WidgetTest::GetEventSink(Widget* widget) {
 // static
 ui::internal::InputMethodDelegate* WidgetTest::GetInputMethodDelegateForWidget(
     Widget* widget) {
-  return NativeWidgetMac::GetBridgeForNativeWindow(widget->GetNativeWindow())
-      ->native_widget_mac()
-      ->bridge_host_for_testing();
+  return BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+      widget->GetNativeWindow());
 }
 
 // static

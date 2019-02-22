@@ -20,6 +20,7 @@
 #include "components/prefs/pref_registry.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
@@ -84,7 +85,8 @@ WebViewProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       browser_state->GetRequestContext(),
-      browser_state->GetSharedURLLoaderFactory()));
+      browser_state->GetSharedURLLoaderFactory(),
+      ApplicationContext::GetInstance()->GetNetworkConnectionTracker()));
   service->Init(
       std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 

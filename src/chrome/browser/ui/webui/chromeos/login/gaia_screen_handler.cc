@@ -177,9 +177,8 @@ void UpdateAuthParams(base::DictionaryValue* params,
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  params->SetBoolean(
-      "guestSignin",
-      chrome_user_manager_util::IsGuestSessionAllowed(cros_settings));
+  params->SetBoolean("guestSignin",
+                     user_manager::UserManager::Get()->IsGuestSessionAllowed());
 
   // nosignup flow if new users are not allowed.
   if (!allow_new_user || is_restrictive_proxy)

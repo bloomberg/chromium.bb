@@ -188,6 +188,7 @@ void DateView::UpdateTextInternal(const base::Time& now) {
   BaseDateTimeView::UpdateTextInternal(now);
   date_label_->SetText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
+  date_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void DateView::OnSystemClockCanSetTimeChanged(bool can_set_time) {
@@ -237,6 +238,8 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
       now, model_->hour_clock_type(), base::kDropAmPm);
   horizontal_label_->SetText(current_time);
   horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
+  horizontal_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                                              true);
 
   // Calculate vertical clock layout labels.
   size_t colon_pos = current_time.find(base::ASCIIToUTF16(":"));
@@ -250,6 +253,10 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
 
   vertical_label_hours_->SetText(hour);
   vertical_label_minutes_->SetText(minute);
+  vertical_label_hours_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
+  vertical_label_minutes_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextChanged, true);
   Layout();
 }
 

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -317,6 +318,9 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     // We don't actually need the begin frame signal when in low latency mode,
     // but we need to subscribe to it or else dispatching frames will not work.
     frame_dispatcher_->SetNeedsBeginFrame(GetPage()->IsPageVisible());
+
+    UseCounter::Count(GetDocument().GetFrame(),
+                      WebFeature::kHTMLCanvasElementLowLatency);
   }
 
   SetNeedsCompositingUpdate();
@@ -426,11 +430,9 @@ void HTMLCanvasElement::FinalizeFrame() {
       const SkIRect damage_rect = SkIRect::MakeXYWH(
           int_dirty.X(), int_dirty.Y(), int_dirty.Width(), int_dirty.Height());
       const bool needs_vertical_flip = !RenderingContext()->IsOriginTopLeft();
-      frame_dispatcher_->DispatchFrameSync(std::move(canvas_resource),
-                                           start_time, damage_rect,
-                                           needs_vertical_flip);
-      (void)start_time;
-      (void)damage_rect;
+      frame_dispatcher_->DispatchFrame(std::move(canvas_resource), start_time,
+                                       damage_rect, needs_vertical_flip,
+                                       IsOpaque());
       dirty_rect_ = FloatRect();
     }
   }
@@ -487,7 +489,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
       FloatRect mapped_dirty_rect =
           MapRect(dirty_rect_, src_rect, content_rect);
       if (context_->IsComposited()) {
-        // Accelerated 2D canvases need the dirty rect to be expressed relative
+        // Composited 2D canvases need the dirty rect to be expressed relative
         // to the content box, as opposed to the layout box.
         mapped_dirty_rect.MoveBy(-content_rect.Location());
       }
@@ -654,9 +656,13 @@ static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
 SkFilterQuality HTMLCanvasElement::FilterQuality() const {
   if (!isConnected())
     return kLow_SkFilterQuality;
-  HTMLCanvasElement* non_const_this = const_cast<HTMLCanvasElement*>(this);
-  non_const_this->UpdateDistributionForFlatTreeTraversal();
-  const ComputedStyle* style = non_const_this->EnsureComputedStyle();
+
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style) {
+    GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+    HTMLCanvasElement* non_const_this = const_cast<HTMLCanvasElement*>(this);
+    style = non_const_this->EnsureComputedStyle();
+  }
   return (style && style->ImageRendering() == EImageRendering::kPixelated)
              ? kNone_SkFilterQuality
              : kLow_SkFilterQuality;
@@ -1110,13 +1116,15 @@ Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
   return canvas2d_bridge_.get();
 }
 
-void HTMLCanvasElement::SetCanvas2DLayerBridgeForTesting(
+void HTMLCanvasElement::SetResourceProviderForTesting(
+    std::unique_ptr<CanvasResourceProvider> resource_provider,
     std::unique_ptr<Canvas2DLayerBridge> bridge,
     const IntSize& size) {
   DiscardResourceProvider();
   SetIntegralAttribute(widthAttr, size.Width());
   SetIntegralAttribute(heightAttr, size.Height());
   SetCanvas2DLayerBridgeInternal(std::move(bridge));
+  ReplaceResourceProvider(std::move(resource_provider));
 }
 
 void HTMLCanvasElement::DiscardResourceProvider() {
@@ -1393,9 +1401,12 @@ FontSelector* HTMLCanvasElement::GetFontSelector() {
 void HTMLCanvasElement::UpdateMemoryUsage() {
   int non_gpu_buffer_count = 0;
   int gpu_buffer_count = 0;
-  if (Is2d() && canvas2d_bridge_) {
+
+  if (!Is2d() && !Is3d())
+    return;
+  if (ResourceProvider()) {
     non_gpu_buffer_count++;
-    if (canvas2d_bridge_->IsAccelerated()) {
+    if (IsAccelerated()) {
       // The number of internal GPU buffers vary between one (stable
       // non-displayed state) and three (triple-buffered animations).
       // Adding 2 is a pessimistic but relevant estimate.
@@ -1404,14 +1415,8 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
     }
   }
 
-  if (Is3d()) {
-    if (ResourceProvider()) {
-      non_gpu_buffer_count++;
-      if (ResourceProvider()->IsAccelerated())
-        gpu_buffer_count += 2;
-    }
+  if (Is3d())
     non_gpu_buffer_count += context_->ExternallyAllocatedBufferCountPerPixel();
-  }
 
   const int bytes_per_pixel = ColorParams().BytesPerPixel();
 

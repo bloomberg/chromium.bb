@@ -4,6 +4,13 @@
 
 #include "chrome/browser/ui/webui/policy_tool_ui_handler.h"
 
+#include <algorithm>
+#include <functional>
+#include <limits>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"

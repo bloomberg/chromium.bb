@@ -41,7 +41,6 @@ Polymer({
     hasDestinations_: {
       type: Boolean,
       value: true,
-      observer: 'hasDestinationsChanged_',
     },
 
     /** @private {boolean} */
@@ -55,6 +54,30 @@ Polymer({
     'updateMatchingDestinations_(destinations.*, searchQuery)',
     'matchingDestinationsChanged_(matchingDestinations_.*)',
   ],
+
+  /** @private {?ResizeObserver} */
+  resizeObserver_: null,
+
+  attached: function() {
+    this.resizeObserver_ = new ResizeObserver(entries => {
+      if (entries === null)
+        return;
+
+      const entry = assert(entries[0]);
+      // Don't set maxHeight below the minimum height.
+      const fullHeight = Math.max(entry.contentRect.height, 64);
+      this.$.list.style.maxHeight = `${fullHeight}px`;
+      this.forceIronResize();
+    });
+    this.resizeObserver_.observe(this.$.listContainer);
+  },
+
+  detached: function() {
+    if (this.resizeObserver_) {
+      this.resizeObserver_.disconnect();
+      this.resizeObserver_ = null;
+    }
+  },
 
   // This is a workaround to ensure that the iron-list correctly updates the
   // displayed destination information when the elements in the
@@ -79,6 +102,7 @@ Polymer({
             this.destinations.filter(
                 d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
             this.destinations.slice());
+    this.forceIronResize();
   },
 
   /** @private */
@@ -110,13 +134,6 @@ Polymer({
    */
   onDestinationSelected_: function(e) {
     this.fire('destination-selected', e.target);
-  },
-
-  /** @private */
-  hasDestinationsChanged_: function() {
-    // If there are no destinations, leave space for "no destinations" message.
-    this.$.list.style.height = this.hasDestinations_ ?
-        'calc(100% - 1rem - 9px)' : 'calc(100% - 2rem - 9px)';
   },
 });
 })();

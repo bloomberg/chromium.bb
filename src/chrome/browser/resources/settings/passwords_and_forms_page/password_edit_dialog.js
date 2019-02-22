@@ -32,19 +32,5 @@ Polymer({
   onActionButtonTap_: function() {
     this.close();
   },
-
-  /**
-   * Manually select texts for readonly inputs.
-   * @param {!Event} event
-   * @private
-   */
-  onInputFocus_: function(event) {
-    (/** @type {!CrInputElement} */ (event.target)).select();
-  },
-
-  /** Manually de-select texts for readonly inputs. */
-  onInputBlur_: function() {
-    this.shadowRoot.getSelection().removeAllRanges();
-  },
 });
 })();

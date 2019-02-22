@@ -59,6 +59,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=808744)
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['linux', 'intel'], bug=867675)
+    self.Skip('WebglExtension_KHR_parallel_shader_compile',
+        ['no_passthrough'], bug=849576)
 
     # Extensions not available under D3D9
     self.Fail('WebglExtension_EXT_sRGB',
@@ -490,16 +492,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', 'passthrough', 'amd'], bug=794339)
 
     # Intel
-    # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
-    self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
-        ['linux', 'intel'], bug=540543)  # GPU timeout
     # Fixed on Mesa 12.0
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
-
-    # Linux Intel HD 630
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
-        ['linux', ('intel', 0x5912)], bug=745888)
 
     # Linux passthrough Intel
     self.Fail('conformance/renderbuffers/' +
@@ -608,10 +603,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=709704)
 
     # Nexus 5X
-    # The following two tests just started timing out randomly on the
+    # The following test recently became so flaky that it had to be
+    # upgraded to Fail.
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=882323)
+    # The following test just started timing out randomly on the
     # android_optional_gpu_tests_rel tryserver with no apparent cause.
-    self.Flaky('deqp/data/gles2/shaders/conversions.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     self.Flaky('deqp/data/gles2/shaders/swizzles.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=793050)
     # This one is causing intermittent timeouts on the device, and it
@@ -724,6 +721,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/misc/' +
         'tex-video-using-tex-unit-non-zero.html',
         ['android', 'nvidia'], bug=830901)
+    self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['android', 'nvidia'], bug=891456)
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['android', 'nvidia'], bug=891456)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', ['android', 'nvidia'],
+        bug=891456)
 
     # Nexus 9 and Shield TV (NVIDIA GPUs currently on the waterfall)
     self.Fail('conformance/ogles/GL/array/array_001_to_006.html',

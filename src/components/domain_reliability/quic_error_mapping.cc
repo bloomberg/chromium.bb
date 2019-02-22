@@ -289,6 +289,13 @@ const struct QuicErrorMapping {
     {quic::QUIC_INVALID_PATH_CHALLENGE_DATA,
      "quic.invalid.path_challenge_data"},
     {quic::QUIC_INVALID_PATH_RESPONSE_DATA, "quic.invalid.path_response_data"},
+    {quic::QUIC_INVALID_MESSAGE_DATA, "quic.invalid.message_data"},
+    {quic::IETF_QUIC_PROTOCOL_VIOLATION, "quic.ietf.protocol_violation"},
+    {quic::QUIC_INVALID_NEW_TOKEN, "quic.invalid_new_token"},
+    {quic::QUIC_DATA_RECEIVED_ON_WRITE_UNIDIRECTIONAL_STREAM,
+     "quic.data.received.on.write.unidirectional.stream"},
+    {quic::QUIC_TRY_TO_WRITE_DATA_ON_READ_UNIDIRECTIONAL_STREAM,
+     "quic.try.to.write.data.on.read.unidirectional.stream"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};

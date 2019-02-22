@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -64,6 +65,12 @@ class BrowserThemePackTest : public ::testing::Test {
   static void BuildFromUnpackedExtension(const base::FilePath& extension_path,
                                          scoped_refptr<BrowserThemePack>* pack);
 
+  // Builds the theme represented by an unpacked extension (located in
+  // {DIR_TEST_DATA}/extensions/|theme_folder|).
+  // The BrowserThemePack is returned in |pack|.
+  static void BuildTestExtensionTheme(const base::StringPiece theme_folder,
+                                      scoped_refptr<BrowserThemePack>* pack);
+
   static base::FilePath GetTestExtensionThemePath(
       base::StringPiece theme_folder);
   static base::FilePath GetStarGazingPath();
@@ -79,8 +86,8 @@ class BrowserThemePackTest : public ::testing::Test {
   // Verify that the colors in the theme for |color_id_a| and |color_id_b| are
   // the same.
   static void VerifyColorsMatch(BrowserThemePack* pack,
-                                TP::OverwritableByUserThemeProperty color_id_a,
-                                TP::OverwritableByUserThemeProperty color_id_b);
+                                int color_id_a,
+                                int color_id_b);
 
   const BrowserThemePack& theme_pack() const { return *theme_pack_; }
 
@@ -136,8 +143,7 @@ std::map<int, SkColor> BrowserThemePackTest::GetDefaultColorMap() {
 
 void BrowserThemePackTest::VerifyColorMap(
     const std::map<int, SkColor>& color_map) {
-  for (std::map<int, SkColor>::const_iterator it = color_map.begin();
-       it != color_map.end(); ++it) {
+  for (auto it = color_map.begin(); it != color_map.end(); ++it) {
     SkColor color;
     if (!theme_pack_->GetColor(it->first, &color))
       color = GetDefaultColor(it->first);
@@ -220,6 +226,14 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
   *pack = new BrowserThemePack;
   BrowserThemePack::BuildFromExtension(extension.get(), *pack);
   ASSERT_TRUE((*pack)->is_valid());
+}
+
+// static
+void BrowserThemePackTest::BuildTestExtensionTheme(
+    const base::StringPiece theme_folder,
+    scoped_refptr<BrowserThemePack>* pack) {
+  base::FilePath contrast_theme_path = GetTestExtensionThemePath(theme_folder);
+  BuildFromUnpackedExtension(contrast_theme_path, pack);
 }
 
 // static
@@ -361,25 +375,25 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 100%.
   const gfx::ImageSkiaRep& rep1 = image_skia->GetRepresentation(1.0f);
   ASSERT_FALSE(rep1.is_null());
-  EXPECT_EQ(80, rep1.sk_bitmap().width());
+  EXPECT_EQ(80, rep1.GetBitmap().width());
   // Bitmap height will be cropped at 60 - kTallestTabHeight + 19.
-  EXPECT_EQ(60, rep1.sk_bitmap().height());
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(4, 4));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(8, 8));
-  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(16, 16));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.sk_bitmap().getColor(24, 24));
-  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.sk_bitmap().getColor(32, 32));
+  EXPECT_EQ(60, rep1.GetBitmap().height());
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(4, 4));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(8, 8));
+  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.GetBitmap().getColor(16, 16));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep1.GetBitmap().getColor(24, 24));
+  EXPECT_EQ(SkColorSetRGB(0, 241, 237), rep1.GetBitmap().getColor(32, 32));
   // Scale 200%.
   const gfx::ImageSkiaRep& rep2 = image_skia->GetRepresentation(2.0f);
   ASSERT_FALSE(rep2.is_null());
-  EXPECT_EQ(160, rep2.sk_bitmap().width());
+  EXPECT_EQ(160, rep2.GetBitmap().width());
   // Cropped height will be 2 * 60.
-  EXPECT_EQ(120, rep2.sk_bitmap().height());
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(4, 4));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(8, 8));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(16, 16));
-  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.sk_bitmap().getColor(24, 24));
-  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.sk_bitmap().getColor(32, 32));
+  EXPECT_EQ(120, rep2.GetBitmap().height());
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.GetBitmap().getColor(4, 4));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(8, 8));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(16, 16));
+  EXPECT_EQ(SkColorSetRGB(223, 42, 0), rep2.GetBitmap().getColor(24, 24));
+  EXPECT_EQ(SkColorSetRGB(255, 255, 255), rep2.GetBitmap().getColor(32, 32));
 
   // TODO(sschmitz): I plan to remove the following (to the end of the fct)
   // Reason: this test may be brittle. It depends on details of how we scale
@@ -399,18 +413,18 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 100%.
   const gfx::ImageSkiaRep& rep3 = image_skia->GetRepresentation(1.0f);
   ASSERT_FALSE(rep3.is_null());
-  EXPECT_EQ(80, rep3.sk_bitmap().width());
+  EXPECT_EQ(80, rep3.GetBitmap().width());
   // Bitmap height will be cropped at 60 - kTallestTabHeight + 19.
-  EXPECT_EQ(60, rep3.sk_bitmap().height());
+  EXPECT_EQ(60, rep3.GetBitmap().height());
   // We take samples of colors and locations along the diagonal whenever
   // the color changes. Note these colors are slightly different from
   // the input PNG file due to input processing.
   std::vector<std::pair<int, SkColor>> normal;
   int xy = 0;
-  SkColor color = rep3.sk_bitmap().getColor(xy, xy);
+  SkColor color = rep3.GetBitmap().getColor(xy, xy);
   normal.push_back(std::make_pair(xy, color));
   for (int xy = 0; xy < 40; ++xy) {
-    SkColor next_color = rep3.sk_bitmap().getColor(xy, xy);
+    SkColor next_color = rep3.GetBitmap().getColor(xy, xy);
     if (next_color != color) {
       color = next_color;
       normal.push_back(std::make_pair(xy, color));
@@ -420,23 +434,22 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
   // Scale 200%.
   const gfx::ImageSkiaRep& rep4 = image_skia->GetRepresentation(2.0f);
   ASSERT_FALSE(rep4.is_null());
-  EXPECT_EQ(160, rep4.sk_bitmap().width());
+  EXPECT_EQ(160, rep4.GetBitmap().width());
   // Cropped height will be 2 * 60.
-  EXPECT_EQ(120, rep4.sk_bitmap().height());
+  EXPECT_EQ(120, rep4.GetBitmap().height());
   // We expect the same colors and at locations scaled by 2
   // since this bitmap was scaled by 2.
   for (size_t i = 0; i < normal.size(); ++i) {
     int xy = 2 * normal[i].first;
     SkColor color = normal[i].second;
-    EXPECT_EQ(color, rep4.sk_bitmap().getColor(xy, xy));
+    EXPECT_EQ(color, rep4.GetBitmap().getColor(xy, xy));
   }
 }
 
 // static
-void BrowserThemePackTest::VerifyColorsMatch(
-    BrowserThemePack* pack,
-    TP::OverwritableByUserThemeProperty color_id_a,
-    TP::OverwritableByUserThemeProperty color_id_b) {
+void BrowserThemePackTest::VerifyColorsMatch(BrowserThemePack* pack,
+                                             int color_id_a,
+                                             int color_id_b) {
   SkColor color_a;
   SkColor color_b;
 
@@ -742,11 +755,8 @@ TEST_F(BrowserThemePackTest, HiDpiThemeTest) {
 // are too similar, the importing process modifies the text color so that it
 // maintains a minimum readable contrast ratio with the background.
 TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast) {
-  // Build a theme from test file (theme_tabcontrast).
-  base::FilePath contrast_theme_path =
-      GetTestExtensionThemePath("theme_tabcontrast");
   scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+  BuildTestExtensionTheme("theme_tabcontrast", &pack);
 
   // Check the contrast ratio of text/tab color pairs to make sure that they
   // meet the minimum criteria for readable contrast ratio.
@@ -805,13 +815,8 @@ TEST_F(BrowserThemePackTest, TestBackgroundTabTextMinimumContrast_NoTabColor) {
 // COLOR_BACKGROUND_TAB_TEXT, that color is used for the other variants of
 // background tab text (inactive, incognito, and incognito+inactive).
 TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign) {
-  // Build a theme from the test file (theme_testinherittextcolor)
-  // This theme specifies a color for background_tab_text, but none of its
-  // variants.
-  base::FilePath contrast_theme_path =
-      GetTestExtensionThemePath("theme_testinherittextcolor");
   scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+  BuildTestExtensionTheme("theme_testinherittextcolor", &pack);
 
   // Verify that all background tab text colors match the color for background
   // tab text.
@@ -828,13 +833,8 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign) {
 // COLOR_BACKGROUND_TAB_TEXT and COLOR_BACKGROUND_TAB_TEXT_INCOGNITO, those
 // colors are also used for their respective inactive variants.
 TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_WithIncognito) {
-  // Build a theme from the test file (theme_testinherittextcolor_withincog)
-  // This theme specifies a color for background_tab_text and
-  // background_tab_text_incognito, but neither of their inactive variants.
-  base::FilePath contrast_theme_path =
-      GetTestExtensionThemePath("theme_testinherittextcolor_withincog");
   scoped_refptr<BrowserThemePack> pack;
-  BuildFromUnpackedExtension(contrast_theme_path, &pack);
+  BuildTestExtensionTheme("theme_testinherittextcolor_withincog", &pack);
 
   // Verify that background_inactive is getting its color from background, and
   // background_incognito_inactive is getting its color from
@@ -869,4 +869,123 @@ TEST_F(BrowserThemePackTest, TestBGTabTextColorAutoAssign_NoTabColor) {
                     TP::COLOR_BACKGROUND_TAB_TEXT);
   VerifyColorsMatch(pack_ptr, TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE,
                     TP::COLOR_BACKGROUND_TAB_TEXT);
+}
+
+// Ensure that, given a theme which specifies a background tab tint, but no
+// background tab color, tab text is correctly calculated to ensure contrast
+// against the (tinted) background tab color.
+TEST_F(BrowserThemePackTest, TestBGTabTextColorContrast_TabTint) {
+  // This theme specifies a color for frame (white) and background_tab_text
+  // (black), in addition to a background_tab tint that reduces the color to
+  // nearly zero.
+  base::FilePath theme_path =
+      GetTestExtensionThemePath("theme_test_bgtabtext_tintonly");
+  scoped_refptr<BrowserThemePack> pack;
+  BuildFromUnpackedExtension(theme_path, &pack);
+
+  SkColor frame_color;
+  SkColor text_color;
+  color_utils::HSL tab_tint;
+
+  pack->GetColor(TP::COLOR_FRAME, &frame_color);
+  pack->GetColor(TP::COLOR_BACKGROUND_TAB_TEXT, &text_color);
+  pack->GetTint(TP::TINT_BACKGROUND_TAB, &tab_tint);
+
+  SkColor tinted_bg_tab_color = color_utils::HSLShift(frame_color, tab_tint);
+  float contrast_ratio =
+      color_utils::GetContrastRatio(tinted_bg_tab_color, text_color);
+
+  EXPECT_GE(contrast_ratio, color_utils::kMinimumReadableContrastRatio);
+}
+
+// Ensure that, given a theme which only specifies a frame color, the calculated
+// caption button background colors appropriately match the frame color.
+TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_FrameColor) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_captionbutton_framecolor", &pack);
+
+  // Verify that control button background colors are matching the frame colors.
+  BrowserThemePack* pack_ptr = pack.get();
+  VerifyColorsMatch(pack_ptr, TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+                    TP::COLOR_FRAME);
+  VerifyColorsMatch(pack_ptr,
+                    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+                    TP::COLOR_FRAME_INACTIVE);
+  VerifyColorsMatch(pack_ptr,
+                    TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+                    TP::COLOR_FRAME_INCOGNITO);
+  VerifyColorsMatch(
+      pack_ptr, TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+      TP::COLOR_FRAME_INCOGNITO_INACTIVE);
+}
+
+// Ensure that, given a theme which specifies a button background color, the
+// calculated caption button background colors appropriately match the button
+// background color blended with the frame color.
+TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGColor) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_captionbutton_buttoncolor", &pack);
+
+  SkColor button_bg_color;
+  const bool has_button_bg_color =
+      pack->GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color);
+  ASSERT_TRUE(has_button_bg_color);
+  SkAlpha button_bg_alpha = SkColorGetA(button_bg_color);
+
+  // Account for the alpha modification that happens in Windows10CaptionButton.
+  button_bg_alpha =
+      WindowFrameUtil::CalculateWindows10GlassCaptionButtonBackgroundAlpha(
+          button_bg_alpha);
+
+  struct CaptionButtonColorPair {
+    int caption_button_bg_color_id;
+    int frame_color_id;
+  };
+  const CaptionButtonColorPair color_pairs_to_check[] = {
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE, TP::COLOR_FRAME},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+       TP::COLOR_FRAME_INACTIVE},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+       TP::COLOR_FRAME_INCOGNITO},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+       TP::COLOR_FRAME_INCOGNITO_INACTIVE},
+  };
+
+  for (const CaptionButtonColorPair& current_pair : color_pairs_to_check) {
+    SkColor calculated_button_bg_color;
+    SkColor frame_color;
+
+    pack->GetColor(current_pair.caption_button_bg_color_id,
+                   &calculated_button_bg_color);
+    pack->GetColor(current_pair.frame_color_id, &frame_color);
+
+    SkColor result_color =
+        color_utils::AlphaBlend(button_bg_color, frame_color, button_bg_alpha);
+
+    EXPECT_EQ(calculated_button_bg_color, result_color);
+  }
+}
+
+// Ensure that, given a theme which specifies a light frame color, but a dark
+// caption button image, the calculated caption button background color is dark
+// (to match the bg image).
+TEST_F(BrowserThemePackTest, TestWindowControlButtonBGColor_ButtonBGImage) {
+  scoped_refptr<BrowserThemePack> pack;
+  BuildTestExtensionTheme("theme_test_captionbutton_buttonimage", &pack);
+
+  // Verify that all of the calculated button background colors are on the
+  // 'dark' end of the spectrum.
+  int colors_to_check[] = {
+      TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+      TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+      TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+      TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+  };
+  for (int color_id : colors_to_check) {
+    SkColor control_button_color;
+    const bool has_color = pack->GetColor(color_id, &control_button_color);
+    EXPECT_TRUE(has_color);
+    EXPECT_EQ(SkColorGetA(control_button_color), SK_AlphaOPAQUE);
+    EXPECT_TRUE(color_utils::IsDark(control_button_color));
+  }
 }

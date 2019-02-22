@@ -58,7 +58,7 @@ public class DesktopCanvas {
      * viewport center is mapped to the center of the screen.  If true, then System UI sizes will be
      * used to determine the center of the viewport.
      */
-    private boolean mAdjustViewportSizeForSystemUi = false;
+    private boolean mAdjustViewportSizeForSystemUi;
 
     /* Used to perform per-frame rendering tasks. */
     private Event.ParameterCallback<Boolean, Void> mFrameRenderedCallback;
@@ -444,7 +444,7 @@ public class DesktopCanvas {
 
             private final Interpolator mInterpolator = new DecelerateInterpolator();
 
-            private long mStartTime = 0;
+            private long mStartTime;
             private final float mOriginalX = mViewportOffset.x - targetOffset.x;
             private final float mOriginalY = mViewportOffset.y - targetOffset.y;
 

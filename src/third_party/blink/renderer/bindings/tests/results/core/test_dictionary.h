@@ -41,7 +41,7 @@ class TestInterfaceImplementation;
 class Element;
 
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   TestDictionary();
   virtual ~TestDictionary();
@@ -221,6 +221,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
     return long_member_;
   }
   inline void setLongMember(int32_t);
+
+  bool hasMemberWithHyphenInName() const { return has_member_with_hyphen_in_name_; }
+  bool memberWithHyphenInName() const {
+    DCHECK(has_member_with_hyphen_in_name_);
+    return member_with_hyphen_in_name_;
+  }
+  inline void setMemberWithHyphenInName(bool);
 
   bool hasObjectMember() const { return !(object_member_.IsEmpty() || object_member_.IsNull() || object_member_.IsUndefined()); }
   ScriptValue objectMember() const {
@@ -454,6 +461,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_internal_dictionary_sequence_member_ = false;
   bool has_is_public_ = false;
   bool has_long_member_ = false;
+  bool has_member_with_hyphen_in_name_ = false;
   bool has_origin_trial_member_ = false;
   bool has_origin_trial_second_member_ = false;
   bool has_record_member_ = false;
@@ -498,6 +506,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   HeapVector<InternalDictionary> internal_dictionary_sequence_member_;
   bool is_public_;
   int32_t long_member_;
+  bool member_with_hyphen_in_name_;
   ScriptValue object_member_;
   ScriptValue object_or_null_member_;
   bool origin_trial_member_;
@@ -600,6 +609,11 @@ void TestDictionary::setIsPublic(bool value) {
 void TestDictionary::setLongMember(int32_t value) {
   long_member_ = value;
   has_long_member_ = true;
+}
+
+void TestDictionary::setMemberWithHyphenInName(bool value) {
+  member_with_hyphen_in_name_ = value;
+  has_member_with_hyphen_in_name_ = true;
 }
 
 void TestDictionary::setOriginTrialMember(bool value) {

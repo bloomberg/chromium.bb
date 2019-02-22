@@ -26,7 +26,6 @@ class OAuth2TokenServiceDelegate {
   static const char kInvalidRefreshToken[];
 
   enum LoadCredentialsState {
-    LOAD_CREDENTIALS_UNKNOWN,
     LOAD_CREDENTIALS_NOT_STARTED,
     LOAD_CREDENTIALS_IN_PROGRESS,
     LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
@@ -59,7 +58,6 @@ class OAuth2TokenServiceDelegate {
                                      const std::string& access_token) {}
 
   virtual void Shutdown() {}
-  virtual void LoadCredentials(const std::string& primary_account_id) {}
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) {}
   virtual void RevokeCredentials(const std::string& account_id) {}
@@ -76,12 +74,30 @@ class OAuth2TokenServiceDelegate {
   // a nullptr otherwise.
   virtual const net::BackoffEntry* BackoffEntry() const;
 
-  // Diagnostic methods
+  // -----------------------------------------------------------------------
+  // Methods that are only used by ProfileOAuth2TokenService.
+  // -----------------------------------------------------------------------
+
+  // Loads the credentials from disk. Called only once when the token service
+  // is initialized. Default implementation is NOTREACHED - subsclasses that
+  // are used by the ProfileOAuth2TokenService must provide an implementation
+  // for this method.
+  virtual void LoadCredentials(const std::string& primary_account_id);
 
   // Returns the state of the load credentials operation.
-  virtual LoadCredentialsState GetLoadCredentialsState() const;
+  LoadCredentialsState load_credentials_state() const {
+    return load_credentials_state_;
+  }
+
+  // -----------------------------------------------------------------------
+  // End of methods that are only used by ProfileOAuth2TokenService
+  // -----------------------------------------------------------------------
 
  protected:
+  void set_load_credentials_state(LoadCredentialsState state) {
+    load_credentials_state_ = state;
+  }
+
   // Called by subclasses to notify observers. Some are virtual to allow Android
   // to broadcast the notifications to Java code.
   virtual void FireRefreshTokenAvailable(const std::string& account_id);
@@ -106,6 +122,9 @@ class OAuth2TokenServiceDelegate {
   // Makes sure list is empty on destruction.
   base::ObserverList<OAuth2TokenService::Observer, true>::Unchecked
       observer_list_;
+
+  // The state of the load credentials operation.
+  LoadCredentialsState load_credentials_state_ = LOAD_CREDENTIALS_NOT_STARTED;
 
   void StartBatchChanges();
   void EndBatchChanges();

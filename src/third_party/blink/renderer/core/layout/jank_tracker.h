@@ -22,7 +22,7 @@ class WebInputEvent;
 // Tracks "jank" from layout objects changing their visual location between
 // animation frames.
 class CORE_EXPORT JankTracker {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(JankTracker);
 
  public:
   JankTracker(LocalFrameView*);
@@ -30,6 +30,9 @@ class CORE_EXPORT JankTracker {
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const LayoutRect& old_visual_rect,
                             const PaintLayer& painting_layer);
+  void NotifyCompositedLayerMoved(const PaintLayer&,
+                                  FloatRect old_layer_rect,
+                                  FloatRect new_layer_rect);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
   bool IsActive();
@@ -38,6 +41,10 @@ class CORE_EXPORT JankTracker {
   void Dispose() { timer_.Stop(); }
 
  private:
+  void AccumulateJank(const LayoutObject&,
+                      const PaintLayer&,
+                      FloatRect old_rect,
+                      FloatRect new_rect);
   void TimerFired(TimerBase*) {}
   std::unique_ptr<TracedValue> PerFrameTraceData(
       double jank_fraction,

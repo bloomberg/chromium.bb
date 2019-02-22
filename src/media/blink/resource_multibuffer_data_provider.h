@@ -70,6 +70,10 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // Callback used when we're asked to fetch data after the end of the file.
   void Terminate();
 
+  // At the end of Start(), we potentially wait for other loaders to
+  // finish, when they do a callback calls this function.
+  void StartLoading(std::unique_ptr<blink::WebURLRequest> request);
+
   // Parse a Content-Range header into its component pieces and return true if
   // each of the expected elements was found & parsed correctly.
   // |*instance_size| may be set to kPositionNotSpecified if the range ends in

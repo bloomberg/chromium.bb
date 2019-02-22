@@ -22,16 +22,14 @@ config("leveldb_config") {
     # Define the macro everywhere, to avoid reasoning about which headers bring
     # windows.h in.
     defines += [ "DeleteFile=DeleteFileW" ]
-
-    # OS_WIN is defined in base_export.h, but needs to be defined earlier for
-    # leveldb to use it.
-    defines += [ "OS_WIN" ]
   }
 }
 
 leveldb_sources = [
   "env_chromium.cc",
   "env_chromium.h",
+  "leveldb_features.h",
+  "leveldb_features.cc",
   "leveldb_chrome.cc",
   "leveldb_chrome.h",
   "port/port_chromium.cc",
@@ -118,17 +116,24 @@ leveldb_sources = [
   "src/util/status.cc",
 ]
 
+config("leveldb_component_config") {
+  if (is_component_build) {
+    # Must be exported to all dependencies so LEVELDB_EXPORT is correctly
+    # defined throughout the component build.
+    defines += [ "LEVELDB_SHARED_LIBRARY" ]
+  }
+}
+
 component("leveldatabase") {
   sources = leveldb_sources
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  if (is_component_build) {
-    defines += [ "LEVELDB_SHARED_LIBRARY" ]
-  }
-
-  public_configs = [ ":leveldb_config" ]
+  public_configs = [
+    ":leveldb_config",
+    ":leveldb_component_config",
+  ]
 
   deps = [
     "//base",
@@ -150,8 +155,14 @@ component("leveldatabase") {
   defines += [ "LEVELDB_COMPILE_LIBRARY" ]
 }
 
-static_library("leveldb") {
-  visibility = [ ":*" ]
+# leveldb does not mark symbols used by tests or its command-line utility as
+# LEVELDB_EXPORT. So, these targets can only be linked statically against the
+# leveldb source code.
+static_library("leveldb_static") {
+  visibility = [
+    ":leveldb_testutil",
+    ":leveldb_leveldbutil",
+  ]
   sources = leveldb_sources
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -191,6 +202,9 @@ if (!is_ios && !is_android) {
   }
 
   static_library("leveldb_testutil") {
+    testonly = true
+    visibility = [ ":*" ]
+
     sources = [
       "src/util/histogram.cc",
       "src/util/histogram.h",
@@ -204,7 +218,7 @@ if (!is_ios && !is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     public_deps = [
-      ":leveldb",
+      ":leveldb_static",
     ]
     deps = [
       "//base",
@@ -349,7 +363,7 @@ if (!is_ios && !is_android) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     deps = [
-      ":leveldb",
+      ":leveldb_static",
     ]
   }
 

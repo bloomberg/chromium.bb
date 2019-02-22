@@ -8,6 +8,8 @@ if (is_android) {
 
 source_set("feed_core") {
   sources = [
+    "content_metadata.cc",
+    "content_metadata.h",
     "feed_content_database.cc",
     "feed_content_database.h",
     "feed_content_mutation.cc",
@@ -24,6 +26,8 @@ source_set("feed_core") {
     "feed_journal_mutation.h",
     "feed_journal_operation.cc",
     "feed_journal_operation.h",
+    "feed_logging_metrics.cc",
+    "feed_logging_metrics.h",
     "feed_networking_host.cc",
     "feed_networking_host.h",
     "feed_scheduler_host.cc",
@@ -45,6 +49,7 @@ source_set("feed_core") {
     "//components/image_fetcher/core:core",
     "//components/leveldb_proto",
     "//net",
+    "//ui/base/mojo:mojo",
   ]
 
   deps = [
@@ -79,6 +84,7 @@ source_set("core_unit_tests") {
     "feed_image_manager_unittest.cc",
     "feed_journal_database_unittest.cc",
     "feed_journal_mutation_unittest.cc",
+    "feed_logging_metrics_unittest.cc",
     "feed_networking_host_unittest.cc",
     "feed_scheduler_host_unittest.cc",
     "refresh_throttler_unittest.cc",

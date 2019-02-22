@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -311,7 +312,7 @@ TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   EXPECT_TRUE(parent->HasVisibleDescendant());
 }
 
-TEST_P(PaintLayerTest, HasDescendantWithSticky) {
+TEST_P(PaintLayerTest, HasStickyPositionDescendant) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='isolation: isolate'>
       <div id='child' style='position: sticky'>
@@ -320,18 +321,18 @@ TEST_P(PaintLayerTest, HasDescendantWithSticky) {
   )HTML");
   PaintLayer* parent = GetPaintLayerByElementId("parent");
   PaintLayer* child = GetPaintLayerByElementId("child");
-  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+  EXPECT_TRUE(parent->HasStickyPositionDescendant());
+  EXPECT_FALSE(child->HasStickyPositionDescendant());
 
   GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
                                                       "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(parent->HasStickyPositionDescendant());
+  EXPECT_FALSE(child->HasStickyPositionDescendant());
 }
 
-TEST_P(PaintLayerTest, HasDescendantWithFixed) {
+TEST_P(PaintLayerTest, HasFixedPositionDescendant) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='isolation: isolate'>
       <div id='child' style='position: fixed'>
@@ -340,18 +341,18 @@ TEST_P(PaintLayerTest, HasDescendantWithFixed) {
   )HTML");
   PaintLayer* parent = GetPaintLayerByElementId("parent");
   PaintLayer* child = GetPaintLayerByElementId("child");
-  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+  EXPECT_TRUE(parent->HasFixedPositionDescendant());
+  EXPECT_FALSE(child->HasFixedPositionDescendant());
 
   GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
                                                       "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(parent->HasFixedPositionDescendant());
+  EXPECT_FALSE(child->HasFixedPositionDescendant());
 }
 
-TEST_P(PaintLayerTest, HasDescendantWithFixedAndSticky) {
+TEST_P(PaintLayerTest, HasFixedAndStickyPositionDescendant) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='isolation: isolate'>
       <div id='child1' style='position: sticky'>
@@ -363,25 +364,34 @@ TEST_P(PaintLayerTest, HasDescendantWithFixedAndSticky) {
   PaintLayer* parent = GetPaintLayerByElementId("parent");
   PaintLayer* child1 = GetPaintLayerByElementId("child1");
   PaintLayer* child2 = GetPaintLayerByElementId("child2");
-  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+  EXPECT_TRUE(parent->HasFixedPositionDescendant());
+  EXPECT_FALSE(child1->HasFixedPositionDescendant());
+  EXPECT_FALSE(child2->HasFixedPositionDescendant());
+  EXPECT_TRUE(parent->HasStickyPositionDescendant());
+  EXPECT_FALSE(child1->HasStickyPositionDescendant());
+  EXPECT_FALSE(child2->HasStickyPositionDescendant());
 
   GetDocument().getElementById("child1")->setAttribute(HTMLNames::styleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+  EXPECT_TRUE(parent->HasFixedPositionDescendant());
+  EXPECT_FALSE(child1->HasFixedPositionDescendant());
+  EXPECT_FALSE(child2->HasFixedPositionDescendant());
+  EXPECT_FALSE(parent->HasStickyPositionDescendant());
+  EXPECT_FALSE(child1->HasStickyPositionDescendant());
+  EXPECT_FALSE(child2->HasStickyPositionDescendant());
 
   GetDocument().getElementById("child2")->setAttribute(HTMLNames::styleAttr,
                                                        "position: relative");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
-  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(parent->HasFixedPositionDescendant());
+  EXPECT_FALSE(child1->HasFixedPositionDescendant());
+  EXPECT_FALSE(child2->HasFixedPositionDescendant());
+  EXPECT_FALSE(parent->HasStickyPositionDescendant());
+  EXPECT_FALSE(child1->HasStickyPositionDescendant());
+  EXPECT_FALSE(child2->HasStickyPositionDescendant());
 }
 
 TEST_P(PaintLayerTest, HasNonContainedAbsolutePositionDescendant) {
@@ -585,6 +595,29 @@ TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
 
   PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
   EXPECT_FALSE(svgroot->SupportsSubsequenceCaching());
+}
+
+TEST_P(PaintLayerTest, NegativeZIndexChangeToPositive) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #child { position: relative; }
+    </style>
+    <div id='target' style='isolation: isolate'>
+      <div id='child' style='z-index: -1'></div>
+    </div>
+  )HTML");
+
+  PaintLayer* target = GetPaintLayerByElementId("target");
+
+  EXPECT_TRUE(target->StackingNode()->HasNegativeZOrderList());
+  EXPECT_FALSE(target->StackingNode()->HasPositiveZOrderList());
+
+  GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
+                                                      "z-index: 1");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(target->StackingNode()->HasNegativeZOrderList());
+  EXPECT_TRUE(target->StackingNode()->HasPositiveZOrderList());
 }
 
 TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
@@ -1611,6 +1644,102 @@ TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
   EXPECT_TRUE(span_layer->NeedsRepaint());
   EXPECT_TRUE(floating_layer->NeedsRepaint());
   EXPECT_TRUE(multicol_layer->NeedsRepaint());
+}
+
+TEST_P(PaintLayerTest, HitTestPseudoElementWithContinuation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #target::before {
+        content: ' ';
+        display: block;
+        height: 100px
+      }
+    </style>
+    <span id='target'></span>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(target->GetPseudoElement(kPseudoIdBefore),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElement) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'>First letter</span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterInBeforePseudoElement) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+      #target::before { content: "First letter"; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'></span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
+}
+
+TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #container { height: 100px; }
+      #container::first-letter { font-size: 50px; }
+      #target { display: contents; }
+    </style>
+    <div id='container'>
+      <div>
+        <span id='target'>First letter</span>
+      </div>
+    </div>
+  )HTML");
+  Element* target = GetDocument().getElementById("target");
+  Element* container = GetDocument().getElementById("container");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(LayoutPoint(10, 10));
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
+  EXPECT_EQ(target, result.InnerNode());
+  EXPECT_EQ(container->GetPseudoElement(kPseudoIdFirstLetter),
+            result.InnerPossiblyPseudoNode());
 }
 
 }  // namespace blink

@@ -374,12 +374,12 @@ Value* Value::SetPath(std::initializer_list<StringPiece> path, Value value) {
 }
 
 Value* Value::SetPath(span<const StringPiece> path, Value value) {
-  DCHECK_NE(path.begin(), path.end());  // Can't be empty path.
+  DCHECK(path.begin() != path.end());  // Can't be empty path.
 
   // Walk/construct intermediate dictionaries. The last element requires
   // special handling so skip it in this loop.
   Value* cur = this;
-  const StringPiece* cur_path = path.begin();
+  auto cur_path = path.begin();
   for (; (cur_path + 1) < path.end(); ++cur_path) {
     if (!cur->is_dict())
       return nullptr;
@@ -486,7 +486,8 @@ bool Value::GetAsDouble(double* out_value) const {
   if (out_value && is_double()) {
     *out_value = double_value_;
     return true;
-  } else if (out_value && is_int()) {
+  }
+  if (out_value && is_int()) {
     // Allow promotion from int to double.
     *out_value = int_value_;
     return true;

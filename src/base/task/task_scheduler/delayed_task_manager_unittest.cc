@@ -34,21 +34,26 @@ void RunTask(Task task) {
   std::move(task.task).Run();
 }
 
+Task ConstructMockedTask(testing::StrictMock<MockTask>& mock_task,
+                         TimeTicks now,
+                         TimeDelta delay) {
+  Task task(FROM_HERE, BindOnce(&MockTask::Run, Unretained(&mock_task)), delay);
+  // The constructor of Task computes |delayed_run_time| by adding |delay| to
+  // the real time. Recompute it by adding |delay| to the given |now| (usually
+  // mock time).
+  task.delayed_run_time = now + delay;
+  return task;
+}
+
 class TaskSchedulerDelayedTaskManagerTest : public testing::Test {
  protected:
   TaskSchedulerDelayedTaskManagerTest()
       : delayed_task_manager_(
             service_thread_task_runner_->DeprecatedGetMockTickClock()),
-        task_(FROM_HERE,
-              BindOnce(&MockTask::Run, Unretained(&mock_task_)),
-              TaskTraits(),
-              kLongDelay) {
-    // The constructor of Task computes |delayed_run_time| by adding |delay| to
-    // the real time. Recompute it by adding |delay| to the mock time.
-    task_.delayed_run_time =
-        service_thread_task_runner_->GetMockTickClock()->NowTicks() +
-        kLongDelay;
-  }
+        task_(ConstructMockedTask(
+            mock_task_,
+            service_thread_task_runner_->GetMockTickClock()->NowTicks(),
+            kLongDelay)) {}
   ~TaskSchedulerDelayedTaskManagerTest() override = default;
 
   const scoped_refptr<TestMockTimeTaskRunner> service_thread_task_runner_ =
@@ -146,16 +151,19 @@ TEST_F(TaskSchedulerDelayedTaskManagerTest, DelayedTasksRunAfterDelay) {
   delayed_task_manager_.Start(service_thread_task_runner_);
 
   testing::StrictMock<MockTask> mock_task_a;
-  Task task_a(FROM_HERE, BindOnce(&MockTask::Run, Unretained(&mock_task_a)),
-              TaskTraits(), TimeDelta::FromHours(1));
+  Task task_a = ConstructMockedTask(
+      mock_task_a, service_thread_task_runner_->GetMockTickClock()->NowTicks(),
+      TimeDelta::FromHours(1));
 
   testing::StrictMock<MockTask> mock_task_b;
-  Task task_b(FROM_HERE, BindOnce(&MockTask::Run, Unretained(&mock_task_b)),
-              TaskTraits(), TimeDelta::FromHours(2));
+  Task task_b = ConstructMockedTask(
+      mock_task_b, service_thread_task_runner_->GetMockTickClock()->NowTicks(),
+      TimeDelta::FromHours(2));
 
   testing::StrictMock<MockTask> mock_task_c;
-  Task task_c(FROM_HERE, BindOnce(&MockTask::Run, Unretained(&mock_task_c)),
-              TaskTraits(), TimeDelta::FromHours(1));
+  Task task_c = ConstructMockedTask(
+      mock_task_c, service_thread_task_runner_->GetMockTickClock()->NowTicks(),
+      TimeDelta::FromHours(1));
 
   // Send tasks to the DelayedTaskManager.
   delayed_task_manager_.AddDelayedTask(std::move(task_a), BindOnce(&RunTask));

@@ -205,6 +205,38 @@ RemoteCall.prototype.waitForElementStyles = function(
 };
 
 /**
+ * Waits for a remote test function to return a specific result.
+ *
+ * @param {string} funcName Name of remote test function to be executed.
+ * @param {string} windowId Target window ID.
+ * @param {function(Object): boolean|Object} expectedResult An value to be
+ *     checked against the return value of |funcName| or a callabck that
+ *     receives the return value of |funcName| and returns true if the result
+ *     is the expected value.
+ * @param {?Array<*>} args Arguments to be provided to |funcName| when executing
+ *     it.
+ * @return {Promise} Promise to be fulfilled when the |expectedResult| is
+ *     returned from |funcName| execution.
+ */
+RemoteCall.prototype.waitFor = function(
+    funcName, windowId, expectedResult, args) {
+  const caller = getCaller();
+  args = args || [];
+  return repeatUntil(() => {
+    return this.callRemoteTestUtil(funcName, windowId, args).then((result) => {
+      if (typeof expectedResult === 'function' && expectedResult(result))
+        return result;
+      if (expectedResult === result)
+        return result;
+      const msg = 'waitFor: Waiting for ' +
+          `${funcName} to return ${expectedResult}, ` +
+          `but got ${JSON.stringify(result)}.`;
+      return pending(caller, msg);
+    });
+  });
+};
+
+/**
  * Waits for the specified element leaving from the DOM.
  * @param {string} windowId Target window ID.
  * @param {string} query Query string for the element.
@@ -227,7 +259,6 @@ RemoteCall.prototype.waitForElementLost = function(windowId, query) {
  * @param {string} windowId Window ID.
  * @param {string} query Query for the target element.
  * @param {string} key DOM UI Events Key value.
- * @param {string} keyIdentifer Key identifier.
  * @param {boolean} ctrlKey Control key flag.
  * @param {boolean} shiftKey Shift key flag.
  * @param {boolean} altKey Alt key flag.
@@ -235,10 +266,9 @@ RemoteCall.prototype.waitForElementLost = function(windowId, query) {
  *     result.
  */
 RemoteCall.prototype.fakeKeyDown =
-    function(windowId, query, key, keyIdentifer, ctrlKey, shiftKey, altKey) {
+    function(windowId, query, key, ctrlKey, shiftKey, altKey) {
   var resultPromise = this.callRemoteTestUtil(
-      'fakeKeyDown', windowId,
-      [query, key, keyIdentifer, ctrlKey, shiftKey, altKey]);
+      'fakeKeyDown', windowId, [query, key, ctrlKey, shiftKey, altKey]);
   return resultPromise.then(function(result) {
     if (result)
       return true;
@@ -390,9 +420,8 @@ RemoteCallFilesApp.prototype.waitUntilTaskExecutes = function(
  */
 RemoteCallFilesApp.prototype.checkNextTabFocus =
     function(windowId, elementId) {
-  return remoteCall.callRemoteTestUtil('fakeKeyDown',
-                                       windowId,
-                                       ['body', 'Tab', 'U+0009', false]).then(
+  return remoteCall.callRemoteTestUtil(
+      'fakeKeyDown', windowId, ['body', 'Tab', false, false, false]).then(
   function(result) {
     chrome.test.assertTrue(result);
     return remoteCall.callRemoteTestUtil('getActiveElement',
@@ -434,6 +463,104 @@ RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
         }
       });
   }.bind(this));
+};
+
+/**
+ * Expands tree item.
+ */
+RemoteCallFilesApp.prototype.expandTreeItemInDirectoryTree = function(
+    windowId, query) {
+  return this.waitForElement(windowId, query)
+      .then(() => {
+        return this.callRemoteTestUtil(
+            'queryAllElements', windowId, [`${query}[expanded]`]);
+      })
+      .then(elements => {
+        // If it's already expanded, do nothing.
+        if (elements.length > 0)
+          return;
+
+        // Focus to directory tree.
+        return this.callRemoteTestUtil('focus', windowId, ['#directory-tree'])
+            .then(() => {
+              // Expand directory volume.
+              return this.callRemoteTestUtil(
+                  'fakeMouseClick', windowId, [`${query} .expand-icon`]);
+            });
+      });
+};
+
+/**
+ * Expands directory tree for specified path.
+ */
+RemoteCallFilesApp.prototype.expandDirectoryTreeFor = function(
+    windowId, path, volumeType = 'downloads') {
+  return this.expandDirectoryTreeForInternal_(
+      windowId, path.split('/'), 0, volumeType);
+};
+
+/**
+ * Internal function for expanding directory tree for specified path.
+ */
+RemoteCallFilesApp.prototype.expandDirectoryTreeForInternal_ = function(
+    windowId, components, index, volumeType) {
+  if (index >= components.length - 1)
+    return Promise.resolve();
+
+  if (index === 0) {
+    return this.expandVolumeInDirectoryTree(windowId, volumeType).then(() => {
+      return this.expandDirectoryTreeForInternal_(
+          windowId, components, index + 1, volumeType);
+    });
+  }
+  const path = `/${components.slice(1, index + 1).join('/')}`;
+  return this
+      .expandTreeItemInDirectoryTree(
+          windowId, `[full-path-for-testing="${path}"]`)
+      .then(() => {
+        return this.expandDirectoryTreeForInternal_(
+            windowId, components, index + 1, volumeType);
+      });
+};
+
+/**
+ * Expands download volume in directory tree.
+ */
+RemoteCallFilesApp.prototype.expandDownloadVolumeInDirectoryTree = function(
+    windowId) {
+  return this.expandVolumeInDirectoryTree(windowId, 'downloads');
+};
+
+/**
+ * Expands download volume in directory tree.
+ */
+RemoteCallFilesApp.prototype.expandVolumeInDirectoryTree = function(
+    windowId, volumeType) {
+  return this.expandTreeItemInDirectoryTree(
+      windowId, `[volume-type-for-testing="${volumeType}"]`);
+};
+
+/**
+ * Navigates to specified directory on the specified volume by using directory
+ * tree.
+ */
+RemoteCallFilesApp.prototype.navigateWithDirectoryTree = function(
+    windowId, path, rootLabel, volumeType = 'downloads') {
+  return this.expandDirectoryTreeFor(windowId, path, volumeType)
+      .then(() => {
+        // Select target path.
+        return this.callRemoteTestUtil(
+            'fakeMouseClick', windowId, [`[full-path-for-testing="${path}"]`]);
+      })
+      .then(() => {
+        // Entries within Drive starts with /root/ but it isn't displayed in the
+        // breadcrubms used by waitUntilCurrentDirectoryIsChanged.
+        path = path.replace(/^\/root/, '').replace(/^\/team_drives/, '');
+
+        // Wait until the Files app is navigated to the path.
+        return this.waitUntilCurrentDirectoryIsChanged(
+            windowId, `/${rootLabel}${path}`);
+      });
 };
 
 /**

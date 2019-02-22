@@ -9059,7 +9059,8 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -9175,7 +9176,8 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -9259,7 +9261,8 @@ TEST_F(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.proxy_delegate = std::move(proxy_delegate);
+  session_deps_.proxy_resolution_service->SetProxyDelegate(
+      proxy_delegate.get());
 
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -13958,18 +13961,18 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   HttpRequestInfo request;
   request.method = "GET";
-  request.url = GURL("https://[::1]:443/");
+  request.url = GURL("https://[::2]:443/");
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Since we have proxy, should try to establish tunnel.
   MockWrite data_writes1[] = {
-      MockWrite("CONNECT [::1]:443 HTTP/1.1\r\n"
-                "Host: [::1]:443\r\n"
+      MockWrite("CONNECT [::2]:443 HTTP/1.1\r\n"
+                "Host: [::2]:443\r\n"
                 "Proxy-Connection: keep-alive\r\n\r\n"),
 
       MockWrite("GET / HTTP/1.1\r\n"
-                "Host: [::1]\r\n"
+                "Host: [::2]\r\n"
                 "Connection: keep-alive\r\n\r\n"),
   };
 
@@ -17155,46 +17158,6 @@ TEST_F(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
   EXPECT_EQ(CountWriteBytes(data_writes), trans.GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(data_reads), trans.GetTotalReceivedBytes());
 }
-
-#if !defined(OS_IOS)
-TEST_F(HttpNetworkTransactionTest, TokenBindingSpdy) {
-  const std::string https_url = "https://www.example.com";
-  HttpRequestInfo request;
-  request.url = GURL(https_url);
-  request.method = "GET";
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.ssl_info.token_binding_negotiated = true;
-  ssl.ssl_info.token_binding_key_param = TB_PARAM_ECDSAP256;
-  ssl.next_proto = kProtoHTTP2;
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
-
-  spdy::SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
-  MockRead reads[] = {CreateMockRead(resp), CreateMockRead(body),
-                      MockRead(ASYNC, ERR_IO_PENDING)};
-  StaticSocketDataProvider data(reads, base::span<MockWrite>());
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.channel_id_service =
-      std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr));
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
-  TestCompletionCallback callback;
-  EXPECT_EQ(ERR_IO_PENDING,
-            trans.Start(&request, callback.callback(), NetLogWithSource()));
-
-  RunUntilIdle();
-
-  EXPECT_TRUE(trans.GetResponseInfo()->was_fetched_via_spdy);
-  HttpRequestHeaders headers;
-  ASSERT_TRUE(trans.GetFullRequestHeaders(&headers));
-  EXPECT_TRUE(headers.HasHeader(HttpRequestHeaders::kTokenBinding));
-}
-#endif  // !defined(OS_IOS)
 
 void CheckContentEncodingMatching(SpdySessionDependencies* session_deps,
                                   const std::string& accept_encoding,

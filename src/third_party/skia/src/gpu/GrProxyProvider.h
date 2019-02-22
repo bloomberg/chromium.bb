@@ -61,33 +61,13 @@ public:
     sk_sp<GrTextureProxy> findOrCreateProxyByUniqueKey(const GrUniqueKey&, GrSurfaceOrigin);
 
     /*
-     * Create a texture proxy that is backed by an instantiated GrSurface. This is almost entirely
-     * used by Skia's testing code.
-     * DDL TODO: remove the remaining Skia-internal use of this method and make it truly
-     * testing-only.
-     */
-    sk_sp<GrTextureProxy> createInstantiatedProxy(const GrSurfaceDesc&, GrSurfaceOrigin,
-                                                  SkBackingFit, SkBudgeted,
-                                                  GrSurfaceDescFlags = kNone_GrSurfaceFlags);
-
-    /*
-     * Create an un-mipmapped texture proxy with data.
-     * DDL TODO: need to refine ownership semantics of 'srcData' if we're in completely
-     * deferred mode
-     */
-    sk_sp<GrTextureProxy> createTextureProxy(const GrSurfaceDesc&, SkBudgeted, const void* srcData,
-                                             size_t rowBytes);
-
-    /*
      * Create an un-mipmapped texture proxy with data. The SkImage must be a raster backend image.
      * Since the SkImage is ref counted, we simply take a ref on it to keep the data alive until we
      * actually upload the data to the gpu.
      */
-    sk_sp<GrTextureProxy> createTextureProxy(sk_sp<SkImage> srcImage,
-                                             GrSurfaceDescFlags descFlags,
-                                             int sampleCnt,
-                                             SkBudgeted budgeted,
-                                             SkBackingFit fit);
+    sk_sp<GrTextureProxy> createTextureProxy(
+            sk_sp<SkImage> srcImage, GrSurfaceDescFlags, int sampleCnt, SkBudgeted, SkBackingFit,
+            GrInternalSurfaceFlags = GrInternalSurfaceFlags::kNone);
 
     /*
      * Create a mipmapped texture proxy without any data.
@@ -240,6 +220,11 @@ public:
 
     int numUniqueKeyProxies_TestOnly() const;
 
+    // This is called on a DDL's proxyprovider when the DDL is finished. The uniquely keyed
+    // proxies need to keep their unique key but cannot hold on to the proxy provider unique
+    // pointer.
+    void orphanAllUniqueKeys();
+    // This is only used by GrContext::releaseResourcesAndAbandonContext()
     void removeAllUniqueKeys();
 
     /**
@@ -247,8 +232,15 @@ public:
      */
     bool recordingDDL() const { return !SkToBool(fResourceProvider); }
 
+    /*
+     * Create a texture proxy that is backed by an instantiated GrSurface.
+     */
+    sk_sp<GrTextureProxy> testingOnly_createInstantiatedProxy(const GrSurfaceDesc&, GrSurfaceOrigin,
+                                                              SkBackingFit, SkBudgeted);
+
 private:
     friend class GrAHardwareBufferImageGenerator; // for createWrapped
+    friend class GrResourceProvider; // for createWrapped
 
     sk_sp<GrTextureProxy> createWrapped(sk_sp<GrTexture> tex, GrSurfaceOrigin origin);
 

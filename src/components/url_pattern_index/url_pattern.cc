@@ -17,10 +17,12 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <ostream>
 
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/strings/string_util.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "components/url_pattern_index/fuzzy_pattern_matching.h"
 #include "components/url_pattern_index/string_splitter.h"
@@ -65,6 +67,10 @@ proto::AnchorType ConvertAnchorType(flat::AnchorType type) {
 base::StringPiece ConvertString(const flatbuffers::String* string) {
   return string ? base::StringPiece(string->data(), string->size())
                 : base::StringPiece();
+}
+
+bool HasAnyUpperAscii(base::StringPiece string) {
+  return std::any_of(string.begin(), string.end(), base::IsAsciiUpper<char>);
 }
 
 // Returns whether |position| within the |url| belongs to its |host| component
@@ -138,13 +144,125 @@ size_t FindSubdomainAnchoredSubpattern(base::StringPiece url,
   return base::StringPiece::npos;
 }
 
+// Returns whether the given |url_pattern| matches the given |url_spec|.
+// Compares the pattern the the url in a case-sensitive manner.
+bool IsCaseSensitiveMatch(base::StringPiece url_pattern,
+                          proto::AnchorType anchor_left,
+                          proto::AnchorType anchor_right,
+                          base::StringPiece url_spec,
+                          url::Component url_host) {
+  DCHECK(!url_spec.empty());
+
+  StringSplitter<IsWildcard> subpatterns(url_pattern);
+  auto subpattern_it = subpatterns.begin();
+  auto subpattern_end = subpatterns.end();
+
+  if (subpattern_it == subpattern_end) {
+    return anchor_left == proto::ANCHOR_TYPE_NONE ||
+           anchor_right == proto::ANCHOR_TYPE_NONE;
+  }
+
+  base::StringPiece subpattern = *subpattern_it;
+  ++subpattern_it;
+
+  // If there is only one |subpattern|, and it has a right anchor, then simply
+  // check that it is a suffix of the |url_spec|, and the left anchor is
+  // fulfilled.
+  if (subpattern_it == subpattern_end &&
+      anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+    if (!EndsWithFuzzy(url_spec, subpattern))
+      return false;
+    if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY)
+      return url_spec.size() == subpattern.size();
+    if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
+      DCHECK_LE(subpattern.size(), url_spec.size());
+      return url_host.is_nonempty() &&
+             IsSubdomainAnchored(url_spec, url_host,
+                                 url_spec.size() - subpattern.size());
+    }
+    return true;
+  }
+
+  // Otherwise, the first |subpattern| does not have to be a suffix. But it
+  // still can have a left anchor. Check and handle that.
+  base::StringPiece text = url_spec;
+  if (anchor_left == proto::ANCHOR_TYPE_BOUNDARY) {
+    if (!StartsWithFuzzy(url_spec, subpattern))
+      return false;
+    if (subpattern_it == subpattern_end) {
+      DCHECK_EQ(anchor_right, proto::ANCHOR_TYPE_NONE);
+      return true;
+    }
+    text.remove_prefix(subpattern.size());
+  } else if (anchor_left == proto::ANCHOR_TYPE_SUBDOMAIN) {
+    if (!url_host.is_nonempty())
+      return false;
+    const size_t match_begin =
+        FindSubdomainAnchoredSubpattern(url_spec, url_host, subpattern);
+    if (match_begin == base::StringPiece::npos)
+      return false;
+    if (subpattern_it == subpattern_end) {
+      DCHECK_EQ(anchor_right, proto::ANCHOR_TYPE_NONE);
+      return true;
+    }
+    text.remove_prefix(match_begin + subpattern.size());
+  } else {
+    DCHECK_EQ(anchor_left, proto::ANCHOR_TYPE_NONE);
+    // Get back to the initial |subpattern|, process it in the loop below.
+    subpattern_it = subpatterns.begin();
+  }
+
+  // Consecutively find all the remaining subpatterns in the |text|. If the
+  // pattern has a right anchor, don't search for the last subpattern, but
+  // instead check that it is a suffix of the |text|.
+  while (subpattern_it != subpattern_end) {
+    subpattern = *subpattern_it;
+    DCHECK(!subpattern.empty());
+
+    if (++subpattern_it == subpattern_end &&
+        anchor_right == proto::ANCHOR_TYPE_BOUNDARY) {
+      break;
+    }
+
+    const size_t match_position = FindSubpattern(text, subpattern);
+    if (match_position == base::StringPiece::npos)
+      return false;
+    text.remove_prefix(match_position + subpattern.size());
+  }
+
+  return anchor_right != proto::ANCHOR_TYPE_BOUNDARY ||
+         EndsWithFuzzy(text, subpattern);
+}
+
 }  // namespace
+
+UrlPattern::UrlInfo::UrlInfo(const GURL& url)
+    : spec_(url.possibly_invalid_spec()),
+      host_(url.parsed_for_possibly_invalid_spec().host) {
+  DCHECK(url.is_valid());
+}
+
+base::StringPiece UrlPattern::UrlInfo::GetLowerCaseSpec() const {
+  if (lower_case_spec_cached_)
+    return *lower_case_spec_cached_;
+
+  if (!HasAnyUpperAscii(spec_)) {
+    lower_case_spec_cached_ = spec_;
+  } else {
+    lower_case_spec_owner_ = base::ToLowerASCII(spec_);
+    lower_case_spec_cached_ = lower_case_spec_owner_;
+  }
+  return *lower_case_spec_cached_;
+}
+
+UrlPattern::UrlInfo::~UrlInfo() = default;
 
 UrlPattern::UrlPattern() = default;
 
 UrlPattern::UrlPattern(base::StringPiece url_pattern,
-                       proto::UrlPatternType type)
-    : type_(type), url_pattern_(url_pattern) {}
+                       proto::UrlPatternType type,
+                       MatchCase match_case)
+    : type_(type), url_pattern_(url_pattern), match_case_(match_case) {}
 
 UrlPattern::UrlPattern(base::StringPiece url_pattern,
                        proto::AnchorType anchor_left,
@@ -159,105 +277,29 @@ UrlPattern::UrlPattern(const flat::UrlRule& rule)
       url_pattern_(ConvertString(rule.url_pattern())),
       anchor_left_(ConvertAnchorType(rule.anchor_left())),
       anchor_right_(ConvertAnchorType(rule.anchor_right())),
-      match_case_(!!(rule.options() & flat::OptionFlag_IS_MATCH_CASE)) {}
-
-UrlPattern::UrlPattern(const proto::UrlRule& rule)
-    : type_(rule.url_pattern_type()),
-      url_pattern_(rule.url_pattern()),
-      anchor_left_(rule.anchor_left()),
-      anchor_right_(rule.anchor_right()),
-      match_case_(rule.match_case()) {}
+      match_case_(rule.options() & flat::OptionFlag_IS_CASE_INSENSITIVE
+                      ? MatchCase::kFalse
+                      : MatchCase::kTrue) {}
 
 UrlPattern::~UrlPattern() = default;
 
-bool UrlPattern::MatchesUrl(const GURL& url) const {
-  // Note: Empty domains are also invalid.
-  DCHECK(url.is_valid());
+bool UrlPattern::MatchesUrl(const UrlInfo& url) const {
   DCHECK(type_ == proto::URL_PATTERN_TYPE_SUBSTRING ||
          type_ == proto::URL_PATTERN_TYPE_WILDCARDED);
+  DCHECK(base::IsStringASCII(url_pattern_));
+  DCHECK(base::IsStringASCII(url.spec()));
+  DCHECK(base::IsStringASCII(url.GetLowerCaseSpec()));
 
-  StringSplitter<IsWildcard> subpatterns(url_pattern_);
-  auto subpattern_it = subpatterns.begin();
-  auto subpattern_end = subpatterns.end();
-
-  if (subpattern_it == subpattern_end) {
-    return anchor_left_ == proto::ANCHOR_TYPE_NONE ||
-           anchor_right_ == proto::ANCHOR_TYPE_NONE;
+  if (match_case()) {
+    return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
+                                url.spec(), url.host());
   }
 
-  const base::StringPiece spec = url.possibly_invalid_spec();
-  const url::Component host_part = url.parsed_for_possibly_invalid_spec().host;
-  DCHECK(!spec.empty());
-
-  base::StringPiece subpattern = *subpattern_it;
-  ++subpattern_it;
-
-  // If there is only one |subpattern|, and it has a right anchor, then simply
-  // check that it is a suffix of the |spec|, and the left anchor is fulfilled.
-  if (subpattern_it == subpattern_end &&
-      anchor_right_ == proto::ANCHOR_TYPE_BOUNDARY) {
-    if (!EndsWithFuzzy(spec, subpattern))
-      return false;
-    if (anchor_left_ == proto::ANCHOR_TYPE_BOUNDARY)
-      return spec.size() == subpattern.size();
-    if (anchor_left_ == proto::ANCHOR_TYPE_SUBDOMAIN) {
-      DCHECK_LE(subpattern.size(), spec.size());
-      return url.has_host() &&
-             IsSubdomainAnchored(spec, host_part,
-                                 spec.size() - subpattern.size());
-    }
-    return true;
-  }
-
-  // Otherwise, the first |subpattern| does not have to be a suffix. But it
-  // still can have a left anchor. Check and handle that.
-  base::StringPiece text = spec;
-  if (anchor_left_ == proto::ANCHOR_TYPE_BOUNDARY) {
-    if (!StartsWithFuzzy(spec, subpattern))
-      return false;
-    if (subpattern_it == subpattern_end) {
-      DCHECK_EQ(anchor_right_, proto::ANCHOR_TYPE_NONE);
-      return true;
-    }
-    text.remove_prefix(subpattern.size());
-  } else if (anchor_left_ == proto::ANCHOR_TYPE_SUBDOMAIN) {
-    if (!url.has_host())
-      return false;
-    const size_t match_begin =
-        FindSubdomainAnchoredSubpattern(spec, host_part, subpattern);
-    if (match_begin == base::StringPiece::npos)
-      return false;
-    if (subpattern_it == subpattern_end) {
-      DCHECK_EQ(anchor_right_, proto::ANCHOR_TYPE_NONE);
-      return true;
-    }
-    text.remove_prefix(match_begin + subpattern.size());
-  } else {
-    DCHECK_EQ(anchor_left_, proto::ANCHOR_TYPE_NONE);
-    // Get back to the initial |subpattern|, process it in the loop below.
-    subpattern_it = subpatterns.begin();
-  }
-
-  // Consecutively find all the remaining subpatterns in the |text|. If the
-  // pattern has a right anchor, don't search for the last subpattern, but
-  // instead check that it is a suffix of the |text|.
-  while (subpattern_it != subpattern_end) {
-    subpattern = *subpattern_it;
-    DCHECK(!subpattern.empty());
-
-    if (++subpattern_it == subpattern_end &&
-        anchor_right_ == proto::ANCHOR_TYPE_BOUNDARY) {
-      break;
-    }
-
-    const size_t match_position = FindSubpattern(text, subpattern);
-    if (match_position == base::StringPiece::npos)
-      return false;
-    text.remove_prefix(match_position + subpattern.size());
-  }
-
-  return anchor_right_ != proto::ANCHOR_TYPE_BOUNDARY ||
-         EndsWithFuzzy(text, subpattern);
+  // Use the lower-cased url for case-insensitive comparison. Case-insensitive
+  // patterns should already be lower-cased.
+  DCHECK(!HasAnyUpperAscii(url_pattern_));
+  return IsCaseSensitiveMatch(url_pattern_, anchor_left_, anchor_right_,
+                              url.GetLowerCaseSpec(), url.host());
 }
 
 std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern) {

@@ -53,7 +53,7 @@ class PointerEventFactoryTest : public testing::Test {
       WebInputEvent::Type type = WebInputEvent::kPointerDown,
       WebPointerProperties::Button button =
           WebPointerProperties::Button::kNoButton,
-      size_t coalesced_event_count = 0) {
+      wtf_size_t coalesced_event_count = 0) {
     WebPointerEvent web_pointer_event;
     web_pointer_event.pointer_type = pointer_type;
     web_pointer_event.id = raw_id;
@@ -64,7 +64,7 @@ class PointerEventFactoryTest : public testing::Test {
     web_pointer_event.hovering = hovering;
     web_pointer_event.button = button;
     Vector<WebPointerEvent> coalesced_events;
-    for (size_t i = 0; i < coalesced_event_count; i++) {
+    for (wtf_size_t i = 0; i < coalesced_event_count; i++) {
       coalesced_events.push_back(web_pointer_event);
     }
     PointerEvent* pointer_event = pointer_event_factory_.Create(
@@ -78,7 +78,7 @@ class PointerEventFactoryTest : public testing::Test {
     EXPECT_EQ(expected_pointer_type, pointer_event->pointerType());
     EXPECT_EQ(coalesced_event_count,
               pointer_event->getCoalescedEvents().size());
-    for (size_t i = 0; i < coalesced_event_count; i++) {
+    for (wtf_size_t i = 0; i < coalesced_event_count; i++) {
       EXPECT_EQ(unique_id, pointer_event->getCoalescedEvents()[i]->pointerId());
       EXPECT_EQ(is_primary,
                 pointer_event->getCoalescedEvents()[i]->isPrimary());

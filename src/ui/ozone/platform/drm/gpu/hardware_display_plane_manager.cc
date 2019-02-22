@@ -49,15 +49,13 @@ HardwareDisplayPlaneManager::CrtcState::~CrtcState() = default;
 
 HardwareDisplayPlaneManager::CrtcState::CrtcState(CrtcState&&) = default;
 
-HardwareDisplayPlaneManager::HardwareDisplayPlaneManager() : drm_(nullptr) {
-}
+HardwareDisplayPlaneManager::HardwareDisplayPlaneManager(DrmDevice* drm)
+    : drm_(drm) {}
 
 HardwareDisplayPlaneManager::~HardwareDisplayPlaneManager() {
 }
 
-bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
-  drm_ = drm;
-
+bool HardwareDisplayPlaneManager::Initialize() {
 // Try to get all of the planes if possible, so we don't have to try to
 // discover hidden primary planes.
 #if defined(DRM_CLIENT_CAP_UNIVERSAL_PLANES)
@@ -65,10 +63,10 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
       drm_->SetCapability(DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 #endif
 
-  if (!InitializeCrtcState(drm))
+  if (!InitializeCrtcState())
     return false;
 
-  if (!InitializePlanes(drm))
+  if (!InitializePlanes())
     return false;
 
   std::sort(planes_.begin(), planes_.end(),
@@ -304,8 +302,8 @@ bool HardwareDisplayPlaneManager::SetGammaCorrection(
   return CommitGammaCorrection(*crtc_props);
 }
 
-bool HardwareDisplayPlaneManager::InitializeCrtcState(DrmDevice* drm) {
-  ScopedDrmResourcesPtr resources(drm->GetResources());
+bool HardwareDisplayPlaneManager::InitializeCrtcState() {
+  ScopedDrmResourcesPtr resources(drm_->GetResources());
   if (!resources) {
     PLOG(ERROR) << "Failed to get resources.";
     return false;
@@ -318,7 +316,7 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState(DrmDevice* drm) {
     state.properties.id = resources->crtcs[i];
 
     ScopedDrmObjectPropertyPtr props(
-        drm->GetObjectProperties(resources->crtcs[i], DRM_MODE_OBJECT_CRTC));
+        drm_->GetObjectProperties(resources->crtcs[i], DRM_MODE_OBJECT_CRTC));
     if (!props) {
       PLOG(ERROR) << "Failed to get CRTC properties for crtc_id="
                   << state.properties.id;
@@ -327,16 +325,16 @@ bool HardwareDisplayPlaneManager::InitializeCrtcState(DrmDevice* drm) {
 
     // These properties are optional. If they don't exist we can tell by the
     // invalid ID.
-    GetDrmPropertyForName(drm, props.get(), "CTM", &state.properties.ctm);
-    GetDrmPropertyForName(drm, props.get(), "GAMMA_LUT",
+    GetDrmPropertyForName(drm_, props.get(), "CTM", &state.properties.ctm);
+    GetDrmPropertyForName(drm_, props.get(), "GAMMA_LUT",
                           &state.properties.gamma_lut);
-    GetDrmPropertyForName(drm, props.get(), "GAMMA_LUT_SIZE",
+    GetDrmPropertyForName(drm_, props.get(), "GAMMA_LUT_SIZE",
                           &state.properties.gamma_lut_size);
-    GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT",
+    GetDrmPropertyForName(drm_, props.get(), "DEGAMMA_LUT",
                           &state.properties.degamma_lut);
-    GetDrmPropertyForName(drm, props.get(), "DEGAMMA_LUT_SIZE",
+    GetDrmPropertyForName(drm_, props.get(), "DEGAMMA_LUT_SIZE",
                           &state.properties.degamma_lut_size);
-    GetDrmPropertyForName(drm, props.get(), "OUT_FENCE_PTR",
+    GetDrmPropertyForName(drm_, props.get(), "OUT_FENCE_PTR",
                           &state.properties.out_fence_ptr);
 
     num_crtcs_with_out_fence_ptr += (state.properties.out_fence_ptr.id != 0);

@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/views/frame/browser_frame_mac.h"
 
 #import "base/mac/foundation_util.h"
+#include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -17,7 +18,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
-#import "ui/views/cocoa/window_touch_bar_delegate.h"
+#import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
 
@@ -42,6 +43,7 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
 
 // Bridge Obj-C class for WindowTouchBarDelegate and
 // BrowserWindowTouchBarController.
+API_AVAILABLE(macos(10.12.2))
 @interface BrowserWindowTouchBarViewsDelegate
     : NSObject<WindowTouchBarDelegate> {
   Browser* browser_;  // Weak.
@@ -148,12 +150,25 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
 
-  touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
-      initWithBrowser:browser_view_->browser()
-               window:ns_window]);
-  [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
+  if (@available(macOS 10.12.2, *)) {
+    touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
+        initWithBrowser:browser_view_->browser()
+                 window:ns_window]);
+    [ns_window setWindowTouchBarDelegate:touch_bar_delegate_.get()];
+  }
 
   return ns_window.autorelease();
+}
+
+views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
+  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
+  if (shim_handler) {
+    apps::AppShimHandler::Host* host =
+        shim_handler->FindHostForBrowser(browser_view_->browser());
+    if (host)
+      return host->GetViewsBridgeFactoryHost();
+  }
+  return nullptr;
 }
 
 void BrowserFrameMac::OnWindowDestroying(NSWindow* window) {

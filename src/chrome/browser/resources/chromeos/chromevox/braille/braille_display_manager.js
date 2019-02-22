@@ -321,13 +321,13 @@ cvox.BrailleDisplayManager.prototype.refresh_ = function() {
     window.clearInterval(this.blinkerId_);
   }
 
-  this.refreshInternal_(true);
-
   // If there's no cursor, don't schedule blinking.
   var cursor = this.panStrategy_.getCursor();
-  if (cursor.start == -1 || cursor.end == -1) {
+  var hideCursor = cursor.start == -1 || cursor.end == -1;
+
+  this.refreshInternal_(!hideCursor);
+  if (hideCursor)
     return;
-  }
 
   var showCursor = false;
   this.blinkerId_ = window.setInterval(function() {

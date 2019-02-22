@@ -82,12 +82,8 @@ static_library("ots") {
     "//third_party/zlib",
   ]
 
-  if (is_win) {
-    cflags = [
-      "/wd4267",  # Conversion from size_t to 'type'.
-      "/wd4334",  # 32-bit shift implicitly converted to 64-bits.
-    ]
-  }
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
 fuzzer_test("ots_fuzzer") {

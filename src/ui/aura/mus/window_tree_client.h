@@ -61,6 +61,7 @@ class DragDropControllerMus;
 class EmbedRoot;
 class EmbedRootDelegate;
 class FocusSynchronizer;
+class GestureSynchronizer;
 class InFlightBoundsChange;
 class InFlightChange;
 class InFlightFocusChange;
@@ -136,20 +137,14 @@ class AURA_EXPORT WindowTreeClient
   void SetImeVisibility(WindowMus* window,
                         bool visible,
                         ui::mojom::TextInputStatePtr state);
-  void SetHitTestMask(WindowMus* window, const base::Optional<gfx::Rect>& rect);
+  void SetHitTestInsets(WindowMus* window,
+                        const gfx::Insets& mouse,
+                        const gfx::Insets& touch);
 
-  // Embeds a new client in |window|. |flags| is a bitmask of the values defined
-  // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate
-  // whether the embedding succeeded or failed and may be called immediately if
-  // the embedding is known to fail.
-  void Embed(Window* window,
-             ws::mojom::WindowTreeClientPtr client,
-             uint32_t flags,
-             ws::mojom::WindowTree::EmbedCallback callback);
-  void EmbedUsingToken(Window* window,
-                       const base::UnguessableToken& token,
-                       uint32_t flags,
-                       ws::mojom::WindowTree::EmbedCallback callback);
+  // See WindowPort for details on these.
+  void RegisterFrameSinkId(WindowMus* window,
+                           const viz::FrameSinkId& child_frame_sink_id);
+  void UnregisterFrameSinkId(WindowMus* window);
 
   // Schedules an embed of a client. See
   // ws::mojom::WindowTreeClient::ScheduleEmbed() for details.
@@ -176,6 +171,17 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<TopmostWindowTracker> StartObservingTopmostWindow(
       ws::mojom::MoveLoopSource source,
       aura::Window* initial_target);
+
+  // See mojom for details.
+  template <typename Interface>
+  mojo::AssociatedInterfacePtr<Interface> BindWindowManagerInterface() {
+    ws::mojom::WindowManagerAssociatedPtr interface_ptr;
+    tree_->BindWindowManagerInterface(Interface::Name_,
+                                      mojo::MakeRequest(&interface_ptr));
+    return mojo::AssociatedInterfacePtr<Interface>(
+        mojo::AssociatedInterfacePtrInfo<Interface>(
+            interface_ptr.PassInterface().PassHandle(), Interface::Version_));
+  }
 
   // Returns true if the specified window was created by this client.
   bool WasCreatedByThisClient(const WindowMus* window) const;
@@ -403,6 +409,7 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowOpacityChanged(ws::Id window_id,
                               float old_opacity,
                               float new_opacity) override;
+  void OnWindowDisplayChanged(ws::Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(ws::Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(
       ws::Id window_id,
@@ -418,8 +425,6 @@ class AURA_EXPORT WindowTreeClient
                               int64_t display_id) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
   void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
-  void OnWindowSurfaceChanged(ws::Id window_id,
-                              const viz::SurfaceInfo& surface_info) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
                            mime_data) override;
   void OnDragEnter(ws::Id window_id,
@@ -469,8 +474,6 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostStackAbove(WindowTreeHostMus* window_tree_host,
                                   Window* window) override;
   void OnWindowTreeHostStackAtTop(WindowTreeHostMus* window_tree_host) override;
-  void OnWindowTreeHostPerformWmAction(WindowTreeHostMus* window_tree_host,
-                                       const std::string& action) override;
   void OnWindowTreeHostPerformWindowMove(
       WindowTreeHostMus* window_tree_host,
       ws::mojom::MoveLoopSource mus_source,
@@ -525,6 +528,8 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<CaptureSynchronizer> capture_synchronizer_;
 
   std::unique_ptr<FocusSynchronizer> focus_synchronizer_;
+
+  std::unique_ptr<GestureSynchronizer> gesture_synchronizer_;
 
   mojo::Binding<ws::mojom::WindowTreeClient> binding_;
   ws::mojom::WindowTreePtr tree_ptr_;

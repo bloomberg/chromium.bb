@@ -1170,9 +1170,6 @@ static int mov_write_av1c_tag(AVIOContext *pb, MOVTrack *track)
 
     avio_wb32(pb, 0);
     ffio_wfourcc(pb, "av1C");
-    avio_w8(pb, 0); /* version */
-    avio_wb24(pb, 0); /* flags */
-    avio_w8(pb, 0); /* reserved (3), initial_presentation_delay_present (1), initial_presentation_delay_minus_one/reserved (4) */
     ff_isom_write_av1c(pb, track->vos_data, track->vos_len);
     return update_size(pb, pos);
 }
@@ -1538,9 +1535,9 @@ static int mov_get_rawvideo_codec_tag(AVFormatContext *s, MOVTrack *track)
     return tag;
 }
 
-static int mov_get_codec_tag(AVFormatContext *s, MOVTrack *track)
+static unsigned int mov_get_codec_tag(AVFormatContext *s, MOVTrack *track)
 {
-    int tag = track->par->codec_tag;
+    unsigned int tag = track->par->codec_tag;
 
     if (!tag || (s->strict_std_compliance >= FF_COMPLIANCE_NORMAL &&
                  (track->par->codec_id == AV_CODEC_ID_DVVIDEO ||
@@ -1592,31 +1589,45 @@ static const AVCodecTag codec_cover_image_tags[] = {
     { AV_CODEC_ID_NONE, 0 },
 };
 
-static int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
+static unsigned int validate_codec_tag(const AVCodecTag *const *tags,
+                                       unsigned int tag, int codec_id)
 {
-    int tag;
+    int i;
+
+    /**
+     * Check that tag + id is in the table
+     */
+    for (i = 0; tags && tags[i]; i++) {
+        const AVCodecTag *codec_tags = tags[i];
+        while (codec_tags->id != AV_CODEC_ID_NONE) {
+            if (avpriv_toupper4(codec_tags->tag) == avpriv_toupper4(tag) &&
+                codec_tags->id == codec_id)
+                return codec_tags->tag;
+            codec_tags++;
+        }
+    }
+    return 0;
+}
+
+static unsigned int mov_find_codec_tag(AVFormatContext *s, MOVTrack *track)
+{
+    unsigned int tag;
 
     if (is_cover_image(track->st))
         return ff_codec_get_tag(codec_cover_image_tags, track->par->codec_id);
 
-    if (track->mode == MODE_MP4 || track->mode == MODE_PSP)
-        tag = track->par->codec_tag;
-    else if (track->mode == MODE_ISM)
-        tag = track->par->codec_tag;
-    else if (track->mode == MODE_IPOD) {
+    if (track->mode == MODE_IPOD)
         if (!av_match_ext(s->url, "m4a") &&
             !av_match_ext(s->url, "m4v") &&
             !av_match_ext(s->url, "m4b"))
             av_log(s, AV_LOG_WARNING, "Warning, extension is not .m4a nor .m4v "
                    "Quicktime/Ipod might not play the file\n");
-        tag = track->par->codec_tag;
-    } else if (track->mode & MODE_3GP)
-        tag = track->par->codec_tag;
-    else if (track->mode == MODE_F4V)
-        tag = track->par->codec_tag;
-    else
-        tag = mov_get_codec_tag(s, track);
 
+    if (track->mode == MODE_MOV)
+        tag = mov_get_codec_tag(s, track);
+    else
+        tag = validate_codec_tag(s->oformat->codec_tag, track->par->codec_tag,
+                                 track->par->codec_id);
     return tag;
 }
 
@@ -2368,9 +2379,9 @@ static int mov_preroll_write_stbl_atoms(AVIOContext *pb, MOVTrack *track)
                decoded. */
             if (roll_samples_remaining > 0)
                 distance = 0;
-            /* Verify distance is a minimum of 2 (60ms) packets and a maximum of
-               32 (2.5ms) packets. */
-            av_assert0(distance == 0 || (distance >= 2 && distance <= 32));
+            /* Verify distance is a maximum of 32 (2.5ms) packets. */
+            if (distance > 32)
+                return AVERROR_INVALIDDATA;
             if (i && distance == sgpd_entries[entries].roll_distance) {
                 sgpd_entries[entries].count++;
             } else {
@@ -6049,7 +6060,7 @@ static int mov_init(AVFormatContext *s)
     /* Set other implicit flags immediately */
     if (mov->mode == MODE_ISM)
         mov->flags |= FF_MOV_FLAG_EMPTY_MOOV | FF_MOV_FLAG_SEPARATE_MOOF |
-                      FF_MOV_FLAG_FRAGMENT;
+                      FF_MOV_FLAG_FRAGMENT | FF_MOV_FLAG_NEGATIVE_CTS_OFFSETS;
     if (mov->flags & FF_MOV_FLAG_DASH)
         mov->flags |= FF_MOV_FLAG_FRAGMENT | FF_MOV_FLAG_EMPTY_MOOV |
                       FF_MOV_FLAG_DEFAULT_BASE_MOOF;
@@ -6243,14 +6254,6 @@ static int mov_init(AVFormatContext *s)
                 if (track->mode != MODE_MP4) {
                     av_log(s, AV_LOG_ERROR, "%s only supported in MP4.\n", avcodec_get_name(track->par->codec_id));
                     return AVERROR(EINVAL);
-                }
-                if (track->par->codec_id == AV_CODEC_ID_AV1 &&
-                    s->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL) {
-                    av_log(s, AV_LOG_ERROR,
-                           "av1 in MP4 support is experimental, add "
-                           "'-strict %d' if you want to use it.\n",
-                           FF_COMPLIANCE_EXPERIMENTAL);
-                    return AVERROR_EXPERIMENTAL;
                 }
             } else if (track->par->codec_id == AV_CODEC_ID_VP8) {
                 /* altref frames handling is not defined in the spec as of version v1.0,
@@ -6781,6 +6784,7 @@ const AVCodecTag codec_mp4_tags[] = {
     { AV_CODEC_ID_EVRC        , MKTAG('m', 'p', '4', 'a') },
     { AV_CODEC_ID_DVD_SUBTITLE, MKTAG('m', 'p', '4', 's') },
     { AV_CODEC_ID_MOV_TEXT    , MKTAG('t', 'x', '3', 'g') },
+    { AV_CODEC_ID_BIN_DATA    , MKTAG('g', 'p', 'm', 'd') },
     { AV_CODEC_ID_NONE        ,    0 },
 };
 

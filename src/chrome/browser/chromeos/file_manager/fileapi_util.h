@@ -9,17 +9,18 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "url/gurl.h"
 
 class Profile;
 
 namespace content {
-struct FileChooserFileInfo;
 class RenderFrameHost;
 }
 
@@ -60,23 +61,24 @@ struct EntryDefinition {
 typedef std::vector<FileDefinition> FileDefinitionList;
 typedef std::vector<EntryDefinition> EntryDefinitionList;
 typedef std::vector<ui::SelectedFileInfo> SelectedFileInfoList;
-typedef std::vector<content::FileChooserFileInfo> FileChooserFileInfoList;
+typedef std::vector<blink::mojom::FileChooserFileInfoPtr>
+    FileChooserFileInfoList;
 
 // The callback used by ConvertFileDefinitionToEntryDefinition. Returns the
 // result of the conversion.
-typedef base::Callback<void(const EntryDefinition& entry_definition)>
+typedef base::OnceCallback<void(const EntryDefinition& entry_definition)>
     EntryDefinitionCallback;
 
 // The callback used by ConvertFileDefinitionListToEntryDefinitionList. Returns
 // the result of the conversion as a list.
-typedef base::Callback<void(
+typedef base::OnceCallback<void(
     std::unique_ptr<EntryDefinitionList> entry_definition_list)>
     EntryDefinitionListCallback;
 
 // The callback used by
 // ConvertFileSelectedInfoListToFileChooserFileInfoList. Returns the result of
 // the conversion as a list.
-typedef base::Callback<void(const FileChooserFileInfoList&)>
+typedef base::OnceCallback<void(FileChooserFileInfoList)>
     FileChooserFileInfoListCallback;
 
 // Returns a file system context associated with the given profile and the
@@ -129,7 +131,7 @@ void ConvertFileDefinitionToEntryDefinition(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinition& file_definition,
-    const EntryDefinitionCallback& callback);
+    EntryDefinitionCallback callback);
 
 // Converts a list of file definitions into a list of entry definitions and
 // returns it via |callback|. The method is safe, |file_definition_list| is
@@ -139,27 +141,34 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
-    const EntryDefinitionListCallback& callback);
+    EntryDefinitionListCallback callback);
 
 // Converts SelectedFileInfoList into FileChooserFileInfoList.
 void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     storage::FileSystemContext* context,
     const GURL& origin,
     const SelectedFileInfoList& selected_info_list,
-    const FileChooserFileInfoListCallback& callback);
+    FileChooserFileInfoListCallback callback);
+
+// Converts EntryDefinition to something File API stack can understand.
+std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(
+    const EntryDefinition& entry_definition);
+
+std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
+    const EntryDefinitionList& entry_definition_list);
 
 // Checks if a directory exists at |directory_path| absolute path.
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& directory_path,
-    const storage::FileSystemOperationRunner::StatusCallback& callback);
+    storage::FileSystemOperationRunner::StatusCallback callback);
 
 // Get metadata for an entry at |entry_path| absolute path.
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& entry_path,
     int fields,
-    const storage::FileSystemOperationRunner::GetMetadataCallback& callback);
+    storage::FileSystemOperationRunner::GetMetadataCallback callback);
 
 // Obtains isolated file system URL from |virtual_path| pointing a file in the
 // external file system.

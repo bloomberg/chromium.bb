@@ -22,6 +22,7 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/java_script_dialog_callback.h"
 #include "ios/web/public/java_script_dialog_type.h"
+#include "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
@@ -102,7 +103,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
                                const base::DictionaryValue& value,
                                const GURL& url,
                                bool user_is_interacting,
-                               bool is_main_frame);
+                               bool is_main_frame,
+                               web::WebFrame* sender_frame);
 
   void SetIsLoading(bool is_loading);
 
@@ -177,6 +179,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void CommitPreviewingViewController(
       UIViewController* previewing_view_controller);
 
+  // Called when a new frame is available in the web_state.
+  void OnWebFrameAvailable(web::WebFrame* frame);
+  // Called when a frame is removed  in the web_state
+  void OnWebFrameUnavailable(web::WebFrame* frame);
+
   // WebState:
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
@@ -227,8 +234,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
       mojo::ScopedMessagePipeHandle interface_pipe) override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
-  void TakeSnapshot(SnapshotCallback callback,
-                    CGSize target_size) const override;
+  void TakeSnapshot(CGRect rect, SnapshotCallback callback) override;
   void AddObserver(WebStateObserver* observer) override;
   void RemoveObserver(WebStateObserver* observer) override;
 
@@ -369,10 +375,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Mojo interface registry for this WebState.
   std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
-
-  // Cached session history when web usage is disabled. It is used to restore
-  // history into WKWebView when web usage is re-enabled.
-  CRWSessionStorage* cached_session_storage_;
 
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().

@@ -33,11 +33,9 @@
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -312,8 +310,7 @@ class FindArchiveToPatchTest : public testing::Test {
     installer_state_.reset(new installer::InstallerState(
         kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL :
         installer::InstallerState::USER_LEVEL));
-    installer_state_->AddProductFromState(
-        *original_state_->GetProductState(kSystemInstall_));
+    installer_state_->set_target_path_for_testing(test_dir_.GetPath());
 
     // Create archives in the two version dirs.
     ASSERT_TRUE(
@@ -440,11 +437,8 @@ TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
 }
 
 TEST(SetupUtilTest, GetRegistrationDataCommandKey) {
-  base::string16 app_guid = L"{AAAAAAAA-BBBB-1111-0123-456789ABCDEF}";
-  UpdatingAppRegistrationData reg_data(app_guid);
-  base::string16 key =
-      installer::GetRegistrationDataCommandKey(reg_data, L"test_name");
-  EXPECT_TRUE(base::EndsWith(key, app_guid + L"\\Commands\\test_name",
+  const base::string16 key = installer::GetCommandKey(L"test_name");
+  EXPECT_TRUE(base::EndsWith(key, L"\\Commands\\test_name",
                              base::CompareCase::SENSITIVE));
 }
 
@@ -695,11 +689,9 @@ class LegacyCleanupsTest : public ::testing::Test {
   class FakeInstallerState : public InstallerState {
    public:
     explicit FakeInstallerState(const base::FilePath& target_path) {
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
       operation_ = InstallerState::SINGLE_INSTALL_OR_UPDATE;
       target_path_ = target_path;
-      state_key_ = dist->GetStateKey();
-      product_ = std::make_unique<Product>(dist);
+      state_key_ = install_static::GetClientStateKeyPath();
       level_ = InstallerState::USER_LEVEL;
       root_key_ = HKEY_CURRENT_USER;
     }

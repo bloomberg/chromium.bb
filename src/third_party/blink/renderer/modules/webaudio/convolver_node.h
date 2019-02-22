@@ -31,6 +31,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -84,10 +85,6 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 
   // Normalize the impulse response or not. Must default to true.
   bool normalize_;
-
-  // True if the |buffer| attribute has ever been set to a non-null
-  // value.  Defaults to false.
-  bool buffer_has_been_set_;
 
   FRIEND_TEST_ALL_PREFIXES(ConvolverNodeTest, ReverbLifetime);
 };

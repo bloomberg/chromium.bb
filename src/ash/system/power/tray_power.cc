@@ -56,6 +56,18 @@ void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
 }
 
+views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  return GetLocalBounds().Contains(point) ? this : nullptr;
+}
+
+bool PowerTrayView::GetTooltipText(const gfx::Point& p,
+                                   base::string16* tooltip) const {
+  if (tooltip_.empty())
+    return false;
+  *tooltip = tooltip_;
+  return true;
+}
+
 void PowerTrayView::OnPowerStatusChanged() {
   UpdateStatus();
 }
@@ -68,6 +80,10 @@ void PowerTrayView::UpdateStatus() {
   UpdateImage();
   SetVisible(PowerStatus::Get()->IsBatteryPresent());
   accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
+  tooltip_ = PowerStatus::Get()->GetInlinedStatusString();
+  // Currently ChromeVox only reads the inner view when touching the icon.
+  // As a result this node's accessible node data will not be read.
+  image_view()->SetAccessibleName(accessible_name_);
 }
 
 void PowerTrayView::UpdateImage() {

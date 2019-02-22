@@ -1009,10 +1009,10 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
     // scrolling contents layer, the size of the rect should be equal to the
     // entire scrolling contents area.
     EXPECT_EQ(child_graphics_layer->Size(),
-              IntSize(region_child_frame.bounds().size()));
+              gfx::Size(region_child_frame.bounds().size()));
   } else {
     EXPECT_EQ(child_frame->GetFrameView()->Size(),
-              IntRect(region_child_frame.bounds()).Size());
+              IntSize(region_child_frame.bounds().size()));
   }
 }
 

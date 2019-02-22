@@ -975,12 +975,8 @@ function initKeyboardLayout2() {
     'switch window<>SEARCH': 'keyboardOverlayF4',
   };
   var shortcutDataCache = keyboardOverlayData['shortcut'];
-  for (var shortcutId in newShortcuts) {
+  for (var shortcutId in newShortcuts)
     shortcutDataCache[shortcutId] = newShortcuts[shortcutId];
-    delete newShortcuts[shortcutId];
-  }
-  for (var remainingId in newShortcuts)
-    shortcutDataCache[remainingId] = newShortcuts[remainingId];
 }
 
 /**

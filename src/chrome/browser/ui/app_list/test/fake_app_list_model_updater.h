@@ -51,6 +51,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   ChromeAppListItem* FindFolderItem(const std::string& folder_id) override;
   bool FindItemIndexForTest(const std::string& id, size_t* index) override;
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
+  syncer::StringOrdinal GetFirstAvailablePosition() const override;
   void GetContextMenuModel(const std::string& id,
                            GetMenuModelCallback callback) override;
   size_t BadgedItemCount() override;
@@ -65,6 +66,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void OnItemUpdated(ash::mojom::AppListItemMetadataPtr item) override {}
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override {}
+  void OnPageBreakItemDeleted(const std::string& id) override {}
 
   void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
 

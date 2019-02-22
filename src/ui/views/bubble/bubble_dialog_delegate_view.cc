@@ -17,7 +17,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_properties.h"
-#include "ui/views/view_tracker.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -51,17 +50,30 @@ class BubbleDialogFrameView : public BubbleFrameView {
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogFrameView);
 };
 
+bool CustomShadowsSupported() {
+#if defined(OS_WIN)
+  return ui::win::IsAeroGlassEnabled();
+#else
+  return true;
+#endif
+}
+
 // Create a widget to host the bubble.
 Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   Widget* bubble_widget = new Widget();
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
-  bubble_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  bubble_params.opacity = CustomShadowsSupported()
+                              ? Widget::InitParams::TRANSLUCENT_WINDOW
+                              : Widget::InitParams::OPAQUE_WINDOW;
   bubble_params.accept_events = bubble->accept_events();
   // Use a window default shadow if the bubble doesn't provides its own.
-  bubble_params.shadow_type = bubble->shadow() == BubbleBorder::NO_ASSETS
-                                  ? Widget::InitParams::SHADOW_TYPE_DEFAULT
-                                  : Widget::InitParams::SHADOW_TYPE_NONE;
+  if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  else if (CustomShadowsSupported())
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  else
+    bubble_params.shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
@@ -102,12 +114,7 @@ Widget* BubbleDialogDelegateView::CreateBubble(
   bubble_delegate->SetAnchorView(bubble_delegate->GetAnchorView());
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
-#if defined(OS_WIN)
-  // If glass is enabled, the bubble is allowed to extend outside the bounds of
-  // the parent frame and let DWM handle compositing.  If not, then we don't
-  // want to allow the bubble to extend the frame because it will be clipped.
-  bubble_delegate->set_adjust_if_offscreen(ui::win::IsAeroGlassEnabled());
-#elif (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
   // Linux clips bubble windows that extend outside their parent window bounds.
   // Mac never adjusts.
   bubble_delegate->set_adjust_if_offscreen(false);
@@ -145,7 +152,11 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   if (base::i18n::IsRTL() && mirror_arrow_in_rtl_)
     adjusted_arrow = BubbleBorder::horizontal_mirror(adjusted_arrow);
   std::unique_ptr<BubbleBorder> border =
-      std::make_unique<BubbleBorder>(adjusted_arrow, shadow(), color());
+      std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
+  // If custom shadows aren't supported we fall back to an OS provided square
+  // shadow.
+  if (!CustomShadowsSupported())
+    border->SetCornerRadius(0);
   frame->SetBubbleBorder(std::move(border));
   return frame;
 }
@@ -198,16 +209,34 @@ void BubbleDialogDelegateView::OnWidgetBoundsChanged(
     SizeToContents();
 }
 
+BubbleBorder::Shadow BubbleDialogDelegateView::GetShadow() const {
+  if (CustomShadowsSupported() || shadow_ == BubbleBorder::NO_ASSETS)
+    return shadow_;
+  return BubbleBorder::NO_SHADOW;
+}
+
 View* BubbleDialogDelegateView::GetAnchorView() const {
   return anchor_view_tracker_->view();
 }
 
-void BubbleDialogDelegateView::set_arrow(BubbleBorder::Arrow arrow) {
+void BubbleDialogDelegateView::SetHighlightedButton(
+    Button* highlighted_button) {
+  bool visible = GetWidget() && GetWidget()->IsVisible();
+  // If the Widget is visible, ensure the old highlight (if any) is removed
+  // when the highlighted view changes.
+  if (visible)
+    UpdateHighlightedButton(false);
+  highlighted_button_tracker_.SetView(highlighted_button);
+  if (visible)
+    UpdateHighlightedButton(true);
+}
+
+void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
   if (arrow_ == arrow)
     return;
   arrow_ = arrow;
 
-  // If set_arrow() is called before CreateWidget(), there's no need to update
+  // If SetArrow() is called before CreateWidget(), there's no need to update
   // the BubbleFrameView.
   if (GetBubbleFrameView()) {
     GetBubbleFrameView()->bubble_border()->set_arrow(arrow);
@@ -321,8 +350,10 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {
     if (anchor_widget()) {
-      if (GetWidget() && GetWidget()->IsVisible())
+      if (GetWidget() && GetWidget()->IsVisible()) {
         UpdateAnchorWidgetRenderState(false);
+        UpdateHighlightedButton(false);
+      }
       anchor_widget_->RemoveObserver(this);
       anchor_widget_ = NULL;
     }
@@ -330,7 +361,9 @@ void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
       anchor_widget_ = anchor_view->GetWidget();
       if (anchor_widget_) {
         anchor_widget_->AddObserver(this);
-        UpdateAnchorWidgetRenderState(GetWidget() && GetWidget()->IsVisible());
+        const bool visible = GetWidget() && GetWidget()->IsVisible();
+        UpdateAnchorWidgetRenderState(visible);
+        UpdateHighlightedButton(visible);
       }
     }
   }
@@ -391,8 +424,10 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,
                                                        bool visible) {
-  if (widget == GetWidget())
+  if (widget == GetWidget()) {
     UpdateAnchorWidgetRenderState(visible);
+    UpdateHighlightedButton(visible);
+  }
 
   // Fire ax::mojom::Event::kAlert for bubbles marked as
   // ax::mojom::Role::kAlertDialog; this instructs accessibility tools to read
@@ -417,6 +452,13 @@ void BubbleDialogDelegateView::UpdateAnchorWidgetRenderState(bool visible) {
     return;
 
   anchor_widget()->GetTopLevelWidget()->SetAlwaysRenderAsActive(visible);
+}
+
+void BubbleDialogDelegateView::UpdateHighlightedButton(bool highlighted) {
+  Button* button = Button::AsButton(highlighted_button_tracker_.view());
+  button = button ? button : Button::AsButton(anchor_view_tracker_->view());
+  if (button)
+    button->SetHighlighted(highlighted);
 }
 
 }  // namespace views

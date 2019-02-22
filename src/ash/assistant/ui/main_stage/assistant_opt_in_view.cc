@@ -83,6 +83,10 @@ AssistantOptInView::AssistantOptInView() {
 
 AssistantOptInView::~AssistantOptInView() = default;
 
+const char* AssistantOptInView::GetClassName() const {
+  return "AssistantOptInView";
+}
+
 void AssistantOptInView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }

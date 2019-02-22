@@ -18,7 +18,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfdoc/cpvt_word.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
-#include "fpdfsdk/cpdfsdk_interform.h"
+#include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cba_fontmap.h"
@@ -26,6 +26,7 @@
 #include "fpdfsdk/pwl/cpwl_edit_impl.h"
 #include "fpdfsdk/pwl/cpwl_icon.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -68,7 +69,6 @@ const char kSetNonZeroWindingClipOperator[] = "W";
 const char kSetRGBOperator[] = "rg";
 const char kSetRGBStrokedOperator[] = "RG";
 const char kSetTextFontAndSizeOperator[] = "Tf";
-const char kSetTextScaleHorizontalOperator[] = "Tz";
 const char kShowTextOperator[] = "Tj";
 const char kStateRestoreOperator[] = "Q";
 const char kStateSaveOperator[] = "q";
@@ -667,16 +667,9 @@ ByteString GetEditAppStream(CPWL_EditImpl* pEdit,
 
   std::ostringstream sAppStream;
   if (sEditStream.tellp() > 0) {
-    int32_t nHorzScale = pEdit->GetHorzScale();
-    if (nHorzScale != 100) {
-      sAppStream << nHorzScale << " " << kSetTextScaleHorizontalOperator
-                 << "\n";
-    }
-
     float fCharSpace = pEdit->GetCharSpace();
-    if (!IsFloatZero(fCharSpace)) {
+    if (!IsFloatZero(fCharSpace))
       sAppStream << fCharSpace << " " << kSetCharacterSpacingOperator << "\n";
-    }
 
     sAppStream << sEditStream.str();
   }
@@ -1243,7 +1236,7 @@ void CPWL_AppStream::SetAsPushButton() {
 
   CBA_FontMap font_map(
       widget_.Get(),
-      widget_->GetInterForm()->GetFormFillEnv()->GetSysHandler());
+      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
   font_map.SetAPType("N");
 
   ByteString csAP =
@@ -1587,7 +1580,7 @@ void CPWL_AppStream::SetAsRadioButton() {
     widget_->SetAppState("Off");
 }
 
-void CPWL_AppStream::SetAsComboBox(const WideString* sValue) {
+void CPWL_AppStream::SetAsComboBox(Optional<WideString> sValue) {
   CPDF_FormControl* pControl = widget_->GetFormControl();
   CPDF_FormField* pField = pControl->GetField();
   std::ostringstream sBody;
@@ -1600,7 +1593,7 @@ void CPWL_AppStream::SetAsComboBox(const WideString* sValue) {
   // Font map must outlive |pEdit|.
   CBA_FontMap font_map(
       widget_.Get(),
-      widget_->GetInterForm()->GetFormFillEnv()->GetSysHandler());
+      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1621,8 +1614,8 @@ void CPWL_AppStream::SetAsComboBox(const WideString* sValue) {
 
   pEdit->Initialize();
 
-  if (sValue) {
-    pEdit->SetText(*sValue);
+  if (sValue.has_value()) {
+    pEdit->SetText(sValue.value());
   } else {
     int32_t nCurSel = pField->GetSelectedIndex(0);
     if (nCurSel < 0)
@@ -1667,7 +1660,7 @@ void CPWL_AppStream::SetAsListBox() {
   // Font map must outlive |pEdit|.
   CBA_FontMap font_map(
       widget_.Get(),
-      widget_->GetInterForm()->GetFormFillEnv()->GetSysHandler());
+      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1743,7 +1736,7 @@ void CPWL_AppStream::SetAsListBox() {
         "");
 }
 
-void CPWL_AppStream::SetAsTextField(const WideString* sValue) {
+void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
   CPDF_FormControl* pControl = widget_->GetFormControl();
   CPDF_FormField* pField = pControl->GetField();
   std::ostringstream sBody;
@@ -1752,7 +1745,7 @@ void CPWL_AppStream::SetAsTextField(const WideString* sValue) {
   // Font map must outlive |pEdit|.
   CBA_FontMap font_map(
       widget_.Get(),
-      widget_->GetInterForm()->GetFormFillEnv()->GetSysHandler());
+      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1782,11 +1775,8 @@ void CPWL_AppStream::SetAsTextField(const WideString* sValue) {
   float fFontSize = widget_->GetFontSize();
 
 #ifdef PDF_ENABLE_XFA
-  WideString sValueTmp;
-  if (!sValue && widget_->GetMixXFAWidget()) {
-    sValueTmp = widget_->GetValue();
-    sValue = &sValueTmp;
-  }
+  if (!sValue.has_value() && widget_->GetMixXFAWidget())
+    sValue = widget_->GetValue();
 #endif  // PDF_ENABLE_XFA
 
   if (nMaxLen > 0) {
@@ -1798,8 +1788,8 @@ void CPWL_AppStream::SetAsTextField(const WideString* sValue) {
                                                         rcClient, nMaxLen);
       }
     } else {
-      if (sValue)
-        nMaxLen = sValue->GetLength();
+      if (sValue.has_value())
+        nMaxLen = sValue.value().GetLength();
       pEdit->SetLimitChar(nMaxLen);
     }
   }
@@ -1810,7 +1800,7 @@ void CPWL_AppStream::SetAsTextField(const WideString* sValue) {
     pEdit->SetFontSize(fFontSize);
 
   pEdit->Initialize();
-  pEdit->SetText(sValue ? *sValue : pField->GetValue());
+  pEdit->SetText(sValue.value_or(pField->GetValue()));
 
   CFX_FloatRect rcContent = pEdit->GetContentRect();
   ByteString sEdit =

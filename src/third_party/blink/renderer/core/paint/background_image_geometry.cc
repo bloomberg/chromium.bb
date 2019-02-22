@@ -1011,7 +1011,14 @@ const Document& BackgroundImageGeometry::ImageDocument() const {
 }
 
 const ComputedStyle& BackgroundImageGeometry::ImageStyle() const {
-  return box_.StyleRef();
+  const bool use_style_from_positioning_box =
+      painting_view_ || cell_using_container_background_;
+  return (use_style_from_positioning_box ? positioning_box_ : box_).StyleRef();
+}
+
+InterpolationQuality BackgroundImageGeometry::ImageInterpolationQuality()
+    const {
+  return box_.StyleRef().GetInterpolationQuality();
 }
 
 }  // namespace blink

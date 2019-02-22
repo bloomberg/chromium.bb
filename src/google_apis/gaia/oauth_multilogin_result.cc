@@ -9,6 +9,29 @@
 
 OAuthMultiloginResult::OAuthMultiloginResult() {}
 
+OAuthMultiloginResult::OAuthMultiloginResult(
+    const OAuthMultiloginResult& other) {
+  cookies_ = other.cookies();
+}
+
+// static
+GoogleServiceAuthError OAuthMultiloginResult::TryParseStatusFromValue(
+    base::DictionaryValue* dictionary_value) {
+  std::string status;
+  dictionary_value->GetString("status", &status);
+  if (status == "OK") {
+    return GoogleServiceAuthError::AuthErrorNone();
+  } else if (status == "RETRY") {
+    // This is a transient error.
+    return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+  } else if (status == "INVALID_TOKENS") {
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  } else {
+    return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR);
+  }
+}
+
 // static
 base::StringPiece OAuthMultiloginResult::StripXSSICharacters(
     const std::string& raw_data) {
@@ -68,17 +91,22 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(
 }
 
 // static
-bool OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
+GoogleServiceAuthError
+OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
     const std::string& raw_data,
     OAuthMultiloginResult* result) {
   base::StringPiece data = StripXSSICharacters(raw_data);
   std::unique_ptr<base::DictionaryValue> dictionary_value =
       base::DictionaryValue::From(base::JSONReader::Read(data));
   if (!dictionary_value) {
-    return false;
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
   }
-  result->TryParseCookiesFromValue(dictionary_value.get());
-  return true;
+  const GoogleServiceAuthError error =
+      TryParseStatusFromValue(dictionary_value.get());
+  if (error.state() == GoogleServiceAuthError::State::NONE)
+    result->TryParseCookiesFromValue(dictionary_value.get());
+  return error;
 }
 
 OAuthMultiloginResult::~OAuthMultiloginResult() = default;

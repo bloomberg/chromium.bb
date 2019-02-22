@@ -130,6 +130,14 @@ void ChromeSearchResult::SetIcon(const gfx::ImageSkia& icon) {
     updater->SetSearchResultMetadata(id(), CloneMetadata());
 }
 
+void ChromeSearchResult::SetChipIcon(const gfx::ImageSkia& chip_icon) {
+  chip_icon.EnsureRepsForSupportedScales();
+  metadata_->chip_icon = chip_icon;
+  AppListModelUpdater* updater = model_updater();
+  if (updater)
+    updater->SetSearchResultMetadata(id(), CloneMetadata());
+}
+
 void ChromeSearchResult::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
   badge_icon.EnsureRepsForSupportedScales();
   metadata_->badge_icon = badge_icon;

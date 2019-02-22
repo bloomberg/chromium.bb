@@ -1,0 +1,181 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
+# These tests currently fail when run with --enable-features=NetworkService
+
+# Uncategorized timeouts or test failures.
+
+# https://crbug.com/882650 (NS OOP)
+-*__multiprocess_mode
+
+# https://crbug.com/893561
+-org.chromium.android_webview.test.AcceptLanguageTest.testAcceptLanguage
+
+# https://crbug.com/893562
+-org.chromium.android_webview.test.AwContentsClientAutoLoginTest.testAutoLoginOnGoogleCom
+-org.chromium.android_webview.test.AwContentsClientAutoLoginTest.testAutoLoginOnNonGoogle
+-org.chromium.android_webview.test.AwContentsClientAutoLoginTest.testAutoLoginWithNullAccount
+
+# https://crbug.com/893563
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenNotSupported_video
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testFullscreenNotSupported_videoInsideDiv
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_video
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testOnShowCustomViewAndPlayWithHtmlControl_videoInsideDiv
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringEmbeddedPlayback
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_video
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsEnabledDuringFullscreenPlayback_videoInsideDiv
+-org.chromium.android_webview.test.AwContentsClientFullScreenTest.testPowerSaveBlockerIsTransferredToEmbedded
+
+# https://crbug.com/893564
+-org.chromium.android_webview.test.AwContentsClientGetDefaultVideoPosterTest.testGetDefaultVideoPoster
+
+# https://crbug.com/893566
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testBaseUrlOfLoadDataSentInRefererHeader
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForExistingFiles
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForIframe
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForImage
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForNonexistentAsset
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForNonexistentContentUrl
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForNonexistentFiles
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForNonexistentResource
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledForUnsupportedSchemes
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectHasUserGestureParam
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectHeadersParam
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectIsMainFrameParam
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectMethodParam
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectRefererHeader
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCalledWithCorrectUrlParam
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testCanInterceptMainFrame
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testContentIdIframe
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testContentIdImage
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDeadlock
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotCrashOnEmptyStream
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotCrashOnInvalidData
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotCrashOnSlowStream
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testDoesNotCrashOnThrowingStream
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testHttpResponseClientViaHeader
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testHttpResponseHeader
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testHttpStatusCodeAndText
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataShouldTriggerShouldInterceptRequest
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataUrlShouldTriggerShouldInterceptRequest
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testLoadDataWithBaseUrlTriggersShouldInterceptRequest
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForExistingAsset
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForExistingContentUrl
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForExistingResource
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNotCalledForHttpRedirect
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testNullInputStreamCausesErrorForMainFrame
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testOnLoadResourceCalledWithCorrectUrl
+-org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testOnReceivedErrorCallback
+
+# https://crbug.com/893567
+-org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testCalledForIframeUnsupportedSchemeNavigations
+-org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenCustomSchemeUrlInPopup
+-org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopup
+-org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopupAddsTrailingSlash
+
+# https://crbug.com/893568
+-org.chromium.android_webview.test.AwContentsTest.testCanInjectHeaders
+-org.chromium.android_webview.test.AwContentsTest.testDownload
+-org.chromium.android_webview.test.AwContentsTest.testEscapingOfErrorPage
+
+# https://crbug.com/893569
+-org.chromium.android_webview.test.AwServiceWorkerClientTest.testFetchResourceLoadingError
+-org.chromium.android_webview.test.AwServiceWorkerClientTest.testInvokeInterceptCallback
+
+# https://crbug.com/893570
+-org.chromium.android_webview.test.AwSettingsTest.testAssetUrl
+-org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithAudio
+-org.chromium.android_webview.test.AwSettingsTest.testBlockNetworkLoadsWithHttpResources
+-org.chromium.android_webview.test.AwSettingsTest.testCacheMode
+-org.chromium.android_webview.test.AwSettingsTest.testCacheModeWithBlockedNetworkLoads
+-org.chromium.android_webview.test.AwSettingsTest.testContentUrlAccessWithTwoViews
+-org.chromium.android_webview.test.AwSettingsTest.testContentUrlFromFileWithTwoViews
+-org.chromium.android_webview.test.AwSettingsTest.testDefaultVideoPosterURL
+-org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockAssetUrls
+-org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessToggleDoesNotBlockResourceUrls
+-org.chromium.android_webview.test.AwSettingsTest.testFileUrlAccessWithTwoViews
+-org.chromium.android_webview.test.AwSettingsTest.testResourceUrl
+
+# https://crbug.com/893572
+-org.chromium.android_webview.test.ClientOnPageStartedTest.testOnPageStartedCalledOnceOnError
+
+# https://crbug.com/893573
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testIframeSubresource
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testImageSubresource
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testMainFrame
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testNotCalledOnStopLoading
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnCacheMiss
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnInvalidScheme
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnNonExistentAssetUrl
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnNonExistentResourceUrl
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGesture
+-org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGestureForIframeSubresource
+
+# https://crbug.com/893574
+-org.chromium.android_webview.test.ClientOnReceivedErrorTest.testCacheMiss
+-org.chromium.android_webview.test.ClientOnReceivedErrorTest.testNonExistentAssetUrl
+-org.chromium.android_webview.test.ClientOnReceivedErrorTest.testNonExistentResourceUrl
+-org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidScheme
+-org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidUrl
+
+# https://crbug.com/891722
+-org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testAfterRedirect
+-org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForMainResource
+-org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForSubresource
+-org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testForUserGesture
+-org.chromium.android_webview.test.ClientOnReceivedHttpErrorTest.testNotCalledIfNoHttpError
+
+# https://crbug.com/893575
+-org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock
+-org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
+
+# https://crbug.com/893576
+-org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie
+-org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
+-org.chromium.android_webview.test.CookieManagerTest.testRejectFileSchemeCookies
+-org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookie
+-org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketEnabledCase
+-org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookiesArePerWebview
+-org.chromium.android_webview.test.CookieManagerTest.testThirdPartyJavascriptCookie
+
+# https://crbug.com/893577
+-org.chromium.android_webview.test.HttpCacheTest.testHttpCacheIsInsideCacheDir
+
+# https://crbug.com/893579
+-org.chromium.android_webview.test.KeySystemTest.testNotSupportFooKeySystem
+-org.chromium.android_webview.test.KeySystemTest.testSupportClearKeySystem
+-org.chromium.android_webview.test.KeySystemTest.testSupportPlatformKeySystemNoPrefix
+
+# https://crbug.com/893580
+-org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
+-org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testSetCookieInIframe
+-org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testThirdPartyCookieInIframe
+
+# https://crbug.com/893581
+-org.chromium.android_webview.test.LoadUrlTest.testLoadUrlWithExtraHeaders
+-org.chromium.android_webview.test.LoadUrlTest.testRedirectAndReloadWithExtraHeaders
+-org.chromium.android_webview.test.LoadUrlTest.testReloadWithExtraHeaders
+-org.chromium.android_webview.test.LoadUrlTest.testRendererNavigationAndGoBackWithExtraHeaders
+
+# https://crbug.com/893582
+-org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame
+-org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingHardcodedMalwareUrl
+-org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingHardcodedPhishingUrl
+-org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingOnSafeBrowsingHitBackToSafety
+-org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingShowsNetworkErrorForInvisibleViews
+
+# https://crbug.com/893583
+-org.chromium.android_webview.test.VisualStateTest.testOnPageCommitVisible
+-org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackFromJsDuringFullscreenTransitions
+-org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWaitsForJs
+-org.chromium.android_webview.test.VisualStateTest.testVisualStateCallbackWhenContainerViewDetached
+
+# https://crbug.com/893584
+-org.chromium.android_webview.test.WebKitHitTestTest.testSrcEmailType
+-org.chromium.android_webview.test.WebKitHitTestTest.testSrcGeoType
+-org.chromium.android_webview.test.WebKitHitTestTest.testSrcPhoneType
+
+# https://crbug.com/893585
+-org.chromium.android_webview.test.WebViewWebVrTest.testWebVrNotFunctional
+

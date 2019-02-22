@@ -5,7 +5,6 @@
 #include "ash/shelf/shelf_context_menu_model.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/display.h"
@@ -263,8 +264,8 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
       gpu_preferences, true, &mailbox_manager_, nullptr /* memory_tracker */,
       &translator_cache_, &completeness_cache_, feature_info, true,
       &image_manager_, nullptr /* image_factory */,
-      nullptr /* progress_reporter */, gpu_feature_info,
-      &discardable_manager_));
+      nullptr /* progress_reporter */, gpu_feature_info, &discardable_manager_,
+      &shared_image_manager_));
 
   transfer_buffer_manager_ =
       std::make_unique<gpu::TransferBufferManager>(nullptr);

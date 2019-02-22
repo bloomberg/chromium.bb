@@ -53,7 +53,8 @@ inline SVGTextPathElement::SVGTextPathElement(Document& document)
       start_offset_(
           SVGAnimatedLength::Create(this,
                                     SVGNames::startOffsetAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
+                                    SVGLengthMode::kWidth,
+                                    SVGLength::Initial::kUnitlessZero)),
       method_(SVGAnimatedEnumeration<SVGTextPathMethodType>::Create(
           this,
           SVGNames::methodAttr,

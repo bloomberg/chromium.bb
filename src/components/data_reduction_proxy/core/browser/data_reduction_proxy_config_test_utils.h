@@ -24,10 +24,6 @@ namespace net {
 class NetLog;
 }
 
-namespace network {
-class NetworkConnectionTracker;
-}
-
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigurator;
@@ -44,7 +40,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   TestDataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
-      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
 
@@ -55,7 +50,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
-      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
 
@@ -150,7 +144,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       net::NetLog* net_log,
-      network::NetworkConnectionTracker* network_connection_tracker,
       DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator);
   ~MockDataReductionProxyConfig() override;

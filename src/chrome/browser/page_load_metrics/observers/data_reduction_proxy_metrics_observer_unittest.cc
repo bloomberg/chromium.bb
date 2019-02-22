@@ -23,7 +23,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -31,10 +31,11 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace data_reduction_proxy {
 
@@ -116,6 +117,19 @@ class TestPingbackClient
   DISALLOW_COPY_AND_ASSIGN(TestPingbackClient);
 };
 
+namespace {
+
+class FakeInputEvent : public blink::WebInputEvent {
+ public:
+  explicit FakeInputEvent(blink::WebInputEvent::Type type)
+      : WebInputEvent(sizeof(FakeInputEvent),
+                      type,
+                      blink::WebInputEvent::kNoModifiers,
+                      base::TimeTicks::Now()) {}
+};
+
+}  // namespace
+
 }  // namespace
 
 // DataReductionProxyMetricsObserver responsible for modifying data about the
@@ -127,11 +141,13 @@ class TestDataReductionProxyMetricsObserver
   TestDataReductionProxyMetricsObserver(content::WebContents* web_contents,
                                         TestPingbackClient* pingback_client,
                                         bool data_reduction_proxy_used,
+                                        bool cached_data_reduction_proxy_used,
                                         bool lite_page_used,
                                         bool black_listed)
       : web_contents_(web_contents),
         pingback_client_(pingback_client),
         data_reduction_proxy_used_(data_reduction_proxy_used),
+        cached_data_reduction_proxy_used_(cached_data_reduction_proxy_used),
         lite_page_used_(lite_page_used),
         black_listed_(black_listed) {}
 
@@ -143,6 +159,8 @@ class TestDataReductionProxyMetricsObserver
     DataReductionProxyData* data =
         DataForNavigationHandle(web_contents_, navigation_handle);
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
+    data->set_was_cached_data_reduction_proxy_response(
+        cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
 
@@ -172,14 +190,16 @@ class TestDataReductionProxyMetricsObserver
     pmd->os_dump->private_footprint_kb = kMemoryKb;
 
     global_dump->process_dumps.push_back(std::move(pmd));
-    callback.Run(true, memory_instrumentation::GlobalMemoryDump::MoveFrom(
-                           std::move(global_dump)));
+    std::move(callback).Run(true,
+                            memory_instrumentation::GlobalMemoryDump::MoveFrom(
+                                std::move(global_dump)));
   }
 
  private:
   content::WebContents* web_contents_;
   TestPingbackClient* pingback_client_;
   bool data_reduction_proxy_used_;
+  bool cached_data_reduction_proxy_used_;
   bool lite_page_used_;
   bool black_listed_;
 
@@ -258,6 +278,7 @@ class DataReductionProxyMetricsObserverTest
     EXPECT_TRUE(pingback_client_->send_pingback_called());
     EXPECT_EQ(timing_.navigation_start,
               pingback_client_->timing()->navigation_start);
+    EXPECT_GT(pingback_client_->timing()->page_end_time, base::TimeDelta());
     ExpectEqualOrUnset(timing_.paint_timing->first_contentful_paint,
                        pingback_client_->timing()->first_contentful_paint);
     ExpectEqualOrUnset(
@@ -329,12 +350,13 @@ class DataReductionProxyMetricsObserverTest
     histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(histogram_suffix),
-        data_reduction_proxy_used_ ? 1 : 0);
+        data_reduction_proxy_used_ || cached_data_reduction_proxy_used_ ? 1
+                                                                        : 0);
     histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramDataReductionProxyLitePagePrefix)
             .append(histogram_suffix),
         is_using_lite_page_ ? 1 : 0);
-    if (!data_reduction_proxy_used_)
+    if (!(data_reduction_proxy_used_ || cached_data_reduction_proxy_used_))
       return;
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
@@ -427,11 +449,14 @@ class DataReductionProxyMetricsObserverTest
     tracker->AddObserver(
         std::make_unique<TestDataReductionProxyMetricsObserver>(
             web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
-            is_using_lite_page_, black_listed_));
+            cached_data_reduction_proxy_used_, is_using_lite_page_,
+            black_listed_));
   }
 
   std::unique_ptr<TestPingbackClient> pingback_client_;
   page_load_metrics::mojom::PageLoadTiming timing_;
+
+  bool cached_data_reduction_proxy_used_ = false;
 
  private:
   bool data_reduction_proxy_used_;
@@ -505,8 +530,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   // Verify that when an opt out occurs, that it is reported in the pingback.
   timing_.document_timing->load_event_start = base::nullopt;
   RunTest(true, true, true, false);
-  observer()->BroadcastEventToObservers(
-      PreviewsInfoBarDelegate::OptOutEventKey());
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateTimes();
   ValidateLoFiInPingback(false);
@@ -548,6 +572,12 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   // called.
   RunTestAndNavigateToUntrackedUrl(false, false, false);
   EXPECT_FALSE(pingback_client_->send_pingback_called());
+
+  ResetTest();
+  cached_data_reduction_proxy_used_ = true;
+  RunTestAndNavigateToUntrackedUrl(false, false, false);
+  EXPECT_TRUE(pingback_client_->send_pingback_called());
+  cached_data_reduction_proxy_used_ = false;
 
   ResetTest();
   // Verify that when the holdback experiment is enabled, a pingback is sent.
@@ -744,6 +774,131 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
                          insecure_network_bytes + secure_network_bytes,
                          drp_bytes + secure_drp_bytes,
                          insecure_ocl_bytes + secure_ocl_bytes);
+}
+
+TEST_F(DataReductionProxyMetricsObserverTest, TouchScrollEventCount) {
+  struct TestCase {
+    std::vector<FakeInputEvent> events;
+    uint32_t want_touch;
+    uint32_t want_scroll;
+  };
+  const TestCase test_cases[] = {
+      {
+          // Test zero value.
+          {},
+          0 /* want_touch */,
+          0 /* want_scroll */,
+      },
+      {
+          // Test all inputs, should only count the ones we care about.
+          {
+              FakeInputEvent(blink::WebInputEvent::kMouseDown),
+              FakeInputEvent(blink::WebInputEvent::kMouseUp),
+              FakeInputEvent(blink::WebInputEvent::kMouseMove),
+              FakeInputEvent(blink::WebInputEvent::kMouseEnter),
+              FakeInputEvent(blink::WebInputEvent::kMouseLeave),
+              FakeInputEvent(blink::WebInputEvent::kContextMenu),
+              FakeInputEvent(blink::WebInputEvent::kMouseWheel),
+              FakeInputEvent(blink::WebInputEvent::kRawKeyDown),
+              FakeInputEvent(blink::WebInputEvent::kKeyDown),
+              FakeInputEvent(blink::WebInputEvent::kKeyUp),
+              FakeInputEvent(blink::WebInputEvent::kChar),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollEnd),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+              FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+              FakeInputEvent(blink::WebInputEvent::kGestureFlingCancel),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchBegin),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchEnd),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchUpdate),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapDown),
+              FakeInputEvent(blink::WebInputEvent::kGestureShowPress),
+              FakeInputEvent(blink::WebInputEvent::kGestureTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapCancel),
+              FakeInputEvent(blink::WebInputEvent::kGestureLongPress),
+              FakeInputEvent(blink::WebInputEvent::kGestureLongTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTwoFingerTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapUnconfirmed),
+              FakeInputEvent(blink::WebInputEvent::kGestureDoubleTap),
+              FakeInputEvent(blink::WebInputEvent::kTouchStart),
+              FakeInputEvent(blink::WebInputEvent::kTouchMove),
+              FakeInputEvent(blink::WebInputEvent::kTouchEnd),
+              FakeInputEvent(blink::WebInputEvent::kTouchCancel),
+              FakeInputEvent(blink::WebInputEvent::kTouchScrollStarted),
+              FakeInputEvent(blink::WebInputEvent::kPointerDown),
+              FakeInputEvent(blink::WebInputEvent::kPointerUp),
+              FakeInputEvent(blink::WebInputEvent::kPointerMove),
+              FakeInputEvent(blink::WebInputEvent::kPointerCancel),
+              FakeInputEvent(blink::WebInputEvent::kPointerCausedUaAction),
+
+          },
+          2 /* want_touch */,
+          3 /* want_scroll */,
+      },
+      {
+          // Test all inputs, with the ones we care about repeated.
+          {
+              FakeInputEvent(blink::WebInputEvent::kMouseDown),
+              FakeInputEvent(blink::WebInputEvent::kMouseUp),
+              FakeInputEvent(blink::WebInputEvent::kMouseMove),
+              FakeInputEvent(blink::WebInputEvent::kMouseEnter),
+              FakeInputEvent(blink::WebInputEvent::kMouseLeave),
+              FakeInputEvent(blink::WebInputEvent::kContextMenu),
+              FakeInputEvent(blink::WebInputEvent::kMouseWheel),
+              FakeInputEvent(blink::WebInputEvent::kRawKeyDown),
+              FakeInputEvent(blink::WebInputEvent::kKeyDown),
+              FakeInputEvent(blink::WebInputEvent::kKeyUp),
+              FakeInputEvent(blink::WebInputEvent::kChar),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollBegin),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollEnd),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+              FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+              FakeInputEvent(blink::WebInputEvent::kGestureFlingCancel),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchBegin),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchEnd),
+              FakeInputEvent(blink::WebInputEvent::kGesturePinchUpdate),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapDown),
+              FakeInputEvent(blink::WebInputEvent::kGestureShowPress),
+              FakeInputEvent(blink::WebInputEvent::kGestureTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapCancel),
+              FakeInputEvent(blink::WebInputEvent::kGestureLongPress),
+              FakeInputEvent(blink::WebInputEvent::kGestureLongTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTwoFingerTap),
+              FakeInputEvent(blink::WebInputEvent::kGestureTapUnconfirmed),
+              FakeInputEvent(blink::WebInputEvent::kGestureDoubleTap),
+              FakeInputEvent(blink::WebInputEvent::kTouchStart),
+              FakeInputEvent(blink::WebInputEvent::kTouchMove),
+              FakeInputEvent(blink::WebInputEvent::kTouchEnd),
+              FakeInputEvent(blink::WebInputEvent::kTouchCancel),
+              FakeInputEvent(blink::WebInputEvent::kTouchScrollStarted),
+              FakeInputEvent(blink::WebInputEvent::kPointerDown),
+              FakeInputEvent(blink::WebInputEvent::kPointerUp),
+              FakeInputEvent(blink::WebInputEvent::kPointerMove),
+              FakeInputEvent(blink::WebInputEvent::kPointerCancel),
+              FakeInputEvent(blink::WebInputEvent::kPointerCausedUaAction),
+              // Repeat.
+              FakeInputEvent(blink::WebInputEvent::kMouseDown),
+              FakeInputEvent(blink::WebInputEvent::kGestureTap),
+              FakeInputEvent(blink::WebInputEvent::kMouseWheel),
+              FakeInputEvent(blink::WebInputEvent::kGestureScrollUpdate),
+              FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
+          },
+          4 /* want_touch */,
+          6 /* want_scroll */,
+      },
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    ResetTest();
+    RunTest(true, false, false, false);
+
+    for (const blink::WebInputEvent& event : test_case.events)
+      SimulateInputEvent(event);
+
+    NavigateToUntrackedUrl();
+    EXPECT_EQ(pingback_client_->timing()->touch_count, test_case.want_touch);
+    EXPECT_EQ(pingback_client_->timing()->scroll_count, test_case.want_scroll);
+  }
 }
 
 TEST_F(DataReductionProxyMetricsObserverTest, ProcessIdSentOnRendererCrash) {

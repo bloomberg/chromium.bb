@@ -16,6 +16,10 @@
 #include <memory>
 #include <set>
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace signin {
 
 class HeaderModificationDelegate;
@@ -26,15 +30,28 @@ class HeaderModificationDelegate;
 // Network Service to modify request and response headers.
 class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
-  ProxyingURLLoaderFactory();
-  ~ProxyingURLLoaderFactory() override;
+  using DisconnectCallback =
+      base::OnceCallback<void(ProxyingURLLoaderFactory*)>;
 
-  void StartProxying(
+  // Constructor public for testing purposes. New instances should be created
+  // by calling MaybeProxyRequest().
+  ProxyingURLLoaderFactory(
       std::unique_ptr<HeaderModificationDelegate> delegate,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory,
-      base::OnceClosure on_disconnect);
+      DisconnectCallback on_disconnect);
+  ~ProxyingURLLoaderFactory() override;
+
+  // Called when a renderer needs a URLLoaderFactory to give this module the
+  // opportunity to install a proxy. This is only done when
+  // https://accounts.google.com is loaded in non-incognito mode. Returns true
+  // when |factory_request| has been proxied.
+  static bool MaybeProxyRequest(
+      content::RenderFrameHost* render_frame_host,
+      bool is_navigation,
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -71,7 +88,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   std::set<std::unique_ptr<InProgressRequest>, base::UniquePtrComparator>
       requests_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
-  base::OnceClosure on_disconnect_;
+  DisconnectCallback on_disconnect_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactory);
 };

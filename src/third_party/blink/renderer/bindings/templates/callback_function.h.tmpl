@@ -17,7 +17,9 @@ class {{forward_declaration}};
 
 class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
  public:
-  static {{cpp_class}}* Create(v8::Local<v8::Function> callback_function) {
+  static {{cpp_class}}* Create(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function) {
     return new {{cpp_class}}(callback_function);
   }
 
@@ -47,8 +49,24 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
 
+{% if callback_function_name == 'EventHandlerNonNull' %}
+  // Returns true if the callback is runnable, otherwise returns false and
+  // throws an exception. 'beforeunload' event need to have priority over pause
+  // of execution contexts.
+  enum class IgnorePause { kDontIgnore, kIgnore };
+  bool IsRunnableOrThrowException(IgnorePause);
+
+  // Performs "invoke" without checking the runnability check, which must be
+  // done prior to this call by |IsRunnableOrThrowException|.
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  // This function may throw unlike InvokeAndReportException.
+  v8::Maybe<{{return_cpp_type}}> InvokeWithoutRunnabilityCheck({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
+{% endif %}
+
  private:
-  explicit {{cpp_class}}(v8::Local<v8::Function> callback_function)
+  explicit {{cpp_class}}(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
       : CallbackFunctionBase(callback_function) {}
 };
 

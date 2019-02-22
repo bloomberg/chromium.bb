@@ -214,6 +214,11 @@ TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
   EXPECT_EQ(50, ImageHeight());
 }
 
+TEST_F(ImageDocumentTest, DomInteractive) {
+  CreateDocument(25, 30);
+  EXPECT_FALSE(GetDocument().GetTiming().DomInteractive().is_null());
+}
+
 #if defined(OS_ANDROID)
 #define MAYBE(test) DISABLED_##test
 #else

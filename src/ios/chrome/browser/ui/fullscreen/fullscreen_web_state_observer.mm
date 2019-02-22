@@ -98,11 +98,9 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
-  ViewportAdjustmentExperiment viewport_experiment =
-      fullscreen::features::GetActiveViewportExperiment();
   bool force_content_inset =
-      viewport_experiment == ViewportAdjustmentExperiment::CONTENT_INSET ||
-      viewport_experiment == ViewportAdjustmentExperiment::SMOOTH_SCROLLING;
+      fullscreen::features::GetActiveViewportExperiment() ==
+      ViewportAdjustmentExperiment::CONTENT_INSET;
   web_state->GetWebViewProxy().shouldUseViewContentInset =
       force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";
@@ -121,7 +119,7 @@ void FullscreenWebStateObserver::DidStartLoading(web::WebState* web_state) {
     // considered as being in the SameDocument by the NavigationContext, so the
     // toolbar isn't shown in the DidFinishNavigation. For example this is
     // needed to load AMP pages from Google Search Result Page.
-    controller_->ResetModel();
+    controller_->ExitFullscreen();
   }
 }
 
@@ -148,12 +146,12 @@ void FullscreenWebStateObserver::SetDisableFullscreenForSSL(bool disable) {
 }
 
 void FullscreenWebStateObserver::SetIsLoading(bool loading) {
-  if (IsUIRefreshPhase1Enabled())
-    return;
-
-  if (!!loading_disabler_.get() == loading)
-    return;
-  loading_disabler_ =
-      loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
-              : nullptr;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (loading)
+      controller_->ExitFullscreen();
+  } else {
+    loading_disabler_ =
+        loading ? std::make_unique<ScopedFullscreenDisabler>(controller_)
+                : nullptr;
+  }
 }

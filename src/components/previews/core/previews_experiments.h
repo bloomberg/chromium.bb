@@ -89,6 +89,10 @@ base::TimeDelta SingleOptOutDuration();
 // shown as a preview.
 base::TimeDelta OfflinePreviewFreshnessDuration();
 
+// The amount of time that a Server Lite Page Preview navigation can take before
+// it is killed and the original page is loaded.
+base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
+
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 
@@ -103,6 +107,11 @@ std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
 // as an experiment for automated and manual testing.
 bool LitePagePreviewsTriggerOnLocalhost();
 
+// The maximum data byte size for the server-provided blacklist. This is
+// a client-side safety limit for RAM use in case server sends too large of
+// a blacklist.
+int LitePageRedirectPreviewMaxServerBlacklistByteSize();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
@@ -113,6 +122,9 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
 
 // Whether any previews are allowed. Acts as a kill-switch or holdback check.
 bool ArePreviewsAllowed();
+
+// Whether the Previews UI is in the omnibox instead of an infobar.
+bool IsPreviewsOmniboxUiEnabled();
 
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
@@ -148,6 +160,15 @@ int NoScriptPreviewsInflationPercent();
 // For estimating NoScript data savings, this is the number of bytes to
 // for inflating the original_bytes count.
 int NoScriptPreviewsInflationBytes();
+
+// For estimating ResourceLoadingHints data savings, this is the percentage
+// factor to multiple by the network bytes for inflating the original_bytes
+// count.
+int ResourceLoadingHintsPreviewsInflationPercent();
+
+// For estimating ResourceLoadingHints data savings, this is the number of
+// bytes to for inflating the original_bytes count.
+int ResourceLoadingHintsPreviewsInflationBytes();
 
 }  // namespace params
 

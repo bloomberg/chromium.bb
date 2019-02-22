@@ -3370,7 +3370,10 @@ static VkResult loader_get_manifest_files(const struct loader_instance *inst, co
                 strcpy(out_files->filename_list[out_files->count], name);
                 out_files->count++;
             } else if(file_already_loaded) {
-                loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0,
+                // If the file has already been loaded we want to silently skip it. We do not want to report an error because having
+                // multiple GPUs using the Windows PnP registries with the same driver are expected to see a duplicate entry. We
+                // leave this as a debug message because it can still be useful in loader debugging.
+                loader_log(inst, VK_DEBUG_REPORT_DEBUG_BIT_EXT, 0,
                     "Skipping manifest file %s - The file has already been read once", name);
             } else if (!list_is_dirs) {
                 loader_log(inst, VK_DEBUG_REPORT_WARNING_BIT_EXT, 0, "Skipping manifest file %s, file name must end in .json",
@@ -4653,6 +4656,7 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
 
     PFN_vkGetInstanceProcAddr next_gipa = loader_gpa_instance_internal;
     PFN_vkGetInstanceProcAddr cur_gipa = loader_gpa_instance_internal;
+    PFN_vkGetDeviceProcAddr cur_gdpa = loader_gpa_device_internal;
     PFN_GetPhysicalDeviceProcAddr next_gpdpa = loader_gpdpa_instance_internal;
     PFN_GetPhysicalDeviceProcAddr cur_gpdpa = loader_gpdpa_instance_internal;
 
@@ -4714,6 +4718,7 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
                         // structure.
                         if (interface_struct.loaderLayerInterfaceVersion > 1) {
                             cur_gipa = interface_struct.pfnGetInstanceProcAddr;
+                            cur_gdpa = interface_struct.pfnGetDeviceProcAddr;
                             cur_gpdpa = interface_struct.pfnGetPhysicalDeviceProcAddr;
                             if (cur_gipa != NULL) {
                                 // We've set the functions, so make sure we
@@ -4754,6 +4759,12 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
             if (layer_prop->interface_version > 1 && cur_gpdpa != NULL) {
                 layer_prop->functions.get_physical_device_proc_addr = cur_gpdpa;
                 next_gpdpa = cur_gpdpa;
+            }
+            if (layer_prop->interface_version > 1 && cur_gipa != NULL) {
+                layer_prop->functions.get_instance_proc_addr = cur_gipa;
+            }
+            if (layer_prop->interface_version > 1 && cur_gdpa != NULL) {
+                layer_prop->functions.get_device_proc_addr = cur_gdpa;
             }
 
             chain_info.u.pLayerInfo = &layer_instance_link_info[activated_layers];
@@ -4874,80 +4885,44 @@ VkResult loader_create_device_chain(const struct loader_physical_device_tramp *p
         for (int32_t i = dev->expanded_activated_layer_list.count - 1; i >= 0; i--) {
             struct loader_layer_properties *layer_prop = &dev->expanded_activated_layer_list.list[i];
             loader_platform_dl_handle lib_handle;
-            bool functions_in_interface = false;
 
             lib_handle = loader_open_layer_lib(inst, "device", layer_prop);
             if (!lib_handle) {
                 continue;
             }
 
-            // If we can negotiate an interface version, then we can also get everything we need from the one function
-            // call, so try that first, and see if we can get all the function pointers necessary from that one call.
-            if (NULL == layer_prop->functions.negotiate_layer_interface) {
-                PFN_vkNegotiateLoaderLayerInterfaceVersion negotiate_interface = NULL;
-                if (strlen(layer_prop->functions.str_negotiate_interface) == 0) {
-                    negotiate_interface = (PFN_vkNegotiateLoaderLayerInterfaceVersion)loader_platform_get_proc_address(
-                        lib_handle, "vkNegotiateLoaderLayerInterfaceVersion");
-                } else {
-                    negotiate_interface = (PFN_vkNegotiateLoaderLayerInterfaceVersion)loader_platform_get_proc_address(
-                        lib_handle, layer_prop->functions.str_negotiate_interface);
+            // The Get*ProcAddr pointers will already be filled in if they were received from either the json file or the
+            // version negotiation
+            if ((fpGIPA = layer_prop->functions.get_instance_proc_addr) == NULL) {
+                if (strlen(layer_prop->functions.str_gipa) == 0) {
+                    fpGIPA = (PFN_vkGetInstanceProcAddr)loader_platform_get_proc_address(lib_handle, "vkGetInstanceProcAddr");
+                    layer_prop->functions.get_instance_proc_addr = fpGIPA;
+                } else
+                    fpGIPA =
+                        (PFN_vkGetInstanceProcAddr)loader_platform_get_proc_address(lib_handle, layer_prop->functions.str_gipa);
+                if (!fpGIPA) {
+                    loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+                               "loader_create_device_chain: Failed to find "
+                               "\'vkGetInstanceProcAddr\' in layer %s.  Skipping"
+                               " layer.",
+                               layer_prop->lib_name);
+                    continue;
                 }
-
-                if (NULL != negotiate_interface) {
-                    layer_prop->functions.negotiate_layer_interface = negotiate_interface;
-
-                    VkNegotiateLayerInterface interface_struct;
-
-                    if (loader_get_layer_interface_version(negotiate_interface, &interface_struct)) {
-                        // Go ahead and set the properties version to the correct value.
-                        layer_prop->interface_version = interface_struct.loaderLayerInterfaceVersion;
-
-                        // If the interface is 2 or newer, we have access to the new GetPhysicalDeviceProcAddr
-                        // function, so grab it, and the other necessary functions, from the structure.
-                        if (interface_struct.loaderLayerInterfaceVersion > 1) {
-                            fpGIPA = interface_struct.pfnGetInstanceProcAddr;
-                            fpGDPA = interface_struct.pfnGetDeviceProcAddr;
-                            if (fpGIPA != NULL && fpGDPA) {
-                                // We've set the functions, so make sure we
-                                // don't do the unnecessary calls later.
-                                functions_in_interface = true;
-                            }
-                        }
-                    }
+            }
+            if ((fpGDPA = layer_prop->functions.get_device_proc_addr) == NULL) {
+                if (strlen(layer_prop->functions.str_gdpa) == 0) {
+                    fpGDPA = (PFN_vkGetDeviceProcAddr)loader_platform_get_proc_address(lib_handle, "vkGetDeviceProcAddr");
+                    layer_prop->functions.get_device_proc_addr = fpGDPA;
+                } else
+                    fpGDPA =
+                        (PFN_vkGetDeviceProcAddr)loader_platform_get_proc_address(lib_handle, layer_prop->functions.str_gdpa);
+                if (!fpGDPA) {
+                    loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Failed to find vkGetDeviceProcAddr in layer %s",
+                               layer_prop->lib_name);
+                    continue;
                 }
             }
 
-            if (!functions_in_interface) {
-                if ((fpGIPA = layer_prop->functions.get_instance_proc_addr) == NULL) {
-                    if (strlen(layer_prop->functions.str_gipa) == 0) {
-                        fpGIPA = (PFN_vkGetInstanceProcAddr)loader_platform_get_proc_address(lib_handle, "vkGetInstanceProcAddr");
-                        layer_prop->functions.get_instance_proc_addr = fpGIPA;
-                    } else
-                        fpGIPA =
-                            (PFN_vkGetInstanceProcAddr)loader_platform_get_proc_address(lib_handle, layer_prop->functions.str_gipa);
-                    if (!fpGIPA) {
-                        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
-                                   "loader_create_device_chain: Failed to find "
-                                   "\'vkGetInstanceProcAddr\' in layer %s.  Skipping"
-                                   " layer.",
-                                   layer_prop->lib_name);
-                        continue;
-                    }
-                }
-                if ((fpGDPA = layer_prop->functions.get_device_proc_addr) == NULL) {
-                    if (strlen(layer_prop->functions.str_gdpa) == 0) {
-                        fpGDPA = (PFN_vkGetDeviceProcAddr)loader_platform_get_proc_address(lib_handle, "vkGetDeviceProcAddr");
-                        layer_prop->functions.get_device_proc_addr = fpGDPA;
-                    } else
-                        fpGDPA =
-                            (PFN_vkGetDeviceProcAddr)loader_platform_get_proc_address(lib_handle, layer_prop->functions.str_gdpa);
-                    if (!fpGDPA) {
-                        loader_log(inst, VK_DEBUG_REPORT_INFORMATION_BIT_EXT, 0, "Failed to find vkGetDeviceProcAddr in layer %s",
-                                   layer_prop->lib_name);
-                        continue;
-                    }
-                }
-            }
             layer_device_link_info[activated_layers].pNext = chain_info.u.pLayerInfo;
             layer_device_link_info[activated_layers].pfnNextGetInstanceProcAddr = nextGIPA;
             layer_device_link_info[activated_layers].pfnNextGetDeviceProcAddr = nextGDPA;

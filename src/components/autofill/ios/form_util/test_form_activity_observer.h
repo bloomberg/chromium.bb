@@ -6,7 +6,7 @@
 #define COMPONENTS_AUTOFILL_IOS_FORM_UTIL_TEST_FORM_ACTIVITY_OBSERVER_H_
 
 #include "components/autofill/ios/form_util/form_activity_observer.h"
-#include "ios/web/public/web_state/form_activity_params.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
 
 namespace web {
 class WebState;
@@ -15,16 +15,20 @@ class WebState;
 namespace autofill {
 // Arguments passed to |DocumentSubmitted|.
 struct TestSubmitDocumentInfo {
-  web::WebState* web_state;
+  TestSubmitDocumentInfo();
+  web::WebState* web_state = nullptr;
+  web::WebFrame* sender_frame = nullptr;
   std::string form_name;
+  std::string form_data;
   bool has_user_gesture;
   bool form_in_main_frame;
 };
 
 // Arguments passed to |FormActivityRegistered|.
 struct TestFormActivityInfo {
-  web::WebState* web_state;
-  web::FormActivityParams form_activity;
+  web::WebState* web_state = nullptr;
+  web::WebFrame* sender_frame = nullptr;
+  FormActivityParams form_activity;
 };
 
 class TestFormActivityObserver : public autofill::FormActivityObserver {
@@ -38,13 +42,16 @@ class TestFormActivityObserver : public autofill::FormActivityObserver {
   // Arguments passed to |FormActivityRegistered|.
   TestFormActivityInfo* form_activity_info();
 
-  void DidSubmitDocument(web::WebState* web_state,
+  void DocumentSubmitted(web::WebState* web_state,
+                         web::WebFrame* sender_frame,
                          const std::string& form_name,
+                         const std::string& form_data,
                          bool has_user_gesture,
                          bool form_in_main_frame) override;
 
-  void OnFormActivity(web::WebState* web_state,
-                      const web::FormActivityParams& params) override;
+  void FormActivityRegistered(web::WebState* web_state,
+                              web::WebFrame* sender_frame,
+                              const FormActivityParams& params) override;
 
  private:
   web::WebState* web_state_ = nullptr;

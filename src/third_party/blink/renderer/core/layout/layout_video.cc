@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
 namespace blink {
@@ -103,9 +104,8 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
 }
 
 void LayoutVideo::ImageChanged(WrappedImagePtr new_image,
-                               CanDeferInvalidation defer,
-                               const IntRect* rect) {
-  LayoutMedia::ImageChanged(new_image, defer, rect);
+                               CanDeferInvalidation defer) {
+  LayoutMedia::ImageChanged(new_image, defer);
 
   // Cache the image intrinsic size so we can continue to use it to draw the
   // image correctly even if we know the video intrinsic size but aren't able to
@@ -196,6 +196,15 @@ CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
     return CompositingReason::kVideo;
 
   return CompositingReason::kNone;
+}
+
+void LayoutVideo::UpdateAfterLayout() {
+  LayoutBox::UpdateAfterLayout();
+  // Report violation of unsized-media policy.
+  if (auto* video_element = ToHTMLVideoElementOrNull(GetNode())) {
+    if (video_element->IsDefaultIntrinsicSize())
+      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+  }
 }
 
 }  // namespace blink

@@ -10,11 +10,11 @@
 #include "core/fxcrt/fx_string.h"
 
 class CPDF_FormField;
-class CPDF_InterForm;
+class CPDF_InteractiveForm;
 
 class IPDF_FormNotify {
  public:
-  virtual ~IPDF_FormNotify() {}
+  virtual ~IPDF_FormNotify() = default;
 
   virtual bool BeforeValueChange(CPDF_FormField* pField,
                                  const WideString& csValue) = 0;
@@ -25,7 +25,7 @@ class IPDF_FormNotify {
   virtual void AfterSelectionChange(CPDF_FormField* pField) = 0;
 
   virtual void AfterCheckedStatusChange(CPDF_FormField* pField) = 0;
-  virtual void AfterFormReset(CPDF_InterForm* pForm) = 0;
+  virtual void AfterFormReset(CPDF_InteractiveForm* pForm) = 0;
 };
 
 #endif  // CORE_FPDFDOC_IPDF_FORMNOTIFY_H_

@@ -110,17 +110,14 @@ class FakeFileSystem : public FileSystemInterface {
                       SearchMetadataCallback callback) override;
   void SearchByHashes(const std::set<std::string>& hashes,
                       SearchByHashesCallback callback) override;
-  void GetAvailableSpace(const GetAvailableSpaceCallback& callback) override;
-  void GetShareUrl(const base::FilePath& file_path,
-                   const GURL& embed_origin,
-                   const GetShareUrlCallback& callback) override;
+  void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
   void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                              const MarkMountedCallback& callback) override;
+                              MarkMountedCallback callback) override;
   void MarkCacheFileAsUnmounted(const base::FilePath& cache_file_path,
                                 const FileOperationCallback& callback) override;
   void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
-                                  const IsMountedCallback& callback) override;
+                                  IsMountedCallback callback) override;
   void AddPermission(const base::FilePath& drive_file_path,
                      const std::string& email,
                      google_apis::drive::PermissionRole role,

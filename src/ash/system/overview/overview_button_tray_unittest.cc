@@ -112,7 +112,7 @@ TEST_F(OverviewButtonTrayTest, TabletModeObserverOnTabletModeToggled) {
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetTray()->visible());
 
-  TabletModeControllerTestApi().LeaveTabletMode(false);
+  TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -132,6 +132,8 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
 }
 
 TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
   ASSERT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Add two windows and activate the second one to test quick switch.
@@ -166,6 +168,15 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
   PerformDoubleTap();
   EXPECT_EQ(window2->layer()->GetTargetOpacity(), 1.0);
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  // Verify that if all windows are minimized, double tapping the tray will have
+  // no effect.
+  ASSERT_TRUE(!Shell::Get()->window_selector_controller()->IsSelecting());
+  wm::GetWindowState(window1.get())->Minimize();
+  wm::GetWindowState(window2.get())->Minimize();
+  PerformDoubleTap();
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
 }
 
 // Tests that tapping on the control will record the user action Tray_Overview.
@@ -302,7 +313,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   ASSERT_TRUE(Shell::IsSystemModalWindowOpen());
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(GetTray()->visible());
-  TabletModeControllerTestApi().LeaveTabletMode(false);
+  TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_FALSE(GetTray()->visible());
 }
 
@@ -364,10 +375,12 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 // Tests that the tray remains visible when leaving tablet mode due to external
 // mouse being connected.
 TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
-  TabletModeControllerTestApi().EnterTabletMode();
+  TabletModeControllerTestApi().OpenLidToAngle(315.0f);
+  EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
   ASSERT_TRUE(GetTray()->visible());
 
-  TabletModeControllerTestApi().LeaveTabletMode(true);
+  TabletModeControllerTestApi().AttachExternalMouse();
+  EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
   EXPECT_TRUE(GetTray()->visible());
 }
 

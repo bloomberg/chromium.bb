@@ -5,5 +5,6 @@ PASS getDisplayMedia() with video false
 FAIL getDisplayMedia() with audio true promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'Navigator': Audio is not supported"
 PASS getDisplayMedia() with audio false
 PASS getDisplayMedia() call with non-bool constraint
+PASS getDisplayMedia() with getSettings
 Harness: the test ran to completion.
 

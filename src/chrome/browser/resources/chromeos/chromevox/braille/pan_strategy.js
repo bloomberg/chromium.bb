@@ -302,6 +302,11 @@ cvox.PanStrategy.prototype = {
       }
     }
 
+    // It's possible the end of the wrapped cursor falls at the
+    // |translatedContent.byteLength| exactly.
+    this.maybeSetWrappedCursor_(
+        index - cellsPadded, wrappedBrailleArray.length);
+
     // Convert the wrapped Braille Uint8 Array back to ArrayBuffer.
     var wrappedBrailleUint8Array = new Uint8Array(wrappedBrailleArray);
     this.wrappedBuffer_ = new ArrayBuffer(wrappedBrailleUint8Array.length);
@@ -327,7 +332,10 @@ cvox.PanStrategy.prototype = {
   },
 
   /**
-   *
+   * Refreshes the wrapped cursor given a mapping from an unwrapped index to a
+   * wrapped index.
+   * @param {number} unwrappedIndex
+   * @param {number} wrappedIndex
    */
   maybeSetWrappedCursor_: function(unwrappedIndex, wrappedIndex) {
     // We only care about the bounds of the index start/end.

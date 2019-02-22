@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">หาแป้นแล้วยกนิ้วขึ้นพิมพ์</translation>
 <translation id="1012173283529841972">รายการ</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">เลื่อน 2 นิ้วไปทางขวา</translation>
 <translation id="1022586497894531524">หากคุณใช้การอธิบายและอ่านออกเสียงของ ChromeVox เป็นครั้งแรก บทแนะนำฉบับย่อนี้ที่จะอธิบายสิ่งที่ควรทราบในการเริ่มต้นใช้งาน ChromeVox</translation>
 <translation id="1023866615269196768">มีการขยาย</translation>
 <translation id="1025074108959230262">ปิดโหมดติดหนึบแล้ว</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">เปิดหรือปิดเสียงความคิดเห็น (earcons)</translation>
 <translation id="1108651818222110612">คำบรรยาย</translation>
 <translation id="1120743664840974483">{"a": "อัลฟ่า", "b": "บราโว่", "c": "ชาร์ลี", "d": "เดลต้า", "e": "เอคโค่", "f": "ฟอกซ์ทรอต", "g": "กอล์ฟ", "h": "โฮเท็ล", "i": "อินเดีย", "j": "จูเลียต","k": "กิโล", "l": "ลิมา", "m": "ไมค์", "n": "โนเวมเบอร์", "o": "ออสการ์","p": "ปาป้า", "q": "ควิเบค", "r": "โรมิโอ", "s": "เซียร์ร่า", "t": "แทงโก้", "u": "ยูนิฟอร์ม", "v": "วิคเตอร์", "w": "วิสกี้","x": "เอ็กซเรย์", "y": "แยงกี้", "z": "ซูลู"}</translation>
+<translation id="1120938014254001895">เลื่อน 2 นิ้วขึ้น</translation>
 <translation id="1124771028211010580">รูปแบบการแสดงผลปัจจุบันคือการแสดงคู่กัน</translation>
 <translation id="113582498867142724">คอลเล็กชัน <ph name="TAG" /> ที่มี <ph name="NUM" /> รายการ</translation>
 <translation id="1155043339247954670">ไม่มีรายการถัดไป</translation>
@@ -91,6 +93,7 @@
 <translation id="1722567105086139392">ลิงก์</translation>
 <translation id="1727806147743597030">ส่วนท้าย</translation>
 <translation id="174268867904053074">กราฟิกถัดไป</translation>
+<translation id="1765245556747822181">เลื่อน 1 นิ้วขึ้น</translation>
 <translation id="1781173782405573156">แป้นส่งผ่าน</translation>
 <translation id="1787176709638001873">ข้อความแก้ไขรหัสผ่าน</translation>
 <translation id="1802710350767629429">แสดงการอัปเดตบันทึก</translation>
@@ -136,6 +139,7 @@
 <translation id="2223693656926968778">ดำเนินการกับรายการปัจจุบัน</translation>
 <translation id="225732394367814946">เพิ่มอัตราการพูด</translation>
 <translation id="2267945578749931355">อักขระถัดไป</translation>
+<translation id="2278490101488436824">เลื่อน 3 นิ้วไปทางซ้าย</translation>
 <translation id="2281234842553884450">แถบเลื่อนก่อนหน้า</translation>
 <translation id="2294136146931447363">เริ่มส่วนที่เป็นตัวเอียง</translation>
 <translation id="2311237334957139798">เลื่อนไปที่ระดับก่อนหน้า</translation>
@@ -208,17 +212,20 @@
 <translation id="2864481629947106776">ลิงก์ก่อนหน้านี้</translation>
 <translation id="2867808975387772810">บรรณานุกรม</translation>
 <translation id="2873259058405069099">ไปที่ด้านบนของตาราง</translation>
+<translation id="2879867157561757640">เลื่อน 3 นิ้วลง</translation>
 <translation id="288178314850623291">ใช้คำสั่งข้ามเพื่อข้ามไปยังประเภทองค์ประกอบที่ต้องการ หากต้องการข้ามไปข้างหน้าระหว่างส่วนหัว ให้กด Search + H หรือหากต้องการข้ามย้อนกลับ ให้กด Search + Shift + H</translation>
 <translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{วงเล็บปีกกาซ้าย}other{# วงเล็บปีกกาซ้าย}}</translation>
 <translation id="2909478709401302630">เริ่มต้นข้อความตัวยก</translation>
 <translation id="2911433807131383493">เปิดบทแนะนำ ChromeVox</translation>
+<translation id="2912405967290226587">เลื่อน 3 นิ้วไปทางขวา</translation>
 <translation id="2932083475399492303">สลับประเภทบรรทัดระหว่างโครงสร้างหรือรูปแบบ</translation>
 <translation id="2944762337049891859">อ่านหน้าโดยอัตโนมัติหลังจากที่โหลดเสร็จ</translation>
 <translation id="2964026537669811554">กลุ่มของส่วนหัว</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{เครื่องหมายแท็บ}other{# เครื่องหมายแท็บ}}</translation>
 <translation id="2972078295414139404">ไม่มีลิงก์ที่เคยเข้าชมก่อนหน้า</translation>
 <translation id="2972205263822847197">เคล็ดลับเครื่องมือ</translation>
+<translation id="297825089465017871">เลื่อน 2 นิ้วไปทางซ้าย</translation>
 <translation id="2998131015536248178">อักขระก่อนหน้า</translation>
 <translation id="2999559350546931576">ลดระดับเสียง</translation>
 <translation id="2999945368667127852">ไม่มีวิดเจ็ตสื่อถัดไป</translation>
@@ -230,6 +237,7 @@
 <translation id="3046838483509668188">ตัวเลือก ChromeVox</translation>
 <translation id="3047143736589213134">รูปแบบแป้นแบบทดลอง</translation>
 <translation id="3060756054951570867">เปิดเมนู <ph name="TITLE" /> แล้ว</translation>
+<translation id="3070245424257836917">เลื่อน 3 นิ้วขึ้น</translation>
 <translation id="3078345202707391975">ส่วนหัวระดับถัดไป  2</translation>
 <translation id="3078740164268491126">ตาราง</translation>
 <translation id="3082249673510793544">เลื่อนกลับ</translation>
@@ -342,6 +350,7 @@
 <translation id="3599054940393788245">ไม่ได้อยู่ในคณิตศาสตร์</translation>
 <translation id="360241989769010433">กิตติกรรมประกาศ</translation>
 <translation id="3616113530831147358">เสียง</translation>
+<translation id="3622350485154495700">ใช้นิ้วเดียวแตะสองครั้ง</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{เครื่องหมายแบ็กทิก}other{# เครื่องหมายแบ็กทิก}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{เครื่องหมายดอลลาร์}other{# เครื่องหมายดอลลาร์}}</translation>
@@ -371,6 +380,7 @@
 <translation id="3914173277599553213">จำเป็น</translation>
 <translation id="3914732343065571127">ข้อมูลอ้างอิงเกี่ยวกับคำสั่ง ChromeVox</translation>
 <translation id="3930498801443296724">การเน้นข้อความ</translation>
+<translation id="3941269780691800708">พูดข้อความที่อยู่ใต้เมาส์</translation>
 <translation id="3962990492275676168">เริ่มอ่านจากตำแหน่งปัจจุบัน</translation>
 <translation id="4004802134384979325">เลือกแล้ว</translation>
 <translation id="4006140876663370126">รูปภาพ</translation>
@@ -461,6 +471,7 @@
 <translation id="4688873778442829762">ตาราง</translation>
 <translation id="4693675773662933727">จุดสังเกตก่อนหน้า</translation>
 <translation id="4696413482802371445">ไม่มีส่วนหัวระดับ 5 ถัดไป</translation>
+<translation id="4710166929009737753">เลื่อน 1 นิ้วไปทางขวา</translation>
 <translation id="4729095194763193578">แถวตารางก่อนหน้า</translation>
 <translation id="4736221692378411923">สิงหาคม</translation>
 <translation id="4740661827607246557">คำสั่งช่วยเหลือ</translation>
@@ -473,6 +484,7 @@
 <translation id="4826415162591436065">นำทางไปข้างหน้า</translation>
 <translation id="4826604887384865800">การข้ามถัดไป</translation>
 <translation id="4827410568042294688">ไม่ได้เลือก</translation>
+<translation id="4838490795649708173">ใช้ 4 นิ้วแตะ</translation>
 <translation id="4839925464551908214">ไปที่แถวก่อนหน้า</translation>
 <translation id="4842108708071771135">ไม่มีข้อความที่ยกมาถัดไป</translation>
 <translation id="4844625982113518938">กดปุ่มใดก็ได้เพื่อเรียนรู้ชื่อของปุ่มนั้น Ctrl+W จะปิดโหมดการเรียนรู้</translation>
@@ -609,6 +621,7 @@
 <translation id="5750633686117194034">ไม่มีการกดคีย์ตัวปรับแต่ง โปรดกดคีย์ตัวปรับแต่งอย่างน้อยหนึ่งคีย์ค้างไว้ ยกนิ้วขึ้นเมื่อเสร็จสิ้นและคุณจะได้ยินเสียงการตั้งคีย์ แตะเพื่อออก</translation>
 <translation id="5760594853119905566">ภาคผนวก</translation>
 <translation id="5788275253279308023">แท็บหน้าต่างที่ไม่ระบุตัวตน <ph name="TITLE" /></translation>
+<translation id="5805940204952508776">ใช้ 2 นิ้วแตะ</translation>
 <translation id="5806206155699461681">เพิ่มประสิทธิภาพไซต์เฉพาะ (เช่น Google Search)</translation>
 <translation id="5819072574982403430">รายการแบบต้นไม้</translation>
 <translation id="5826479389509458994">แถว <ph name="ROW" /> คอลัมน์ <ph name="COL" /></translation>
@@ -713,8 +726,10 @@
 <translation id="6786800275320335305">บทความ</translation>
 <translation id="6787839852456839824">แป้นพิมพ์ลัด</translation>
 <translation id="6793101435925451627">กล่องรายการ</translation>
+<translation id="6826226459053491773">เลื่อน 2 นิ้วลง</translation>
 <translation id="6833103209700200188">ส่วนท้าย</translation>
 <translation id="6858047746862060282">อารัมภบท</translation>
+<translation id="6859876496651143278">เลื่อน 1 นิ้วไปทางซ้าย</translation>
 <translation id="6871161210040114857">ไม่สนใจตัวพิมพ์เล็กหรือใหญ่</translation>
 <translation id="6877435256196695200">ไม่มีกราฟิกถัดไป</translation>
 <translation id="6897341342232909480">เลื่อนไปทางซ้าย</translation>
@@ -964,6 +979,7 @@
 <translation id="923331726185079994">ChromeVox อัปเดตแล้ว</translation>
 <translation id="930275611743429116">เริ่มต้นหรือสิ้นสุดการเลือก</translation>
 <translation id="948171205378458592">ลดความเร็วการพูด</translation>
+<translation id="958854023026327378">เลื่อน 1 นิ้วลง</translation>
 <translation id="962913030769097253">ส่วนหัวระดับ 1 ถัดไป</translation>
 <translation id="973955474346881951">เปิด/ปิดโหมดติดหนึบ</translation>
 <translation id="976849232629612000">ไม่มีรายการ</translation>

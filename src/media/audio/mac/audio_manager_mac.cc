@@ -515,8 +515,8 @@ AudioManagerMac::AudioManagerMac(std::unique_ptr<AudioThread> audio_thread,
   // PostTask since AudioManager creation may be on the startup path and this
   // may be slow.
   GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&AudioManagerMac::InitializeOnAudioThread,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&AudioManagerMac::InitializeOnAudioThread,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 AudioManagerMac::~AudioManagerMac() = default;

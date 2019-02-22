@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Network.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace network {
@@ -52,6 +52,7 @@ class WebSocketHandshakeRequest;
 
 namespace blink {
 
+class BlobDataHandle;
 class Document;
 class DocumentLoader;
 class ExecutionContext;
@@ -67,6 +68,8 @@ class ThreadableLoaderClient;
 class XHRReplayData;
 class XMLHttpRequest;
 class WorkerGlobalScope;
+enum class ResourceRequestBlockedReason;
+enum class ResourceType : uint8_t;
 
 class CORE_EXPORT InspectorNetworkAgent final
     : public InspectorBaseAgent<protocol::Network::Metainfo> {
@@ -87,7 +90,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                        DocumentLoader*,
                        const FetchInitiatorInfo&,
                        ResourceRequestBlockedReason,
-                       Resource::Type);
+                       ResourceType);
   void DidChangeResourcePriority(DocumentLoader*,
                                  unsigned long identifier,
                                  ResourceLoadPriority);
@@ -97,7 +100,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
-                       Resource::Type);
+                       ResourceType);
   void MarkResourceAsCached(DocumentLoader*, unsigned long identifier);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
@@ -142,8 +145,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                    bool include_crendentials);
   void DidFinishXHR(XMLHttpRequest*);
 
-  void WillStartFetch(ThreadableLoaderClient*);
-
   void WillSendEventSourceRequest(ThreadableLoaderClient*);
   void WillDispatchEventSourceEvent(unsigned long identifier,
                                     const AtomicString& event_name,
@@ -154,8 +155,6 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
   void FrameClearedScheduledNavigation(LocalFrame*);
-  void FrameScheduledClientNavigation(LocalFrame*);
-  void FrameClearedScheduledClientNavigation(LocalFrame*);
 
   void DidCreateWebSocket(ExecutionContext*,
                           unsigned long identifier,
@@ -275,11 +274,8 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   Member<XHRReplayData> pending_xhr_replay_data_;
 
-  typedef HashMap<String, std::unique_ptr<protocol::Network::Initiator>>
-      FrameNavigationInitiatorMap;
-  FrameNavigationInitiatorMap frame_navigation_initiator_map_;
-  HashSet<String> frames_with_scheduled_navigation_;
-  HashSet<String> frames_with_scheduled_client_navigation_;
+  HashMap<String, std::unique_ptr<protocol::Network::Initiator>>
+      frame_navigation_initiator_map_;
 
   HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_;
   HeapHashSet<Member<XMLHttpRequest>> replay_xhrs_to_be_deleted_;

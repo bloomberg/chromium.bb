@@ -81,6 +81,7 @@ void TestDownloadDriver::Start(
   entry.paused = false;
   entry.bytes_downloaded = 0;
   entry.expected_total_size = 0;
+  entry.url_chain = {params.url};
   entry.response_headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200");
   entries_[guid] = entry;
@@ -89,7 +90,7 @@ void TestDownloadDriver::Start(
     client_->OnDownloadCreated(entry);
 }
 
-void TestDownloadDriver::Remove(const std::string& guid) {
+void TestDownloadDriver::Remove(const std::string& guid, bool remove_file) {
   entries_.erase(guid);
 }
 

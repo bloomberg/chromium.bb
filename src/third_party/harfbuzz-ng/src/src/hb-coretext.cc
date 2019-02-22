@@ -28,8 +28,8 @@
 
 #define HB_SHAPER coretext
 
-#include "hb-private.hh"
-#include "hb-shaper-impl-private.hh"
+#include "hb.hh"
+#include "hb-shaper-impl.hh"
 
 #include "hb-coretext.h"
 #include <math.h>
@@ -210,7 +210,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
   }
 
   CFURLRef original_url = nullptr;
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if TARGET_OS_MAC && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
   ATSFontRef atsFont;
   FSRef fsref;
   OSStatus status;
@@ -240,7 +240,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
        * process in Blink. This can be detected by the new file URL location
        * that the newly found font points to. */
       CFURLRef new_url = nullptr;
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if TARGET_OS_MAC && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
       atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
       status = ATSFontGetFileReference (atsFont, &fsref);
       if (status == noErr)
@@ -515,12 +515,14 @@ struct range_record_t {
 #define kUpperCaseType				38
 
 /* Table data courtesy of Apple. */
-static const struct feature_mapping_t {
-    FourCharCode otFeatureTag;
+static const struct feature_mapping_t
+{
+    hb_tag_t otFeatureTag;
     uint16_t aatFeatureType;
     uint16_t selectorToEnable;
     uint16_t selectorToDisable;
-} feature_mappings[] = {
+} feature_mappings[] =
+{
     { 'c2pc',   kUpperCaseType,             kUpperCasePetiteCapsSelector,           kDefaultUpperCaseSelector },
     { 'c2sc',   kUpperCaseType,             kUpperCaseSmallCapsSelector,            kDefaultUpperCaseSelector },
     { 'calt',   kContextualAlternatesType,  kContextualAlternatesOnSelector,        kContextualAlternatesOffSelector },
@@ -601,7 +603,7 @@ static const struct feature_mapping_t {
 static int
 _hb_feature_mapping_cmp (const void *key_, const void *entry_)
 {
-  unsigned int key = * (unsigned int *) key_;
+  hb_tag_t key = * (unsigned int *) key_;
   const feature_mapping_t * entry = (const feature_mapping_t *) entry_;
   return key < entry->otFeatureTag ? -1 :
 	 key > entry->otFeatureTag ? 1 :
@@ -624,7 +626,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
   CGFloat y_mult = (CGFloat) font->y_scale / ct_font_size;
 
   /* Attach marks to their bases, to match the 'ot' shaper.
-   * Adapted from hb-ot-shape:hb_form_clusters().
+   * Adapted from a very old version of hb-ot-shape:hb_form_clusters().
    * Note that this only makes us be closer to the 'ot' shaper,
    * but by no means the same.  For example, if there's
    * B1 M1 B2 M2, and B1-B2 form a ligature, M2's cluster will

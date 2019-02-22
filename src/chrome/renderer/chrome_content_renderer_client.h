@@ -113,11 +113,11 @@ class ChromeContentRendererClient
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
-  bool IsPluginHandledByMimeHandlerView(content::RenderFrame* render_frame,
-                                        const blink::WebElement& plugin_element,
-                                        const GURL& original_url,
-                                        const std::string& mime_type,
-                                        int32_t instance_id_to_use) override;
+  bool MaybeCreateMimeHandlerView(content::RenderFrame* render_frame,
+                                  const blink::WebElement& plugin_element,
+                                  const GURL& original_url,
+                                  const std::string& mime_type,
+                                  int32_t instance_id_to_use) override;
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
@@ -185,7 +185,6 @@ class ChromeContentRendererClient
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(
       content::RenderFrame* render_frame) override;
-  bool AllowPepperMediaStreamAPI(const GURL& url) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
@@ -211,6 +210,10 @@ class ChromeContentRendererClient
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
+      int64_t service_worker_version_id,
+      const GURL& service_worker_scope,
+      const GURL& script_url) override;
+  void DidStartServiceWorkerContextOnWorkerThread(
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
       const GURL& script_url) override;

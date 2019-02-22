@@ -11,8 +11,9 @@
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/scheduler_stub.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "components/offline_pages/core/offline_pages_ukm_reporter_stub.h"
 #include "content/public/browser/browser_context.h"
 
@@ -23,11 +24,9 @@ std::unique_ptr<KeyedService> BuildTestRequestCoordinator(
   // Use original policy.
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
 
-  // Use the in-memory store.
-  std::unique_ptr<RequestQueueInMemoryStore> store(
-      new RequestQueueInMemoryStore());
   // Use the regular test queue (should work).
-  std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
+  std::unique_ptr<RequestQueue> queue(
+      new RequestQueue(std::make_unique<TestRequestQueueStore>()));
 
   // Initialize the rest with stubs.
   std::unique_ptr<Offliner> offliner(new OfflinerStub());

@@ -25,7 +25,6 @@
 #include "chromeos/network/shill_property_handler.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Location;
 class Value;
@@ -397,10 +396,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Parses the properties for the network service or device. Mostly calls
   // managed->PropertyChanged(key, value) for each dictionary entry.
-  void UpdateManagedStateProperties(
-      ManagedState::ManagedType type,
-      const std::string& path,
-      const base::DictionaryValue& properties) override;
+  // |properties| is expected to be type DICTIONARY.
+  void UpdateManagedStateProperties(ManagedState::ManagedType type,
+                                    const std::string& path,
+                                    const base::Value& properties) override;
 
   // Called by ShillPropertyHandler when a watched service property changes.
   void UpdateNetworkServiceProperty(const std::string& service_path,
@@ -413,12 +412,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
                             const base::Value& value) override;
 
   // Called by ShillPropertyHandler when a watched network or device
-  // IPConfig property changes.
-  void UpdateIPConfigProperties(
-      ManagedState::ManagedType type,
-      const std::string& path,
-      const std::string& ip_config_path,
-      const base::DictionaryValue& properties) override;
+  // IPConfig property changes. |properties| is expected to be type DICTIONARY.
+  void UpdateIPConfigProperties(ManagedState::ManagedType type,
+                                const std::string& path,
+                                const std::string& ip_config_path,
+                                const base::Value& properties) override;
 
   // Called by ShillPropertyHandler when the portal check list manager property
   // changes.
@@ -464,9 +462,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void UpdateNetworkStats();
 
   // NetworkState specific method for UpdateManagedStateProperties which
-  // notifies observers.
+  // notifies observers. |properties| is expected to be type DICTIONARY.
   void UpdateNetworkStateProperties(NetworkState* network,
-                                    const base::DictionaryValue& properties);
+                                    const base::Value& properties);
 
   // Ensure a valid GUID for NetworkState.
   void UpdateGuid(NetworkState* network);

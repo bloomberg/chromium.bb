@@ -22,7 +22,7 @@ class RendererVk;
 class RenderTargetVk;
 class WindowSurfaceVk;
 
-class FramebufferVk : public FramebufferImpl, public vk::CommandGraphResource
+class FramebufferVk : public FramebufferImpl
 {
   public:
     // Factory methods so we don't have to use constructors with overloads.
@@ -82,17 +82,14 @@ class FramebufferVk : public FramebufferImpl, public vk::CommandGraphResource
 
     bool checkStatus(const gl::Context *context) const override;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Framebuffer::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Framebuffer::DirtyBits &dirtyBits) override;
 
     gl::Error getSamplePosition(const gl::Context *context,
                                 size_t index,
                                 GLfloat *xy) const override;
     RenderTargetVk *getDepthStencilRenderTarget() const;
     const vk::RenderPassDesc &getRenderPassDesc();
-    angle::Result getCommandBufferForDraw(ContextVk *contextVk,
-                                          vk::CommandBuffer **commandBufferOut,
-                                          vk::RecordingMode *modeOut);
 
     // Internal helper function for readPixels operations.
     angle::Result readPixelsImpl(ContextVk *contextVk,
@@ -107,36 +104,50 @@ class FramebufferVk : public FramebufferImpl, public vk::CommandGraphResource
     gl::DrawBufferMask getEmulatedAlphaAttachmentMask();
     RenderTargetVk *getColorReadRenderTarget() const;
 
+    // This will clear the current write operation if it is complete.
+    bool appendToStartedRenderPass(RendererVk *renderer, vk::CommandBuffer **commandBufferOut)
+    {
+        return mFramebuffer.appendToStartedRenderPass(renderer, commandBufferOut);
+    }
+
+    vk::FramebufferHelper *getFramebuffer() { return &mFramebuffer; }
+
+    angle::Result startNewRenderPass(ContextVk *context, vk::CommandBuffer **commandBufferOut);
+
   private:
     FramebufferVk(RendererVk *renderer,
                   const gl::FramebufferState &state,
                   WindowSurfaceVk *backbuffer);
 
+    // Helper for appendToStarted/else startNewRenderPass.
+    angle::Result getCommandBufferForDraw(ContextVk *contextVk,
+                                          vk::CommandBuffer **commandBufferOut,
+                                          vk::RecordingMode *modeOut);
+
     // The 'in' rectangles must be clipped to the scissor and FBO. The clipping is done in 'blit'.
-    void blitWithCommand(vk::CommandBuffer *commandBuffer,
-                         const gl::Rectangle &readRectIn,
-                         const gl::Rectangle &drawRectIn,
-                         RenderTargetVk *readRenderTarget,
-                         RenderTargetVk *drawRenderTarget,
-                         GLenum filter,
-                         bool colorBlit,
-                         bool depthBlit,
-                         bool stencilBlit,
-                         bool flipSource,
-                         bool flipDest);
+    angle::Result blitWithCommand(ContextVk *contextVk,
+                                  const gl::Rectangle &readRectIn,
+                                  const gl::Rectangle &drawRectIn,
+                                  RenderTargetVk *readRenderTarget,
+                                  RenderTargetVk *drawRenderTarget,
+                                  GLenum filter,
+                                  bool colorBlit,
+                                  bool depthBlit,
+                                  bool stencilBlit,
+                                  bool flipSource,
+                                  bool flipDest);
 
     // Note that 'copyArea' must be clipped to the scissor and FBO. The clipping is done in 'blit'.
-    void blitWithCopy(vk::CommandBuffer *commandBuffer,
-                      const gl::Rectangle &copyArea,
-                      RenderTargetVk *readRenderTarget,
-                      RenderTargetVk *drawRenderTarget,
-                      bool blitDepthBuffer,
-                      bool blitStencilBuffer);
+    angle::Result blitWithCopy(ContextVk *contextVk,
+                               const gl::Rectangle &copyArea,
+                               RenderTargetVk *readRenderTarget,
+                               RenderTargetVk *drawRenderTarget,
+                               bool blitDepthBuffer,
+                               bool blitStencilBuffer);
 
     angle::Result blitWithReadback(ContextVk *contextVk,
                                    const gl::Rectangle &copyArea,
                                    VkImageAspectFlagBits aspect,
-                                   vk::CommandBuffer *commandBuffer,
                                    RenderTargetVk *readRenderTarget,
                                    RenderTargetVk *drawRenderTarget);
 
@@ -152,7 +163,7 @@ class FramebufferVk : public FramebufferImpl, public vk::CommandGraphResource
     WindowSurfaceVk *mBackbuffer;
 
     Optional<vk::RenderPassDesc> mRenderPassDesc;
-    vk::Framebuffer mFramebuffer;
+    vk::FramebufferHelper mFramebuffer;
     RenderTargetCache<RenderTargetVk> mRenderTargetCache;
 
     // These two variables are used to quickly compute if we need to do a masked clear. If a color

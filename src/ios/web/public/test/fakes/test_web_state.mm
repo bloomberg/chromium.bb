@@ -14,7 +14,9 @@
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
+#include "ios/web/public/web_state/web_frame.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
+#include "ios/web/web_state/web_frames_manager_impl.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -332,6 +334,37 @@ void TestWebState::ClearLastExecutedJavascript() {
   last_executed_javascript_.clear();
 }
 
+void TestWebState::CreateWebFramesManager() {
+  DCHECK(!web::WebFramesManagerImpl::FromWebState(this));
+  web::WebFramesManagerImpl::CreateForWebState(this);
+}
+
+void TestWebState::AddWebFrame(std::unique_ptr<web::WebFrame> frame) {
+  DCHECK(frame);
+  web::WebFramesManagerImpl* manager =
+      web::WebFramesManagerImpl::FromWebState(this);
+  DCHECK(manager) << "Create a frame manager before adding a frame.";
+  std::string frame_id = frame->GetFrameId();
+  DCHECK(!manager->GetFrameWithId(frame_id));
+  manager->AddFrame(std::move(frame));
+  WebFrame* frame_ptr = manager->GetFrameWithId(frame_id);
+  for (auto& observer : observers_) {
+    observer.WebFrameDidBecomeAvailable(this, frame_ptr);
+  }
+}
+
+void TestWebState::RemoveWebFrame(std::string frame_id) {
+  web::WebFramesManagerImpl* manager =
+      web::WebFramesManagerImpl::FromWebState(this);
+  DCHECK(manager) << "Create a frame manager before adding a frame.";
+  DCHECK(manager->GetFrameWithId(frame_id));
+  WebFrame* frame_ptr = manager->GetFrameWithId(frame_id);
+  for (auto& observer : observers_) {
+    observer.WebFrameWillBecomeUnavailable(this, frame_ptr);
+  }
+  manager->RemoveFrameWithId(frame_id);
+}
+
 CRWWebViewProxyType TestWebState::GetWebViewProxy() const {
   return web_view_proxy_;
 }
@@ -356,8 +389,7 @@ void TestWebState::SetHasOpener(bool has_opener) {
   has_opener_ = has_opener;
 }
 
-void TestWebState::TakeSnapshot(SnapshotCallback callback,
-                                CGSize target_size) const {
+void TestWebState::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
   std::move(callback).Run(gfx::Image([[UIImage alloc] init]));
 }
 

@@ -51,10 +51,6 @@ class Insets;
 class Point;
 }
 
-namespace keyboard {
-class KeyboardController;
-}  // namespace keyboard
-
 namespace service_manager {
 class Connector;
 }
@@ -108,7 +104,6 @@ class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
-class ClientImageRegistry;
 class DisplayOutputProtection;
 class CrosDisplayConfig;
 class DetachableBaseHandler;
@@ -131,10 +126,11 @@ class HighContrastController;
 class HighlighterController;
 class ImeController;
 class ImeFocusHandler;
-class ImmersiveContextAsh;
+class ImmersiveContext;
 class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
+class AshKeyboardController;
 class LaserPointerController;
 class LocaleNotificationController;
 class LockStateController;
@@ -207,7 +203,6 @@ class WindowPositioner;
 class WindowSelectorController;
 class WindowTreeHostManager;
 
-enum class Config;
 enum class LoginStatus;
 
 // Shell is a singleton object that presents the Shell API and implements the
@@ -279,8 +274,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Whether |window| hosts a remote client (e.g. the keyboard shortcut viewer
   // app under classic ash, or a browser window under mash).
   static bool HasRemoteClient(aura::Window* window);
-
-  static Config GetAshConfig();
 
   // Registers all ash related local state prefs to the given |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
@@ -369,9 +362,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return brightness_control_delegate_.get();
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
-  ClientImageRegistry* client_image_registry() {
-    return client_image_registry_.get();
-  }
   service_manager::Connector* connector() { return connector_; }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
@@ -421,11 +411,15 @@ class ASH_EXPORT Shell : public SessionObserver,
     return high_contrast_controller_.get();
   }
   ImeController* ime_controller() { return ime_controller_.get(); }
+  ImmersiveContext* immersive_context() { return immersive_context_.get(); }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
   }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
+  }
+  AshKeyboardController* ash_keyboard_controller() {
+    return ash_keyboard_controller_.get();
   }
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
@@ -621,15 +615,18 @@ class ASH_EXPORT Shell : public SessionObserver,
   // windows get re-arranged).
   void NotifyOverviewModeStarting();
 
-  // Notifies observers that overview mode is about to end (bofore the windows
+  // Notifies observers that the start overview mode animation has completed.
+  void NotifyOverviewModeStartingAnimationComplete(bool canceled);
+
+  // Notifies observers that overview mode is about to end (before the windows
   // restore themselves).
   void NotifyOverviewModeEnding();
 
   // Notifies observers that overview mode has ended.
   void NotifyOverviewModeEnded();
 
-  // Notifies observers that the end overivew mode animation has completed.
-  void NotifyOverviewModeEndingAnimationComplete();
+  // Notifies observers that the end overview mode animation has completed.
+  void NotifyOverviewModeEndingAnimationComplete(bool canceled);
 
   // Notifies observers that split view mode is about to be started (before the
   // window gets snapped and activated).
@@ -743,7 +740,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
-  std::unique_ptr<ClientImageRegistry> client_image_registry_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   service_manager::Connector* const connector_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
@@ -755,10 +751,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImeController> ime_controller_;
   std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
-  std::unique_ptr<ImmersiveContextAsh> immersive_context_;
+  std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
-  std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
@@ -851,6 +846,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       bluetooth_notification_controller_;
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
+  std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;

@@ -118,6 +118,15 @@ message ContainerShutdownSignal {
 // Request to launch on application in the specified VM/container. Used with the
 // LaunchContainerApplication D-Bus message into vm_concierge.
 message LaunchContainerApplicationRequest {
+  // Display scaling of the app windows.
+  enum DisplayScaling {
+    // Default scaling.
+    UNSCALED = 0;
+    // Windows scaled. Used to scale up older app windows that don't show well
+    // with HiDPI display otherwise.
+    SCALED = 1;
+  }
+
   // Name of the VM to target.
   string vm_name = 1;
 
@@ -135,6 +144,9 @@ message LaunchContainerApplicationRequest {
   // Files to pass as arguments when launching the application, if any, given
   // as absolute paths within the container's filesystem.
   repeated string files = 5;
+
+  // Display scaling requested.
+  DisplayScaling display_scaling = 6;
 }
 
 // Response sent back by vm_concierge when it receives a
@@ -332,6 +344,80 @@ message InstallLinuxPackageProgressSignal {
   string failure_details = 6;
 }
 
+// Request to uninstall the package owning the indicated file. Identifying the
+// package-to-be-uninstalled by desktop file name is safer than using
+// package_id; we don't watch for package upgrades so the package_id may be
+// stale.
+message UninstallPackageOwningFileRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // The ID of the .desktop file inside the container. The container will find
+  // the owning package and remove it.
+  string desktop_file_id = 4;
+}
+
+// Response sent back from a UninstallPackageOwningFile call.
+message UninstallPackageOwningFileResponse {
+  enum Status {
+    // Uninstall process was successfully started, all further updates will be
+    // sent via the UninstallPackageProgress signal.
+    STARTED = 0;
+
+    // Failed to start up for a general reason, specific details are given in
+    // failure_reason.
+    FAILED = 1;
+
+    // Indicates another blocking operation (uninstall, install, etc) is already
+    // in progress, this one will not be started.
+    BLOCKING_OPERATION_IN_PROGRESS = 2;
+  }
+  Status status = 1;
+
+  // Contains a textual reason for the failure in case status is FAILED.
+  string failure_reason = 2;
+}
+
+// Message used in a signal for updates on UninstallPackageOwningFile calls.
+message UninstallPackageProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // Uninstall has completed and was successful. No further signals will be
+    // sent after this one.
+    SUCCEEDED = 0;
+
+    // Uninstall failed to complete, the specific reason will be in
+    // failure_details. No further signals will be sent after this one.
+    FAILED = 1;
+
+    // This is sent while the uninstall is in progress. progress_percent will be
+    // filled in.
+    UNINSTALLING = 2;
+  }
+
+  // Current status of the uninstallation progress.
+  Status status = 4;
+
+  // Overall percentage progress.
+  uint32 progress_percent = 5;
+
+  // Details relating to the failure state.
+  string failure_details = 6;
+}
 
 // Request for creating an LXD container.
 message CreateLxdContainerRequest {

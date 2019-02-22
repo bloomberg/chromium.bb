@@ -21,7 +21,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/resource_coordinator/public/cpp/page_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -39,8 +38,7 @@ ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
   TabLoadTracker::Get()->StartTracking(web_contents);
 
   service_manager::Connector* connector = nullptr;
-  if (resource_coordinator::IsResourceCoordinatorEnabled() &&
-      content::ServiceManagerConnection::GetForProcess()) {
+  if (content::ServiceManagerConnection::GetForProcess()) {
     connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
     page_resource_coordinator_ =
@@ -134,6 +132,10 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
   }
 
   if (page_resource_coordinator_) {
+    // Grab the current time up front, as this is as close as we'll get to the
+    // original commit time.
+    base::TimeTicks navigation_committed_time = base::TimeTicks::Now();
+
     content::RenderFrameHost* render_frame_host =
         navigation_handle->GetRenderFrameHost();
     // Make sure the hierarchical structure is constructed before sending signal
@@ -157,7 +159,7 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
       UpdateUkmRecorder(navigation_handle->GetNavigationId());
       ResetFlag();
       page_resource_coordinator_->OnMainFrameNavigationCommitted(
-          navigation_handle->GetNavigationId(),
+          navigation_committed_time, navigation_handle->GetNavigationId(),
           navigation_handle->GetURL().spec());
     }
   }

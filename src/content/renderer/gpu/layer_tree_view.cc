@@ -191,10 +191,11 @@ void LayerTreeView::Initialize(
   }
   if (!is_threaded) {
     // Single-threaded layout tests, and unit tests.
-    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  } else {
     layer_tree_host_ =
-        cc::LayerTreeHost::CreateThreaded(compositor_thread_, &params);
+        cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
+  } else {
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(compositor_thread_,
+                                                         std::move(params));
   }
 }
 
@@ -478,12 +479,9 @@ void LayerTreeView::CompositeAndReadbackAsync(
   }
 }
 
-void LayerTreeView::SynchronouslyCompositeNoRasterForTesting() {
-  SynchronouslyComposite(false /* raster */, nullptr /* swap_promise */);
-}
-
-void LayerTreeView::CompositeWithRasterForTesting() {
-  SynchronouslyComposite(true /* raster */, nullptr /* swap_promise */);
+void LayerTreeView::UpdateAllLifecyclePhasesAndCompositeForTesting(
+    bool do_raster) {
+  SynchronouslyComposite(do_raster, nullptr /* swap_promise */);
 }
 
 void LayerTreeView::SynchronouslyComposite(
@@ -498,8 +496,7 @@ void LayerTreeView::SynchronouslyComposite(
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
     delegate_->BeginMainFrame(base::TimeTicks::Now());
-    delegate_->UpdateVisualState(
-        cc::LayerTreeHostClient::VisualStateUpdate::kAll);
+    delegate_->UpdateVisualState();
     return;
   }
 
@@ -516,8 +513,8 @@ void LayerTreeView::SynchronouslyComposite(
   layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
 }
 
-void LayerTreeView::SetDeferCommits(bool defer_commits) {
-  layer_tree_host_->SetDeferCommits(defer_commits);
+std::unique_ptr<cc::ScopedDeferCommits> LayerTreeView::DeferCommits() {
+  return layer_tree_host_->DeferCommits();
 }
 
 int LayerTreeView::LayerTreeId() const {
@@ -611,19 +608,13 @@ void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void LayerTreeView::UpdateLayerTreeHost(VisualStateUpdate requested_update) {
-  delegate_->UpdateVisualState(requested_update);
+void LayerTreeView::UpdateLayerTreeHost() {
+  delegate_->UpdateVisualState();
 }
 
-void LayerTreeView::ApplyViewportDeltas(
-    const gfx::Vector2dF& inner_delta,
-    const gfx::Vector2dF& outer_delta,
-    const gfx::Vector2dF& elastic_overscroll_delta,
-    float page_scale,
-    float top_controls_delta) {
-  delegate_->ApplyViewportDeltas(inner_delta, outer_delta,
-                                 elastic_overscroll_delta, page_scale,
-                                 top_controls_delta);
+void LayerTreeView::ApplyViewportChanges(
+    const cc::ApplyViewportChangesArgs& args) {
+  delegate_->ApplyViewportChanges(args);
 }
 
 void LayerTreeView::RecordWheelAndTouchScrollingCount(
@@ -669,10 +660,6 @@ void LayerTreeView::DidCommitAndDrawFrame() {
   delegate_->DidCommitAndDrawCompositorFrame();
 }
 
-void LayerTreeView::DidReceiveCompositorFrameAck() {
-  delegate_->DidReceiveCompositorFrameAck();
-}
-
 void LayerTreeView::DidCompletePageScaleAnimation() {
   delegate_->DidCompletePageScaleAnimation();
 }
@@ -691,6 +678,10 @@ void LayerTreeView::DidPresentCompositorFrame(
       std::move(callback).Run(feedback.timestamp);
     presentation_callbacks_.erase(front);
   }
+}
+
+void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  delegate_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
 void LayerTreeView::RequestScheduleAnimation() {

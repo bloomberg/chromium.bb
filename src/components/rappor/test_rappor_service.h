@@ -98,7 +98,7 @@ class TestRapporServiceImpl : public RapporServiceImpl {
 
   TestingPrefServiceSimple* test_prefs() { return &test_prefs_; }
 
-  TestLogUploader* test_uploader() { return test_uploader_; }
+  rappor::TestLogUploader* test_uploader() { return test_uploader_; }
 
   base::TimeDelta next_rotation() { return next_rotation_; }
 
@@ -126,7 +126,7 @@ class TestRapporServiceImpl : public RapporServiceImpl {
   TestingPrefServiceSimple test_prefs_;
 
   // Holds a weak ref to the uploader_ object.
-  TestLogUploader* test_uploader_;
+  rappor::TestLogUploader* test_uploader_;
 
   // The last scheduled log rotation.
   base::TimeDelta next_rotation_;

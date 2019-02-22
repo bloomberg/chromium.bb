@@ -148,7 +148,7 @@ class CONTENT_EXPORT InterceptingResourceHandler
   // Result of the first read, that may have to be passed to an alternate
   // ResourceHandler instead of the original ResourceHandler.
   scoped_refptr<net::IOBuffer> first_read_buffer_;
-  // Instead of |first_read_buffer_|, this handler creates a new IOBuffer with
+  // Instead of |first_read_buffer_|, this handler creates an IOBuffer with
   // the same size and return it to the client.
   scoped_refptr<net::IOBuffer> first_read_buffer_double_;
   int first_read_buffer_size_ = 0;

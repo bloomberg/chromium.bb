@@ -136,7 +136,7 @@ void ExtensionUpdateClientBaseTest::SetUp() {
   ASSERT_TRUE(https_server_for_ping_.InitializeAndListen());
 
   scoped_feature_list_.InitAndEnableFeature(
-      features::kNewExtensionUpdaterService);
+      extensions_features::kNewExtensionUpdaterService);
   ChromeUpdateClientConfig::SetChromeUpdateClientConfigFactoryForTesting(
       ChromeUpdateClientConfigFactory());
   ExtensionBrowserTest::SetUp();

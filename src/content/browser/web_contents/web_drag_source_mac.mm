@@ -31,6 +31,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
@@ -48,10 +49,6 @@ using content::PromiseFileFinalizer;
 using content::RenderViewHostImpl;
 
 namespace {
-
-// An unofficial standard pasteboard title type to be provided alongside the
-// |NSURLPboardType|.
-NSString* const kNSURLTitlePboardType = @"public.url-name";
 
 // This helper's sole task is to write out data for a promised file; the caller
 // is responsible for opening the file. It takes the drop data and an open file
@@ -154,9 +151,9 @@ void PromiseWriterHelper(const DropData& drop_data,
     }
     [url writeToPasteboard:pboard];
   // URL title.
-  } else if ([type isEqualToString:kNSURLTitlePboardType]) {
+  } else if ([type isEqualToString:ui::kUTTypeURLName]) {
     [pboard setString:SysUTF16ToNSString(dropData_->url_title)
-              forType:kNSURLTitlePboardType];
+              forType:ui::kUTTypeURLName];
 
   // File contents.
   } else if ([type isEqualToString:base::mac::CFToNSCast(fileUTI_)]) {
@@ -348,7 +345,7 @@ void PromiseWriterHelper(const DropData& drop_data,
 
   // URL (and title).
   if (dropData_->url.is_valid()) {
-    [pasteboard_ addTypes:@[ NSURLPboardType, kNSURLTitlePboardType ]
+    [pasteboard_ addTypes:@[ NSURLPboardType, ui::kUTTypeURLName ]
                     owner:contentsView_];
   }
 

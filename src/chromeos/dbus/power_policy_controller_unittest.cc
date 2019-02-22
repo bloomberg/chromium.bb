@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -157,6 +159,18 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_system_wake_lock(true);
   expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason) +
                              ", Screen");
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  // Set the "allow wake locks" pref to false and add a screen wake lock.
+  // It should be ignored.
+  prefs.allow_wake_locks = false;
+  policy_controller_->ApplyPrefs(prefs);
+  policy_controller_->AddScreenWakeLock(PowerPolicyController::REASON_OTHER,
+                                        "Screen");
+  expected_policy.clear_system_wake_lock();
+  expected_policy.set_reason(std::string(PowerPolicyController::kPrefsReason));
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));
@@ -320,6 +334,42 @@ TEST_F(PowerPolicyControllerTest, SuspendOnLidClosedWhileSignedOut) {
       power_manager::PowerManagementPolicy_Action_SUSPEND);
   expected_policy.set_reason("Prefs, encryption migration");
   // Lid-closed action successfully changed to "suspend".
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+}
+
+TEST_F(PowerPolicyControllerTest, SmartDimEnabledExperimentEnabled) {
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      chromeos::features::kUserActivityPrediction, params);
+
+  PowerPolicyController::PrefValues prefs;
+  policy_controller_->ApplyPrefs(prefs);
+  const power_manager::PowerManagementPolicy kDefaultPolicy =
+      fake_power_client_->policy();
+
+  // First disable smart dim model.
+  prefs.smart_dim_enabled = false;
+  prefs.presentation_screen_dim_delay_factor = 3.0;
+  prefs.user_activity_screen_dim_delay_factor = 2.0;
+  policy_controller_->ApplyPrefs(prefs);
+
+  power_manager::PowerManagementPolicy expected_policy = kDefaultPolicy;
+  expected_policy.set_presentation_screen_dim_delay_factor(3.0);
+  expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
+  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_->policy()));
+
+  // Then enable smart dim model.
+  prefs.smart_dim_enabled = true;
+  policy_controller_->ApplyPrefs(prefs);
+
+  expected_policy.set_presentation_screen_dim_delay_factor(1.0);
+  expected_policy.set_user_activity_screen_dim_delay_factor(1.0);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
                 fake_power_client_->policy()));

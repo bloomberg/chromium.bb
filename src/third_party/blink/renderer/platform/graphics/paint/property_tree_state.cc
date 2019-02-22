@@ -16,6 +16,12 @@ const PropertyTreeState& PropertyTreeState::Root() {
   return root;
 }
 
+PropertyTreeState PropertyTreeState::Unalias() const {
+  return PropertyTreeState(transform_ ? transform_->Unalias() : nullptr,
+                           clip_ ? clip_->Unalias() : nullptr,
+                           effect_ ? effect_->Unalias() : nullptr);
+}
+
 const CompositorElementId PropertyTreeState::GetCompositorElementId(
     const CompositorElementIdSet& element_ids) const {
   // The effect or transform nodes could have a compositor element id. The order

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONSTANTS_CRYPTOHOME_H_
-#define CONSTANTS_CRYPTOHOME_H_
+#ifndef SYSTEM_API_CONSTANTS_CRYPTOHOME_H_
+#define SYSTEM_API_CONSTANTS_CRYPTOHOME_H_
 
 #include <stdint.h>
 
@@ -14,4 +14,4 @@ const int64_t kMinFreeSpaceInBytes = 512 * 1LL << 20;
 
 }  // namespace cryptohome
 
-#endif  // CONSTANTS_CRYPTOHOME_H_
+#endif  // SYSTEM_API_CONSTANTS_CRYPTOHOME_H_

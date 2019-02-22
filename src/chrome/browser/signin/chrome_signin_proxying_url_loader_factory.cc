@@ -5,16 +5,81 @@
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 
 #include "base/barrier_closure.h"
+#include "base/task/post_task.h"
+#include "build/buildflag.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_context.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/net_errors.h"
 
-using content::BrowserThread;
-
 namespace signin {
+
+namespace {
+
+// User data key for ResourceContextData.
+const void* const kResourceContextUserDataKey = &kResourceContextUserDataKey;
+
+// Owns all of the ProxyingURLLoaderFactorys for a given Profile. Since these
+// live on the IO thread this is done indirectly through the
+// content::ResourceContext.
+class ResourceContextData : public base::SupportsUserData::Data {
+ public:
+  ~ResourceContextData() override {}
+
+  static void StartProxying(
+      content::ResourceContext* resource_context,
+      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      network::mojom::URLLoaderFactoryRequest request,
+      network::mojom::URLLoaderFactoryPtrInfo target_factory) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+    auto* self = static_cast<ResourceContextData*>(
+        resource_context->GetUserData(kResourceContextUserDataKey));
+    if (!self) {
+      self = new ResourceContextData();
+      resource_context->SetUserData(kResourceContextUserDataKey,
+                                    base::WrapUnique(self));
+    }
+
+    auto delegate =
+        std::make_unique<HeaderModificationDelegateImpl>(resource_context);
+    auto proxy = std::make_unique<ProxyingURLLoaderFactory>(
+        std::move(delegate), std::move(web_contents_getter), std::move(request),
+        std::move(target_factory),
+        base::BindOnce(&ResourceContextData::RemoveProxy,
+                       self->weak_factory_.GetWeakPtr()));
+    self->proxies_.emplace(std::move(proxy));
+  }
+
+  void RemoveProxy(ProxyingURLLoaderFactory* proxy) {
+    auto it = proxies_.find(proxy);
+    DCHECK(it != proxies_.end());
+    proxies_.erase(it);
+  }
+
+ private:
+  ResourceContextData() : weak_factory_(this) {}
+
+  std::set<std::unique_ptr<ProxyingURLLoaderFactory>, base::UniquePtrComparator>
+      proxies_;
+
+  base::WeakPtrFactory<ResourceContextData> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceContextData);
+};
+
+}  // namespace
 
 class ProxyingURLLoaderFactory::InProgressRequest
     : public network::mojom::URLLoader,
@@ -346,18 +411,12 @@ void ProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   response_url_ = redirect_info.new_url;
 }
 
-ProxyingURLLoaderFactory::ProxyingURLLoaderFactory() = default;
-
-ProxyingURLLoaderFactory::~ProxyingURLLoaderFactory() = default;
-
-// static
-void ProxyingURLLoaderFactory::StartProxying(
+ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
     std::unique_ptr<HeaderModificationDelegate> delegate,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory,
-    base::OnceClosure on_disconnect) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DisconnectCallback on_disconnect) {
   DCHECK(proxy_bindings_.empty());
   DCHECK(!target_factory_.is_bound());
   DCHECK(!delegate_);
@@ -377,6 +436,60 @@ void ProxyingURLLoaderFactory::StartProxying(
       &ProxyingURLLoaderFactory::OnProxyBindingError, base::Unretained(this)));
 }
 
+ProxyingURLLoaderFactory::~ProxyingURLLoaderFactory() = default;
+
+// static
+bool ProxyingURLLoaderFactory::MaybeProxyRequest(
+    content::RenderFrameHost* render_frame_host,
+    bool is_navigation,
+    const url::Origin& request_initiator,
+    network::mojom::URLLoaderFactoryRequest* factory_request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Navigation requests are handled using signin::URLLoaderThrottle.
+  if (is_navigation)
+    return false;
+
+  // This proxy should only be installed for subresource requests from a frame
+  // that is rendering the GAIA signon realm.
+  if (!gaia::IsGaiaSignonRealm(request_initiator.GetURL()))
+    return false;
+
+  auto* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  auto* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
+    return false;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Account consistency requires the AccountReconcilor, which is only
+  // attached to the main request context.
+  // Note: InlineLoginUI uses an isolated request context and thus bypasses
+  // the account consistency flow here. See http://crbug.com/428396
+  if (extensions::WebViewRendererState::GetInstance()->IsGuest(
+          render_frame_host->GetProcess()->GetID())) {
+    return false;
+  }
+#endif
+
+  auto proxied_request = std::move(*factory_request);
+  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+  *factory_request = mojo::MakeRequest(&target_factory_info);
+
+  auto web_contents_getter =
+      base::BindRepeating(&content::WebContents::FromFrameTreeNodeId,
+                          render_frame_host->GetFrameTreeNodeId());
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&ResourceContextData::StartProxying,
+                     profile->GetResourceContext(),
+                     std::move(web_contents_getter), std::move(proxied_request),
+                     std::move(target_factory_info)));
+  return true;
+}
+
 void ProxyingURLLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderRequest loader_request,
     int32_t routing_id,
@@ -392,13 +505,10 @@ void ProxyingURLLoaderFactory::CreateLoaderAndStart(
 
 void ProxyingURLLoaderFactory::Clone(
     network::mojom::URLLoaderFactoryRequest loader_request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   proxy_bindings_.AddBinding(this, std::move(loader_request));
 }
 
 void ProxyingURLLoaderFactory::OnTargetFactoryError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   // Stop calls to CreateLoaderAndStart() when |target_factory_| is invalid.
   target_factory_.reset();
   proxy_bindings_.CloseAllBindings();
@@ -407,8 +517,6 @@ void ProxyingURLLoaderFactory::OnTargetFactoryError() {
 }
 
 void ProxyingURLLoaderFactory::OnProxyBindingError() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   if (proxy_bindings_.empty())
     target_factory_.reset();
 
@@ -424,16 +532,13 @@ void ProxyingURLLoaderFactory::RemoveRequest(InProgressRequest* request) {
 }
 
 void ProxyingURLLoaderFactory::MaybeDestroySelf() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   // Even if all URLLoaderFactory pipes connected to this object have been
   // closed it has to stay alive until all active requests have completed.
   if (target_factory_.is_bound() || !requests_.empty())
     return;
 
-  // Deletes |this| after a roundtrip to the UI thread.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          std::move(on_disconnect_));
+  // Deletes |this|.
+  std::move(on_disconnect_).Run(this);
 }
 
 }  // namespace signin

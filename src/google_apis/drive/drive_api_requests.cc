@@ -295,9 +295,8 @@ Property::~Property() {
 
 //============================ DriveApiPartialFieldRequest ====================
 
-DriveApiPartialFieldRequest::DriveApiPartialFieldRequest(
-    RequestSender* sender) : UrlFetchRequestBase(sender) {
-}
+DriveApiPartialFieldRequest::DriveApiPartialFieldRequest(RequestSender* sender)
+    : UrlFetchRequestBase(sender, ProgressCallback(), ProgressCallback()) {}
 
 DriveApiPartialFieldRequest::~DriveApiPartialFieldRequest() {
 }
@@ -311,14 +310,11 @@ GURL DriveApiPartialFieldRequest::GetURL() const {
 
 //=============================== FilesGetRequest =============================
 
-FilesGetRequest::FilesGetRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    bool use_internal_endpoint,
-    const FileResourceCallback& callback)
+FilesGetRequest::FilesGetRequest(RequestSender* sender,
+                                 const DriveApiUrlGenerator& url_generator,
+                                 const FileResourceCallback& callback)
     : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator),
-      use_internal_endpoint_(use_internal_endpoint) {
+      url_generator_(url_generator) {
   DCHECK(!callback.is_null());
 }
 
@@ -326,29 +322,7 @@ FilesGetRequest::~FilesGetRequest() {}
 
 GURL FilesGetRequest::GetURLInternal() const {
   return url_generator_.GetFilesGetUrl(file_id_,
-                                       use_internal_endpoint_,
                                        embed_origin_);
-}
-
-//============================ FilesAuthorizeRequest ===========================
-
-FilesAuthorizeRequest::FilesAuthorizeRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const FileResourceCallback& callback)
-    : DriveApiDataRequest<FileResource>(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-FilesAuthorizeRequest::~FilesAuthorizeRequest() {}
-
-net::URLFetcher::RequestType FilesAuthorizeRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
-}
-
-GURL FilesAuthorizeRequest::GetURLInternal() const {
-  return url_generator_.GetFilesAuthorizeUrl(file_id_, app_id_);
 }
 
 //============================ FilesInsertRequest ============================
@@ -365,8 +339,8 @@ FilesInsertRequest::FilesInsertRequest(
 
 FilesInsertRequest::~FilesInsertRequest() {}
 
-net::URLFetcher::RequestType FilesInsertRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string FilesInsertRequest::GetRequestType() const {
+  return "POST";
 }
 
 bool FilesInsertRequest::GetContentData(std::string* upload_content_type,
@@ -427,8 +401,8 @@ FilesPatchRequest::FilesPatchRequest(
 
 FilesPatchRequest::~FilesPatchRequest() {}
 
-net::URLFetcher::RequestType FilesPatchRequest::GetRequestType() const {
-  return net::URLFetcher::PATCH;
+std::string FilesPatchRequest::GetRequestType() const {
+  return "PATCH";
 }
 
 std::vector<std::string> FilesPatchRequest::GetExtraRequestHeaders() const {
@@ -497,8 +471,8 @@ FilesCopyRequest::FilesCopyRequest(
 FilesCopyRequest::~FilesCopyRequest() {
 }
 
-net::URLFetcher::RequestType FilesCopyRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string FilesCopyRequest::GetRequestType() const {
+  return "POST";
 }
 
 GURL FilesCopyRequest::GetURLInternal() const {
@@ -620,8 +594,8 @@ FilesDeleteRequest::FilesDeleteRequest(
 
 FilesDeleteRequest::~FilesDeleteRequest() {}
 
-net::URLFetcher::RequestType FilesDeleteRequest::GetRequestType() const {
-  return net::URLFetcher::DELETE_REQUEST;
+std::string FilesDeleteRequest::GetRequestType() const {
+  return "DELETE";
 }
 
 GURL FilesDeleteRequest::GetURL() const {
@@ -648,8 +622,8 @@ FilesTrashRequest::FilesTrashRequest(
 
 FilesTrashRequest::~FilesTrashRequest() {}
 
-net::URLFetcher::RequestType FilesTrashRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string FilesTrashRequest::GetRequestType() const {
+  return "POST";
 }
 
 GURL FilesTrashRequest::GetURLInternal() const {
@@ -711,45 +685,6 @@ GURL ChangesListNextPageRequest::GetURLInternal() const {
   return next_link_;
 }
 
-//============================== AppsListRequest ===========================
-
-AppsListRequest::AppsListRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    bool use_internal_endpoint,
-    const AppListCallback& callback)
-    : DriveApiDataRequest<AppList>(sender, callback),
-      url_generator_(url_generator),
-      use_internal_endpoint_(use_internal_endpoint) {
-  DCHECK(!callback.is_null());
-}
-
-AppsListRequest::~AppsListRequest() {}
-
-GURL AppsListRequest::GetURLInternal() const {
-  return url_generator_.GetAppsListUrl(use_internal_endpoint_);
-}
-
-//============================== AppsDeleteRequest ===========================
-
-AppsDeleteRequest::AppsDeleteRequest(RequestSender* sender,
-                                     const DriveApiUrlGenerator& url_generator,
-                                     const EntryActionCallback& callback)
-    : EntryActionRequest(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
-
-AppsDeleteRequest::~AppsDeleteRequest() {}
-
-net::URLFetcher::RequestType AppsDeleteRequest::GetRequestType() const {
-  return net::URLFetcher::DELETE_REQUEST;
-}
-
-GURL AppsDeleteRequest::GetURL() const {
-  return url_generator_.GetAppsDeleteUrl(app_id_);
-}
-
 //========================== ChildrenInsertRequest ============================
 
 ChildrenInsertRequest::ChildrenInsertRequest(
@@ -763,8 +698,8 @@ ChildrenInsertRequest::ChildrenInsertRequest(
 
 ChildrenInsertRequest::~ChildrenInsertRequest() {}
 
-net::URLFetcher::RequestType ChildrenInsertRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string ChildrenInsertRequest::GetRequestType() const {
+  return "POST";
 }
 
 GURL ChildrenInsertRequest::GetURL() const {
@@ -797,8 +732,8 @@ ChildrenDeleteRequest::ChildrenDeleteRequest(
 
 ChildrenDeleteRequest::~ChildrenDeleteRequest() {}
 
-net::URLFetcher::RequestType ChildrenDeleteRequest::GetRequestType() const {
-  return net::URLFetcher::DELETE_REQUEST;
+std::string ChildrenDeleteRequest::GetRequestType() const {
+  return "DELETE";
 }
 
 GURL ChildrenDeleteRequest::GetURL() const {
@@ -826,9 +761,8 @@ GURL InitiateUploadNewFileRequest::GetURL() const {
   return url_generator_.GetInitiateUploadNewFileUrl(!modified_date_.is_null());
 }
 
-net::URLFetcher::RequestType
-InitiateUploadNewFileRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string InitiateUploadNewFileRequest::GetRequestType() const {
+  return "POST";
 }
 
 bool InitiateUploadNewFileRequest::GetContentData(
@@ -882,9 +816,8 @@ GURL InitiateUploadExistingFileRequest::GetURL() const {
       resource_id_, !modified_date_.is_null());
 }
 
-net::URLFetcher::RequestType
-InitiateUploadExistingFileRequest::GetRequestType() const {
-  return net::URLFetcher::PUT;
+std::string InitiateUploadExistingFileRequest::GetRequestType() const {
+  return "PUT";
 }
 
 std::vector<std::string>
@@ -945,9 +878,9 @@ ResumeUploadRequest::ResumeUploadRequest(
                               end_position,
                               content_length,
                               content_type,
-                              local_file_path),
-      callback_(callback),
-      progress_callback_(progress_callback) {
+                              local_file_path,
+                              progress_callback),
+      callback_(callback) {
   DCHECK(!callback_.is_null());
 }
 
@@ -958,14 +891,6 @@ void ResumeUploadRequest::OnRangeRequestComplete(
     std::unique_ptr<base::Value> value) {
   DCHECK(CalledOnValidThread());
   ParseFileResourceWithUploadRangeAndRun(callback_, response, std::move(value));
-}
-
-void ResumeUploadRequest::OnURLFetchUploadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total) {
-  if (!progress_callback_.is_null())
-    progress_callback_.Run(current, total);
 }
 
 //========================== GetUploadStatusRequest ==========================
@@ -1026,9 +951,8 @@ GURL MultipartUploadNewFileDelegate::GetURL() const {
   return url_generator_.GetMultipartUploadNewFileUrl(has_modified_date_);
 }
 
-net::URLFetcher::RequestType MultipartUploadNewFileDelegate::GetRequestType()
-    const {
-  return net::URLFetcher::POST;
+std::string MultipartUploadNewFileDelegate::GetRequestType() const {
+  return "POST";
 }
 
 //====================== MultipartUploadExistingFileDelegate ===================
@@ -1081,9 +1005,8 @@ GURL MultipartUploadExistingFileDelegate::GetURL() const {
                                                           has_modified_date_);
 }
 
-net::URLFetcher::RequestType
-MultipartUploadExistingFileDelegate::GetRequestType() const {
-  return net::URLFetcher::PUT;
+std::string MultipartUploadExistingFileDelegate::GetRequestType() const {
+  return "PUT";
 }
 
 //========================== DownloadFileRequest ==========================
@@ -1127,9 +1050,8 @@ GURL PermissionsInsertRequest::GetURL() const {
   return url_generator_.GetPermissionsInsertUrl(id_);
 }
 
-net::URLFetcher::RequestType
-PermissionsInsertRequest::GetRequestType() const {
-  return net::URLFetcher::POST;
+std::string PermissionsInsertRequest::GetRequestType() const {
+  return "POST";
 }
 
 bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
@@ -1180,7 +1102,14 @@ bool PermissionsInsertRequest::GetContentData(std::string* upload_content_type,
 SingleBatchableDelegateRequest::SingleBatchableDelegateRequest(
     RequestSender* sender,
     std::unique_ptr<BatchableDelegate> delegate)
-    : UrlFetchRequestBase(sender),
+    : UrlFetchRequestBase(
+          sender,
+          base::BindRepeating(
+              &SingleBatchableDelegateRequest::OnUploadProgress,
+              // Safe to not retain as the SimpleURLoader is owned by our base
+              // class and cannot outlive this instance.
+              base::Unretained(this)),
+          ProgressCallback()),
       delegate_(std::move(delegate)),
       weak_ptr_factory_(this) {}
 
@@ -1191,8 +1120,7 @@ GURL SingleBatchableDelegateRequest::GetURL() const {
   return delegate_->GetURL();
 }
 
-net::URLFetcher::RequestType SingleBatchableDelegateRequest::GetRequestType()
-    const {
+std::string SingleBatchableDelegateRequest::GetRequestType() const {
   return delegate_->GetRequestType();
 }
 
@@ -1212,9 +1140,11 @@ bool SingleBatchableDelegateRequest::GetContentData(
 }
 
 void SingleBatchableDelegateRequest::ProcessURLFetchResults(
-    const net::URLFetcher* source) {
+    const network::ResourceResponseHead* response_head,
+    base::FilePath response_file,
+    std::string response_body) {
   delegate_->NotifyResult(
-      GetErrorCode(), response_writer()->data(),
+      GetErrorCode(), response_body,
       base::Bind(
           &SingleBatchableDelegateRequest::OnProcessURLFetchResultsComplete,
           weak_ptr_factory_.GetWeakPtr()));
@@ -1225,11 +1155,9 @@ void SingleBatchableDelegateRequest::RunCallbackOnPrematureFailure(
   delegate_->NotifyError(code);
 }
 
-void SingleBatchableDelegateRequest::OnURLFetchUploadProgress(
-    const net::URLFetcher* source,
-    int64_t current,
-    int64_t total) {
-  delegate_->NotifyUploadProgress(source, current, total);
+void SingleBatchableDelegateRequest::OnUploadProgress(int64_t current,
+                                                      int64_t total) {
+  delegate_->NotifyUploadProgress(current, total);
 }
 
 //========================== BatchUploadRequest ==========================
@@ -1244,13 +1172,18 @@ BatchUploadChildEntry::~BatchUploadChildEntry() {
 BatchUploadRequest::BatchUploadRequest(
     RequestSender* sender,
     const DriveApiUrlGenerator& url_generator)
-    : UrlFetchRequestBase(sender),
+    : UrlFetchRequestBase(
+          sender,
+          // Safe to not retain as the SimpleURLoader is owned by our base class
+          // and cannot outlive this instance.
+          base::BindRepeating(&BatchUploadRequest::OnUploadProgress,
+                              base::Unretained(this)),
+          ProgressCallback()),
       sender_(sender),
       url_generator_(url_generator),
       committed_(false),
       last_progress_value_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 BatchUploadRequest::~BatchUploadRequest() {
 }
@@ -1336,18 +1269,7 @@ void BatchUploadRequest::MayCompletePrepare() {
     DCHECK(result);
 
     const GURL url = child->request->GetURL();
-    std::string method;
-    switch (child->request->GetRequestType()) {
-      case net::URLFetcher::POST:
-        method = "POST";
-        break;
-      case net::URLFetcher::PUT:
-        method = "PUT";
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    std::string method = child->request->GetRequestType();
     const std::string header = base::StringPrintf(
         kBatchUploadRequestFormat, method.c_str(), url.path().c_str(),
         url_generator_.GetBatchUploadUrl().host().c_str(), type.c_str());
@@ -1389,8 +1311,8 @@ GURL BatchUploadRequest::GetURL() const {
   return url_generator_.GetBatchUploadUrl();
 }
 
-net::URLFetcher::RequestType BatchUploadRequest::GetRequestType() const {
-  return net::URLFetcher::PUT;
+std::string BatchUploadRequest::GetRequestType() const {
+  return "PUT";
 }
 
 std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
@@ -1399,17 +1321,20 @@ std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
   return headers;
 }
 
-void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
+void BatchUploadRequest::ProcessURLFetchResults(
+    const network::ResourceResponseHead* response_head,
+    base::FilePath response_file,
+    std::string response_body) {
   // Return the detailed raw HTTP code if the error code is abstracted
   // DRIVE_OTHER_ERROR. If HTTP connection is failed and the status code is -1,
   // return network status error.
   int histogram_error = 0;
   if (GetErrorCode() != DRIVE_OTHER_ERROR) {
     histogram_error = GetErrorCode();
-  } else if (source->GetResponseCode() != -1) {
-    histogram_error = source->GetResponseCode();
+  } else if (response_head && response_head->headers->response_code() != -1) {
+    histogram_error = response_head->headers->response_code();
   } else {
-    histogram_error = source->GetStatus().error();
+    histogram_error = NetError();
   }
   base::UmaHistogramSparse(kUMADriveBatchUploadResponseCode, histogram_error);
 
@@ -1420,12 +1345,13 @@ void BatchUploadRequest::ProcessURLFetchResults(const net::URLFetcher* source) {
   }
 
   std::string content_type;
-  source->GetResponseHeaders()->EnumerateHeader(
-      /* need only first header */ NULL, "Content-Type", &content_type);
+  if (response_head) {
+    response_head->headers->EnumerateHeader(
+        /* need only first header */ nullptr, "Content-Type", &content_type);
+  }
 
   std::vector<MultipartHttpResponse> parts;
-  if (!ParseMultipartResponse(content_type, response_writer()->data(),
-                              &parts) ||
+  if (!ParseMultipartResponse(content_type, response_body, &parts) ||
       child_requests_.size() != parts.size()) {
     RunCallbackOnPrematureFailure(DRIVE_PARSE_ERROR);
     sender_->RequestFinished(this);
@@ -1451,18 +1377,15 @@ void BatchUploadRequest::RunCallbackOnPrematureFailure(DriveApiErrorCode code) {
   child_requests_.clear();
 }
 
-void BatchUploadRequest::OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                                  int64_t current,
-                                                  int64_t total) {
+void BatchUploadRequest::OnUploadProgress(int64_t current, int64_t total) {
   for (const auto& child : child_requests_) {
     if (child->data_offset <= current &&
         current <= child->data_offset + child->data_size) {
-      child->request->NotifyUploadProgress(source, current - child->data_offset,
+      child->request->NotifyUploadProgress(current - child->data_offset,
                                            child->data_size);
     } else if (last_progress_value_ < child->data_offset + child->data_size &&
                child->data_offset + child->data_size < current) {
-      child->request->NotifyUploadProgress(source, child->data_size,
-                                           child->data_size);
+      child->request->NotifyUploadProgress(child->data_size, child->data_size);
     }
   }
   last_progress_value_ = current;

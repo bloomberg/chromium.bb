@@ -158,7 +158,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
-  DCHECK(HasBeenDisposed());
+  CHECK(HasBeenDisposed());
 }
 
 void PaintLayerScrollableArea::DidScroll(const FloatPoint& position) {
@@ -462,7 +462,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
   UpdateCompositingLayersAfterScroll();
 
-  GetLayoutBox()->DispatchFakeMouseMoveEventSoon(frame->GetEventHandler());
+  GetLayoutBox()->MayUpdateHoverWhenContentUnderMouseChanged(
+      frame->GetEventHandler());
 
   if (scroll_type == kUserScroll || scroll_type == kCompositorScroll) {
     Page* page = frame->GetPage();
@@ -784,6 +785,11 @@ void PaintLayerScrollableArea::DeregisterForAnimation() {
 
 bool PaintLayerScrollableArea::UserInputScrollable(
     ScrollbarOrientation orientation) const {
+  if (orientation == kVerticalScrollbar &&
+      GetLayoutBox()->GetDocument().IsVerticalScrollEnforced()) {
+    return false;
+  }
+
   if (GetLayoutBox()->IsIntrinsicallyScrollable(orientation))
     return true;
 
@@ -954,7 +960,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
             ->GetFrame()
             ->GetPage()
             ->GetVisualViewport()
-            .SetNeedsPaintPropertiesUpdate();
+            .SetNeedsPaintPropertyUpdate();
       }
     }
 
@@ -1867,8 +1873,10 @@ void PaintLayerScrollableArea::InvalidateAllStickyConstraints() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {
       if (sticky_layer->GetLayoutObject().StyleRef().GetPosition() ==
-          EPosition::kSticky)
+          EPosition::kSticky) {
         sticky_layer->SetNeedsCompositingInputsUpdate();
+        sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+      }
     }
     d->sticky_constraints_map_.clear();
   }
@@ -1880,8 +1888,10 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     d->sticky_constraints_map_.erase(layer);
     if (needs_compositing_update &&
-        layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
+        layer->GetLayoutObject().StyleRef().HasStickyConstrainedPosition()) {
       layer->SetNeedsCompositingInputsUpdate();
+      layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    }
   }
 }
 
@@ -1904,7 +1914,7 @@ bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
-      sticky_layer->GetLayoutObject().SetShouldCheckForPaintInvalidation();
+      sticky_layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
   }
 }
 
@@ -2472,14 +2482,12 @@ int PaintLayerScrollableArea::PreventRelayoutScope::count_ = 0;
 SubtreeLayoutScope*
     PaintLayerScrollableArea::PreventRelayoutScope::layout_scope_ = nullptr;
 bool PaintLayerScrollableArea::PreventRelayoutScope::relayout_needed_ = false;
-PersistentHeapVector<Member<PaintLayerScrollableArea>>*
-    PaintLayerScrollableArea::PreventRelayoutScope::needs_relayout_ = nullptr;
 
 PaintLayerScrollableArea::PreventRelayoutScope::PreventRelayoutScope(
     SubtreeLayoutScope& layout_scope) {
   if (!count_) {
     DCHECK(!layout_scope_);
-    DCHECK(!needs_relayout_ || needs_relayout_->IsEmpty());
+    DCHECK(NeedsRelayoutList().IsEmpty());
     layout_scope_ = &layout_scope;
   }
   count_++;
@@ -2488,7 +2496,7 @@ PaintLayerScrollableArea::PreventRelayoutScope::PreventRelayoutScope(
 PaintLayerScrollableArea::PreventRelayoutScope::~PreventRelayoutScope() {
   if (--count_ == 0) {
     if (relayout_needed_) {
-      for (auto scrollable_area : *needs_relayout_) {
+      for (auto scrollable_area : NeedsRelayoutList()) {
         DCHECK(scrollable_area->NeedsRelayout());
         LayoutBox* box = scrollable_area->GetLayoutBox();
         layout_scope_->SetNeedsLayout(
@@ -2508,7 +2516,7 @@ PaintLayerScrollableArea::PreventRelayoutScope::~PreventRelayoutScope() {
         scrollable_area->SetNeedsRelayout(false);
       }
 
-      needs_relayout_->clear();
+      NeedsRelayoutList().clear();
     }
     layout_scope_ = nullptr;
   }
@@ -2528,30 +2536,30 @@ void PaintLayerScrollableArea::PreventRelayoutScope::SetBoxNeedsLayout(
   scrollable_area.SetHadVerticalScrollbarBeforeRelayout(had_vertical_scrollbar);
 
   relayout_needed_ = true;
-  if (!needs_relayout_)
-    needs_relayout_ =
-        new PersistentHeapVector<Member<PaintLayerScrollableArea>>();
-  needs_relayout_->push_back(&scrollable_area);
+  NeedsRelayoutList().push_back(&scrollable_area);
 }
 
 void PaintLayerScrollableArea::PreventRelayoutScope::ResetRelayoutNeeded() {
   DCHECK_EQ(count_, 0);
-  DCHECK(!needs_relayout_ || needs_relayout_->IsEmpty());
+  DCHECK(NeedsRelayoutList().IsEmpty());
   relayout_needed_ = false;
+}
+
+HeapVector<Member<PaintLayerScrollableArea>>&
+PaintLayerScrollableArea::PreventRelayoutScope::NeedsRelayoutList() {
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
+                      needs_relayout_list,
+                      (new HeapVector<Member<PaintLayerScrollableArea>>));
+  return *needs_relayout_list;
 }
 
 int PaintLayerScrollableArea::FreezeScrollbarsScope::count_ = 0;
 
 int PaintLayerScrollableArea::DelayScrollOffsetClampScope::count_ = 0;
-PersistentHeapVector<Member<PaintLayerScrollableArea>>*
-    PaintLayerScrollableArea::DelayScrollOffsetClampScope::needs_clamp_ =
-        nullptr;
 
 PaintLayerScrollableArea::DelayScrollOffsetClampScope::
     DelayScrollOffsetClampScope() {
-  if (!needs_clamp_)
-    needs_clamp_ = new PersistentHeapVector<Member<PaintLayerScrollableArea>>();
-  DCHECK(count_ > 0 || needs_clamp_->IsEmpty());
+  DCHECK(count_ > 0 || NeedsClampList().IsEmpty());
   count_++;
 }
 
@@ -2565,16 +2573,23 @@ void PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
     PaintLayerScrollableArea* scrollable_area) {
   if (!scrollable_area->NeedsScrollOffsetClamp()) {
     scrollable_area->SetNeedsScrollOffsetClamp(true);
-    needs_clamp_->push_back(scrollable_area);
+    NeedsClampList().push_back(scrollable_area);
   }
 }
 
 void PaintLayerScrollableArea::DelayScrollOffsetClampScope::
     ClampScrollableAreas() {
-  for (auto& scrollable_area : *needs_clamp_)
+  for (auto& scrollable_area : NeedsClampList())
     scrollable_area->ClampScrollOffsetAfterOverflowChange();
-  delete needs_clamp_;
-  needs_clamp_ = nullptr;
+  NeedsClampList().clear();
+}
+
+HeapVector<Member<PaintLayerScrollableArea>>&
+PaintLayerScrollableArea::DelayScrollOffsetClampScope::NeedsClampList() {
+  DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<PaintLayerScrollableArea>>>,
+                      needs_clamp_list,
+                      (new HeapVector<Member<PaintLayerScrollableArea>>));
+  return *needs_clamp_list;
 }
 
 ScrollbarTheme& PaintLayerScrollableArea::GetPageScrollbarTheme() const {

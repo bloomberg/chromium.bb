@@ -7,10 +7,18 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/translate/core/common/translate_util.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
+#include "ios/web/public/browser_state.h"
+#include "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -70,7 +78,8 @@ bool TranslateController::OnJavascriptCommandReceived(
     const base::DictionaryValue& command,
     const GURL& url,
     bool interacting,
-    bool is_main_frame) {
+    bool is_main_frame,
+    web::WebFrame* sender_frame) {
   if (!is_main_frame) {
     // Translate is only supported on main frame.
     return false;
@@ -87,8 +96,9 @@ bool TranslateController::OnJavascriptCommandReceived(
     return OnTranslateReady(command);
   if (out_string == "translate.status")
     return OnTranslateComplete(command);
+  if (out_string == "translate.loadjavascript")
+    return OnTranslateLoadJavaScript(command);
 
-  NOTREACHED();
   return false;
 }
 
@@ -102,7 +112,6 @@ bool TranslateController::OnTranslateReady(
       !command.GetDouble("errorCode", &error_code) ||
       error_code < TranslateErrors::NONE ||
       error_code >= TranslateErrors::TRANSLATE_ERROR_MAX) {
-    NOTREACHED();
     return false;
   }
 
@@ -110,7 +119,6 @@ bool TranslateController::OnTranslateReady(
       static_cast<TranslateErrors::Type>(error_code);
   if (error_type == TranslateErrors::NONE) {
     if (!command.HasKey("loadTime") || !command.HasKey("readyTime")) {
-      NOTREACHED();
       return false;
     }
     command.GetDouble("loadTime", &load_time);
@@ -131,7 +139,6 @@ bool TranslateController::OnTranslateComplete(
       !command.GetDouble("errorCode", &error_code) ||
       error_code < TranslateErrors::NONE ||
       error_code >= TranslateErrors::TRANSLATE_ERROR_MAX) {
-    NOTREACHED();
     return false;
   }
 
@@ -140,7 +147,6 @@ bool TranslateController::OnTranslateComplete(
   if (error_type == TranslateErrors::NONE) {
     if (!command.HasKey("originalPageLanguage") ||
         !command.HasKey("translationTime")) {
-      NOTREACHED();
       return false;
     }
     command.GetString("originalPageLanguage", &original_language);
@@ -153,6 +159,43 @@ bool TranslateController::OnTranslateComplete(
   return true;
 }
 
+bool TranslateController::OnTranslateLoadJavaScript(
+    const base::DictionaryValue& command) {
+  std::string url;
+  if (!command.HasKey("url") || !command.GetString("url", &url)) {
+    return false;
+  }
+
+  FetchScript(url);
+
+  return true;
+}
+
+void TranslateController::FetchScript(const std::string& url) {
+  GURL security_origin = translate::GetTranslateSecurityOrigin();
+  if (url.find(security_origin.spec()) || script_fetcher_) {
+    return;
+  }
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(url);
+
+  script_fetcher_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), NO_TRAFFIC_ANNOTATION_YET);
+  script_fetcher_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      web_state_->GetBrowserState()->GetURLLoaderFactory(),
+      base::BindOnce(&TranslateController::OnScriptFetchComplete,
+                     base::Unretained(this)));
+}
+
+void TranslateController::OnScriptFetchComplete(
+    std::unique_ptr<std::string> response_body) {
+  if (response_body) {
+    web_state_->ExecuteJavaScript(base::UTF8ToUTF16(*response_body));
+  }
+  script_fetcher_.reset();
+}
+
 // web::WebStateObserver implementation.
 
 void TranslateController::WebStateDestroyed(web::WebState* web_state) {
@@ -160,6 +203,16 @@ void TranslateController::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
+
+  script_fetcher_.reset();
+}
+
+void TranslateController::DidStartNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  if (!navigation_context->IsSameDocument()) {
+    script_fetcher_.reset();
+  }
 }
 
 }  // namespace translate

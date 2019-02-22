@@ -17,10 +17,11 @@ namespace machine_learning {
 // interface.
 // Usage:
 //   chromeos::machine_learning::mojom::ModelPtr model;
-//   chromeos::machine_learning::mojom::ModelSpec spec;
+//   chromeos::machine_learning::mojom::ModelSpec spec = ...;
 //   chromeos::machine_learning::ServiceConnection::GetInstance()
-//       ->LoadModel(spec, mojom::MakeRequest(&model));
-//   // Use model ...
+//       ->LoadModel(spec, mojom::MakeRequest(&model),
+//                   base::BindOnce(&MyCallBack));
+//   // Use |model| or wait for |MyCallBack|.
 // Sequencing: Must be used on a single sequence (may be created on another).
 class ServiceConnection {
  public:
@@ -29,7 +30,10 @@ class ServiceConnection {
   // Instruct ML daemon to load the model specified in |spec|, binding a Model
   // implementation to |request|.
   // Bootstraps the initial Mojo connection to the daemon if necessary.
-  void LoadModel(mojom::ModelSpecPtr spec, mojom::ModelRequest request);
+  void LoadModel(
+      mojom::ModelSpecPtr spec,
+      mojom::ModelRequest request,
+      mojom::MachineLearningService::LoadModelCallback result_callback);
 
  private:
   friend class base::NoDestructor<ServiceConnection>;

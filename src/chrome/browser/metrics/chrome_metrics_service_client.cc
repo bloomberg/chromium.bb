@@ -86,6 +86,7 @@
 #include "components/sync/device_info/device_count_metrics_provider.h"
 #include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
@@ -800,8 +801,8 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 #endif
 
   // Merge histograms from metrics providers into StatisticsRecorder.
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&base::StatisticsRecorder::ImportProvidedHistograms),
       callback);
 

@@ -35,11 +35,12 @@
 namespace blink {
 
 SVGStaticStringList::SVGStaticStringList(SVGElement* context_element,
-                                         const QualifiedName& attribute_name)
+                                         const QualifiedName& attribute_name,
+                                         SVGStringListBase* initial_value)
     : SVGAnimatedPropertyBase(kAnimatedUnknown,
                               context_element,
                               attribute_name),
-      value_(SVGStringList::Create()) {
+      value_(initial_value) {
   DCHECK(context_element);
 }
 

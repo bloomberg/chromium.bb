@@ -68,6 +68,9 @@ Polymer({
    * @private
    */
   shouldHideResetButton_: function() {
+    if (this.model === undefined)
+      return false;
+
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED ||
         !(this.readOnlyList || !!this.model.embeddingOrigin);
@@ -78,6 +81,9 @@ Polymer({
    * @private
    */
   shouldHideActionMenu_: function() {
+    if (this.model === undefined)
+      return false;
+
     return this.model.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED ||
         this.readOnlyList || !!this.model.embeddingOrigin;
@@ -110,6 +116,13 @@ Polymer({
     } else if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
       displayName = loadTimeData.getString('embeddedOnAnyHost');
     }
+
+    // <if expr="chromeos">
+    if (this.model.category === settings.ContentSettingsTypes.NOTIFICATIONS &&
+        this.model.showAndroidSmsNote) {
+      displayName = loadTimeData.getString('androidSmsNote');
+    }
+    // </if>
 
     if (this.model.incognito) {
       if (displayName.length > 0)

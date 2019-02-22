@@ -41,6 +41,7 @@ constexpr SkColor kAppListTextColor = gfx::kGoogleGrey100;
 constexpr SkColor kAppListRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
 constexpr SkColor kAppListFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
 constexpr int kAppListMaxTextWidth = 192;
+constexpr int kBlurRadius = 5;
 
 // Shared style:
 constexpr int kIconMarginDip = 8;
@@ -65,10 +66,34 @@ SuggestionChipView::SuggestionChipView(const Params& params,
       assistant_style_(params.assistant_style) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInkDropMode(InkDropHostView::InkDropMode::ON);
+
+  // Set background blur for the chip and use mask layer to clip it into
+  // rounded rect.
+  if (!assistant_style_)
+    SetBackgroundBlurEnabled(false);
+
   InitLayout(params);
 }
 
 SuggestionChipView::~SuggestionChipView() = default;
+
+void SuggestionChipView::SetBackgroundBlurEnabled(bool enabled) {
+  DCHECK(!assistant_style_);
+
+  // Background blur is enabled if and only if layer exists.
+  if (!!layer() == enabled)
+    return;
+
+  if (!enabled) {
+    DestroyLayer();
+    return;
+  }
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetBackgroundBlur(kBlurRadius);
+  SetRoundedRectMaskLayer(kPreferredHeightDip / 2);
+}
 
 gfx::Size SuggestionChipView::CalculatePreferredSize() const {
   const int preferred_width = views::View::CalculatePreferredSize().width();
@@ -103,7 +128,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
 
   // Icon.
   const int icon_size =
-      AppListConfig::instance().recommended_app_icon_dimension();
+      AppListConfig::instance().suggestion_chip_icon_dimension();
   icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
   icon_view_->SetPreferredSize(gfx::Size(icon_size, icon_size));
 
@@ -166,6 +191,11 @@ void SuggestionChipView::OnBlur() {
   SchedulePaint();
 }
 
+void SuggestionChipView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (chip_mask_)
+    chip_mask_->layer()->SetBounds(GetContentsBounds());
+}
+
 std::unique_ptr<views::InkDrop> SuggestionChipView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();
@@ -192,6 +222,13 @@ std::unique_ptr<views::InkDropRipple> SuggestionChipView::CreateInkDropRipple()
       GetInkDropCenterBasedOnLastEvent(), kAppListRippleColor, 1.0f);
 }
 
+std::unique_ptr<ui::Layer> SuggestionChipView::RecreateLayer() {
+  std::unique_ptr<ui::Layer> old_layer = views::View::RecreateLayer();
+  if (layer())
+    SetRoundedRectMaskLayer(kPreferredHeightDip / 2);
+  return old_layer;
+}
+
 void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
   icon_view_->SetImage(icon);
   icon_view_->SetVisible(true);
@@ -200,7 +237,7 @@ void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {
 void SuggestionChipView::SetText(const base::string16& text) {
   text_view_->SetText(text);
   if (!assistant_style_) {
-    gfx::Size size = text_view_->GetPreferredSize();
+    gfx::Size size = text_view_->CalculatePreferredSize();
     size.set_width(std::min(kAppListMaxTextWidth, size.width()));
     text_view_->SetPreferredSize(size);
   }
@@ -208,6 +245,15 @@ void SuggestionChipView::SetText(const base::string16& text) {
 
 const base::string16& SuggestionChipView::GetText() const {
   return text_view_->text();
+}
+
+void SuggestionChipView::SetRoundedRectMaskLayer(int corner_radius) {
+  chip_mask_ = views::Painter::CreatePaintedLayer(
+      views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                  corner_radius));
+  chip_mask_->layer()->SetFillsBoundsOpaquely(false);
+  chip_mask_->layer()->SetBounds(GetLocalBounds());
+  layer()->SetMaskLayer(chip_mask_->layer());
 }
 
 }  // namespace app_list

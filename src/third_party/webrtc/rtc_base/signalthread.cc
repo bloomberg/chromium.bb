@@ -12,6 +12,7 @@
 
 #include "absl/memory/memory.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/nullsocketserver.h"
 
 namespace rtc {
 
@@ -151,7 +152,7 @@ void SignalThread::OnMainThreadDestroyed() {
   main_ = nullptr;
 }
 
-bool SignalThread::Worker::IsProcessingMessages() {
+bool SignalThread::Worker::IsProcessingMessagesForTesting() {
   return false;
 }
 

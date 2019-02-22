@@ -56,25 +56,17 @@ class IdentityManager;
 }
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
-
-namespace sync_sessions {
-class AbstractSessionsSyncManager;
-class FaviconCache;
-class OpenTabsUIDelegate;
-}  // namespace sync_sessions
 
 namespace syncer {
 class BackendMigrator;
 class BaseTransaction;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
-class LocalDeviceInfoProvider;
 class ModelTypeControllerDelegate;
 class NetworkResources;
-class SyncableService;
-class SyncErrorController;
 class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
@@ -214,10 +206,12 @@ class ProfileSyncService : public syncer::SyncService,
     identity::IdentityManager* identity_manager;
     SigninScopedDeviceIdCallback signin_scoped_device_id_callback;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
-    invalidation::IdentityProvider* invalidations_identity_provider = nullptr;
+    std::vector<invalidation::IdentityProvider*>
+        invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;
     syncer::NetworkTimeUpdateCallback network_time_update_callback;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+    network::NetworkConnectionTracker* network_connection_tracker;
     std::string debug_identifier;
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     bool user_events_separate_pref_group = false;
@@ -269,9 +263,8 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
-  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider()
-      const override;
   void ReenableDatatype(syncer::ModelType type) override;
+  void ReadyForStartChanged(syncer::ModelType type) override;
   syncer::SyncTokenStatus GetSyncTokenStatus() const override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) const override;
   base::Time GetLastSyncedTime() const override;
@@ -293,7 +286,6 @@ class ProfileSyncService : public syncer::SyncService,
                        callback) override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
-  syncer::GlobalIdMapper* GetGlobalIdMapper() const override;
 
   // Add a sync type preference provider. Each provider may only be added once.
   void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
@@ -305,10 +297,9 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasPreferenceProvider(
       syncer::SyncTypePreferenceProvider* provider) const;
 
-  // Returns the SyncableService or USS bridge for syncer::SESSIONS.
-  syncer::SyncableService* GetSessionsSyncableService();
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetSessionSyncControllerDelegate();
+  const syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const;
+  void SetLocalDeviceInfoProviderForTest(
+      std::unique_ptr<syncer::LocalDeviceInfoProvider> provider);
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -325,6 +316,7 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const std::string& cache_guid,
+      const std::string& session_name,
       bool success) override;
   void OnSyncCycleCompleted(const syncer::SyncCycleSnapshot& snapshot) override;
   void OnProtocolEvent(const syncer::ProtocolEvent& event) override;
@@ -436,18 +428,9 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   bool encryption_pending() const;
 
-  syncer::SyncErrorController* sync_error_controller() {
-    return sync_error_controller_.get();
-  }
-  const syncer::SyncErrorController* sync_error_controller() const {
-    return sync_error_controller_.get();
-  }
-
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
-
-  sync_sessions::FaviconCache* GetFaviconCache();
 
   // Overrides the NetworkResources used for Sync connections.
   // TODO(treib): Inject this in the ctor instead. As it is, it's possible that
@@ -463,6 +446,12 @@ class ProfileSyncService : public syncer::SyncService,
   // It should be used to persist data to disk when the process might be
   // killed in the near future.
   void FlushDirectory() const;
+
+  // Notifies observers that foreign sessions have been updated.
+  // TODO(crbug.com/883199): This doesn't belong here, just like
+  // OnForeignSessionUpdated() doesn't belong in the observer. Let's move them
+  // to OpenTabsUIDelegate by introducing a similar observer mechanism.
+  virtual void NotifyForeignSessionUpdated();
 
   // Returns a serialized NigoriKey proto generated from the bootstrap token in
   // SyncPrefs. Will return the empty string if no bootstrap token exists.
@@ -551,7 +540,6 @@ class ProfileSyncService : public syncer::SyncService,
   void NotifyObservers();
 
   void NotifySyncCycleCompleted();
-  void NotifyForeignSessionUpdated();
   void NotifyShutdown();
 
   void ClearStaleErrors();
@@ -679,6 +667,9 @@ class ProfileSyncService : public syncer::SyncService,
   // The URL loader factory for the sync.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
+  // The global NetworkConnectionTracker instance.
+  network::NetworkConnectionTracker* network_connection_tracker_;
+
   // Indicates if this is the first time sync is being configured.
   // This is set to true if last synced time is not set at the time of
   // OnEngineInitialized().
@@ -687,9 +678,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Number of UIs currently configuring the Sync service. When this number
   // is decremented back to zero, Sync setup is marked no longer in progress.
   int outstanding_setup_in_progress_handles_ = 0;
-
-  // List of available data type controllers.
-  syncer::DataTypeController::TypeMap data_type_controllers_;
 
   // Whether the SyncEngine has been initialized.
   bool engine_initialized_;
@@ -728,9 +716,6 @@ class ProfileSyncService : public syncer::SyncService,
   // an action set on it.
   syncer::SyncProtocolError last_actionable_error_;
 
-  // Exposes sync errors to the UI.
-  std::unique_ptr<syncer::SyncErrorController> sync_error_controller_;
-
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
   syncer::DataTypeStatusTable::TypeErrorMap data_type_error_map_;
@@ -742,18 +727,18 @@ class ProfileSyncService : public syncer::SyncService,
   // when the user signs out of the content area.
   GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
-  // This provider tells the invalidations code which identity to register for.
+  // This providers tells the invalidations code which identity to register for.
   // The account that it registers for should be the same as the currently
   // syncing account, so we'll need to update this whenever the account changes.
-  invalidation::IdentityProvider* const invalidations_identity_provider_;
+  std::vector<invalidation::IdentityProvider*> const
+      invalidations_identity_providers_;
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
 
-  // Locally owned SyncableService or ModelTypeSyncBridge implementations.
-  std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
-      sessions_sync_manager_;
-
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
+
+  // List of available data type controllers.
+  syncer::DataTypeController::TypeMap data_type_controllers_;
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 

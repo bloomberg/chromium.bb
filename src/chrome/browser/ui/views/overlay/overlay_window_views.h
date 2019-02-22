@@ -14,6 +14,7 @@
 namespace views {
 class ControlImageButton;
 class CloseImageButton;
+class ResizeHandleButton;
 class ToggleImageButton;
 }  // namespace views
 
@@ -27,6 +28,8 @@ class OverlayWindowViews : public content::OverlayWindow,
       content::PictureInPictureWindowController* controller);
   ~OverlayWindowViews() override;
 
+  enum class WindowQuadrant { kBottomLeft, kBottomRight, kTopLeft, kTopRight };
+
   // OverlayWindow:
   bool IsActive() const override;
   void Close() override;
@@ -38,6 +41,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetBounds() const override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
+  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>& controls) override;
   ui::Layer* GetWindowBackgroundLayer() override;
@@ -45,10 +49,13 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetVideoBounds() override;
 
   // views::Widget:
+  void OnNativeBlur() override;
+  void OnNativeWidgetDestroyed() override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
+  void OnNativeWidgetMove() override;
+  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
   void OnNativeWidgetWorkspaceChanged() override;
-  void OnNativeWidgetBeginUserBoundsChange() override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -56,22 +63,15 @@ class OverlayWindowViews : public content::OverlayWindow,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::internal::NativeWidgetDelegate:
-  void OnNativeBlur() override;
-  void OnNativeWidgetMove() override;
-  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
-  void OnNativeWidgetDestroyed() override;
-
   // Gets the bounds of the controls.
   gfx::Rect GetCloseControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
   gfx::Rect GetFirstCustomControlsBounds();
   gfx::Rect GetSecondCustomControlsBounds();
 
-  // Send the message that a custom control on |this| has been clicked.
-  void ClickCustomControl(const std::string& control_id);
-
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
+  gfx::Point close_image_position_for_testing() const;
+  gfx::Point resize_handle_position_for_testing() const;
   views::View* controls_parent_view_for_testing() const;
   OverlayWindowViews::PlaybackState playback_state_for_testing() const;
 
@@ -102,15 +102,16 @@ class OverlayWindowViews : public content::OverlayWindow,
   void UpdateButtonSize();
 
   // Update the size of each controls view as the size of the window changes.
-  void UpdateCustomControlsSize(views::ControlImageButton*);
+  void UpdateCustomControlsSize(views::ControlImageButton* control_button);
   void UpdatePlayPauseControlsSize();
 
-  void SetUpCustomControl(std::unique_ptr<views::ControlImageButton>&,
-                          const blink::PictureInPictureControlInfo&,
-                          ControlPosition);
+  void CreateCustomControl(
+      std::unique_ptr<views::ControlImageButton>& control_button,
+      const blink::PictureInPictureControlInfo& info,
+      ControlPosition position);
 
   // Returns whether there is exactly one custom control on the window.
-  bool OnlyOneCustomControlAdded();
+  bool HasOnlyOneCustomControl();
 
   // Calculate and set the bounds of the controls.
   gfx::Rect CalculateControlsBounds(int x, const gfx::Size& size);
@@ -122,6 +123,7 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   ui::Layer* GetControlsScrimLayer();
   ui::Layer* GetCloseControlsLayer();
+  ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
 
   // Toggles the play/pause control through the |controller_| and updates the
@@ -141,6 +143,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // sizing and placement. This is different from checking whether the window
   // components has been initialized.
   bool has_been_shown_ = false;
+
+  // Whether or not the play/pause button will always be hidden. This is the
+  // case for media streams video that user is not allowed to play/pause.
+  bool always_hide_play_pause_button_ = false;
 
   // Current playback state on the video in Picture-in-Picture window. It is
   // used to show/hide controls.
@@ -174,6 +180,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   // the close view.
   std::unique_ptr<views::View> controls_parent_view_;
   std::unique_ptr<views::CloseImageButton> close_controls_view_;
+  std::unique_ptr<views::ResizeHandleButton> resize_handle_view_;
   std::unique_ptr<views::ToggleImageButton> play_pause_controls_view_;
   std::unique_ptr<views::ControlImageButton> first_custom_controls_view_;
   std::unique_ptr<views::ControlImageButton> second_custom_controls_view_;

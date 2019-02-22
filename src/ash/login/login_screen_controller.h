@@ -57,11 +57,13 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // LoginScreenClient (in the chrome process) will do the authentication and
   // request to show error messages in the screen if auth fails, or request to
   // clear errors if auth succeeds.
-  void AuthenticateUser(const AccountId& account_id,
-                        const std::string& password,
-                        bool authenticated_by_pin,
-                        OnAuthenticateCallback callback);
-  void AttemptUnlock(const AccountId& account_id);
+  void AuthenticateUserWithPasswordOrPin(const AccountId& account_id,
+                                         const std::string& password,
+                                         bool authenticated_by_pin,
+                                         OnAuthenticateCallback callback);
+  void AuthenticateUserWithExternalBinary(const AccountId& account_id,
+                                          OnAuthenticateCallback callback);
+  void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
   void OnFocusPod(const AccountId& account_id);
@@ -86,6 +88,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void LaunchArcKioskApp(const AccountId& account_id);
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
+  void FocusOobeDialog();
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);
@@ -147,6 +150,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void SetAddUserButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
   void SetShowGuestButtonForGaiaScreen(bool can_show) override;
+  void FocusLoginShelf(bool reverse) override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();

@@ -119,7 +119,7 @@ static KeyValueMap RetrieveKeyValuePairs(SharedBufferChunkReader* buffer) {
       key = String();
       value.Clear();
     }
-    size_t semi_colon_index = line.find(':');
+    wtf_size_t semi_colon_index = line.find(':');
     if (semi_colon_index == kNotFound) {
       // This is not a key value pair, ignore.
       continue;

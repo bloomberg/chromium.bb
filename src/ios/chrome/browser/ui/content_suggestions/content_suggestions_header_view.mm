@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
@@ -38,7 +37,7 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 
 }  // namespace
 
-@interface ContentSuggestionsHeaderView ()<ToolbarSnapshotProviding>
+@interface ContentSuggestionsHeaderView ()
 
 // Layout constraints for fake omnibox background image and blur.
 @property(nonatomic, strong) NSLayoutConstraint* backgroundHeightConstraint;
@@ -67,17 +66,6 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
   }
   return self;
 }
-
-#pragma mark - Private
-
-// Scale the the hint label down to at most content_suggestions::kHintTextScale.
-- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
-  CGFloat scaleValue =
-      1 + (content_suggestions::kHintTextScale * (1 - percent));
-  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
-}
-
-#pragma mark - NTPHeaderViewAdapter
 
 - (void)addToolbarView:(UIView*)toolbarView {
   _toolBarView = toolbarView;
@@ -241,10 +229,7 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
 
   // Adjust the position of the search field's subviews by adjusting their
   // constraint constant value.
-  CGFloat constantDiff = IsUIRefreshPhase1Enabled()
-                             ? -maxXInset * percent
-                             : percent * (ntp_header::kMaxHorizontalMarginDiff +
-                                          inset + safeAreaInsets.left);
+  CGFloat constantDiff = -maxXInset * percent;
   for (NSLayoutConstraint* constraint in constraints) {
     if (constraint.constant > 0)
       constraint.constant = constantDiff + ntp_header::kHintLabelSidePadding;
@@ -267,50 +252,13 @@ const CGFloat kFakeboxHighlightIncrease = 0.06;
                    completion:nil];
 }
 
-- (void)fadeOutShadow {
-  // No-op.
-}
+#pragma mark - Private
 
-- (void)hideToolbarViewsForNewTabPage {
-  // No-op.
-}
-
-- (void)setToolbarTabCount:(int)tabCount {
-  // No-op.
-}
-
-- (void)setCanGoForward:(BOOL)canGoForward {
-  // No-op.
-}
-
-- (void)setCanGoBack:(BOOL)canGoBack {
-  // No-op.
-}
-
-#pragma mark - ToolbarOwner
-
-- (CGRect)toolbarFrame {
-  return CGRectZero;
-}
-
-- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  return self;
-}
-
-#pragma mark - ToolbarSnapshotProviding
-
-- (UIView*)snapshotForTabSwitcher {
-  return nil;
-}
-
-- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
-                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  NOTREACHED();
-  return nil;
-}
-
-- (UIColor*)toolbarBackgroundColor {
-  return nil;
+// Scale the the hint label down to at most content_suggestions::kHintTextScale.
+- (void)scaleHintLabel:(UIView*)hintLabel percent:(CGFloat)percent {
+  CGFloat scaleValue =
+      1 + (content_suggestions::kHintTextScale * (1 - percent));
+  hintLabel.transform = CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
 
 @end

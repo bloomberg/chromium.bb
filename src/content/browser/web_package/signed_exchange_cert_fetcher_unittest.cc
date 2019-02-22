@@ -137,8 +137,11 @@ class URLLoaderFactoryForMockLoader final
 
 void ForwardCertificateCallback(
     bool* called,
+    SignedExchangeLoadResult* out_result,
     std::unique_ptr<SignedExchangeCertificateChain>* out_cert,
+    SignedExchangeLoadResult result,
     std::unique_ptr<SignedExchangeCertificateChain> cert_chain) {
+  *out_result = result;
   *called = true;
   *out_cert = std::move(cert_chain);
 }
@@ -206,7 +209,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
       bool force_fetch) {
     SignedExchangeCertFetcher::CertificateCallback callback = base::BindOnce(
         &ForwardCertificateCallback, base::Unretained(&callback_called_),
-        base::Unretained(&cert_result_));
+        base::Unretained(&result_), base::Unretained(&cert_result_));
 
     return SignedExchangeCertFetcher::CreateAndStart(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
@@ -240,6 +243,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   const GURL url_;
   const url::Origin request_initiator_;
   bool callback_called_ = false;
+  SignedExchangeLoadResult result_;
   std::unique_ptr<SignedExchangeCertificateChain> cert_result_;
   URLLoaderFactoryForMockLoader mock_loader_factory_;
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
@@ -275,6 +279,7 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
       network::URLLoaderCompletionStatus(net::OK));
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(GetTestDataCertFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
@@ -301,6 +306,7 @@ TEST_F(SignedExchangeCertFetcherTest, MultipleChunked) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(certificate->CalculateChainFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
@@ -325,6 +331,7 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -348,6 +355,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_Exceeds) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -371,6 +379,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_SameSize) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   EXPECT_TRUE(cert_result_);
 }
 
@@ -398,6 +407,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_MultipleChunked) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -425,6 +435,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -438,6 +449,7 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_Redirect) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -451,6 +463,7 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -467,6 +480,7 @@ TEST_F(SignedExchangeCertFetcherTest, WrongMimeType) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -485,6 +499,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertData) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertParseError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -506,6 +521,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertMessage) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertParseError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -541,6 +557,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_Simple) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(GetTestDataCertFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
@@ -557,6 +574,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRequest) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -583,6 +601,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRedirect) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -615,6 +634,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnResponse) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -694,6 +714,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeReceiveResponse) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -706,6 +727,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeResponseBody) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -727,6 +749,8 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_WhileReceivingBody) {
   data_pipe.producer_handle.reset();
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
+  // SignedExchangeCertFetcher receives a truncated cert cbor.
+  EXPECT_EQ(SignedExchangeLoadResult::kCertParseError, result_);
   EXPECT_FALSE(cert_result_);
 }
 
@@ -748,6 +772,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(certificate->CalculateChainFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
@@ -769,6 +794,7 @@ TEST_F(SignedExchangeCertFetcherTest, DataURL) {
       network::URLLoaderCompletionStatus(net::OK));
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result_);
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(GetTestDataCertFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
@@ -786,6 +812,7 @@ TEST_F(SignedExchangeCertFetcherTest, DataURLWithWrongMimeType) {
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SignedExchangeLoadResult::kCertFetchError, result_);
 }
 
 }  // namespace content

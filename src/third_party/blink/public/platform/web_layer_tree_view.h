@@ -33,6 +33,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -151,16 +152,15 @@ class WebLayerTreeView {
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}
 
-  // Synchronously run all lifecycle phases and compositor update with no
-  // raster. Should only be called by layout tests running in synchronous
-  // single-threaded mode.
-  virtual void SynchronouslyCompositeNoRasterForTesting() {}
-
-  // Synchronously rasterizes and composites a frame.
-  virtual void CompositeWithRasterForTesting() {}
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state, optionally including
+  // rasterization.
+  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
 
   // Prevents updates to layer tree from becoming visible.
-  virtual void SetDeferCommits(bool defer_commits) {}
+  virtual std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() {
+    return nullptr;
+  }
 
   struct ViewportLayers {
     cc::ElementId overscroll_elasticity_element_id;

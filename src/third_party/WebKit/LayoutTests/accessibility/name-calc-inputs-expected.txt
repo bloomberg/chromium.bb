@@ -13,5 +13,8 @@ PASS Text input with placeholder and label-wrapped
 PASS Text input with multiple label-for
 PASS Text input with title and aria-placeholder
 PASS Text input with title and aria-placeholder
+PASS Div with textbox role and aria-placeholder
+PASS Div with textbox role and title and aria-placeholder
+PASS Div without textbox role and aria-placeholder
 Harness: the test ran to completion.
 

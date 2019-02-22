@@ -41,7 +41,7 @@ interface UsbDeviceManager {
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.
-  SetClient(UsbDeviceManagerClient client);
+  SetClient(associated UsbDeviceManagerClient client);
 };
 
 interface UsbDeviceManagerClient {

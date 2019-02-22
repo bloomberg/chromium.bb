@@ -45,8 +45,7 @@ AudioDecoderSoftwareWrapper::AudioDecoderSoftwareWrapper(
     MediaPipelineBackend::AudioDecoder* backend_decoder)
     : backend_decoder_(backend_decoder),
       delegate_(nullptr),
-      decoder_error_(false),
-      weak_factory_(this) {
+      decoder_error_(false) {
   DCHECK(backend_decoder_);
   backend_decoder_->SetDelegate(this);
 }
@@ -68,12 +67,10 @@ MediaPipelineBackend::BufferStatus AudioDecoderSoftwareWrapper::PushBuffer(
     return backend_decoder_->PushBuffer(buffer);
 
   DecoderBufferBase* buffer_base = static_cast<DecoderBufferBase*>(buffer);
-  if (!software_decoder_->Decode(
-          base::WrapRefCounted(buffer_base),
-          base::Bind(&AudioDecoderSoftwareWrapper::OnDecodedBuffer,
-                     weak_factory_.GetWeakPtr()))) {
-    return MediaPipelineBackend::kBufferFailed;
-  }
+  software_decoder_->Decode(
+      base::WrapRefCounted(buffer_base),
+      base::BindOnce(&AudioDecoderSoftwareWrapper::OnDecodedBuffer,
+                     base::Unretained(this)));
   return MediaPipelineBackend::kBufferPending;
 }
 
@@ -144,8 +141,8 @@ bool AudioDecoderSoftwareWrapper::CreateSoftwareDecoder(
       base::ThreadTaskRunnerHandle::Get(), config,
       media::CastAudioDecoder::kOutputSigned16,
       media::CastAudioDecoder::OutputChannelLayoutFromConfig(config),
-      base::Bind(&AudioDecoderSoftwareWrapper::OnDecoderInitialized,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AudioDecoderSoftwareWrapper::OnDecoderInitialized,
+                     base::Unretained(this)));
   return (software_decoder_.get() != nullptr);
 }
 
@@ -161,11 +158,23 @@ void AudioDecoderSoftwareWrapper::OnDecoderInitialized(bool success) {
 
 void AudioDecoderSoftwareWrapper::OnDecodedBuffer(
     CastAudioDecoder::Status status,
-    const scoped_refptr<DecoderBufferBase>& decoded) {
+    const media::AudioConfig& config,
+    scoped_refptr<DecoderBufferBase> decoded) {
   DCHECK(delegate_);
   if (status != CastAudioDecoder::kDecodeOk) {
     delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
     return;
+  }
+
+  if (config.samples_per_second != output_config_.samples_per_second) {
+    // Sample rate of actual stream may differ from the rate reported from the
+    // container format.
+    output_config_.samples_per_second = config.samples_per_second;
+    if (!backend_decoder_->SetConfig(output_config_)) {
+      LOG(ERROR) << "Failed to set underlying backend to changed sample rate";
+      delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
+      return;
+    }
   }
 
   pending_pushed_buffer_ = decoded;

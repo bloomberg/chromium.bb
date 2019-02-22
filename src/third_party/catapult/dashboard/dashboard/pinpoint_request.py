@@ -6,7 +6,6 @@
 
 import json
 
-from google.appengine.api import users
 from google.appengine.ext import ndb
 
 from dashboard import start_try_job
@@ -172,7 +171,7 @@ def PinpointParamsFromPerfTryParams(params):
     'error' field.
   """
   if not utils.IsValidSheriffUser():
-    user = users.get_current_user()
+    user = utils.GetEmail()
     raise InvalidParamsError('User "%s" not authorized.' % user)
 
   test_path = params['test_path']
@@ -193,8 +192,8 @@ def PinpointParamsFromPerfTryParams(params):
 
   extra_test_args = params['extra_test_args']
 
-  email = users.get_current_user().email()
-  job_name = 'Job on [%s/%s] for [%s]' % (bot_name, suite, email)
+  email = utils.GetEmail()
+  job_name = 'Try job on %s/%s' % (bot_name, suite)
 
   return {
       'configuration': bot_name,
@@ -226,7 +225,7 @@ def PinpointParamsFromBisectParams(params):
     'error' field.
   """
   if not utils.IsValidSheriffUser():
-    user = users.get_current_user()
+    user = utils.GetEmail()
     raise InvalidParamsError('User "%s" not authorized.' % user)
 
   test_path = params['test_path']
@@ -259,8 +258,8 @@ def PinpointParamsFromBisectParams(params):
   # ideally be stored in a SparesDiagnostic but for now we can guess.
   target = _GetIsolateTarget(bot_name, suite, start_commit, end_commit)
 
-  email = users.get_current_user().email()
-  job_name = 'Job on [%s/%s/%s] for [%s]' % (bot_name, suite, chart_name, email)
+  email = utils.GetEmail()
+  job_name = '%s bisect on %s/%s' % (bisect_mode.capitalize(), bot_name, suite)
 
   # Histogram names don't include the statistic, so split these
   chart_name, statistic_name = ParseStatisticNameFromChart(chart_name)

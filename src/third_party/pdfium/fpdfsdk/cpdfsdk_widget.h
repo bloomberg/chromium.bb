@@ -7,8 +7,6 @@
 #ifndef FPDFSDK_CPDFSDK_WIDGET_H_
 #define FPDFSDK_CPDFSDK_WIDGET_H_
 
-#include <set>
-
 #include "core/fpdfdoc/cpdf_aaction.h"
 #include "core/fpdfdoc/cpdf_action.h"
 #include "core/fpdfdoc/cpdf_annot.h"
@@ -19,6 +17,7 @@
 #include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_baannot.h"
 #include "fpdfsdk/cpdfsdk_fieldaction.h"
+#include "third_party/base/optional.h"
 
 class CFX_RenderDevice;
 class CPDF_Annot;
@@ -27,7 +26,7 @@ class CPDF_FormControl;
 class CPDF_FormField;
 class CPDF_RenderOptions;
 class CPDF_Stream;
-class CPDFSDK_InterForm;
+class CPDFSDK_InteractiveForm;
 class CPDFSDK_PageView;
 
 #ifdef PDF_ENABLE_XFA
@@ -41,7 +40,7 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   CXFA_FFWidget* GetMixXFAWidget() const;
   CXFA_FFWidgetHandler* GetXFAWidgetHandler() const;
 
-  bool HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT);
+  bool HasXFAAAction(PDFSDK_XFAAActionType eXFAAAT) const;
   bool OnXFAAAction(PDFSDK_XFAAActionType eXFAAAT,
                     CPDFSDK_FieldAction* data,
                     CPDFSDK_PageView* pPageView);
@@ -51,7 +50,7 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
 
   CPDFSDK_Widget(CPDF_Annot* pAnnot,
                  CPDFSDK_PageView* pPageView,
-                 CPDFSDK_InterForm* pInterForm);
+                 CPDFSDK_InteractiveForm* pInteractiveForm);
   ~CPDFSDK_Widget() override;
 
   bool IsSignatureWidget() const override;
@@ -64,9 +63,9 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   int GetFieldFlags() const;
   int GetRotate() const;
 
-  bool GetFillColor(FX_COLORREF& color) const;
-  bool GetBorderColor(FX_COLORREF& color) const;
-  bool GetTextColor(FX_COLORREF& color) const;
+  Optional<FX_COLORREF> GetFillColor() const;
+  Optional<FX_COLORREF> GetBorderColor() const;
+  Optional<FX_COLORREF> GetTextColor() const;
   float GetFontSize() const;
 
   int GetSelectedIndex(int nIndex) const;
@@ -90,20 +89,20 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
 #ifdef PDF_ENABLE_XFA
   void ResetAppearance(bool bValueChanged);
 #endif  // PDF_ENABLE_XFA
-  void ResetAppearance(const WideString* sValue, bool bValueChanged);
+  void ResetAppearance(Optional<WideString> sValue, bool bValueChanged);
   void ResetFieldAppearance(bool bValueChanged);
   void UpdateField();
-  WideString OnFormat(bool& bFormatted);
+  Optional<WideString> OnFormat();
 
   bool OnAAction(CPDF_AAction::AActionType type,
                  CPDFSDK_FieldAction* data,
                  CPDFSDK_PageView* pPageView);
 
-  CPDFSDK_InterForm* GetInterForm() const { return m_pInterForm.Get(); }
+  CPDFSDK_InteractiveForm* GetInteractiveForm() const {
+    return m_pInteractiveForm.Get();
+  }
   CPDF_FormField* GetFormField() const;
   CPDF_FormControl* GetFormControl() const;
-  static CPDF_FormControl* GetFormControl(CPDF_InterForm* pInterForm,
-                                          const CPDF_Dictionary* pAnnotDict);
 
   void DrawShadow(CFX_RenderDevice* pDevice, CPDFSDK_PageView* pPageView);
 
@@ -129,14 +128,14 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
 
  private:
 #ifdef PDF_ENABLE_XFA
-  CXFA_FFWidget* GetGroupMixXFAWidget();
+  CXFA_FFWidget* GetGroupMixXFAWidget() const;
   WideString GetName() const;
 #endif  // PDF_ENABLE_XFA
 
-  UnownedPtr<CPDFSDK_InterForm> const m_pInterForm;
-  bool m_bAppModified;
-  uint32_t m_nAppearanceAge;
-  uint32_t m_nValueAge;
+  UnownedPtr<CPDFSDK_InteractiveForm> const m_pInteractiveForm;
+  bool m_bAppModified = false;
+  uint32_t m_nAppearanceAge = 0;
+  uint32_t m_nValueAge = 0;
 
 #ifdef PDF_ENABLE_XFA
   mutable UnownedPtr<CXFA_FFWidget> m_hMixXFAWidget;

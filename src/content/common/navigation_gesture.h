@@ -14,9 +14,7 @@ enum NavigationGesture {
   // setTimeout-triggered document.location changes and form.submits.  See
   // http://b/1046841 for some cases that should be treated this way but aren't.
   NavigationGestureAuto,
-  // Initial state.
-  NavigationGestureUnknown,
-  NavigationGestureLast = NavigationGestureUnknown
+  NavigationGestureLast = NavigationGestureAuto
 };
 
 }  // namespace content

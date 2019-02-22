@@ -24,7 +24,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-ot-shape-complex-myanmar-private.hh"
+#include "hb-ot-shape-complex-myanmar.hh"
 
 
 /*
@@ -54,7 +54,14 @@ other_features[] =
   HB_TAG('a','b','v','s'),
   HB_TAG('b','l','w','s'),
   HB_TAG('p','s','t','s'),
-  /* Positioning features, though we don't care about the types. */
+};
+static const hb_tag_t
+positioning_features[] =
+{
+  /*
+   * Positioning features.
+   * We don't care about the types.
+   */
   HB_TAG('d','i','s','t'),
   /* Pre-release version of Windows 8 Myanmar font had abvm,blwm
    * features.  The released Windows 8 version of the font (as well
@@ -89,27 +96,33 @@ collect_features_myanmar (hb_ot_shape_planner_t *plan)
   /* Do this before any lookups have been applied. */
   map->add_gsub_pause (setup_syllables);
 
-  map->add_global_bool_feature (HB_TAG('l','o','c','l'));
+  map->enable_feature (HB_TAG('l','o','c','l'));
   /* The Indic specs do not require ccmp, but we apply it here since if
    * there is a use of it, it's typically at the beginning. */
-  map->add_global_bool_feature (HB_TAG('c','c','m','p'));
+  map->enable_feature (HB_TAG('c','c','m','p'));
 
 
   map->add_gsub_pause (initial_reordering);
+
   for (unsigned int i = 0; i < ARRAY_LENGTH (basic_features); i++)
   {
-    map->add_feature (basic_features[i], 1, F_GLOBAL | F_MANUAL_ZWJ);
+    map->enable_feature (basic_features[i], F_MANUAL_ZWJ);
     map->add_gsub_pause (nullptr);
   }
+
   map->add_gsub_pause (final_reordering);
+
   for (unsigned int i = 0; i < ARRAY_LENGTH (other_features); i++)
-    map->add_feature (other_features[i], 1, F_GLOBAL | F_MANUAL_ZWJ);
+    map->enable_feature (other_features[i], F_MANUAL_ZWJ);
+
+  for (unsigned int i = 0; i < ARRAY_LENGTH (positioning_features); i++)
+    map->enable_feature (positioning_features[i]);
 }
 
 static void
 override_features_myanmar (hb_ot_shape_planner_t *plan)
 {
-  plan->map.add_feature (HB_TAG('l','i','g','a'), 0, F_GLOBAL);
+  plan->map.disable_feature (HB_TAG('l','i','g','a'));
 }
 
 
@@ -376,7 +389,7 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar_old =
   nullptr, /* decompose */
   nullptr, /* compose */
   nullptr, /* setup_masks */
-  nullptr, /* disable_otl */
+  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_LATE,
   true, /* fallback_position */
@@ -394,7 +407,7 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_myanmar =
   nullptr, /* decompose */
   nullptr, /* compose */
   setup_masks_myanmar,
-  nullptr, /* disable_otl */
+  HB_TAG_NONE, /* gpos_tag */
   nullptr, /* reorder_marks */
   HB_OT_SHAPE_ZERO_WIDTH_MARKS_BY_GDEF_EARLY,
   false, /* fallback_position */

@@ -20,6 +20,35 @@
 namespace gl
 {
 
+// GL_ANGLE_copy_texture_3d
+ANGLE_EXPORT void GL_APIENTRY CopyTexture3DANGLE(GLuint sourceId,
+                                                 GLint sourceLevel,
+                                                 GLenum destTarget,
+                                                 GLuint destId,
+                                                 GLint destLevel,
+                                                 GLint internalFormat,
+                                                 GLenum destType,
+                                                 GLboolean unpackFlipY,
+                                                 GLboolean unpackPremultiplyAlpha,
+                                                 GLboolean unpackUnmultiplyAlpha);
+ANGLE_EXPORT void GL_APIENTRY CopySubTexture3DANGLE(GLuint sourceId,
+                                                    GLint sourceLevel,
+                                                    GLenum destTarget,
+                                                    GLuint destId,
+                                                    GLint destLevel,
+                                                    GLint xoffset,
+                                                    GLint yoffset,
+                                                    GLint zoffset,
+                                                    GLint x,
+                                                    GLint y,
+                                                    GLint z,
+                                                    GLint width,
+                                                    GLint height,
+                                                    GLint depth,
+                                                    GLboolean unpackFlipY,
+                                                    GLboolean unpackPremultiplyAlpha,
+                                                    GLboolean unpackUnmultiplyAlpha);
+
 // GL_ANGLE_framebuffer_blit
 ANGLE_EXPORT void GL_APIENTRY BlitFramebufferANGLE(GLint srcX0,
                                                    GLint srcY0,
@@ -437,15 +466,6 @@ ANGLE_EXPORT void GL_APIENTRY GetQueryObjectui64vRobustANGLE(GLuint id,
                                                              GLsizei *length,
                                                              GLuint64 *params);
 
-// GL_ANGLE_texture_multisample_array
-ANGLE_EXPORT void GL_APIENTRY TexStorage3DMultisampleANGLE(GLenum target,
-                                                           GLsizei samples,
-                                                           GLint sizedinternalformat,
-                                                           GLsizei width,
-                                                           GLsizei height,
-                                                           GLsizei depth,
-                                                           GLboolean fixedsamplelocations);
-
 // GL_ANGLE_translated_shader_source
 ANGLE_EXPORT void GL_APIENTRY GetTranslatedShaderSourceANGLE(GLuint shader,
                                                              GLsizei bufsize,
@@ -576,6 +596,19 @@ ANGLE_EXPORT void GL_APIENTRY ProgramPathFragmentInputGenCHROMIUM(GLuint program
                                                                   GLenum genMode,
                                                                   GLint components,
                                                                   const GLfloat *coeffs);
+
+// GL_EXT_blend_func_extended
+ANGLE_EXPORT void GL_APIENTRY BindFragDataLocationEXT(GLuint program,
+                                                      GLuint color,
+                                                      const GLchar *name);
+ANGLE_EXPORT void GL_APIENTRY BindFragDataLocationIndexedEXT(GLuint program,
+                                                             GLuint colorNumber,
+                                                             GLuint index,
+                                                             const GLchar *name);
+ANGLE_EXPORT GLint GL_APIENTRY GetFragDataIndexEXT(GLuint program, const GLchar *name);
+ANGLE_EXPORT GLint GL_APIENTRY GetProgramResourceLocationIndexEXT(GLuint program,
+                                                                  GLenum programInterface,
+                                                                  const GLchar *name);
 
 // GL_EXT_debug_marker
 ANGLE_EXPORT void GL_APIENTRY InsertEventMarkerEXT(GLsizei length, const GLchar *marker);
@@ -806,6 +839,15 @@ ANGLE_EXPORT void GL_APIENTRY TexGenivOES(GLenum coord, GLenum pname, const GLin
 ANGLE_EXPORT void GL_APIENTRY TexGenxOES(GLenum coord, GLenum pname, GLfixed param);
 ANGLE_EXPORT void GL_APIENTRY TexGenxvOES(GLenum coord, GLenum pname, const GLfixed *params);
 
+// GL_OES_texture_storage_multisample_2d_array
+ANGLE_EXPORT void GL_APIENTRY TexStorage3DMultisampleOES(GLenum target,
+                                                         GLsizei samples,
+                                                         GLenum internalformat,
+                                                         GLsizei width,
+                                                         GLsizei height,
+                                                         GLsizei depth,
+                                                         GLboolean fixedsamplelocations);
+
 // GL_OES_vertex_array_object
 ANGLE_EXPORT void GL_APIENTRY BindVertexArrayOES(GLuint array);
 ANGLE_EXPORT void GL_APIENTRY DeleteVertexArraysOES(GLsizei n, const GLuint *arrays);
@@ -843,6 +885,15 @@ ANGLE_EXPORT void GL_APIENTRY BindBufferRangeContextANGLE(GLeglContext ctx,
                                                           GLuint buffer,
                                                           GLintptr offset,
                                                           GLsizeiptr size);
+ANGLE_EXPORT void GL_APIENTRY BindFragDataLocationEXTContextANGLE(GLeglContext ctx,
+                                                                  GLuint program,
+                                                                  GLuint color,
+                                                                  const GLchar *name);
+ANGLE_EXPORT void GL_APIENTRY BindFragDataLocationIndexedEXTContextANGLE(GLeglContext ctx,
+                                                                         GLuint program,
+                                                                         GLuint colorNumber,
+                                                                         GLuint index,
+                                                                         const GLchar *name);
 ANGLE_EXPORT void GL_APIENTRY BindFramebufferContextANGLE(GLeglContext ctx,
                                                           GLenum target,
                                                           GLuint framebuffer);
@@ -1433,6 +1484,9 @@ ANGLE_EXPORT void GL_APIENTRY GetFixedvContextANGLE(GLeglContext ctx,
                                                     GLenum pname,
                                                     GLfixed *params);
 ANGLE_EXPORT void GL_APIENTRY GetFloatvContextANGLE(GLeglContext ctx, GLenum pname, GLfloat *data);
+ANGLE_EXPORT GLint GL_APIENTRY GetFragDataIndexEXTContextANGLE(GLeglContext ctx,
+                                                               GLuint program,
+                                                               const GLchar *name);
 ANGLE_EXPORT GLint GL_APIENTRY GetFragDataLocationContextANGLE(GLeglContext ctx,
                                                                GLuint program,
                                                                const GLchar *name);
@@ -1545,6 +1599,11 @@ ANGLE_EXPORT GLint GL_APIENTRY GetProgramResourceLocationContextANGLE(GLeglConte
                                                                       GLuint program,
                                                                       GLenum programInterface,
                                                                       const GLchar *name);
+ANGLE_EXPORT GLint GL_APIENTRY
+GetProgramResourceLocationIndexEXTContextANGLE(GLeglContext ctx,
+                                               GLuint program,
+                                               GLenum programInterface,
+                                               const GLchar *name);
 ANGLE_EXPORT void GL_APIENTRY GetProgramResourceNameContextANGLE(GLeglContext ctx,
                                                                  GLuint program,
                                                                  GLenum programInterface,
@@ -2393,6 +2452,15 @@ ANGLE_EXPORT void GL_APIENTRY TexStorage3DEXTContextANGLE(GLeglContext ctx,
                                                           GLsizei width,
                                                           GLsizei height,
                                                           GLsizei depth);
+ANGLE_EXPORT void GL_APIENTRY
+TexStorage3DMultisampleOESContextANGLE(GLeglContext ctx,
+                                       GLenum target,
+                                       GLsizei samples,
+                                       GLenum internalformat,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLsizei depth,
+                                       GLboolean fixedsamplelocations);
 ANGLE_EXPORT void GL_APIENTRY TexSubImage2DContextANGLE(GLeglContext ctx,
                                                         GLenum target,
                                                         GLint level,
@@ -3281,15 +3349,35 @@ FramebufferTextureMultiviewSideBySideANGLEContextANGLE(GLeglContext ctx,
                                                        GLint level,
                                                        GLsizei numViews,
                                                        const GLint *viewportOffsets);
-ANGLE_EXPORT void GL_APIENTRY
-TexStorage3DMultisampleANGLEContextANGLE(GLeglContext ctx,
-                                         GLenum target,
-                                         GLsizei samples,
-                                         GLint sizedinternalformat,
-                                         GLsizei width,
-                                         GLsizei height,
-                                         GLsizei depth,
-                                         GLboolean fixedsamplelocations);
+ANGLE_EXPORT void GL_APIENTRY CopyTexture3DANGLEContextANGLE(GLeglContext ctx,
+                                                             GLuint sourceId,
+                                                             GLint sourceLevel,
+                                                             GLenum destTarget,
+                                                             GLuint destId,
+                                                             GLint destLevel,
+                                                             GLint internalFormat,
+                                                             GLenum destType,
+                                                             GLboolean unpackFlipY,
+                                                             GLboolean unpackPremultiplyAlpha,
+                                                             GLboolean unpackUnmultiplyAlpha);
+ANGLE_EXPORT void GL_APIENTRY CopySubTexture3DANGLEContextANGLE(GLeglContext ctx,
+                                                                GLuint sourceId,
+                                                                GLint sourceLevel,
+                                                                GLenum destTarget,
+                                                                GLuint destId,
+                                                                GLint destLevel,
+                                                                GLint xoffset,
+                                                                GLint yoffset,
+                                                                GLint zoffset,
+                                                                GLint x,
+                                                                GLint y,
+                                                                GLint z,
+                                                                GLint width,
+                                                                GLint height,
+                                                                GLint depth,
+                                                                GLboolean unpackFlipY,
+                                                                GLboolean unpackPremultiplyAlpha,
+                                                                GLboolean unpackUnmultiplyAlpha);
 }  // namespace gl
 
 #endif  // LIBGLESV2_ENTRY_POINTS_GLES_EXT_AUTOGEN_H_

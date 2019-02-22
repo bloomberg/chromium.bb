@@ -13,6 +13,7 @@
 #include "ash/system/model/session_length_limit_model.h"
 #include "ash/system/model/tracing_model.h"
 #include "ash/system/model/update_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -25,7 +26,8 @@ SystemTrayModel::SystemTrayModel()
       enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
       session_length_limit_(std::make_unique<SessionLengthLimitModel>()),
       tracing_(std::make_unique<TracingModel>()),
-      update_model_(std::make_unique<UpdateModel>()) {}
+      update_model_(std::make_unique<UpdateModel>()),
+      virtual_keyboard_(std::make_unique<VirtualKeyboardModel>()) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
 

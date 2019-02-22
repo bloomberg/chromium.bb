@@ -12,7 +12,6 @@
 
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/cpwl_scroll_bar.h"
-#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -121,10 +120,6 @@ CPWL_Wnd::CPWL_Wnd()
 
 CPWL_Wnd::~CPWL_Wnd() {
   ASSERT(!m_bCreated);
-}
-
-ByteString CPWL_Wnd::GetClassName() const {
-  return "CPWL_Wnd";
 }
 
 void CPWL_Wnd::Create(const CreateParams& cp) {

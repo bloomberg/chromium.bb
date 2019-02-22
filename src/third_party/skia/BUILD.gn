@@ -31,8 +31,10 @@ declare_args() {
   skia_use_zlib = true
   skia_use_metal = false
   skia_use_libheif = is_skia_dev_build
+  skia_use_x11 = is_linux
 
   skia_android_serial = ""
+  skia_enable_ccpr = true
   skia_enable_discrete_gpu = true
   skia_enable_effects = true
   skia_enable_effects_imagefilters = true
@@ -92,6 +94,7 @@ skia_public_includes = [
   "include/codec",
   "include/config",
   "include/core",
+  "include/docs",
   "include/effects",
   "include/encode",
   "include/gpu",
@@ -119,6 +122,9 @@ config("skia_public") {
   }
   if (skia_enable_flutter_defines) {
     defines += flutter_defines
+
+    # Flutter always wants this https://github.com/flutter/flutter/issues/11402
+    defines += [ "SK_ENABLE_DUMP_GPU" ]
   }
   if (!skia_enable_gpu) {
     defines += [ "SK_SUPPORT_GPU=0" ]
@@ -155,9 +161,6 @@ config("skia_private") {
     "src/xml",
     "third_party/gif",
   ]
-  if (skia_llvm_path != "") {
-    include_dirs += [ "$skia_llvm_path/include" ]
-  }
 
   defines = [ "SK_GAMMA_APPLY_TO_A8" ]
   if (is_android) {
@@ -400,7 +403,8 @@ optional("fontmgr_android") {
 }
 
 optional("fontmgr_custom") {
-  enabled = is_linux && skia_use_freetype && !skia_use_fontconfig
+  enabled = (is_linux || target_cpu == "wasm") && skia_use_freetype &&
+            !skia_use_fontconfig
 
   deps = [
     ":typeface_freetype",
@@ -584,6 +588,10 @@ optional("gpu") {
   public_deps = []
 
   sources = skia_gpu_sources + skia_sksl_sources + skia_gpu_processor_outputs
+  if (!skia_enable_ccpr) {
+    sources -= skia_ccpr_sources
+    sources += [ "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp" ]
+  }
 
   # These paths need to be absolute to match the ones produced by shared_sources.gni.
   sources -= get_path_info([ "src/gpu/gl/GrGLMakeNativeInterface_none.cpp" ],
@@ -599,7 +607,7 @@ optional("gpu") {
   } else if (skia_use_egl) {
     sources += [ "src/gpu/gl/egl/GrGLMakeNativeInterface_egl.cpp" ]
     libs += [ "EGL" ]
-  } else if (is_linux) {
+  } else if (is_linux && skia_use_x11) {
     sources += [ "src/gpu/gl/glx/GrGLMakeNativeInterface_glx.cpp" ]
     libs += [ "GL" ]
   } else if (is_mac) {
@@ -638,6 +646,10 @@ optional("gpu") {
 
   if (skia_enable_atlas_text) {
     sources += skia_atlas_text_sources
+  }
+
+  if (is_debug) {
+    public_defines += [ "SK_ENABLE_DUMP_GPU" ]
   }
 }
 
@@ -930,7 +942,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || target_cpu == "wasm") {
     sources += [ "src/ports/SkDebug_stdio.cpp" ]
     if (skia_use_egl) {
       libs += [ "GLESv2" ]
@@ -974,6 +986,71 @@ component("skia") {
   if (is_fuchsia) {
     sources += [ "src/ports/SkDebug_stdio.cpp" ]
   }
+}
+
+static_library("pathkit") {
+  public_configs = [ ":skia_public" ]
+  configs += skia_library_configs
+
+  deps = [
+    ":arm64",
+    ":armv7",
+    ":avx",
+    ":crc32",
+    ":hsw",
+    ":none",
+    ":sse2",
+    ":sse41",
+    ":sse42",
+    ":ssse3",
+  ]
+
+  # This file (and all GN files in Skia) are designed to work with an
+  # empty sources assignment filter; we handle all that explicitly.
+  # We clear the filter here for clients who may have set up a global filter.
+  set_sources_assignment_filter([])
+
+  sources = []
+  sources += skia_pathops_sources
+  sources += [
+    "src/core/SkAnalyticEdge.cpp",
+    "src/core/SkArenaAlloc.cpp",
+    "src/core/SkCubicMap.cpp",
+    "src/core/SkEdge.cpp",
+    "src/core/SkEdgeBuilder.cpp",
+    "src/core/SkEdgeClipper.cpp",
+    "src/core/SkGeometry.cpp",
+    "src/core/SkLineClipper.cpp",
+    "src/core/SkMallocPixelRef.cpp",
+    "src/core/SkMath.cpp",
+    "src/core/SkMatrix.cpp",
+    "src/core/SkOpts.cpp",
+    "src/core/SkPaint.cpp",
+    "src/core/SkPath.cpp",
+    "src/core/SkPathEffect.cpp",
+    "src/core/SkPathMeasure.cpp",
+    "src/core/SkPathRef.cpp",
+    "src/core/SkPoint.cpp",
+    "src/core/SkRRect.cpp",
+    "src/core/SkRect.cpp",
+    "src/core/SkSemaphore.cpp",
+    "src/core/SkStream.cpp",
+    "src/core/SkString.cpp",
+    "src/core/SkStringUtils.cpp",
+    "src/core/SkStroke.cpp",
+    "src/core/SkStrokeRec.cpp",
+    "src/core/SkStrokerPriv.cpp",
+    "src/core/SkThreadID.cpp",
+    "src/core/SkUtils.cpp",
+    "src/effects/SkDashPathEffect.cpp",
+    "src/effects/SkTrimPathEffect.cpp",
+    "src/ports/SkDebug_stdio.cpp",
+    "src/ports/SkMemory_malloc.cpp",
+    "src/utils/SkDashPath.cpp",
+    "src/utils/SkParse.cpp",
+    "src/utils/SkParsePath.cpp",
+    "src/utils/SkUTF.cpp",
+  ]
 }
 
 # Targets guarded by skia_enable_tools may use //third_party freely.
@@ -1297,8 +1374,8 @@ if (skia_enable_tools) {
       deps += [ "//third_party/angle2" ]
       sources += [ "tools/gpu/gl/angle/GLTestContext_angle.cpp" ]
     }
+    public_include_dirs += [ "third_party/vulkan" ]
     if (skia_use_vulkan) {
-      public_include_dirs += [ "third_party/vulkan" ]
       sources += [ "tools/gpu/vk/VkTestContext.cpp" ]
       sources += [ "tools/gpu/vk/VkTestUtils.cpp" ]
       if (defined(skia_moltenvk_path) && skia_moltenvk_path != "") {
@@ -1399,6 +1476,7 @@ if (skia_enable_tools) {
       ":skia",
       ":tool_utils",
       "modules/skottie",
+      "modules/skottie:gm",
       "modules/sksg",
     ]
     public_deps = [
@@ -1417,6 +1495,7 @@ if (skia_enable_tools) {
       sources -= [ "//tests/FontMgrFontConfigTest.cpp" ]
     }
     deps = [
+      ":experimental_pipe",
       ":experimental_svg_model",
       ":flags",
       ":skia",
@@ -1441,6 +1520,18 @@ if (skia_enable_tools) {
       ":gpu_tool_utils",
       ":skia",
       ":tool_utils",
+    ]
+  }
+
+  test_lib("experimental_pipe") {
+    public_include_dirs = [ "experimental/pipe" ]
+    sources = [
+      "experimental/pipe/SkPipe.h",
+      "experimental/pipe/SkPipeCanvas.cpp",
+      "experimental/pipe/SkPipeCanvas.h",
+      "experimental/pipe/SkPipeFormat.h",
+      "experimental/pipe/SkPipeReader.cpp",
+      "experimental/pipe/SkRefSet.h",
     ]
   }
 
@@ -1539,7 +1630,7 @@ if (skia_enable_tools) {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_mac) {
     test_app("skottie_tool") {
       deps = [
         "modules/skottie:tool",
@@ -1595,6 +1686,7 @@ if (skia_enable_tools) {
       include_dirs = [ "tests" ]
       deps = [
         ":common_flags",
+        ":experimental_pipe",
         ":experimental_svg_model",
         ":flags",
         ":gm",
@@ -1752,17 +1844,18 @@ if (skia_enable_tools) {
       "tools/debugger",
     ]
     sources = [
+      "fuzz/Fuzz.cpp",
       "fuzz/FuzzCanvas.cpp",
       "fuzz/FuzzCommon.cpp",
       "fuzz/FuzzDrawFunctions.cpp",
       "fuzz/FuzzEncoders.cpp",
       "fuzz/FuzzGradients.cpp",
+      "fuzz/FuzzMain.cpp",
       "fuzz/FuzzParsePath.cpp",
       "fuzz/FuzzPathMeasure.cpp",
       "fuzz/FuzzPathop.cpp",
       "fuzz/FuzzPolyUtils.cpp",
       "fuzz/FuzzRegionOp.cpp",
-      "fuzz/fuzz.cpp",
       "fuzz/oss_fuzz/FuzzAnimatedImage.cpp",
       "fuzz/oss_fuzz/FuzzImage.cpp",
       "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
@@ -1895,6 +1988,7 @@ if (skia_enable_tools) {
       deps = [
         ":skia",
         "modules/skottie",
+        "modules/sksg:samples",
       ]
     }
   }

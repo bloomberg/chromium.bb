@@ -127,20 +127,21 @@ TEST_F(SubresourceFilterFeaturesTest, ActivationLevel) {
   const struct {
     bool feature_enabled;
     const char* activation_level_param;
-    ActivationLevel expected_activation_level;
-  } kTestCases[] = {{false, "", ActivationLevel::DISABLED},
-                    {false, "disabled", ActivationLevel::DISABLED},
-                    {false, "dryrun", ActivationLevel::DISABLED},
-                    {false, "enabled", ActivationLevel::DISABLED},
-                    {false, "%$ garbage !%", ActivationLevel::DISABLED},
-                    {true, "", ActivationLevel::DISABLED},
-                    {true, "disable", ActivationLevel::DISABLED},
-                    {true, "Disable", ActivationLevel::DISABLED},
-                    {true, "disabled", ActivationLevel::DISABLED},
-                    {true, "%$ garbage !%", ActivationLevel::DISABLED},
-                    {true, kActivationLevelDryRun, ActivationLevel::DRYRUN},
-                    {true, kActivationLevelEnabled, ActivationLevel::ENABLED},
-                    {true, "Enabled", ActivationLevel::ENABLED}};
+    mojom::ActivationLevel expected_activation_level;
+  } kTestCases[] = {
+      {false, "", mojom::ActivationLevel::kDisabled},
+      {false, "disabled", mojom::ActivationLevel::kDisabled},
+      {false, "dryrun", mojom::ActivationLevel::kDisabled},
+      {false, "enabled", mojom::ActivationLevel::kDisabled},
+      {false, "%$ garbage !%", mojom::ActivationLevel::kDisabled},
+      {true, "", mojom::ActivationLevel::kDisabled},
+      {true, "disable", mojom::ActivationLevel::kDisabled},
+      {true, "Disable", mojom::ActivationLevel::kDisabled},
+      {true, "disabled", mojom::ActivationLevel::kDisabled},
+      {true, "%$ garbage !%", mojom::ActivationLevel::kDisabled},
+      {true, kActivationLevelDryRun, mojom::ActivationLevel::kDryRun},
+      {true, kActivationLevelEnabled, mojom::ActivationLevel::kEnabled},
+      {true, "Enabled", mojom::ActivationLevel::kEnabled}};
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
@@ -202,7 +203,7 @@ TEST_F(SubresourceFilterFeaturesTest, ActivationScope) {
     } else {
       ExpectAndRetrieveExactlyOneEnabledConfig(&actual_configuration);
     }
-    EXPECT_EQ(ActivationLevel::DISABLED,
+    EXPECT_EQ(mojom::ActivationLevel::kDisabled,
               actual_configuration.activation_options.activation_level);
     EXPECT_EQ(test_case.expected_activation_scope,
               actual_configuration.activation_conditions.activation_scope);
@@ -213,37 +214,37 @@ TEST_F(SubresourceFilterFeaturesTest, ActivationLevelAndScope) {
   const struct {
     bool feature_enabled;
     const char* activation_level_param;
-    ActivationLevel expected_activation_level;
+    mojom::ActivationLevel expected_activation_level;
     const char* activation_scope_param;
     ActivationScope expected_activation_scope;
   } kTestCases[] = {
-      {false, kActivationLevelDisabled, ActivationLevel::DISABLED,
+      {false, kActivationLevelDisabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
+      {true, kActivationLevelDisabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
+      {true, kActivationLevelDisabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
+      {true, kActivationLevelDisabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationLevelDisabled, ActivationLevel::DISABLED,
+      {true, kActivationLevelDisabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
+      {true, kActivationLevelDryRun, mojom::ActivationLevel::kDryRun,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
+      {true, kActivationLevelDryRun, mojom::ActivationLevel::kDryRun,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
+      {true, kActivationLevelDryRun, mojom::ActivationLevel::kDryRun,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationLevelDryRun, ActivationLevel::DRYRUN,
+      {true, kActivationLevelDryRun, mojom::ActivationLevel::kDryRun,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
+      {true, kActivationLevelEnabled, mojom::ActivationLevel::kEnabled,
        kActivationScopeNoSites, ActivationScope::NO_SITES},
-      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
+      {true, kActivationLevelEnabled, mojom::ActivationLevel::kEnabled,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
+      {true, kActivationLevelEnabled, mojom::ActivationLevel::kEnabled,
        kActivationScopeActivationList, ActivationScope::ACTIVATION_LIST},
-      {true, kActivationLevelEnabled, ActivationLevel::ENABLED,
+      {true, kActivationLevelEnabled, mojom::ActivationLevel::kEnabled,
        kActivationScopeAllSites, ActivationScope::ALL_SITES},
-      {false, kActivationLevelEnabled, ActivationLevel::DISABLED,
+      {false, kActivationLevelEnabled, mojom::ActivationLevel::kDisabled,
        kActivationScopeAllSites, ActivationScope::NO_SITES}};
 
   for (const auto& test_case : kTestCases) {
@@ -538,7 +539,7 @@ TEST_F(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
   EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
             config.activation_conditions.activation_scope);
   EXPECT_EQ(800, config.activation_conditions.priority);
-  EXPECT_EQ(ActivationLevel::ENABLED,
+  EXPECT_EQ(mojom::ActivationLevel::kEnabled,
             config.activation_options.activation_level);
   EXPECT_EQ(0.0, config.activation_options.performance_measurement_rate);
 }
@@ -632,7 +633,7 @@ TEST_F(SubresourceFilterFeaturesTest,
        {kActivationPriorityParameterName, "750"},
        {kRulesetFlavorParameterName, kTestRulesetFlavor}});
 
-  Configuration experimental_config(ActivationLevel::DRYRUN,
+  Configuration experimental_config(mojom::ActivationLevel::kDryRun,
                                     ActivationScope::ACTIVATION_LIST,
                                     ActivationList::SUBRESOURCE_FILTER);
   experimental_config.activation_conditions.priority = 750;

@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Намерете клавиш, след което вдигнете пръст, за да въведете</translation>
 <translation id="1012173283529841972">Списъчен елемент</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Прекарайте два пръста надясно</translation>
 <translation id="1022586497894531524">За първи път ли използвате обратната връзка с говор на ChromeVox? В този кратък урок са обяснени основните положения за започване на работа с екранния четец.</translation>
 <translation id="1023866615269196768">Разпростряна.</translation>
 <translation id="1025074108959230262">Фиксираният режим е деактивиран</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">Включване или изключване на обратната връзка със звук (звукови сигнали).</translation>
 <translation id="1108651818222110612">подзаглавие</translation>
 <translation id="1120743664840974483">{"а": "антон", "б": "борис", "в": "васил", "г": "георги", "д": "димитър", "е": "елена", "ж": "живко", "з": "захари", "и": "иван", "й": "йордан", "к": "кирил", "л": "людмил", "м": "мария", "н": "николай", "о": "огнян", "п": "петър", "р": "румен", "с": "стефан", "т": "тодор", "у": "уляна", "ф": "филип", "х": "христо", "ц": "цветан", "ч": "чавдар", "ш": "шипка", "щ": "щерю", "ъ": "ер голям", "ь": "ер малък", "ю": "юлия", "я": "явор"}</translation>
+<translation id="1120938014254001895">Прекарайте два пръста нагоре</translation>
 <translation id="1124771028211010580">Използва се изгледът с успоредно показване.</translation>
 <translation id="113582498867142724">Колекция от <ph name="TAG" /> с/ъс <ph name="NUM" /> елемента</translation>
 <translation id="1155043339247954670">Няма следващ списъчен елемент.</translation>
@@ -91,6 +93,7 @@
 <translation id="1722567105086139392">Връзка</translation>
 <translation id="1727806147743597030">долен колонтитул</translation>
 <translation id="174268867904053074">Следващата графика</translation>
+<translation id="1765245556747822181">Прекарайте пръст нагоре</translation>
 <translation id="1781173782405573156">Пропускане на клавиш</translation>
 <translation id="1787176709638001873">Поле за парола</translation>
 <translation id="1802710350767629429">Показване на бележките за актуализацията</translation>
@@ -136,6 +139,7 @@
 <translation id="2223693656926968778">Извършване на действие върху текущия елемент</translation>
 <translation id="225732394367814946">Увеличаване на скоростта на говора</translation>
 <translation id="2267945578749931355">Следващият знак</translation>
+<translation id="2278490101488436824">Прекарайте три пръста наляво</translation>
 <translation id="2281234842553884450">Предишният плъзгач</translation>
 <translation id="2294136146931447363">Начало на текста с курсив</translation>
 <translation id="2311237334957139798">Преминаване към предишното ниво на детайлност</translation>
@@ -208,17 +212,20 @@
 <translation id="2864481629947106776">Предишната връзка</translation>
 <translation id="2867808975387772810">Библиография</translation>
 <translation id="2873259058405069099">Към началото на таблицата</translation>
+<translation id="2879867157561757640">Прекарайте три пръста надолу</translation>
 <translation id="288178314850623291">Използвайте команди за преход, за да преминете направо към конкретни типове елементи. За преход по заглавията напред натиснете „търсене“ + H, а за преход назад натиснете „търсене“ + Shift + H.</translation>
 <translation id="2894654529758326923">Информация</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{лява фигурна скоба}other{# леви фигурни скоби}}</translation>
 <translation id="2909478709401302630">Начало на горния индекс</translation>
 <translation id="2911433807131383493">Отваряне на урока за ChromeVox</translation>
+<translation id="2912405967290226587">Прекарайте три пръста надясно</translation>
 <translation id="2932083475399492303">Превключване между структурен или тип ред за оформление</translation>
 <translation id="2944762337049891859">Автоматично прочитане на страницата след приключване на зареждането й.</translation>
 <translation id="2964026537669811554">Група заглавия</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{табулатор}other{# табулатора}}</translation>
 <translation id="2972078295414139404">Няма предишна посетена връзка.</translation>
 <translation id="2972205263822847197">Подсказка</translation>
+<translation id="297825089465017871">Прекарайте два пръста наляво</translation>
 <translation id="2998131015536248178">Предишният знак</translation>
 <translation id="2999559350546931576">Намаляване на височината на звука</translation>
 <translation id="2999945368667127852">Няма следващо приспособление за мултимедия.</translation>
@@ -230,6 +237,7 @@
 <translation id="3046838483509668188">Опции за ChromeVox</translation>
 <translation id="3047143736589213134">Експериментална клавиатурна подредба</translation>
 <translation id="3060756054951570867">Отворихте менюто „<ph name="TITLE" />“</translation>
+<translation id="3070245424257836917">Прекарайте три пръста нагоре</translation>
 <translation id="3078345202707391975">Следващото заглавие от второ ниво</translation>
 <translation id="3078740164268491126">таблица</translation>
 <translation id="3082249673510793544">Превъртане назад</translation>
@@ -342,6 +350,7 @@
 <translation id="3599054940393788245">Извън математическия израз</translation>
 <translation id="360241989769010433">Признания</translation>
 <translation id="3616113530831147358">Аудио</translation>
+<translation id="3622350485154495700">Докоснете два пъти с един пръст</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{обратен апостроф}other{# обратни апострофа}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{знак за долар}other{# знака за долар}}</translation>
@@ -371,6 +380,7 @@
 <translation id="3914173277599553213">Задължително</translation>
 <translation id="3914732343065571127">Справочник на командите на ChromeVox</translation>
 <translation id="3930498801443296724">Изнесен цитат</translation>
+<translation id="3941269780691800708">Изговаряне на текста под курсора на мишката.</translation>
 <translation id="3962990492275676168">Стартиране на четенето от текущото местоположение</translation>
 <translation id="4004802134384979325">с отметка</translation>
 <translation id="4006140876663370126">изображение</translation>
@@ -461,6 +471,7 @@
 <translation id="4688873778442829762">таблица</translation>
 <translation id="4693675773662933727">Предишният ориентир</translation>
 <translation id="4696413482802371445">Няма следващо заглавие от пето ниво.</translation>
+<translation id="4710166929009737753">Прекарайте пръст надясно</translation>
 <translation id="4729095194763193578">Предишният ред в таблицата</translation>
 <translation id="4736221692378411923">август</translation>
 <translation id="4740661827607246557">Помощни команди</translation>
@@ -473,6 +484,7 @@
 <translation id="4826415162591436065">Навигация напред</translation>
 <translation id="4826604887384865800">Следващият преход</translation>
 <translation id="4827410568042294688">отмяна на открояването</translation>
+<translation id="4838490795649708173">Докоснете с четири пръста</translation>
 <translation id="4839925464551908214">Преминаване към предишния ред</translation>
 <translation id="4842108708071771135">Няма следващ блоков цитат.</translation>
 <translation id="4844625982113518938">Натиснете клавиш, за да научите името му. С Ctrl + W се изключва режимът за изговаряне.</translation>
@@ -609,6 +621,7 @@
 <translation id="5750633686117194034">Не сте натиснали модифициращ клавиш. Моля, натиснете и задръжте един или повече. Щом сте готови, вдигнете пръстите си и ще чуете набора от клавиши. Използвайте „Tab“ за изход.</translation>
 <translation id="5760594853119905566">Приложение</translation>
 <translation id="5788275253279308023">прозорец в режим „инкогнито“ с раздела „<ph name="TITLE" />“</translation>
+<translation id="5805940204952508776">Докоснете с два пръста</translation>
 <translation id="5806206155699461681">Подобряване на конкретни сайтове (като Google Търсене).</translation>
 <translation id="5819072574982403430">Елемент от дърво</translation>
 <translation id="5826479389509458994">ред <ph name="ROW" />, графа <ph name="COL" /></translation>
@@ -713,8 +726,10 @@
 <translation id="6786800275320335305">Статия</translation>
 <translation id="6787839852456839824">Клавишни комбинации</translation>
 <translation id="6793101435925451627">списъчно поле</translation>
+<translation id="6826226459053491773">Прекарайте два пръста надолу</translation>
 <translation id="6833103209700200188">Долен колонтитул</translation>
 <translation id="6858047746862060282">Пролог</translation>
+<translation id="6859876496651143278">Прекарайте пръст наляво</translation>
 <translation id="6871161210040114857">Регистърът на буквите се пренебрегва.</translation>
 <translation id="6877435256196695200">Няма следваща графика.</translation>
 <translation id="6897341342232909480">Преместване наляво</translation>
@@ -964,6 +979,7 @@
 <translation id="923331726185079994">Екранният четец ChromeVox е актуализиран</translation>
 <translation id="930275611743429116">Начало или край на открояването.</translation>
 <translation id="948171205378458592">Намаляване на скоростта на говора</translation>
+<translation id="958854023026327378">Прекарайте пръст надолу</translation>
 <translation id="962913030769097253">Следващото заглавие от първо ниво</translation>
 <translation id="973955474346881951">Активиране/деактивиране на фиксирания режим</translation>
 <translation id="976849232629612000">Няма елементи.</translation>

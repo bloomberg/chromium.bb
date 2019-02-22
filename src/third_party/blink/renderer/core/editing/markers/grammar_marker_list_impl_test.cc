@@ -6,12 +6,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/editing/markers/grammar_marker_list_impl.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
 // Functionality implemented in SpellCheckMarkerListImpl is tested in
-// SpellingMarkerListImplTest.cpp.
+// spelling_marker_list_impl_test.cc.
 
 class GrammarMarkerListImplTest : public testing::Test {
  protected:

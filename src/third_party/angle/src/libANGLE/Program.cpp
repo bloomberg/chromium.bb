@@ -600,7 +600,7 @@ struct Program::LinkingState
 {
     const Context *context;
     std::unique_ptr<ProgramLinkedResources> resources;
-    ProgramHash programHash;
+    egl::BlobCache::Key programHash;
     std::unique_ptr<rx::LinkEvent> linkEvent;
 };
 
@@ -920,7 +920,7 @@ Program::~Program()
 
 void Program::onDestroy(const Context *context)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     for (ShaderType shaderType : AllShaderTypes())
     {
         if (mState.mAttachedShaders[shaderType])
@@ -940,30 +940,25 @@ void Program::onDestroy(const Context *context)
 }
 GLuint Program::id() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mHandle;
 }
 
 void Program::setLabel(const std::string &label)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mState.mLabel = label;
 }
 
 const std::string &Program::getLabel() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mLabel;
-}
-rx::ProgramImpl *Program::getImplementation() const
-{
-    resolveLink();
-    return mProgram;
 }
 
 void Program::attachShader(Shader *shader)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ShaderType shaderType = shader->getType();
     ASSERT(shaderType != ShaderType::InvalidEnum);
 
@@ -973,7 +968,7 @@ void Program::attachShader(Shader *shader)
 
 void Program::detachShader(const Context *context, Shader *shader)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ShaderType shaderType = shader->getType();
     ASSERT(shaderType != ShaderType::InvalidEnum);
 
@@ -984,7 +979,7 @@ void Program::detachShader(const Context *context, Shader *shader)
 
 int Program::getAttachedShadersCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     int numAttachedShaders = 0;
     for (const Shader *shader : mState.mAttachedShaders)
     {
@@ -999,31 +994,41 @@ int Program::getAttachedShadersCount() const
 
 const Shader *Program::getAttachedShader(ShaderType shaderType) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getAttachedShader(shaderType);
 }
 
 void Program::bindAttributeLocation(GLuint index, const char *name)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mAttributeBindings.bindLocation(index, name);
 }
 
 void Program::bindUniformLocation(GLuint index, const char *name)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mUniformLocationBindings.bindLocation(index, name);
 }
 
 void Program::bindFragmentInputLocation(GLint index, const char *name)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mFragmentInputBindings.bindLocation(index, name);
+}
+
+void Program::bindFragmentOutputLocation(GLuint index, const char *name)
+{
+    mFragmentOutputLocations.bindLocation(index, name);
+}
+
+void Program::bindFragmentOutputIndex(GLuint index, const char *name)
+{
+    mFragmentOutputIndexes.bindLocation(index, name);
 }
 
 BindingInfo Program::getFragmentInputBindingInfo(GLint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     BindingInfo ret;
     ret.type  = GL_NONE;
     ret.valid = false;
@@ -1079,7 +1084,7 @@ void Program::pathFragmentInputGen(GLint index,
                                    GLint components,
                                    const GLfloat *coeffs)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     // If the location is -1 then the command is silently ignored
     if (index == -1)
         return;
@@ -1114,13 +1119,14 @@ Error Program::link(const gl::Context *context)
         return NoError();
     }
 
-    ProgramHash programHash   = {0};
+    egl::BlobCache::Key programHash = {0};
     MemoryProgramCache *cache = context->getMemoryProgramCache();
 
     if (cache)
     {
-        ANGLE_TRY_RESULT(cache->getProgram(context, this, &mState, &programHash), mLinked);
-        ANGLE_HISTOGRAM_BOOLEAN("GPU.ANGLE.ProgramCache.LoadBinarySuccess", mLinked);
+        angle::Result result = cache->getProgram(context, this, &mState, &programHash);
+        mLinked              = (result == angle::Result::Continue());
+        ANGLE_TRY(result);
     }
 
     if (mLinked)
@@ -1233,8 +1239,9 @@ Error Program::link(const gl::Context *context)
             return NoError();
         }
 
-        if (!linkOutputVariables(context->getCaps(), context->getClientVersion(),
-                                 combinedImageUniforms, combinedShaderStorageBlocks))
+        if (!linkOutputVariables(context->getCaps(), context->getExtensions(),
+                                 context->getClientVersion(), combinedImageUniforms,
+                                 combinedShaderStorageBlocks))
         {
             return NoError();
         }
@@ -1277,17 +1284,13 @@ bool Program::isLinking() const
     return (mLinkingState.get() && mLinkingState->linkEvent->isLinking());
 }
 
-bool Program::isLinked() const
-{
-    resolveLink();
-    return mLinked;
-}
-
-void Program::resolveLinkImpl()
+void Program::resolveLinkImpl(const Context *context)
 {
     ASSERT(mLinkingState.get());
 
-    mLinked           = mLinkingState->linkEvent->wait();
+    angle::Result result = mLinkingState->linkEvent->wait(context);
+
+    mLinked           = result == angle::Result::Continue();
     mLinkResolved     = true;
     auto linkingState = std::move(mLinkingState);
     if (!mLinked)
@@ -1429,7 +1432,7 @@ Error Program::loadBinary(const Context *context,
                           const void *binary,
                           GLsizei length)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     unlink();
 
 #if ANGLE_PROGRAM_BINARY_LOAD != ANGLE_ENABLED
@@ -1443,11 +1446,13 @@ Error Program::loadBinary(const Context *context,
     }
 
     const uint8_t *bytes = reinterpret_cast<const uint8_t *>(binary);
-    ANGLE_TRY_RESULT(
-        MemoryProgramCache::Deserialize(context, this, &mState, bytes, length, mInfoLog), mLinked);
+    angle::Result result =
+        MemoryProgramCache::Deserialize(context, this, &mState, bytes, length, mInfoLog);
+    mLinked = result == angle::Result::Continue();
+    ANGLE_TRY(result);
 
     // Currently we require the full shader text to compute the program hash.
-    // TODO(jmadill): Store the binary in the internal program cache.
+    // We could also store the binary in the internal program cache.
 
     for (size_t uniformBlockIndex = 0; uniformBlockIndex < mState.mUniformBlocks.size();
          ++uniformBlockIndex)
@@ -1465,7 +1470,7 @@ Error Program::saveBinary(const Context *context,
                           GLsizei bufSize,
                           GLsizei *length) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (binaryFormat)
     {
         *binaryFormat = GL_PROGRAM_BINARY_ANGLE;
@@ -1510,7 +1515,7 @@ Error Program::saveBinary(const Context *context,
 
 GLint Program::getBinaryLength(const Context *context) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (!mLinked)
     {
         return 0;
@@ -1528,7 +1533,7 @@ GLint Program::getBinaryLength(const Context *context) const
 
 void Program::setBinaryRetrievableHint(bool retrievable)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     // TODO(jmadill) : replace with dirty bits
     mProgram->setBinaryRetrievableHint(retrievable);
     mState.mBinaryRetrieveableHint = retrievable;
@@ -1536,13 +1541,13 @@ void Program::setBinaryRetrievableHint(bool retrievable)
 
 bool Program::getBinaryRetrievableHint() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mBinaryRetrieveableHint;
 }
 
 void Program::setSeparable(bool separable)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     // TODO(yunchao) : replace with dirty bits
     if (mState.mSeparable != separable)
     {
@@ -1553,25 +1558,14 @@ void Program::setSeparable(bool separable)
 
 bool Program::isSeparable() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mSeparable;
 }
 
-void Program::release(const Context *context)
+void Program::deleteSelf(const Context *context)
 {
-    resolveLink();
-    mRefCount--;
-
-    if (mRefCount == 0 && mDeleteStatus)
-    {
-        mResourceManager->deleteProgram(context, mHandle);
-    }
-}
-
-void Program::addRef()
-{
-    resolveLink();
-    mRefCount++;
+    ASSERT(mRefCount == 0 && mDeleteStatus);
+    mResourceManager->deleteProgram(context, mHandle);
 }
 
 unsigned int Program::getRefCount() const
@@ -1581,19 +1575,19 @@ unsigned int Program::getRefCount() const
 
 int Program::getInfoLogLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return static_cast<int>(mInfoLog.getLength());
 }
 
 void Program::getInfoLog(GLsizei bufSize, GLsizei *length, char *infoLog) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mInfoLog.getLog(bufSize, length, infoLog);
 }
 
 void Program::getAttachedShaders(GLsizei maxCount, GLsizei *count, GLuint *shaders) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     int total = 0;
 
     for (const Shader *shader : mState.mAttachedShaders)
@@ -1613,13 +1607,13 @@ void Program::getAttachedShaders(GLsizei maxCount, GLsizei *count, GLuint *shade
 
 GLuint Program::getAttributeLocation(const std::string &name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getAttributeLocation(name);
 }
 
 bool Program::isAttribLocationActive(size_t attribLocation) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(attribLocation < mState.mActiveAttribLocationsMask.size());
     return mState.mActiveAttribLocationsMask[attribLocation];
 }
@@ -1631,7 +1625,7 @@ void Program::getActiveAttribute(GLuint index,
                                  GLenum *type,
                                  GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (!mLinked)
     {
         if (bufsize > 0)
@@ -1664,7 +1658,7 @@ void Program::getActiveAttribute(GLuint index,
 
 GLint Program::getActiveAttributeCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (!mLinked)
     {
         return 0;
@@ -1675,7 +1669,7 @@ GLint Program::getActiveAttributeCount() const
 
 GLint Program::getActiveAttributeMaxLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (!mLinked)
     {
         return 0;
@@ -1693,69 +1687,69 @@ GLint Program::getActiveAttributeMaxLength() const
 
 const std::vector<sh::Attribute> &Program::getAttributes() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mAttributes;
 }
 
 const std::vector<SamplerBinding> &Program::getSamplerBindings() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mSamplerBindings;
 }
 
 const sh::WorkGroupSize &Program::getComputeShaderLocalSize() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mComputeShaderLocalSize;
 }
 
 PrimitiveMode Program::getGeometryShaderInputPrimitiveType() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mGeometryShaderInputPrimitiveType;
 }
 PrimitiveMode Program::getGeometryShaderOutputPrimitiveType() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mGeometryShaderOutputPrimitiveType;
 }
 GLint Program::getGeometryShaderInvocations() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mGeometryShaderInvocations;
 }
 GLint Program::getGeometryShaderMaxVertices() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mGeometryShaderMaxVertices;
 }
 
 GLuint Program::getInputResourceIndex(const GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return GetResourceIndexFromName(mState.mAttributes, std::string(name));
 }
 
 GLuint Program::getOutputResourceIndex(const GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return GetResourceIndexFromName(mState.mOutputVariables, std::string(name));
 }
 
 size_t Program::getOutputResourceCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return (mLinked ? mState.mOutputVariables.size() : 0);
 }
 
 const std::vector<GLenum> &Program::getOutputVariableTypes() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mOutputVariableTypes;
 }
 DrawBufferMask Program::getActiveOutputVariables() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mActiveOutputVariables;
 }
 
@@ -1793,7 +1787,7 @@ void Program::getInputResourceName(GLuint index,
                                    GLsizei *length,
                                    GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     getResourceName(index, mState.mAttributes, bufSize, length, name);
 }
 
@@ -1802,7 +1796,7 @@ void Program::getOutputResourceName(GLuint index,
                                     GLsizei *length,
                                     GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     getResourceName(index, mState.mOutputVariables, bufSize, length, name);
 }
 
@@ -1811,7 +1805,7 @@ void Program::getUniformResourceName(GLuint index,
                                      GLsizei *length,
                                      GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     getResourceName(index, mState.mUniforms, bufSize, length, name);
 }
 
@@ -1820,72 +1814,92 @@ void Program::getBufferVariableResourceName(GLuint index,
                                             GLsizei *length,
                                             GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     getResourceName(index, mState.mBufferVariables, bufSize, length, name);
 }
 
 const sh::Attribute &Program::getInputResource(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < mState.mAttributes.size());
     return mState.mAttributes[index];
 }
 
 const sh::OutputVariable &Program::getOutputResource(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < mState.mOutputVariables.size());
     return mState.mOutputVariables[index];
 }
 
 const ProgramBindings &Program::getAttributeBindings() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mAttributeBindings;
 }
 const ProgramBindings &Program::getUniformLocationBindings() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mUniformLocationBindings;
 }
 const ProgramBindings &Program::getFragmentInputBindings() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mFragmentInputBindings;
 }
 
 int Program::getNumViews() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getNumViews();
 }
 
 ComponentTypeMask Program::getDrawBufferTypeMask() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mDrawBufferTypeMask;
 }
 ComponentTypeMask Program::getAttributesTypeMask() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mAttributesTypeMask;
 }
 AttributesMask Program::getAttributesMask() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mAttributesMask;
 }
 
 const std::vector<GLsizei> &Program::getTransformFeedbackStrides() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mTransformFeedbackStrides;
 }
 
 GLint Program::getFragDataLocation(const std::string &name) const
 {
-    resolveLink();
-    return GetVariableLocation(mState.mOutputVariables, mState.mOutputLocations, name);
+    ASSERT(mLinkResolved);
+    GLint primaryLocation =
+        GetVariableLocation(mState.mOutputVariables, mState.mOutputLocations, name);
+    if (primaryLocation != -1)
+    {
+        return primaryLocation;
+    }
+    return GetVariableLocation(mState.mOutputVariables, mState.mSecondaryOutputLocations, name);
+}
+
+GLint Program::getFragDataIndex(const std::string &name) const
+{
+    ASSERT(mLinkResolved);
+    if (GetVariableLocation(mState.mOutputVariables, mState.mOutputLocations, name) != -1)
+    {
+        return 0;
+    }
+    if (GetVariableLocation(mState.mOutputVariables, mState.mSecondaryOutputLocations, name) != -1)
+    {
+        return 1;
+    }
+    return -1;
 }
 
 void Program::getActiveUniform(GLuint index,
@@ -1895,7 +1909,7 @@ void Program::getActiveUniform(GLuint index,
                                GLenum *type,
                                GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (mLinked)
     {
         // index must be smaller than getActiveUniformCount()
@@ -1930,7 +1944,7 @@ void Program::getActiveUniform(GLuint index,
 
 GLint Program::getActiveUniformCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (mLinked)
     {
         return static_cast<GLint>(mState.mUniforms.size());
@@ -1943,13 +1957,13 @@ GLint Program::getActiveUniformCount() const
 
 size_t Program::getActiveBufferVariableCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mLinked ? mState.mBufferVariables.size() : 0;
 }
 
 GLint Program::getActiveUniformMaxLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     size_t maxLength = 0;
 
     if (mLinked)
@@ -1973,7 +1987,7 @@ GLint Program::getActiveUniformMaxLength() const
 
 bool Program::isValidUniformLocation(GLint location) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(angle::IsValueInRangeForNumericType<GLint>(mState.mUniformLocations.size()));
     return (location >= 0 && static_cast<size_t>(location) < mState.mUniformLocations.size() &&
             mState.mUniformLocations[static_cast<size_t>(location)].used());
@@ -1981,52 +1995,40 @@ bool Program::isValidUniformLocation(GLint location) const
 
 const LinkedUniform &Program::getUniformByLocation(GLint location) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(location >= 0 && static_cast<size_t>(location) < mState.mUniformLocations.size());
     return mState.mUniforms[mState.getUniformIndexFromLocation(location)];
 }
 
 const VariableLocation &Program::getUniformLocation(GLint location) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(location >= 0 && static_cast<size_t>(location) < mState.mUniformLocations.size());
     return mState.mUniformLocations[location];
 }
 
-const std::vector<VariableLocation> &Program::getUniformLocations() const
-{
-    resolveLink();
-    return mState.mUniformLocations;
-}
-const LinkedUniform &Program::getUniformByIndex(GLuint index) const
-{
-    resolveLink();
-    ASSERT(index < static_cast<size_t>(mState.mUniforms.size()));
-    return mState.mUniforms[index];
-}
-
 const BufferVariable &Program::getBufferVariableByIndex(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < static_cast<size_t>(mState.mBufferVariables.size()));
     return mState.mBufferVariables[index];
 }
 
 GLint Program::getUniformLocation(const std::string &name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return GetVariableLocation(mState.mUniforms, mState.mUniformLocations, name);
 }
 
 GLuint Program::getUniformIndex(const std::string &name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getUniformIndexFromName(name);
 }
 
 void Program::setUniform1fv(GLint location, GLsizei count, const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 1, v);
     mProgram->setUniform1fv(location, clampedCount, v);
@@ -2034,7 +2036,7 @@ void Program::setUniform1fv(GLint location, GLsizei count, const GLfloat *v)
 
 void Program::setUniform2fv(GLint location, GLsizei count, const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 2, v);
     mProgram->setUniform2fv(location, clampedCount, v);
@@ -2042,7 +2044,7 @@ void Program::setUniform2fv(GLint location, GLsizei count, const GLfloat *v)
 
 void Program::setUniform3fv(GLint location, GLsizei count, const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 3, v);
     mProgram->setUniform3fv(location, clampedCount, v);
@@ -2050,7 +2052,7 @@ void Program::setUniform3fv(GLint location, GLsizei count, const GLfloat *v)
 
 void Program::setUniform4fv(GLint location, GLsizei count, const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 4, v);
     mProgram->setUniform4fv(location, clampedCount, v);
@@ -2058,7 +2060,7 @@ void Program::setUniform4fv(GLint location, GLsizei count, const GLfloat *v)
 
 Program::SetUniformResult Program::setUniform1iv(GLint location, GLsizei count, const GLint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 1, v);
 
@@ -2075,7 +2077,7 @@ Program::SetUniformResult Program::setUniform1iv(GLint location, GLsizei count, 
 
 void Program::setUniform2iv(GLint location, GLsizei count, const GLint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 2, v);
     mProgram->setUniform2iv(location, clampedCount, v);
@@ -2083,7 +2085,7 @@ void Program::setUniform2iv(GLint location, GLsizei count, const GLint *v)
 
 void Program::setUniform3iv(GLint location, GLsizei count, const GLint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 3, v);
     mProgram->setUniform3iv(location, clampedCount, v);
@@ -2091,7 +2093,7 @@ void Program::setUniform3iv(GLint location, GLsizei count, const GLint *v)
 
 void Program::setUniform4iv(GLint location, GLsizei count, const GLint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 4, v);
     mProgram->setUniform4iv(location, clampedCount, v);
@@ -2099,7 +2101,7 @@ void Program::setUniform4iv(GLint location, GLsizei count, const GLint *v)
 
 void Program::setUniform1uiv(GLint location, GLsizei count, const GLuint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 1, v);
     mProgram->setUniform1uiv(location, clampedCount, v);
@@ -2107,7 +2109,7 @@ void Program::setUniform1uiv(GLint location, GLsizei count, const GLuint *v)
 
 void Program::setUniform2uiv(GLint location, GLsizei count, const GLuint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 2, v);
     mProgram->setUniform2uiv(location, clampedCount, v);
@@ -2115,7 +2117,7 @@ void Program::setUniform2uiv(GLint location, GLsizei count, const GLuint *v)
 
 void Program::setUniform3uiv(GLint location, GLsizei count, const GLuint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 3, v);
     mProgram->setUniform3uiv(location, clampedCount, v);
@@ -2123,7 +2125,7 @@ void Program::setUniform3uiv(GLint location, GLsizei count, const GLuint *v)
 
 void Program::setUniform4uiv(GLint location, GLsizei count, const GLuint *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &locationInfo = mState.mUniformLocations[location];
     GLsizei clampedCount                 = clampUniformCount(locationInfo, count, 4, v);
     mProgram->setUniform4uiv(location, clampedCount, v);
@@ -2134,7 +2136,7 @@ void Program::setUniformMatrix2fv(GLint location,
                                   GLboolean transpose,
                                   const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<2, 2>(location, count, transpose, v);
     mProgram->setUniformMatrix2fv(location, clampedCount, transpose, v);
 }
@@ -2144,7 +2146,7 @@ void Program::setUniformMatrix3fv(GLint location,
                                   GLboolean transpose,
                                   const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<3, 3>(location, count, transpose, v);
     mProgram->setUniformMatrix3fv(location, clampedCount, transpose, v);
 }
@@ -2154,7 +2156,7 @@ void Program::setUniformMatrix4fv(GLint location,
                                   GLboolean transpose,
                                   const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<4, 4>(location, count, transpose, v);
     mProgram->setUniformMatrix4fv(location, clampedCount, transpose, v);
 }
@@ -2164,7 +2166,7 @@ void Program::setUniformMatrix2x3fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<2, 3>(location, count, transpose, v);
     mProgram->setUniformMatrix2x3fv(location, clampedCount, transpose, v);
 }
@@ -2174,7 +2176,7 @@ void Program::setUniformMatrix2x4fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<2, 4>(location, count, transpose, v);
     mProgram->setUniformMatrix2x4fv(location, clampedCount, transpose, v);
 }
@@ -2184,7 +2186,7 @@ void Program::setUniformMatrix3x2fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<3, 2>(location, count, transpose, v);
     mProgram->setUniformMatrix3x2fv(location, clampedCount, transpose, v);
 }
@@ -2194,7 +2196,7 @@ void Program::setUniformMatrix3x4fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<3, 4>(location, count, transpose, v);
     mProgram->setUniformMatrix3x4fv(location, clampedCount, transpose, v);
 }
@@ -2204,7 +2206,7 @@ void Program::setUniformMatrix4x2fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<4, 2>(location, count, transpose, v);
     mProgram->setUniformMatrix4x2fv(location, clampedCount, transpose, v);
 }
@@ -2214,14 +2216,14 @@ void Program::setUniformMatrix4x3fv(GLint location,
                                     GLboolean transpose,
                                     const GLfloat *v)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLsizei clampedCount = clampMatrixUniformCount<4, 3>(location, count, transpose, v);
     mProgram->setUniformMatrix4x3fv(location, clampedCount, transpose, v);
 }
 
 GLuint Program::getSamplerUniformBinding(const VariableLocation &uniformLocation) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GLuint samplerIndex = mState.getSamplerIndexFromUniformIndex(uniformLocation.index);
     const std::vector<GLuint> &boundTextureUnits =
         mState.mSamplerBindings[samplerIndex].boundTextureUnits;
@@ -2230,7 +2232,7 @@ GLuint Program::getSamplerUniformBinding(const VariableLocation &uniformLocation
 
 void Program::getUniformfv(const Context *context, GLint location, GLfloat *v) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &uniformLocation = mState.getUniformLocations()[location];
     const LinkedUniform &uniform            = mState.getUniforms()[uniformLocation.index];
 
@@ -2253,7 +2255,7 @@ void Program::getUniformfv(const Context *context, GLint location, GLfloat *v) c
 
 void Program::getUniformiv(const Context *context, GLint location, GLint *v) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &uniformLocation = mState.getUniformLocations()[location];
     const LinkedUniform &uniform            = mState.getUniforms()[uniformLocation.index];
 
@@ -2276,7 +2278,7 @@ void Program::getUniformiv(const Context *context, GLint location, GLint *v) con
 
 void Program::getUniformuiv(const Context *context, GLint location, GLuint *v) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     const VariableLocation &uniformLocation = mState.getUniformLocations()[location];
     const LinkedUniform &uniform            = mState.getUniforms()[uniformLocation.index];
 
@@ -2299,19 +2301,19 @@ void Program::getUniformuiv(const Context *context, GLint location, GLuint *v) c
 
 void Program::flagForDeletion()
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mDeleteStatus = true;
 }
 
 bool Program::isFlaggedForDeletion() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mDeleteStatus;
 }
 
 void Program::validate(const Caps &caps)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mInfoLog.reset();
 
     if (mLinked)
@@ -2326,7 +2328,7 @@ void Program::validate(const Caps &caps)
 
 bool Program::validateSamplersImpl(InfoLog *infoLog, const Caps &caps)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
 
     // if any two active samplers in a program are of different types, but refer to the same
     // texture image unit, and this is the current program, then ValidateProgram will fail, and
@@ -2353,20 +2355,8 @@ bool Program::validateSamplersImpl(InfoLog *infoLog, const Caps &caps)
 
 bool Program::isValidated() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mValidated;
-}
-
-GLuint Program::getActiveAtomicCounterBufferCount() const
-{
-    resolveLink();
-    return static_cast<GLuint>(mState.mAtomicCounterBuffers.size());
-}
-
-GLuint Program::getActiveShaderStorageBlockCount() const
-{
-    resolveLink();
-    return static_cast<GLuint>(mState.mShaderStorageBlocks.size());
 }
 
 void Program::getActiveUniformBlockName(const GLuint blockIndex,
@@ -2374,7 +2364,7 @@ void Program::getActiveUniformBlockName(const GLuint blockIndex,
                                         GLsizei *length,
                                         GLchar *blockName) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GetInterfaceBlockName(blockIndex, mState.mUniformBlocks, bufSize, length, blockName);
 }
 
@@ -2383,7 +2373,7 @@ void Program::getActiveShaderStorageBlockName(const GLuint blockIndex,
                                               GLsizei *length,
                                               GLchar *blockName) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     GetInterfaceBlockName(blockIndex, mState.mShaderStorageBlocks, bufSize, length, blockName);
 }
 
@@ -2409,45 +2399,45 @@ GLint Program::getActiveInterfaceBlockMaxNameLength(const std::vector<T> &resour
 
 GLint Program::getActiveUniformBlockMaxNameLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return getActiveInterfaceBlockMaxNameLength(mState.mUniformBlocks);
 }
 
 GLint Program::getActiveShaderStorageBlockMaxNameLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return getActiveInterfaceBlockMaxNameLength(mState.mShaderStorageBlocks);
 }
 
 GLuint Program::getUniformBlockIndex(const std::string &name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return GetInterfaceBlockIndex(mState.mUniformBlocks, name);
 }
 
 GLuint Program::getShaderStorageBlockIndex(const std::string &name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return GetInterfaceBlockIndex(mState.mShaderStorageBlocks, name);
 }
 
 const InterfaceBlock &Program::getUniformBlockByIndex(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < static_cast<GLuint>(mState.mUniformBlocks.size()));
     return mState.mUniformBlocks[index];
 }
 
 const InterfaceBlock &Program::getShaderStorageBlockByIndex(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < static_cast<GLuint>(mState.mShaderStorageBlocks.size()));
     return mState.mShaderStorageBlocks[index];
 }
 
 void Program::bindUniformBlock(GLuint uniformBlockIndex, GLuint uniformBlockBinding)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mState.mUniformBlocks[uniformBlockIndex].binding = uniformBlockBinding;
     mState.mActiveUniformBlockBindings.set(uniformBlockIndex, uniformBlockBinding != 0);
     mDirtyBits.set(DIRTY_BIT_UNIFORM_BLOCK_BINDING_0 + uniformBlockIndex);
@@ -2455,13 +2445,13 @@ void Program::bindUniformBlock(GLuint uniformBlockIndex, GLuint uniformBlockBind
 
 GLuint Program::getUniformBlockBinding(GLuint uniformBlockIndex) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getUniformBlockBinding(uniformBlockIndex);
 }
 
 GLuint Program::getShaderStorageBlockBinding(GLuint shaderStorageBlockIndex) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.getShaderStorageBlockBinding(shaderStorageBlockIndex);
 }
 
@@ -2469,7 +2459,7 @@ void Program::setTransformFeedbackVaryings(GLsizei count,
                                            const GLchar *const *varyings,
                                            GLenum bufferMode)
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     mState.mTransformFeedbackVaryingNames.resize(count);
     for (GLsizei i = 0; i < count; i++)
     {
@@ -2486,7 +2476,7 @@ void Program::getTransformFeedbackVarying(GLuint index,
                                           GLenum *type,
                                           GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (mLinked)
     {
         ASSERT(index < mState.mLinkedTransformFeedbackVaryings.size());
@@ -2515,7 +2505,7 @@ void Program::getTransformFeedbackVarying(GLuint index,
 
 GLsizei Program::getTransformFeedbackVaryingCount() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (mLinked)
     {
         return static_cast<GLsizei>(mState.mLinkedTransformFeedbackVaryings.size());
@@ -2528,7 +2518,7 @@ GLsizei Program::getTransformFeedbackVaryingCount() const
 
 GLsizei Program::getTransformFeedbackVaryingMaxLength() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     if (mLinked)
     {
         GLsizei maxSize = 0;
@@ -2548,7 +2538,7 @@ GLsizei Program::getTransformFeedbackVaryingMaxLength() const
 
 GLenum Program::getTransformFeedbackBufferMode() const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     return mState.mTransformFeedbackBufferMode;
 }
 
@@ -2673,7 +2663,7 @@ bool Program::linkValidateShaders(InfoLog &infoLog)
 
 GLuint Program::getTransformFeedbackVaryingResourceIndex(const GLchar *name) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     for (GLuint tfIndex = 0; tfIndex < mState.mLinkedTransformFeedbackVaryings.size(); ++tfIndex)
     {
         const auto &tf = mState.mLinkedTransformFeedbackVaryings[tfIndex];
@@ -2687,7 +2677,7 @@ GLuint Program::getTransformFeedbackVaryingResourceIndex(const GLchar *name) con
 
 const TransformFeedbackVarying &Program::getTransformFeedbackVaryingResource(GLuint index) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     ASSERT(index < mState.mLinkedTransformFeedbackVaryings.size());
     return mState.mLinkedTransformFeedbackVaryings[index];
 }
@@ -3570,7 +3560,46 @@ ProgramMergedVaryings Program::getMergedVaryings() const
     return merged;
 }
 
+bool CompareOutputVariable(const sh::OutputVariable &a, const sh::OutputVariable &b)
+{
+    return a.getArraySizeProduct() > b.getArraySizeProduct();
+}
+
+int Program::getOutputLocationForLink(const sh::OutputVariable &outputVariable) const
+{
+    if (outputVariable.location != -1)
+    {
+        return outputVariable.location;
+    }
+    int apiLocation = mFragmentOutputLocations.getBinding(outputVariable.name);
+    if (apiLocation != -1)
+    {
+        return apiLocation;
+    }
+    return -1;
+}
+
+bool Program::isOutputSecondaryForLink(const sh::OutputVariable &outputVariable) const
+{
+    if (outputVariable.index != -1)
+    {
+        ASSERT(outputVariable.index == 0 || outputVariable.index == 1);
+        return (outputVariable.index == 1);
+    }
+    int apiIndex = mFragmentOutputIndexes.getBinding(outputVariable.name);
+    if (apiIndex != -1)
+    {
+        // Index layout qualifier from the shader takes precedence, so the index from the API is
+        // checked only if the index was not set in the shader. This is not specified in the EXT
+        // spec, but is specified in desktop OpenGL specs.
+        return (apiIndex == 1);
+    }
+    // EXT_blend_func_extended: Outputs get index 0 by default.
+    return false;
+}
+
 bool Program::linkOutputVariables(const Caps &caps,
+                                  const Extensions &extensions,
                                   const Version &version,
                                   GLuint combinedImageUniformsCount,
                                   GLuint combinedShaderStorageBlocksCount)
@@ -3640,49 +3669,166 @@ bool Program::linkOutputVariables(const Caps &caps,
     mState.mOutputVariables = outputVariables;
     // TODO(jmadill): any caps validation here?
 
+    for (sh::OutputVariable &outputVariable : mState.mOutputVariables)
+    {
+        if (outputVariable.isArray())
+        {
+            // We're following the GLES 3.1 November 2016 spec section 7.3.1.1 Naming Active
+            // Resources and including [0] at the end of array variable names.
+            outputVariable.name += "[0]";
+            outputVariable.mappedName += "[0]";
+        }
+    }
+
+    bool hasSecondaryOutputs = false;
+
+    // Reserve locations for output variables whose location is fixed in the shader or through the
+    // API.
     for (unsigned int outputVariableIndex = 0; outputVariableIndex < mState.mOutputVariables.size();
          outputVariableIndex++)
     {
         const sh::OutputVariable &outputVariable = mState.mOutputVariables[outputVariableIndex];
 
-        if (outputVariable.isArray())
-        {
-            // We're following the GLES 3.1 November 2016 spec section 7.3.1.1 Naming Active
-            // Resources and including [0] at the end of array variable names.
-            mState.mOutputVariables[outputVariableIndex].name += "[0]";
-            mState.mOutputVariables[outputVariableIndex].mappedName += "[0]";
-        }
-
         // Don't store outputs for gl_FragDepth, gl_FragColor, etc.
         if (outputVariable.isBuiltIn())
             continue;
 
-        // Since multiple output locations must be specified, use 0 for non-specified locations.
-        unsigned int baseLocation =
-            (outputVariable.location == -1 ? 0u
-                                           : static_cast<unsigned int>(outputVariable.location));
+        int baseLocation = getOutputLocationForLink(outputVariable);
+        if (baseLocation == -1)
+        {
+            // Here we're only reserving locations for variables whose location is fixed.
+            continue;
+        }
+
+        auto *outputLocations = &mState.mOutputLocations;
+        if (isOutputSecondaryForLink(outputVariable))
+        {
+            outputLocations = &mState.mSecondaryOutputLocations;
+            // Note that this check doesn't need to be before checking baseLocation == -1 above. If
+            // an output has an index specified it will always also have the location specified.
+            hasSecondaryOutputs = true;
+        }
 
         // GLSL ES 3.10 section 4.3.6: Output variables cannot be arrays of arrays or arrays of
         // structures, so we may use getBasicTypeElementCount().
         unsigned int elementCount = outputVariable.getBasicTypeElementCount();
+        unsigned int outputLocationsNeeded = static_cast<unsigned int>(baseLocation) + elementCount;
+        if (outputLocationsNeeded > outputLocations->size())
+        {
+            outputLocations->resize(outputLocationsNeeded);
+        }
         for (unsigned int elementIndex = 0; elementIndex < elementCount; elementIndex++)
         {
-            const unsigned int location = baseLocation + elementIndex;
-            if (location >= mState.mOutputLocations.size())
+            const unsigned int location = static_cast<unsigned int>(baseLocation) + elementIndex;
+            ASSERT(location < outputLocations->size());
+            if (outputLocations->at(location).used())
             {
-                mState.mOutputLocations.resize(location + 1);
+                mInfoLog << "Location of variable " << outputVariable.name
+                         << " conflicts with another variable.";
+                return false;
             }
-            ASSERT(!mState.mOutputLocations.at(location).used());
             if (outputVariable.isArray())
             {
-                mState.mOutputLocations[location] =
-                    VariableLocation(elementIndex, outputVariableIndex);
+                (*outputLocations)[location] = VariableLocation(elementIndex, outputVariableIndex);
             }
             else
             {
                 VariableLocation locationInfo;
                 locationInfo.index                = outputVariableIndex;
-                mState.mOutputLocations[location] = locationInfo;
+                (*outputLocations)[location]      = locationInfo;
+            }
+        }
+    }
+
+    // Here we assign locations for the output variables that don't yet have them. Note that we're
+    // not necessarily able to fit the variables optimally, since then we might have to try
+    // different arrangements of output arrays. Now we just assign the locations in the order that
+    // we got the output variables. The spec isn't clear on what kind of algorithm is required for
+    // finding locations for the output variables, so this should be acceptable at least for now.
+    GLuint maxLocation = caps.maxDrawBuffers;
+    if (hasSecondaryOutputs)
+    {
+        // EXT_blend_func_extended: Program outputs will be validated against
+        // MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT if there's even one output with index one.
+        maxLocation = extensions.maxDualSourceDrawBuffers;
+    }
+
+    for (unsigned int outputVariableIndex = 0; outputVariableIndex < mState.mOutputVariables.size();
+         outputVariableIndex++)
+    {
+        const sh::OutputVariable &outputVariable = mState.mOutputVariables[outputVariableIndex];
+
+        // Don't store outputs for gl_FragDepth, gl_FragColor, etc.
+        if (outputVariable.isBuiltIn())
+            continue;
+
+        if (getOutputLocationForLink(outputVariable) != -1)
+        {
+            continue;
+        }
+
+        auto *outputLocations = &mState.mOutputLocations;
+        if (isOutputSecondaryForLink(outputVariable))
+        {
+            outputLocations = &mState.mSecondaryOutputLocations;
+        }
+
+        int baseLocation          = 0;
+        unsigned int elementCount = outputVariable.getBasicTypeElementCount();
+        bool elementsFit          = false;
+        while (!elementsFit)
+        {
+            // Try baseLocations starting from 0 one at a time and see if the variable fits.
+            elementsFit = true;
+            if (baseLocation + elementCount > maxLocation)
+            {
+                // EXT_blend_func_extended: Linking can fail:
+                // "if the explicit binding assignments do not leave enough space for the linker to
+                // automatically assign a location for a varying out array, which requires multiple
+                // contiguous locations."
+                mInfoLog << "Could not fit output variable into available locations: "
+                         << outputVariable.name;
+                return false;
+            }
+            unsigned int outputLocationsNeeded =
+                static_cast<unsigned int>(baseLocation) + elementCount;
+            if (outputLocationsNeeded > outputLocations->size())
+            {
+                outputLocations->resize(outputLocationsNeeded);
+            }
+            for (unsigned int elementIndex = 0; elementIndex < elementCount; elementIndex++)
+            {
+                const unsigned int location =
+                    static_cast<unsigned int>(baseLocation) + elementIndex;
+                ASSERT(location < outputLocations->size());
+                if (outputLocations->at(location).used())
+                {
+                    elementsFit = false;
+                    break;
+                }
+            }
+            if (elementsFit)
+            {
+                for (unsigned int elementIndex = 0; elementIndex < elementCount; elementIndex++)
+                {
+                    const unsigned int location =
+                        static_cast<unsigned int>(baseLocation) + elementIndex;
+                    if (outputVariable.isArray())
+                    {
+                        (*outputLocations)[location] =
+                            VariableLocation(elementIndex, outputVariableIndex);
+                    }
+                    else
+                    {
+                        VariableLocation locationInfo;
+                        locationInfo.index           = outputVariableIndex;
+                        (*outputLocations)[location] = locationInfo;
+                    }
+                }
+            }
+            else
+            {
+                ++baseLocation;
             }
         }
     }
@@ -3913,7 +4059,7 @@ void Program::getUniformInternal(const Context *context,
 
 bool Program::samplesFromTexture(const gl::State &state, GLuint textureID) const
 {
-    resolveLink();
+    ASSERT(mLinkResolved);
     // Must be called after samplers are validated.
     ASSERT(mCachedValidateSamplersResult.valid() && mCachedValidateSamplersResult.value());
 
@@ -3934,15 +4080,15 @@ bool Program::samplesFromTexture(const gl::State &state, GLuint textureID) const
     return false;
 }
 
-Error Program::syncState(const Context *context)
+angle::Result Program::syncState(const Context *context)
 {
     if (mDirtyBits.any())
     {
-        resolveLink();
+        ASSERT(mLinkResolved);
         ANGLE_TRY(mProgram->syncState(context, mDirtyBits));
         mDirtyBits.reset();
     }
 
-    return NoError();
+    return angle::Result::Continue();
 }
 }  // namespace gl

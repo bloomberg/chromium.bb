@@ -173,7 +173,8 @@ LoadCredentialsStateFromTokenResult(TokenServiceTable::Result token_result) {
       return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
   }
   NOTREACHED();
-  return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_UNKNOWN;
+  return OAuth2TokenServiceDelegate::
+      LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
 }
 
 // Returns whether the token service should be migrated to Dice.
@@ -199,9 +200,7 @@ bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
   }
 
   // Do not migrate if some accounts are not valid.
-  for (std::map<std::string, std::string>::const_iterator iter =
-           db_tokens.begin();
-       iter != db_tokens.end(); ++iter) {
+  for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
     const std::string& prefixed_account_id = iter->first;
     std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
     AccountInfo account_info = account_tracker->GetAccountInfo(account_id);
@@ -341,7 +340,6 @@ MutableProfileOAuth2TokenServiceDelegate::
         bool revoke_all_tokens_on_load,
         bool can_revoke_credentials)
     : web_data_service_request_(0),
-      load_credentials_state_(LOAD_CREDENTIALS_NOT_STARTED),
       backoff_entry_(&backoff_policy_),
       backoff_error_(GoogleServiceAuthError::NONE),
       client_(client),
@@ -450,7 +448,7 @@ bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
 
 std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const std::string& account_id) const {
-  AccountStatusMap::const_iterator iter = refresh_tokens_.find(account_id);
+  auto iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end()) {
     const std::string refresh_token = iter->second->refresh_token();
     DCHECK(!refresh_token.empty());
@@ -478,25 +476,20 @@ MutableProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return client_->GetURLLoaderFactory();
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-MutableProfileOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
-  return load_credentials_state_;
-}
-
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
-  if (load_credentials_state_ == LOAD_CREDENTIALS_IN_PROGRESS) {
+  if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
     VLOG(1) << "Load credentials operation already in progress";
     return;
   }
 
-  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
 
 #if defined(OS_CHROMEOS)
   // ChromeOS OOBE loads credentials without a primary account and expects this
   // to be a no-op. See htttp://crbug.com/891818
   if (primary_account_id.empty()) {
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FinishLoadingCredentials();
     return;
   }
@@ -512,7 +505,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   if (!token_web_data_) {
     // This case only exists in unit tests that do not care about loading
     // credentials.
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
     FinishLoadingCredentials();
     return;
   }
@@ -544,10 +537,10 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     const WDResult<TokenResult>* token_result =
         static_cast<const WDResult<TokenResult>*>(result.get());
     LoadAllCredentialsIntoMemory(token_result->GetValue().tokens);
-    load_credentials_state_ =
-        LoadCredentialsStateFromTokenResult(token_result->GetValue().db_result);
+    set_load_credentials_state(LoadCredentialsStateFromTokenResult(
+        token_result->GetValue().db_result));
   } else {
-    load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
+    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
   }
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
@@ -555,9 +548,9 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // while this profile is connected to an account.
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
-    if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
-      load_credentials_state_ =
-          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT;
+    if (load_credentials_state() == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+      set_load_credentials_state(
+          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT);
     }
     AddAccountStatus(loading_primary_account_id_, kInvalidRefreshToken,
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -591,9 +584,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
             << db_tokens.size() << " Credential(s).";
     AccountTrackerService::AccountIdMigrationState migration_state =
         account_tracker_service_->GetMigrationState();
-    for (std::map<std::string, std::string>::const_iterator iter =
-             db_tokens.begin();
-         iter != db_tokens.end(); ++iter) {
+    for (auto iter = db_tokens.begin(); iter != db_tokens.end(); ++iter) {
       std::string prefixed_account_id = iter->first;
       std::string refresh_token = iter->second;
 
@@ -906,8 +897,5 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_UNKNOWN);
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED);
-  DCHECK(load_credentials_state_ != LOAD_CREDENTIALS_IN_PROGRESS);
   FireRefreshTokensLoaded();
 }

@@ -32,6 +32,7 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
@@ -42,16 +43,17 @@
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/cdm/supported_cdm_versions.h"
+#include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR. NOLINT
+#if !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
+#error This file should only be compiled when Widevine CDM component is enabled
+#endif
 
 using content::BrowserThread;
 using content::CdmRegistry;
 
 namespace component_updater {
-
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 
 namespace {
 
@@ -240,6 +242,7 @@ bool GetSessionTypes(const base::DictionaryValue& manifest,
 
   // Temporary session is always supported.
   session_types->insert(media::CdmSessionType::kTemporary);
+
   if (is_persistent_license_supported)
     session_types->insert(media::CdmSessionType::kPersistentLicense);
 
@@ -503,21 +506,17 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
     return;
   }
 
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,
                          absolute_cdm_install_dir, base::Passed(&manifest)));
 }
 
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-
 void RegisterWidevineCdmComponent(ComponentUpdateService* cus) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<WidevineCdmComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 }
 
 }  // namespace component_updater

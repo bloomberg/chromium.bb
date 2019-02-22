@@ -90,6 +90,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/string_or_string_sequence.h",
   "$bindings_core_v8_output_dir/string_or_trusted_html.cc",
   "$bindings_core_v8_output_dir/string_or_trusted_html.h",
+  "$bindings_core_v8_output_dir/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.cc",
+  "$bindings_core_v8_output_dir/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h",
   "$bindings_core_v8_output_dir/string_or_trusted_script.cc",
   "$bindings_core_v8_output_dir/string_or_trusted_script.h",
   "$bindings_core_v8_output_dir/string_or_trusted_script_url.cc",
@@ -128,6 +130,12 @@ generated_core_testing_callback_function_files = [
 generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_blob_callback.cc",
   "$bindings_core_v8_output_dir/v8_blob_callback.h",
+  "$bindings_core_v8_output_dir/v8_custom_element_constructor.cc",
+  "$bindings_core_v8_output_dir/v8_custom_element_constructor.h",
+  "$bindings_core_v8_output_dir/v8_display_lock_callback.cc",
+  "$bindings_core_v8_output_dir/v8_display_lock_callback.h",
+  "$bindings_core_v8_output_dir/v8_event_handler_non_null.cc",
+  "$bindings_core_v8_output_dir/v8_event_handler_non_null.h",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.cc",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.h",
   "$bindings_core_v8_output_dir/v8_function.cc",
@@ -156,6 +164,8 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_create_script_callback.h",
   "$bindings_core_v8_output_dir/v8_create_url_callback.cc",
   "$bindings_core_v8_output_dir/v8_create_url_callback.h",
+  "$bindings_core_v8_output_dir/v8_task_queue_post_callback.cc",
+  "$bindings_core_v8_output_dir/v8_task_queue_post_callback.h",
   "$bindings_core_v8_output_dir/v8_void_function.cc",
   "$bindings_core_v8_output_dir/v8_void_function.h",
 ]
@@ -171,7 +181,7 @@ generate_origin_trial_features("bindings_core_origin_trial_features") {
   ]
 }
 
-if ((is_win && is_official_build) || use_jumbo_build) {
+if (is_win && is_official_build) {
   # On Windows Official release builds, we try to preserve symbol space.
   # is_official_build adds /GL option and /LTCG is automatically enabled in
   # link.exe. But link.exe cannot make binary smaller than its size limit from
@@ -192,7 +202,7 @@ group("bindings_core_v8_generated") {
   public_deps = [
     ":bindings_core_impl_generated",
   ]
-  if ((is_win && is_official_build) || use_jumbo_build) {
+  if (is_win && is_official_build) {
     public_deps += [ ":generate_bindings_core_v8_all_interfaces" ]
   } else {
     public_deps += [ ":generate_bindings_core_v8_interfaces" ]

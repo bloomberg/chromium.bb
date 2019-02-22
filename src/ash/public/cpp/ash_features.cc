@@ -35,6 +35,9 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNewMessageListView{"NewMessageListView",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNewWallpaperPicker{"NewWallpaperPicker",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -52,7 +55,13 @@ const base::Feature kSystemTrayUnified{"SystemTrayUnified",
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUnlockWithExternalBinary{
+    "UnlockWithExternalBinary", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
@@ -77,6 +86,10 @@ bool IsLockScreenInlineReplyEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
+}
+
+bool IsNewMessageListViewEnabled() {
+  return base::FeatureList::IsEnabled(kNewMessageListView);
 }
 
 bool IsNewWallpaperPickerEnabled() {

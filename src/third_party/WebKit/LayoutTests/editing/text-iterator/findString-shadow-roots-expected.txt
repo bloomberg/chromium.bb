@@ -20,14 +20,12 @@ PASS testRunner.findString("ENTAFTER", []) is false
 PASS testRunner.findString("ORESHADOW", []) is false
 PASS testRunner.findString("SHADOWAFTER", []) is false
 Finished testSimpleShadow().
-
 Starting testNestedShadows()...
 PASS testRunner.findString("DOCUMENT", []) is false
 PASS testRunner.findString("OUTER", []) is true
 PASS testRunner.findString("SHADOW", []) is false
 PASS testRunner.findString("INNER", []) is true
 Finished testNestedShadows().
-
 Starting testDistribution()...
 PASS testRunner.findString("BEFORE", []) is true
 PASS testRunner.findString("DOCUMENT", []) is true
@@ -36,7 +34,6 @@ PASS testRunner.findString("BEFOREDOCUMENTAFTER", []) is true
 PASS testRunner.findString("DOCUMENTBEFORE", []) is false
 PASS testRunner.findString("AFTERDOCUMENT", []) is false
 Finished testDistribution().
-
 PASS successfullyParsed is true
 
 TEST COMPLETE

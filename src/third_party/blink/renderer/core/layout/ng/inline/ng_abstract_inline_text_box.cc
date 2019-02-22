@@ -147,10 +147,8 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
     return;
   }
   const ShapeResult& shape_result = *PhysicalTextFragment().TextShapeResult();
-  ShapeResultBuffer buffer;
-  buffer.AppendResult(&shape_result);
-  const Vector<CharacterRange> ranges = buffer.IndividualCharacterRanges(
-      shape_result.Direction(), shape_result.Width());
+  Vector<CharacterRange> ranges;
+  shape_result.IndividualCharacterRanges(&ranges);
   widths.ReserveCapacity(ranges.size());
   widths.resize(0);
   for (const auto& range : ranges)

@@ -201,56 +201,6 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   const GURL kBlockedFirstPartySite;
 };
 
-TEST_F(ChromeNetworkDelegatePrivacyModeTest, DisablePrivacyIfCookiesAllowed) {
-  std::unique_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
-  SetDelegate(delegate.get());
-
-  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
-                                                       kEmptyFirstPartySite));
-}
-
-TEST_F(ChromeNetworkDelegatePrivacyModeTest, EnablePrivacyIfCookiesBlocked) {
-  std::unique_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
-  SetDelegate(delegate.get());
-
-  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
-                                                       kEmptyFirstPartySite));
-
-  cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
-  EXPECT_TRUE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
-                                                      kEmptyFirstPartySite));
-}
-
-TEST_F(ChromeNetworkDelegatePrivacyModeTest, EnablePrivacyIfThirdPartyBlocked) {
-  std::unique_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
-  SetDelegate(delegate.get());
-
-  EXPECT_FALSE(
-      network_delegate_->CanEnablePrivacyMode(kAllowedSite, kFirstPartySite));
-
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  EXPECT_TRUE(
-      network_delegate_->CanEnablePrivacyMode(kAllowedSite, kFirstPartySite));
-  profile_.GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, false);
-  EXPECT_FALSE(
-      network_delegate_->CanEnablePrivacyMode(kAllowedSite, kFirstPartySite));
-}
-
-TEST_F(ChromeNetworkDelegatePrivacyModeTest,
-       DisablePrivacyIfOnlyFirstPartyBlocked) {
-  std::unique_ptr<ChromeNetworkDelegate> delegate(CreateNetworkDelegate());
-  SetDelegate(delegate.get());
-
-  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
-                                                       kBlockedFirstPartySite));
-
-  cookie_settings_->SetCookieSetting(kBlockedFirstPartySite,
-                                     CONTENT_SETTING_BLOCK);
-  // Privacy mode is disabled as kAllowedSite is still getting cookies
-  EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
-                                                       kBlockedFirstPartySite));
-}
-
 TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Platforms other than Chrome OS and Android have access to any files.
@@ -288,6 +238,18 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   // If profile path is given, the following additional paths are allowed.
   EXPECT_TRUE(IsAccessAllowed("/profile/Downloads", "/profile"));
   EXPECT_TRUE(IsAccessAllowed("/profile/WebRTC Logs", "/profile"));
+
+  // GCache/v2/<opaque ID>/Logs is allowed.
+  EXPECT_TRUE(IsAccessAllowed("/profile/GCache/v2/id/Logs", "/profile"));
+  EXPECT_TRUE(
+      IsAccessAllowed("/profile/GCache/v2/id/Logs/drivefs.txt", "/profile"));
+  EXPECT_FALSE(
+      IsAccessAllowed("/profile/GCache/v2/id/logs/drivefs.txt", "/profile"));
+  EXPECT_FALSE(
+      IsAccessAllowed("/profile/GCache/v2/id/something_else", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/profile/GCache/v2/id", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/profile/GCache/v2", "/profile"));
+  EXPECT_FALSE(IsAccessAllowed("/home/chronos/user/GCache/v2/id/Logs", ""));
 
 #elif defined(OS_ANDROID)
   // Android allows the following directories.

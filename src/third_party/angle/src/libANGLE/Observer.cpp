@@ -42,57 +42,36 @@ Subject::~Subject()
 
 bool Subject::hasObservers() const
 {
-    return !mFastObservers.empty();
+    return !mObservers.empty();
 }
 
-void Subject::addObserver(ObserverBinding *observer)
+ANGLE_INLINE void Subject::addObserver(ObserverBinding *observer)
 {
-    ASSERT(!IsInContainer(mFastObservers, observer) && !IsInContainer(mSlowObservers, observer));
-
-    if (!mFastObservers.full())
-    {
-        mFastObservers.push_back(observer);
-    }
-    else
-    {
-        mSlowObservers.push_back(observer);
-    }
+    ASSERT(!IsInContainer(mObservers, observer));
+    mObservers.push_back(observer);
 }
 
-void Subject::removeObserver(ObserverBinding *observer)
+ANGLE_INLINE void Subject::removeObserver(ObserverBinding *observer)
 {
-    auto iter = std::find(mFastObservers.begin(), mFastObservers.end(), observer);
-    if (iter != mFastObservers.end())
+    ASSERT(IsInContainer(mObservers, observer));
+    size_t len = mObservers.size() - 1;
+    for (size_t index = 0; index < len; ++index)
     {
-        size_t index = iter - mFastObservers.begin();
-        std::swap(mFastObservers[index], mFastObservers[mFastObservers.size() - 1]);
-        mFastObservers.resize(mFastObservers.size() - 1);
-        if (!mSlowObservers.empty())
+        if (mObservers[index] == observer)
         {
-            mFastObservers.push_back(mSlowObservers.back());
-            mSlowObservers.pop_back();
-            ASSERT(mFastObservers.full());
+            mObservers[index] = mObservers[len];
+            break;
         }
     }
-    else
-    {
-        auto slowIter = std::find(mSlowObservers.begin(), mSlowObservers.end(), observer);
-        ASSERT(slowIter != mSlowObservers.end());
-        mSlowObservers.erase(slowIter);
-    }
+    mObservers.pop_back();
 }
 
 void Subject::onStateChange(const gl::Context *context, SubjectMessage message) const
 {
-    if (mFastObservers.empty())
+    if (mObservers.empty())
         return;
 
-    for (const angle::ObserverBinding *receiver : mFastObservers)
-    {
-        receiver->onStateChange(context, message);
-    }
-
-    for (const angle::ObserverBinding *receiver : mSlowObservers)
+    for (const angle::ObserverBinding *receiver : mObservers)
     {
         receiver->onStateChange(context, message);
     }
@@ -100,17 +79,11 @@ void Subject::onStateChange(const gl::Context *context, SubjectMessage message) 
 
 void Subject::resetObservers()
 {
-    for (angle::ObserverBinding *observer : mFastObservers)
+    for (angle::ObserverBinding *observer : mObservers)
     {
         observer->onSubjectReset();
     }
-    mFastObservers.clear();
-
-    for (angle::ObserverBinding *observer : mSlowObservers)
-    {
-        observer->onSubjectReset();
-    }
-    mSlowObservers.clear();
+    mObservers.clear();
 }
 
 // ObserverBinding implementation.
@@ -143,11 +116,6 @@ void ObserverBinding::bind(Subject *subject)
     {
         mSubject->addObserver(this);
     }
-}
-
-void ObserverBinding::reset()
-{
-    bind(nullptr);
 }
 
 void ObserverBinding::onStateChange(const gl::Context *context, SubjectMessage message) const

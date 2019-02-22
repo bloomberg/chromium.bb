@@ -168,7 +168,7 @@ interface RTCIceCandidate {
     readonly        attribute DOMString? foundation;
     readonly        attribute RTCIceComponent? component;
     readonly        attribute unsigned long? priority;
-    readonly        attribute DOMString? ip;
+    readonly        attribute DOMString? address;
     readonly        attribute RTCIceProtocol? protocol;
     readonly        attribute unsigned short? port;
     readonly        attribute RTCIceCandidateType? type;
@@ -520,6 +520,7 @@ enum RTCSctpTransportState {
     readonly        attribute RTCPriorityType priority;
     readonly        attribute RTCDataChannelState readyState;
     readonly        attribute unsigned long bufferedAmount;
+                    [EnforceRange]
                     attribute unsigned long bufferedAmountLowThreshold;
                     attribute EventHandler onopen;
                     attribute EventHandler onbufferedamountlow;
@@ -536,7 +537,9 @@ enum RTCSctpTransportState {
 
 dictionary RTCDataChannelInit {
              boolean ordered = true;
+             [EnforceRange]
              unsigned short maxPacketLifeTime;
+             [EnforceRange]
              unsigned short maxRetransmits;
              USVString protocol = "";
              boolean negotiated = false;

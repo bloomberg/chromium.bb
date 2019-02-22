@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VP9_ENCODER_VP9_RATECTRL_H_
-#define VP9_ENCODER_VP9_RATECTRL_H_
+#ifndef VPX_VP9_ENCODER_VP9_RATECTRL_H_
+#define VPX_VP9_ENCODER_VP9_RATECTRL_H_
 
 #include "vpx/vpx_codec.h"
 #include "vpx/vpx_integer.h"
@@ -31,6 +31,8 @@ extern "C" {
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
 #define ONEHALFONLY_RESIZE 0
+
+#define FRAME_OVERHEAD_BITS 200
 
 // Threshold used to define a KF group as static (e.g. a slide show).
 // Essentially this means that no frame in the group has more than 1% of MBs
@@ -111,16 +113,6 @@ typedef struct {
   int source_alt_ref_pending;
   int source_alt_ref_active;
   int is_src_frame_alt_ref;
-
-  // Length of the bi-predictive frame group interval
-  int bipred_group_interval;
-
-  // NOTE: Different types of frames may have different bits allocated
-  //       accordingly, aiming to achieve the overall optimal RD performance.
-  int is_bwd_ref_frame;
-  int is_last_bipred_frame;
-  int is_bipred_frame;
-  int is_src_frame_ext_arf;
 
   int avg_frame_bandwidth;  // Average frame size target for clip
   int min_frame_bandwidth;  // Minimum allocation used for any frame
@@ -320,4 +312,4 @@ void vp9_estimate_qp_gop(struct VP9_COMP *cpi);
 }  // extern "C"
 #endif
 
-#endif  // VP9_ENCODER_VP9_RATECTRL_H_
+#endif  // VPX_VP9_ENCODER_VP9_RATECTRL_H_

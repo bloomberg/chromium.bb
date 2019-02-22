@@ -58,35 +58,35 @@ struct NameToCodec {
 
 // Mapping between codec names and enum values.
 static const NameToCodec kCodecMap[] = {
-    {"opus", EME_CODEC_WEBM_OPUS},      // Opus.
-    {"vorbis", EME_CODEC_WEBM_VORBIS},  // Vorbis.
-    {"vp8", EME_CODEC_WEBM_VP8},        // VP8.
-    {"vp8.0", EME_CODEC_WEBM_VP8},      // VP8.
-    {"vp9", EME_CODEC_WEBM_VP9},        // VP9.
-    {"vp9.0", EME_CODEC_WEBM_VP9},      // VP9.
-    {"vp09", EME_CODEC_COMMON_VP9},     // New multi-part VP9 for WebM and MP4.
-    {"flac", EME_CODEC_MP4_FLAC},       // FLAC.
+    {"opus", EME_CODEC_OPUS},         // Opus.
+    {"vorbis", EME_CODEC_VORBIS},     // Vorbis.
+    {"vp8", EME_CODEC_VP8},           // VP8.
+    {"vp8.0", EME_CODEC_VP8},         // VP8.
+    {"vp9", EME_CODEC_LEGACY_VP9},    // VP9.
+    {"vp9.0", EME_CODEC_LEGACY_VP9},  // VP9.
+    {"vp09", EME_CODEC_VP9},          // New multi-part VP9 for WebM and MP4.
+    {"flac", EME_CODEC_FLAC},         // FLAC.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    {"mp4a", EME_CODEC_MP4_AAC},  // AAC.
+    {"mp4a", EME_CODEC_AAC},  // AAC.
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-    {"ac-3", EME_CODEC_MP4_AC3},   // AC3.
-    {"ec-3", EME_CODEC_MP4_EAC3},  // EAC3.
+    {"ac-3", EME_CODEC_AC3},   // AC3.
+    {"ec-3", EME_CODEC_EAC3},  // EAC3.
 #endif
 #if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
-    {"mhm1", EME_CODEC_MP4_MPEG_H_AUDIO},  // MPEG-H Audio.
+    {"mhm1", EME_CODEC_MPEG_H_AUDIO},  // MPEG-H Audio.
 #endif
-    {"avc1", EME_CODEC_MP4_AVC1},  // AVC1 for MP4 and MP2T
-    {"avc3", EME_CODEC_MP4_AVC1},  // AVC3 for MP4 and MP2T
+    {"avc1", EME_CODEC_AVC1},  // AVC1 for MP4 and MP2T
+    {"avc3", EME_CODEC_AVC1},  // AVC3 for MP4 and MP2T
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    {"hev1", EME_CODEC_MP4_HEVC},  // HEV1.
-    {"hvc1", EME_CODEC_MP4_HEVC},  // HVC1.
+    {"hev1", EME_CODEC_HEVC},  // HEV1.
+    {"hvc1", EME_CODEC_HEVC},  // HVC1.
 #endif
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-    {"dva1", EME_CODEC_MP4_DV_AVC},  // DolbyVision AVC
-    {"dvav", EME_CODEC_MP4_DV_AVC},  // DolbyVision AVC
+    {"dva1", EME_CODEC_DOLBY_VISION_AVC},  // DolbyVision AVC
+    {"dvav", EME_CODEC_DOLBY_VISION_AVC},  // DolbyVision AVC
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    {"dvh1", EME_CODEC_MP4_DV_HEVC},  // DolbyVision HEVC
-    {"dvhe", EME_CODEC_MP4_DV_HEVC},  // DolbyVision HEVC
+    {"dvh1", EME_CODEC_DOLBY_VISION_HEVC},  // DolbyVision HEVC
+    {"dvhe", EME_CODEC_DOLBY_VISION_HEVC},  // DolbyVision HEVC
 #endif
 #endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -319,8 +319,7 @@ KeySystemsImpl::~KeySystemsImpl() = default;
 
 SupportedCodecs KeySystemsImpl::GetCodecMaskForMimeType(
     const std::string& container_mime_type) const {
-  MimeTypeToCodecsMap::const_iterator iter =
-      mime_type_to_codecs_map_.find(container_mime_type);
+  auto iter = mime_type_to_codecs_map_.find(container_mime_type);
   if (iter == mime_type_to_codecs_map_.end())
     return EME_CODEC_NONE;
 
@@ -329,7 +328,7 @@ SupportedCodecs KeySystemsImpl::GetCodecMaskForMimeType(
 }
 
 EmeCodec KeySystemsImpl::GetCodecForString(const std::string& codec) const {
-  CodecMap::const_iterator iter = codec_map_.find(codec);
+  auto iter = codec_map_.find(codec);
   if (iter != codec_map_.end())
     return iter->second;
   return EME_CODEC_NONE;
@@ -491,8 +490,7 @@ bool KeySystemsImpl::IsSupportedInitDataType(
     EmeInitDataType init_data_type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return false;
@@ -505,8 +503,7 @@ EmeConfigRule KeySystemsImpl::GetEncryptionSchemeConfigRule(
     EncryptionMode encryption_scheme) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
@@ -561,8 +558,7 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
 bool KeySystemsImpl::CanUseAesDecryptor(const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     DLOG(ERROR) << key_system << " is not a known key system";
     return false;
@@ -592,8 +588,7 @@ EmeConfigRule KeySystemsImpl::GetContentTypeConfigRule(
   }
 
   // Double check whether the key system is supported.
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED()
         << "KeySystemConfigSelector should've checked key system support";
@@ -652,8 +647,7 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     const std::string& requested_robustness) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeConfigRule::NOT_SUPPORTED;
@@ -666,8 +660,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
@@ -679,8 +672,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentUsageRecordSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
@@ -692,8 +684,7 @@ EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;
@@ -705,8 +696,7 @@ EmeFeatureSupport KeySystemsImpl::GetDistinctiveIdentifierSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  KeySystemPropertiesMap::const_iterator key_system_iter =
-      key_system_properties_map_.find(key_system);
+  auto key_system_iter = key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
     return EmeFeatureSupport::INVALID;

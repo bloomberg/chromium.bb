@@ -227,27 +227,27 @@ class Driver(object):
         # used by e.g. tools/valgrind/valgrind_tests.py.
         return shlex.split(wrapper_option) if wrapper_option else []
 
+    # The *_HOST_AND_PORTS tuples are (hostname, insecure_port, secure_port),
+    # i.e. the information needed to create HTTP and HTTPS URLs.
+    # TODO(burnik): Read from config or args.
     HTTP_DIR = 'http/tests/'
     HTTP_LOCAL_DIR = 'http/tests/local/'
+    HTTP_HOST_AND_PORTS = ('127.0.0.1', 8000, 8443)
     WPT_DIR = 'external/wpt/'
+    WPT_HOST_AND_PORTS = ('web-platform.test', 8001, 8444)
 
     def is_http_test(self, test_name):
         return test_name.startswith(self.HTTP_DIR) and not test_name.startswith(self.HTTP_LOCAL_DIR)
 
-    def _get_http_host_and_ports_for_test(self, test_name):
-        if self._port.should_use_wptserve(test_name):
-            # TODO(burnik): Read from config or args.
-            return ('web-platform.test', 8001, 8444)
-        else:
-            return ('127.0.0.1', 8000, 8443)
-
     def test_to_uri(self, test_name):
         """Convert a test name to a URI.
 
-        Tests which have an 'https' directory in their paths (e.g.
-        '/http/tests/security/mixedContent/https/test1.html') or '.https.' in
-        their name (e.g. 'http/tests/security/mixedContent/test1.https.html') will
-        be loaded over HTTPS; all other tests over HTTP.
+        Tests which have an 'https' directory in their paths or '.https.' or
+        '.serviceworker.' in their name will be loaded over HTTPS; all other
+        tests over HTTP. Example paths loaded over HTTPS:
+        http/tests/security/mixedContent/https/test1.html
+        http/tests/security/mixedContent/test1.https.html
+        external/wpt/encoding/idlharness.any.serviceworker.html
         """
         using_wptserve = self._port.should_use_wptserve(test_name)
 
@@ -256,15 +256,21 @@ class Driver(object):
 
         if using_wptserve:
             test_dir_prefix = self.WPT_DIR
+            hostname, insecure_port, secure_port = self.WPT_HOST_AND_PORTS
         else:
             test_dir_prefix = self.HTTP_DIR
+            hostname, insecure_port, secure_port = self.HTTP_HOST_AND_PORTS
 
         relative_path = test_name[len(test_dir_prefix):]
-        hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(test_name)
 
-        if '/https/' in test_name or '.https.' in test_name:
+        if '/https/' in test_name or '.https.' in test_name or '.serviceworker.' in test_name:
             return 'https://%s:%d/%s' % (hostname, secure_port, relative_path)
         return 'http://%s:%d/%s' % (hostname, insecure_port, relative_path)
+
+    def _get_uri_prefixes(self, hostname, insecure_port, secure_port):
+        """Returns the HTTP and HTTPS URI prefix for a hostname."""
+        return ['http://%s:%d/' % (hostname, insecure_port),
+                'https://%s:%d/' % (hostname, secure_port)]
 
     def uri_to_test(self, uri):
         """Return the base layout test name for a given URI.
@@ -274,18 +280,18 @@ class Driver(object):
         "fast/html/keygen.html".
         """
 
-        # This looks like a bit of a hack, since the uri is used instead of test name.
-        hostname, insecure_port, secure_port = self._get_http_host_and_ports_for_test(uri)
-
         if uri.startswith('file:///'):
             prefix = path.abspath_to_uri(self._port.host.platform, self._port.layout_tests_dir())
             if not prefix.endswith('/'):
                 prefix += '/'
             return uri[len(prefix):]
-        if uri.startswith('http://'):
-            return uri.replace('http://%s:%d/' % (hostname, insecure_port), self.HTTP_DIR)
-        if uri.startswith('https://'):
-            return uri.replace('https://%s:%d/' % (hostname, secure_port), self.HTTP_DIR)
+
+        for prefix in self._get_uri_prefixes(*self.HTTP_HOST_AND_PORTS):
+            if uri.startswith(prefix):
+                return self.HTTP_DIR + uri[len(prefix):]
+        for prefix in self._get_uri_prefixes(*self.WPT_HOST_AND_PORTS):
+            if uri.startswith(prefix):
+                return self.WPT_DIR + uri[len(prefix):]
         raise NotImplementedError('unknown url type: %s' % uri)
 
     def has_crashed(self):

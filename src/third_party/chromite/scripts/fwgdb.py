@@ -25,7 +25,7 @@ cros_build_lib.AssertInsideChroot()
 
 # pylint: disable=import-error
 from servo import client
-from servo import multiservo
+from servo import servo_parsing
 from servo import terminal_freezer
 # pylint: enable=import-error
 
@@ -66,16 +66,16 @@ def ParseArgs(argv):
                            'multiple times)')
 
   parser.add_argument('-n', '--servod-name', dest='name')
-  parser.add_argument('--servod-rcfile', default=multiservo.DEFAULT_RC_FILE)
+  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE)
   parser.add_argument('--servod-server')
   parser.add_argument('-p', '--servod-port', type=int, dest='port')
   parser.add_argument('-t', '--tty',
                       help='TTY file to connect to (defaults to cpu_uart_pty)')
 
   opts = parser.parse_args(argv)
-  multiservo.get_env_options(logging, opts)
+  servo_parsing.get_env_options(logging, opts)
   if opts.name:
-    rc = multiservo.parse_rc(logging, opts.servod_rcfile)
+    rc = servo_parsing.parse_rc(logging, opts.servod_rcfile)
     if opts.name not in rc:
       raise parser.error('%s not in %s' % (opts.name, opts.servod_rcfile))
     if not opts.servod_server:

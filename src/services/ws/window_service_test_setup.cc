@@ -5,7 +5,7 @@
 #include "services/ws/window_service_test_setup.h"
 
 #include "services/ws/embedding.h"
-#include "services/ws/gpu_interface_provider.h"
+#include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_binding.h"

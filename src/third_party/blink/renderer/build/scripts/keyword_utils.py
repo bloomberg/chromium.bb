@@ -6,7 +6,7 @@ import json5_generator
 
 
 def sort_keyword_properties_by_canonical_order(css_properties, css_value_keywords_file, json5_file_parameters):
-    """Sort all keyword CSS properties by the order of the keyword in CSSValueKeywords.json5
+    """Sort all keyword CSS properties by the order of the keyword in css_value_keywords.json5
 
     Args:
         css_properties: css_properties excluding extra fields.

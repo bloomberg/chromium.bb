@@ -36,7 +36,7 @@ void GLES1Renderer::onDestroy(Context *context, State *state)
 {
     if (mRendererProgramInitialized)
     {
-        state->setProgram(context, 0);
+        context->handleError(state->setProgram(context, 0));
 
         mShaderPrograms->deleteProgram(context, mProgramState.program);
         mShaderPrograms->release(context);
@@ -47,7 +47,7 @@ void GLES1Renderer::onDestroy(Context *context, State *state)
 
 GLES1Renderer::~GLES1Renderer() = default;
 
-Error GLES1Renderer::prepareForDraw(PrimitiveMode mode, Context *context, State *glState)
+angle::Result GLES1Renderer::prepareForDraw(PrimitiveMode mode, Context *context, State *glState)
 {
     ANGLE_TRY(initializeRendererProgram(context, glState));
 
@@ -394,7 +394,7 @@ Error GLES1Renderer::prepareForDraw(PrimitiveMode mode, Context *context, State 
     // None of those are changes in sampler, so there is no need to set the GL_PROGRAM dirty.
     // Otherwise, put the dirtying here.
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
 // static
@@ -476,10 +476,10 @@ Program *GLES1Renderer::getProgram(GLuint handle) const
     return mShaderPrograms->getProgram(handle);
 }
 
-Error GLES1Renderer::compileShader(Context *context,
-                                   ShaderType shaderType,
-                                   const char *src,
-                                   GLuint *shaderOut)
+angle::Result GLES1Renderer::compileShader(Context *context,
+                                           ShaderType shaderType,
+                                           const char *src,
+                                           GLuint *shaderOut)
 {
     rx::ContextImpl *implementation = context->getImplementation();
     const Limitations &limitations  = implementation->getNativeLimitations();
@@ -487,9 +487,7 @@ Error GLES1Renderer::compileShader(Context *context,
     GLuint shader = mShaderPrograms->createShader(implementation, limitations, shaderType);
 
     Shader *shaderObject = getShader(shader);
-
-    if (!shaderObject)
-        return InternalError();
+    ANGLE_CHECK(context, shaderObject, "Missing shader object", GL_INVALID_OPERATION);
 
     shaderObject->setSource(1, &src, nullptr);
     shaderObject->compile(context);
@@ -501,29 +499,26 @@ Error GLES1Renderer::compileShader(Context *context,
         GLint infoLogLength = shaderObject->getInfoLogLength();
         std::vector<char> infoLog(infoLogLength, 0);
         shaderObject->getInfoLog(infoLogLength - 1, nullptr, infoLog.data());
-        fprintf(stderr, "GLES1Renderer::%s: Info log: %s\n", __func__, infoLog.data());
-        return InternalError() << "GLES1Renderer shader compile failed. Source: " << src
-                               << " Info log: " << infoLog.data();
+
+        ERR() << "Internal GLES 1 shader compile failed. Info log: " << infoLog.data();
+        ANGLE_CHECK(context, false, "GLES1Renderer shader compile failed.", GL_INVALID_OPERATION);
+        return angle::Result::Stop();
     }
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
-Error GLES1Renderer::linkProgram(Context *context,
-                                 State *glState,
-                                 GLuint vertexShader,
-                                 GLuint fragmentShader,
-                                 const std::unordered_map<GLint, std::string> &attribLocs,
-                                 GLuint *programOut)
+angle::Result GLES1Renderer::linkProgram(Context *context,
+                                         State *glState,
+                                         GLuint vertexShader,
+                                         GLuint fragmentShader,
+                                         const std::unordered_map<GLint, std::string> &attribLocs,
+                                         GLuint *programOut)
 {
     GLuint program = mShaderPrograms->createProgram(context->getImplementation());
 
     Program *programObject = getProgram(program);
-
-    if (!programObject)
-    {
-        return InternalError();
-    }
+    ANGLE_CHECK(context, programObject, "Missing program object", GL_INVALID_OPERATION);
 
     *programOut = program;
 
@@ -537,29 +532,33 @@ Error GLES1Renderer::linkProgram(Context *context,
         programObject->bindAttributeLocation(index, name.c_str());
     }
 
-    ANGLE_TRY(programObject->link(context));
+    ANGLE_TRY_HANDLE(context, programObject->link(context));
+    programObject->resolveLink(context);
 
-    glState->onProgramExecutableChange(programObject);
+    ANGLE_TRY(glState->onProgramExecutableChange(context, programObject));
 
     if (!programObject->isLinked())
     {
         GLint infoLogLength = programObject->getInfoLogLength();
         std::vector<char> infoLog(infoLogLength, 0);
         programObject->getInfoLog(infoLogLength - 1, nullptr, infoLog.data());
-        return InternalError() << "GLES1Renderer program link failed. Info log: " << infoLog.data();
+
+        ERR() << "Internal GLES 1 shader link failed. Info log: " << infoLog.data();
+        ANGLE_CHECK(context, false, "GLES1Renderer program link failed.", GL_INVALID_OPERATION);
+        return angle::Result::Stop();
     }
 
     programObject->detachShader(context, getShader(vertexShader));
     programObject->detachShader(context, getShader(fragmentShader));
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
-Error GLES1Renderer::initializeRendererProgram(Context *context, State *glState)
+angle::Result GLES1Renderer::initializeRendererProgram(Context *context, State *glState)
 {
     if (mRendererProgramInitialized)
     {
-        return NoError();
+        return angle::Result::Continue();
     }
 
     mShaderPrograms = new ShaderProgramManager();
@@ -710,7 +709,7 @@ Error GLES1Renderer::initializeRendererProgram(Context *context, State *glState)
     mProgramState.drawTextureNormalizedCropRectLoc =
         programObject->getUniformLocation("draw_texture_normalized_crop_rect");
 
-    glState->setProgram(context, programObject);
+    ANGLE_TRY(glState->setProgram(context, programObject));
 
     for (int i = 0; i < kTexUnitCount; i++)
     {
@@ -721,7 +720,7 @@ Error GLES1Renderer::initializeRendererProgram(Context *context, State *glState)
     glState->setObjectDirty(GL_PROGRAM);
 
     mRendererProgramInitialized = true;
-    return NoError();
+    return angle::Result::Continue();
 }
 
 void GLES1Renderer::setUniform1i(Program *programObject, GLint loc, GLint value)

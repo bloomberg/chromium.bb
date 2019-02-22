@@ -55,6 +55,9 @@ void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
   if (set & kAnalysisValueNumberTable) {
     BuildValueNumberTable();
   }
+  if (set & kAnalysisStructuredCFG) {
+    BuildStructuredCFGAnalysis();
+  }
 }
 
 void IRContext::InvalidateAnalysesExceptFor(
@@ -89,6 +92,9 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   if (analyses_to_invalidate & kAnalysisValueNumberTable) {
     vn_table_.reset(nullptr);
   }
+  if (analyses_to_invalidate & kAnalysisStructuredCFG) {
+    struct_cfg_analysis_.reset(nullptr);
+  }
 
   valid_analyses_ = Analysis(valid_analyses_ & ~analyses_to_invalidate);
 }
@@ -107,9 +113,6 @@ Instruction* IRContext::KillInst(Instruction* inst) {
     instr_to_block_.erase(inst);
   }
   if (AreAnalysesValid(kAnalysisDecorations)) {
-    if (inst->result_id() != 0) {
-      decoration_mgr_->RemoveDecorationsFrom(inst->result_id());
-    }
     if (inst->IsDecoration()) {
       decoration_mgr_->RemoveDecoration(inst);
     }
@@ -258,12 +261,8 @@ void IRContext::AnalyzeUses(Instruction* inst) {
 }
 
 void IRContext::KillNamesAndDecorates(uint32_t id) {
-  std::vector<Instruction*> decorations =
-      get_decoration_mgr()->GetDecorationsFor(id, true);
-
-  for (Instruction* inst : decorations) {
-    KillInst(inst);
-  }
+  analysis::DecorationManager* dec_mgr = get_decoration_mgr();
+  dec_mgr->RemoveDecorationsFrom(id);
 
   std::vector<Instruction*> name_to_kill;
   for (auto name : GetNames(id)) {

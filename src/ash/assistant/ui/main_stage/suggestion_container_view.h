@@ -6,12 +6,13 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_SUGGESTION_CONTAINER_VIEW_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/assistant_scroll_view.h"
+#include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
@@ -41,6 +42,7 @@ class SuggestionContainerView : public AssistantScrollView,
   ~SuggestionContainerView() override;
 
   // AssistantScrollView:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
@@ -51,7 +53,8 @@ class SuggestionContainerView : public AssistantScrollView,
       override;
 
   // AssistantInteractionModelObserver:
-  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
   void OnResponseCleared() override;
 
   // AssistantUiModelObserver:

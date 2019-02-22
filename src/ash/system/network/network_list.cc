@@ -44,6 +44,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
@@ -326,7 +327,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
           // Bluetooth' if Tether is available but not initialized, otherwise
           // show 'no networks'.
           if (tether_state == NetworkStateHandler::TECHNOLOGY_UNINITIALIZED)
-            subtitle = IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
+            subtitle = IDS_ENABLE_BLUETOOTH;
           else
             subtitle = IDS_ASH_STATUS_TRAY_NO_MOBILE_NETWORKS;
         }

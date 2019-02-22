@@ -41,8 +41,7 @@ class LocalCardMigrationBubbleControllerImpl
   // Returns nullptr if no bubble is currently shown.
   LocalCardMigrationBubble* local_card_migration_bubble_view() const;
 
-  // LocalCardBubbleController:
-  base::string16 GetBubbleMessage() const override;
+  // LocalCardMigrationBubbleController:
   void OnConfirmButtonClicked() override;
   void OnCancelButtonClicked() override;
   void OnBubbleClosed() override;

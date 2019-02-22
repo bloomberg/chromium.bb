@@ -159,6 +159,14 @@ void WebURLResponse::SetHTTPVersion(HTTPVersion version) {
       static_cast<ResourceResponse::HTTPVersion>(version));
 }
 
+int WebURLResponse::RequestId() const {
+  return resource_response_->RequestId();
+}
+
+void WebURLResponse::SetRequestId(int request_id) {
+  resource_response_->SetRequestId(request_id);
+}
+
 int WebURLResponse::HttpStatusCode() const {
   return resource_response_->HttpStatusCode();
 }
@@ -241,7 +249,7 @@ void WebURLResponse::SetCTPolicyCompliance(
       resource_response_->SetCTPolicyCompliance(
           ResourceResponse::kCTPolicyComplies);
       break;
-    case net::ct::CTPolicyCompliance::CT_POLICY_MAX:
+    case net::ct::CTPolicyCompliance::CT_POLICY_COUNT:
       NOTREACHED();
       resource_response_->SetCTPolicyCompliance(
           ResourceResponse::kCTPolicyComplianceDetailsNotAvailable);
@@ -389,6 +397,12 @@ void WebURLResponse::SetRemotePort(unsigned short remote_port) {
 
 void WebURLResponse::SetEncodedDataLength(long long length) {
   resource_response_->SetEncodedDataLength(length);
+}
+
+void WebURLResponse::SetIsSignedExchangeInnerResponse(
+    bool is_signed_exchange_inner_response) {
+  resource_response_->SetIsSignedExchangeInnerResponse(
+      is_signed_exchange_inner_response);
 }
 
 WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {

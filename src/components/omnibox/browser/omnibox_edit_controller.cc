@@ -10,10 +10,12 @@ void OmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
-    AutocompleteMatchType::Type type) {
+    AutocompleteMatchType::Type type,
+    base::TimeTicks match_selection_timestamp) {
   destination_url_ = destination_url;
   disposition_ = disposition;
   transition_ = transition;
+  match_selection_timestamp_ = match_selection_timestamp;
 }
 
 void OmniboxEditController::OnInputInProgress(bool in_progress) {}

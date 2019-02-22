@@ -75,7 +75,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
 
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void WillBeDestroyed() override;
 
   bool is_in_layout_;

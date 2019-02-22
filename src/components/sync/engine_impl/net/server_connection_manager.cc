@@ -156,14 +156,12 @@ ServerConnectionManager::MakeActiveConnection() {
 bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!auth_token.empty() && (previously_invalidated_token != auth_token)) {
+  if (!auth_token.empty()) {
     auth_token_.assign(auth_token);
-    previously_invalidated_token = std::string();
     return true;
   }
 
-  if (auth_token.empty())
-    InvalidateAndClearAuthToken();
+  auth_token_.clear();
 
   // The auth token could be non-empty in cases like server outage/bug. E.g.
   // token returned by first request is considered invalid by sync server and
@@ -175,13 +173,8 @@ bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   return false;
 }
 
-void ServerConnectionManager::InvalidateAndClearAuthToken() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Copy over the token to previous invalid token.
-  if (!auth_token_.empty()) {
-    previously_invalidated_token.assign(auth_token_);
-    auth_token_.clear();
-  }
+void ServerConnectionManager::ClearAuthToken() {
+  auth_token_.clear();
 }
 
 void ServerConnectionManager::SetServerStatus(
@@ -237,7 +230,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
                              &params->response);
 
   if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
-    InvalidateAndClearAuthToken();
+    auth_token_.clear();
   }
 
   if (!ok || net::HTTP_OK != params->response.response_code)

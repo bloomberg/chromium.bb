@@ -1,6 +1,6 @@
 # Omnibox Bug Triage Process
 
-*last update: 2017/07/11*
+*last update: 2018/06/11*
 
 *The current triage process owner is `mpearson@`.*
 
@@ -24,9 +24,6 @@ labeled as such (*Needs=Feedback* or *Needs=TestConfirmation*).
 * Ensure high priority bugs or regressions are making progress / ping bug owners
   for progress updates on other important bugs.  (Trust your teammates to work
   on assigned bugs.)
-* Monitor for changes outside of the bugs database (e.g., UMA regressions, crash
-  database).  (The Speed team monitors UMA for performance regressions and the
-  Stability team monitors the crash database.  Both file bugs as appropriate.)
 
 ## Process
 
@@ -39,6 +36,12 @@ labeled as such (*Needs=Feedback* or *Needs=TestConfirmation*).
   to see if any should be moved to the omnibox component and triaged.  (This
   scan can be limited to those filed in the last week, i.e., since the last
   check.)
+* Every week on Thursday, the triage engineer looks over all alerts sent to
+  [chrome-omnibox-team-alerts@](https://groups.google.com/a/google.com/forum/#!forum/chrome-omnibox-team-alerts)
+  and, for each, either files a bug or replies to the message indicating why
+  filing a bug is not appropriate.  These bugs **must have an owner** for
+  follow-up; they cannot be left "Available*.  More details available
+  [below](#How-to-triage-alerts).
 * Every month (the first Thursday of the month), the triage engineer should
   look over [all bugs with *Needs=Feedback*](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AUI%3EBrowser%3EOmnibox+Needs%3DFeedback+&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids)
   and should take action on those that have been sitting for too long (ping the
@@ -48,7 +51,7 @@ Other team members are welcome to triage a bug if they see it before the the
 triage engineer.  The triager owner will cycle among team members by
 arrangement.
 
-## How to triage
+## How to triage chromium bugs
 
 ### Purpose
 
@@ -108,11 +111,18 @@ taken:
 
 ### Priority
 
-Follow [standard Chromium 
+Follow [standard Chromium
 policies](https://www.chromium.org/for-testers/bug-reporting-guidelines/triage-best-practices).
 *Priority-2* represents wanted for this release but can be punted for a release.
 *Priority-3* are bugs not time sensitive.  There is an even-lower-priority
 state; see the *NextAction=01/08/2019* below.
+
+If you aren't sure of the scope, severity, or implications of an issue, prefer
+to assign it a higher priority (*1* or *2*) and try to assign it to someone
+appropriate to look into further or at least identify the scope / true priority.
+If you cannot identify a person to assign it to, it would be better to leave it
+*Untriaged* for the next triage engineer than mark it *Available* just to try to
+clear the queue.
 
 ### Owners
 
@@ -159,6 +169,7 @@ The subcomponents of omnibox bugs include:
 | Subcomponent | Description |
 | --- | --- |
 | UI>Browser>Omnibox>AiS | Answers in Suggest. |
+| UI>Browser>Omnibox>DocumentSuggest | Documents provided by Google Drive |
 | UI>Browser>Omnibox>SecurityIndicators | Secure/insecure icons; triaged by another team. |
 | UI>Browser>Omnibox>TabToSearch | Custom search engines, omnibox extensions, etc. (including adding, triggering, ranking, etc. for them). |
 | UI>Browser>Omnibox>ZeroSuggest | Suggestions displayed on omnibox focus (both contextual and non-contextual). |
@@ -171,6 +182,84 @@ to fix this year (e.g., really unimportant, or mostly unimportant and hard to
 fix).  This label should be applied only when confident the whole team will
 agree with you.  When searching the bugs database for things to do, I suggest
 excluding bugs on this hotlist.)
+
+## How to triage alerts
+
+Every message sent to
+[chrome-omnibox-team-alerts@](https://groups.google.com/a/google.com/forum/#!forum/chrome-omnibox-team-alerts)
+should be evaluated by a triage engineer.  The triage engineer should either
+
+* file a Chromium bug to investigate the issue further and reply to the alert
+  with a link to the Chromium bug, or
+* reply to the alert explaining that the alert is already being tracked, and
+  link to the appropriate Chromium bug, or
+* reply to the alert explaining why ignoring the alert is appropriate.  This
+  is only appropriate if the engineer believes the alert is incorrect or
+  spurious.
+
+> **Tip**: Alerts on Beta and Stable that happen at the time of a new version
+> release will often have triggered an alert on Dev.  Look for those Dev alerts.
+> Most likely they already have associated bugs.  If the Beta/Stable change is
+> the same scale at the Dev change, it's likely the same issue--you should
+> simply point the Beta/Stable alert thread to the existing bug thread.
+
+With this process, when the next triage engineer begins their triage rotation,
+they'll be able to see which alerts have been handled and which have not.  All
+alerts that have been handled will have a reply from a triage engineer.  All
+alerts that have not been looked at will not.
+
+Sometimes multiple alerts will be fired at around the same time, on the same
+channel, on related histograms.  All of these alerts can be filed as part of the
+same bug if the triage engineer thinks they're likely all related (as they
+likely are).  All these alerts should be mentioned in the bug and all the
+separate alert threads should be replied to pointing to that bug.
+
+When filing the bug about an alert:
+
+* Leave it *Untriaged*.  You should investigate it during your triage shift;
+  if you don't identify a root cause, the next triager will see the bug and try.
+  Only assign an owner if the likely root cause has been determined!
+* Add the Restrict-View-Google label so metrics can be discussed without fear
+  of leaking sensitive information.
+* Link to the alert message.
+* Set a priority.  Generally these bugs should be *Priority-1* or *Priority-2*.
+* Tag it with a milestone (if appropriate).
+* Likely, label it with either Performance-Browser or Hotlist-OmniboxRanking.
+  (Probably one of those is appropriate.)
+
+### Investigating an Alert
+
+The [timeline dashboard](http://go/uma-timeline) is your friend,
+especially the split by channel, split by platform, split by milestone, and
+split by version features.  Some tips on how to investigate using the timeline
+dashboard:
+ 
+* If the regression is on Dev, see if you can spot it on Canary.  That can
+  usually indicate a narrow regression range.  This can usually be done unless
+  the histogram is too noisy.
+* What platforms did the regression happen on?  That might narrow down the area
+  of relevant code.
+* Did the regression happen on multiple channels at the same time?  If so, then
+  it's either caused by a change that was submitted and quickly merged to
+  multiple channels or it may be caused by something external to Chrome (such as
+  a major holiday or significant weather events, which can change omnibox
+  behavior).
+
+**Action**: The best way to verify that a particular changelist caused a
+regression is to **revert the changelist** and see if the metrics improve.  This
+is a better strategy than landing a fix directly.  If the "fix" doesn't make the
+metric recover to the exact same degree as the regression, it's unclear whether
+the fix was related to the regression, only a partial solution, and whether
+there's still another issue.
+
+FYI: the alerting system does not alert on ChromeOS changes because the vast
+majority of alerts that trigger on ChromeOS are due to school schedules (e.g.,
+summer and winter vacation).  For the year prior to disabling ChromeOS alerts,
+we did not see a real ChromeOS alert that wasn't also fired on Windows.  (I.e.,
+all real regressions on ChromeOS were also regressions on Windows; Views
+platforms tend to regress simultaneously.)  Thus, we seemingly don't get any
+additional value from ChromeOS alerts.
+
 
 # Appendix
 

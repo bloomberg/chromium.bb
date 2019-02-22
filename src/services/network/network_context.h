@@ -26,6 +26,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -60,6 +61,7 @@ class CookieManager;
 class ExpectCTReporter;
 class HostResolver;
 class NetworkService;
+class NetworkServiceProxyDelegate;
 class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
@@ -134,6 +136,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
 
+#if defined(OS_ANDROID)
+  base::android::ApplicationStatusListener* app_status_listener() const {
+    return app_status_listener_.get();
+  }
+#endif
+
   // Creates a URLLoaderFactory with a ResourceSchedulerClient specified. This
   // is used to reuse the existing ResourceSchedulerClient for cloned
   // URLLoaderFactory.
@@ -177,6 +185,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override;
   void CloseAllConnections(CloseAllConnectionsCallback callback) override;
+  void CloseIdleConnections(CloseIdleConnectionsCallback callback) override;
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
@@ -186,6 +195,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::vector<std::string>& excluded_hosts,
       const std::vector<std::string>& excluded_spkis,
       const std::vector<std::string>& excluded_legacy_spkis) override;
+  void AddExpectCT(const std::string& domain,
+                   base::Time expiry,
+                   bool enforce,
+                   const GURL& report_uri,
+                   AddExpectCTCallback callback) override;
+  void SetExpectCTTestReport(const GURL& report_uri,
+                             SetExpectCTTestReportCallback callback) override;
+  void GetExpectCTState(const std::string& domain,
+                        GetExpectCTStateCallback callback) override;
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override;
   void CreateTCPServerSocket(
@@ -197,10 +215,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CreateTCPConnectedSocket(
       const base::Optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
+      mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override;
+  void CreateTCPBoundSocket(
+      const net::IPEndPoint& local_addr,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::TCPBoundSocketRequest request,
+      CreateTCPBoundSocketCallback callback) override;
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override;
   void CreateWebSocket(mojom::WebSocketRequest request,
@@ -211,6 +235,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void LookUpProxyForURL(
       const GURL& url,
       mojom::ProxyLookupClientPtr proxy_lookup_client) override;
+  void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
+  void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
@@ -228,10 +254,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       VerifyCertForSignedExchangeCallback callback) override;
   void IsHSTSActiveForHost(const std::string& host,
                            IsHSTSActiveForHostCallback callback) override;
-  void AddHSTSForTesting(const std::string& host,
-                         base::Time expiry,
-                         bool include_subdomains,
-                         AddHSTSForTestingCallback callback) override;
+  void AddHSTS(const std::string& host,
+               base::Time expiry,
+               bool include_subdomains,
+               AddHSTSCallback callback) override;
+  void GetHSTSState(const std::string& domain,
+                    GetHSTSStateCallback callback) override;
+  void DeleteDynamicDataForHost(
+      const std::string& host,
+      DeleteDynamicDataForHostCallback callback) override;
+  void SetCorsOriginAccessListsForOrigin(
+      const url::Origin& source_origin,
+      std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+      SetCorsOriginAccessListsForOriginCallback callback) override;
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override;
@@ -259,6 +295,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   size_t pending_proxy_lookup_requests_for_testing() const {
     return proxy_lookup_requests_.size();
+  }
+
+  NetworkServiceProxyDelegate* proxy_delegate() const {
+    return proxy_delegate_.get();
   }
 
  private:
@@ -293,6 +333,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
 
+  void OnSetExpectCTTestReportSuccess();
+
+  void LazyCreateExpectCTReporter(net::URLRequestContext* url_request_context);
+
+  void OnSetExpectCTTestReportFailure();
+
   NetworkService* const network_service_;
 
   mojom::NetworkContextClientPtr client_;
@@ -313,6 +359,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // If non-null, called when the mojo pipe for the NetworkContext is closed.
   OnConnectionCloseCallback on_connection_close_callback_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<base::android::ApplicationStatusListener>
+      app_status_listener_;
+#endif
 
   mojo::Binding<mojom::NetworkContext> binding_;
 
@@ -371,6 +422,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::set<std::unique_ptr<HostResolver>, base::UniquePtrComparator>
       host_resolvers_;
 
+  std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
+
   // Used for Signed Exchange certificate verification.
   int next_cert_verify_id_ = 0;
   struct PendingCertVerify {
@@ -387,6 +440,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     std::string sct_list;
   };
   std::map<int, std::unique_ptr<PendingCertVerify>> cert_verifier_requests_;
+
+  // Manages allowed origin access lists.
+  cors::OriginAccessList cors_origin_access_list_;
+
+  std::queue<SetExpectCTTestReportCallback>
+      outstanding_set_expect_ct_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

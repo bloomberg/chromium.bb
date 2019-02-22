@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
@@ -59,6 +61,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -66,7 +69,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
@@ -78,6 +80,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
+#include "chrome/browser/ui/webui/chromeos/video_source.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -89,11 +92,14 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -335,12 +341,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<KioskEnableScreenHandler>());
 
-  auto supervised_user_creation_screen_handler =
-      std::make_unique<SupervisedUserCreationScreenHandler>();
-  supervised_user_creation_screen_view_ =
-      supervised_user_creation_screen_handler.get();
-  AddScreenHandler(std::move(supervised_user_creation_screen_handler));
-
   AddScreenHandler(std::make_unique<WrongHWIDScreenHandler>());
 
   AddScreenHandler(std::make_unique<AutoEnrollmentCheckScreenHandler>());
@@ -426,6 +426,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<AssistantOptInFlowScreenHandler>());
 
+  AddScreenHandler(std::make_unique<MultiDeviceSetupScreenHandler>());
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   auto kiosk_app_menu_handler =
       std::make_unique<KioskAppMenuHandler>(network_state_informer_);
@@ -434,28 +436,51 @@ void OobeUI::ConfigureOobeDisplay() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
-  ThemeSource* theme = new ThemeSource(profile);
-  content::URLDataSource::Add(profile, theme);
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
   // Set up the chrome://terms/ data source, for EULA content.
-  AboutUIHTMLSource* about_source =
-      new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
-  content::URLDataSource::Add(profile, about_source);
+  content::URLDataSource::Add(
+      profile,
+      std::make_unique<AboutUIHTMLSource>(chrome::kChromeUITermsHost, profile));
 
   // Set up the chrome://userimage/ source.
-  UserImageSource* user_image_source = new UserImageSource();
-  content::URLDataSource::Add(profile, user_image_source);
+  content::URLDataSource::Add(profile, std::make_unique<UserImageSource>());
 
   // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
 
+  // // Handler for the oobe video assets which will be shown if available.
+  content::URLDataSource::Add(profile,
+                              std::make_unique<chromeos::VideoSource>());
+
   if (IsRemoraRequisitioned())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 
+service_manager::Connector* OobeUI::GetLoggedInUserMojoConnector() {
+  // This function should only be called after the user has logged in.
+  DCHECK(
+      user_manager::UserManager::Get()->IsUserLoggedIn() &&
+      user_manager::UserManager::Get()->GetActiveUser()->is_profile_created());
+  return content::BrowserContext::GetConnectorFor(
+      ProfileManager::GetActiveUserProfile());
+}
+
+void OobeUI::BindMultiDeviceSetup(
+    multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+  GetLoggedInUserMojoConnector()->BindInterface(
+      multidevice_setup::mojom::kServiceName, std::move(request));
+}
+
+void OobeUI::BindPrivilegedHostDeviceSetter(
+    multidevice_setup::mojom::PrivilegedHostDeviceSetterRequest request) {
+  GetLoggedInUserMojoConnector()->BindInterface(
+      multidevice_setup::mojom::kServiceName, std::move(request));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
-    : WebUIController(web_ui) {
+    : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   display_type_ = GetDisplayType(url);
 
   js_calls_container = std::make_unique<JSCallsContainer>();
@@ -480,10 +505,14 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       CreateOobeUIDataSource(localized_strings, display_type_);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+
+  AddHandlerToRegistry(base::BindRepeating(&OobeUI::BindMultiDeviceSetup,
+                                           base::Unretained(this)));
+  AddHandlerToRegistry(base::BindRepeating(
+      &OobeUI::BindPrivilegedHostDeviceSetter, base::Unretained(this)));
 }
 
-OobeUI::~OobeUI() {
-}
+OobeUI::~OobeUI() {}
 
 CoreOobeView* OobeUI::GetCoreOobeView() {
   return core_handler_;
@@ -602,17 +631,16 @@ AssistantOptInFlowScreenView* OobeUI::GetAssistantOptInFlowScreenView() {
   return GetView<AssistantOptInFlowScreenHandler>();
 }
 
+MultiDeviceSetupScreenView* OobeUI::GetMultiDeviceSetupScreenView() {
+  return GetView<MultiDeviceSetupScreenHandler>();
+}
+
 UserImageView* OobeUI::GetUserImageView() {
   return GetView<UserImageScreenHandler>();
 }
 
 ErrorScreen* OobeUI::GetErrorScreen() {
   return error_screen_.get();
-}
-
-SupervisedUserCreationScreenHandler*
-OobeUI::GetSupervisedUserCreationScreenView() {
-  return supervised_user_creation_screen_view_;
 }
 
 GaiaView* OobeUI::GetGaiaScreenView() {

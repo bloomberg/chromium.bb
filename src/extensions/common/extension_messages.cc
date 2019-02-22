@@ -140,7 +140,7 @@ bool ParamTraits<URLPattern>::Read(const base::Pickle* m,
   URLPattern::ParseResult result =
       p->Parse(spec, URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
   p->SetValidSchemes(valid_schemes);
-  return URLPattern::PARSE_SUCCESS == result;
+  return URLPattern::ParseResult::kSuccess == result;
 }
 
 void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
@@ -158,8 +158,7 @@ bool ParamTraits<URLPatternSet>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &patterns))
     return false;
 
-  for (std::set<URLPattern>::iterator i = patterns.begin();
-       i != patterns.end(); ++i)
+  for (auto i = patterns.begin(); i != patterns.end(); ++i)
     p->AddPattern(*i);
   return true;
 }

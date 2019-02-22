@@ -44,6 +44,7 @@ class InMemoryDownload {
   // Report download progress with in-memory download backend.
   class Delegate {
    public:
+    virtual void OnDownloadStarted(InMemoryDownload* download) = 0;
     virtual void OnDownloadProgress(InMemoryDownload* download) = 0;
     virtual void OnDownloadComplete(InMemoryDownload* download) = 0;
 
@@ -230,6 +231,9 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
 
   // Ensures Delegate::OnDownloadComplete is only called once.
   bool completion_notified_;
+
+  // If |OnResponseStarted| is called.
+  bool started_;
 
   // Bounded to main thread task runner.
   base::WeakPtrFactory<InMemoryDownloadImpl> weak_ptr_factory_;

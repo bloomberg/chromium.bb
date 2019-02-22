@@ -6,10 +6,16 @@
     "voices": [
       {
         "voice_name": "name",
-	"lang": "en-US",
-	"gender": "female",
+        "lang": "en-US",
+        "gender": "female",
         "event_types": ["start", "end", "marker"],
-	"other_key": "other_value"
+        "other_key": "other_value"
+      },
+      {
+        "voice_name": "name 2",
+        "lang": "en-US",
+        "event_types": ["start", "end", "marker"],
+        "other_key": "other_value"
       }
     ]
   }

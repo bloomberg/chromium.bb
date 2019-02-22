@@ -31,8 +31,8 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Test suite for Sync.
@@ -126,9 +126,8 @@ public class SyncTest {
                 // real account rename events instead of the mocks.
                 MockChangeEventChecker eventChecker = new MockChangeEventChecker();
                 eventChecker.insertRenameEvent(oldAccount.name, newAccount.name);
-                SigninHelper.resetAccountRenameEventIndex(mSyncTestRule.getTargetContext());
-                SigninHelper.updateAccountRenameData(
-                        mSyncTestRule.getTargetContext(), eventChecker);
+                SigninHelper.resetAccountRenameEventIndex();
+                SigninHelper.updateAccountRenameData(eventChecker);
 
                 // Tell the fake content resolver that a rename had happen and copy over the sync
                 // settings. This would normally be done by the
@@ -146,7 +145,7 @@ public class SyncTest {
 
                 // Starts the rename process. Normally, this is triggered by the broadcast
                 // listener as well.
-                SigninHelper.get(mSyncTestRule.getTargetContext()).validateAccountSettings(true);
+                SigninHelper.get().validateAccountSettings(true);
             }
         });
 

@@ -101,6 +101,12 @@ BigBufferView::BigBufferView(base::span<const uint8_t> bytes) {
                 static_cast<uint8_t*>(shared_memory_->buffer_mapping_.get()));
       return;
     }
+
+    // Shared memory allocation failed, so we're going to inline the data. If
+    // the data is large enough to be rejected by Mojo internals, we crash early
+    // to disambiguate this case from other intentional large-IPC crashes. See
+    // https://crbug.com/872237.
+    CHECK_LE(bytes.size(), 127u * 1024 * 1024);
   }
 
   // Either the data is small enough or shared memory allocation failed. Either

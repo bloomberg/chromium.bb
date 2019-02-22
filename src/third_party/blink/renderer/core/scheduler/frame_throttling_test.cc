@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -191,7 +192,7 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_TRUE(inner_frame_document->View()->ShouldThrottleRendering());
 
   // An intersection observation overrides...
-  inner_frame_document->View()->SetNeedsIntersectionObservation(
+  inner_frame_document->View()->SetIntersectionObservationState(
       LocalFrameView::kRequired);
   EXPECT_FALSE(inner_frame_document->View()->ShouldThrottleRendering());
   inner_frame_document->View()->ScheduleAnimation();
@@ -777,11 +778,31 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   auto* frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
   CompositeFrame();  // Update touch handler regions.
 
-  // The touch handlers in the throttled frame should have been ignored.
-  EXPECT_EQ(0u, TouchHandlerRegionSize());
+  // In here, throttle iframe doesn't throttle the main frame.
+  EXPECT_TRUE(
+      frame_element->contentDocument()->View()->ShouldThrottleRendering());
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRendering());
+
+  // In this test, the iframe has the same origin as the main frame, so we have
+  // two documents but one graphics layer tree. The test throttles the iframe
+  // document only. In ScrollingCoordinator::UpdateLayerTouchActionRects, we
+  // check whether the document associated with a certain grahpics layer is
+  // throttled or not. Since the layers are associated with the main document
+  // which is not throttled, we expect the main document to have one touch
+  // handler region.
+  // In the Non-PaintTouchActionRects world, the
+  // AccumulateDocumentTouchEventTargetRects goes through every document and
+  // check whether the document is throttled or not. So we expect no touch
+  // handler region.
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    EXPECT_EQ(1u, TouchHandlerRegionSize());
+  else
+    EXPECT_EQ(0u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handlers active again. Note that
   // both handlers get combined into the same rectangle in the region, so
@@ -818,11 +839,31 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   auto* frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   frame_element->setAttribute(styleAttr, "transform: translateY(480px)");
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
   CompositeFrame();  // Update touch handler regions.
 
-  // The touch handler in the throttled frame should have been ignored.
-  EXPECT_EQ(0u, TouchHandlerRegionSize());
+  // In here, throttle iframe doesn't throttle the main frame.
+  EXPECT_TRUE(
+      frame_element->contentDocument()->View()->ShouldThrottleRendering());
+  EXPECT_FALSE(GetDocument().View()->ShouldThrottleRendering());
+
+  // In this test, the iframe has the same origin as the main frame, so we have
+  // two documents but one graphics layer tree. The test throttles the iframe
+  // document only. In ScrollingCoordinator::UpdateLayerTouchActionRects, we
+  // check whether the document associated with a certain grahpics layer is
+  // throttled or not. Since the layers are associated with the main document
+  // which is not throttled, we expect the main document to have one touch
+  // handler region.
+  // In the Non-PaintTouchActionRects world, the
+  // AccumulateDocumentTouchEventTargetRects goes through every document and
+  // check whether the document is throttled or not. So we expect no touch
+  // handler region.
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    EXPECT_EQ(1u, TouchHandlerRegionSize());
+  else
+    EXPECT_EQ(0u, TouchHandlerRegionSize());
 
   // Unthrottling the frame makes the touch handler active again.
   frame_element->setAttribute(styleAttr, "transform: translateY(0px)");
@@ -1156,7 +1197,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
       local_frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
-          ScriptSourceCode("window.didRaf;"));
+          ScriptSourceCode("window.didRaf;"), KURL(), kOpaqueResource);
   EXPECT_TRUE(result->IsTrue());
 }
 

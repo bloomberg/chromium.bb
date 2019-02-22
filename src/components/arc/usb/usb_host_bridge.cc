@@ -211,7 +211,7 @@ void ArcUsbHostBridge::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
 void ArcUsbHostBridge::OnDeviceRemoved(
     scoped_refptr<device::UsbDevice> device) {
   mojom::UsbHostInstance* usb_host_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->usb_host(), OnDeviceAdded);
+      arc_bridge_service_->usb_host(), OnDeviceRemoved);
 
   if (!usb_host_instance) {
     VLOG(2) << "UsbInstance not ready yet";

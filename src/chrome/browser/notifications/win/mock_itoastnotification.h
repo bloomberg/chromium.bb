@@ -6,26 +6,21 @@
 #define CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFICATION_H_
 
 #include <windows.ui.notifications.h>
+#include <wrl/implements.h>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
 class MockIToastNotification
-    : public ABI::Windows::UI::Notifications::IToastNotification,
-      public ABI::Windows::UI::Notifications::IToastNotification2 {
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
+          ABI::Windows::UI::Notifications::IToastNotification,
+          ABI::Windows::UI::Notifications::IToastNotification2> {
  public:
   explicit MockIToastNotification(const base::string16& xml,
                                   const base::string16& tag);
-  ~MockIToastNotification() = default;
-
-  // IInspectable implementation:
-  HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,
-                                           void** ppvObject) override;
-  ULONG STDMETHODCALLTYPE AddRef() override;
-  ULONG STDMETHODCALLTYPE Release() override;
-  HRESULT STDMETHODCALLTYPE GetIids(ULONG* iidCount, IID** iids) override;
-  HRESULT STDMETHODCALLTYPE GetRuntimeClassName(HSTRING* className) override;
-  HRESULT STDMETHODCALLTYPE GetTrustLevel(TrustLevel* trustLevel) override;
+  ~MockIToastNotification() override = default;
 
   // ABI::Windows::UI::Notifications::IToastNotification implementation:
   HRESULT STDMETHODCALLTYPE
@@ -66,8 +61,6 @@ class MockIToastNotification
 
   base::string16 group_;
   base::string16 tag_;
-
-  int refcount_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MockIToastNotification);
 };

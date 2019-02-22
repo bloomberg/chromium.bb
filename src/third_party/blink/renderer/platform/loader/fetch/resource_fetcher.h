@@ -28,12 +28,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_H_
 
 #include <memory>
+
+#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -50,7 +52,9 @@ namespace blink {
 class ArchiveResource;
 class MHTMLArchive;
 class KURL;
+class Resource;
 class ResourceTimingInfo;
+enum class ResourceType : uint8_t;
 
 // The ResourceFetcher provides a per-context interface to the MemoryCache and
 // enforces a bunch of security checks and rules for resource revalidation. Its
@@ -105,9 +109,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);
 
-  FetchContext& Context() const {
-    return context_ ? *context_.Get() : FetchContext::NullInstance();
-  }
+  FetchContext& Context() const;
   void ClearContext();
 
   int BlockingRequestCount() const;
@@ -141,7 +143,9 @@ class PLATFORM_EXPORT ResourceFetcher
                           TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
-                          bool should_report_corb_blocking);
+                          bool should_report_corb_blocking,
+                          const std::vector<network::cors::PreflightTimingInfo>&
+                              cors_preflight_timing_info);
   void HandleLoaderError(Resource*,
                          const ResourceError&,
                          uint32_t inflight_keepalive_bytes);
@@ -151,8 +155,8 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
 
-  WARN_UNUSED_RESULT static WebURLRequest::RequestContext
-  DetermineRequestContext(Resource::Type, IsImageSet, bool is_main_frame);
+  WARN_UNUSED_RESULT static mojom::RequestContextType
+  DetermineRequestContext(ResourceType, IsImageSet, bool is_main_frame);
 
   void UpdateAllImageResourcePriorities();
 
@@ -173,7 +177,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // TODO(hiroshige): Remove this hack.
   void EmulateLoadStartedForInspector(Resource*,
                                       const KURL&,
-                                      WebURLRequest::RequestContext,
+                                      mojom::RequestContextType,
                                       const AtomicString& initiator_name);
 
   // This is called from leak detectors (Real-world leak detector & layout test
@@ -183,7 +187,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void SetStaleWhileRevalidateEnabled(bool enabled);
 
-  using ResourceFetcherSet = PersistentHeapHashSet<WeakMember<ResourceFetcher>>;
+  using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();
 
  private:
@@ -205,7 +209,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                      const ResourceFactory&);
   void StorePerformanceTimingInitiatorInformation(Resource*);
   ResourceLoadPriority ComputeLoadPriority(
-      Resource::Type,
+      ResourceType,
       const ResourceRequest&,
       ResourcePriority::VisibilityStatus,
       FetchParameters::DeferOption = FetchParameters::kNoDefer,
@@ -227,11 +231,11 @@ class PLATFORM_EXPORT ResourceFetcher
                                       ResourceRequestBlockedReason,
                                       ResourceClient*);
 
-  Resource* MatchPreload(const FetchParameters& params, Resource::Type);
+  Resource* MatchPreload(const FetchParameters& params, ResourceType);
   void PrintPreloadWarning(Resource*, Resource::MatchStatus);
   void InsertAsPreloadIfNecessary(Resource*,
                                   const FetchParameters& params,
-                                  Resource::Type);
+                                  ResourceType);
 
   bool IsImageResourceDisallowedToBeReused(const Resource&) const;
 
@@ -243,7 +247,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   // A wrapper just for placing a trace_event macro.
   RevalidationPolicy DetermineRevalidationPolicy(
-      Resource::Type,
+      ResourceType,
       const FetchParameters&,
       const Resource& existing_resource,
       bool is_static_data) const;
@@ -251,7 +255,7 @@ class PLATFORM_EXPORT ResourceFetcher
   // resource retrieved from the memory cache (can be a newly constructed one
   // for a static data).
   RevalidationPolicy DetermineRevalidationPolicyInternal(
-      Resource::Type,
+      ResourceType,
       const FetchParameters&,
       const Resource& existing_resource,
       bool is_static_data) const;

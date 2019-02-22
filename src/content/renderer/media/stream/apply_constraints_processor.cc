@@ -256,8 +256,6 @@ VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
 
   DCHECK(video_source_->GetCurrentCaptureParams());
   VideoDeviceCaptureCapabilities video_capabilities;
-  video_capabilities.power_line_capabilities.push_back(
-      video_source_->GetCurrentCaptureParams()->power_line_frequency);
   video_capabilities.noise_reduction_capabilities.push_back(
       GetCurrentVideoTrack()->noise_reduction());
   video_capabilities.device_capabilities.push_back(

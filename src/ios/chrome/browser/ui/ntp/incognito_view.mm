@@ -30,17 +30,13 @@
 namespace {
 
 const CGFloat kStackViewHorizontalMargin = 20.0;
-const CGFloat kStackViewHorizontalMarginLegacy = 24.0;
 const CGFloat kStackViewMaxWidth = 416.0;
 const CGFloat kStackViewDefaultSpacing = 20.0;
-const CGFloat kStackViewDefaultSpacingLegacy = 32.0;
 const CGFloat kStackViewImageSpacing = 22.0;
-const CGFloat kStackViewImageSpacingLegacy = 24.0;
 const CGFloat kLayoutGuideVerticalMargin = 8.0;
 const CGFloat kLayoutGuideMinHeight = 12.0;
 
 const int kLinkColor = 0x3A8FFF;
-const int kLinkColorLegacy = 0x03A9F4;
 
 // The URL for the the Learn More page shown on incognito new tab.
 // Taken from ntp_resource_cache.cc.
@@ -168,43 +164,25 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     _containerView = [[UIView alloc] initWithFrame:frame];
     [_containerView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-    // The following stackview constants depend on the state of the UIRefresh
-    // experiment.
-    BOOL refreshEnabled = IsUIRefreshPhase1Enabled();
-    const CGFloat stackViewHorizontalMargin =
-        refreshEnabled ? kStackViewHorizontalMargin
-                       : kStackViewHorizontalMarginLegacy;
-    const CGFloat stackViewDefaultSpacing =
-        refreshEnabled ? kStackViewDefaultSpacing
-                       : kStackViewDefaultSpacingLegacy;
-    const CGFloat stackViewImageSpacing =
-        refreshEnabled ? kStackViewImageSpacing : kStackViewImageSpacingLegacy;
-
     // Stackview in which all the subviews (image, labels, button) are added.
     _stackView = [[UIStackView alloc] init];
     [_stackView setTranslatesAutoresizingMaskIntoConstraints:NO];
     _stackView.axis = UILayoutConstraintAxisVertical;
-    _stackView.spacing = stackViewDefaultSpacing;
+    _stackView.spacing = kStackViewDefaultSpacing;
     _stackView.distribution = UIStackViewDistributionFill;
     _stackView.alignment = UIStackViewAlignmentCenter;
     [_containerView addSubview:_stackView];
 
     // Incognito image.
-    NSString* incognitoImageName =
-        refreshEnabled ? @"incognito_icon" : @"incognito_legacy_icon";
     UIImageView* incognitoImage = [[UIImageView alloc]
-        initWithImage:[UIImage imageNamed:incognitoImageName]];
+        initWithImage:[UIImage imageNamed:@"incognito_icon"]];
     [_stackView addArrangedSubview:incognitoImage];
     if (@available(iOS 11.0, *)) {
-      [_stackView setCustomSpacing:stackViewImageSpacing
+      [_stackView setCustomSpacing:kStackViewImageSpacing
                          afterView:incognitoImage];
     }
 
-    if (refreshEnabled) {
-      [self addUIRefreshTextSections];
-    } else {
-      [self addLegacyTextSections];
-    }
+    [self addTextSections];
 
     // |topGuide| and |bottomGuide| exist to vertically position the stackview
     // inside the container scrollview.
@@ -253,10 +231,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
       // Center the stackview horizontally with a minimum margin.
       [_stackView.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:_containerView.leadingAnchor
-                                      constant:stackViewHorizontalMargin],
+                                      constant:kStackViewHorizontalMargin],
       [_stackView.trailingAnchor
           constraintLessThanOrEqualToAnchor:_containerView.trailingAnchor
-                                   constant:-stackViewHorizontalMargin],
+                                   constant:-kStackViewHorizontalMargin],
       [_stackView.centerXAnchor
           constraintEqualToAnchor:_containerView.centerXAnchor],
 
@@ -336,7 +314,11 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  [self updateToolbarMargins];
+}
 
+- (void)safeAreaInsetsDidChange {
+  [super safeAreaInsetsDidChange];
   [self updateToolbarMargins];
 }
 
@@ -359,14 +341,16 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 // Updates the height of the margins for the top and bottom toolbars.
 - (void)updateToolbarMargins {
-  if (!IsUIRefreshPhase1Enabled())
-    return;
-
   if (IsRegularXRegularSizeClass(self)) {
     _topToolbarMarginHeight.constant = 0;
   } else {
-    _topToolbarMarginHeight.constant =
-        StatusBarHeight() + kAdaptiveToolbarHeight;
+    CGFloat topInset = 0;
+    if (@available(iOS 11, *)) {
+      topInset = self.safeAreaInsets.top;
+    } else {
+      topInset = StatusBarHeight();
+    }
+    _topToolbarMarginHeight.constant = topInset + kAdaptiveToolbarHeight;
   }
 
   if (IsSplitToolbarMode(self)) {
@@ -384,7 +368,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 }
 
 // Adds views containing the text of the incognito page to |_stackView|.
-- (void)addUIRefreshTextSections {
+- (void)addTextSections {
   UIColor* titleTextColor = [UIColor whiteColor];
   UIColor* bodyTextColor = BodyTextColor();
   UIColor* linkTextColor = UIColorFromRGB(kLinkColor);
@@ -466,76 +450,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
          selector:@selector(contentSizeCategoryDidChange)
              name:UIContentSizeCategoryDidChangeNotification
            object:nil];
-}
-
-#pragma mark - Legacy UI
-
-// Returns an autoreleased label that is styled for the legacy UI.
-- (UILabel*)legacyLabelWithMessageID:(int)messageID
-                                font:(UIFont*)font
-                               alpha:(CGFloat)alpha {
-  NSString* string = l10n_util::GetNSString(messageID);
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc] initWithString:string];
-  NSMutableParagraphStyle* paragraphStyle =
-      [[NSMutableParagraphStyle alloc] init];
-  [paragraphStyle setLineSpacing:4];
-  [paragraphStyle setAlignment:NSTextAlignmentJustified];
-  [attributedString addAttribute:NSParagraphStyleAttributeName
-                           value:paragraphStyle
-                           range:NSMakeRange(0, string.length)];
-  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
-  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [label setNumberOfLines:0];
-  [label setFont:font];
-  [label setAttributedText:attributedString];
-  [label setTextColor:[UIColor colorWithWhite:1.0 alpha:alpha]];
-  return label;
-}
-
-// Adds views containing the text of the incognito page to |_stackView|.
-- (void)addLegacyTextSections {
-  // Title.
-  UIFont* titleFont = [[MDCTypography fontLoader] lightFontOfSize:24];
-  UILabel* incognitoTabHeading =
-      [self legacyLabelWithMessageID:IDS_NEW_TAB_OTR_HEADING
-                                font:titleFont
-                               alpha:0.8];
-  [_stackView addArrangedSubview:incognitoTabHeading];
-
-  // Description paragraph.
-  UIFont* regularFont = [[MDCTypography fontLoader] regularFontOfSize:14];
-  UILabel* incognitoTabDescription =
-      [self legacyLabelWithMessageID:IDS_NEW_TAB_OTR_DESCRIPTION
-                                font:regularFont
-                               alpha:0.7];
-  [_stackView addArrangedSubview:incognitoTabDescription];
-
-  // Warning paragraph.
-  UILabel* incognitoTabWarning =
-      [self legacyLabelWithMessageID:IDS_NEW_TAB_OTR_MESSAGE_WARNING
-                                font:regularFont
-                               alpha:0.7];
-  [_stackView addArrangedSubview:incognitoTabWarning];
-
-  // Learn more button.
-  MDCButton* learnMore = [[MDCFlatButton alloc] init];
-  [learnMore setBackgroundColor:[UIColor clearColor]
-                       forState:UIControlStateNormal];
-  UIColor* inkColor =
-      [[[MDCPalette greyPalette] tint300] colorWithAlphaComponent:0.25];
-  [learnMore setInkColor:inkColor];
-  [learnMore setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [learnMore setTitle:l10n_util::GetNSString(IDS_NEW_TAB_OTR_LEARN_MORE_LINK)
-             forState:UIControlStateNormal];
-  [learnMore setTitleColor:UIColorFromRGB(kLinkColorLegacy)
-                  forState:UIControlStateNormal];
-  UIFont* buttonFont = [[MDCTypography fontLoader] boldFontOfSize:14];
-  [[learnMore titleLabel] setFont:buttonFont];
-  [learnMore addTarget:self
-                action:@selector(learnMoreButtonPressed)
-      forControlEvents:UIControlEventTouchUpInside];
-  [_stackView addArrangedSubview:learnMore];
 }
 
 @end

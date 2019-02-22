@@ -30,8 +30,6 @@ virtual GLuint CreateImageCHROMIUM(ClientBuffer buffer,
                                    GLsizei height,
                                    GLenum internalformat) = 0;
 virtual void DestroyImageCHROMIUM(GLuint image_id) = 0;
-virtual void CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                           GLuint dest_id) = 0;
 virtual void LoseContextCHROMIUM(GLenum current, GLenum other) = 0;
 virtual void GenSyncTokenCHROMIUM(GLbyte* sync_token) = 0;
 virtual void GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) = 0;

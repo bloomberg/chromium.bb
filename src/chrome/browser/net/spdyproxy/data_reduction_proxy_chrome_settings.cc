@@ -17,6 +17,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +32,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -175,8 +178,8 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
     : data_reduction_proxy::DataReductionProxySettings(),
-      data_reduction_proxy_enabled_pref_name_(prefs::kDataSaverEnabled) {
-}
+      data_reduction_proxy_enabled_pref_name_(prefs::kDataSaverEnabled),
+      profile_(nullptr) {}
 
 DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {
 }
@@ -192,10 +195,12 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
     net::URLRequestContextGetter* request_context_getter,
+    Profile* profile,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<data_reduction_proxy::DataStore> store,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner) {
+  profile_ = profile;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_ANDROID)
   // On mobile we write Data Reduction Proxy prefs directly to the pref service.
@@ -210,7 +215,8 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
-          this, profile_prefs, request_context_getter, std::move(store),
+          this, profile_prefs, request_context_getter, url_loader_factory,
+          std::move(store),
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
               url_loader_factory, ui_task_runner),
@@ -229,6 +235,18 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
               &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
   // TODO(bengr): Remove after M46. See http://crbug.com/445599.
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
+}
+
+void DataReductionProxyChromeSettings::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  // |previews_service| is null if |profile_| is off the record.
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(profile_);
+  if (previews_service && previews_service->previews_ui_service()) {
+    previews_service->previews_ui_service()
+        ->SetIgnoreLongTermBlackListForServerPreviews(
+            ignore_long_term_black_list_rules);
+  }
 }
 
 // static

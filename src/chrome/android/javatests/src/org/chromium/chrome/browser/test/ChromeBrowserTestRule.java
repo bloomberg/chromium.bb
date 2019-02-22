@@ -12,7 +12,7 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
  * JUnit test rule that takes care of important initialization for Chrome-specific tests, such as

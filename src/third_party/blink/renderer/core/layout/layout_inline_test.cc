@@ -246,4 +246,31 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   }
 }
 
+TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div>
+      <span>xx<br>
+        <span id="target" tabindex="-1">yy
+          <div style="width:111px;height:222px;background:yellow"></div>
+          yy
+        </span>
+      </span>
+    </div>
+  )HTML");
+
+  LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
+  LayoutRect visual_rect = target->VisualRectInDocument();
+  EXPECT_EQ(visual_rect.X(), LayoutUnit(0));
+  EXPECT_EQ(visual_rect.Y(), LayoutUnit(20));
+  EXPECT_EQ(visual_rect.Width(), LayoutUnit(111));
+  EXPECT_EQ(visual_rect.Height(), LayoutUnit(222 + 20 * 2));
+}
+
 }  // namespace blink

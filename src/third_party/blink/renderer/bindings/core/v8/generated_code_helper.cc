@@ -32,17 +32,27 @@ v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
   return v8::Null(isolate);
 }
 
-bool IsCallbackFunctionRunnable(
+namespace {
+
+enum class IgnorePause { kDontIgnore, kIgnore };
+
+// 'beforeunload' event listeners are runnable even when execution contexts are
+// paused. Use |RespectPause::kPrioritizeOverPause| in such a case.
+bool IsCallbackFunctionRunnableInternal(
     const ScriptState* callback_relevant_script_state,
-    ScriptState* incumbent_script_state) {
+    const ScriptState* incumbent_script_state,
+    IgnorePause ignore_pause) {
   if (!callback_relevant_script_state->ContextIsValid())
     return false;
   const ExecutionContext* relevant_execution_context =
       ExecutionContext::From(callback_relevant_script_state);
   if (!relevant_execution_context ||
-      relevant_execution_context->IsContextPaused() ||
       relevant_execution_context->IsContextDestroyed()) {
     return false;
+  }
+  if (relevant_execution_context->IsContextPaused()) {
+    if (ignore_pause == IgnorePause::kDontIgnore)
+      return false;
   }
 
   // TODO(yukishiino): Callback function type value must make the incumbent
@@ -60,12 +70,34 @@ bool IsCallbackFunctionRunnable(
   // the callback.
   // TODO(crbug.com/608641): move IsMainWorld check into
   // ExecutionContext::CanExecuteScripts()
-  return incumbent_execution_context &&
-         !incumbent_execution_context->IsContextPaused() &&
-         !incumbent_execution_context->IsContextDestroyed() &&
-         (!incumbent_script_state->World().IsMainWorld() ||
-          incumbent_execution_context->CanExecuteScripts(
-              kAboutToExecuteScript));
+  if (!incumbent_execution_context ||
+      incumbent_execution_context->IsContextDestroyed()) {
+    return false;
+  }
+  if (incumbent_execution_context->IsContextPaused()) {
+    if (ignore_pause == IgnorePause::kDontIgnore)
+      return false;
+  }
+  return !incumbent_script_state->World().IsMainWorld() ||
+         incumbent_execution_context->CanExecuteScripts(kAboutToExecuteScript);
+}
+
+}  // namespace
+
+bool IsCallbackFunctionRunnable(
+    const ScriptState* callback_relevant_script_state,
+    const ScriptState* incumbent_script_state) {
+  return IsCallbackFunctionRunnableInternal(callback_relevant_script_state,
+                                            incumbent_script_state,
+                                            IgnorePause::kDontIgnore);
+}
+
+bool IsCallbackFunctionRunnableIgnoringPause(
+    const ScriptState* callback_relevant_script_state,
+    const ScriptState* incumbent_script_state) {
+  return IsCallbackFunctionRunnableInternal(callback_relevant_script_state,
+                                            incumbent_script_state,
+                                            IgnorePause::kIgnore);
 }
 
 }  // namespace blink

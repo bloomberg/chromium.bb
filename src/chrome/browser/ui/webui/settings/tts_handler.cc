@@ -177,8 +177,8 @@ void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
   TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(profile);
   extensions::ProcessManager::Get(profile)->WakeEventPage(
       extension_misc::kSpeechSynthesisExtensionId,
-      base::BindRepeating(&TtsHandler::OnTtsEngineAwake,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&TtsHandler::OnTtsEngineAwake,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void TtsHandler::OnTtsEngineAwake(bool success) {

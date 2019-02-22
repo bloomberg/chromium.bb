@@ -26,7 +26,6 @@
 #include "deDefs.h"
 #include "deFloat16.h"
 #include "deRandom.hpp"
-#include "deSharedPtr.hpp"
 #include "tcuTestLog.hpp"
 #include "tcuVector.hpp"
 #include "tcuTestLog.hpp"
@@ -72,23 +71,6 @@ static void fillRandomScalars (de::Random& rnd, deInt32 minValue, deInt32 maxVal
 		dst[i] = rnd.getInt(minValue, maxValue);
 }
 
-typedef de::MovePtr<vk::Allocation>			AllocationMp;
-typedef de::SharedPtr<vk::Allocation>		AllocationSp;
-
-/*--------------------------------------------------------------------*//*!
- * \brief Abstract class for an input/output storage buffer object
- *//*--------------------------------------------------------------------*/
-class BufferInterface
-{
-public:
-	virtual				~BufferInterface	(void)				{}
-
-	virtual void		getBytes			(std::vector<deUint8>& bytes) const = 0;
-	virtual size_t		getByteSize			(void) const = 0;
-};
-
-typedef de::SharedPtr<BufferInterface>		BufferSp;
-
 /*--------------------------------------------------------------------*//*!
 * \brief Concrete class for an input/output storage buffer object used for OpAtomic tests
 *//*--------------------------------------------------------------------*/
@@ -125,7 +107,7 @@ public:
 
 			for (size_t ndx = 0; ndx < m_numInputElements; ndx++)
 			{
-				deInt32* const bytesAsInt = reinterpret_cast<deInt32* const>(&bytes.front());
+				deInt32* const bytesAsInt = reinterpret_cast<deInt32*>(&bytes.front());
 
 				switch (m_opAtomic)
 				{
@@ -146,13 +128,18 @@ public:
 
 			if (m_opAtomic == OPATOMIC_COMPEX)
 			{
-				deInt32* const bytesAsInt = reinterpret_cast<deInt32* const>(&bytes.front());
+				deInt32* const bytesAsInt = reinterpret_cast<deInt32*>(&bytes.front());
 				for (size_t ndx = 0; ndx < m_numInputElements; ndx++)
 					bytesAsInt[ndx] = inputInts[ndx] % 2;
 			}
 		}
 		else
 			DE_FATAL("Unknown buffer type");
+	}
+
+	void getPackedBytes (std::vector<deUint8>& bytes) const
+	{
+		return getBytes(bytes);
 	}
 
 	size_t getByteSize (void) const
@@ -171,7 +158,7 @@ public:
 	}
 
 	template <int OpAtomic>
-	static bool compareWithRetvals (const std::vector<BufferSp>& inputs, const std::vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, tcu::TestLog& log)
+	static bool compareWithRetvals (const std::vector<Resource>& inputs, const std::vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, tcu::TestLog& log)
 	{
 		if (outputAllocs.size() != 2 || inputs.size() != 1)
 			DE_FATAL("Wrong number of buffers to compare");
@@ -184,7 +171,7 @@ public:
 			{
 				// BUFFERTYPE_ATOMIC_RET for arithmetic operations must be verified manually by matching return values to inputs
 				std::vector<deUint8>	inputBytes;
-				inputs[0]->getBytes(inputBytes);
+				inputs[0].getBytes(inputBytes);
 
 				const deUint32*			inputValues			= reinterpret_cast<deUint32*>(&inputBytes.front());
 				const size_t			inputValuesCount	= inputBytes.size() / sizeof(deUint32);
@@ -200,7 +187,7 @@ public:
 			}
 			else
 			{
-				const BufferSp&			expectedOutput = expectedOutputs[i];
+				const BufferSp&			expectedOutput = expectedOutputs[i].getBuffer();
 				std::vector<deUint8>	expectedBytes;
 
 				expectedOutput->getBytes(expectedBytes);
@@ -276,24 +263,49 @@ template<typename E>
 class Buffer : public BufferInterface
 {
 public:
-						Buffer				(const std::vector<E>& elements)
-							: m_elements(elements)
-						{}
+	Buffer	(const std::vector<E>& elements, deUint32 padding = 0 /* in bytes */)
+			: m_elements(elements)
+			, m_padding(padding)
+			{}
 
 	void getBytes (std::vector<deUint8>& bytes) const
 	{
-		const size_t size = m_elements.size() * sizeof(E);
+		const size_t	count			= m_elements.size();
+		const size_t	perSegmentSize	= sizeof(E) + m_padding;
+		const size_t	size			= count * perSegmentSize;
+
 		bytes.resize(size);
+
+		if (m_padding == 0)
+		{
+			deMemcpy(&bytes.front(), &m_elements.front(), size);
+		}
+		else
+		{
+			deMemset(&bytes.front(), 0xff, size);
+
+			for (deUint32 elementIdx = 0; elementIdx < count; ++elementIdx)
+				deMemcpy(&bytes[elementIdx * perSegmentSize], &m_elements[elementIdx], sizeof(E));
+		}
+	}
+
+	void getPackedBytes (std::vector<deUint8>& bytes) const
+	{
+		const size_t size = m_elements.size() * sizeof(E);
+
+		bytes.resize(size);
+
 		deMemcpy(&bytes.front(), &m_elements.front(), size);
 	}
 
 	size_t getByteSize (void) const
 	{
-		return m_elements.size() * sizeof(E);
+		return m_elements.size() * (sizeof(E) + m_padding);
 	}
 
 private:
 	std::vector<E>		m_elements;
+	deUint32			m_padding;
 };
 
 DE_STATIC_ASSERT(sizeof(tcu::Vec4) == 4 * sizeof(float));
@@ -304,14 +316,10 @@ typedef Buffer<deInt64>		Int64Buffer;
 typedef Buffer<deInt32>		Int32Buffer;
 typedef Buffer<deInt16>		Int16Buffer;
 typedef Buffer<deUint16>	Uint16Buffer;
+typedef Buffer<deInt8>		Int8Buffer;
 typedef Buffer<deUint32>	Uint32Buffer;
 typedef Buffer<deUint64>	Uint64Buffer;
 typedef Buffer<tcu::Vec4>	Vec4Buffer;
-
-typedef bool (*ComputeVerifyIOFunc) (const std::vector<BufferSp>&		inputs,
-									 const std::vector<AllocationSp>&	outputAllocations,
-									 const std::vector<BufferSp>&		expectedOutputs,
-									 tcu::TestLog&						log);
 
 typedef bool (*ComputeVerifyBinaryFunc) (const ProgramBinary&	binary);
 
@@ -325,12 +333,10 @@ struct ComputeShaderSpec
 {
 	std::string								assembly;
 	std::string								entryPoint;
-	std::vector<BufferSp>					inputs;
-	// Mapping from input index (in the inputs field) to the descriptor type.
-	std::map<deUint32, VkDescriptorType>	inputTypes;
-	std::vector<BufferSp>					outputs;
+	std::vector<Resource>					inputs;
+	std::vector<Resource>					outputs;
 	tcu::IVec3								numWorkGroups;
-	std::vector<deUint32>					specConstants;
+	SpecConstants							specConstants;
 	BufferSp								pushConstants;
 	std::vector<std::string>				extensions;
 	VulkanFeatures							requestedVulkanFeatures;
@@ -340,7 +346,7 @@ struct ComputeShaderSpec
 	// and the contents of expectedOutputs. Otherwise the function pointed to by verifyIO will be called.
 	// If true is returned, then the test case is assumed to have passed, if false is returned, then the test
 	// case is assumed to have failed. Exact meaning of failure can be customized with failResult.
-	ComputeVerifyIOFunc						verifyIO;
+	VerifyIOFunc							verifyIO;
 	ComputeVerifyBinaryFunc					verifyBinary;
 	SpirvVersion							spirvVersion;
 	bool									coherentMemory;
@@ -379,10 +385,14 @@ const char* getComputeAsmInputOutputBuffer			(void);
  *//*--------------------------------------------------------------------*/
 const char* getComputeAsmInputOutputBufferTraits	(void);
 
-bool verifyOutput									(const std::vector<BufferSp>&,
-													const std::vector<AllocationSp>& outputAllocs,
-													const std::vector<BufferSp>&		expectedOutputs,
+bool verifyOutput									(const std::vector<Resource>&,
+													const std::vector<AllocationSp>&	outputAllocs,
+													const std::vector<Resource>&		expectedOutputs,
 													tcu::TestLog&						log);
+
+													// Creates vertex-shader assembly by specializing a boilerplate StringTemplate
+
+std::string makeComputeShaderAssembly(const std::map<std::string, std::string>& fragments);
 
 } // SpirVAssembly
 } // vkt

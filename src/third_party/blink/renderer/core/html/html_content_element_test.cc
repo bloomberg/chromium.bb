@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/html_content_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -38,7 +39,7 @@ TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
 
   GetDocument().UpdateDistributionForLegacyDistributedNodes();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kNoChange);
+  GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
 
   EXPECT_TRUE(fallback->GetNonAttachedStyle());
 }

@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 
 enum VideoCapturePixelFormat {
   UNKNOWN,
@@ -204,13 +205,13 @@ enum VideoCaptureError {
   kMacDeckLinkCouldNotStartCapturing,
   kMacDeckLinkUnsupportedPixelFormat,
   kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
-  kAndroidApi2ErrorConfiguringCamera
+  kAndroidApi2ErrorConfiguringCamera,
+  kCrosHalV3DeviceDelegateFailedToFlush
 };
 
 enum VideoCaptureFrameDropReason {
   kNone,
   kDeviceClientFrameHasInvalidFormat,
-  kDeviceClientFailedToReserveBufferFromBufferPool,
   kDeviceClientLibyuvConvertToI420Failed,
   kV4L2BufferErrorFlagWasSet,
   kV4L2InvalidNumberOfBytesInBuffer,
@@ -222,7 +223,9 @@ enum VideoCaptureFrameDropReason {
   kWinDirectShowFailedToGetMemoryPointerFromMediaSample,
   kWinMediaFoundationReceivedSampleIsNull,
   kWinMediaFoundationLockingBufferDelieveredNullptr,
-  kWinMediaFoundationGetBufferByIndexReturnedNull
+  kWinMediaFoundationGetBufferByIndexReturnedNull,
+  kBufferPoolMaxBufferCountExceeded,
+  kBufferPoolBufferAllocationFailed
 };
 
 struct VideoCaptureFormat {
@@ -238,12 +241,30 @@ struct VideoCaptureParams {
   PowerLineFrequency power_line_frequency;
 };
 
+// Contains one stride value per image plane. Stride means the number of bytes
+// per row. If the image format uses fewer than kMaxPlanes planes, the values
+// for higher plane indices are ignored. For example, for a YUV format, plane
+// index 0 corresponds to the Y plane, index 1 to the U plane, and index 2 to
+// the V plane.
+struct PlaneStrides {
+  // Size must be kept in sync with media::VideoFrame::kMaxPlanes.
+  array<uint32, 4> stride_by_plane;
+};
+
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
   mojo_base.mojom.DictionaryValue metadata;
   VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
+  // This field is only optional to work around the issue of native enums
+  // not being usable for non-Chromium Mojo clients.
+  // TODO(chfremer): Make this non-optional once gfx.mojom.ColorSpace has been
+  // migrated to a full Mojo struct.
+  gfx.mojom.ColorSpace? color_space;
+  // Optionally, stride information can be provided.
+  // If not provided, it is assumed that frame data is tightly packed.
+  PlaneStrides? strides;
 };
 
 struct VideoCaptureDeviceDescriptorCameraCalibration {

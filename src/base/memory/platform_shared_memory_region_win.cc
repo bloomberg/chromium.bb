@@ -12,37 +12,20 @@
 #include "base/bits.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/numerics/checked_math.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/windows_version.h"
 
 namespace base {
 namespace subtle {
 
 namespace {
 
-// Errors that can occur during Shared Memory construction.
-// These match tools/metrics/histograms/histograms.xml.
-// This enum is append-only.
-enum CreateError {
-  SUCCESS = 0,
-  SIZE_ZERO = 1,
-  SIZE_TOO_LARGE = 2,
-  INITIALIZE_ACL_FAILURE = 3,
-  INITIALIZE_SECURITY_DESC_FAILURE = 4,
-  SET_SECURITY_DESC_FAILURE = 5,
-  CREATE_FILE_MAPPING_FAILURE = 6,
-  REDUCE_PERMISSIONS_FAILURE = 7,
-  ALREADY_EXISTS = 8,
-  CREATE_ERROR_LAST = ALREADY_EXISTS
-};
-
 // Emits UMA metrics about encountered errors. Pass zero (0) for |winerror|
 // if there is no associated Windows error.
-void LogError(CreateError error, DWORD winerror) {
-  UMA_HISTOGRAM_ENUMERATION("SharedMemory.CreateError", error,
-                            CREATE_ERROR_LAST + 1);
+void LogError(PlatformSharedMemoryRegion::CreateError error, DWORD winerror) {
+  UMA_HISTOGRAM_ENUMERATION("SharedMemory.CreateError", error);
   static_assert(ERROR_SUCCESS == 0, "Windows error code changed!");
   if (winerror != ERROR_SUCCESS)
     UmaHistogramSparse("SharedMemory.CreateWinError", winerror);
@@ -111,7 +94,9 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
   HANDLE h = CreateFileMapping(INVALID_HANDLE_VALUE, sa, PAGE_READWRITE, 0,
                                static_cast<DWORD>(rounded_size), name);
   if (!h) {
-    LogError(CREATE_FILE_MAPPING_FAILURE, GetLastError());
+    LogError(
+        PlatformSharedMemoryRegion::CreateError::CREATE_FILE_MAPPING_FAILURE,
+        GetLastError());
     return nullptr;
   }
 
@@ -124,7 +109,9 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
   DCHECK(rv);
 
   if (!success) {
-    LogError(REDUCE_PERMISSIONS_FAILURE, GetLastError());
+    LogError(
+        PlatformSharedMemoryRegion::CreateError::REDUCE_PERMISSIONS_FAILURE,
+        GetLastError());
     return nullptr;
   }
 
@@ -230,18 +217,10 @@ bool PlatformSharedMemoryRegion::ConvertToUnsafe() {
   return true;
 }
 
-bool PlatformSharedMemoryRegion::MapAt(off_t offset,
-                                       size_t size,
-                                       void** memory,
-                                       size_t* mapped_size) const {
-  if (!IsValid())
-    return false;
-
-  size_t end_byte;
-  if (!CheckAdd(offset, size).AssignIfValid(&end_byte) || end_byte > size_) {
-    return false;
-  }
-
+bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
+                                               size_t size,
+                                               void** memory,
+                                               size_t* mapped_size) const {
   bool write_allowed = mode_ != Mode::kReadOnly;
   // Try to map the shared memory. On the first failure, release any reserved
   // address space for a single entry.
@@ -259,8 +238,6 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
   }
 
   *mapped_size = GetMemorySectionSize(*memory);
-  DCHECK_EQ(0U,
-            reinterpret_cast<uintptr_t>(*memory) & (kMapMinimumAlignment - 1));
   return true;
 }
 
@@ -271,13 +248,13 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   // per mapping on average.
   static const size_t kSectionSize = 65536;
   if (size == 0) {
-    LogError(SIZE_ZERO, 0);
+    LogError(CreateError::SIZE_ZERO, 0);
     return {};
   }
 
   size_t rounded_size = bits::Align(size, kSectionSize);
   if (rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
-    LogError(SIZE_TOO_LARGE, 0);
+    LogError(CreateError::SIZE_TOO_LARGE, 0);
     return {};
   }
 
@@ -288,31 +265,36 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   ACL dacl;
   SECURITY_DESCRIPTOR sd;
   if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION)) {
-    LogError(INITIALIZE_ACL_FAILURE, GetLastError());
+    LogError(CreateError::INITIALIZE_ACL_FAILURE, GetLastError());
     return {};
   }
   if (!InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION)) {
-    LogError(INITIALIZE_SECURITY_DESC_FAILURE, GetLastError());
+    LogError(CreateError::INITIALIZE_SECURITY_DESC_FAILURE, GetLastError());
     return {};
   }
   if (!SetSecurityDescriptorDacl(&sd, TRUE, &dacl, FALSE)) {
-    LogError(SET_SECURITY_DESC_FAILURE, GetLastError());
+    LogError(CreateError::SET_SECURITY_DESC_FAILURE, GetLastError());
     return {};
   }
 
-  // Windows ignores DACLs on unnamed shared section. Generate a random name in
-  // order to be able to enforce read-only.
-  uint64_t rand_values[4];
-  RandBytes(&rand_values, sizeof(rand_values));
-  string16 name =
-      StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx", rand_values[0],
-                   rand_values[1], rand_values[2], rand_values[3]);
+  string16 name;
+  if (base::win::GetVersion() < base::win::VERSION_WIN8_1) {
+    // Windows < 8.1 ignores DACLs on certain unnamed objects (like shared
+    // sections). So, we generate a random name when we need to enforce
+    // read-only.
+    uint64_t rand_values[4];
+    RandBytes(&rand_values, sizeof(rand_values));
+    name = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
+                        rand_values[0], rand_values[1], rand_values[2],
+                        rand_values[3]);
+    DCHECK(!name.empty());
+  }
 
   SECURITY_ATTRIBUTES sa = {sizeof(sa), &sd, FALSE};
   // Ask for the file mapping with reduced permisions to avoid passing the
   // access control permissions granted by default into unpriviledged process.
-  HANDLE h =
-      CreateFileMappingWithReducedPermissions(&sa, rounded_size, name.c_str());
+  HANDLE h = CreateFileMappingWithReducedPermissions(
+      &sa, rounded_size, name.empty() ? nullptr : name.c_str());
   if (h == nullptr) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
     return {};
@@ -321,10 +303,11 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   win::ScopedHandle scoped_h(h);
   // Check if the shared memory pre-exists.
   if (GetLastError() == ERROR_ALREADY_EXISTS) {
-    LogError(ALREADY_EXISTS, ERROR_ALREADY_EXISTS);
+    LogError(CreateError::ALREADY_EXISTS, ERROR_ALREADY_EXISTS);
     return {};
   }
 
+  LogError(CreateError::SUCCESS, ERROR_SUCCESS);
   return PlatformSharedMemoryRegion(std::move(scoped_h), mode, size,
                                     UnguessableToken::Create());
 }

@@ -24,7 +24,7 @@ namespace blink {
 class NodeList;
 
 class CORE_EXPORT ByteStringOrNodeList final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   ByteStringOrNodeList();
   bool IsNull() const { return type_ == SpecificType::kNone; }

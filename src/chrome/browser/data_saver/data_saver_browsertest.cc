@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -313,4 +314,113 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, HttpRttEstimate) {
   observer.WaitForNotification(base::TimeDelta::FromMilliseconds(500));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), GetHttpRttEstimate());
+}
+
+class DataSaverForWorkerBrowserTest : public InProcessBrowserTest {
+ protected:
+  void Init() {
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  }
+
+  void EnableDataSaver(bool enabled) {
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> CaptureHeaderHandler(
+      const std::string& path,
+      net::test_server::HttpRequest::HeaderMap* header_map,
+      base::OnceClosure done_callback,
+      const net::test_server::HttpRequest& request) {
+    GURL request_url = request.GetURL();
+    if (request_url.path() != path)
+      return nullptr;
+
+    *header_map = request.headers;
+    std::move(done_callback).Run();
+    return std::make_unique<net::test_server::BasicHttpResponse>();
+  }
+
+  // Sends a request to |url| and returns its headers via |header_map|.
+  void RequestAndGetHeaders(
+      const std::string& url,
+      net::test_server::HttpRequest::HeaderMap* header_map) {
+    base::RunLoop loop;
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &DataSaverForWorkerBrowserTest::CaptureHeaderHandler,
+        base::Unretained(this), "/capture", header_map, loop.QuitClosure()));
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    ui_test_utils::NavigateToURL(browser(),
+                                 embedded_test_server()->GetURL(url));
+    loop.Run();
+  }
+};
+
+// Checks that the Save-Data header isn't sent in a request for dedicated worker
+// script when the data saver is disabled.
+IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_Off) {
+  Init();
+  EnableDataSaver(false);
+
+  net::test_server::HttpRequest::HeaderMap header_map;
+  RequestAndGetHeaders("/workers/create_worker.html?worker_url=/capture",
+                       &header_map);
+
+  EXPECT_TRUE(header_map.find("Save-Data") == header_map.end());
+}
+
+// Checks that the Save-Data header is sent in a request for dedicated worker
+// script when the data saver is enabled.
+IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, DedicatedWorker_On) {
+  Init();
+  EnableDataSaver(true);
+
+  net::test_server::HttpRequest::HeaderMap header_map;
+  RequestAndGetHeaders("/workers/create_worker.html?worker_url=/capture",
+                       &header_map);
+
+  EXPECT_TRUE(header_map.find("Save-Data") != header_map.end());
+  EXPECT_EQ("on", header_map["Save-Data"]);
+}
+
+// Checks that the Save-Data header isn't sent in a request for shared worker
+// script when the data saver is disabled. Disabled on Android since a shared
+// worker is not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker_Off DISABLED_SharedWorker_Off
+#else
+#define MAYBE_SharedWorker_Off SharedWorker_Off
+#endif
+IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, MAYBE_SharedWorker_Off) {
+  Init();
+  EnableDataSaver(false);
+
+  net::test_server::HttpRequest::HeaderMap header_map;
+  RequestAndGetHeaders("/workers/create_shared_worker.html?worker_url=/capture",
+                       &header_map);
+
+  EXPECT_TRUE(header_map.find("Save-Data") == header_map.end());
+}
+
+// Checks that the Save-Data header is sent in a request for shared worker
+// script when the data saver is enabled. Disabled on Android since a shared
+// worker is not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker_On DISABLED_SharedWorker_On
+#else
+#define MAYBE_SharedWorker_On SharedWorker_On
+#endif
+IN_PROC_BROWSER_TEST_F(DataSaverForWorkerBrowserTest, MAYBE_SharedWorker_On) {
+  Init();
+  EnableDataSaver(true);
+
+  net::test_server::HttpRequest::HeaderMap header_map;
+  RequestAndGetHeaders("/workers/create_shared_worker.html?worker_url=/capture",
+                       &header_map);
+
+  EXPECT_TRUE(header_map.find("Save-Data") != header_map.end());
+  EXPECT_EQ("on", header_map["Save-Data"]);
 }

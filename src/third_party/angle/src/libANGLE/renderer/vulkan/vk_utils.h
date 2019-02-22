@@ -48,7 +48,7 @@ struct VertexAttribute;
 class VertexBinding;
 
 ANGLE_GL_OBJECTS_X(ANGLE_PRE_DECLARE_OBJECT);
-}
+}  // namespace gl
 
 #define ANGLE_PRE_DECLARE_VK_OBJECT(OBJ) class OBJ##Vk;
 
@@ -94,7 +94,7 @@ namespace vk
 {
 struct Format;
 
-// Abstracts error handling. Implemented by both ContextVk for GL and RendererVk for EGL errors.
+// Abstracts error handling. Implemented by both ContextVk for GL and DisplayVk for EGL errors.
 class Context : angle::NonCopyable
 {
   public:
@@ -169,7 +169,8 @@ GetImplType<T> *GetImpl(const T *glObject)
     FUNC(Sampler)                  \
     FUNC(DescriptorPool)           \
     FUNC(Framebuffer)              \
-    FUNC(CommandPool)
+    FUNC(CommandPool)              \
+    FUNC(QueryPool)
 
 #define ANGLE_COMMA_SEP_FUNC(TYPE) TYPE,
 
@@ -274,7 +275,8 @@ class MemoryProperties final : angle::NonCopyable
     void init(VkPhysicalDevice physicalDevice);
     angle::Result findCompatibleMemoryIndex(Context *context,
                                             const VkMemoryRequirements &memoryRequirements,
-                                            VkMemoryPropertyFlags memoryPropertyFlags,
+                                            VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                            VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                             uint32_t *indexOut) const;
     void destroy();
 
@@ -321,15 +323,15 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
     angle::Result end(Context *context);
     angle::Result reset(Context *context);
 
-    void singleImageBarrier(VkPipelineStageFlags srcStageMask,
-                            VkPipelineStageFlags dstStageMask,
-                            VkDependencyFlags dependencyFlags,
-                            const VkImageMemoryBarrier &imageMemoryBarrier);
-
-    void singleBufferBarrier(VkPipelineStageFlags srcStageMask,
-                             VkPipelineStageFlags dstStageMask,
-                             VkDependencyFlags dependencyFlags,
-                             const VkBufferMemoryBarrier &bufferBarrier);
+    void pipelineBarrier(VkPipelineStageFlags srcStageMask,
+                         VkPipelineStageFlags dstStageMask,
+                         VkDependencyFlags dependencyFlags,
+                         uint32_t memoryBarrierCount,
+                         const VkMemoryBarrier *memoryBarriers,
+                         uint32_t bufferMemoryBarrierCount,
+                         const VkBufferMemoryBarrier *bufferMemoryBarriers,
+                         uint32_t imageMemoryBarrierCount,
+                         const VkImageMemoryBarrier *imageMemoryBarriers);
 
     void clearColorImage(const Image &image,
                          VkImageLayout imageLayout,
@@ -380,13 +382,22 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
     void draw(uint32_t vertexCount,
               uint32_t instanceCount,
               uint32_t firstVertex,
-              uint32_t firstInstance);
+              uint32_t firstInstance)
+    {
+        ASSERT(valid());
+        vkCmdDraw(mHandle, vertexCount, instanceCount, firstVertex, firstInstance);
+    }
 
     void drawIndexed(uint32_t indexCount,
                      uint32_t instanceCount,
                      uint32_t firstIndex,
                      int32_t vertexOffset,
-                     uint32_t firstInstance);
+                     uint32_t firstInstance)
+    {
+        ASSERT(valid());
+        vkCmdDrawIndexed(mHandle, indexCount, instanceCount, firstIndex, vertexOffset,
+                         firstInstance);
+    }
 
     void bindPipeline(VkPipelineBindPoint pipelineBindPoint, const Pipeline &pipeline);
     void bindVertexBuffers(uint32_t firstBinding,
@@ -412,6 +423,10 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
                        uint32_t offset,
                        uint32_t size,
                        const void *data);
+
+    void resetQueryPool(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount);
+    void beginQuery(VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags);
+    void endQuery(VkQueryPool queryPool, uint32_t query);
 };
 
 class Image final : public WrappedObject<Image, VkImage>
@@ -521,15 +536,6 @@ class ShaderModule final : public WrappedObject<ShaderModule, VkShaderModule>
     angle::Result init(Context *context, const VkShaderModuleCreateInfo &createInfo);
 };
 
-class Pipeline final : public WrappedObject<Pipeline, VkPipeline>
-{
-  public:
-    Pipeline();
-    void destroy(VkDevice device);
-
-    angle::Result initGraphics(Context *context, const VkGraphicsPipelineCreateInfo &createInfo);
-};
-
 class PipelineLayout final : public WrappedObject<PipelineLayout, VkPipelineLayout>
 {
   public:
@@ -537,6 +543,27 @@ class PipelineLayout final : public WrappedObject<PipelineLayout, VkPipelineLayo
     void destroy(VkDevice device);
 
     angle::Result init(Context *context, const VkPipelineLayoutCreateInfo &createInfo);
+};
+
+class PipelineCache final : public WrappedObject<PipelineCache, VkPipelineCache>
+{
+  public:
+    PipelineCache();
+    void destroy(VkDevice device);
+
+    angle::Result init(Context *context, const VkPipelineCacheCreateInfo &createInfo);
+    angle::Result getCacheData(Context *context, size_t *cacheSize, void *cacheData);
+};
+
+class Pipeline final : public WrappedObject<Pipeline, VkPipeline>
+{
+  public:
+    Pipeline();
+    void destroy(VkDevice device);
+
+    angle::Result initGraphics(Context *context,
+                               const VkGraphicsPipelineCreateInfo &createInfo,
+                               const PipelineCache &pipelineCacheVk);
 };
 
 class DescriptorSetLayout final : public WrappedObject<DescriptorSetLayout, VkDescriptorSetLayout>
@@ -606,6 +633,22 @@ class StagingBuffer final : angle::NonCopyable
     size_t mSize;
 };
 
+class QueryPool final : public WrappedObject<QueryPool, VkQueryPool>
+{
+  public:
+    QueryPool();
+    void destroy(VkDevice device);
+
+    angle::Result init(Context *context, const VkQueryPoolCreateInfo &createInfo);
+    angle::Result getResults(Context *context,
+                             uint32_t firstQuery,
+                             uint32_t queryCount,
+                             size_t dataSize,
+                             void *data,
+                             VkDeviceSize stride,
+                             VkQueryResultFlags flags) const;
+};
+
 template <typename ObjT>
 class ObjectAndSerial final : angle::NonCopyable
 {
@@ -645,7 +688,8 @@ class ObjectAndSerial final : angle::NonCopyable
 };
 
 angle::Result AllocateBufferMemory(vk::Context *context,
-                                   VkMemoryPropertyFlags memoryPropertyFlags,
+                                   VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                   VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                    Buffer *buffer,
                                    DeviceMemory *deviceMemoryOut);
 
@@ -678,6 +722,8 @@ enum class ShaderType
 
 template <typename T>
 using ShaderMap = angle::PackedEnumMap<ShaderType, T>;
+
+using ShaderBitSet = angle::PackedEnumBitSet<ShaderType>;
 
 using AllShaderTypes = angle::AllEnums<vk::ShaderType>;
 
@@ -743,6 +789,25 @@ VkColorComponentFlags GetColorComponentFlags(bool red, bool green, bool blue, bo
         }                                                              \
     }                                                                  \
     ANGLE_EMPTY_STATEMENT
+
+#define ANGLE_VK_TRY_ALLOW_OTHER(context, command, acceptable, result)                      \
+    {                                                                                       \
+        auto ANGLE_LOCAL_VAR = command;                                                     \
+        if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR != VK_SUCCESS && ANGLE_LOCAL_VAR != acceptable)) \
+        {                                                                                   \
+            context->handleError(ANGLE_LOCAL_VAR, __FILE__, __LINE__);                      \
+            return angle::Result::Stop();                                                   \
+        }                                                                                   \
+        result = ANGLE_LOCAL_VAR == VK_SUCCESS ? angle::Result::Continue()                  \
+                                               : angle::Result::Incomplete();               \
+    }                                                                                       \
+    ANGLE_EMPTY_STATEMENT
+
+#define ANGLE_VK_TRY_ALLOW_INCOMPLETE(context, command, result) \
+    ANGLE_VK_TRY_ALLOW_OTHER(context, command, VK_INCOMPLETE, result)
+
+#define ANGLE_VK_TRY_ALLOW_NOT_READY(context, command, result) \
+    ANGLE_VK_TRY_ALLOW_OTHER(context, command, VK_NOT_READY, result)
 
 #define ANGLE_VK_CHECK(context, test, error) ANGLE_VK_TRY(context, test ? VK_SUCCESS : error)
 

@@ -19,7 +19,7 @@ namespace blink {
 namespace scheduler {
 
 WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
-    const WebThreadCreationParams& params)
+    const ThreadCreationParams& params)
     : thread_(new base::Thread(params.name ? params.name : std::string())),
       thread_type_(params.thread_type),
       worker_scheduler_proxy_(params.frame_or_worker_scheduler
@@ -96,7 +96,7 @@ blink::PlatformThreadId WebThreadImplForWorkerScheduler::ThreadId() const {
   return thread_->GetThreadId();
 }
 
-blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
+blink::ThreadScheduler* WebThreadImplForWorkerScheduler::Scheduler() {
   return non_main_thread_scheduler_.get();
 }
 

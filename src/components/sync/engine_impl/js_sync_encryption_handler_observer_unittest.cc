@@ -84,16 +84,13 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnPassphraseRequired) {
                             HasDetailsAsDictionary(reason_decryption_details)));
 
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_PASSPHRASE_NOT_REQUIRED,
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+      REASON_PASSPHRASE_NOT_REQUIRED, KeyDerivationParams::CreateForPbkdf2(),
       sync_pb::EncryptedData());
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_ENCRYPTION,
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+      REASON_ENCRYPTION, KeyDerivationParams::CreateForPbkdf2(),
       sync_pb::EncryptedData());
   js_sync_encryption_handler_observer_.OnPassphraseRequired(
-      REASON_DECRYPTION,
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+      REASON_DECRYPTION, KeyDerivationParams::CreateForPbkdf2(),
       sync_pb::EncryptedData());
   PumpLoop();
 }

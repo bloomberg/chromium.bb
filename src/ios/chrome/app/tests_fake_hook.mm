@@ -31,9 +31,6 @@ bool DisableSigninRecallPromo() {
 bool DisableUpdateService() {
   return false;
 }
-bool ForceUIRefreshPhase1() {
-  return false;
-}
 void SetUpTestsIfPresent() {}
 void RunTestsIfPresent() {}
 

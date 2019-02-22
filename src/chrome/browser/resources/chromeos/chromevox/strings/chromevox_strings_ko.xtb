@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">키를 찾은 다음 손가락을 떼서 입력하세요.</translation>
 <translation id="1012173283529841972">목록 항목</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">손가락 두 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="1022586497894531524">ChromeVox 음성 피드백을 처음 사용하시나요? 이 빠른 가이드에서 ChromeVox를 시작하기 위한 기본사항을 알아볼 수 있습니다.</translation>
 <translation id="1023866615269196768">병합되었습니다.</translation>
 <translation id="1025074108959230262">고정 모드 사용 중지됨</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">음성 피드백(이어콘)을 사용 또는 사용 안함으로 설정합니다.</translation>
 <translation id="1108651818222110612">부제</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "fox", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">손가락 두 개를 사용하여 위로 스와이프</translation>
 <translation id="1124771028211010580">현재 디스플레이 스타일은 병렬식입니다.</translation>
 <translation id="113582498867142724"><ph name="NUM" />개 항목을 포함한 <ph name="TAG" /> 컬렉션</translation>
 <translation id="1155043339247954670">다음 목록 항목이 없습니다.</translation>
@@ -91,6 +93,7 @@
 <translation id="1722567105086139392">링크</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">다음 그래픽</translation>
+<translation id="1765245556747822181">손가락 한 개를 사용하여 위로 스와이프</translation>
 <translation id="1781173782405573156">통과 키</translation>
 <translation id="1787176709638001873">비밀번호 수정 텍스트</translation>
 <translation id="1802710350767629429">업데이트 메모 표시</translation>
@@ -137,6 +140,7 @@
 <translation id="2223693656926968778">현재 항목에서 작업 수행</translation>
 <translation id="225732394367814946">말하기 속도 증가</translation>
 <translation id="2267945578749931355">다음 문자</translation>
+<translation id="2278490101488436824">손가락 세 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2281234842553884450">이전 슬라이더</translation>
 <translation id="2294136146931447363">기울임꼴 시작 부분</translation>
 <translation id="2311237334957139798">이전 세부 수준으로 이동</translation>
@@ -209,17 +213,20 @@
 <translation id="2864481629947106776">이전 링크</translation>
 <translation id="2867808975387772810">참고문헌</translation>
 <translation id="2873259058405069099">표의 처음으로 이동</translation>
+<translation id="2879867157561757640">손가락 세 개를 사용하여 아래로 스와이프</translation>
 <translation id="288178314850623291">특정 유형의 요소로 건너뛰려면 이동 명령어를 사용합니다. 제목 간 이동하려면 검색+H를 눌러 앞으로 이동, 검색+Shift+H를 눌러 뒤로 이동합니다.</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{왼쪽 중괄호}other{왼쪽 중괄호 #개}}</translation>
 <translation id="2909478709401302630">위 첨자 시작</translation>
 <translation id="2911433807131383493">ChromeVox 가이드 열기</translation>
+<translation id="2912405967290226587">손가락 세 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="2932083475399492303">구조 선/레이아웃 선 간의 선 유형 전환</translation>
 <translation id="2944762337049891859">로드가 끝나면 자동으로 페이지를 읽습니다.</translation>
 <translation id="2964026537669811554">제목 그룹</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{탭}other{탭 #개}}</translation>
 <translation id="2972078295414139404">이전 방문한 링크가 없습니다.</translation>
 <translation id="2972205263822847197">툴팁</translation>
+<translation id="297825089465017871">손가락 두 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2998131015536248178">이전 문자</translation>
 <translation id="2999559350546931576">음조 낮춤</translation>
 <translation id="2999945368667127852">다음 미디어 위젯이 없습니다.</translation>
@@ -231,6 +238,7 @@
 <translation id="3046838483509668188">ChromeVox 옵션</translation>
 <translation id="3047143736589213134">실험용 키맵</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> 메뉴 열림</translation>
+<translation id="3070245424257836917">손가락 세 개를 사용하여 위로 스와이프</translation>
 <translation id="3078345202707391975">다음 수준 2 제목</translation>
 <translation id="3078740164268491126">표</translation>
 <translation id="3082249673510793544">뒤로 스크롤</translation>
@@ -343,6 +351,7 @@
 <translation id="3599054940393788245">수학 영역에 있지 않음</translation>
 <translation id="360241989769010433">감사의 말</translation>
 <translation id="3616113530831147358">오디오</translation>
+<translation id="3622350485154495700">손가락 한 개로 두 번 탭</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{백틱 기호}other{백틱 기호 #개}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{달러 기호}other{달러 기호 #개}}</translation>
@@ -372,6 +381,7 @@
 <translation id="3914173277599553213">필수</translation>
 <translation id="3914732343065571127">ChromeVox 명령어 참조</translation>
 <translation id="3930498801443296724">인용문</translation>
+<translation id="3941269780691800708">마우스 커서를 올린 텍스트를 음성으로 알려줍니다.</translation>
 <translation id="3962990492275676168">현재 위치부터 읽기 시작</translation>
 <translation id="4004802134384979325">선택됨</translation>
 <translation id="4006140876663370126">img</translation>
@@ -462,6 +472,7 @@
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">이전 랜드마크</translation>
 <translation id="4696413482802371445">다음 수준 5 제목이 없습니다.</translation>
+<translation id="4710166929009737753">손가락 한 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="4729095194763193578">이전 행</translation>
 <translation id="4736221692378411923">8월</translation>
 <translation id="4740661827607246557">도움말 명령어</translation>
@@ -474,6 +485,7 @@
 <translation id="4826415162591436065">앞으로 탐색</translation>
 <translation id="4826604887384865800">다음 점프</translation>
 <translation id="4827410568042294688">선택되지 않음</translation>
+<translation id="4838490795649708173">손가락 네 개로 탭</translation>
 <translation id="4839925464551908214">이전 행으로 이동</translation>
 <translation id="4842108708071771135">다음 인용구가 없습니다.</translation>
 <translation id="4844625982113518938">아무 키나 눌러서 이름을 알아보세요. Ctrl+W를 누르면 학습 모드가 종료됩니다.</translation>
@@ -610,6 +622,7 @@
 <translation id="5750633686117194034">특수키를 누르지 않았습니다. 하나 이상의 특수키를 길게 누르세요. 완료 후 손가락을 떼면 키가 설정되었다는 메시지가 나옵니다. 탭하여 종료하세요.</translation>
 <translation id="5760594853119905566">부록</translation>
 <translation id="5788275253279308023">시크릿 창, <ph name="TITLE" /> 탭</translation>
+<translation id="5805940204952508776">손가락 두 개로 탭</translation>
 <translation id="5806206155699461681">특정 사이트 개선(예: Google 검색)</translation>
 <translation id="5819072574982403430">트리 항목</translation>
 <translation id="5826479389509458994"><ph name="ROW" />행 <ph name="COL" />열</translation>
@@ -714,8 +727,10 @@
 <translation id="6786800275320335305">도움말</translation>
 <translation id="6787839852456839824">단축키</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6826226459053491773">손가락 두 개를 사용하여 아래로 스와이프</translation>
 <translation id="6833103209700200188">바닥글</translation>
 <translation id="6858047746862060282">프롤로그</translation>
+<translation id="6859876496651143278">손가락 한 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="6871161210040114857">대소문자를 구분하지 않습니다.</translation>
 <translation id="6877435256196695200">다음 그래픽이 없습니다.</translation>
 <translation id="6897341342232909480">왼쪽으로 이동</translation>
@@ -965,6 +980,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="923331726185079994">ChromeVox 업데이트됨</translation>
 <translation id="930275611743429116">선택을 시작 또는 종료합니다.</translation>
 <translation id="948171205378458592">말하기 속도 줄이기</translation>
+<translation id="958854023026327378">손가락 한 개를 사용하여 아래로 스와이프</translation>
 <translation id="962913030769097253">다음 수준 1 제목</translation>
 <translation id="973955474346881951">고정 모드 사용/사용 중지</translation>
 <translation id="976849232629612000">항목 없음</translation>

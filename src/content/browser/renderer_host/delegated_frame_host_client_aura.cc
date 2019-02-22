@@ -54,4 +54,8 @@ void DelegatedFrameHostClientAura::OnFrameTokenChanged(uint32_t frame_token) {
   render_widget_host_view_->OnFrameTokenChangedForView(frame_token);
 }
 
+float DelegatedFrameHostClientAura::GetDeviceScaleFactor() const {
+  return render_widget_host_view_->device_scale_factor_;
+}
+
 }  // namespace content

@@ -315,7 +315,7 @@ void V4Database::RecordFileSizeHistograms() {
     db_size += size;
   }
   const int64_t db_size_kilobytes = static_cast<int64_t>(db_size / 1024);
-  UMA_HISTOGRAM_COUNTS(kV4DatabaseSizeMetric, db_size_kilobytes);
+  UMA_HISTOGRAM_COUNTS_1M(kV4DatabaseSizeMetric, db_size_kilobytes);
 }
 
 void V4Database::CollectDatabaseInfo(

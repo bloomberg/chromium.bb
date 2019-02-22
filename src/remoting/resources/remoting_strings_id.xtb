@@ -102,7 +102,6 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="3171922709365450819">Perangkat ini tidak didukung oleh klien ini karena memerlukan autentikasi pihak ketiga.</translation>
 <translation id="3194245623920924351">Chrome Desktop Jarak Jauh</translation>
 <translation id="3197730452537982411">Desktop Jarak Jauh</translation>
-<translation id="3212472844831225214">• Dukungan tambahan untuk Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Kirimkan petunjuk berikut melalui email</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="3286521253923406898">Pengontrol Host Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="8548209692293300397">Sebelumnya, Anda telah masuk sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Google Chrome<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chrome Desktop Jarak Jauh.</translation>
 <translation id="8642984861538780905">Sedang</translation>
+<translation id="8705151241155781642">• Dukungan tambahan untuk Android 9.0 Pie.
+• Dukungan untuk mengubah ukuran resolusi desktop jarak jauh agar cocok dengan layar perangkat Android Anda.</translation>
 <translation id="8712909229180978490">Saya tidak dapat melihat file saya yang tersimpan secara online di Google Drive.</translation>
 <translation id="8743328882720071828">Izinkan <ph name="CLIENT_USERNAME" /> melihat dan mengontrol komputer Anda?</translation>
 <translation id="8747048596626351634">Sesi error atau gagal dimulai. Jika ~/.chrome-remote-desktop-session terdapat di komputer jarak jauh, pastikan file tersebut memulai proses latar depan (foreground) yang berjalan lama seperti lingkungan desktop atau pengelola jendela.</translation>

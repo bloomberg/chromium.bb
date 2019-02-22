@@ -87,7 +87,7 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
 
   base::ThreadChecker thread_checker_;
 
-  DrmThreadProxy* drm_thread_proxy_;
+  DrmThreadProxy* const drm_thread_proxy_;
 
   std::map<gfx::AcceleratedWidget, GbmSurfaceless*> widget_to_surface_map_;
 

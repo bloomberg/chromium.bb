@@ -86,56 +86,29 @@ void RecordExtendedReportingPrefChanged(
     safe_browsing::ExtendedReportingOptInLocation location) {
   bool pref_value = safe_browsing::IsExtendedReportingEnabled(prefs);
 
-  if (safe_browsing::IsScout(prefs)) {
-    switch (location) {
-      case safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.ChromeSettings",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.AndroidSettings",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.DownloadPopup",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial",
-            pref_value);
-        break;
-      default:
-        NOTREACHED();
-    }
-  } else {
-    switch (location) {
-      case safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.ChromeSettings",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.AndroidSettings",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.DownloadPopup",
-            pref_value);
-        break;
-      case safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL:
-        UMA_HISTOGRAM_BOOLEAN(
-            "SafeBrowsing.Pref.Scout.SetPref.SBER1Pref.SecurityInterstitial",
-            pref_value);
-        break;
-      default:
-        NOTREACHED();
-    }
+  switch (location) {
+    case safe_browsing::SBER_OPTIN_SITE_CHROME_SETTINGS:
+      UMA_HISTOGRAM_BOOLEAN(
+          "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.ChromeSettings",
+          pref_value);
+      break;
+    case safe_browsing::SBER_OPTIN_SITE_ANDROID_SETTINGS:
+      UMA_HISTOGRAM_BOOLEAN(
+          "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.AndroidSettings",
+          pref_value);
+      break;
+    case safe_browsing::SBER_OPTIN_SITE_DOWNLOAD_FEEDBACK_POPUP:
+      UMA_HISTOGRAM_BOOLEAN(
+          "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.DownloadPopup",
+          pref_value);
+      break;
+    case safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL:
+      UMA_HISTOGRAM_BOOLEAN(
+          "SafeBrowsing.Pref.Scout.SetPref.SBER2Pref.SecurityInterstitial",
+          pref_value);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -195,33 +168,12 @@ namespace safe_browsing {
 const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-std::string ChooseOptInTextPreference(
-    const PrefService& prefs,
-    const std::string& extended_reporting_pref,
-    const std::string& scout_pref) {
-  return IsScout(prefs) ? scout_pref : extended_reporting_pref;
-}
-
-int ChooseOptInTextResource(const PrefService& prefs,
-                            int extended_reporting_resource,
-                            int scout_resource) {
-  return IsScout(prefs) ? scout_resource : extended_reporting_resource;
-}
-
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
-  return prefs.HasPrefPath(GetExtendedReportingPrefName(prefs));
+  return prefs.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
-  if (!IsExtendedReportingEnabled(prefs)) {
-    return SBER_LEVEL_OFF;
-  } else {
-    return IsScout(prefs) ? SBER_LEVEL_SCOUT : SBER_LEVEL_LEGACY;
-  }
-}
-
-const char* GetExtendedReportingPrefName(const PrefService& prefs) {
-    return prefs::kSafeBrowsingScoutReportingEnabled;
+  return IsExtendedReportingEnabled(prefs) ? SBER_LEVEL_SCOUT : SBER_LEVEL_OFF;
 }
 
 bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
@@ -229,16 +181,11 @@ bool IsExtendedReportingOptInAllowed(const PrefService& prefs) {
 }
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
-  return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
+  return prefs.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 bool IsExtendedReportingPolicyManaged(const PrefService& prefs) {
-  return prefs.IsManagedPreference(GetExtendedReportingPrefName(prefs));
-}
-
-bool IsScout(const PrefService& prefs) {
-  return GetExtendedReportingPrefName(prefs) ==
-         prefs::kSafeBrowsingScoutReportingEnabled;
+  return prefs.IsManagedPreference(prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 void RecordExtendedReportingMetrics(const PrefService& prefs) {
@@ -310,19 +257,17 @@ void SetExtendedReportingPrefAndMetric(
     PrefService* prefs,
     bool value,
     ExtendedReportingOptInLocation location) {
-  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
   RecordExtendedReportingPrefChanged(*prefs, location);
 }
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
-  prefs->SetBoolean(GetExtendedReportingPrefName(*prefs), value);
+  prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
 }
 
 void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
                                             bool on_show_pref_existed,
                                             bool on_show_pref_value) {
-  const ActiveExtendedReportingPref active_pref =
-      IsScout(prefs) ? SBER2_PREF : SBER1_PREF;
   const bool cur_pref_value = IsExtendedReportingEnabled(prefs);
 
   if (!on_show_pref_existed) {
@@ -330,7 +275,7 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
       // User seeing pref for the first time, didn't touch the checkbox (left it
       // unchecked).
       UMA_HISTOGRAM_ENUMERATION(
-          "SafeBrowsing.Pref.Scout.Decision.First_LeftUnchecked", active_pref,
+          "SafeBrowsing.Pref.Scout.Decision.First_LeftUnchecked", SBER2_PREF,
           MAX_SBER_PREF);
       return;
     }
@@ -339,7 +284,7 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
     if (cur_pref_value) {
       // User turned the pref on.
       UMA_HISTOGRAM_ENUMERATION(
-          "SafeBrowsing.Pref.Scout.Decision.First_Enabled", active_pref,
+          "SafeBrowsing.Pref.Scout.Decision.First_Enabled", SBER2_PREF,
           MAX_SBER_PREF);
       return;
     }
@@ -348,7 +293,7 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
     // the interstitial was first shown, they must have turned it on and then
     // off before the interstitial was closed.
     UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.Pref.Scout.Decision.First_Disabled",
-                              active_pref, MAX_SBER_PREF);
+                              SBER2_PREF, MAX_SBER_PREF);
     return;
   }
 
@@ -358,24 +303,24 @@ void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
   if (on_show_pref_value && cur_pref_value) {
     // User left the pref on.
     UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftEnabled", active_pref,
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftEnabled", SBER2_PREF,
         MAX_SBER_PREF);
     return;
   } else if (on_show_pref_value && !cur_pref_value) {
     // User turned the pref off.
     UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.Decision.Repeat_Disabled", active_pref,
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_Disabled", SBER2_PREF,
         MAX_SBER_PREF);
     return;
   } else if (!on_show_pref_value && cur_pref_value) {
     // User turned the pref on.
     UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.Pref.Scout.Decision.Repeat_Enabled",
-                              active_pref, MAX_SBER_PREF);
+                              SBER2_PREF, MAX_SBER_PREF);
     return;
   } else {
     // Both on_show and cur values are false - user left the pref off.
     UMA_HISTOGRAM_ENUMERATION(
-        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftDisabled", active_pref,
+        "SafeBrowsing.Pref.Scout.Decision.Repeat_LeftDisabled", SBER2_PREF,
         MAX_SBER_PREF);
     return;
   }
@@ -393,10 +338,7 @@ void UpdatePrefsBeforeSecurityInterstitial(PrefService* prefs) {
   }
 
   // Remember that this user saw an interstitial with the current opt-in text.
-  prefs->SetBoolean(IsScout(*prefs)
-                        ? prefs::kSafeBrowsingSawInterstitialScoutReporting
-                        : prefs::kSafeBrowsingSawInterstitialExtendedReporting,
-                    true);
+  prefs->SetBoolean(prefs::kSafeBrowsingSawInterstitialScoutReporting, true);
 }
 
 base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
@@ -421,11 +363,9 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
 void GetSafeBrowsingWhitelistDomainsPref(
     const PrefService& prefs,
     std::vector<std::string>* out_canonicalized_domain_list) {
-  if (base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1)) {
-    const base::ListValue* pref_value =
-        prefs.GetList(prefs::kSafeBrowsingWhitelistDomains);
-    CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
-  }
+  const base::ListValue* pref_value =
+      prefs.GetList(prefs::kSafeBrowsingWhitelistDomains);
+  CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
 }
 
 void CanonicalizeDomainList(
@@ -484,10 +424,8 @@ void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
 
 bool MatchesPasswordProtectionLoginURL(const GURL& url,
                                        const PrefService& prefs) {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) ||
-      !url.is_valid()) {
+  if (!url.is_valid())
     return false;
-  }
 
   std::vector<GURL> login_urls;
   GetPasswordProtectionLoginURLsPref(prefs, &login_urls);
@@ -522,10 +460,8 @@ GURL GetPasswordProtectionChangePasswordURLPref(const PrefService& prefs) {
 
 bool MatchesPasswordProtectionChangePasswordURL(const GURL& url,
                                                 const PrefService& prefs) {
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) ||
-      !url.is_valid()) {
+  if (!url.is_valid())
     return false;
-  }
 
   GURL change_password_url = GetPasswordProtectionChangePasswordURLPref(prefs);
   if (change_password_url.is_empty())

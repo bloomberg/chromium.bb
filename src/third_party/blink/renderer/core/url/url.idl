@@ -50,4 +50,6 @@
     attribute USVString search;
     readonly attribute URLSearchParams searchParams;
     attribute USVString hash;
+
+    USVString toJSON();
 };

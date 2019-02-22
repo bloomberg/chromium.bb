@@ -73,8 +73,11 @@ sync_pb::SyncEnums::GetUpdatesOrigin GetOriginFromReason(
 
 }  // namespace
 
-SyncManagerImpl::SyncManagerImpl(const std::string& name)
+SyncManagerImpl::SyncManagerImpl(
+    const std::string& name,
+    network::NetworkConnectionTracker* network_connection_tracker)
     : name_(name),
+      network_connection_tracker_(network_connection_tracker),
       change_delegate_(nullptr),
       initialized_(false),
       observing_network_connectivity_changes_(false),
@@ -308,7 +311,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   initialized_ = true;
 
   if (!args->enable_local_sync_backend) {
-    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+    network_connection_tracker_->AddNetworkConnectionObserver(this);
     observing_network_connectivity_changes_ = true;
 
     UpdateCredentials(args->credentials);
@@ -445,8 +448,8 @@ void SyncManagerImpl::PurgePartiallySyncedTypes() {
 
   DVLOG(1) << "Purging partially synced types "
            << ModelTypeSetToString(partially_synced_types);
-  UMA_HISTOGRAM_COUNTS("Sync.PartiallySyncedTypes",
-                       partially_synced_types.Size());
+  UMA_HISTOGRAM_COUNTS_1M("Sync.PartiallySyncedTypes",
+                          partially_synced_types.Size());
   directory()->PurgeEntriesWithTypeIn(partially_synced_types, ModelTypeSet(),
                                       ModelTypeSet());
 }
@@ -530,7 +533,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
     connection_manager_->RemoveListener(this);
   connection_manager_.reset();
 
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   observing_network_connectivity_changes_ = false;
 
   if (initialized_ && directory()) {
@@ -549,8 +552,7 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
   weak_handle_this_.Reset();
 }
 
-void SyncManagerImpl::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void SyncManagerImpl::OnConnectionChanged(network::mojom::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!observing_network_connectivity_changes_) {
     DVLOG(1) << "Network change dropped.";
@@ -644,9 +646,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncApi(
 
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
-  for (syncable::EntryKernelMutationMap::const_iterator it =
-           mutations.Get().begin();
-       it != mutations.Get().end(); ++it) {
+  for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {
     if (!it->second.mutated.ref(syncable::IS_UNSYNCED)) {
       continue;
     }
@@ -725,9 +725,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
   Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
-  for (syncable::EntryKernelMutationMap::const_iterator it =
-           mutations.Get().begin();
-       it != mutations.Get().end(); ++it) {
+  for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {
     bool existed_before = !it->second.original.ref(syncable::IS_DEL);
     bool exists_now = !it->second.mutated.ref(syncable::IS_DEL);
 

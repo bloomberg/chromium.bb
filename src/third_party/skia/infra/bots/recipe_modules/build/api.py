@@ -9,18 +9,23 @@
 from recipe_engine import recipe_api
 
 from . import android
+from . import canvaskit
 from . import chromebook
 from . import chromecast
 from . import default
 from . import flutter
 from . import pathkit
+from . import skqp
 from . import util
 
 
 class BuildApi(recipe_api.RecipeApi):
   def __init__(self, buildername, *args, **kwargs):
     b = buildername
-    if 'Android' in b and not 'Flutter' in b:
+    if 'SKQP' in b and not 'Test' in b:
+      self.compile_fn = skqp.compile_fn
+      self.copy_fn = skqp.copy_extra_build_products
+    elif 'Android' in b and not 'Flutter' in b:
       self.compile_fn = android.compile_fn
       self.copy_fn = android.copy_extra_build_products
     elif 'Chromebook' in b:
@@ -33,8 +38,12 @@ class BuildApi(recipe_api.RecipeApi):
       self.compile_fn = flutter.compile_fn
       self.copy_fn = flutter.copy_extra_build_products
     elif 'EMCC' in b:
-      self.compile_fn = pathkit.compile_fn
-      self.copy_fn = pathkit.copy_extra_build_products
+      if 'PathKit' in b:
+        self.compile_fn = pathkit.compile_fn
+        self.copy_fn = pathkit.copy_extra_build_products
+      else:
+        self.compile_fn = canvaskit.compile_fn
+        self.copy_fn = canvaskit.copy_extra_build_products
     else:
       self.compile_fn = default.compile_fn
       self.copy_fn = default.copy_extra_build_products

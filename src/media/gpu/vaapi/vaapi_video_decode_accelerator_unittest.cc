@@ -167,7 +167,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
   }
 
   void QueueInputBuffer(const BitstreamBuffer& bitstream_buffer) {
-    vda_.QueueInputBuffer(bitstream_buffer);
+    vda_.QueueInputBuffer(bitstream_buffer.ToDecoderBuffer(),
+                          bitstream_buffer.id());
   }
 
   void AssignPictureBuffers(const std::vector<PictureBuffer>& picture_buffers) {

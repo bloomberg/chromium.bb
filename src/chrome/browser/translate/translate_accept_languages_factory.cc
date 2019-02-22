@@ -9,36 +9,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
-
-namespace {
-
-// TranslateAcceptLanguagesService is a thin container for
-// TranslateAcceptLanguages to enable associating it with a BrowserContext.
-class TranslateAcceptLanguagesService : public KeyedService {
- public:
-  explicit TranslateAcceptLanguagesService(PrefService* prefs);
-  ~TranslateAcceptLanguagesService() override;
-
-  // Returns the associated TranslateAcceptLanguages.
-  translate::TranslateAcceptLanguages& accept_languages() {
-    return accept_languages_;
-  }
-
- private:
-  translate::TranslateAcceptLanguages accept_languages_;
-  DISALLOW_COPY_AND_ASSIGN(TranslateAcceptLanguagesService);
-};
-
-TranslateAcceptLanguagesService::TranslateAcceptLanguagesService(
-    PrefService* prefs)
-    : accept_languages_(prefs, prefs::kAcceptLanguages) {}
-
-TranslateAcceptLanguagesService::~TranslateAcceptLanguagesService() {}
-
-}  // namespace
 
 // static
 TranslateAcceptLanguagesFactory*
@@ -50,15 +22,13 @@ TranslateAcceptLanguagesFactory::GetInstance() {
 translate::TranslateAcceptLanguages*
 TranslateAcceptLanguagesFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  TranslateAcceptLanguagesService* service =
-      static_cast<TranslateAcceptLanguagesService*>(
-          GetInstance()->GetServiceForBrowserContext(context, true));
-  return &service->accept_languages();
+  return static_cast<translate::TranslateAcceptLanguages*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 TranslateAcceptLanguagesFactory::TranslateAcceptLanguagesFactory()
     : BrowserContextKeyedServiceFactory(
-          "TranslateAcceptLanguagesService",
+          "TranslateAcceptLanguages",
           BrowserContextDependencyManager::GetInstance()) {}
 
 TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {}
@@ -66,11 +36,12 @@ TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {}
 KeyedService* TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  return new TranslateAcceptLanguagesService(profile->GetPrefs());
+  return new translate::TranslateAcceptLanguages(profile->GetPrefs(),
+                                                 prefs::kAcceptLanguages);
 }
 
 content::BrowserContext*
 TranslateAcceptLanguagesFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }

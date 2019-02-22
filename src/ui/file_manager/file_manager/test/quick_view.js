@@ -6,14 +6,17 @@ const quickview = {};
 
 /**
  * Helper function to open and close Quick View.
+ * @param {string} file file to open and close.
+ * @param {function(!Element)=} opt_validate optional validation function that
+ *   receives the QuickView element as argument.
  */
-quickview.openCloseQuickView = () => {
+quickview.openCloseQuickView = (file, opt_validate) => {
   // Using an image file for testing https://crbug.com/845830.
   // If this test starts to take too long on the bots, the image could be
   // changed to text file 'hello.txt'.
-  assertTrue(test.selectFile('My Desktop Background.png'));
+  assertTrue(test.selectFile(file));
   // Press Space key.
-  assertTrue(test.fakeKeyDown('#file-list', ' ', ' ', false, false, false));
+  assertTrue(test.fakeKeyDown('#file-list', ' ', false, false, false));
   // Wait until Quick View is displayed and files-safe-media.src is set.
   return test
       .repeatUntil(() => {
@@ -27,6 +30,10 @@ quickview.openCloseQuickView = () => {
         return test.pending('Quick View is not opened yet.');
       })
       .then((result) => {
+        // Run optional validate.
+        if (opt_validate)
+          opt_validate(result);
+
         // Click panel and wait for close.
         assertTrue(test.fakeMouseClick(['#quick-view', '#contentPanel']));
         return test.repeatUntil(() => {
@@ -43,7 +50,25 @@ quickview.openCloseQuickView = () => {
 quickview.testOpenCloseQuickViewDownloads = (done) => {
   test.setupAndWaitUntilReady()
       .then(() => {
-        return quickview.openCloseQuickView();
+        return quickview.openCloseQuickView('My Desktop Background.png');
+      })
+      .then(() => {
+        // Add hello.mhtml file and verify background is white.
+        const entriesWithMhtml =
+            test.BASIC_LOCAL_ENTRY_SET.concat([test.ENTRIES.mhtml]);
+        test.addEntries(entriesWithMhtml, [], []);
+        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(entriesWithMhtml));
+      })
+      .then(() => {
+        return quickview.openCloseQuickView('hello.mhtml', (qv) => {
+          const htmlPanel = qv.querySelector(
+              '#innerContentPanel files-safe-media[type="html"]');
+          const style = window.getComputedStyle(htmlPanel);
+          // White background is 'rgb(255, 255, 255)'.
+          assertEquals('rgb(255, 255, 255)', style.backgroundColor, 'bg white');
+        });
       })
       .then(() => {
         done();
@@ -67,7 +92,7 @@ quickview.testOpenCloseQuickViewCrostini = (done) => {
             test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
       })
       .then(() => {
-        return quickview.openCloseQuickView();
+        return quickview.openCloseQuickView('My Desktop Background.png');
       })
       .then(() => {
         chrome.fileManagerPrivate.removeMount('crostini');

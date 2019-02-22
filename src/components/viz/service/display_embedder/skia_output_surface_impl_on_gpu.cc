@@ -161,7 +161,14 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
       }
       vulkan_surface_ = std::move(vulkan_surface);
     }
+    auto old_size = vulkan_surface_->size();
     vulkan_surface_->SetSize(size);
+    if (vulkan_surface_->size() != old_size) {
+      // Size has been changed, we need to clear all surfaces which will be
+      // recreated later.
+      sk_surfaces_.clear();
+      sk_surfaces_.resize(vulkan_surface_->GetSwapChain()->num_images());
+    }
     CreateSkSurfaceForVulkan();
 #else
     NOTREACHED();
@@ -209,6 +216,14 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
     OnSwapBuffers();
+    auto backend = sk_surface_->getBackendRenderTarget(
+        SkSurface::kFlushRead_BackendHandleAccess);
+    GrVkImageInfo vk_image_info;
+    if (!backend.getVkImageInfo(&vk_image_info))
+      NOTREACHED() << "Failed to get the image info.";
+    vulkan_surface_->GetSwapChain()->SetCurrentImageLayout(
+        vk_image_info.fImageLayout);
+
     gpu::SwapBuffersCompleteParams params;
     params.swap_response.swap_start = base::TimeTicks::Now();
     params.swap_response.result = vulkan_surface_->SwapBuffers();
@@ -523,23 +538,34 @@ void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
 
 void SkiaOutputSurfaceImplOnGpu::CreateSkSurfaceForVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
-  SkSurfaceProps surface_props =
-      SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
   auto* swap_chain = vulkan_surface_->GetSwapChain();
-  VkImage vk_image = swap_chain->GetCurrentImage(swap_chain->current_image());
-  GrVkImageInfo vk_image_info;
-  vk_image_info.fImage = vk_image;
-  vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
-  vk_image_info.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
-  vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
-  vk_image_info.fLevelCount = 1;
-  GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
-                                      vulkan_surface_->size().height(), 0, 0,
-                                      vk_image_info);
-  sk_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context_, render_target, kTopLeft_GrSurfaceOrigin,
-      kBGRA_8888_SkColorType, nullptr, &surface_props);
+  auto index = swap_chain->current_image();
+  auto& sk_surface = sk_surfaces_[index];
+  if (!sk_surface) {
+    SkSurfaceProps surface_props =
+        SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
+    VkImage vk_image = swap_chain->GetCurrentImage();
+    VkImageLayout vk_image_layout = swap_chain->GetCurrentImageLayout();
+    GrVkImageInfo vk_image_info;
+    vk_image_info.fImage = vk_image;
+    vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
+    vk_image_info.fImageLayout = vk_image_layout;
+    vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+    vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    vk_image_info.fLevelCount = 1;
+    GrBackendRenderTarget render_target(vulkan_surface_->size().width(),
+                                        vulkan_surface_->size().height(), 0, 0,
+                                        vk_image_info);
+    sk_surface = SkSurface::MakeFromBackendRenderTarget(
+        gr_context_, render_target, kTopLeft_GrSurfaceOrigin,
+        kBGRA_8888_SkColorType, nullptr, &surface_props);
+  } else {
+    auto backend = sk_surface->getBackendRenderTarget(
+        SkSurface::kFlushRead_BackendHandleAccess);
+    backend.setVkImageLayout(swap_chain->GetCurrentImageLayout());
+  }
+
+  sk_surface_ = sk_surface;
 #endif
 }
 

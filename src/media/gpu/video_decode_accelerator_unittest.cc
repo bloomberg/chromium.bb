@@ -607,8 +607,9 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
 
   if (num_decoded_frames_ > config_.delay_reuse_after_frame_num) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
-                              weak_vda_, picture_buffer_id),
+        FROM_HERE,
+        base::BindOnce(&VideoDecodeAccelerator::ReusePictureBuffer, weak_vda_,
+                       picture_buffer_id),
         kReuseDelay);
   } else {
     decoder_->ReusePictureBuffer(picture_buffer_id);
@@ -930,10 +931,11 @@ void VideoDecodeAcceleratorTest::SetUp() {
 void VideoDecodeAcceleratorTest::TearDown() {
   // |clients_| must be deleted first because |clients_| use |notes_|.
   g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&Delete<ClientsVector>, base::Passed(&clients_)));
+      FROM_HERE,
+      base::BindOnce(&Delete<ClientsVector>, base::Passed(&clients_)));
 
   g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&Delete<NotesVector>, base::Passed(&notes_)));
+      FROM_HERE, base::BindOnce(&Delete<NotesVector>, base::Passed(&notes_)));
 
   WaitUntilIdle();
 
@@ -944,8 +946,8 @@ void VideoDecodeAcceleratorTest::TearDown() {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RenderingHelper::UnInitialize,
-                            base::Unretained(&rendering_helper_), &done));
+      FROM_HERE, base::BindOnce(&RenderingHelper::UnInitialize,
+                                base::Unretained(&rendering_helper_), &done));
   done.Wait();
 }
 
@@ -1036,8 +1038,8 @@ void VideoDecodeAcceleratorTest::CreateAndStartDecoder(
     GLRenderingVDAClient* client,
     ClientStateNotification<ClientState>* note) {
   g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&GLRenderingVDAClient::CreateAndStartDecoder,
-                            base::Unretained(client)));
+      FROM_HERE, base::BindOnce(&GLRenderingVDAClient::CreateAndStartDecoder,
+                                base::Unretained(client)));
   ASSERT_EQ(note->Wait(), CS_DECODER_SET);
 }
 

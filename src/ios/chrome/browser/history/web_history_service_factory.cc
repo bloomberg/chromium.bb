@@ -26,7 +26,7 @@ namespace {
 bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  return sync_service && sync_service->IsSyncActive() &&
+  return sync_service && sync_service->IsSyncFeatureActive() &&
          sync_service->GetActiveDataTypes().Has(
              syncer::HISTORY_DELETE_DIRECTIVES);
 }

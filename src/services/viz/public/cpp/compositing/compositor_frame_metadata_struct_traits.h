@@ -101,6 +101,16 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.min_page_scale_factor;
   }
 
+  static float top_controls_height(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_height;
+  }
+
+  static float top_controls_shown_ratio(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_shown_ratio;
+  }
+
 #if defined(OS_ANDROID)
   static float max_page_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {
@@ -115,16 +125,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   static bool root_overflow_y_hidden(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.root_overflow_y_hidden;
-  }
-
-  static float top_controls_height(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_height;
-  }
-
-  static float top_controls_shown_ratio(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_shown_ratio;
   }
 
   static float bottom_controls_height(

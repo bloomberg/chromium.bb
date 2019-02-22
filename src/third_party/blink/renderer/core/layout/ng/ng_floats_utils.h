@@ -23,6 +23,8 @@ struct NGLogicalSize;
 struct NGPositionedFloat;
 struct NGUnpositionedFloat;
 
+typedef Vector<NGPositionedFloat, 8> NGPositionedFloatVector;
+
 enum NGFloatTypeValue {
   kFloatTypeNone = 0b00,
   kFloatTypeLeft = 0b01,
@@ -42,6 +44,7 @@ CORE_EXPORT LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
 CORE_EXPORT NGPositionedFloat
 PositionFloat(const NGLogicalSize& float_available_size,
               const NGLogicalSize& float_percentage_size,
+              const NGLogicalSize& float_replaced_percentage_size,
               const NGBfcOffset& origin_bfc_offset,
               LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
@@ -50,14 +53,15 @@ PositionFloat(const NGLogicalSize& float_available_size,
 
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
-CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
-    const NGLogicalSize& float_available_size,
-    const NGLogicalSize& float_percentage_size,
-    const NGBfcOffset& origin_bfc_offset,
-    LayoutUnit container_block_offset,
-    NGUnpositionedFloatVector& unpositioned_floats,
-    const NGConstraintSpace& space,
-    NGExclusionSpace* exclusion_space);
+CORE_EXPORT const NGPositionedFloatVector
+PositionFloats(const NGLogicalSize& float_available_size,
+               const NGLogicalSize& float_percentage_size,
+               const NGLogicalSize& float_replaced_percentage_size,
+               const NGBfcOffset& origin_bfc_offset,
+               LayoutUnit container_block_offset,
+               NGUnpositionedFloatVector& unpositioned_floats,
+               const NGConstraintSpace& space,
+               NGExclusionSpace* exclusion_space);
 
 // Add a pending float to the list. It will be committed (positioned) once we
 // have resolved the BFC block offset.

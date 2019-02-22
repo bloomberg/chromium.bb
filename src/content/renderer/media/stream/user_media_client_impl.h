@@ -59,6 +59,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   void ApplyConstraints(
       const blink::WebApplyConstraintsRequest& web_request) override;
   void StopTrack(const blink::WebMediaStreamTrack& web_track) override;
+  bool IsCapturing() override;
 
   // RenderFrameObserver override
   void WillCommitProvisionalLoad() override;

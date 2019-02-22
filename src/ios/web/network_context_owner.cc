@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/task/post_task.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
@@ -18,8 +20,8 @@ NetworkContextOwner::NetworkContextOwner(
     network::mojom::NetworkContextPtr* network_context_client)
     : request_context_(request_context) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::BindOnce(&NetworkContextOwner::InitializeOnIOThread,
                      // This is safe, since |this| will be deleted on the IO
                      // thread, which would have to happen afterwards.

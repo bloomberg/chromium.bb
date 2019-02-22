@@ -31,12 +31,12 @@ extern "C" {
 #endif
 }  // extern "C"
 
-class CJpegContext final : public CCodec_JpegModule::Context {
+class CJpegContext final : public CodecModuleIface::Context {
  public:
   CJpegContext();
   ~CJpegContext() override;
 
-  jmp_buf* GetJumpMark() override { return &m_JumpMark; }
+  jmp_buf* GetJumpMark() { return &m_JumpMark; }
 
   jmp_buf m_JumpMark;
   jpeg_decompress_struct m_Info;
@@ -398,7 +398,7 @@ CJpegContext::~CJpegContext() {
   jpeg_destroy_decompress(&m_Info);
 }
 
-std::unique_ptr<CCodec_JpegModule::Context> CCodec_JpegModule::Start() {
+std::unique_ptr<CodecModuleIface::Context> CCodec_JpegModule::Start() {
   // Use ordinary pointer until past the possibility of a longjump.
   auto* pContext = new CJpegContext();
   if (setjmp(pContext->m_JumpMark) == -1) {
@@ -412,22 +412,23 @@ std::unique_ptr<CCodec_JpegModule::Context> CCodec_JpegModule::Start() {
   return pdfium::WrapUnique(pContext);
 }
 
-void CCodec_JpegModule::Input(Context* pContext,
-                              const unsigned char* src_buf,
-                              uint32_t src_size) {
+bool CCodec_JpegModule::Input(Context* pContext,
+                              RetainPtr<CFX_CodecMemory> codec_memory,
+                              CFX_DIBAttribute*) {
+  pdfium::span<uint8_t> src_buf = codec_memory->GetSpan();
   auto* ctx = static_cast<CJpegContext*>(pContext);
   if (ctx->m_SkipSize) {
-    if (ctx->m_SkipSize > src_size) {
+    if (ctx->m_SkipSize > src_buf.size()) {
       ctx->m_SrcMgr.bytes_in_buffer = 0;
-      ctx->m_SkipSize -= src_size;
-      return;
+      ctx->m_SkipSize -= src_buf.size();
+      return true;
     }
-    src_size -= ctx->m_SkipSize;
-    src_buf += ctx->m_SkipSize;
+    src_buf = src_buf.subspan(ctx->m_SkipSize);
     ctx->m_SkipSize = 0;
   }
-  ctx->m_SrcMgr.next_input_byte = src_buf;
-  ctx->m_SrcMgr.bytes_in_buffer = src_size;
+  ctx->m_SrcMgr.next_input_byte = src_buf.data();
+  ctx->m_SrcMgr.bytes_in_buffer = src_buf.size();
+  return true;
 }
 
 #ifdef PDF_ENABLE_XFA
@@ -464,16 +465,13 @@ bool CCodec_JpegModule::ReadScanline(Context* pContext,
   return nlines == 1;
 }
 
-uint32_t CCodec_JpegModule::GetAvailInput(Context* pContext,
-                                          uint8_t** avail_buf_ptr) {
+FX_FILESIZE CCodec_JpegModule::GetAvailInput(Context* pContext) const {
   auto* ctx = static_cast<CJpegContext*>(pContext);
-  if (avail_buf_ptr) {
-    *avail_buf_ptr = nullptr;
-    if (ctx->m_SrcMgr.bytes_in_buffer > 0) {
-      *avail_buf_ptr = (uint8_t*)ctx->m_SrcMgr.next_input_byte;
-    }
-  }
-  return (uint32_t)ctx->m_SrcMgr.bytes_in_buffer;
+  return static_cast<FX_FILESIZE>(ctx->m_SrcMgr.bytes_in_buffer);
+}
+
+jmp_buf* CCodec_JpegModule::GetJumpMark(Context* pContext) {
+  return static_cast<CJpegContext*>(pContext)->GetJumpMark();
 }
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -72,7 +73,7 @@ String BuildCacheId(const String& security_origin, const String& cache_name) {
 ProtocolResponse ParseCacheId(const String& id,
                               String* security_origin,
                               String* cache_name) {
-  size_t pipe = id.find('|');
+  wtf_size_t pipe = id.find('|');
   if (pipe == WTF::kNotFound)
     return ProtocolResponse::Error("Invalid cache id.");
   *security_origin = id.Substring(0, pipe);
@@ -189,13 +190,13 @@ struct RequestResponse {
 
 class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
  public:
-  ResponsesAccumulator(int num_responses,
+  ResponsesAccumulator(wtf_size_t num_responses,
                        const DataRequestParams& params,
                        mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
                        std::unique_ptr<RequestEntriesCallback> callback)
       : params_(params),
         num_responses_left_(num_responses),
-        responses_(static_cast<size_t>(num_responses)),
+        responses_(num_responses),
         cache_ptr_(std::move(cache_ptr)),
         callback_(std::move(callback)) {}
 
@@ -364,7 +365,8 @@ class CachedResponseFileReaderLoaderClient final
   void DidFinishLoading() override {
     std::unique_ptr<CachedResponse> response =
         CachedResponse::create()
-            .setBody(Base64Encode(data_->Data(), data_->size()))
+            .setBody(
+                Base64Encode(data_->Data(), SafeCast<unsigned>(data_->size())))
             .build();
     callback_->sendSuccess(std::move(response));
     dispose();

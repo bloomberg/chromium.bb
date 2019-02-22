@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -153,8 +152,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   _imageView.layer.masksToBounds = YES;
   _imageView.contentMode = UIViewContentModeScaleAspectFit;
 
-  if (cellStyle == CollectionViewCellStyle::kUIKit &&
-      experimental_flags::IsSettingsUIRebootEnabled()) {
+  if (cellStyle == CollectionViewCellStyle::kUIKit) {
     _textLabel.font = [UIFont systemFontOfSize:kUIKitMainFontSize];
     _textLabel.textColor = UIColorFromRGB(kUIKitMainTextColor);
     _detailTextLabel.font =

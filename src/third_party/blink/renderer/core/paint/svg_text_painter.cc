@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 
 namespace blink {
 
@@ -18,7 +18,7 @@ void SVGTextPainter::Paint(const PaintInfo& paint_info) {
 
   PaintInfo block_info(paint_info);
   block_info.UpdateCullRect(layout_svg_text_.LocalToSVGParentTransform());
-  SVGTransformContext transform_context(
+  ScopedSVGTransformState transform_state(
       block_info, layout_svg_text_,
       layout_svg_text_.LocalToSVGParentTransform());
 
@@ -47,8 +47,8 @@ void SVGTextPainter::RecordHitTestData(const PaintInfo& paint_info) {
     return;
 
   auto rect = LayoutRect(layout_svg_text_.VisualRectInLocalSVGCoordinates());
-  HitTestData::RecordTouchActionRect(paint_info.context, layout_svg_text_,
-                                     TouchActionRect(rect, touch_action));
+  HitTestData::RecordHitTestRect(paint_info.context, layout_svg_text_,
+                                 HitTestRect(rect, touch_action));
 }
 
 }  // namespace blink

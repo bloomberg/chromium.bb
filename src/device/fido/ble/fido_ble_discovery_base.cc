@@ -20,7 +20,7 @@
 namespace device {
 
 FidoBleDiscoveryBase::FidoBleDiscoveryBase(FidoTransportProtocol transport)
-    : FidoDiscovery(transport), weak_factory_(this) {}
+    : FidoDeviceDiscovery(transport), weak_factory_(this) {}
 
 FidoBleDiscoveryBase::~FidoBleDiscoveryBase() {
   if (adapter_)

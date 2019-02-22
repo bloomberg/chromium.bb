@@ -13,27 +13,11 @@
 namespace google_apis {
 
 class AboutResource;
-class AppList;
 
 // Callback used for getting AboutResource.
 typedef base::Callback<void(DriveApiErrorCode error,
                             std::unique_ptr<AboutResource> about_resource)>
     AboutResourceCallback;
-
-// Callback used for getting ShareUrl.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            const GURL& share_url)> GetShareUrlCallback;
-
-// Callback used for getting AppList.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            std::unique_ptr<AppList> app_list)>
-    AppListCallback;
-
-// Callback used for authorizing an app. |open_url| is used to open the target
-// file with the authorized app.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            const GURL& open_url)>
-    AuthorizeAppCallback;
 
 // Closure for canceling a certain request. Each request-issuing method returns
 // this type of closure. If it is called during the request is in-flight, the

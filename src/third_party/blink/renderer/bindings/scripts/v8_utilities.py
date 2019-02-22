@@ -35,6 +35,7 @@ import os
 import re
 import sys
 
+from blinkbuild.name_style_converter import NameStyleConverter
 from idl_types import IdlTypeBase
 import idl_types
 from idl_definitions import Exposure, IdlInterface, IdlAttribute
@@ -366,6 +367,12 @@ def cpp_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     if extended_attributes and 'ImplementedAs' in extended_attributes:
         return extended_attributes['ImplementedAs']
+    # WebIDL identifiers can contain hyphens[1], but C++ identifiers cannot.
+    # Therefore camelCase hyphen-containing identifiers.
+    #
+    # [1] https://heycam.github.io/webidl/#prod-identifier
+    if '-' in definition_or_member.name:
+        return NameStyleConverter(definition_or_member.name).to_lower_camel_case()
     return definition_or_member.name
 
 
@@ -449,10 +456,8 @@ def runtime_enabled_feature_name(definition_or_member):
 
 
 # [Unforgeable]
-def is_unforgeable(interface, member):
-    return (('Unforgeable' in interface.extended_attributes or
-             'Unforgeable' in member.extended_attributes) and
-            not member.is_static)
+def is_unforgeable(member):
+    return 'Unforgeable' in member.extended_attributes
 
 
 # [LegacyInterfaceTypeChecking]
@@ -485,8 +490,7 @@ def on_instance(interface, member):
 
     if ('PrimaryGlobal' in interface.extended_attributes or
             'Global' in interface.extended_attributes or
-            'Unforgeable' in member.extended_attributes or
-            'Unforgeable' in interface.extended_attributes):
+            'Unforgeable' in member.extended_attributes):
         return True
     return False
 
@@ -517,8 +521,7 @@ def on_prototype(interface, member):
 
     if ('PrimaryGlobal' in interface.extended_attributes or
             'Global' in interface.extended_attributes or
-            'Unforgeable' in member.extended_attributes or
-            'Unforgeable' in interface.extended_attributes):
+            'Unforgeable' in member.extended_attributes):
         return False
     return True
 

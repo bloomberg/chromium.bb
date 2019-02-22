@@ -24,23 +24,22 @@
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 
 extern "C" {
-void CGSSetDenyWindowServerConnections(bool);
-void CGSShutdownServerConnections();
+CGError CGSSetDenyWindowServerConnections(bool);
 };
 
 namespace content {
 
 namespace {
 
-// This disconnects from the window server, and then indicates that Chrome
-// should continue execution without access to launchservicesd.
-void DisconnectWindowServer() {
-  // Now disconnect from WindowServer, after all objects have been warmed up.
-  // Shutting down the connection requires connecting to WindowServer,
-  // so do this before actually engaging the sandbox. This may cause two log
-  // messages to be printed to the system logger on certain OS versions.
-  CGSSetDenyWindowServerConnections(true);
-  CGSShutdownServerConnections();
+// This tells Core Graphics not to attempt to connect to the WindowServer (and
+// verifies there are no existing open connections), and then indicates that
+// Chrome should continue execution without access to launchservicesd.
+void DisableSystemServices() {
+  // Tell the WindowServer that we don't want to make any future connections.
+  // This will return Success as long as there are no open connections, which
+  // is what we want.
+  CGError result = CGSSetDenyWindowServerConnections(true);
+  CHECK_EQ(result, kCGErrorSuccess);
 
   sandbox::DisableLaunchServices();
 }
@@ -146,12 +145,12 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 bool RendererMainPlatformDelegate::EnableSandbox() {
   bool sandbox_initialized = sandbox::Seatbelt::IsSandboxed();
 
-  // If the sandbox is already engaged, just disconnect from the window server.
+  // If the sandbox is already engaged, just disable system services.
   if (sandbox_initialized) {
-    DisconnectWindowServer();
+    DisableSystemServices();
   } else {
     sandbox_initialized =
-        InitializeSandbox(base::BindOnce(&DisconnectWindowServer));
+        InitializeSandbox(base::BindOnce(&DisableSystemServices));
   }
 
   // The sandbox is now engaged. Make sure that the renderer has not connected

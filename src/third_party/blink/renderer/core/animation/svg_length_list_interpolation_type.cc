@@ -15,7 +15,7 @@ namespace blink {
 InterpolationValue SVGLengthListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  size_t underlying_length =
+  wtf_size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
       UnderlyingLengthChecker::Create(underlying_length));
@@ -25,7 +25,7 @@ InterpolationValue SVGLengthListInterpolationType::MaybeConvertNeutral(
 
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(underlying_length);
-  for (size_t i = 0; i < underlying_length; i++)
+  for (wtf_size_t i = 0; i < underlying_length; i++)
     result->Set(i, SVGLengthInterpolationType::NeutralInterpolableValue());
   return InterpolationValue(std::move(result));
 }
@@ -38,7 +38,7 @@ InterpolationValue SVGLengthListInterpolationType::MaybeConvertSVGValue(
   const SVGLengthList& length_list = ToSVGLengthList(svg_value);
   std::unique_ptr<InterpolableList> result =
       InterpolableList::Create(length_list.length());
-  for (size_t i = 0; i < length_list.length(); i++) {
+  for (wtf_size_t i = 0; i < length_list.length(); i++) {
     InterpolationValue component =
         SVGLengthInterpolationType::ConvertSVGLength(*length_list.at(i));
     result->Set(i, std::move(component.interpolable_value));
@@ -49,8 +49,9 @@ InterpolationValue SVGLengthListInterpolationType::MaybeConvertSVGValue(
 PairwiseInterpolationValue SVGLengthListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  size_t start_length = ToInterpolableList(*start.interpolable_value).length();
-  size_t end_length = ToInterpolableList(*end.interpolable_value).length();
+  wtf_size_t start_length =
+      ToInterpolableList(*start.interpolable_value).length();
+  wtf_size_t end_length = ToInterpolableList(*end.interpolable_value).length();
   if (start_length != end_length)
     return nullptr;
   return InterpolationType::MaybeMergeSingles(std::move(start), std::move(end));
@@ -61,10 +62,11 @@ void SVGLengthListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  size_t start_length =
+  wtf_size_t start_length =
       ToInterpolableList(*underlying_value_owner.Value().interpolable_value)
           .length();
-  size_t end_length = ToInterpolableList(*value.interpolable_value).length();
+  wtf_size_t end_length =
+      ToInterpolableList(*value.interpolable_value).length();
 
   if (start_length == end_length)
     InterpolationType::Composite(underlying_value_owner, underlying_fraction,
@@ -90,7 +92,7 @@ void SVGLengthListInterpolationType::Apply(
 
   SVGLengthList* result = SVGLengthList::Create(unit_mode_);
   const InterpolableList& list = ToInterpolableList(interpolable_value);
-  for (size_t i = 0; i < list.length(); i++) {
+  for (wtf_size_t i = 0; i < list.length(); i++) {
     result->Append(SVGLengthInterpolationType::ResolveInterpolableSVGLength(
         *list.Get(i), length_context, unit_mode_, negative_values_forbidden_));
   }

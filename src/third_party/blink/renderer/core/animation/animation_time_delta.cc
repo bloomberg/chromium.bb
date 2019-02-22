@@ -7,7 +7,29 @@
 namespace blink {
 
 #if !defined(BLINK_ANIMATION_USE_TIME_DELTA)
-std::ostream& operator<<(std::ostream& os, AnimationTimeDelta time) {
+// Comparison operators on AnimationTimeDelta.
+bool CORE_EXPORT operator==(const AnimationTimeDelta& lhs,
+                            const AnimationTimeDelta& rhs) {
+  return lhs.InSecondsF() == rhs.InSecondsF();
+}
+bool CORE_EXPORT operator!=(const AnimationTimeDelta& lhs,
+                            const AnimationTimeDelta& rhs) {
+  return lhs.InSecondsF() != rhs.InSecondsF();
+}
+bool CORE_EXPORT operator>(const AnimationTimeDelta& lhs,
+                           const AnimationTimeDelta& rhs) {
+  return lhs.InSecondsF() > rhs.InSecondsF();
+}
+bool CORE_EXPORT operator>=(const AnimationTimeDelta& lhs,
+                            const AnimationTimeDelta& rhs) {
+  return lhs.InSecondsF() >= rhs.InSecondsF();
+}
+bool CORE_EXPORT operator<=(const AnimationTimeDelta& lhs,
+                            const AnimationTimeDelta& rhs) {
+  return lhs.InSecondsF() <= rhs.InSecondsF();
+}
+
+std::ostream& operator<<(std::ostream& os, const AnimationTimeDelta& time) {
   return os << time.InSecondsF() << " s";
 }
 #endif

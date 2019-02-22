@@ -411,28 +411,27 @@ bool ComputedStyle::IsStyleAvailable() const {
   return this != StyleResolver::StyleNotYetAvailable();
 }
 
-ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
+const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
     return nullptr;
 
   if (StyleType() != kPseudoIdNone)
     return nullptr;
 
-  for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
+  for (const auto& pseudo_style : *cached_pseudo_styles_) {
     if (pseudo_style->StyleType() == pid)
-      return pseudo_style;
+      return pseudo_style.get();
   }
 
   return nullptr;
 }
 
-ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
+const ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
     scoped_refptr<ComputedStyle> pseudo) {
   DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
-  ComputedStyle* result = pseudo.get();
+  const ComputedStyle* result = pseudo.get();
 
   if (!cached_pseudo_styles_)
     cached_pseudo_styles_ = std::make_unique<PseudoStyleCache>();
@@ -445,8 +444,8 @@ ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
 void ComputedStyle::RemoveCachedPseudoStyle(PseudoId pid) {
   if (!cached_pseudo_styles_)
     return;
-  for (size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
-    ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
+  for (wtf_size_t i = 0; i < cached_pseudo_styles_->size(); ++i) {
+    const ComputedStyle* pseudo_style = cached_pseudo_styles_->at(i).get();
     if (pseudo_style->StyleType() == pid) {
       cached_pseudo_styles_->EraseAt(i);
       return;
@@ -932,7 +931,10 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       HasBlendMode() || HasIsolation() || HasViewportConstrainedPosition() ||
       GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
-      ContainsPaint()) {
+      /* TODO(882625): This becomes unnecessary when will-change correctly takes
+      into account active animations. */
+      ShouldCompositeForCurrentAnimations() || ContainsPaint() ||
+      ContainsLayout()) {
     SetIsStackingContext(true);
   }
 }
@@ -947,8 +949,8 @@ void ComputedStyle::SetContent(ContentData* content_data) {
 }
 
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  for (size_t i = 0; i < WillChangeProperties().size(); ++i) {
-    switch (WillChangeProperties()[i]) {
+  for (const auto& property : WillChangeProperties()) {
+    switch (property) {
       case CSSPropertyOpacity:
       case CSSPropertyTransform:
       case CSSPropertyAliasWebkitTransform:
@@ -1556,37 +1558,6 @@ CSSTransitionData& ComputedStyle::AccessTransitions() {
   return *TransitionsInternal();
 }
 
-const Font& ComputedStyle::GetFont() const {
-  return FontInternal();
-}
-const FontDescription& ComputedStyle::GetFontDescription() const {
-  return FontInternal().GetFontDescription();
-}
-float ComputedStyle::SpecifiedFontSize() const {
-  return GetFontDescription().SpecifiedSize();
-}
-float ComputedStyle::ComputedFontSize() const {
-  return GetFontDescription().ComputedSize();
-}
-LayoutUnit ComputedStyle::ComputedFontSizeAsFixed() const {
-  return LayoutUnit::FromFloatRound(GetFontDescription().ComputedSize());
-}
-int ComputedStyle::FontSize() const {
-  return GetFontDescription().ComputedPixelSize();
-}
-float ComputedStyle::FontSizeAdjust() const {
-  return GetFontDescription().SizeAdjust();
-}
-bool ComputedStyle::HasFontSizeAdjust() const {
-  return GetFontDescription().HasSizeAdjust();
-}
-FontSelectionValue ComputedStyle::GetFontWeight() const {
-  return GetFontDescription().Weight();
-}
-FontSelectionValue ComputedStyle::GetFontStretch() const {
-  return GetFontDescription().Stretch();
-}
-
 FontBaseline ComputedStyle::GetFontBaseline() const {
   // TODO(kojii): Incorporate 'dominant-baseline' when we support it.
   // https://www.w3.org/TR/css-inline-3/#dominant-baseline-property
@@ -1595,6 +1566,34 @@ FontBaseline ComputedStyle::GetFontBaseline() const {
   // baseline. https://drafts.csswg.org/css-writing-modes-3/#intro-baselines
   return !GetFontDescription().IsVerticalAnyUpright() ? kAlphabeticBaseline
                                                       : kIdeographicBaseline;
+}
+
+FontOrientation ComputedStyle::ComputeFontOrientation() const {
+  if (IsHorizontalWritingMode())
+    return FontOrientation::kHorizontal;
+
+  switch (GetTextOrientation()) {
+    case ETextOrientation::kMixed:
+      return FontOrientation::kVerticalMixed;
+    case ETextOrientation::kUpright:
+      return FontOrientation::kVerticalUpright;
+    case ETextOrientation::kSideways:
+      return FontOrientation::kVerticalRotated;
+    default:
+      NOTREACHED();
+      return FontOrientation::kVerticalMixed;
+  }
+}
+
+void ComputedStyle::UpdateFontOrientation() {
+  FontOrientation orientation = ComputeFontOrientation();
+  if (GetFontDescription().Orientation() == orientation)
+    return;
+  FontSelector* current_font_selector = GetFont().GetFontSelector();
+  FontDescription font_description = GetFontDescription();
+  font_description.SetOrientation(orientation);
+  SetFontDescription(font_description);
+  GetFont().Update(current_font_selector);
 }
 
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
@@ -1607,8 +1606,8 @@ TextDecoration ComputedStyle::TextDecorationsInEffect() const {
 
   const Vector<AppliedTextDecoration>& applied = AppliedTextDecorations();
 
-  for (size_t i = 0; i < applied.size(); ++i)
-    decorations |= applied[i].Lines();
+  for (const AppliedTextDecoration& decoration : applied)
+    decorations |= decoration.Lines();
 
   return decorations;
 }
@@ -1661,49 +1660,22 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   return *variables;
 }
 
-void ComputedStyle::SetUnresolvedInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && value->NeedsVariableResolution());
-  MutableInheritedVariables().SetVariable(name, std::move(value));
+void ComputedStyle::SetVariable(const AtomicString& name,
+                                scoped_refptr<CSSVariableData> value,
+                                bool is_inherited_property) {
+  if (is_inherited_property)
+    MutableInheritedVariables().SetVariable(name, std::move(value));
+  else
+    MutableNonInheritedVariables().SetVariable(name, std::move(value));
 }
 
-void ComputedStyle::SetUnresolvedNonInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && value->NeedsVariableResolution());
-  MutableNonInheritedVariables().SetVariable(name, std::move(value));
-}
-
-void ComputedStyle::SetResolvedUnregisteredVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value) {
-  DCHECK(value && !value->NeedsVariableResolution());
-  MutableInheritedVariables().SetVariable(name, std::move(value));
-}
-
-void ComputedStyle::SetResolvedInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value,
-    const CSSValue* parsed_value) {
-  DCHECK(!!value == !!parsed_value);
-  DCHECK(!(value && value->NeedsVariableResolution()));
-
-  StyleInheritedVariables& variables = MutableInheritedVariables();
-  variables.SetVariable(name, std::move(value));
-  variables.SetRegisteredVariable(name, parsed_value);
-}
-
-void ComputedStyle::SetResolvedNonInheritedVariable(
-    const AtomicString& name,
-    scoped_refptr<CSSVariableData> value,
-    const CSSValue* parsed_value) {
-  DCHECK(!!value == !!parsed_value);
-  DCHECK(!(value && value->NeedsVariableResolution()));
-
-  StyleNonInheritedVariables& variables = MutableNonInheritedVariables();
-  variables.SetVariable(name, std::move(value));
-  variables.SetRegisteredVariable(name, parsed_value);
+void ComputedStyle::SetRegisteredVariable(const AtomicString& name,
+                                          const CSSValue* value,
+                                          bool is_inherited_property) {
+  if (is_inherited_property)
+    MutableInheritedVariables().SetRegisteredVariable(name, value);
+  else
+    MutableNonInheritedVariables().SetRegisteredVariable(name, value);
 }
 
 void ComputedStyle::RemoveVariable(const AtomicString& name,
@@ -1756,23 +1728,12 @@ const CSSValue* ComputedStyle::GetRegisteredVariable(
   return GetRegisteredVariable(name, true);
 }
 
-float ComputedStyle::WordSpacing() const {
-  return GetFontDescription().WordSpacing();
-}
-float ComputedStyle::LetterSpacing() const {
-  return GetFontDescription().LetterSpacing();
-}
-
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {
   if (FontInternal().GetFontDescription() != v) {
     SetFontInternal(Font(v));
     return true;
   }
   return false;
-}
-
-void ComputedStyle::SetFont(const Font& font) {
-  SetFontInternal(font);
 }
 
 bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
@@ -1782,10 +1743,6 @@ bool ComputedStyle::HasIdenticalAscentDescentAndLineGap(
   return font_data && other_font_data &&
          font_data->GetFontMetrics().HasIdenticalAscentDescentAndLineGap(
              other_font_data->GetFontMetrics());
-}
-
-const Length& ComputedStyle::SpecifiedLineHeight() const {
-  return LineHeightInternal();
 }
 
 Length ComputedStyle::LineHeight() const {
@@ -1895,8 +1852,8 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
   if (!list->HasOneRef())
     list = list->Copy();
 
-  for (size_t i = 0; i < list->size(); ++i)
-    list->at(i).SetColor(override_color);
+  for (AppliedTextDecoration& decoration : *list)
+    decoration.SetColor(override_color);
 }
 
 void ComputedStyle::ApplyTextDecorations(
@@ -2190,11 +2147,11 @@ void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   if (!shadow_list)
     return false;
-  for (size_t i = shadow_list->Shadows().size(); i--;) {
-    if (shadow_list->Shadows()[i].GetColor().IsCurrentColor())
-      return true;
-  }
-  return false;
+  return std::any_of(shadow_list->Shadows().begin(),
+                     shadow_list->Shadows().end(),
+                     [](const ShadowData& shadow) {
+                       return shadow.GetColor().IsCurrentColor();
+                     });
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto,

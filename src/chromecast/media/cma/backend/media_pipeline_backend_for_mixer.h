@@ -56,6 +56,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend,
   VideoDecoderForMixer* video_decoder() const { return video_decoder_.get(); }
   AudioDecoderForMixer* audio_decoder() const { return audio_decoder_.get(); }
   void OnAudioReadyForPlayback();
+  void NewAudioPlaybackRateInEffect(float rate);
 
   // Gets current time on the same clock as the rendering delay timestamp.
   virtual int64_t MonotonicClockNow() const;
@@ -95,7 +96,8 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend,
   // met.
   bool audio_ready_to_play_ = false;
   bool video_ready_to_play_ = false;
-  bool first_resume_processed_ = false;
+  bool playback_started_ = false;
+  float starting_playback_rate_ = 1.0;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

@@ -166,7 +166,7 @@ Element* InsertParagraphSeparatorCommand::CloneHierarchyUnderNewBlock(
     EditingState* editing_state) {
   // Make clones of ancestors in between the start node and the start block.
   Element* parent = block_to_insert;
-  for (size_t i = ancestors.size(); i != 0; --i) {
+  for (wtf_size_t i = ancestors.size(); i != 0; --i) {
     Element* child = ancestors[i - 1]->CloneWithoutChildren();
     // It should always be okay to remove id from the cloned elements, since the
     // originals are not deleted.

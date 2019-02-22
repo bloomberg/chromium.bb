@@ -27,7 +27,7 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD0(StartVoiceInteraction, void());
 
-  MOCK_METHOD0(StopActiveInteraction, void());
+  MOCK_METHOD1(StopActiveInteraction, void(bool));
 
   MOCK_METHOD1(SendTextQuery, void(const std::string&));
 
@@ -54,6 +54,8 @@ class MockAssistant : public mojom::Assistant {
   void CacheScreenContext(base::OnceClosure callback) override {
     DoCacheScreenContext(&callback);
   }
+
+  MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);

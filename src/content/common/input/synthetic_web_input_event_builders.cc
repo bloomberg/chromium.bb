@@ -5,6 +5,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 
 #include "base/logging.h"
+#include "content/common/input/web_mouse_wheel_event_traits.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -47,6 +48,7 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
   WebMouseWheelEvent result(WebInputEvent::kMouseWheel,
                             WebInputEvent::kNoModifiers, ui::EventTimeForNow());
   result.phase = phase;
+  result.event_action = WebMouseWheelEventTraits::GetEventAction(result);
   return result;
 }
 
@@ -83,6 +85,7 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
     result.wheel_ticks_y = dy > 0.0f ? 1.0f : -1.0f;
   result.has_precise_scrolling_deltas = precise;
   result.scroll_by_page = scroll_by_page;
+  result.event_action = WebMouseWheelEventTraits::GetEventAction(result);
   return result;
 }
 

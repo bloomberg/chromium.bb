@@ -548,8 +548,8 @@ class SslCastSocketTest : public CastSocketTestBase {
   int ReadExactLength(net::IOBuffer* buffer,
                       int buffer_length,
                       net::Socket* socket) {
-    scoped_refptr<net::DrainableIOBuffer> draining_buffer(
-        new net::DrainableIOBuffer(buffer, buffer_length));
+    scoped_refptr<net::DrainableIOBuffer> draining_buffer =
+        base::MakeRefCounted<net::DrainableIOBuffer>(buffer, buffer_length);
     while (draining_buffer->BytesRemaining() > 0) {
       net::TestCompletionCallback read_callback;
       int read_result = read_callback.GetResult(server_socket_->Read(
@@ -564,8 +564,8 @@ class SslCastSocketTest : public CastSocketTestBase {
   int WriteExactLength(net::IOBuffer* buffer,
                        int buffer_length,
                        net::Socket* socket) {
-    scoped_refptr<net::DrainableIOBuffer> draining_buffer(
-        new net::DrainableIOBuffer(buffer, buffer_length));
+    scoped_refptr<net::DrainableIOBuffer> draining_buffer =
+        base::MakeRefCounted<net::DrainableIOBuffer>(buffer, buffer_length);
     while (draining_buffer->BytesRemaining() > 0) {
       net::TestCompletionCallback write_callback;
       int write_result = write_callback.GetResult(server_socket_->Write(
@@ -1069,8 +1069,8 @@ TEST_F(SslCastSocketTest, MAYBE_TestConnectEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
 
   int challenge_buffer_length = challenge_str.size();
-  scoped_refptr<net::IOBuffer> challenge_buffer(
-      new net::IOBuffer(challenge_buffer_length));
+  scoped_refptr<net::IOBuffer> challenge_buffer =
+      base::MakeRefCounted<net::IOBuffer>(challenge_buffer_length);
   int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
                              server_socket_.get());
 
@@ -1083,8 +1083,8 @@ TEST_F(SslCastSocketTest, MAYBE_TestConnectEndToEndWithRealSSL) {
   std::string reply_str;
   EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
 
-  scoped_refptr<net::StringIOBuffer> reply_buffer(
-      new net::StringIOBuffer(reply_str));
+  scoped_refptr<net::StringIOBuffer> reply_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(reply_str);
   int written = WriteExactLength(reply_buffer.get(), reply_buffer->size(),
                                  server_socket_.get());
 
@@ -1108,8 +1108,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
 
   int challenge_buffer_length = challenge_str.size();
-  scoped_refptr<net::IOBuffer> challenge_buffer(
-      new net::IOBuffer(challenge_buffer_length));
+  scoped_refptr<net::IOBuffer> challenge_buffer =
+      base::MakeRefCounted<net::IOBuffer>(challenge_buffer_length);
 
   int read = ReadExactLength(challenge_buffer.get(), challenge_buffer_length,
                              server_socket_.get());
@@ -1123,8 +1123,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   std::string reply_str;
   EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
 
-  scoped_refptr<net::StringIOBuffer> reply_buffer(
-      new net::StringIOBuffer(reply_str));
+  scoped_refptr<net::StringIOBuffer> reply_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(reply_str);
   int written = WriteExactLength(reply_buffer.get(), reply_buffer->size(),
                                  server_socket_.get());
 
@@ -1141,8 +1141,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
   EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
 
   int test_message_length = test_message_str.size();
-  scoped_refptr<net::IOBuffer> test_message_buffer(
-      new net::IOBuffer(test_message_length));
+  scoped_refptr<net::IOBuffer> test_message_buffer =
+      base::MakeRefCounted<net::IOBuffer>(test_message_length);
 
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
   socket_->transport()->SendMessage(

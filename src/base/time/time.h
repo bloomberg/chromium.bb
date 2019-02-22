@@ -186,18 +186,18 @@ class BASE_EXPORT TimeDelta {
   // towards zero, std::trunc() behavior). The InXYZFloored() versions round to
   // lesser integers (std::floor() behavior). The XYZRoundedUp() versions round
   // up to greater integers (std::ceil() behavior).
-  int InDays() const;
+  constexpr int InDays() const;
   int InDaysFloored() const;
-  int InHours() const;
-  int InMinutes() const;
-  double InSecondsF() const;
-  int64_t InSeconds() const;
-  double InMillisecondsF() const;
-  int64_t InMilliseconds() const;
+  constexpr int InHours() const;
+  constexpr int InMinutes() const;
+  constexpr double InSecondsF() const;
+  constexpr int64_t InSeconds() const;
+  constexpr double InMillisecondsF() const;
+  constexpr int64_t InMilliseconds() const;
   int64_t InMillisecondsRoundedUp() const;
-  int64_t InMicroseconds() const;
-  double InMicrosecondsF() const;
-  int64_t InNanoseconds() const;
+  constexpr int64_t InMicroseconds() const;
+  constexpr double InMicrosecondsF() const;
+  constexpr int64_t InNanoseconds() const;
 
   // Computations with other deltas. Can easily be made constexpr with C++17 but
   // hard to do until then per limitations around
@@ -294,6 +294,11 @@ class BASE_EXPORT TimeDelta {
   // and a known-positive value.
   static constexpr TimeDelta FromProduct(int64_t value, int64_t positive_value);
 
+  // Returns |delta_| (microseconds) divided by |divisor|, or the max value
+  // representable in T if is_max().
+  template <typename T>
+  constexpr T DivideOrMax(int64_t divisor) const;
+
   // Delta in microseconds.
   int64_t delta_;
 };
@@ -320,20 +325,20 @@ namespace time_internal {
 template<class TimeClass>
 class TimeBase {
  public:
-  static const int64_t kHoursPerDay = 24;
-  static const int64_t kMillisecondsPerSecond = 1000;
-  static const int64_t kMillisecondsPerDay =
+  static constexpr int64_t kHoursPerDay = 24;
+  static constexpr int64_t kMillisecondsPerSecond = 1000;
+  static constexpr int64_t kMillisecondsPerDay =
       kMillisecondsPerSecond * 60 * 60 * kHoursPerDay;
-  static const int64_t kMicrosecondsPerMillisecond = 1000;
-  static const int64_t kMicrosecondsPerSecond =
+  static constexpr int64_t kMicrosecondsPerMillisecond = 1000;
+  static constexpr int64_t kMicrosecondsPerSecond =
       kMicrosecondsPerMillisecond * kMillisecondsPerSecond;
-  static const int64_t kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
-  static const int64_t kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
-  static const int64_t kMicrosecondsPerDay =
+  static constexpr int64_t kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
+  static constexpr int64_t kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
+  static constexpr int64_t kMicrosecondsPerDay =
       kMicrosecondsPerHour * kHoursPerDay;
-  static const int64_t kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
-  static const int64_t kNanosecondsPerMicrosecond = 1000;
-  static const int64_t kNanosecondsPerSecond =
+  static constexpr int64_t kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
+  static constexpr int64_t kNanosecondsPerMicrosecond = 1000;
+  static constexpr int64_t kNanosecondsPerSecond =
       kNanosecondsPerMicrosecond * kMicrosecondsPerSecond;
 
   // Returns true if this object has not been initialized.
@@ -341,13 +346,15 @@ class TimeBase {
   // Warning: Be careful when writing code that performs math on time values,
   // since it's possible to produce a valid "zero" result that should not be
   // interpreted as a "null" value.
-  bool is_null() const {
-    return us_ == 0;
-  }
+  constexpr bool is_null() const { return us_ == 0; }
 
   // Returns true if this object represents the maximum/minimum time.
-  bool is_max() const { return us_ == std::numeric_limits<int64_t>::max(); }
-  bool is_min() const { return us_ == std::numeric_limits<int64_t>::min(); }
+  constexpr bool is_max() const {
+    return us_ == std::numeric_limits<int64_t>::max();
+  }
+  constexpr bool is_min() const {
+    return us_ == std::numeric_limits<int64_t>::min();
+  }
 
   // Returns the maximum/minimum times, which should be greater/less than than
   // any reasonable time with which we might compare it.
@@ -373,7 +380,9 @@ class TimeBase {
   //
   // Warning: While the Time subclass has a fixed origin point, the origin for
   // the other subclasses can vary each time the application is restarted.
-  TimeDelta since_origin() const { return TimeDelta::FromMicroseconds(us_); }
+  constexpr TimeDelta since_origin() const {
+    return TimeDelta::FromMicroseconds(us_);
+  }
 
   TimeClass& operator=(TimeClass other) {
     us_ = other.us_;
@@ -773,6 +782,64 @@ constexpr TimeDelta TimeDelta::Max() {
 // static
 constexpr TimeDelta TimeDelta::Min() {
   return TimeDelta(std::numeric_limits<int64_t>::min());
+}
+
+// Must be defined before use below.
+template <typename T>
+constexpr T TimeDelta::DivideOrMax(int64_t divisor) const {
+  return is_max() ? std::numeric_limits<T>::max()
+                  : static_cast<T>(delta_ / divisor);
+}
+
+// Must be defined before use below.
+template <>
+constexpr double TimeDelta::DivideOrMax<double>(int64_t divisor) const {
+  return is_max() ? std::numeric_limits<double>::infinity()
+                  : static_cast<double>(delta_) / divisor;
+}
+
+constexpr int TimeDelta::InDays() const {
+  return DivideOrMax<int>(Time::kMicrosecondsPerDay);
+}
+
+constexpr int TimeDelta::InHours() const {
+  return DivideOrMax<int>(Time::kMicrosecondsPerHour);
+}
+
+constexpr int TimeDelta::InMinutes() const {
+  return DivideOrMax<int>(Time::kMicrosecondsPerMinute);
+}
+
+constexpr double TimeDelta::InSecondsF() const {
+  return DivideOrMax<double>(Time::kMicrosecondsPerSecond);
+}
+
+constexpr int64_t TimeDelta::InSeconds() const {
+  return DivideOrMax<int64_t>(Time::kMicrosecondsPerSecond);
+}
+
+constexpr double TimeDelta::InMillisecondsF() const {
+  return DivideOrMax<double>(Time::kMicrosecondsPerMillisecond);
+}
+
+constexpr int64_t TimeDelta::InMilliseconds() const {
+  return DivideOrMax<int64_t>(Time::kMicrosecondsPerMillisecond);
+}
+
+constexpr int64_t TimeDelta::InMicroseconds() const {
+  return DivideOrMax<int64_t>(1);
+}
+
+constexpr double TimeDelta::InMicrosecondsF() const {
+  return DivideOrMax<double>(1);
+}
+
+constexpr int64_t TimeDelta::InNanoseconds() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<int64_t>::max();
+  }
+  return delta_ * Time::kNanosecondsPerMicrosecond;
 }
 
 // static

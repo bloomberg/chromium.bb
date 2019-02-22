@@ -48,7 +48,7 @@ void ExtensionBlockedActionsBubbleTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
   scoped_feature_list_.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 }
 
 void ExtensionBlockedActionsBubbleTest::SetUpOnMainThread() {

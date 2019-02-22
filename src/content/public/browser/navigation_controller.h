@@ -36,6 +36,7 @@ class RefCountedString;
 
 namespace content {
 
+enum class WasActivatedOption;
 class BrowserContext;
 class NavigationEntry;
 class WebContents;
@@ -196,6 +197,15 @@ class NavigationController {
     // navigations will always get their NavigationUIData from
     // ContentBrowserClient::GetNavigationUIData.
     std::unique_ptr<NavigationUIData> navigation_ui_data;
+
+    // Time at which the input leading to this navigation occurred. This field
+    // is set for links clicked by the user; the embedder is recommended to set
+    // it for navigations it initiates.
+    base::TimeTicks input_start;
+
+    // Set to |kYes| if the navigation should propagate user activation. This
+    // is used by embedders where the activation has occurred outside the page.
+    WasActivatedOption was_activated;
 
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();

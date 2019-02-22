@@ -37,6 +37,7 @@ struct PhotoState {
   array<Point2D> points_of_interest;
 
   Range exposure_compensation;
+  Range exposure_time;
   Range color_temperature;
   Range iso;
 
@@ -45,6 +46,7 @@ struct PhotoState {
   Range saturation;
   Range sharpness;
 
+  Range focus_distance;
   Range zoom;
 
   bool supports_torch;
@@ -81,6 +83,8 @@ struct PhotoSettings {
 
   bool has_exposure_compensation;
   double exposure_compensation;
+  bool has_exposure_time;
+  double exposure_time;
   bool has_color_temperature;
   double color_temperature;
   bool has_iso;
@@ -95,6 +99,8 @@ struct PhotoSettings {
   bool has_sharpness;
   double sharpness;
 
+  bool has_focus_distance;
+  double focus_distance;
   bool has_zoom;
   double zoom;
 

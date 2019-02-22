@@ -63,4 +63,5 @@ dictionary TestDictionary {
     record<DOMString, (double or DOMString)?> unionOrNullRecordMember;
     VoidCallbackFunction callbackFunctionMember;
     required VoidCallbackFunction requiredCallbackFunctionMember;
+    boolean member-with-hyphen-in-name = false;
 };

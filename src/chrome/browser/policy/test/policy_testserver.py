@@ -53,8 +53,11 @@ Example:
   "available_licenses" : {
       "annual": 10,
       "perpetual": 20
-   }
-
+   },
+   "token_enrollment": {
+      "token": "abcd-ef01-123123123",
+      "username": "admin@example.com"
+   },
 }
 
 """
@@ -391,6 +394,18 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     return None
 
+  def CheckEnrollmentToken(self):
+    """Extracts the enrollment token from the request and returns it. The token
+    is GoogleEnrollmentToken token from an Authorization header. Returns None
+    if no token is present.
+    """
+    match = re.match('GoogleEnrollmentToken auth=(\\w+)',
+                     self.headers.getheader('Authorization', ''))
+    if match:
+      return match.group(1)
+
+    return None
+
   def ProcessRegister(self, msg):
     """Handles a register request.
 
@@ -403,15 +418,26 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-    # Check the auth token and device ID.
-    auth = self.CheckGoogleLogin()
-    if not auth:
-      return (403, 'No authorization')
-
+    enrollment_token = self.CheckEnrollmentToken()
     policy = self.server.GetPolicies()
-    if ('managed_users' not in policy):
-      return (500, 'Error in config - no managed users')
-    username = self.server.ResolveUser(auth)
+    if enrollment_token:
+      if ((not policy['token_enrollment']) or
+          (not policy['token_enrollment']['token']) or
+          (not policy['token_enrollment']['username'])):
+        return (500, 'Error in config - no token-based enrollment')
+      if policy['token_enrollment']['token'] != enrollment_token:
+        return (403, 'Invalid enrollment token')
+      username = policy['token_enrollment']['username']
+    else:
+      # Check the auth token and device ID.
+      auth = self.CheckGoogleLogin()
+      if not auth:
+        return (403, 'No authorization')
+
+      if ('managed_users' not in policy):
+        return (500, 'Error in config - no managed users')
+      username = self.server.ResolveUser(auth)
+
     if ('*' not in policy['managed_users'] and
         username not in policy['managed_users']):
       return (403, 'Unmanaged')
@@ -1329,9 +1355,6 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       ],
       dm.DeviceRegisterRequest.ANDROID_BROWSER: [
           'google/android/user'
-      ],
-      dm.DeviceRegisterRequest.IOS_BROWSER: [
-          'google/ios/user'
       ],
       dm.DeviceRegisterRequest.TT: ['google/chromeos/user',
                                     'google/chrome/user'],

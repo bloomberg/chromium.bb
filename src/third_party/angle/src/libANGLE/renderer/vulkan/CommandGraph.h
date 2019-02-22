@@ -17,7 +17,131 @@ namespace rx
 
 namespace vk
 {
-class CommandGraphNode;
+enum class VisitedState
+{
+    Unvisited,
+    Ready,
+    Visited,
+};
+
+enum class CommandGraphResourceType
+{
+    Buffer,
+    Framebuffer,
+    Image,
+    Query,
+};
+
+// Certain functionality cannot be put in secondary command buffers, so they are special-cased in
+// the node.
+enum class CommandGraphNodeFunction
+{
+    Generic,
+    BeginQuery,
+    EndQuery,
+};
+
+// Only used internally in the command graph. Kept in the header for better inlining performance.
+class CommandGraphNode final : angle::NonCopyable
+{
+  public:
+    CommandGraphNode(CommandGraphNodeFunction function);
+    ~CommandGraphNode();
+
+    // Immutable queries for when we're walking the commands tree.
+    CommandBuffer *getOutsideRenderPassCommands();
+
+    CommandBuffer *getInsideRenderPassCommands()
+    {
+        ASSERT(!mHasChildren);
+        return &mInsideRenderPassCommands;
+    }
+
+    // For outside the render pass (copies, transitions, etc).
+    angle::Result beginOutsideRenderPassRecording(Context *context,
+                                                  const CommandPool &commandPool,
+                                                  CommandBuffer **commandsOut);
+
+    // For rendering commands (draws).
+    angle::Result beginInsideRenderPassRecording(Context *context, CommandBuffer **commandsOut);
+
+    // storeRenderPassInfo and append*RenderTarget store info relevant to the RenderPass.
+    void storeRenderPassInfo(const Framebuffer &framebuffer,
+                             const gl::Rectangle renderArea,
+                             const vk::RenderPassDesc &renderPassDesc,
+                             const std::vector<VkClearValue> &clearValues);
+
+    // Dependency commands order node execution in the command graph.
+    // Once a node has commands that must happen after it, recording is stopped and the node is
+    // frozen forever.
+    static void SetHappensBeforeDependency(CommandGraphNode *beforeNode,
+                                           CommandGraphNode *afterNode);
+    static void SetHappensBeforeDependencies(CommandGraphNode **beforeNodes,
+                                             size_t beforeNodesCount,
+                                             CommandGraphNode *afterNode);
+    static void SetHappensBeforeDependencies(CommandGraphNode *beforeNode,
+                                             CommandGraphNode **afterNodes,
+                                             size_t afterNodesCount);
+    bool hasParents() const;
+    bool hasChildren() const { return mHasChildren; }
+
+    // Commands for traversing the node on a flush operation.
+    VisitedState visitedState() const;
+    void visitParents(std::vector<CommandGraphNode *> *stack);
+    angle::Result visitAndExecute(Context *context,
+                                  Serial serial,
+                                  RenderPassCache *renderPassCache,
+                                  CommandBuffer *primaryCommandBuffer);
+
+    // Only used in the command graph diagnostics.
+    const std::vector<CommandGraphNode *> &getParentsForDiagnostics() const;
+    void setDiagnosticInfo(CommandGraphResourceType resourceType, uintptr_t resourceID);
+
+    CommandGraphResourceType getResourceTypeForDiagnostics() const { return mResourceType; }
+    uintptr_t getResourceIDForDiagnostics() const { return mResourceID; }
+
+    const gl::Rectangle &getRenderPassRenderArea() const;
+
+    CommandGraphNodeFunction getFunction() const { return mFunction; }
+
+    void setQueryPool(const QueryPool *queryPool, uint32_t queryIndex);
+
+  private:
+    void setHasChildren();
+
+    // Used for testing only.
+    bool isChildOf(CommandGraphNode *parent);
+
+    // Only used if we need a RenderPass for these commands.
+    RenderPassDesc mRenderPassDesc;
+    Framebuffer mRenderPassFramebuffer;
+    gl::Rectangle mRenderPassRenderArea;
+    gl::AttachmentArray<VkClearValue> mRenderPassClearValues;
+
+    CommandGraphNodeFunction mFunction;
+
+    // Keep separate buffers for commands inside and outside a RenderPass.
+    // TODO(jmadill): We might not need inside and outside RenderPass commands separate.
+    CommandBuffer mOutsideRenderPassCommands;
+    CommandBuffer mInsideRenderPassCommands;
+
+    // Special-function additional data:
+    VkQueryPool mQueryPool;
+    uint32_t mQueryIndex;
+
+    // Parents are commands that must be submitted before 'this' CommandNode can be submitted.
+    std::vector<CommandGraphNode *> mParents;
+
+    // If this is true, other commands exist that must be submitted after 'this' command.
+    bool mHasChildren;
+
+    // Used when traversing the dependency graph.
+    VisitedState mVisitedState;
+
+    // Additional diagnostic information.
+    CommandGraphResourceType mResourceType;
+    uintptr_t mResourceID;
+};
 
 // This is a helper class for back-end objects used in Vk command buffers. It records a serial
 // at command recording times indicating an order in the queue. We use Fences to detect when
@@ -25,14 +149,16 @@ class CommandGraphNode;
 // queue serial in a special 'garbage' queue. Resources also track current read and write
 // dependencies. Only one command buffer node can be writing to the Resource at a time, but many
 // can be reading from it. Together the dependencies will form a command graph at submission time.
-class CommandGraphResource
+class CommandGraphResource : angle::NonCopyable
 {
   public:
-    CommandGraphResource();
     virtual ~CommandGraphResource();
 
     // Returns true if the resource is in use by the renderer.
     bool isResourceInUse(RendererVk *renderer) const;
+
+    // Returns true if the resource has unsubmitted work pending.
+    bool hasPendingWork(RendererVk *renderer) const;
 
     // Sets up dependency relations. 'this' resource is the resource being written to.
     void addWriteDependency(CommandGraphResource *writingResource);
@@ -40,18 +166,10 @@ class CommandGraphResource
     // Sets up dependency relations. 'this' resource is the resource being read.
     void addReadDependency(CommandGraphResource *readingResource);
 
-  protected:
     // Allocates a write node via getNewWriteNode and returns a started command buffer.
     // The started command buffer will render outside of a RenderPass.
-    angle::Result beginWriteResource(Context *context, CommandBuffer **commandBufferOut);
-
-    // Check if we have started writing outside a RenderPass.
-    bool hasStartedWriteResource() const;
-
-    // Starts rendering to an existing command buffer for the resource.
-    // The started command buffer will render outside of a RenderPass.
-    // Calls beginWriteResource if we have not yet started writing.
-    angle::Result appendWriteResource(Context *context, CommandBuffer **commandBufferOut);
+    // Will append to an existing command buffer/graph node if possible.
+    angle::Result recordCommands(Context *context, CommandBuffer **commandBufferOut);
 
     // Begins a command buffer on the current graph node for in-RenderPass rendering.
     // Currently only called from FramebufferVk::getCommandBufferForDraw.
@@ -60,7 +178,10 @@ class CommandGraphResource
                                   const gl::Rectangle &renderArea,
                                   const RenderPassDesc &renderPassDesc,
                                   const std::vector<VkClearValue> &clearValues,
-                                  CommandBuffer **commandBufferOut) const;
+                                  CommandBuffer **commandBufferOut);
+
+    void beginQuery(Context *context, const QueryPool *queryPool, uint32_t queryIndex);
+    void endQuery(Context *context, const QueryPool *queryPool, uint32_t queryIndex);
 
     // Checks if we're in a RenderPass, returning true if so. Updates serial internally.
     // Returns the started command buffer in commandBufferOut.
@@ -70,19 +191,38 @@ class CommandGraphResource
     const gl::Rectangle &getRenderPassRenderArea() const;
 
     // Called when 'this' object changes, but we'd like to start a new command buffer later.
-    void onResourceChanged(RendererVk *renderer);
+    void finishCurrentCommands(RendererVk *renderer);
+
+  protected:
+    explicit CommandGraphResource(CommandGraphResourceType resourceType);
 
     // Get the current queue serial for this resource. Only used to release resources.
     Serial getStoredQueueSerial() const;
 
   private:
+    void startNewCommands(RendererVk *renderer, CommandGraphNodeFunction function);
+
     void onWriteImpl(CommandGraphNode *writingNode, Serial currentSerial);
 
     // Returns true if this node has a current writing node with no children.
-    bool hasChildlessWritingNode() const;
+    bool hasChildlessWritingNode() const
+    {
+        // Note: currently, we don't have a resource that can issue both generic and special
+        // commands.  We don't create read/write dependencies between mixed generic/special
+        // resources either.  As such, we expect the function to always be generic here.  If such a
+        // resource is added in the future, this can add a check for function == generic and fail if
+        // false.
+        ASSERT(mCurrentWritingNode == nullptr ||
+               mCurrentWritingNode->getFunction() == CommandGraphNodeFunction::Generic);
+        return (mCurrentWritingNode != nullptr && !mCurrentWritingNode->hasChildren());
+    }
 
     // Checks if we're in a RenderPass without children.
-    bool hasStartedRenderPass() const;
+    bool hasStartedRenderPass() const
+    {
+        return hasChildlessWritingNode() &&
+               mCurrentWritingNode->getInsideRenderPassCommands()->valid();
+    }
 
     // Updates the in-use serial tracked for this resource. Will clear dependencies if the resource
     // was not used in this set of command nodes.
@@ -91,13 +231,9 @@ class CommandGraphResource
     Serial mStoredQueueSerial;
     std::vector<CommandGraphNode *> mCurrentReadingNodes;
     CommandGraphNode *mCurrentWritingNode;
-};
 
-enum class VisitedState
-{
-    Unvisited,
-    Ready,
-    Visited,
+    // Additional diagnostic information.
+    CommandGraphResourceType mResourceType;
 };
 
 // Translating OpenGL commands into Vulkan and submitting them immediately loses out on some
@@ -124,13 +260,14 @@ enum class VisitedState
 class CommandGraph final : angle::NonCopyable
 {
   public:
-    CommandGraph();
+    explicit CommandGraph(bool enableGraphDiagnostics);
     ~CommandGraph();
 
     // Allocates a new CommandGraphNode and adds it to the list of current open nodes. No ordering
     // relations exist in the node by default. Call CommandGraphNode::SetHappensBeforeDependency
-    // to set up dependency relations.
-    CommandGraphNode *allocateNode();
+    // to set up dependency relations. If the node is a barrier, it will automatically add
+    // dependencies between the previous barrier, the new barrier and all nodes in between.
+    CommandGraphNode *allocateNode(bool isBarrier, CommandGraphNodeFunction function);
 
     angle::Result submitCommands(Context *context,
                                  Serial serial,
@@ -139,10 +276,66 @@ class CommandGraph final : angle::NonCopyable
                                  CommandBuffer *primaryCommandBufferOut);
     bool empty() const;
 
-  private:
-    std::vector<CommandGraphNode *> mNodes;
-};
+    CommandGraphNode *getLastBarrierNode(size_t *indexOut);
 
+  private:
+    void dumpGraphDotFile(std::ostream &out) const;
+
+    void setNewBarrier(CommandGraphNode *newBarrier);
+    void addDependenciesToNextBarrier(size_t begin, size_t end, CommandGraphNode *nextBarrier);
+
+    std::vector<CommandGraphNode *> mNodes;
+    bool mEnableGraphDiagnostics;
+
+    // A set of nodes (eventually) exist that act as barriers to guarantee submission order.  For
+    // example, a glMemoryBarrier() calls would lead to such a barrier or beginning and ending a
+    // query. This is because the graph can reorder operations if it sees fit.  Let's call a barrier
+    // node Bi, and the other nodes Ni. The edges between Ni don't interest us.  Before a barrier is
+    // inserted, we have:
+    //
+    // N0 N1 ... Na
+    // \___\__/_/     (dependency egdes, which we don't care about so I'll stop drawing them.
+    //      \/
+    //
+    // When the first barrier is inserted, we will have:
+    //
+    //     ______
+    //    /  ____\
+    //   /  /     \
+    //  /  /      /\
+    // N0 N1 ... Na B0
+    //
+    // This makes sure all N0..Na are called before B0.  From then on, B0 will be the current
+    // "barrier point" which extends an edge to every next node:
+    //
+    //     ______
+    //    /  ____\
+    //   /  /     \
+    //  /  /      /\
+    // N0 N1 ... Na B0 Na+1 ... Nb
+    //                \/       /
+    //                 \______/
+    //
+    //
+    // When the next barrier B1 is met, all nodes between B0 and B1 will add a depenency on B1 as
+    // well, and the "barrier point" is updated.
+    //
+    //     ______
+    //    /  ____\         ______         ______
+    //   /  /     \       /      \       /      \
+    //  /  /      /\     /       /\     /       /\
+    // N0 N1 ... Na B0 Na+1 ... Nb B1 Nb+1 ... Nc B2 ...
+    //                \/       /  /  \/       /  /
+    //                 \______/  /    \______/  /
+    //                  \_______/      \_______/
+    //
+    //
+    // When barrier Bi is introduced, all nodes added since Bi-1 need to add a dependency to Bi
+    // (including Bi-1). We therefore keep track of the node index of the last barrier that was
+    // issued.
+    static constexpr size_t kInvalidNodeIndex = std::numeric_limits<std::size_t>::max();
+    size_t mLastBarrierIndex;
+};
 }  // namespace vk
 }  // namespace rx
 

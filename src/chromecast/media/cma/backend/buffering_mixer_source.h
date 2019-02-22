@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
+#include "chromecast/media/cma/backend/audio_resampler.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
@@ -79,6 +80,14 @@ class BufferingMixerSource : public MixerInput::Source,
   // |start_playback_asap| is false during constructing.
   void StartPlaybackAt(int64_t playback_start_timestamp);
 
+  // Restarts the current playback from the timestamp provided at the pts
+  // provided. Flushes any currently buffered audio. Generally does well if you
+  // require the audio to jump back and/or forth by up to 5 seconds or so,
+  // depending on how much data is already buffered by the upper layers and
+  // ready for consumption here. This API will start having problems if you try
+  // to do more than that, so it's not advised.
+  void RestartPlaybackAt(int64_t timestamp, int64_t pts);
+
   // Queues some PCM data to be mixed. |data| must be in planar float format.
   // If the buffer can accept more data, the delegate's OnWritePcmCompletion()
   // method is called synchronously. Otherwise, OnWritePcmCompletion() will be
@@ -96,6 +105,10 @@ class BufferingMixerSource : public MixerInput::Source,
   // called, no more calls will be made to delegate methods. The source will
   // be removed from the mixer once it has faded out appropriately.
   void Remove();
+
+  // This allows for very small changes in the rate of audio playback that are
+  // (supposedly) imperceptible.
+  float SetAvSyncPlaybackRate(float rate);
 
  private:
   enum class State {
@@ -137,6 +150,7 @@ class BufferingMixerSource : public MixerInput::Source,
       // INT64_MAX indicates playback should start at a specified timestamp,
       // but we don't know what that timestamp is.
       int64_t playback_start_timestamp_;
+      AudioResampler audio_resampler_;
 
      private:
       DISALLOW_COPY_AND_ASSIGN(Members);
@@ -215,7 +229,6 @@ class BufferingMixerSource : public MixerInput::Source,
   int64_t DataToFrames(int64_t size);
   void CheckAndStartPlaybackIfNecessary(int num_frames,
                                         int64_t playback_absolute_timestamp);
-
   Delegate* const delegate_;
   const int num_channels_;
   const int input_samples_per_second_;
@@ -238,6 +251,8 @@ class BufferingMixerSource : public MixerInput::Source,
   int64_t playback_start_pts_;
 
   LockedMembers locked_members_;
+
+  int remaining_silence_frames_ = 0;
 
   base::WeakPtr<BufferingMixerSource> weak_this_;
   base::WeakPtrFactory<BufferingMixerSource> weak_factory_;

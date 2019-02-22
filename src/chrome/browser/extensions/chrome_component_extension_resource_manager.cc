@@ -25,11 +25,17 @@ namespace extensions {
 ChromeComponentExtensionResourceManager::
 ChromeComponentExtensionResourceManager() {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
+#if defined(OS_CHROMEOS)
+    {"web_store/webstore_icon_128.png", IDR_WEBSTORE_APP_ICON_128},
+    {"web_store/webstore_icon_16.png", IDR_WEBSTORE_APP_ICON_16},
+#else
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_ICON},
     {"web_store/webstore_icon_16.png", IDR_WEBSTORE_ICON_16},
-    {"chrome_app/product_logo_128.png", IDR_PRODUCT_LOGO_128},
-    {"chrome_app/product_logo_16.png", IDR_PRODUCT_LOGO_16},
+#endif
+
 #if defined(OS_CHROMEOS)
+    {"chrome_app/chrome_app_icon_32.png", IDR_CHROME_APP_ICON_32},
+    {"chrome_app/chrome_app_icon_192.png", IDR_CHROME_APP_ICON_192},
     {"webstore_widget/app/icons/icon_16.png", IDR_WEBSTORE_ICON_16},
     {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
     {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
@@ -83,8 +89,7 @@ bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
   relative_path = relative_path.Append(resource_path);
   relative_path = relative_path.NormalizePathSeparators();
 
-  std::map<base::FilePath, int>::const_iterator entry =
-      path_to_resource_id_.find(relative_path);
+  auto entry = path_to_resource_id_.find(relative_path);
   if (entry != path_to_resource_id_.end())
     *resource_id = entry->second;
 

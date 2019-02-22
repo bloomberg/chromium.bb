@@ -79,12 +79,8 @@ void ServiceWorkerURLJobWrapper::FailDueToLostController() {
   url_request_job_->FailDueToLostController();
 }
 
-bool ServiceWorkerURLJobWrapper::WasCanceled() const {
-  if (url_loader_job_) {
-    return url_loader_job_->WasCanceled();
-  } else {
-    return !url_request_job_;
-  }
+bool ServiceWorkerURLJobWrapper::IsAlive() const {
+  return url_loader_job_ || url_request_job_;
 }
 
 }  // namespace content

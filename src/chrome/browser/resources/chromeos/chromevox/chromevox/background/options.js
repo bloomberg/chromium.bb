@@ -9,6 +9,7 @@
 
 goog.provide('cvox.OptionsPage');
 
+goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
 goog.require('Msgs');
 goog.require('PanelCommand');
@@ -19,7 +20,6 @@ goog.require('cvox.ChromeTts');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
-goog.require('cvox.ConsoleTts');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
@@ -38,7 +38,7 @@ cvox.OptionsPage.prefs;
 
 /**
  * The ChromeVoxConsoleTts object.
- * @type {cvox.ConsoleTts}
+ * @type {ConsoleTts}
  */
 cvox.OptionsPage.consoleTts;
 
@@ -50,7 +50,7 @@ cvox.OptionsPage.consoleTts;
 cvox.OptionsPage.init = function() {
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
   cvox.OptionsPage.consoleTts =
-      chrome.extension.getBackgroundPage().cvox.ConsoleTts.getInstance();
+      chrome.extension.getBackgroundPage().ConsoleTts.getInstance();
   cvox.OptionsPage.populateVoicesSelect();
   cvox.BrailleTable.getAll(function(tables) {
     /** @type {!Array<cvox.BrailleTable.Table>} */
@@ -138,6 +138,13 @@ cvox.OptionsPage.init = function() {
   document.addEventListener('click', cvox.OptionsPage.eventListener, false);
   document.addEventListener('keydown', cvox.OptionsPage.eventListener, false);
 
+  window.addEventListener('storage', (event) => {
+    if (event.key == 'speakTextUnderMouse') {
+      chrome.accessibilityPrivate.enableChromeVoxMouseEvents(
+          event.newValue == String(true));
+    }
+  });
+
   cvox.ExtensionBridge.addMessageListener(function(message) {
     if (message['prefs']) {
       cvox.OptionsPage.update();
@@ -194,6 +201,7 @@ cvox.OptionsPage.update = function() {
     }
   }
 };
+
 /**
  * Adds event listeners to input boxes to update local storage values and
  * make sure that the input is a positive nonempty number between 1 and 99.
@@ -393,15 +401,10 @@ cvox.OptionsPage.eventListener = function(event) {
     var target = event.target;
     if (target.id == 'brailleWordWrap') {
       chrome.storage.local.set({brailleWordWrap: target.checked});
-    } else if (target.name == 'enableSpeechLogging') {
-      cvox.OptionsPage.consoleTts.setEnabled(target.checked);
-      cvox.OptionsPage.prefs.setPref(target.name, target.checked);
-    } else if (target.id == 'enableEventStreamLogging') {
-      cvox.OptionsPage.prefs.setPref(target.name, target.checked);
-      chrome.extension.getBackgroundPage()
-          .EventStreamLogger.instance.notifyEventStreamFilterChangedAll(
-              target.checked);
-      cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
+    } else if (target.className.indexOf('logging') != -1) {
+      cvox.OptionsPage.prefs.setLoggingPrefs(target.name, target.checked);
+      if (target.name == 'enableEventStreamLogging')
+        cvox.OptionsPage.disableEventStreamFilterCheckBoxes(!target.checked);
     } else if (target.className.indexOf('eventstream') != -1) {
       cvox.OptionsPage.prefs.setPref(target.name, target.checked);
       chrome.extension.getBackgroundPage()

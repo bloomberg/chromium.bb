@@ -12,6 +12,8 @@
 
 namespace {
 const base::TimeDelta kRequestDelta = base::TimeDelta::FromMilliseconds(100);
+const base::TimeDelta kLongRequestDelta =
+    base::TimeDelta::FromMilliseconds(200);
 const base::TimeDelta kTinyDelay = base::TimeDelta::FromMilliseconds(1);
 const base::TimeDelta kModerateDelay = base::TimeDelta::FromMilliseconds(25);
 const base::TimeDelta kExcessiveDelay = base::TimeDelta::FromMilliseconds(75);
@@ -22,11 +24,12 @@ TEST(ExtensionWebRequestTimeTrackerTest, Histograms) {
   base::HistogramTester histogram_tester;
 
   ExtensionWebRequestTimeTracker tracker;
-  base::Time start;
+  base::TimeTicks start;
 
-  tracker.LogRequestStartTime(1, start);
-  tracker.LogRequestStartTime(2, start);
-  tracker.LogRequestStartTime(3, start);
+  tracker.LogRequestStartTime(1, start, false);
+  tracker.LogRequestStartTime(2, start, true);
+  tracker.LogRequestStartTime(3, start, true);
+  tracker.LogRequestStartTime(4, start, true);
   tracker.IncrementTotalBlockTime(1, kTinyDelay);
   tracker.IncrementTotalBlockTime(2, kModerateDelay);
   tracker.IncrementTotalBlockTime(2, kModerateDelay);
@@ -34,6 +37,7 @@ TEST(ExtensionWebRequestTimeTrackerTest, Histograms) {
   tracker.LogRequestEndTime(1, start + kRequestDelta);
   tracker.LogRequestEndTime(2, start + kRequestDelta);
   tracker.LogRequestEndTime(3, start + kRequestDelta);
+  tracker.LogRequestEndTime(4, start + kLongRequestDelta);
 
   histogram_tester.ExpectTimeBucketCount("Extensions.NetworkDelay", kTinyDelay,
                                          1);
@@ -49,6 +53,18 @@ TEST(ExtensionWebRequestTimeTrackerTest, Histograms) {
   histogram_tester.ExpectBucketCount("Extensions.NetworkDelayPercentage", 75,
                                      1);
   histogram_tester.ExpectTotalCount("Extensions.NetworkDelayPercentage", 3);
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Extensions.WebRequest.TotalRequestTime", kRequestDelta, 2);
+  histogram_tester.ExpectTimeBucketCount(
+      "Extensions.WebRequest.TotalRequestTime", kLongRequestDelta, 1);
+  histogram_tester.ExpectTotalCount("Extensions.WebRequest.TotalRequestTime",
+                                    3);
+
+  histogram_tester.ExpectTimeBucketCount(
+      "Extensions.WebRequest.TotalBlockingRequestTime", kRequestDelta, 3);
+  histogram_tester.ExpectTotalCount(
+      "Extensions.WebRequest.TotalBlockingRequestTime", 3);
 
   EXPECT_TRUE(tracker.request_time_logs_.empty());
 }

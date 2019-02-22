@@ -68,9 +68,9 @@ class TextureD3D : public TextureImpl
 
     bool isImmutable() const { return mImmutable; }
 
-    virtual gl::Error getRenderTarget(const gl::Context *context,
-                                      const gl::ImageIndex &index,
-                                      RenderTargetD3D **outRT) = 0;
+    virtual angle::Result getRenderTarget(const gl::Context *context,
+                                          const gl::ImageIndex &index,
+                                          RenderTargetD3D **outRT) = 0;
 
     // Returns an iterator over all "Images" for this particular Texture.
     virtual gl::ImageIndexIterator imageIterator() const = 0;
@@ -88,18 +88,18 @@ class TextureD3D : public TextureImpl
     TextureStorage *getStorage();
     ImageD3D *getBaseLevelImage() const;
 
-    gl::Error getAttachmentRenderTarget(const gl::Context *context,
-                                        GLenum binding,
-                                        const gl::ImageIndex &imageIndex,
-                                        FramebufferAttachmentRenderTarget **rtOut) override;
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
 
     gl::Error setBaseLevel(const gl::Context *context, GLuint baseLevel) override;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Texture::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Texture::DirtyBits &dirtyBits) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
   protected:
     angle::Result setImageImpl(const gl::Context *context,
@@ -259,7 +259,7 @@ class TextureD3D_2D : public TextureD3D
                              const gl::ImageIndex &index,
                              const gl::Offset &destOffset,
                              size_t sourceLevel,
-                             const gl::Rectangle &sourceArea,
+                             const gl::Box &sourceBox,
                              bool unpackFlipY,
                              bool unpackPremultiplyAlpha,
                              bool unpackUnmultiplyAlpha,
@@ -279,9 +279,9 @@ class TextureD3D_2D : public TextureD3D
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -388,7 +388,7 @@ class TextureD3D_Cube : public TextureD3D
                              const gl::ImageIndex &index,
                              const gl::Offset &destOffset,
                              size_t sourceLevel,
-                             const gl::Rectangle &sourceArea,
+                             const gl::Box &sourceBox,
                              bool unpackFlipY,
                              bool unpackPremultiplyAlpha,
                              bool unpackUnmultiplyAlpha,
@@ -407,9 +407,9 @@ class TextureD3D_Cube : public TextureD3D
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -461,6 +461,7 @@ class TextureD3D_3D : public TextureD3D
     GLsizei getDepth(GLint level) const;
     GLenum getInternalFormat(GLint level) const;
     bool isDepth(GLint level) const;
+    bool isSRGB(GLint level) const;
 
     gl::Error setImage(const gl::Context *context,
                        const gl::ImageIndex &index,
@@ -505,6 +506,25 @@ class TextureD3D_3D : public TextureD3D
                            const gl::Rectangle &sourceArea,
                            gl::Framebuffer *source) override;
 
+    gl::Error copyTexture(const gl::Context *context,
+                          const gl::ImageIndex &index,
+                          GLenum internalFormat,
+                          GLenum type,
+                          size_t sourceLevel,
+                          bool unpackFlipY,
+                          bool unpackPremultiplyAlpha,
+                          bool unpackUnmultiplyAlpha,
+                          const gl::Texture *source) override;
+    gl::Error copySubTexture(const gl::Context *context,
+                             const gl::ImageIndex &index,
+                             const gl::Offset &destOffset,
+                             size_t sourceLevel,
+                             const gl::Box &sourceBox,
+                             bool unpackFlipY,
+                             bool unpackPremultiplyAlpha,
+                             bool unpackUnmultiplyAlpha,
+                             const gl::Texture *source) override;
+
     gl::Error setStorage(const gl::Context *context,
                          gl::TextureType type,
                          size_t levels,
@@ -518,9 +538,9 @@ class TextureD3D_3D : public TextureD3D
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -614,6 +634,25 @@ class TextureD3D_2DArray : public TextureD3D
                            const gl::Rectangle &sourceArea,
                            gl::Framebuffer *source) override;
 
+    gl::Error copyTexture(const gl::Context *context,
+                          const gl::ImageIndex &index,
+                          GLenum internalFormat,
+                          GLenum type,
+                          size_t sourceLevel,
+                          bool unpackFlipY,
+                          bool unpackPremultiplyAlpha,
+                          bool unpackUnmultiplyAlpha,
+                          const gl::Texture *source) override;
+    gl::Error copySubTexture(const gl::Context *context,
+                             const gl::ImageIndex &index,
+                             const gl::Offset &destOffset,
+                             size_t sourceLevel,
+                             const gl::Box &sourceBox,
+                             bool unpackFlipY,
+                             bool unpackPremultiplyAlpha,
+                             bool unpackUnmultiplyAlpha,
+                             const gl::Texture *source) override;
+
     gl::Error setStorage(const gl::Context *context,
                          gl::TextureType type,
                          size_t levels,
@@ -627,9 +666,9 @@ class TextureD3D_2DArray : public TextureD3D
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -651,6 +690,7 @@ class TextureD3D_2DArray : public TextureD3D
     bool isValidLevel(int level) const;
     bool isLevelComplete(int level) const;
     bool isImageComplete(const gl::ImageIndex &index) const override;
+    bool isSRGB(GLint level) const;
     angle::Result updateStorageLevel(const gl::Context *context, int level);
 
     void deleteImages();
@@ -740,9 +780,9 @@ class TextureD3D_External : public TextureD3DImmutableBase
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -781,9 +821,9 @@ class TextureD3D_2DMultisample : public TextureD3DImmutableBase
                                 gl::TextureType type,
                                 egl::Image *image) override;
 
-    gl::Error getRenderTarget(const gl::Context *context,
-                              const gl::ImageIndex &index,
-                              RenderTargetD3D **outRT) override;
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
 
     gl::ImageIndexIterator imageIterator() const override;
     gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
@@ -794,17 +834,64 @@ class TextureD3D_2DMultisample : public TextureD3DImmutableBase
   protected:
     void markAllImagesDirty() override;
 
-  private:
-    angle::Result initializeStorage(const gl::Context *context, bool renderTarget) override;
-    angle::Result createCompleteStorage(bool renderTarget,
-                                        TexStoragePointer *outTexStorage) const override;
     angle::Result setCompleteTexStorage(const gl::Context *context,
                                         TextureStorage *newCompleteTexStorage) override;
 
     angle::Result updateStorage(const gl::Context *context) override;
+
+  private:
+    angle::Result initializeStorage(const gl::Context *context, bool renderTarget) override;
+    angle::Result createCompleteStorage(bool renderTarget,
+                                        TexStoragePointer *outTexStorage) const override;
     angle::Result initMipmapImages(const gl::Context *context) override;
 
     bool isImageComplete(const gl::ImageIndex &index) const override;
+};
+
+class TextureD3D_2DMultisampleArray : public TextureD3DImmutableBase
+{
+  public:
+    TextureD3D_2DMultisampleArray(const gl::TextureState &data, RendererD3D *renderer);
+    ~TextureD3D_2DMultisampleArray() override;
+
+    gl::Error setStorageMultisample(const gl::Context *context,
+                                    gl::TextureType type,
+                                    GLsizei samples,
+                                    GLint internalFormat,
+                                    const gl::Extents &size,
+                                    bool fixedSampleLocations) override;
+
+    gl::Error setEGLImageTarget(const gl::Context *context,
+                                gl::TextureType type,
+                                egl::Image *image) override;
+
+    angle::Result getRenderTarget(const gl::Context *context,
+                                  const gl::ImageIndex &index,
+                                  RenderTargetD3D **outRT) override;
+
+    gl::ImageIndexIterator imageIterator() const override;
+    gl::ImageIndex getImageIndex(GLint mip, GLint layer) const override;
+    bool isValidIndex(const gl::ImageIndex &index) const override;
+
+    GLsizei getLayerCount(int level) const override;
+
+  protected:
+    void markAllImagesDirty() override;
+
+    angle::Result setCompleteTexStorage(const gl::Context *context,
+                                        TextureStorage *newCompleteTexStorage) override;
+
+    angle::Result updateStorage(const gl::Context *context) override;
+
+  private:
+    angle::Result initializeStorage(const gl::Context *context, bool renderTarget) override;
+    angle::Result createCompleteStorage(bool renderTarget,
+                                        TexStoragePointer *outTexStorage) const override;
+    angle::Result initMipmapImages(const gl::Context *context) override;
+
+    bool isImageComplete(const gl::ImageIndex &index) const override;
+
+    GLsizei mLayerCount;
 };
 }
 

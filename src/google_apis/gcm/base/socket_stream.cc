@@ -223,7 +223,8 @@ SocketOutputStream::SocketOutputStream(
     mojo::ScopedDataPipeProducerHandle stream)
     : stream_(std::move(stream)),
       stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      io_buffer_(new net::IOBufferWithSize(kDefaultBufferSize)),
+      io_buffer_(
+          base::MakeRefCounted<net::IOBufferWithSize>(kDefaultBufferSize)),
       next_pos_(0),
       last_error_(net::OK),
       weak_ptr_factory_(this) {

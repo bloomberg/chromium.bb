@@ -102,6 +102,20 @@ void GpuDataManagerImpl::UpdateGpuInfo(
   private_->UpdateGpuInfo(gpu_info, gpu_info_for_hardware_gpu);
 }
 
+#if defined(OS_WIN)
+void GpuDataManagerImpl::UpdateDxDiagNode(
+    const gpu::DxDiagNode& dx_diagnostics) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDxDiagNode(dx_diagnostics);
+}
+
+void GpuDataManagerImpl::UpdateDx12VulkanInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
+}
+#endif
+
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     const base::Optional<gpu::GpuFeatureInfo>&
@@ -162,8 +176,8 @@ void GpuDataManagerImpl::HandleGpuSwitch() {
   private_->HandleGpuSwitch();
 }
 
-void GpuDataManagerImpl::BlockDomainFrom3DAPIs(
-    const GURL& url, DomainGuilt guilt) {
+void GpuDataManagerImpl::BlockDomainFrom3DAPIs(const GURL& url,
+                                               gpu::DomainGuilt guilt) {
   base::AutoLock auto_lock(lock_);
   private_->BlockDomainFrom3DAPIs(url, guilt);
 }

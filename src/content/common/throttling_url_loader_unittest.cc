@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -690,33 +689,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
   EXPECT_EQ(1u, client_.on_complete_called());
 }
 
-TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeSyncResponse) {
-  base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
-        EXPECT_EQ(net::ERR_ABORTED, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
-
-  CreateLoaderAndStart(true);
-
-  factory_.CloseClientPipe();
-
-  run_loop.Run();
-
-  EXPECT_EQ(1u, throttle_->will_start_request_called());
-  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
-  EXPECT_EQ(0u, throttle_->will_process_response_called());
-
-  EXPECT_EQ(0u, client_.on_received_response_called());
-  EXPECT_EQ(0u, client_.on_received_redirect_called());
-  EXPECT_EQ(1u, client_.on_complete_called());
-}
-
-// Once browser-side navigation is the only option these two tests should be
-// merged as the sync and async cases will be identical.
-TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeAsyncResponse) {
+TEST_F(ThrottlingURLLoaderTest, PipeClosure) {
   base::RunLoop run_loop;
   client_.set_on_complete_callback(base::Bind(
       [](const base::Closure& quit_closure, int error) {

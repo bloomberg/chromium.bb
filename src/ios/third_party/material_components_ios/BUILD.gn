@@ -8,7 +8,9 @@ config("config") {
   visibility = [ ":material_components_ios" ]
   include_dirs = [
     "src/components/ActivityIndicator/src",
+    "src/components/Buttons/src/ShapeThemer",
     "src/components/AppBar/src",
+    "src/components/private/ShapeLibrary/src",
     "src/components/ButtonBar/src",
     "src/components/Buttons/src",
     "src/components/CollectionCells/src",
@@ -30,6 +32,7 @@ config("config") {
     "src/components/private/Shapes/src/",
     "src/components/private/UIMetrics/src",
     "src/components/schemes/Color/src",
+    "src/components/schemes/Shape/src",
     "src/components/schemes/Typography/src",
   ]
 }
@@ -67,12 +70,19 @@ source_set("material_components_ios") {
     "src/components/AnimationTiming/src/MaterialAnimationTiming.h",
     "src/components/AnimationTiming/src/UIView+MDCTimingFunction.h",
     "src/components/AnimationTiming/src/UIView+MDCTimingFunction.m",
+    "src/components/AppBar/src/ColorThemer/MDCAppBarColorThemer.h",
+    "src/components/AppBar/src/ColorThemer/MDCAppBarColorThemer.m",
+    "src/components/AppBar/src/ColorThemer/MaterialAppBar+ColorThemer.h",
     "src/components/AppBar/src/MDCAppBar.h",
     "src/components/AppBar/src/MDCAppBarContainerViewController.h",
     "src/components/AppBar/src/MDCAppBarContainerViewController.m",
+    "src/components/AppBar/src/MDCAppBarNavigationController.h",
+    "src/components/AppBar/src/MDCAppBarNavigationController.m",
     "src/components/AppBar/src/MDCAppBarViewController.h",
     "src/components/AppBar/src/MDCAppBarViewController.m",
     "src/components/AppBar/src/MaterialAppBar.h",
+    "src/components/AppBar/src/private/MaterialAppBarStrings.h",
+    "src/components/AppBar/src/private/MaterialAppBarStrings_table.h",
     "src/components/BottomSheet/src/MDCBottomSheetController.h",
     "src/components/BottomSheet/src/MDCBottomSheetController.m",
     "src/components/BottomSheet/src/MDCBottomSheetPresentationController.h",
@@ -113,6 +123,11 @@ source_set("material_components_ios") {
     "src/components/Buttons/src/MDCRaisedButton.h",
     "src/components/Buttons/src/MDCRaisedButton.m",
     "src/components/Buttons/src/MaterialButtons.h",
+    "src/components/Buttons/src/ShapeThemer/MDCButtonShapeThemer.h",
+    "src/components/Buttons/src/ShapeThemer/MDCButtonShapeThemer.m",
+    "src/components/Buttons/src/ShapeThemer/MDCFloatingButtonShapeThemer.h",
+    "src/components/Buttons/src/ShapeThemer/MDCFloatingButtonShapeThemer.m",
+    "src/components/Buttons/src/ShapeThemer/MaterialButtons+ShapeThemer.h",
     "src/components/Buttons/src/TypographyThemer/MDCButtonTypographyThemer.h",
     "src/components/Buttons/src/TypographyThemer/MDCButtonTypographyThemer.m",
     "src/components/Buttons/src/private/MDCButton+Subclassing.h",
@@ -163,6 +178,9 @@ source_set("material_components_ios") {
     "src/components/Dialogs/src/private/MDCDialogShadowedView.m",
     "src/components/Dialogs/src/private/MaterialDialogsStrings.h",
     "src/components/Dialogs/src/private/MaterialDialogsStrings_table.h",
+    "src/components/FlexibleHeader/src/ColorThemer/MDCFlexibleHeaderColorThemer.h",
+    "src/components/FlexibleHeader/src/ColorThemer/MDCFlexibleHeaderColorThemer.m",
+    "src/components/FlexibleHeader/src/ColorThemer/MaterialFlexibleHeader+ColorThemer.h",
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderContainerViewController.h",
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderContainerViewController.m",
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderView.h",
@@ -170,6 +188,8 @@ source_set("material_components_ios") {
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderViewController.h",
     "src/components/FlexibleHeader/src/MDCFlexibleHeaderViewController.m",
     "src/components/FlexibleHeader/src/MaterialFlexibleHeader.h",
+    "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderTopSafeArea.h",
+    "src/components/FlexibleHeader/src/private/MDCFlexibleHeaderTopSafeArea.m",
     "src/components/FlexibleHeader/src/private/MDCStatusBarShifter.h",
     "src/components/FlexibleHeader/src/private/MDCStatusBarShifter.m",
     "src/components/HeaderStackView/src/MDCHeaderStackView.h",
@@ -189,6 +209,9 @@ source_set("material_components_ios") {
     "src/components/Ink/src/private/MDCLegacyInkLayer+Testing.h",
     "src/components/Ink/src/private/MDCLegacyInkLayer.h",
     "src/components/Ink/src/private/MDCLegacyInkLayer.m",
+    "src/components/NavigationBar/src/ColorThemer/MDCNavigationBarColorThemer.h",
+    "src/components/NavigationBar/src/ColorThemer/MDCNavigationBarColorThemer.m",
+    "src/components/NavigationBar/src/ColorThemer/MaterialNavigationBar+ColorThemer.h",
     "src/components/NavigationBar/src/MDCNavigationBar.h",
     "src/components/NavigationBar/src/MDCNavigationBar.m",
     "src/components/NavigationBar/src/MaterialNavigationBar.h",
@@ -275,6 +298,14 @@ source_set("material_components_ios") {
     "src/components/private/Overlay/src/private/MDCOverlayObserverTransition.m",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.h",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.m",
+    "src/components/private/Shapes/src/MDCCornerTreatment.h",
+    "src/components/private/Shapes/src/MDCCornerTreatment.m",
+    "src/components/private/Shapes/src/MDCEdgeTreatment.h",
+    "src/components/private/Shapes/src/MDCEdgeTreatment.m",
+    "src/components/private/Shapes/src/MDCPathGenerator.h",
+    "src/components/private/Shapes/src/MDCPathGenerator.m",
+    "src/components/private/Shapes/src/MDCRectangleShapeGenerator.h",
+    "src/components/private/Shapes/src/MDCRectangleShapeGenerator.m",
     "src/components/private/Shapes/src/MDCShapedShadowLayer.h",
     "src/components/private/Shapes/src/MDCShapedShadowLayer.m",
     "src/components/private/Shapes/src/MDCShapedView.h",
@@ -299,6 +330,10 @@ source_set("material_components_ios") {
     "src/components/schemes/Color/src/MDCSemanticColorScheme.h",
     "src/components/schemes/Color/src/MDCSemanticColorScheme.m",
     "src/components/schemes/Color/src/MaterialColorScheme.h",
+    "src/components/schemes/Shape/src/MDCShapeCategory.h",
+    "src/components/schemes/Shape/src/MDCShapeCategory.m",
+    "src/components/schemes/Shape/src/MDCShapeScheme.h",
+    "src/components/schemes/Shape/src/MDCShapeScheme.m",
     "src/components/schemes/Typography/src/MDCLegacyFontScheme.h",
     "src/components/schemes/Typography/src/MDCLegacyFontScheme.m",
     "src/components/schemes/Typography/src/MDCTypographyScheme.h",
@@ -309,12 +344,16 @@ source_set("material_components_ios") {
     "src/components/ActivityIndicator/src",
     "src/components/AnimationTiming/src",
     "src/components/AppBar/src",
+    "src/components/AppBar/src/ColorThemer",
     "src/components/BottomSheet/src",
     "src/components/ButtonBar/src",
     "src/components/Buttons/src/ButtonThemer",
     "src/components/Buttons/src/ColorThemer",
     "src/components/Buttons/src/TypographyThemer",
+    "src/components/FlexibleHeader/src",
+    "src/components/FlexibleHeader/src/ColorThemer",
     "src/components/NavigationBar/src",
+    "src/components/NavigationBar/src/ColorThemer",
     "src/components/OverlayWindow/src",
     "src/components/private/Math/src",
     "src/components/private/Application/src",
@@ -376,6 +415,16 @@ source_set("material_components_ios") {
 _locales = [ "en" ]
 
 foreach(locale, _locales) {
+  bundle_data("material_app_bar_bundle_$locale") {
+    visibility = [ ":material_app_bar_bundle" ]
+    sources = [
+      "src/components/AppBar/src/MaterialAppBar.bundle/Resources/$locale.lproj/MaterialAppBar.strings",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/MaterialAppBar.bundle/Resources/$locale.lproj/{{source_file_part}}",
+    ]
+  }
+
   bundle_data("material_collections_bundle_$locale") {
     visibility = [ ":material_collections_bundle" ]
     sources = [

@@ -36,7 +36,7 @@ namespace test {
 class MockStream : public QuicStream {
  public:
   MockStream(QuicSession* session, QuicStreamId id)
-      : QuicStream(id, session, /*is_static=*/false) {}
+      : QuicStream(id, session, /*is_static=*/false, BIDIRECTIONAL) {}
 
   MOCK_METHOD0(OnFinRead, void());
   MOCK_METHOD0(OnDataAvailable, void());
@@ -684,6 +684,33 @@ TEST_F(QuicStreamSequencerTest, ReadAndAppendToString) {
   EXPECT_EQ("abcdefghi", actual);
   EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
   EXPECT_EQ(6u, stream_.flow_controller()->bytes_consumed());
+}
+
+TEST_F(QuicStreamSequencerTest, StopReading) {
+  EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+  EXPECT_CALL(stream_, OnFinRead());
+
+  sequencer_->StopReading();
+
+  OnFrame(0u, "abc");
+  OnFrame(3u, "def");
+  OnFinFrame(6u, "ghi");
+}
+
+TEST_F(QuicStreamSequencerTest, StopReadingWithLevelTriggered) {
+  if (GetQuicReloadableFlag(quic_stop_reading_when_level_triggered)) {
+    EXPECT_CALL(stream_, OnDataAvailable()).Times(0);
+    EXPECT_CALL(stream_, OnFinRead());
+  } else {
+    EXPECT_CALL(stream_, OnDataAvailable()).Times(3);
+  }
+
+  sequencer_->set_level_triggered(true);
+  sequencer_->StopReading();
+
+  OnFrame(0u, "abc");
+  OnFrame(3u, "def");
+  OnFinFrame(6u, "ghi");
 }
 
 }  // namespace

@@ -48,7 +48,7 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
   bool copies_capable;
 
-  bool duplex_capable;
+  std::vector<DuplexMode> duplex_modes;
   DuplexMode duplex_default;
 
   bool color_changeable;
@@ -107,10 +107,12 @@ class PRINTING_EXPORT PrintBackend
       const std::string& printer_name,
       PrinterSemanticCapsAndDefaults* printer_info) = 0;
 
+#if !defined(OS_CHROMEOS)
   // Gets the capabilities and defaults for a specific printer.
   virtual bool GetPrinterCapsAndDefaults(
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) = 0;
+#endif  // !defined(OS_CHROMEOS)
 
   // Gets the information about driver for a specific printer.
   virtual std::string GetPrinterDriverInfo(

@@ -8,37 +8,12 @@
 from __future__ import print_function
 
 import base64
-import filecmp
 import fnmatch
 import hashlib
 import os
 import shutil
 
 from chromite.lib import osutils
-
-
-class MissingFileError(RuntimeError):
-  """Raised when required file is missing."""
-
-
-class MissingDirectoryError(RuntimeError):
-  """Raised when required directory is missing."""
-
-
-def Cmp(path1, path2):
-  """Return True if paths hold identical files.
-
-  If either file is missing then always return False.
-
-  Args:
-    path1: Path to a local file.
-    path2: Path to a local file.
-
-  Returns:
-    True if files are the same, False otherwise.
-  """
-  return (os.path.exists(path1) and os.path.exists(path2) and
-          filecmp.cmp(path1, path2))
 
 
 def Copy(src_path, dest_path):
@@ -51,89 +26,10 @@ def Copy(src_path, dest_path):
     dest_path: Path to local file to copy to.
   """
   dest_dir = os.path.dirname(dest_path)
-  if dest_dir and not Exists(dest_dir, as_dir=True):
+  if dest_dir and not os.path.isdir(dest_dir):
     osutils.SafeMakedirs(dest_dir)
 
   shutil.copy2(src_path, dest_path)
-
-
-def Size(path):
-  """Return size of file in bytes.
-
-  Args:
-    path: Path to a local file.
-
-  Returns:
-    Size of file in bytes.
-
-  Raises:
-    MissingFileError if file is missing.
-  """
-  if os.path.isfile(path):
-    return os.stat(path).st_size
-
-  raise MissingFileError('No file at %r.' % path)
-
-
-def Exists(path, as_dir=False):
-  """Return True if file exists at given path.
-
-  If path is a directory and as_dir is False then this will return False.
-
-  Args:
-    path: Path to a local file.
-    as_dir: If True then check path as a directory, otherwise check as a file.
-
-  Returns:
-    True if file (or directory) exists at path, False otherwise.
-  """
-  if as_dir:
-    return os.path.isdir(path)
-  else:
-    return os.path.isfile(path)
-
-
-def Remove(*args, **kwargs):
-  """Delete the file(s) at path_or_paths, or directory with recurse set.
-
-  The first path to fail to be removed will abort the command, unless
-  the failure is for a path that cannot be found and ignore_no_match is True.
-  For example, if paths is [pathA, pathB, pathC] and pathB fails to be removed
-  then pathC will also not be removed, but pathA will.
-
-  Args:
-    args: One or more paths to local files.
-    ignore_no_match: If True, then do not complain if anything was not
-      removed because no file was found at path.  Like rm -f.  Defaults to
-      False.
-    recurse: Remove recursively starting at path.  Same as rm -R.  Defaults
-      to False.
-
-  Returns:
-    True if everything was removed, False if anything was not removed (which can
-      only happen with no exception if ignore_no_match is True).
-
-  Raises:
-    MissingFileError if file is missing and ignore_no_match was False.
-  """
-  ignore_no_match = kwargs.pop('ignore_no_match', False)
-  recurse = kwargs.pop('recurse', False)
-
-  any_no_match = False
-
-  for path in args:
-    if os.path.isdir(path) and recurse:
-      shutil.rmtree(path)
-    elif os.path.exists(path):
-      # Note that a directory path with recurse==False will call os.remove here,
-      # which will fail, causing this function to fail.  As it should.
-      os.remove(path)
-    elif ignore_no_match:
-      any_no_match = True
-    else:
-      raise MissingFileError('No file at %r.' % path)
-
-  return not any_no_match
 
 
 def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
@@ -179,36 +75,6 @@ def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
     paths = sorted(paths)
 
   return paths
-
-
-def CopyFiles(src_dir, dst_dir):
-  """Recursively copy all files from src_dir into dst_dir
-
-  Args:
-    src_dir: directory to copy from.
-    dst_dir: directory to copy into.
-
-  Returns:
-    A list of absolute path files for all copied files.
-  """
-  dst_paths = []
-  src_paths = ListFiles(src_dir, recurse=True)
-  for src_path in src_paths:
-    dst_path = src_path.replace(src_dir, dst_dir)
-    Copy(src_path, dst_path)
-    dst_paths.append(dst_path)
-
-  return dst_paths
-
-
-def RemoveDirContents(base_dir):
-  """Remove all contents of a directory.
-
-  Args:
-    base_dir: directory to delete contents of.
-  """
-  for obj_name in os.listdir(base_dir):
-    Remove(os.path.join(base_dir, obj_name), recurse=True)
 
 
 def MD5Sum(file_path):
@@ -279,15 +145,3 @@ def ShaSums(file_path):
   sha256_hex = base64.b64encode(sha256.digest())
 
   return sha1_hex, sha256_hex
-
-
-def TruncateToSize(file_path, size):
-  """Truncates a file down to a given size, if it is bigger.
-
-  Args:
-    file_path: path to the file to truncate
-    size: the size to truncate down to, in bytes
-  """
-  if size < os.path.getsize(file_path):
-    with open(file_path, 'r+') as file_obj:
-      file_obj.truncate(size)

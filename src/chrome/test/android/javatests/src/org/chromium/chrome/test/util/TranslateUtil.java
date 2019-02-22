@@ -9,14 +9,15 @@ import android.view.View;
 
 import org.junit.Assert;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarCompactLayout;
 import org.chromium.chrome.browser.infobar.TranslateCompactInfoBar;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Utility functions for dealing with Translate InfoBars.
@@ -100,4 +101,17 @@ public class TranslateUtil {
         });
     }
 
+    /**
+     * Simulate the target menu item with given language |code| being clicked (even if it is not
+     * visible).
+     */
+    public static void clickTargetMenuItem(
+            final TranslateCompactInfoBar infoBar, final String code) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                infoBar.onTargetMenuItemClicked(code);
+            }
+        });
+    }
 }

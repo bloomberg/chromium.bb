@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1510238584712386396">Übersicht</translation>
+<translation id="1734367976349034509">Dieses Gerät wird vom Unternehmen verwaltet</translation>
+<translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2083960536266308407">Nichts auf dem Display gefunden</translation>
+<translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
+<translation id="2805756323405976993">Apps</translation>
+<translation id="2872961005593481000">Herunterfahren</translation>
+<translation id="3147142846278915599">Launcher (Apps werden synchronisiert...)</translation>
 <translation id="5212543919916444558">Ich finde nichts auf deinem Display, wobei ich dir helfen könnte.
 Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
-<translation id="6674412557034343536">Timer stoppen</translation>
-<translation id="8626219642120025691">Timer abgelaufen</translation>
+<translation id="5222676887888702881">Abmelden</translation>
+<translation id="5457599981699367932">Als Gast nutzen</translation>
+<translation id="54609108002486618">Verwaltet</translation>
+<translation id="5832805196449965646">Person hinzufügen</translation>
+<translation id="5895138241574237353">Neu starten</translation>
+<translation id="7222902781030499995">Timer stoppen</translation>
+<translation id="7658239707568436148">Abbrechen</translation>
+<translation id="7837740436429729974">Die Zeit ist um</translation>
 <translation id="8898978413391960553">00:00 s</translation>
+<translation id="9111102763498581341">Entsperren</translation>
 </translationbundle>

@@ -47,9 +47,9 @@ constexpr int kMaxDepth = 4;
 // App Indexing supports strings up to length 20k.
 constexpr int kMaxStringLength = 200;
 // Enforced by App Indexing, so stop processing early if possible.
-constexpr size_t kMaxNumFields = 20;
+constexpr wtf_size_t kMaxNumFields = 20;
 // Enforced by App Indexing, so stop processing early if possible.
-constexpr size_t kMaxRepeatedSize = 100;
+constexpr wtf_size_t kMaxRepeatedSize = 100;
 
 constexpr char kJSONLDKeyType[] = "@type";
 constexpr char kJSONLDKeyGraph[] = "@graph";
@@ -101,7 +101,7 @@ bool parseRepeatedValue(const JSONArray& arr,
     default:
       break;
   }
-  for (size_t j = 0; j < std::min(arr.size(), kMaxRepeatedSize); ++j) {
+  for (wtf_size_t j = 0; j < std::min(arr.size(), kMaxRepeatedSize); ++j) {
     const JSONValue* innerVal = arr.at(j);
     if (innerVal->GetType() != type) {
       // App Indexing doesn't support mixed types. If there are mixed
@@ -157,7 +157,7 @@ void extractEntity(const JSONObject& val, Entity& entity, int recursionLevel) {
     type = "Thing";
   }
   entity.type = type;
-  for (size_t i = 0; i < std::min(val.size(), kMaxNumFields); ++i) {
+  for (wtf_size_t i = 0; i < std::min(val.size(), kMaxNumFields); ++i) {
     PropertyPtr property = Property::New();
     const JSONObject::Entry& entry = val.at(i);
     property->name = entry.first;

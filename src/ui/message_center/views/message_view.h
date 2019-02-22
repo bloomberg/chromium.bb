@@ -111,10 +111,10 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
+  void PaintChildren(const views::PaintInfo& paint_info) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
-  void Layout() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void RemovedFromWidget() override;
   void AddedToWidget() override;
@@ -155,11 +155,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
 
   virtual void UpdateControlButtonsVisibility() = 0;
 
-  // Changes the background color being used by |background_view_| and schedules
-  // a paint.
+  // Changes the background color and schedules a paint.
   virtual void SetDrawBackgroundAsActive(bool active);
 
-  views::View* background_view() { return background_view_; }
   views::ScrollView* scroller() { return scroller_; }
 
   bool is_nested() const { return is_nested_; }
@@ -171,7 +169,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   SlideOutController::SlideMode CalculateSlideMode() const;
 
   std::string notification_id_;
-  views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   views::ScrollView* scroller_ = nullptr;
 
   base::string16 accessible_name_;

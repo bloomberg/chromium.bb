@@ -64,6 +64,14 @@
     didUpdateFaviconURLCandidates:
         (const std::vector<web::FaviconURL>&)candidates;
 
+// Invoked by WebStateObserverBridge::WebFrameDidBecomeAvailable.
+- (void)webState:(web::WebState*)webState
+    frameDidBecomeAvailable:(web::WebFrame*)web_frame;
+
+// Invoked by WebStateObserverBridge::WebFrameWillBecomeUnavailable.
+- (void)webState:(web::WebState*)webState
+    frameWillBecomeUnavailable:(web::WebFrame*)web_frame;
+
 // Invoked by WebStateObserverBridge::RenderProcessGone.
 - (void)renderProcessGoneForWebState:(web::WebState*)webState;
 
@@ -111,6 +119,10 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void DidSuppressDialog(web::WebState* web_state) override;
   void FaviconUrlUpdated(web::WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
+  void WebFrameDidBecomeAvailable(WebState* web_state,
+                                  WebFrame* web_frame) override;
+  void WebFrameWillBecomeUnavailable(WebState* web_state,
+                                     WebFrame* web_frame) override;
   void RenderProcessGone(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
   void DidStartLoading(web::WebState* web_state) override;

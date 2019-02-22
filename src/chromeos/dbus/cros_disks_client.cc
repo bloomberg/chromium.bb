@@ -16,12 +16,14 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
 #include "dbus/bus.h"
@@ -169,10 +171,10 @@ class CrosDisksClientImpl : public CrosDisksClient {
     std::vector<std::string> options =
         ComposeMountOptions(mount_options, mount_label, access_mode, remount);
     writer.AppendArrayOfStrings(options);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&CrosDisksClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&CrosDisksClientImpl::OnMount,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      std::move(callback), base::Time::Now()));
   }
 
   // CrosDisksClient override.
@@ -189,10 +191,10 @@ class CrosDisksClientImpl : public CrosDisksClient {
       unmount_options.push_back(kLazyUnmountOption);
 
     writer.AppendArrayOfStrings(unmount_options);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&CrosDisksClientImpl::OnUnmount,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&CrosDisksClientImpl::OnUnmount,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      std::move(callback), base::Time::Now()));
   }
 
   void EnumerateDevices(EnumerateDevicesCallback callback,
@@ -325,10 +327,23 @@ class CrosDisksClientImpl : public CrosDisksClient {
     std::move(callback).Run(response);
   }
 
-  // Handles the result of Unmount and calls |callback| or |error_callback|.
-  void OnUnmount(UnmountCallback callback, dbus::Response* response) {
-    const char kUnmountHistogramName[] = "CrosDisksClient.UnmountError";
+  // Handles the result of Mount and calls |callback|.
+  void OnMount(VoidDBusMethodCallback callback,
+               base::Time start_time,
+               dbus::Response* response) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("CrosDisksClient.MountTime",
+                               base::Time::Now() - start_time);
+    std::move(callback).Run(response);
+  }
 
+  // Handles the result of Unmount and calls |callback| or |error_callback|.
+  void OnUnmount(UnmountCallback callback,
+                 base::Time start_time,
+                 dbus::Response* response) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("CrosDisksClient.UnmountTime",
+                               base::Time::Now() - start_time);
+
+    const char kUnmountHistogramName[] = "CrosDisksClient.UnmountError";
     if (!response) {
       UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, MOUNT_ERROR_UNKNOWN,
                                 MOUNT_ERROR_COUNT);
@@ -336,20 +351,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
       return;
     }
 
-    // Temporarly allow Unmount method to report failure both by setting dbus
-    // error (in which case response is not set) and by returning mount error
-    // different from MOUNT_ERROR_NONE. This is done so we can change Unmount
-    // method to return mount error (http://crbug.com/288974) without breaking
-    // Chrome.
-    // TODO(tbarzic): When Unmount implementation is changed on cros disks side,
-    // make this fail if reader is not able to read the error code value from
-    // the response.
     dbus::MessageReader reader(response);
     uint32_t error_code = 0;
     MountError mount_error = MOUNT_ERROR_NONE;
     if (reader.PopUint32(&error_code)) {
       mount_error = CrosDisksMountErrorToChromeMountError(
           static_cast<cros_disks::MountErrorType>(error_code));
+    } else {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      mount_error = MOUNT_ERROR_UNKNOWN;
     }
     UMA_HISTOGRAM_ENUMERATION(kUnmountHistogramName, mount_error,
                               MOUNT_ERROR_COUNT);
@@ -446,6 +456,15 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
     UMA_HISTOGRAM_ENUMERATION("CrosDisksClient.MountCompletedError",
                               entry.error_code(), MOUNT_ERROR_COUNT);
+    // Flatten MountType and MountError into a single dimension.
+    constexpr int kMaxMountErrors = 100;
+    static_assert(MOUNT_ERROR_COUNT <= kMaxMountErrors,
+                  "CrosDisksClient.MountErrorMountType histogram must be "
+                  "updated.");
+    const int type_and_error =
+        (entry.mount_type() * kMaxMountErrors) + entry.error_code();
+    base::UmaHistogramSparse("CrosDisksClient.MountErrorMountType",
+                             type_and_error);
     for (auto& observer : observer_list_)
       observer.OnMountCompleted(entry);
   }

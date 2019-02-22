@@ -42,7 +42,8 @@ DIAGNOSTIC_NAMES_TO_ANNOTATION_NAMES = {
     reserved_infos.FUCHSIA_GARNET_REVISIONS.name: 'r_fuchsia_garnet_git',
     reserved_infos.FUCHSIA_PERIDOT_REVISIONS.name: 'r_fuchsia_peridot_git',
     reserved_infos.FUCHSIA_TOPAZ_REVISIONS.name: 'r_fuchsia_topaz_git',
-    reserved_infos.FUCHSIA_ZIRCON_REVISIONS.name: 'r_fuchsia_zircon_git'
+    reserved_infos.FUCHSIA_ZIRCON_REVISIONS.name: 'r_fuchsia_zircon_git',
+    reserved_infos.REVISION_TIMESTAMPS.name: 'r_revision_timestamp',
 }
 
 
@@ -365,6 +366,14 @@ def _MakeRowDict(revision, test_path, tracing_histogram, stat_name=None):
 
 
 def _AddStdioUris(tracing_histogram, row_dict):
+  build_urls_diagnostic = tracing_histogram.diagnostics.get(
+      reserved_infos.BUILD_URLS.name)
+  if build_urls_diagnostic:
+    build_tuple = build_urls_diagnostic.GetOnlyElement()
+    if isinstance(build_tuple, list):
+      link = '[%s](%s)' % tuple(build_tuple)
+      row_dict['supplemental_columns']['a_build_uri'] = link
+
   log_urls = tracing_histogram.diagnostics.get(reserved_infos.LOG_URLS.name)
   if not log_urls:
     return

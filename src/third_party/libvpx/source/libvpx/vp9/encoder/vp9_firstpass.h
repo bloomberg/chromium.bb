@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VP9_ENCODER_VP9_FIRSTPASS_H_
-#define VP9_ENCODER_VP9_FIRSTPASS_H_
+#ifndef VPX_VP9_ENCODER_VP9_FIRSTPASS_H_
+#define VPX_VP9_ENCODER_VP9_FIRSTPASS_H_
 
 #include <assert.h>
 
@@ -49,6 +49,7 @@ typedef struct {
 #define BFG_INTERVAL 2
 #define MAX_EXT_ARFS 2
 #define MIN_EXT_ARF_INTERVAL 4
+#define MAX_ARF_LAYERS 6
 
 typedef struct {
   double frame_mb_intra_factor;
@@ -116,13 +117,9 @@ typedef enum {
   GF_UPDATE = 2,
   ARF_UPDATE = 3,
   OVERLAY_UPDATE = 4,
-  USE_BUF_FRAME = 5,         // Use show existing frame, no ref buffer update
-  BRF_UPDATE = 6,            // Backward Reference Frame
-  LAST_BIPRED_UPDATE = 7,    // Last Bi-predictive Frame
-  BIPRED_UPDATE = 8,         // Bi-predictive Frame, but not the last one
-  INTNL_OVERLAY_UPDATE = 9,  // Internal Overlay Frame
-  INTNL_ARF_UPDATE = 10,     // Internal Altref Frame (candidate for ALTREF2)
-  FRAME_UPDATE_TYPES = 11
+  MID_OVERLAY_UPDATE = 5,
+  USE_BUF_FRAME = 6,  // Use show existing frame, no ref buffer update
+  FRAME_UPDATE_TYPES = 7
 } FRAME_UPDATE_TYPE;
 
 #define FC_ANIMATION_THRESH 0.15
@@ -134,15 +131,19 @@ typedef enum {
 
 typedef struct {
   unsigned char index;
-  unsigned char first_inter_index;
   RATE_FACTOR_LEVEL rf_level[MAX_STATIC_GF_GROUP_LENGTH + 2];
   FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH + 2];
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 2];
-  unsigned char arf_update_idx[MAX_STATIC_GF_GROUP_LENGTH + 2];
-  unsigned char arf_ref_idx[MAX_STATIC_GF_GROUP_LENGTH + 2];
-  unsigned char brf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 2];
-  unsigned char bidir_pred_enabled[MAX_STATIC_GF_GROUP_LENGTH + 2];
+  unsigned char layer_depth[MAX_STATIC_GF_GROUP_LENGTH + 2];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 2];
+  int gfu_boost[MAX_STATIC_GF_GROUP_LENGTH + 2];
+
+  int frame_start;
+  int frame_end;
+  // TODO(jingning): The array size of arf_stack could be reduced.
+  int arf_index_stack[MAX_LAG_BUFFERS * 2];
+  int top_arf_idx;
+  int stack_size;
 } GF_GROUP;
 
 typedef struct {
@@ -233,4 +234,4 @@ static INLINE int get_number_of_extra_arfs(int interval, int arf_pending) {
 }  // extern "C"
 #endif
 
-#endif  // VP9_ENCODER_VP9_FIRSTPASS_H_
+#endif  // VPX_VP9_ENCODER_VP9_FIRSTPASS_H_

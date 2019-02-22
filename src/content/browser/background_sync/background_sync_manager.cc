@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -26,6 +27,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
@@ -149,7 +151,7 @@ void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
                          int request_id,
                          ServiceWorkerVersion::StatusCallback callback,
                          blink::mojom::ServiceWorkerEventStatus status,
-                         base::Time dispatch_event_time) {
+                         base::TimeTicks dispatch_event_time) {
   if (!active_version->FinishRequest(
           request_id,
           status == blink::mojom::ServiceWorkerEventStatus::COMPLETED,
@@ -344,8 +346,8 @@ void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
     return;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetControllerParameters, service_worker_context_,
                      std::make_unique<BackgroundSyncParameters>(*parameters_)),
       base::BindOnce(&BackgroundSyncManager::InitDidGetControllerParameters,
@@ -494,8 +496,8 @@ void BackgroundSyncManager::RegisterImpl(
     return;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetBackgroundSyncPermissionOnUIThread,
                      service_worker_context_,
                      sw_registration->pattern().GetOrigin()),
@@ -527,8 +529,8 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyBackgroundSyncRegisteredOnUIThread,
                      service_worker_context_,
                      sw_registration->pattern().GetOrigin()));
@@ -638,8 +640,7 @@ BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
     const std::string& tag) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  SWIdToRegistrationsMap::iterator it =
-      active_registrations_.find(sw_registration_id);
+  auto it = active_registrations_.find(sw_registration_id);
   if (it == active_registrations_.end())
     return nullptr;
 
@@ -836,8 +837,7 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     return;
   }
 
-  SWIdToRegistrationsMap::iterator it =
-      active_registrations_.find(sw_registration_id);
+  auto it = active_registrations_.find(sw_registration_id);
 
   if (it != active_registrations_.end()) {
     const BackgroundSyncRegistrations& registrations = it->second;
@@ -917,8 +917,8 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   // In case the browser closes (or to prevent it from closing), call
   // RunInBackground to either wake up the browser at the wakeup delta or to
   // keep the browser running.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           RunInBackgroundOnUIThread, service_worker_context_,
           !soonest_wakeup_delta.is_max() /* should run in background */,

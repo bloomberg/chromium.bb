@@ -450,8 +450,7 @@ void DesktopDragDropClientAuraX11::X11DragContext::ReadActions() {
 
 int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
-  for (std::vector<::Atom>::const_iterator it = actions_.begin();
-       it != actions_.end(); ++it) {
+  for (auto it = actions_.begin(); it != actions_.end(); ++it) {
     MaskOperation(*it, &drag_operation);
   }
 
@@ -711,7 +710,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
       }
 
       if (!IsDragDropInProgress()) {
-        UMA_HISTOGRAM_COUNTS("Event.DragDrop.ExternalOriginDrop", 1);
+        UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
       drag_operation = delegate->OnPerformDrop(event);

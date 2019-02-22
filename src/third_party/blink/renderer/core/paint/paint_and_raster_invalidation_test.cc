@@ -903,16 +903,22 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
   scroller->setScrollTop(100);
 
   const auto* sticky = GetLayoutObjectByElementId("sticky");
-  EXPECT_TRUE(sticky->ShouldCheckForPaintInvalidation());
-  EXPECT_EQ(LayoutPoint(0, 50), sticky->FirstFragment().PaintOffset());
+  EXPECT_TRUE(sticky->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
+  EXPECT_EQ(
+      TransformationMatrix().Translate(0.f, 50.f),
+      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
   const auto* inner = GetLayoutObjectByElementId("inner");
-  EXPECT_EQ(LayoutPoint(0, 50), inner->FirstFragment().PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FALSE(sticky->ShouldCheckForPaintInvalidation());
-  EXPECT_EQ(LayoutPoint(0, 150), sticky->FirstFragment().PaintOffset());
-  EXPECT_EQ(LayoutPoint(0, 150), inner->FirstFragment().PaintOffset());
+  EXPECT_FALSE(sticky->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
+  EXPECT_EQ(
+      TransformationMatrix().Translate(0.f, 150.f),
+      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
+  EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 }
 
 class PaintInvalidatorTestClient : public EmptyChromeClient {

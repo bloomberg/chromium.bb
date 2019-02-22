@@ -48,7 +48,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchInvalidRegistration) {
   auto registration = CreateBackgroundFetchRegistration(
       invalid_registration_id.developer_id(),
       invalid_registration_id.unique_id(),
-      blink::mojom::BackgroundFetchState::FAILURE,
+      blink::mojom::BackgroundFetchResult::FAILURE,
       blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
   event_dispatcher_.DispatchBackgroundFetchAbortEvent(
       invalid_registration_id, std::move(registration), run_loop.QuitClosure());
@@ -79,7 +79,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId, kExampleUniqueId,
-        blink::mojom::BackgroundFetchState::FAILURE,
+        blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
     event_dispatcher_.DispatchBackgroundFetchAbortEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
@@ -109,7 +109,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId2, kExampleUniqueId2,
-        blink::mojom::BackgroundFetchState::FAILURE,
+        blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
     event_dispatcher_.DispatchBackgroundFetchAbortEvent(second_registration_id,
                                                         std::move(registration),
@@ -148,7 +148,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId, kExampleUniqueId,
-        blink::mojom::BackgroundFetchState::PENDING,
+        blink::mojom::BackgroundFetchResult::UNSET,
         blink::mojom::BackgroundFetchFailureReason::NONE);
     event_dispatcher_.DispatchBackgroundFetchClickEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
@@ -159,8 +159,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_registration()->developer_id);
-  EXPECT_EQ(blink::mojom::BackgroundFetchState::PENDING,
-            embedded_worker_test_helper()->last_registration()->state);
+  EXPECT_EQ(blink::mojom::BackgroundFetchResult::UNSET,
+            embedded_worker_test_helper()->last_registration()->result);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -176,7 +176,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId2, kExampleUniqueId2,
-        blink::mojom::BackgroundFetchState::FAILURE,
+        blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
     event_dispatcher_.DispatchBackgroundFetchClickEvent(second_registration_id,
                                                         std::move(registration),
@@ -188,8 +188,8 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
   ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_registration()->developer_id);
-  EXPECT_EQ(blink::mojom::BackgroundFetchState::FAILURE,
-            embedded_worker_test_helper()->last_registration()->state);
+  EXPECT_EQ(blink::mojom::BackgroundFetchResult::FAILURE,
+            embedded_worker_test_helper()->last_registration()->result);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -215,7 +215,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId, kExampleUniqueId,
-        blink::mojom::BackgroundFetchState::FAILURE,
+        blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
@@ -241,7 +241,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId2, kExampleUniqueId2,
-        blink::mojom::BackgroundFetchState::FAILURE,
+        blink::mojom::BackgroundFetchResult::FAILURE,
         blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED);
     event_dispatcher_.DispatchBackgroundFetchFailEvent(second_registration_id,
                                                        std::move(registration),
@@ -277,7 +277,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId, kExampleUniqueId,
-        blink::mojom::BackgroundFetchState::SUCCESS,
+        blink::mojom::BackgroundFetchResult::SUCCESS,
         blink::mojom::BackgroundFetchFailureReason::NONE);
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
         registration_id, std::move(registration), run_loop.QuitClosure());
@@ -306,7 +306,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     base::RunLoop run_loop;
     auto registration = CreateBackgroundFetchRegistration(
         kExampleDeveloperId2, kExampleUniqueId2,
-        blink::mojom::BackgroundFetchState::SUCCESS,
+        blink::mojom::BackgroundFetchResult::SUCCESS,
         blink::mojom::BackgroundFetchFailureReason::NONE);
     event_dispatcher_.DispatchBackgroundFetchSuccessEvent(
         second_registration_id, std::move(registration),

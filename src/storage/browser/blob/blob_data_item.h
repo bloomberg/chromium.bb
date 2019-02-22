@@ -33,8 +33,6 @@ class FileSystemContext;
 // the BlobStorageContext.
 class STORAGE_EXPORT BlobDataItem : public base::RefCounted<BlobDataItem> {
  public:
-  static constexpr uint64_t kUnknownSize = std::numeric_limits<uint64_t>::max();
-
   enum class Type {
     kBytes,
     kBytesDescription,

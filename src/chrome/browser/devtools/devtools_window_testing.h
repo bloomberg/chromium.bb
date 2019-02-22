@@ -32,6 +32,7 @@ class DevToolsWindowTesting {
   static DevToolsWindow* OpenDevToolsWindowSync(
       Profile* profile,
       scoped_refptr<content::DevToolsAgentHost> agent_host);
+  static DevToolsWindow* OpenDiscoveryDevToolsWindowSync(Profile* profile);
 
   // Closes the window like it was user-initiated.
   static void CloseDevToolsWindow(DevToolsWindow* window);

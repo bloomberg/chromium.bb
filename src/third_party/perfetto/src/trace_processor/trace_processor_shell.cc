@@ -36,6 +36,12 @@
 #define PERFETTO_HAS_SIGNAL_H() 0
 #endif
 
+#if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
+#include <linenoise.h>
+#include <pwd.h>
+#include <sys/types.h>
+#endif
+
 #if PERFETTO_HAS_SIGNAL_H()
 #include <signal.h>
 #endif
@@ -46,10 +52,85 @@ using namespace perfetto::trace_processor;
 namespace {
 TraceProcessor* g_tp;
 
-void PrintPrompt() {
-  printf("\r%80s\r> ", "");
-  fflush(stdout);
+#if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
+
+bool EnsureDir(const std::string& path) {
+  return mkdir(path.c_str(), 0755) != -1 || errno == EEXIST;
 }
+
+bool EnsureFile(const std::string& path) {
+  return base::OpenFile(path, O_RDONLY | O_CREAT, 0755).get() != -1;
+}
+
+std::string GetConfigPath() {
+  const char* homedir = getenv("HOME");
+  if (homedir == nullptr)
+    homedir = getpwuid(getuid())->pw_dir;
+  if (homedir == nullptr)
+    return "";
+  return std::string(homedir) + "/.config";
+}
+
+std::string GetPerfettoPath() {
+  std::string config = GetConfigPath();
+  if (config == "")
+    return "";
+  return config + "/perfetto";
+}
+
+std::string GetHistoryPath() {
+  std::string perfetto = GetPerfettoPath();
+  if (perfetto == "")
+    return "";
+  return perfetto + "/.trace_processor_shell_history";
+}
+
+void SetupLineEditor() {
+  linenoiseSetMultiLine(true);
+  linenoiseHistorySetMaxLen(1000);
+
+  bool success = GetHistoryPath() != "";
+  success = success && EnsureDir(GetConfigPath());
+  success = success && EnsureDir(GetPerfettoPath());
+  success = success && EnsureFile(GetHistoryPath());
+  success = success && linenoiseHistoryLoad(GetHistoryPath().c_str()) != -1;
+  if (!success) {
+    PERFETTO_PLOG("Could not load history from %s", GetHistoryPath().c_str());
+  }
+}
+
+void FreeLine(char* line) {
+  linenoiseHistoryAdd(line);
+  linenoiseHistorySave(GetHistoryPath().c_str());
+  linenoiseFree(line);
+}
+
+char* GetLine(const char* prompt) {
+  return linenoise(prompt);
+}
+
+#else
+
+void SetupLineEditor() {}
+
+void FreeLine(char* line) {
+  delete[] line;
+}
+
+char* GetLine(const char* prompt) {
+  printf("\r%80s\r%s", "", prompt);
+  fflush(stdout);
+  char* line = new char[1024];
+  if (!fgets(line, 1024 - 1, stdin)) {
+    FreeLine(line);
+    return nullptr;
+  }
+  if (strlen(line) > 0)
+    line[strlen(line) - 1] = 0;
+  return line;
+}
+
+#endif
 
 void OnQueryResult(base::TimeNanos t_start, const protos::RawQueryResult& res) {
   if (res.has_error()) {
@@ -118,9 +199,10 @@ int main(int argc, char** argv) {
   }
 
   // Load the trace file into the trace processor.
-  TraceProcessor tp;
-  base::ScopedFile fd;
-  fd.reset(open(trace_file_path, O_RDONLY));
+  TraceProcessor::Config config;
+  config.optimization_mode = OptimizationMode::kMaxBandwidth;
+  TraceProcessor tp(config);
+  base::ScopedFile fd(base::OpenFile(trace_file_path, O_RDONLY));
   PERFETTO_CHECK(fd);
 
   // Load the trace in chunks using async IO. We create a simple pipeline where,
@@ -163,6 +245,7 @@ int main(int argc, char** argv) {
     // Parse the completed buffer while the async read is in-flight.
     tp.Parse(std::move(buf), static_cast<size_t>(rsize));
   }
+  tp.NotifyEndOfFile();
   double t_load = (base::GetWallTimeMs() - t_load_start).count() / 1E3;
   double size_mb = file_size / 1E6;
   PERFETTO_ILOG("Trace loaded: %.2f MB (%.1f MB/s)", size_mb, size_mb / t_load);
@@ -172,12 +255,13 @@ int main(int argc, char** argv) {
   signal(SIGINT, [](int) { g_tp->InterruptQuery(); });
 #endif
 
+  SetupLineEditor();
+
   for (;;) {
-    PrintPrompt();
-    char line[1024];
-    if (!fgets(line, sizeof(line) - 1, stdin) || strcmp(line, "q\n") == 0)
-      return 0;
-    if (strcmp(line, "\n") == 0)
+    char* line = GetLine("> ");
+    if (!line || strcmp(line, "q\n") == 0)
+      break;
+    if (strcmp(line, "") == 0)
       continue;
     protos::RawQueryArgs query;
     query.set_sql_query(line);
@@ -185,5 +269,9 @@ int main(int argc, char** argv) {
     g_tp->ExecuteQuery(query, [t_start](const protos::RawQueryResult& res) {
       OnQueryResult(t_start, res);
     });
+
+    FreeLine(line);
   }
+
+  return 0;
 }

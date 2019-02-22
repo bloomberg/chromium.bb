@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -37,7 +38,7 @@ enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
 //   in the dom range is expanded into multiple characters.
 // See design doc https://goo.gl/CJbxky for details.
 class CORE_EXPORT NGOffsetMappingUnit {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   NGOffsetMappingUnit(NGOffsetMappingUnitType,
@@ -175,6 +176,13 @@ class CORE_EXPORT NGOffsetMapping {
   // the layout order, aka the flat tree order.
   Position GetFirstPosition(unsigned) const;
   Position GetLastPosition(unsigned) const;
+
+  // Returns all NGOffsetMappingUnits whose text content ranges has non-empty
+  // (but possibly collapsed) intersection with (start, end). Note that units
+  // that only "touch" |start| or |end| are excluded.
+  NGMappingUnitRange GetMappingUnitsForTextContentOffsetRange(
+      unsigned start,
+      unsigned end) const;
 
   // TODO(xiaochengh): Add offset-to-DOM APIs skipping generated contents.
 

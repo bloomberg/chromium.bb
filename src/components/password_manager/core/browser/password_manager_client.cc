@@ -95,4 +95,8 @@ favicon::FaviconService* PasswordManagerClient::GetFaviconService() {
   return nullptr;
 }
 
+bool PasswordManagerClient::IsUnderAdvancedProtection() const {
+  return false;
+}
+
 }  // namespace password_manager

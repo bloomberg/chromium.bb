@@ -36,8 +36,8 @@ class NumericRangeSet;
 // The following fields are used to control MediaStreamVideoSource objects:
 //   * device_id: used for device selection and obtained from the deviceId
 //   * capture_params: used to initialize video capture. Its values are obtained
-//     from the width, height, aspectRatio, frame_rate, googPowerLineFrequency,
-//     and googNoiseReduction constraints.
+//     from the width, height, aspectRatio, frame_rate, and googNoiseReduction
+//     constraints.
 // The following fields are used to control MediaStreamVideoTrack objects:
 //   * track_adapter_settings: All track objects use a VideoTrackAdapter object
 //     that may perform cropping and frame-rate adjustment. This field contains
@@ -103,10 +103,6 @@ class CONTENT_EXPORT VideoCaptureSettings {
   media::ResolutionChangePolicy ResolutionChangePolicy() const {
     DCHECK(HasValue());
     return capture_params_.resolution_change_policy;
-  }
-  media::PowerLineFrequency PowerLineFrequency() const {
-    DCHECK(HasValue());
-    return capture_params_.power_line_frequency;
   }
 
   // Other accessors.
@@ -186,7 +182,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   // Creates an object with the given values.
   explicit AudioCaptureSettings(
       std::string device_id,
-      const media::AudioParameters& audio_parameters,
       bool enable_hotword,
       bool disable_local_echo,
       bool enable_automatic_output_device_selection,
@@ -203,11 +198,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
   const std::string& device_id() const {
     DCHECK(HasValue());
     return device_id_;
-  }
-  // This field is meaningless in content capture.
-  const media::AudioParameters& device_parameters() const {
-    DCHECK(HasValue());
-    return audio_parameters_;
   }
   bool hotword_enabled() const {
     DCHECK(HasValue());
@@ -229,7 +219,6 @@ class CONTENT_EXPORT AudioCaptureSettings {
  private:
   const char* failed_constraint_name_;
   std::string device_id_;
-  media::AudioParameters audio_parameters_;
   bool hotword_enabled_;
   bool disable_local_echo_;
   bool render_to_associated_sink_;

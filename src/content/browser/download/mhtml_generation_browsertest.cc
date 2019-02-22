@@ -13,11 +13,13 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/render_frame_host.h"
@@ -34,7 +36,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 
 using testing::ContainsRegex;
@@ -56,12 +57,12 @@ class FindTrackingDelegate : public WebContentsDelegate {
     WebContentsDelegate* old_delegate = web_contents->GetDelegate();
     web_contents->SetDelegate(this);
 
-    blink::WebFindOptions options;
-    options.run_synchronously_for_testing = true;
-    options.match_case = false;
+    auto options = blink::mojom::FindOptions::New();
+    options->run_synchronously_for_testing = true;
+    options->match_case = false;
 
     web_contents->Find(global_request_id++, base::UTF8ToUTF16(search_),
-                       options);
+                       std::move(options));
     run_loop_.Run();
 
     web_contents->SetDelegate(old_delegate);
@@ -329,8 +330,8 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
       //   execution at (Y?) and (Z?) instead is possible.  In practice,
       //   bouncing off of UI and download sequence does mean (Z) happens
       //   after (1).
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskX,
                          base::Unretained(this)));
     }
@@ -346,8 +347,8 @@ class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
   }
 
   void TaskY() {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskZ,
                        base::Unretained(this)));
   }

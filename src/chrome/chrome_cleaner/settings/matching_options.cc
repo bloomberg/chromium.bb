@@ -14,13 +14,4 @@ void MatchingOptions::set_only_one_footprint(bool only_one_footprint) {
   only_one_footprint_ = only_one_footprint;
 }
 
-bool MatchingOptions::find_incomplete_matches() const {
-  return find_incomplete_matches_;
-}
-
-void MatchingOptions::set_find_incomplete_matches(
-    bool find_incomplete_matches) {
-  find_incomplete_matches_ = find_incomplete_matches;
-}
-
 }  // namespace chrome_cleaner

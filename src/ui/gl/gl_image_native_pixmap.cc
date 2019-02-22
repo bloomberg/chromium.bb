@@ -89,11 +89,6 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
@@ -316,7 +311,7 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     // scoped_fd.release() transfers ownership to the caller so it will not
     // call close when going out of scope. base::FileDescriptor never closes
     // the fd when going out of scope. The auto_close flag is just a hint for
-    // the user. When true it means the user has ownership of it so he is
+    // the user. When true it means the user has ownership of it so they are
     // responsible for closing the fd.
     handle.fds.emplace_back(
         base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
@@ -412,11 +407,6 @@ unsigned GLImageNativePixmap::GetInternalFormatForTesting(
       return GL_RGB_YCRCB_420_CHROMIUM;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return GL_RGB_YCBCR_420V_CHROMIUM;
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
@@ -444,11 +434,6 @@ bool GLImageNativePixmap::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:

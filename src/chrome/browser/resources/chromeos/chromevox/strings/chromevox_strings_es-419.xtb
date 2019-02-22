@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Busca una tecla y, luego, activa el teclado para escribir</translation>
 <translation id="1012173283529841972">Elemento de lista</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Deslizar dos dedos hacia la derecha</translation>
 <translation id="1022586497894531524">¿Estás usando los comentarios por voz de ChromeVox por primera vez? En este instructivo rápido se explican los aspectos básicos para comenzar a usar ChromeVox.</translation>
 <translation id="1023866615269196768">Ampliada</translation>
 <translation id="1025074108959230262">Modo permanente inhabilitado</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">Permite activar o desactivar el sonido.</translation>
 <translation id="1108651818222110612">subtítulo</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "chocolate", "d": "delta", "e": "eco", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "julieta","k": "kilo", "l": "lima", "m": "maría", "n": "noviembre", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniforme", "v": "víctor", "w": "whisky","x": "xilófono", "y": "yanqui", "z": "zulú"}</translation>
+<translation id="1120938014254001895">Deslizar dos dedos hacia arriba</translation>
 <translation id="1124771028211010580">El estilo actual de la pantalla es lado a lado.</translation>
 <translation id="113582498867142724">Colección de <ph name="TAG" /> con <ph name="NUM" /> elementos</translation>
 <translation id="1155043339247954670">No hay ningún elemento de la lista posterior.</translation>
@@ -91,6 +93,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">pie</translation>
 <translation id="174268867904053074">Siguiente gráfico</translation>
+<translation id="1765245556747822181">Deslizar un dedo hacia arriba</translation>
 <translation id="1781173782405573156">Tecla de acceso rápido</translation>
 <translation id="1787176709638001873">Texto de edición de contraseña</translation>
 <translation id="1802710350767629429">Muestra notas de actualización</translation>
@@ -137,6 +140,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2223693656926968778">Tomar medidas sobre el elemento actual</translation>
 <translation id="225732394367814946">Hablar más rápido</translation>
 <translation id="2267945578749931355">Carácter siguiente</translation>
+<translation id="2278490101488436824">Deslizar tres dedos hacia la izquierda</translation>
 <translation id="2281234842553884450">Control deslizante anterior</translation>
 <translation id="2294136146931447363">Inicio del texto en cursiva</translation>
 <translation id="2311237334957139798">Ir al gesto del nivel de detalle anterior</translation>
@@ -209,17 +213,20 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2864481629947106776">Vínculo anterior</translation>
 <translation id="2867808975387772810">Bibliografía</translation>
 <translation id="2873259058405069099">Ir al principio de la tabla</translation>
+<translation id="2879867157561757640">Deslizar tres dedos hacia abajo</translation>
 <translation id="288178314850623291">Usa los comandos de navegación para ir directamente a tipos de elementos específicos. Para avanzar entre encabezados, presiona Búsqueda + H; para ir hacia atrás, presiona Búsqueda + mayúscula + H.</translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{llave de apertura}other{# llaves de apertura}}</translation>
 <translation id="2909478709401302630">Inicio del superíndice</translation>
 <translation id="2911433807131383493">Abrir tutorial de ChromeVox</translation>
+<translation id="2912405967290226587">Deslizar tres dedos hacia la derecha</translation>
 <translation id="2932083475399492303">Alternar entre líneas estructurales y líneas de diseño</translation>
 <translation id="2944762337049891859">Leer la página automáticamente después de que termina de cargarse</translation>
 <translation id="2964026537669811554">Grupo de encabezados</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulación}other{# tabulaciones}}</translation>
 <translation id="2972078295414139404">No hay ningún vínculo anterior visitado.</translation>
 <translation id="2972205263822847197">Información de la herramienta</translation>
+<translation id="297825089465017871">Deslizar dos dedos hacia la izquierda</translation>
 <translation id="2998131015536248178">Carácter anterior</translation>
 <translation id="2999559350546931576">Disminuir el tono</translation>
 <translation id="2999945368667127852">No hay ningún widget multimedia posterior.</translation>
@@ -231,6 +238,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3046838483509668188">Opciones de ChromeVox</translation>
 <translation id="3047143736589213134">Mapa de teclado experimental</translation>
 <translation id="3060756054951570867">menú <ph name="TITLE" /> abierto</translation>
+<translation id="3070245424257836917">Deslizar tres dedos hacia arriba</translation>
 <translation id="3078345202707391975">Siguiente encabezado de nivel 2</translation>
 <translation id="3078740164268491126">tabla</translation>
 <translation id="3082249673510793544">Desplazarse hacia atrás</translation>
@@ -343,6 +351,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3599054940393788245">No incluido en el objeto matemático</translation>
 <translation id="360241989769010433">Reconocimientos</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3622350485154495700">Presionar dos veces con un dedo</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{comilla simple}other{# comillas simples}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dólar}other{# signos de dólar}}</translation>
@@ -372,6 +381,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3914173277599553213">Permisos requeridos</translation>
 <translation id="3914732343065571127">Referencia de comandos de ChromeVox</translation>
 <translation id="3930498801443296724">Cita inicial</translation>
+<translation id="3941269780691800708">Pronunciar el texto cuando pasas el puntero del mouse</translation>
 <translation id="3962990492275676168">Comenzar a leer desde la ubicación actual</translation>
 <translation id="4004802134384979325">seleccionada</translation>
 <translation id="4006140876663370126">img</translation>
@@ -462,6 +472,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4688873778442829762">cdrcl</translation>
 <translation id="4693675773662933727">Punto de referencia anterior</translation>
 <translation id="4696413482802371445">No hay ningún encabezado de nivel 5 posterior.</translation>
+<translation id="4710166929009737753">Deslizar un dedo hacia la derecha</translation>
 <translation id="4729095194763193578">Fila anterior de la tabla</translation>
 <translation id="4736221692378411923">Agosto</translation>
 <translation id="4740661827607246557">Comandos de ayuda</translation>
@@ -474,6 +485,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4826415162591436065">Avanzar</translation>
 <translation id="4826604887384865800">Siguiente salto</translation>
 <translation id="4827410568042294688">sin seleccionar</translation>
+<translation id="4838490795649708173">Presionar con cuatro dedos</translation>
 <translation id="4839925464551908214">Ir a la fila anterior</translation>
 <translation id="4842108708071771135">No hay ningún bloque entrecomillado posterior.</translation>
 <translation id="4844625982113518938">Presiona cualquier tecla para aprender su nombre. Para cerrar el modo de aprendizaje, presiona Ctrl + W.</translation>
@@ -610,6 +622,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5750633686117194034">No se presionó ninguna tecla modificadora; mantén presionada una o más teclas modificadoras y luego suéltalas para escuchar el conjunto de teclas. Presiona el tabulador para salir.</translation>
 <translation id="5760594853119905566">Apéndice</translation>
 <translation id="5788275253279308023">pestaña <ph name="TITLE" /> de la ventana de incógnito</translation>
+<translation id="5805940204952508776">Presionar con dos dedos</translation>
 <translation id="5806206155699461681">Mejorar sitios específicos (como la Búsqueda de Google)</translation>
 <translation id="5819072574982403430">Elemento de árbol</translation>
 <translation id="5826479389509458994">Fila <ph name="ROW" />, columna <ph name="COL" /></translation>
@@ -714,8 +727,10 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6786800275320335305">Artículo</translation>
 <translation id="6787839852456839824">Combinaciones de teclas para acceso directo</translation>
 <translation id="6793101435925451627">cdr lst</translation>
+<translation id="6826226459053491773">Deslizar dos dedos hacia abajo</translation>
 <translation id="6833103209700200188">Pie de página</translation>
 <translation id="6858047746862060282">Prólogo</translation>
+<translation id="6859876496651143278">Deslizar un dedo hacia la izquierda</translation>
 <translation id="6871161210040114857">No distingue mayúscula de minúscula.</translation>
 <translation id="6877435256196695200">No hay ningún gráfico posterior.</translation>
 <translation id="6897341342232909480">Mover hacia la izquierda</translation>
@@ -965,6 +980,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="923331726185079994">Actualización de ChromeVox</translation>
 <translation id="930275611743429116">Iniciar o finalizar selección</translation>
 <translation id="948171205378458592">Hablar más lento</translation>
+<translation id="958854023026327378">Deslizar un dedo hacia abajo</translation>
 <translation id="962913030769097253">Encabezado siguiente de nivel 1</translation>
 <translation id="973955474346881951">Habilitar/inhabilitar modo permanente</translation>
 <translation id="976849232629612000">Sin elementos</translation>

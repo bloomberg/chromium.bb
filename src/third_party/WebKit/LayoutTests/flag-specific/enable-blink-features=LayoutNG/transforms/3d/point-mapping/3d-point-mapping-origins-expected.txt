@@ -65,12 +65,12 @@ layer at (42,289) size 140x140
   LayoutNGBlockFlow {DIV} at (21,21) size 140x140 [bgcolor=#DDDDDD] [border: (1px solid #000000)]
 layer at (63,310) size 100x100
   LayoutNGBlockFlow (relative positioned) {DIV} at (21,21) size 100x100 [bgcolor=#AAAAAA] [border: (1px solid #000000)]
-layer at (84,331) size 100x100
+layer at (88,282) size 136x170
   LayoutNGBlockFlow (relative positioned) {DIV} at (21,21) size 100x100 [bgcolor=#0000FF] [border: (1px solid #000000)]
 layer at (288,289) size 140x140
   LayoutNGBlockFlow {DIV} at (21,21) size 140x140 [bgcolor=#DDDDDD] [border: (1px solid #000000)]
 layer at (309,310) size 100x100
   LayoutNGBlockFlow (relative positioned) {DIV} at (21,21) size 100x100 [bgcolor=#AAAAAA] [border: (1px solid #000000)]
     LayoutNGBlockFlow {DIV} at (21,21) size 100x100 [bgcolor=#C0D69E] [border: (1px solid #000000)]
-layer at (351,352) size 100x100
+layer at (358,313) size 150x180
   LayoutNGBlockFlow (relative positioned) {DIV} at (21,21) size 100x100 [bgcolor=#0000FF] [border: (1px solid #000000)]

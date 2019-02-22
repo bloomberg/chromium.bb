@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
@@ -56,7 +55,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public viz::GpuHostImpl::Delegate {
  public:
   enum GpuProcessKind {
-    GPU_PROCESS_KIND_UNSANDBOXED,
+    GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
     GPU_PROCESS_KIND_SANDBOXED,
     GPU_PROCESS_KIND_COUNT
   };
@@ -85,10 +84,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       bool force_create,
       const base::Callback<void(GpuProcessHost*)>& callback);
 
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe);
-  void TerminateGpuProcess(const std::string& message);
-
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
   static GpuProcessHost* FromID(int host_id);
@@ -97,9 +92,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
-
-  // Adds a connection error handler for the GpuService.
-  void AddConnectionErrorHandler(base::OnceClosure handler);
 
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
@@ -134,10 +126,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   bool Init();
 
-#if defined(USE_OZONE)
-  void InitOzone();
-#endif  // defined(USE_OZONE)
-
   // BrowserChildProcessHostDelegate implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelConnected(int32_t peer_pid) override;
@@ -148,7 +136,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // viz::GpuHostImpl::Delegate:
   gpu::GPUInfo GetGPUInfo() const override;
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const override;
-  void UpdateGpuInfo(
+  void DidInitialize(
       const gpu::GPUInfo& gpu_info,
       const gpu::GpuFeatureInfo& gpu_feature_info,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
@@ -156,8 +144,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
           gpu_feature_info_for_hardware_gpu) override;
   void DidFailInitialize() override;
   void DidCreateContextSuccessfully() override;
-  void BlockDomainFrom3DAPIs(const GURL& url,
-                             Delegate::DomainGuilt guilt) override;
+  void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt) override;
   void DisableGpuCompositing() override;
   bool GpuAccessAllowed() const override;
   gpu::ShaderCacheFactory* GetShaderCacheFactory() override;
@@ -167,11 +154,14 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void BindDiscardableMemoryRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request)
       override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
+#if defined(USE_OZONE)
+  void TerminateGpuProcess(const std::string& message) override;
+  void SendGpuProcessMessage(IPC::Message* message) override;
+#endif
 
   // Message handlers.
-#if defined(OS_ANDROID)
-  void OnDestroyingVideoSurfaceAck();
-#endif
   void OnFieldTrialActivated(const std::string& trial_name);
 
   bool LaunchGpuProcess();
@@ -188,12 +178,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // GPU process id in case GPU is not in-process.
   base::ProcessId process_id_ = base::kNullProcessId;
-
-  // List of connection error handlers for the GpuService.
-  std::vector<base::OnceClosure> connection_error_handlers_;
-
-  // A callback to signal the completion of a SendDestroyingVideoSurface call.
-  base::Closure send_destroying_video_surface_done_cb_;
 
   // Qeueud messages to send when the process launches.
   base::queue<IPC::Message*> queued_messages_;
@@ -217,6 +201,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
+
+  // The GPU process reported failure to initialize.
+  bool did_fail_initialize_ = false;
 
   // The total number of GPU process crashes.
   static base::subtle::Atomic32 gpu_crash_count_;

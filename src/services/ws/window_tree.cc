@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/client_change.h"
 #include "services/ws/client_change_tracker.h"
@@ -20,9 +21,11 @@
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
 #include "services/ws/pointer_watcher.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/server_window.h"
 #include "services/ws/topmost_window_observer.h"
 #include "services/ws/window_delegate_impl.h"
+#include "services/ws/window_manager_interface.h"
 #include "services/ws/window_service.h"
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
@@ -43,6 +46,8 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -67,6 +72,11 @@ uint32_t GenerateEventAckId() {
   return 0x1000000 | (rand() & 0xffffff);
 }
 
+gfx::Insets MakeInsetsPositive(const gfx::Insets& insets) {
+  return gfx::Insets(std::max(0, insets.top()), std::max(0, insets.left()),
+                     std::max(0, insets.bottom()), std::max(0, insets.right()));
+}
+
 }  // namespace
 
 // Used to track events sent to the client.
@@ -79,6 +89,9 @@ struct WindowTree::InFlightEvent {
   // by the client, it's processed locally for accelerators.
   std::unique_ptr<ui::Event> event;
 };
+
+WindowTree::KnownWindow::KnownWindow() = default;
+WindowTree::KnownWindow::~KnownWindow() = default;
 
 WindowTree::WindowTree(WindowService* window_service,
                        ClientSpecificId client_id,
@@ -102,11 +115,11 @@ WindowTree::~WindowTree() {
                      DeleteClientRootReason::kDestructor);
   }
 
-  while (!client_created_windows_.empty()) {
+  while (FindFirstClientCreatedWindow()) {
     // RemoveWindowFromKnownWindows() should make it such that the Window is no
     // longer recognized as being created (owned) by this client.
     const bool delete_if_owned = true;
-    RemoveWindowFromKnownWindows(client_created_windows_.begin()->first,
+    RemoveWindowFromKnownWindows(FindFirstClientCreatedWindow(),
                                  delete_if_owned);
   }
 
@@ -119,15 +132,14 @@ void WindowTree::InitForEmbed(aura::Window* root,
   ServerWindow* server_window =
       window_service_->GetServerWindowForWindowCreateIfNecessary(root);
   const ClientWindowId client_window_id = server_window->frame_sink_id();
-  AddWindowToKnownWindows(root, client_window_id);
+  AddWindowToKnownWindows(root, client_window_id, nullptr);
   const bool is_top_level = false;
   ClientRoot* client_root = CreateClientRoot(root, is_top_level);
 
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root).id();
   const ClientWindowId focused_window_id =
-      root->HasFocus() ? window_to_client_window_id_map_[root]
-                       : ClientWindowId();
+      root->HasFocus() ? ClientWindowIdForWindow(root) : ClientWindowId();
   const bool drawn = root->IsVisible() && root->GetHost();
   window_tree_client_->OnEmbed(WindowToWindowData(root),
                                std::move(window_tree_ptr), display_id,
@@ -180,25 +192,27 @@ void WindowTree::SendEventToClient(aura::Window* window,
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnWillSendEventToClient(client_id_, event_id);
 
+  std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
   // Translate the root location for located events. Event's root location
   // should be in the coordinate of the root window, however the root for the
   // target window in the client can be different from the one in the server,
   // thus the root location needs to be converted from the original coordinate
   // to the one used in the client. See also 'WindowTreeTest.EventLocation' test
   // case.
-  std::unique_ptr<ui::Event> event_to_send =
-      PointerWatcher::CreateEventForClient(event);
   if (event.IsLocatedEvent()) {
-    aura::Window* client_root_window = GetClientRootWindowFor(window);
-    // The client_root_ may have been removed on shutdown.
-    if (client_root_window) {
+    ClientRoot* client_root = FindClientRootContaining(window);
+    // The |client_root| may have been removed on shutdown.
+    if (client_root) {
       gfx::PointF root_location =
           event_to_send->AsLocatedEvent()->root_location_f();
       aura::Window::ConvertPointToTarget(window->GetRootWindow(),
-                                         client_root_window, &root_location);
+                                         client_root->window(), &root_location);
       event_to_send->AsLocatedEvent()->set_root_location_f(root_location);
     }
   }
+  DVLOG(4) << "SendEventToClient window="
+           << ServerWindow::GetMayBeNull(window)->GetIdForDebugging()
+           << " event_type=" << ui::EventTypeName(event.type());
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
       std::move(event_to_send), matches_pointer_watcher);
@@ -214,6 +228,10 @@ void WindowTree::SendPointerWatcherEventToClient(
 bool WindowTree::IsTopLevel(aura::Window* window) {
   auto iter = FindClientRootWithRoot(window);
   return iter != client_roots_.end() && (*iter)->is_top_level();
+}
+
+aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
+  return GetWindowByClientId(MakeClientWindowId(transport_window_id));
 }
 
 void WindowTree::RequestClose(ServerWindow* window) {
@@ -248,7 +266,7 @@ void WindowTree::CompleteScheduleEmbedForExistingClient(
     aura::Window* window,
     const ClientWindowId& id,
     const base::UnguessableToken& token) {
-  AddWindowToKnownWindows(window, id);
+  AddWindowToKnownWindows(window, id, nullptr);
   const bool is_top_level = false;
   ClientRoot* client_root = CreateClientRoot(window, is_top_level);
 
@@ -279,10 +297,19 @@ bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
   return false;
 }
 
-ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) {
-  auto iter = window_to_client_window_id_map_.find(window);
-  return iter == window_to_client_window_id_map_.end() ? ClientWindowId()
-                                                       : iter->second;
+bool WindowTree::IsWindowKnown(aura::Window* window) const {
+  return window && known_windows_map_.count(window) > 0u;
+}
+
+ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
+  auto iter = known_windows_map_.find(window);
+  return iter == known_windows_map_.end() ? ClientWindowId()
+                                          : iter->second.client_window_id;
+}
+
+ClientRoot* WindowTree::GetClientRootForWindow(aura::Window* window) {
+  auto iter = FindClientRootWithRoot(window);
+  return iter == client_roots_.end() ? nullptr : iter->get();
 }
 
 ClientRoot* WindowTree::CreateClientRoot(aura::Window* window,
@@ -313,6 +340,7 @@ void WindowTree::DeleteClientRoot(ClientRoot* client_root,
   aura::Window* window = client_root->window();
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  client_root->UnattachChildFrameSinkIdRecursive(server_window);
   if (server_window->capture_owner() == this) {
     // This client will no longer know about |window|, so it should not receive
     // any events sent to the client.
@@ -392,25 +420,23 @@ aura::Window* WindowTree::GetWindowByClientId(const ClientWindowId& id) {
   return iter == client_window_id_to_window_map_.end() ? nullptr : iter->second;
 }
 
-aura::Window* WindowTree::GetWindowByTransportId(Id transport_window_id) {
-  return GetWindowByClientId(MakeClientWindowId(transport_window_id));
-}
-
 bool WindowTree::IsClientCreatedWindow(aura::Window* window) {
-  return window && client_created_windows_.count(window) > 0u;
+  auto iter = known_windows_map_.find(window);
+  return iter == known_windows_map_.end() ? false
+                                          : iter->second.is_client_created;
 }
 
 bool WindowTree::IsClientRootWindow(aura::Window* window) {
   return window && FindClientRootWithRoot(window) != client_roots_.end();
 }
 
-aura::Window* WindowTree::GetClientRootWindowFor(aura::Window* window) {
+ClientRoot* WindowTree::FindClientRootContaining(aura::Window* window) {
   if (!window)
     return nullptr;
   auto iter = FindClientRootWithRoot(window);
   if (iter != client_roots_.end())
-    return iter->get()->window();
-  return GetClientRootWindowFor(window->parent());
+    return iter->get();
+  return FindClientRootContaining(window->parent());
 }
 
 WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
@@ -424,14 +450,19 @@ WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
   return client_roots_.end();
 }
 
-bool WindowTree::IsWindowKnown(aura::Window* window) const {
-  return window && window_to_client_window_id_map_.count(window) > 0u;
-}
-
 bool WindowTree::IsWindowRootOfAnotherClient(aura::Window* window) const {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   return server_window && server_window->embedded_window_tree() != nullptr &&
          server_window->embedded_window_tree() != this;
+}
+
+bool WindowTree::DoesAnyAncestorInterceptEvents(ServerWindow* window) {
+  if (window->embedding() && window->embedding()->embedding_tree() != this &&
+      window->embedding()->embedding_tree_intercepts_events()) {
+    return true;
+  }
+  ServerWindow* parent = ServerWindow::GetMayBeNull(window->window()->parent());
+  return parent && DoesAnyAncestorInterceptEvents(parent);
 }
 
 void WindowTree::OnCaptureLost(aura::Window* lost_capture) {
@@ -492,21 +523,33 @@ void WindowTree::OnPerformDragDropDone(uint32_t change_id, int drag_result) {
       change_id, drag_result != ui::DragDropTypes::DRAG_NONE, drag_result);
 }
 
+aura::Window* WindowTree::FindFirstClientCreatedWindow() {
+  for (auto& pair : known_windows_map_) {
+    if (pair.second.is_client_created)
+      return pair.first;
+  }
+  return nullptr;
+}
+
 aura::Window* WindowTree::AddClientCreatedWindow(
     const ClientWindowId& id,
     bool is_top_level,
     std::unique_ptr<aura::Window> window_ptr) {
   aura::Window* window = window_ptr.get();
-  client_created_windows_[window] = std::move(window_ptr);
   ServerWindow::Create(window, this, id, is_top_level);
-  AddWindowToKnownWindows(window, id);
+  AddWindowToKnownWindows(window, id, std::move(window_ptr));
   return window;
 }
 
-void WindowTree::AddWindowToKnownWindows(aura::Window* window,
-                                         const ClientWindowId& id) {
-  DCHECK_EQ(0u, window_to_client_window_id_map_.count(window));
-  window_to_client_window_id_map_[window] = id;
+void WindowTree::AddWindowToKnownWindows(
+    aura::Window* window,
+    const ClientWindowId& id,
+    std::unique_ptr<aura::Window> owned_window) {
+  DCHECK(!IsWindowKnown(window));
+  KnownWindow& known_window = known_windows_map_[window];
+  known_window.client_window_id = id;
+  known_window.is_client_created = owned_window.get() != nullptr;
+  known_window.owned_window = std::move(owned_window);
 
   DCHECK(IsWindowKnown(window));
   client_window_id_to_window_map_[id] = window;
@@ -517,21 +560,33 @@ void WindowTree::AddWindowToKnownWindows(aura::Window* window,
 void WindowTree::RemoveWindowFromKnownWindows(aura::Window* window,
                                               bool delete_if_owned) {
   DCHECK(IsWindowKnown(window));
-  auto client_iter = client_created_windows_.find(window);
-  if (client_iter != client_created_windows_.end()) {
+
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  ClientRoot* client_root = FindClientRootContaining(window);
+  if (client_root)
+    client_root->UnattachChildFrameSinkIdRecursive(server_window);
+
+  server_window->set_attached_frame_sink_id(viz::FrameSinkId());
+
+  auto iter = known_windows_map_.find(window);
+  DCHECK(iter != known_windows_map_.end());
+  if (iter->second.owned_window) {
     window->RemoveObserver(this);
     if (!delete_if_owned) {
       // |window| is in the process of being deleted, release() to avoid double
       // deletion.
-      client_iter->second.release();
+      iter->second.owned_window.release();
     }
-    client_created_windows_.erase(client_iter);
+    iter->second.owned_window.reset();
   }
+  // Sanity check to make sure deletion didn't result in removal
+  DCHECK(iter == known_windows_map_.find(window));
+
   // Remove from these maps after destruction. This is necessary as destruction
   // may end up expecting to find a ServerWindow.
-  auto iter = window_to_client_window_id_map_.find(window);
-  client_window_id_to_window_map_.erase(iter->second);
-  window_to_client_window_id_map_.erase(iter);
+  DCHECK(iter != known_windows_map_.end());
+  client_window_id_to_window_map_.erase(iter->second.client_window_id);
+  known_windows_map_.erase(iter);
 }
 
 void WindowTree::RemoveWindowFromKnownWindowsRecursive(
@@ -569,9 +624,7 @@ Id WindowTree::ClientWindowIdToTransportId(
 
 Id WindowTree::TransportIdForWindow(aura::Window* window) const {
   DCHECK(IsWindowKnown(window));
-  auto iter = window_to_client_window_id_map_.find(window);
-  DCHECK(iter != window_to_client_window_id_map_.end());
-  return ClientWindowIdToTransportId(iter->second);
+  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
 }
 
 ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
@@ -732,6 +785,14 @@ bool WindowTree::SetCaptureImpl(const ClientWindowId& window_id) {
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+
+  if (DoesAnyAncestorInterceptEvents(server_window)) {
+    // If an ancestor is intercepting events, than the descendants are not
+    // allowed to set capture. This is primarily to prevent renderers from
+    // setting capture.
+    DVLOG(1) << "SetCapture failed (ancestor intercepts events)";
+    return false;
+  }
 
   wm::CaptureController* capture_controller = wm::CaptureController::Get();
   DCHECK(capture_controller);
@@ -935,28 +996,6 @@ bool WindowTree::SetModalTypeImpl(const ClientWindowId& client_window_id,
   return true;
 }
 
-bool WindowTree::SetChildModalParentImpl(const ClientWindowId& child_id,
-                                         const ClientWindowId& parent_id) {
-  DVLOG(3) << "setting child window modal parent client=" << client_id_
-           << " child_id=" << child_id << " parent_id=" << parent_id;
-  aura::Window* child = GetWindowByClientId(child_id);
-  aura::Window* parent = GetWindowByClientId(parent_id);
-  // A value of null for |parent_id| resets the modal parent.
-  if (!child) {
-    DVLOG(1) << "SetChildModalParent failed (invalid id)";
-    return false;
-  }
-
-  if (!IsClientCreatedWindow(child) ||
-      (parent && !IsClientCreatedWindow(parent))) {
-    DVLOG(1) << "SetChildModalParent failed (access denied)";
-    return false;
-  }
-
-  wm::SetModalParent(child, parent);
-  return true;
-}
-
 bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
                                          bool visible) {
   aura::Window* window = GetWindowByClientId(window_id);
@@ -991,21 +1030,39 @@ bool WindowTree::SetWindowPropertyImpl(
     DVLOG(1) << "SetWindowProperty failed (no window)";
     return false;
   }
-  DCHECK(window_service_->property_converter()->IsTransportNameRegistered(name))
-      << "Attempting to set an unregistered property; this is not implemented. "
-      << "property name=" << name;
+  aura::PropertyConverter* property_converter =
+      window_service_->property_converter();
+  if (!property_converter->IsTransportNameRegistered(name)) {
+    NOTREACHED() << "Attempting to set an unregistered property; this is not "
+                    "implemented. property name="
+                 << name;
+    return false;
+  }
   if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
     DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
     return false;
   }
 
-  ClientChange change(property_change_tracker_.get(), window,
-                      ClientChangeType::kProperty);
+  ClientChange change(
+      property_change_tracker_.get(), window, ClientChangeType::kProperty,
+      property_converter->GetPropertyKeyFromTransportName(name));
+
+  // Special handle the property whose value is a pointer to aura::Window since
+  // property converter can't convert the transported value.
+  const aura::WindowProperty<aura::Window*>* property =
+      property_converter->GetWindowPtrProperty(name);
+  if (property) {
+    aura::Window* prop_window = nullptr;
+    if (value.has_value())
+      prop_window = GetWindowByTransportId(mojo::ConvertTo<Id>(value.value()));
+    window->SetProperty(property, prop_window);
+    return true;
+  }
+
   std::unique_ptr<std::vector<uint8_t>> data;
   if (value.has_value())
     data = std::make_unique<std::vector<uint8_t>>(value.value());
-  window_service_->property_converter()->SetPropertyFromTransportValue(
-      window, name, data.get());
+  property_converter->SetPropertyFromTransportValue(window, name, data.get());
   return true;
 }
 
@@ -1025,7 +1082,8 @@ bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
   }
 
   const bool owner_intercept_events =
-      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (connection_type_ != ConnectionType::kEmbedding &&
+       (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0);
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(this, window, owner_intercept_events);
   embedding->Init(window_service_, std::move(window_tree_client_ptr),
@@ -1081,11 +1139,11 @@ bool WindowTree::SetWindowBoundsImpl(
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const gfx::Rect original_bounds =
       IsTopLevel(window) ? window->GetBoundsInScreen() : window->bounds();
+  const bool local_surface_id_changed =
+      server_window->local_surface_id() != local_surface_id;
 
-  if (original_bounds == bounds &&
-      server_window->local_surface_id() == local_surface_id) {
+  if (original_bounds == bounds && !local_surface_id_changed)
     return true;
-  }
 
   ClientChange change(property_change_tracker_.get(), window,
                       ClientChangeType::kBounds);
@@ -1114,8 +1172,21 @@ bool WindowTree::SetWindowBoundsImpl(
     return false;
   }
 
-  if (window->bounds() == original_bounds)
-    return false;
+  if (window->bounds() == original_bounds) {
+    if (local_surface_id_changed) {
+      // If the bounds didn't change, but the LocalSurfaceId did, then the
+      // LocalSurfaceId needs to be propagated to any embeddings.
+      if (server_window->HasEmbedding() &&
+          server_window->embedding()->embedding_tree() == this) {
+        WindowTree* embedded_tree = server_window->embedding()->embedded_tree();
+        ClientRoot* embedded_client_root =
+            embedded_tree->GetClientRootForWindow(window);
+        DCHECK(embedded_client_root);
+        embedded_client_root->OnLocalSurfaceIdChanged();
+      }
+    }
+    return (bounds == original_bounds);
+  }
 
   if (window->bounds() == bounds &&
       server_window->local_surface_id() == local_surface_id) {
@@ -1243,6 +1314,24 @@ void WindowTree::OnEmbeddedClientConnectionLost(Embedding* embedding) {
   ServerWindow::GetMayBeNull(embedding->window())->SetEmbedding(nullptr);
 }
 
+void WindowTree::OnWindowHierarchyChanging(
+    const HierarchyChangeParams& params) {
+  if (params.target != params.receiver || !IsClientCreatedWindow(params.target))
+    return;
+
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(params.target);
+  DCHECK(server_window);  // non-null because of IsClientCreatedWindow() check.
+  ClientRoot* old_root = FindClientRootContaining(params.old_parent);
+  ClientRoot* new_root = FindClientRootContaining(params.new_parent);
+  if (old_root == new_root)
+    return;
+
+  if (old_root)
+    old_root->UnattachChildFrameSinkIdRecursive(server_window);
+  if (new_root)
+    new_root->AttachChildFrameSinkIdRecursive(server_window);
+}
+
 void WindowTree::OnWindowDestroyed(aura::Window* window) {
   DCHECK(IsWindowKnown(window));
 
@@ -1254,11 +1343,8 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
   if (iter != client_roots_.end())
     DeleteClientRoot(iter->get(), WindowTree::DeleteClientRootReason::kDeleted);
 
-  DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
-  const ClientWindowId client_window_id =
-      window_to_client_window_id_map_[window];
-  window_tree_client_->OnWindowDeleted(
-      ClientWindowIdToTransportId(client_window_id));
+  DCHECK(IsWindowKnown(window));
+  window_tree_client_->OnWindowDeleted(TransportIdForWindow(window));
 
   const bool delete_if_owned = false;
   RemoveWindowFromKnownWindows(window, delete_if_owned);
@@ -1423,29 +1509,72 @@ void WindowTree::SetClientArea(
       insets, additional_client_areas.value_or(std::vector<gfx::Rect>()));
 }
 
-void WindowTree::SetHitTestMask(Id transport_window_id,
-                                const base::Optional<gfx::Rect>& mask) {
+void WindowTree::SetHitTestInsets(Id transport_window_id,
+                                  const gfx::Insets& mouse,
+                                  const gfx::Insets& touch) {
   const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
   aura::Window* window = GetWindowByClientId(window_id);
-  DVLOG(3) << "SetHitTestMask client window_id=" << window_id.ToString()
-           << " mask=" << (mask ? mask.value().ToString() : "null");
+  DVLOG(3) << "SetHitTestInsets client window_id=" << window_id.ToString()
+           << " mouse=" << mouse.ToString() << " touch=" << touch.ToString();
   if (!window) {
-    DVLOG(1) << "SetHitTestMask failed (invalid window id)";
+    DVLOG(1) << "SetHitTestInsets failed (invalid window id)";
     return;
   }
   if (!IsClientCreatedWindow(window)) {
-    DVLOG(1) << "SetHitTestMask failed (access denied)";
-    return;
-  }
-  const gfx::Rect window_local_bounds(window->bounds().size());
-  if (mask && !window_local_bounds.Contains(mask.value())) {
-    DVLOG(1) << "SetHitTestMask failed (mask extends beyond window bounds)";
+    DVLOG(1) << "SetHitTestInsets failed (access denied)";
     return;
   }
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   DCHECK(server_window);  // Must exist because of preceding conditionals.
-  server_window->SetHitTestMask(mask);
+  server_window->SetHitTestInsets(MakeInsetsPositive(mouse),
+                                  MakeInsetsPositive(touch));
+}
+
+void WindowTree::AttachFrameSinkId(Id transport_window_id,
+                                   const viz::FrameSinkId& f) {
+  if (!f.is_valid()) {
+    DVLOG(3) << "AttachFrameSinkId failed (invalid frame sink)";
+    return;
+  }
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window || !IsClientCreatedWindow(window)) {
+    DVLOG(3) << "AttachFrameSinkId failed (invalid window id)";
+    return;
+  }
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  DCHECK(server_window);  // Must exist because of preceding conditionals.
+  if (server_window->attached_frame_sink_id() == f)
+    return;
+  if (f.is_valid() && server_window->attached_frame_sink_id().is_valid()) {
+    DVLOG(3) << "AttachFrameSinkId failed (window already has frame sink)";
+    return;
+  }
+  server_window->set_attached_frame_sink_id(f);
+  ClientRoot* client_root = FindClientRootContaining(window);
+  if (client_root)
+    client_root->AttachChildFrameSinkId(server_window);
+}
+
+void WindowTree::UnattachFrameSinkId(Id transport_window_id) {
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window || !IsClientCreatedWindow(window)) {
+    DVLOG(3) << "UnattachFrameSinkId failed (invalid window id)";
+    return;
+  }
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  DCHECK(server_window);  // Must exist because of preceding conditionals.
+  if (!server_window->attached_frame_sink_id().is_valid()) {
+    DVLOG(3) << "UnattachFrameSinkId failed (frame sink already cleared)";
+    return;
+  }
+
+  ClientRoot* client_root = FindClientRootContaining(window);
+  if (client_root)
+    client_root->UnattachChildFrameSinkId(server_window);
+  server_window->set_attached_frame_sink_id(viz::FrameSinkId());
 }
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
@@ -1558,14 +1687,6 @@ void WindowTree::SetModalType(uint32_t change_id,
       change_id, SetModalTypeImpl(MakeClientWindowId(window_id), type));
 }
 
-void WindowTree::SetChildModalParent(uint32_t change_id,
-                                     Id window_id,
-                                     Id parent_window_id) {
-  window_tree_client_->OnChangeCompleted(
-      change_id, SetChildModalParentImpl(MakeClientWindowId(window_id),
-                                         MakeClientWindowId(parent_window_id)));
-}
-
 void WindowTree::ReorderWindow(uint32_t change_id,
                                Id transport_window_id,
                                Id transport_relative_window_id,
@@ -1658,7 +1779,8 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const bool owner_intercept_events =
-      (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (connection_type_ != ConnectionType::kEmbedding &&
+       (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0);
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, token);
   std::unique_ptr<Embedding> embedding =
@@ -1796,8 +1918,13 @@ void WindowTree::StackAtTop(uint32_t change_id, Id window_id) {
   window_tree_client_->OnChangeCompleted(change_id, result);
 }
 
-void WindowTree::PerformWmAction(Id window_id, const std::string& action) {
-  NOTIMPLEMENTED_LOG_ONCE();
+void WindowTree::BindWindowManagerInterface(
+    const std::string& name,
+    mojom::WindowManagerAssociatedRequest window_manager) {
+  auto wm_interface = window_service_->delegate()->CreateWindowManagerInterface(
+      this, name, window_manager.PassHandle());
+  if (wm_interface)
+    window_manager_interfaces_.push_back(std::move(wm_interface));
 }
 
 void WindowTree::GetCursorLocationMemory(
@@ -1923,6 +2050,67 @@ void WindowTree::StopObservingTopmostWindow() {
     return;
   }
   topmost_window_observer_.reset();
+}
+
+void WindowTree::CancelActiveTouchesExcept(Id not_cancelled_window_id) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "CancelActiveTouchesExcept failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "CancelActiveTouchesExcept not_cancelled_window_id="
+           << MakeClientWindowId(not_cancelled_window_id).ToString();
+  aura::Window* not_cancelled_window = nullptr;
+  if (not_cancelled_window_id != kInvalidTransportId) {
+    not_cancelled_window = GetWindowByTransportId(not_cancelled_window_id);
+    if (!not_cancelled_window || !IsClientCreatedWindow(not_cancelled_window)) {
+      DVLOG(1) << "CancelActiveTouchesExcept failed (invalid window)";
+      return;
+    }
+  }
+  window_service_->env()->gesture_recognizer()->CancelActiveTouchesExcept(
+      not_cancelled_window);
+}
+
+void WindowTree::CancelActiveTouches(Id window_id) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "CancelActiveTouches failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "CancelActiveTouches window_id="
+           << MakeClientWindowId(window_id).ToString();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window || !IsClientCreatedWindow(window)) {
+    DVLOG(1) << "CancelActiveTouches failed (invalid window)";
+    return;
+  }
+  window_service_->env()->gesture_recognizer()->CancelActiveTouches(window);
+}
+
+void WindowTree::TransferGestureEventsTo(Id current_id,
+                                         Id new_id,
+                                         bool should_cancel) {
+  if (connection_type_ == ConnectionType::kEmbedding) {
+    DVLOG(1) << "TransferGestureEventsTo failed (access denied)";
+    return;
+  }
+  DVLOG(3) << "TransferGestureEventsTo current_id="
+           << MakeClientWindowId(current_id).ToString()
+           << " new_id=" << MakeClientWindowId(new_id)
+           << " should_cancel=" << should_cancel;
+  aura::Window* current_window = GetWindowByTransportId(current_id);
+  aura::Window* new_window = GetWindowByTransportId(new_id);
+  if (!current_window || !IsClientCreatedWindow(current_window)) {
+    DVLOG(1) << "TransferGestureEventsTo failed (invalid current_window)";
+    return;
+  }
+  if (!new_window || !IsClientCreatedWindow(new_window)) {
+    DVLOG(1) << "TransferGestureEventsTo failed (invalid new_window)";
+    return;
+  }
+  window_service_->env()->gesture_recognizer()->TransferEventsTo(
+      current_window, new_window,
+      should_cancel ? ui::TransferTouchesBehavior::kCancel
+                    : ui::TransferTouchesBehavior::kDontCancel);
 }
 
 }  // namespace ws

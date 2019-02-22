@@ -10,6 +10,7 @@
 #include "components/offline_pages/core/prefetch/proto/offline_pages.pb.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -39,9 +40,9 @@ class GetOperationRequestTest : public PrefetchRequestTestBase {
  public:
   std::unique_ptr<GetOperationRequest> CreateRequest(
       PrefetchRequestFinishedCallback callback) {
-    return std::unique_ptr<GetOperationRequest>(
-        new GetOperationRequest(kTestOperationName, kTestChannel,
-                                request_context(), std::move(callback)));
+    return std::unique_ptr<GetOperationRequest>(new GetOperationRequest(
+        kTestOperationName, kTestChannel, shared_url_loader_factory(),
+        std::move(callback)));
   }
 };
 
@@ -49,25 +50,28 @@ TEST_F(GetOperationRequestTest, RequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GetOperationRequest> request(CreateRequest(callback.Get()));
 
-  net::TestURLFetcher* fetcher = GetRunningFetcher();
-  GURL fetcher_url = fetcher->GetOriginalURL();
-  EXPECT_TRUE(fetcher_url.SchemeIs(url::kHttpsScheme));
-  EXPECT_EQ(kServerPathForTestOperation, fetcher_url.path());
-  EXPECT_TRUE(base::StartsWith(fetcher_url.query(), "key",
+  auto* pending_request = GetPendingRequest();
+  DCHECK(pending_request);
+  GURL request_url = pending_request->request.url;
+  EXPECT_TRUE(request_url.SchemeIs(url::kHttpsScheme));
+  EXPECT_EQ(kServerPathForTestOperation, request_url.path());
+  EXPECT_TRUE(base::StartsWith(request_url.query(), "key",
                                base::CompareCase::SENSITIVE));
 
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
+  net::HttpRequestHeaders headers = pending_request->request.headers;
   std::string content_type_header;
   headers.GetHeader(net::HttpRequestHeaders::kContentType,
                     &content_type_header);
   EXPECT_EQ("application/x-protobuf", content_type_header);
 
   // Experiment header should not be set.
-  EXPECT_EQ("", GetExperiementHeaderValue(fetcher));
+  EXPECT_EQ("", GetExperiementHeaderValue(pending_request));
 
-  EXPECT_TRUE(fetcher->upload_content_type().empty());
-  EXPECT_TRUE(fetcher->upload_data().empty());
+  std::string upload_content_type;
+  pending_request->request.headers.GetHeader(
+      net::HttpRequestHeaders::kContentType, &upload_content_type);
+  EXPECT_FALSE(upload_content_type.empty());
+  EXPECT_TRUE(network::GetUploadData(pending_request->request).empty());
 }
 
 TEST_F(GetOperationRequestTest, ExperimentHeaderInRequestData) {
@@ -76,11 +80,12 @@ TEST_F(GetOperationRequestTest, ExperimentHeaderInRequestData) {
 
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GetOperationRequest> request(CreateRequest(callback.Get()));
-  net::TestURLFetcher* fetcher = GetRunningFetcher();
+  auto* pending_request = GetPendingRequest();
+  DCHECK(pending_request);
 
   // Experiment header should be set.
   EXPECT_EQ(kExperimentValueSetInFieldTrial,
-            GetExperiementHeaderValue(fetcher));
+            GetExperiementHeaderValue(pending_request));
 }
 
 TEST_F(GetOperationRequestTest, EmptyResponse) {
@@ -94,8 +99,9 @@ TEST_F(GetOperationRequestTest, EmptyResponse) {
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
                       SaveArg<2>(&pages)));
   RespondWithData("");
+  RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_EQ(std::string(kTestOperationName), operation_name);
   EXPECT_TRUE(pages.empty());
 }
@@ -111,8 +117,9 @@ TEST_F(GetOperationRequestTest, InvalidResponse) {
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
                       SaveArg<2>(&pages)));
   RespondWithData("Some invalid data");
+  RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_EQ(std::string(kTestOperationName), operation_name);
   EXPECT_TRUE(pages.empty());
 }

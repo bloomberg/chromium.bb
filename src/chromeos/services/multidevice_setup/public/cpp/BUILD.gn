@@ -35,7 +35,18 @@ source_set("android_sms_app_helper_delegate") {
     "android_sms_app_helper_delegate.h",
   ]
 
-  public_deps = [
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("android_sms_pairing_state_tracker") {
+  sources = [
+    "android_sms_pairing_state_tracker.cc",
+    "android_sms_pairing_state_tracker.h",
+  ]
+
+  deps = [
     "//base",
   ]
 }
@@ -48,7 +59,34 @@ source_set("prefs") {
 
   deps = [
     "//base",
+    "//chromeos/services/multidevice_setup/public/mojom",
     "//components/prefs:prefs",
+  ]
+}
+
+source_set("first_run_field_trial") {
+  sources = [
+    "first_run_field_trial.cc",
+    "first_run_field_trial.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromeos",
+    "//components/variations/proto",
+    "//components/variations/service",
+  ]
+}
+
+source_set("oobe_completion_tracker") {
+  sources = [
+    "oobe_completion_tracker.cc",
+    "oobe_completion_tracker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
   ]
 }
 
@@ -70,16 +108,21 @@ static_library("test_support") {
   sources = [
     "fake_android_sms_app_helper_delegate.cc",
     "fake_android_sms_app_helper_delegate.h",
+    "fake_android_sms_pairing_state_tracker.cc",
+    "fake_android_sms_pairing_state_tracker.h",
     "fake_auth_token_validator.cc",
     "fake_auth_token_validator.h",
     "fake_multidevice_setup.cc",
     "fake_multidevice_setup.h",
     "fake_multidevice_setup_client.cc",
     "fake_multidevice_setup_client.h",
+    "fake_privileged_host_device_setter.cc",
+    "fake_privileged_host_device_setter.h",
   ]
 
   public_deps = [
     ":android_sms_app_helper_delegate",
+    ":android_sms_pairing_state_tracker",
     ":auth_token_validator",
     ":cpp",
     "//chromeos/services/multidevice_setup",

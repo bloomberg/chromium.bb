@@ -88,7 +88,6 @@ EditingViewPortElement::CustomStyleForLayoutObject() {
   // We don't want the shadow dom to be editable, so we set this block to
   // read-only in case the input itself is editable.
   style->SetUserModify(EUserModify::kReadOnly);
-  style->SetUnique();
 
   return style;
 }
@@ -169,7 +168,6 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
           ? EUserModify::kReadOnly
           : EUserModify::kReadWritePlaintextOnly);
   text_block_style->SetDisplay(EDisplay::kBlock);
-  text_block_style->SetUnique();
 
   if (!IsHTMLTextAreaElement(host)) {
     text_block_style->SetWhiteSpace(EWhiteSpace::kPre);

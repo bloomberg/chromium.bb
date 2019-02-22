@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -24,7 +25,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
-#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/codec_allocator.h"
 #include "media/media_buildflags.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -100,6 +101,11 @@ void OutputBufferReleased(bool using_async_api,
   pump_cb.Run();
 }
 
+bool IsSurfaceControlEnabled(const gpu::GpuFeatureInfo& info) {
+  return info.status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+         gpu::kGpuFeatureStatusEnabled;
+}
+
 }  // namespace
 
 // static
@@ -115,19 +121,22 @@ PendingDecode::~PendingDecode() = default;
 
 MediaCodecVideoDecoder::MediaCodecVideoDecoder(
     const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
     DeviceInfo* device_info,
-    AVDACodecAllocator* codec_allocator,
+    CodecAllocator* codec_allocator,
     std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
     AndroidOverlayMojoFactoryCB overlay_factory_cb,
     RequestOverlayInfoCB request_overlay_info_cb,
     std::unique_ptr<VideoFrameFactory> video_frame_factory)
     : codec_allocator_(codec_allocator),
       request_overlay_info_cb_(std::move(request_overlay_info_cb)),
+      is_surface_control_enabled_(IsSurfaceControlEnabled(gpu_feature_info)),
       surface_chooser_helper_(
           std::move(surface_chooser),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kForceVideoOverlays),
-          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
+          base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively),
+          is_surface_control_enabled_),
       video_frame_factory_(std::move(video_frame_factory)),
       overlay_factory_cb_(std::move(overlay_factory_cb)),
       device_info_(device_info),
@@ -147,23 +156,24 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
   ReleaseCodec();
   codec_allocator_->StopThread(this);
-
-  if (!media_crypto_context_)
-    return;
-
-  // Cancel previously registered callback (if any).
-  media_crypto_context_->SetMediaCryptoReadyCB(
-      MediaCryptoContext::MediaCryptoReadyCB());
-
-  if (cdm_registration_id_)
-    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
   DVLOG(1) << __func__;
+
+  if (media_crypto_context_) {
+    // Cancel previously registered callback (if any).
+    media_crypto_context_->SetMediaCryptoReadyCB(base::NullCallback());
+    if (cdm_registration_id_)
+      media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
+    media_crypto_context_ = nullptr;
+    cdm_registration_id_ = 0;
+  }
+
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     std::move(reset_cb_).Run();
+
   // Cancel callbacks we no longer want.
   codec_allocator_weak_factory_.InvalidateWeakPtrs();
   CancelPendingDecodes(DecodeStatus::ABORTED);
@@ -302,14 +312,20 @@ void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
+
+  // SurfaceControl allows TextureOwner to be promoted to an overlay in the
+  // compositing pipeline itself.
+  const bool use_texture_owner_as_overlays = is_surface_control_enabled_;
+
   // Only ask for promotion hints if we can actually switch surfaces, since we
-  // wouldn't be able to do anything with them.  Also, if threaded texture
-  // mailboxes are enabled, then we turn off overlays anyway.
+  // wouldn't be able to do anything with them. Also, if threaded texture
+  // mailboxes are enabled, then we turn off overlays anyway. And if texture
+  // owner can be used as an overlay, no promotion hints are necessary.
   const bool want_promotion_hints =
       device_info_->IsSetOutputSurfaceSupported() &&
-      !enable_threaded_texture_mailboxes_;
+      !enable_threaded_texture_mailboxes_ && !use_texture_owner_as_overlays;
   video_frame_factory_->Initialize(
-      want_promotion_hints,
+      want_promotion_hints, use_texture_owner_as_overlays,
       base::Bind(&MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized,
                  weak_factory_.GetWeakPtr()));
 }
@@ -430,6 +446,8 @@ void MediaCodecVideoDecoder::CreateCodec() {
 
   scoped_refptr<CodecConfig> config = new CodecConfig();
   config->codec = decoder_config_.codec();
+  config->csd0 = csd0_;
+  config->csd1 = csd1_;
   config->requires_secure_codec = requires_secure_codec_;
   // TODO(liberato): per android_util.h, remove JavaObjectPtr.
   config->media_crypto =
@@ -437,6 +455,8 @@ void MediaCodecVideoDecoder::CreateCodec() {
           media_crypto_);
   config->initial_expected_coded_size = decoder_config_.coded_size();
   config->surface_bundle = target_surface_bundle_;
+  config->container_color_space = decoder_config_.color_space_info();
+  config->hdr_metadata = decoder_config_.hdr_metadata();
 
   // Use the asynchronous API if we can.
   if (device_info_->IsAsyncApiSupported()) {

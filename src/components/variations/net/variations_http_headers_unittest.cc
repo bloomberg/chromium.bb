@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -146,7 +147,7 @@ TEST(VariationsHttpHeadersTest, ShouldAppendHeaders) {
       {"https://a.b.googleweblight.com", false},
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     const GURL url(cases[i].url);
     EXPECT_EQ(cases[i].should_append_headers, ShouldAppendVariationHeaders(url))
         << url;

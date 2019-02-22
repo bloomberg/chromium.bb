@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -86,8 +88,10 @@ constexpr char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
 class FakeSelectFileDialog : public ui::SelectFileDialog {
  public:
   FakeSelectFileDialog(ui::SelectFileDialog::Listener* listener,
-                       std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)) {}
+                       std::unique_ptr<ui::SelectFilePolicy> policy,
+                       const base::FilePath& drivefs_root)
+      : ui::SelectFileDialog(listener, std::move(policy)),
+        drivefs_root_(drivefs_root) {}
 
   void SelectFileImpl(Type type,
                       const base::string16& title,
@@ -97,8 +101,12 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
                       void* params) override {
-    listener_->FileSelected(base::FilePath("/special/drive-user/root/test_dir"),
-                            0, nullptr);
+    listener_->FileSelected(
+        (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)
+             ? drivefs_root_
+             : base::FilePath("/special/drive-user"))
+            .Append("root/test_dir"),
+        0, nullptr);
   }
 
   bool IsRunning(gfx::NativeWindow owning_window) const override {
@@ -111,16 +119,34 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
 
  private:
   ~FakeSelectFileDialog() override = default;
+
+  const base::FilePath drivefs_root_;
 };
 
 class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
+ public:
+  explicit FakeSelectFileDialogFactory(const base::FilePath& drivefs_root)
+      : drivefs_root_(drivefs_root) {}
+
  private:
   ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new FakeSelectFileDialog(listener, std::move(policy));
+    return new FakeSelectFileDialog(listener, std::move(policy), drivefs_root_);
   }
+
+  const base::FilePath drivefs_root_;
 };
+
+bool TouchFile(const base::FilePath& path,
+               base::StringPiece mtime_string,
+               base::StringPiece atime_string) {
+  base::Time mtime, atime;
+  auto result = base::Time::FromString(mtime_string.data(), &mtime) &&
+                base::Time::FromString(atime_string.data(), &atime) &&
+                base::TouchFile(path, atime, mtime);
+  return result;
+}
 
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
@@ -140,7 +166,7 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!base::CreateDirectory(test_dir))
     return false;
 
-  base::FilePath test_subdir = test_dir.AppendASCII("empty_test_dir");
+  base::FilePath test_subdir = test_dir.AppendASCII("empty_dir");
   if (!base::CreateDirectory(test_subdir))
     return false;
 
@@ -164,10 +190,42 @@ bool InitializeLocalFileSystem(std::string mount_point_name,
   if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
     return false;
 
-  test_file = test_dir.AppendASCII("empty_test_file.foo");
+  test_file = test_dir.AppendASCII("empty_file.foo");
   if (!google_apis::test_util::WriteStringToFile(test_file, ""))
     return false;
 
+  if (!TouchFile(test_dir.Append("empty_dir"), "2011-11-02T04:00:00.000Z",
+                 "2011-11-02T04:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("subdir"), "2011-04-01T18:34:08.234Z",
+                 "2012-01-02T00:00:01.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.xul"), "2011-12-14T00:40:47.330Z",
+                 "2012-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.xul.foo"),
+                 "2012-01-01T10:00:30.000Z", "2012-01-01T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.tiff"), "2011-04-03T11:11:10.000Z",
+                 "2012-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("test_file.tiff.foo"),
+                 "2011-12-14T00:40:47.330Z", "2010-01-02T00:00:00.000Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir.Append("empty_file.foo"), "2011-12-14T00:40:47.330Z",
+                 "2011-12-14T00:40:47.330Z")) {
+    return false;
+  }
+  if (!TouchFile(test_dir, "2012-01-02T00:00:00.000Z",
+                 "2012-01-02T00:00:01.000Z")) {
+    return false;
+  }
   return true;
 }
 
@@ -222,11 +280,10 @@ void AddDirectoryToDriveService(drive::FakeDriveService* fake_drive_service,
 // The hierarchy is the same as for the local file system.
 drive::FakeDriveService* CreateDriveService() {
   drive::FakeDriveService* service = new drive::FakeDriveService;
-  service->LoadAppListForDriveApi("drive/applist.json");
   AddDirectoryToDriveService(service, service->GetRootResourceId(), "test_dir",
                              "2012-01-02T00:00:00.000Z",
                              "2012-01-02T00:00:01.000Z");
-  AddDirectoryToDriveService(service, "test_dir", "empty_test_dir",
+  AddDirectoryToDriveService(service, "test_dir", "empty_dir",
                              "2011-11-02T04:00:00.000Z",
                              "2011-11-02T04:00:00.000Z");
   AddDirectoryToDriveService(service, "test_dir", "subdir",
@@ -244,9 +301,8 @@ drive::FakeDriveService* CreateDriveService() {
   AddFileToDriveService(service, "test/rw", kTestFileContent, "test_dir",
                         "test_file.tiff.foo", "2011-12-14T00:40:47.330Z",
                         "2010-01-02T00:00:00.000Z");
-  AddFileToDriveService(service, "test/rw", "", "test_dir",
-                        "empty_test_file.foo", "2011-12-14T00:40:47.330Z",
-                        "2011-12-14T00:40:47.330Z");
+  AddFileToDriveService(service, "test/rw", "", "test_dir", "empty_file.foo",
+                        "2011-12-14T00:40:47.330Z", "2011-12-14T00:40:47.330Z");
   return service;
 }
 
@@ -284,6 +340,10 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
   FileSystemExtensionApiTestBase() = default;
   ~FileSystemExtensionApiTestBase() override = default;
 
+  bool SetUpUserDataDirectory() override {
+    return drive::SetUpUserDataDirectoryForDriveFsTest();
+  }
+
   void SetUp() override {
     InitTestFileSystem();
     extensions::ExtensionApiTest::SetUp();
@@ -295,9 +355,10 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
     // Mock the Media Router in extension api tests. Dispatches to the message
     // loop now try to handle mojo messages that will call back into Profile
     // creation through the media router, which then confuse the drive code.
-    ON_CALL(media_router_, RegisterMediaSinksObserver(testing::_))
+    media_router_ = std::make_unique<media_router::MockMediaRouter>();
+    ON_CALL(*media_router_, RegisterMediaSinksObserver(testing::_))
         .WillByDefault(testing::Return(true));
-    CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
+    CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
 
     extensions::ExtensionApiTest::SetUpOnMainThread();
   }
@@ -371,7 +432,7 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
   virtual void AddTestMountPoint() = 0;
 
  private:
-  media_router::MockMediaRouter media_router_;
+  std::unique_ptr<media_router::MockMediaRouter> media_router_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemExtensionApiTestBase);
 };
@@ -485,13 +546,21 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // could exist simultaneously.
     DCHECK(!fake_drive_service_);
     fake_drive_service_ = CreateDriveService();
+    base::FilePath drivefs_mount_point;
+    InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
+                              &drivefs_mount_point);
+    fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
+        profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr);
+        nullptr,
+        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
   }
 
   base::ScopedTempDir test_cache_root_;
+  base::ScopedTempDir drivefs_root_;
   drive::FakeDriveService* fake_drive_service_ = nullptr;
+  std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
@@ -635,10 +704,26 @@ class LocalAndDriveFileSystemExtensionApiTest
   // DriveIntegrationService factory function for this test.
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
+    // Ignore signin and lock screen apps profile.
+    if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir() ||
+        profile->GetPath() ==
+            chromeos::ProfileHelper::GetLockScreenAppProfilePath()) {
+      return nullptr;
+    }
+
+    // LocalAndDriveFileSystemExtensionApiTest doesn't expect that several user
+    // profiles could exist simultaneously.
+    DCHECK(!fake_drive_service_);
     fake_drive_service_ = CreateDriveService();
+    base::FilePath drivefs_mount_point;
+    InitializeLocalFileSystem("drive-user/root", &drivefs_root_,
+                              &drivefs_mount_point);
+    fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
+        profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
-        profile, nullptr, fake_drive_service_, "drive",
-        test_cache_root_.GetPath(), nullptr);
+        profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
+        nullptr,
+        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
   }
 
  private:
@@ -648,7 +733,9 @@ class LocalAndDriveFileSystemExtensionApiTest
 
   // For drive volume.
   base::ScopedTempDir test_cache_root_;
+  base::ScopedTempDir drivefs_root_;
   drive::FakeDriveService* fake_drive_service_ = nullptr;
+  std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
   DriveIntegrationServiceFactory::FactoryCallback
       create_drive_integration_service_;
   std::unique_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
@@ -748,7 +835,6 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, FileBrowserHandlers) {
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, Search) {
   // Configure the drive service to return only one search result at a time
   // to simulate paginated searches.
-  fake_drive_service_->set_default_max_results(1);
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/drive_search_test",
       FILE_PATH_LITERAL("manifest.json"),
@@ -765,7 +851,8 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, RetainEntry) {
-  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory());
+  ui::SelectFileDialog::SetFactory(new FakeSelectFileDialogFactory(
+      drivefs_root_.GetPath().Append("drive-user")));
   EXPECT_TRUE(RunFileSystemExtensionApiTest("file_browser/retain_entry",
                                             FILE_PATH_LITERAL("manifest.json"),
                                             "",

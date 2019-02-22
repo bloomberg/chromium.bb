@@ -43,6 +43,9 @@ include_rules = [
 
   # Access to the process specific switches.
   "+services/service_manager/embedder",
+
+  # Allows using test_ws for mash.
+  "+services/ws/test_ws",
 ]
 
 specific_include_rules = {

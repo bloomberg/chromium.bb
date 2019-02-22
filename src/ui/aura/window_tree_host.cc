@@ -243,7 +243,8 @@ void WindowTreeHost::SetSharedInputMethod(ui::InputMethod* input_method) {
 }
 
 ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
+    ui::KeyEvent* event,
+    base::OnceCallback<void(bool)> ack_callback) {
   // If dispatch to IME is already disabled we shouldn't reach here.
   DCHECK(!dispatcher_->should_skip_ime());
   dispatcher_->set_skip_ime(true);
@@ -252,6 +253,7 @@ ui::EventDispatchDetails WindowTreeHost::DispatchKeyEventPostIME(
       event_sink()->OnEventFromSource(event);
   if (!dispatch_details.dispatcher_destroyed)
     dispatcher_->set_skip_ime(false);
+  CallDispatchKeyEventPostIMEAck(event, std::move(ack_callback));
   return dispatch_details;
 }
 
@@ -298,6 +300,11 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
   if (!window_)
     window_ = new Window(nullptr);
   display::Screen::GetScreen()->AddObserver(this);
+}
+
+void WindowTreeHost::IntializeDeviceScaleFactor(float device_scale_factor) {
+  DCHECK(!compositor_->root_layer()) << "Only call this before InitHost()";
+  device_scale_factor_ = device_scale_factor;
 }
 
 void WindowTreeHost::DestroyCompositor() {
@@ -441,10 +448,6 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 ui::EventSink* WindowTreeHost::GetEventSink() {
   return dispatcher_.get();
 }
-
-void WindowTreeHost::OnDisplayAdded(const display::Display& new_display) {}
-
-void WindowTreeHost::OnDisplayRemoved(const display::Display& old_display) {}
 
 void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {

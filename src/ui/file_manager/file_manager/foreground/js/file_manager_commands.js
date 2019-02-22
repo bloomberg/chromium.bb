@@ -69,7 +69,7 @@ CommandUtil.getCommandEntries = function(element) {
  *
  * @param {EventTarget} element Element which is the command event's target.
  * @param {DirectoryModel} directoryModel
- * @return {DirectoryEntry|FakeEntry|FilesAppEntry} The extracted parent entry.
+ * @return {DirectoryEntry|FilesAppEntry} The extracted parent entry.
  */
 CommandUtil.getParentEntry = function(element, directoryModel) {
   if (element instanceof DirectoryTree) {
@@ -238,7 +238,7 @@ CommandUtil.getOnlyOneSelectedDirectory = function(selection) {
 
 /**
  * Returns true if the given entry is the root entry of the volume.
- * @param {VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the entry is a root entry.
  */
@@ -262,7 +262,7 @@ CommandUtil.isFromSelectionMenu = function(event) {
 
 /**
  * If entry is fake/invalid/root, we don't show menu items for regular entries.
- * @param {VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show the menu items for regular entries.
  */
@@ -355,7 +355,7 @@ var CommandHandler = function(fileManager, selectionHandler) {
   chrome.commandLinePrivate.hasSwitch(
       'disable-zip-archiver-packer', function(disabled) {
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
-      }.bind(this));
+      });
 };
 
 /**
@@ -394,6 +394,7 @@ CommandHandler.MenuCommandsForUMA = {
   SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
   HIDDEN_ANDROID_FOLDERS_SHOW: 'toggle-hidden-android-folders-on',
   HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
+  SHARE_WITH_LINUX: 'share-with-linux',
 };
 
 /**
@@ -418,6 +419,7 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_SHOW,
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
+  CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -1628,6 +1630,48 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
   }
 });
 
+
+/**
+ * Shares the selected (single only) Downloads subfolder with crostini
+ * container.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    const entry = CommandUtil.getCommandEntry(event.target);
+    if (entry && entry.isDirectory) {
+      const dir = /** @type {!DirectoryEntry} */ (entry);
+      chrome.fileManagerPrivate.sharePathWithCrostini(
+          dir, () => {
+            if (chrome.runtime.lastError) {
+              console.error(
+                  'Error sharing with linux: ' +
+                  chrome.runtime.lastError.message);
+            } else {
+              Crostini.registerSharedPath(dir, fileManager.volumeManager);
+            }
+          });
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX);
+    }
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    // Must be single directory subfolder of Downloads not already shared.
+    const entries = CommandUtil.getCommandEntries(event.target);
+    event.canExecute = entries.length === 1 && entries[0].isDirectory &&
+        !Crostini.isPathShared(entries[0], fileManager.volumeManager) &&
+        Crostini.canSharePath(entries[0], fileManager.volumeManager);
+    event.command.setHidden(!event.canExecute);
+  }
+});
 
 /**
  * Creates a shortcut of the selected folder (single only).

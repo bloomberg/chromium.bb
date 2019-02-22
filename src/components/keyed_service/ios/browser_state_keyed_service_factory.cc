@@ -4,6 +4,7 @@
 
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -11,26 +12,31 @@
 
 void BrowserStateKeyedServiceFactory::SetTestingFactory(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
-  KeyedServiceFactory::TestingFactoryFunction func;
+    TestingFactory testing_factory) {
+  KeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<web::BrowserState*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](const TestingFactory& testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory.Run(static_cast<web::BrowserState*>(context));
+        },
+        std::move(testing_factory));
   }
-  KeyedServiceFactory::SetTestingFactory(context, func);
+  KeyedServiceFactory::SetTestingFactory(context, std::move(wrapped_factory));
 }
 
 KeyedService* BrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
-  KeyedServiceFactory::TestingFactoryFunction func;
-  if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<web::BrowserState*>(context));
-    };
-  }
-  return KeyedServiceFactory::SetTestingFactoryAndUse(context, func);
+    TestingFactory testing_factory) {
+  DCHECK(testing_factory);
+  return KeyedServiceFactory::SetTestingFactoryAndUse(
+      context, base::BindRepeating(
+                   [](const TestingFactory& testing_factory,
+                      base::SupportsUserData* context) {
+                     return testing_factory.Run(
+                         static_cast<web::BrowserState*>(context));
+                   },
+                   std::move(testing_factory)));
 }
 
 BrowserStateKeyedServiceFactory::BrowserStateKeyedServiceFactory(

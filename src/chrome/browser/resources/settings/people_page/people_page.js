@@ -148,7 +148,9 @@ Polymer({
         if (settings.routes.MANAGE_PROFILE) {
           map.set(
               settings.routes.MANAGE_PROFILE.path,
-              '#picture-subpage-trigger .subpage-arrow button');
+              loadTimeData.getBoolean('diceEnabled') ?
+                  '#edit-profile .subpage-arrow button' :
+                  '#picture-subpage-trigger .subpage-arrow button');
         }
         // </if>
         // <if expr="chromeos">
@@ -229,6 +231,15 @@ Polymer({
         this.showSignoutDialog_ = true;
       }
     }
+  },
+
+  /**
+   * @return {!Element}
+   * @private
+   */
+  getEditPersonAssocControl_: function() {
+    return this.diceEnabled_ ? assert(this.$$('#edit-profile')) :
+                               assert(this.$$('#picture-subpage-trigger'));
   },
 
   // <if expr="chromeos">
@@ -468,9 +479,28 @@ Polymer({
    * @param {?settings.SyncStatus} syncStatus
    * @return {boolean}
    */
-  isAdvancedSyncSettingsVisible_: function(syncStatus) {
+  isPreUnifiedConsentAdvancedSyncSettingsVisible_: function(syncStatus) {
     return !!syncStatus && !!syncStatus.signedIn &&
         !!syncStatus.syncSystemEnabled && !this.unifiedConsentEnabled_;
+  },
+
+  /**
+   * @private
+   * @param {?settings.SyncStatus} syncStatus
+   * @return {boolean}
+   */
+  isAdvancedSyncSettingsSearchable_: function(syncStatus) {
+    return this.isPreUnifiedConsentAdvancedSyncSettingsVisible_(syncStatus) ||
+        !!this.unifiedConsentEnabled_;
+  },
+
+  /**
+   * @private
+   * @return {Element|null}
+   */
+  getAdvancedSyncSettingsAssociatedControl_: function() {
+    return !!this.unifiedConsentEnabled_ ? this.$$('#sync-setup') :
+                                           this.$$('#sync-status');
   },
 
   /**

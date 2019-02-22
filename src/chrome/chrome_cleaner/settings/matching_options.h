@@ -12,12 +12,8 @@ class MatchingOptions {
   bool only_one_footprint() const;
   void set_only_one_footprint(bool only_one_footprint);
 
-  bool find_incomplete_matches() const;
-  void set_find_incomplete_matches(bool find_incomplete_matches);
-
  private:
   bool only_one_footprint_ = false;
-  bool find_incomplete_matches_ = false;
 };
 
 }  // namespace chrome_cleaner

@@ -12,6 +12,14 @@
 
 namespace content {
 
+bool RenderWidgetHostDelegate::DoBrowserControlsShrinkRendererSize() const {
+  return false;
+}
+
+int RenderWidgetHostDelegate::GetTopControlsHeight() const {
+  return 0;
+}
+
 KeyboardEventProcessingResult RenderWidgetHostDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   return KeyboardEventProcessingResult::NOT_HANDLED;

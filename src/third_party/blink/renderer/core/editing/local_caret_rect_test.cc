@@ -698,11 +698,10 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreak) {
       LocalCaretRect(second_br->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
       LocalCaretRectOfPosition(PositionWithAffinity(
           Position::AfterNode(*first_br), TextAffinity::kDownstream)));
-  EXPECT_EQ(LocalCaretRect(second_br->GetLayoutObject(),
-                           LayoutNGEnabled() ? LayoutRect(0, 10, 1, 10)
-                                             : LayoutRect(0, 0, 0, 0)),
-            LocalCaretRectOfPosition(PositionWithAffinity(
-                Position::AfterNode(*second_br), TextAffinity::kDownstream)));
+  EXPECT_EQ(
+      LocalCaretRect(second_br->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+      LocalCaretRectOfPosition(PositionWithAffinity(
+          Position::AfterNode(*second_br), TextAffinity::kDownstream)));
 }
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre) {
@@ -716,10 +715,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre) {
   EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 4), TextAffinity::kDownstream)));
-  // TODO(yoichio): Legacy should return valid rect: crbug.com/812535.
-  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(),
-                           LayoutNGEnabled() ? LayoutRect(0, 10, 1, 10)
-                                             : LayoutRect(0, 0, 0, 0)),
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 5), TextAffinity::kDownstream)));
 }
@@ -738,9 +734,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre2) {
   EXPECT_EQ(LocalCaretRect(br->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 4), TextAffinity::kDownstream)));
-  EXPECT_EQ(LocalCaretRect(br->GetLayoutObject(), LayoutNGEnabled()
-                                                      ? LayoutRect(0, 10, 1, 10)
-                                                      : LayoutRect(0, 0, 0, 0)),
+  EXPECT_EQ(LocalCaretRect(br->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position::AfterNode(*br), TextAffinity::kDownstream)));
 }
@@ -962,6 +956,19 @@ TEST_P(ParameterizedLocalCaretRectTest, RtlMeterNoCrash) {
       LocalCaretRectOfPosition(PositionWithAffinity(position));
   EXPECT_EQ(GetDocument().QuerySelector("meter")->GetLayoutObject(),
             local_caret_rect.layout_object);
+}
+
+// https://crbug.com/883044
+TEST_P(ParameterizedLocalCaretRectTest, AfterCollapsedWhiteSpaceInRTLText) {
+  LoadAhem();
+  InsertStyleElement(
+      "bdo { display: block; font: 10px/10px Ahem; width: 100px }");
+  const Position position =
+      SetCaretTextToBody("<bdo dir=rtl>AAA  |BBB<span>CCC</span></bdo>");
+  const Node* text = position.AnchorNode();
+  EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), LayoutRect(60, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                PositionWithAffinity(position, TextAffinity::kDownstream)));
 }
 
 }  // namespace blink

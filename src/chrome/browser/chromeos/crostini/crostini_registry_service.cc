@@ -48,6 +48,7 @@ constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
+constexpr char kAppScaledKey[] = "scaled";
 constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
 constexpr char kAppStartupNotifyKey[] = "startup_notify";
 constexpr char kAppInstallTimeKey[] = "install_time";
@@ -316,6 +317,16 @@ base::Time CrostiniRegistryService::Registration::LastLaunchTime() const {
   return GetTime(pref_, kAppLastLaunchTimeKey);
 }
 
+bool CrostiniRegistryService::Registration::IsScaled() const {
+  if (pref_.is_none())
+    return false;
+  const base::Value* scaled =
+      pref_.FindKeyOfType(kAppScaledKey, base::Value::Type::BOOLEAN);
+  if (!scaled)
+    return false;
+  return scaled->GetBool();
+}
+
 // We store in prefs all the localized values for given fields (formatted with
 // undescores, e.g. 'fr' or 'en_US'), but users of the registry don't need to
 // deal with this.
@@ -414,7 +425,9 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
   // If an app had StartupWMClass set to the given WM class, use that,
   // otherwise look for a desktop file id matching the WM class.
   base::StringPiece key = suffix.substr(strlen(kWMClassPrefix));
-  FindAppIdResult result = FindAppId(apps, kAppStartupWMClassKey, key, &app_id);
+  FindAppIdResult result = FindAppId(apps, kAppStartupWMClassKey, key, &app_id,
+                                     false /* require_startup_notification */,
+                                     true /* need_display */);
   if (result == FindAppIdResult::UniqueMatch)
     return app_id;
   if (result == FindAppIdResult::NonUniqueMatch)
@@ -756,6 +769,23 @@ void CrostiniRegistryService::SetCurrentTime(base::Value* dictionary,
   dictionary->SetKey(key, base::Value(base::Int64ToString(time)));
 }
 
+void CrostiniRegistryService::SetAppScaled(const std::string& app_id,
+                                           bool scaled) {
+  DCHECK_NE(app_id, kCrostiniTerminalId);
+
+  DictionaryPrefUpdate update(prefs_, prefs::kCrostiniRegistry);
+  base::DictionaryValue* apps = update.Get();
+
+  base::Value* app = apps->FindKey(app_id);
+  if (!app) {
+    LOG(ERROR)
+        << "Tried to set display scaled property on the app with this app_id "
+        << app_id << " that doesn't exist in the registry.";
+    return;
+  }
+  app->SetKey(kAppScaledKey, base::Value(scaled));
+}
+
 void CrostiniRegistryService::RequestIcon(const std::string& app_id,
                                           ui::ScaleFactor scale_factor) {
   // Ignore requests for app_id that isn't registered.
@@ -791,9 +821,8 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
       break;
   }
 
-  crostini::CrostiniManager::GetInstance()->GetContainerAppIcons(
-      profile_, registration->VmName(), registration->ContainerName(),
-      desktop_file_ids,
+  crostini::CrostiniManager::GetForProfile(profile_)->GetContainerAppIcons(
+      registration->VmName(), registration->ContainerName(), desktop_file_ids,
       app_list::AppListConfig::instance().grid_icon_dimension(), icon_scale,
       base::BindOnce(&CrostiniRegistryService::OnContainerAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));

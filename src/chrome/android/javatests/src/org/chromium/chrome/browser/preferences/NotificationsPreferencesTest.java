@@ -28,19 +28,22 @@ import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for the NotificationsPreferences.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class NotificationsPreferencesTest {
-    // TODO(peconn): Add UI Catalogue entries for NotificationsPreferences.
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
     private Preferences mActivity;
+
+    @Rule
+    public ScreenShooter mScreenShooter = new ScreenShooter();
 
     @Before
     public void setUp() {
@@ -50,7 +53,7 @@ public class NotificationsPreferencesTest {
 
     @Test
     @SmallTest
-    @Feature({"Preferences"})
+    @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     @CommandLineFlags.Add("enable-features=ContentSuggestionsNotifications")
     public void testContentSuggestionsToggle() {
@@ -82,11 +85,13 @@ public class NotificationsPreferencesTest {
                 PreferencesTest.clickPreference(fragment, toggle);
             }
         });
+
+        mScreenShooter.shoot("ContentSuggestionsToggle");
     }
 
     @Test
     @SmallTest
-    @Feature({"Preferences"})
+    @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     @CommandLineFlags.Add("disable-features=NTPArticleSuggestions")
     public void testToggleDisabledWhenSuggestionsDisabled() {
@@ -96,12 +101,14 @@ public class NotificationsPreferencesTest {
 
         Assert.assertFalse(toggle.isEnabled());
         Assert.assertFalse(toggle.isChecked());
+
+        mScreenShooter.shoot("ToggleDisabledWhenSuggestionsDisabled");
     }
 
 
     @Test
     @SmallTest
-    @Feature({"Preferences"})
+    @Feature({"Preferences", "UiCatalogue"})
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N)
     public void testLinkToWebsiteNotifications() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -125,6 +132,8 @@ public class NotificationsPreferencesTest {
         SingleCategoryPreferences fragment = (SingleCategoryPreferences) getTopFragment();
         Assert.assertTrue(
                 fragment.getCategoryForTest().showSites(SiteSettingsCategory.Type.NOTIFICATIONS));
+
+        mScreenShooter.shoot("LinkToWebsiteNotifications");
     }
 
     /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */

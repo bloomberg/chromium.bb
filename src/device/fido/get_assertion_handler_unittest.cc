@@ -147,7 +147,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
   void set_mock_platform_device(std::unique_ptr<MockFidoDevice> device) {
-    mock_platform_device_ = std::move(device);
+    pending_mock_platform_device_ = std::move(device);
   }
 
   void set_supported_transports(
@@ -157,10 +157,11 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
  protected:
   base::Optional<PlatformAuthenticatorInfo> CreatePlatformAuthenticator() {
-    if (!mock_platform_device_)
+    if (!pending_mock_platform_device_)
       return base::nullopt;
     return PlatformAuthenticatorInfo(
-        std::make_unique<FidoDeviceAuthenticator>(mock_platform_device_.get()),
+        std::make_unique<FidoDeviceAuthenticator>(
+            std::move(pending_mock_platform_device_)),
         false /* has_recognized_mac_touch_id_credential_available */);
   }
 
@@ -173,7 +174,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* cable_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
-  std::unique_ptr<MockFidoDevice> mock_platform_device_;
+  std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestGetAssertionRequestCallback get_assertion_cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetAllTransportProtocols();
@@ -323,6 +324,32 @@ TEST_F(FidoGetAssertionHandlerTest, InvalidCredential) {
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(get_assertion_callback().was_called());
+}
+
+// Tests a scenario where the authenticator responds with an empty credential.
+// When GetAssertion request only has a single credential in the allow list,
+// this is a valid response. Check that credential is set by the client before
+// the response is returned to the relying party.
+TEST_F(FidoGetAssertionHandlerTest, ValidEmptyCredential) {
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  // Resident Keys must be disabled, otherwise allow list check is skipped.
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponseWithoutResidentKeySupport);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      test_data::kTestGetAssertionResponseWithEmptyCredential);
+  discovery()->AddDevice(std::move(device));
+
+  get_assertion_callback().WaitForCallback();
+  const auto& response = get_assertion_callback().value<0>();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(response->credential());
+  EXPECT_THAT(
+      response->raw_credential_id(),
+      ::testing::ElementsAreArray(test_data::kTestGetAssertionCredentialId));
 }
 
 // Tests a scenario where authenticator responds without user entity in its

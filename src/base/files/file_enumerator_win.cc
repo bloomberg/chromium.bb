@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/shlwapi.h"
 
 namespace base {
@@ -111,7 +111,7 @@ FileEnumerator::FileInfo FileEnumerator::GetInfo() const {
 }
 
 FilePath FileEnumerator::Next() {
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   while (has_find_data_ || !pending_paths_.empty()) {
     if (!has_find_data_) {

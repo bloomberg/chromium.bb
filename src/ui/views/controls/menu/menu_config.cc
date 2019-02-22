@@ -5,6 +5,7 @@
 #include "ui/views/controls/menu/menu_config.h"
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -100,8 +101,8 @@ bool MenuConfig::ShouldShowAcceleratorText(const MenuItemView* item,
 
 // static
 const MenuConfig& MenuConfig::instance() {
-  CR_DEFINE_STATIC_LOCAL(MenuConfig, instance, ());
-  return instance;
+  static base::NoDestructor<MenuConfig> instance;
+  return *instance;
 }
 
 }  // namespace views

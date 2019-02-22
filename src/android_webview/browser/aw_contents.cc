@@ -54,6 +54,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/android/autofill_provider_android.h"
@@ -63,6 +64,7 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -235,7 +237,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       functor_(nullptr),
       browser_view_renderer_(
           this,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
       web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
@@ -586,8 +588,8 @@ void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
                                  const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
   if (java_ref.get(env).obj()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ShowGeolocationPromptHelperTask, java_ref, origin));
   }
 }
@@ -1403,6 +1405,7 @@ void AwContents::DidFinishNavigation(
                                navigation_handle->IsInMainFrame(),
                                navigation_handle->HasUserGesture(),
                                net::HttpRequestHeaders());
+  request.is_renderer_initiated = navigation_handle->IsRendererInitiated();
 
   client->OnReceivedError(request, error_code, false);
 }

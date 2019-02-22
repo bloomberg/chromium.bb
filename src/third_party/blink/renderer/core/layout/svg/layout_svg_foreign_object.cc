@@ -124,21 +124,33 @@ void LayoutSVGForeignObject::UpdateLayout() {
     SVGResourcesCache::ClientLayoutChanged(*this);
 }
 
-bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
-                                              const FloatPoint& point_in_parent,
-                                              HitTestAction hit_test_action) {
+bool LayoutSVGForeignObject::NodeAtPointFromSVG(
+    HitTestResult& result,
+    const HitTestLocation& location_in_parent,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction) {
+  DCHECK_EQ(accumulated_offset, LayoutPoint());
   AffineTransform local_transform = LocalSVGTransform();
   if (!local_transform.IsInvertible())
     return false;
 
-  FloatPoint local_point = local_transform.Inverse().MapPoint(point_in_parent);
-  LayoutPoint point_in_foreign_object(local_point);
+  AffineTransform inverse = local_transform.Inverse();
+  base::Optional<HitTestLocation> local_location;
+  if (location_in_parent.IsRectBasedTest()) {
+    local_location.emplace(
+        inverse.MapPoint(location_in_parent.TransformedPoint()),
+        inverse.MapQuad(location_in_parent.TransformedRect()));
+  } else {
+    local_location.emplace(
+        (inverse.MapPoint(location_in_parent.TransformedPoint())));
+  }
+
   // |local_point| already includes the offset of the <foreignObject> element,
   // but PaintLayer::HitTestLayer assumes it has not been.
-  point_in_foreign_object.MoveBy(-Layer()->LayoutBoxLocation());
-  HitTestLocation location(point_in_foreign_object);
-  HitTestResult layer_result(result.GetHitTestRequest(), location);
-  bool retval = Layer()->HitTest(location, layer_result,
+  HitTestLocation local_without_offset(
+      *local_location, -ToLayoutSize(Layer()->LayoutBoxLocation()));
+  HitTestResult layer_result(result.GetHitTestRequest(), local_without_offset);
+  bool retval = Layer()->HitTest(local_without_offset, layer_result,
                                  LayoutRect(LayoutRect::InfiniteIntRect()));
 
   // Preserve the "point in inner node frame" from the original request,

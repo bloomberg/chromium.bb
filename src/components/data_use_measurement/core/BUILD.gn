@@ -33,10 +33,6 @@ static_library("ascriber") {
     "//google_apis",
     "//net",
   ]
-
-  if (!is_ios) {
-    deps += [ "//components/domain_reliability" ]
-  }
 }
 
 source_set("unit_tests") {

@@ -22,7 +22,6 @@
 <translation id="3196546062792660320">‏يوفر Chrome وقتك من خلال تجميع حساباتك على شبكة الإنترنت. ويمكنك إضافة أو إزالة حسابات في الإعدادات.</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3345341804167540816">‏استخدم Chrome في كل مكان</translation>
-<translation id="3678774398092457402">‏هل تريد من Chrome حفظ كلمة مرورك لهذا الموقع؟</translation>
 <translation id="384394811301901750">‏يتعذر على Google Chrome استخدام الكاميرا في الوقت الحالي</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3980220367029651214">‏أنت تجري تبديلاً لحسابات المزامنة من <ph name="USER_EMAIL1" /> إلى <ph name="USER_EMAIL2" />. يتم إدارة بيانات Chrome الحالية من خلال <ph name="DOMAIN" />. سيؤدي ذلك إلى إزالة بياناتك من هذا الجهاز، ولكن ستظل بياناتك في <ph name="USER_EMAIL1" />.</translation>
@@ -48,6 +47,7 @@
 <translation id="690638524486313356">‏بنود خدمة Google Chrome</translation>
 <translation id="7165736900384873061">‏بدء استخدام الماسح الضوئي للاستجابة السريعة في Google Chrome</translation>
 <translation id="7172660552945675509">‏نصيحة: <ph name="BEGIN_LINK" />نقل Chrome إلى شريط الإرساء<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">‏يستخدم Chrome تقنية "التعرُّف على الوجه" لضمان الدخول المصرَّح به إلى كلمات المرور.</translation>
 <translation id="7265369419224458312">‏يمكنك الدخول إلى علامات التبويب التي فتحتها على جهاز الكمبيوتر، مباشرةً من هنا. لن يلزمك سوى فتح Chrome على جهاز الكمبيوتر، والانتقال إلى القائمة وتحديد "تسجيل الدخول إلى Chrome…"</translation>
 <translation id="728488472449859922">‏تشغيل الماسح الضوئي للاستجابة السريعة في Google Chrome</translation>
 <translation id="7400722733683201933">‏معلومات عن Google Chrome</translation>

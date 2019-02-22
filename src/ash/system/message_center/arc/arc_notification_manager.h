@@ -51,14 +51,13 @@ class ArcNotificationManager
   void OnNotificationUpdated(arc::mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const std::string& key) override;
   void OpenMessageCenter() override;
+  void CloseMessageCenter() override;
   void OnDoNotDisturbStatusUpdated(
       arc::mojom::ArcDoNotDisturbStatusPtr status) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
   void SendNotificationClickedOnChrome(const std::string& key);
-  void SendNotificationButtonClickedOnChrome(const std::string& key,
-                                             int button_index);
   void CreateNotificationWindow(const std::string& key);
   void CloseNotificationWindow(const std::string& key);
   void OpenNotificationSettings(const std::string& key);

@@ -458,6 +458,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // all objects in |source_state_map_|.
   void ShutdownAllStreams();
 
+  // Executes |init_cb_| with |status| and closes out the async trace.
+  void RunInitCB_Locked(PipelineStatus status);
+
+  // Executes |seek_cb_| with |status| and closes out the async trace.
+  void RunSeekCB_Locked(PipelineStatus status);
+
   mutable base::Lock lock_;
   State state_;
   bool cancel_next_seek_;

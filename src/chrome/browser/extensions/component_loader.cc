@@ -54,7 +54,6 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
 #include "ui/keyboard/grit/keyboard_resources.h"
-#include "ui/keyboard/keyboard_util.h"
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -271,8 +270,7 @@ void ComponentLoader::Remove(const base::FilePath& root_directory) {
 }
 
 void ComponentLoader::Remove(const std::string& id) {
-  for (RegisteredComponentExtensions::iterator it =
-           component_extensions_.begin();
+  for (auto it = component_extensions_.begin();
        it != component_extensions_.end(); ++it) {
     if (it->extension_id == id) {
       UnloadComponent(&(*it));
@@ -323,9 +321,7 @@ void ComponentLoader::AddGalleryExtension() {
 void ComponentLoader::AddZipArchiverExtension() {
 #if defined(OS_CHROMEOS)
   base::FilePath resources_path;
-  if ((chromeos::switches::IsZipArchiverPackerEnabled() ||
-       chromeos::switches::IsZipArchiverUnpackerEnabled()) &&
-      base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
+  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
     AddWithNameAndDescriptionFromDir(
         resources_path.Append(extension_misc::kZipArchiverExtensionPath),
         extension_misc::kZipArchiverExtensionId,
@@ -371,7 +367,7 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
       extension_misc::kSpeechSynthesisExtensionId,
       base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
                  weak_factory_.GetWeakPtr(),
-                 extension_misc::kChromeVoxExtensionId));
+                 extension_misc::kSpeechSynthesisExtensionId));
 }
 #endif
 

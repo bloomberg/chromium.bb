@@ -7,10 +7,12 @@
 
 #include <deque>
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
-#include "ash/assistant/ui/assistant_scroll_view.h"
+#include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
 #include "ui/views/view_observer.h"
 
@@ -18,14 +20,16 @@ namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
 
+namespace views {
+class NativeViewHost;
+}  // namespace views
+
 namespace ash {
 
-class AssistantCardElement;
 class AssistantController;
 class AssistantResponse;
+class AssistantCardElement;
 class AssistantTextElement;
-class AssistantUiElement;
-enum class AssistantUiElementType;
 
 // UiElementContainerView is the child of AssistantMainView concerned with
 // laying out text views and embedded card views in response to Assistant
@@ -37,48 +41,50 @@ class UiElementContainerView : public AssistantScrollView,
   ~UiElementContainerView() override;
 
   // AssistantScrollView:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
+  void PreferredSizeChanged() override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;
-  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
   void OnResponseCleared() override;
 
  private:
   void InitLayout();
 
-  void OnResponseAdded(const AssistantResponse& response);
+  void OnResponseAdded(std::shared_ptr<const AssistantResponse> response);
+  void OnCardElementAdded(const AssistantCardElement* card_element);
+  void OnTextElementAdded(const AssistantTextElement* text_element);
   void OnAllUiElementsAdded();
   bool OnAllUiElementsExitAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
-  void OnUiElementAdded(const AssistantUiElement* ui_element);
-  void OnCardElementAdded(const AssistantCardElement* card_element);
-  void OnCardReady(const base::Optional<base::UnguessableToken>& embed_token);
-  void OnTextElementAdded(const AssistantTextElement* text_element);
 
-  // Assistant cards are rendered asynchronously before being added to the view
-  // hierarchy. For this reason, it is necessary to pend any UI elements that
-  // arrive between the time a render request is sent and the time at which the
-  // view is finally embedded. Failure to do so could result in a mismatch
-  // between the ordering of UI elements received and their corresponding views.
-  void SetProcessingUiElement(bool is_processing);
-  void ProcessPendingUiElements();
-
-  void ReleaseAllCards();
+  // Sets whether or not PreferredSizeChanged events should be propagated.
+  void SetPropagatePreferredSizeChanged(bool propagate);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
-  // Uniquely identifies cards owned by AssistantCardRenderer.
-  std::vector<base::UnguessableToken> id_token_list_;
+  // Shared pointers to the response that is currently on stage as well as the
+  // pending response to be presented following the former's animated exit. We
+  // use shared pointers to ensure that underlying UI elements are not destroyed
+  // before we have an opportunity to remove their associated views.
+  std::shared_ptr<const AssistantResponse> response_;
+  std::shared_ptr<const AssistantResponse> pending_response_;
 
-  // Owned by AssistantInteractionModel.
-  std::deque<const AssistantUiElement*> pending_ui_element_list_;
+  // Whether we should allow propagation of PreferredSizeChanged events. Because
+  // we only animate views in/out in batches, we can prevent over-propagation of
+  // PreferredSizeChanged events by waiting until the entirety of a response has
+  // been added/removed before propagating. This reduces layout passes.
+  bool propagate_preferred_size_changed_ = true;
 
-  // Whether a UI element is currently being processed. If true, new UI elements
-  // are added to |pending_ui_element_list_| and processed later.
-  bool is_processing_ui_element_ = false;
+  // Cached references to the native view hosts associated with card elements.
+  // We maintain a reference so long as the native view host is attached so that
+  // we can detach before removal from the view hierarchy and destruction.
+  std::vector<views::NativeViewHost*> native_view_hosts_;
 
   // UI elements will be animated on their own layers. We track the desired
   // opacity to which each layer should be animated when processing the next
@@ -88,8 +94,9 @@ class UiElementContainerView : public AssistantScrollView,
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       ui_elements_exit_animation_observer_;
 
-  // Weak pointer factory used for card rendering requests.
-  base::WeakPtrFactory<UiElementContainerView> render_request_weak_factory_;
+  // Whether or not the card we are adding is the first card for the current
+  // Assistant response. The first card requires the addition of a top margin.
+  bool is_first_card_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UiElementContainerView);
 };

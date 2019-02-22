@@ -55,18 +55,26 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
       const cdm::InputBuffer_1& encrypted_buffer,
       cdm::AudioFrames* audio_frames) override;
 
-  // cdm::ContentDecryptionModule_10/11 implementation.
+  // cdm::ContentDecryptionModule_10 implementation.
+  cdm::Status InitializeVideoDecoder(
+      const cdm::VideoDecoderConfig_2& video_decoder_config) override;
+  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
+                                    cdm::VideoFrame* video_frame) override;
+
+  // cdm::ContentDecryptionModule_11 implementation.
+  cdm::Status InitializeVideoDecoder(
+      const cdm::VideoDecoderConfig_3& video_decoder_config) override;
+  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
+                                    cdm::VideoFrame_2* video_frame) override;
+
+  // Common cdm::ContentDecryptionModule_10/11 implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state,
                   bool use_hw_secure_codecs) override;
   cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig_2& audio_decoder_config) override;
-  cdm::Status InitializeVideoDecoder(
-      const cdm::VideoDecoderConfig_2& video_decoder_config) override;
   cdm::Status Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
                       cdm::DecryptedBlock* decrypted_block) override;
-  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer_2& encrypted_buffer,
-                                    cdm::VideoFrame* video_frame) override;
   cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer_2& encrypted_buffer,
       cdm::AudioFrames* audio_frames) override;
@@ -111,6 +119,17 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
                    uint32_t storage_id_size) override;
 
  private:
+  struct UpdateParams {
+    UpdateParams(uint32_t promise_id,
+                 std::string session_id,
+                 std::vector<uint8_t> response);
+    ~UpdateParams();
+
+    const uint32_t promise_id;
+    const std::string session_id;
+    const std::vector<uint8_t> response;
+  };
+
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
                         CdmMessageType message_type,
@@ -161,6 +180,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
 
   void InitializeCdmProxyHandler();
   void OnCdmProxyHandlerInitialized(bool success);
+  void OnCdmProxyKeySet(bool success);
+
+  void UpdateSessionInternal(std::unique_ptr<UpdateParams> params);
 
   int host_interface_version_ = 0;
 
@@ -186,7 +208,10 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   std::unique_ptr<FFmpegCdmAudioDecoder> audio_decoder_;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
+  std::unique_ptr<UpdateParams> pending_update_params_;
+
   std::unique_ptr<CdmVideoDecoder> video_decoder_;
+
   std::unique_ptr<FileIOTestRunner> file_io_test_runner_;
   std::unique_ptr<CdmProxyHandler> cdm_proxy_handler_;
 

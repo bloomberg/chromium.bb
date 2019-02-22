@@ -41,7 +41,7 @@ class CertificateViewerDialog : public ui::BaseShellDialogImpl {
     }
 
     RunState run_state = BeginRun(parent);
-    run_state.dialog_thread->task_runner()->PostTaskAndReply(
+    run_state.dialog_task_runner->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&CertificateViewerDialog::ShowOnDialogThread,
                    base::Unretained(this), run_state,

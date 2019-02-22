@@ -95,9 +95,9 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // incremented if this returns true.
   bool MustIncrementMaxTasksLockRequired();
 
-  bool is_running_background_task_lock_required() const {
+  bool is_running_best_effort_task_lock_required() const {
     outer_->lock_.AssertAcquired();
-    return is_running_background_task_;
+    return is_running_best_effort_task_;
   }
 
  private:
@@ -142,7 +142,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // Writes are made from the worker thread and are protected by
   // |outer_->lock_|. Reads are made from any thread, they are protected by
   // |outer_->lock_| when made outside of the worker thread.
-  bool is_running_background_task_ = false;
+  bool is_running_best_effort_task_ = false;
 
 #if defined(OS_WIN)
   std::unique_ptr<win::ScopedWindowsThreadEnvironment> win_thread_environment_;
@@ -216,7 +216,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 
 void SchedulerWorkerPoolImpl::Start(
     const SchedulerWorkerPoolParams& params,
-    int max_background_tasks,
+    int max_best_effort_tasks,
     scoped_refptr<TaskRunner> service_thread_task_runner,
     SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment) {
@@ -228,7 +228,7 @@ void SchedulerWorkerPoolImpl::Start(
   DCHECK_GE(max_tasks_, 1U);
   initial_max_tasks_ = max_tasks_;
   DCHECK_LE(initial_max_tasks_, kMaxNumberOfWorkers);
-  max_background_tasks_ = max_background_tasks;
+  max_best_effort_tasks_ = max_best_effort_tasks;
   suggested_reclaim_time_ = params.suggested_reclaim_time();
   backward_compatibility_ = params.backward_compatibility();
   worker_environment_ = worker_environment;
@@ -438,7 +438,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     SchedulerWorker* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!is_running_task_);
-  DCHECK(!is_running_background_task_);
+  DCHECK(!is_running_best_effort_task_);
 
   {
     AutoSchedulerLock auto_lock(outer_->lock_);
@@ -495,14 +495,14 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       return nullptr;
     }
 
-    // Enforce that no more than |max_background_tasks_| run concurrently.
+    // Enforce that no more than |max_best_effort_tasks_| run concurrently.
     const TaskPriority priority = transaction->PeekSortKey().priority();
     if (priority == TaskPriority::BEST_EFFORT) {
       AutoSchedulerLock auto_lock(outer_->lock_);
-      if (outer_->num_running_background_tasks_ <
-          outer_->max_background_tasks_) {
-        ++outer_->num_running_background_tasks_;
-        is_running_background_task_ = true;
+      if (outer_->num_running_best_effort_tasks_ <
+          outer_->max_best_effort_tasks_) {
+        ++outer_->num_running_best_effort_tasks_;
+        is_running_best_effort_task_ = true;
       } else {
         OnWorkerBecomesIdleLockRequired(worker);
         return nullptr;
@@ -531,10 +531,10 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
   is_running_task_ = false;
 
-  if (is_running_background_task_) {
+  if (is_running_best_effort_task_) {
     AutoSchedulerLock auto_lock(outer_->lock_);
-    --outer_->num_running_background_tasks_;
-    is_running_background_task_ = false;
+    --outer_->num_running_best_effort_tasks_;
+    is_running_best_effort_task_ = false;
   }
 
   ++num_tasks_since_last_wait_;
@@ -694,8 +694,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     if (!may_block_start_time_.is_null()) {
       may_block_start_time_ = TimeTicks();
       --outer_->num_pending_may_block_workers_;
-      if (is_running_background_task_)
-        --outer_->num_pending_background_may_block_workers_;
+      if (is_running_best_effort_task_)
+        --outer_->num_pending_best_effort_may_block_workers_;
     }
   }
 
@@ -711,12 +711,12 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingEnded() {
 
   AutoSchedulerLock auto_lock(outer_->lock_);
   if (incremented_max_tasks_since_blocked_) {
-    outer_->DecrementMaxTasksLockRequired(is_running_background_task_);
+    outer_->DecrementMaxTasksLockRequired(is_running_best_effort_task_);
   } else {
     DCHECK(!may_block_start_time_.is_null());
     --outer_->num_pending_may_block_workers_;
-    if (is_running_background_task_)
-      --outer_->num_pending_background_may_block_workers_;
+    if (is_running_best_effort_task_)
+      --outer_->num_pending_best_effort_may_block_workers_;
   }
 
   incremented_max_tasks_since_blocked_ = false;
@@ -733,8 +733,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::MayBlockEntered() {
     DCHECK(may_block_start_time_.is_null());
     may_block_start_time_ = TimeTicks::Now();
     ++outer_->num_pending_may_block_workers_;
-    if (is_running_background_task_)
-      ++outer_->num_pending_background_may_block_workers_;
+    if (is_running_best_effort_task_)
+      ++outer_->num_pending_best_effort_may_block_workers_;
   }
   outer_->ScheduleAdjustMaxTasksIfNeeded();
 }
@@ -751,7 +751,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::WillBlockEntered() {
     DCHECK(!incremented_max_tasks_since_blocked_);
     DCHECK(may_block_start_time_.is_null());
     incremented_max_tasks_since_blocked_ = true;
-    outer_->IncrementMaxTasksLockRequired(is_running_background_task_);
+    outer_->IncrementMaxTasksLockRequired(is_running_best_effort_task_);
 
     // If the number of workers was less than the old max tasks, PostTask
     // would've handled creating extra workers during WakeUpOneWorker.
@@ -790,8 +790,8 @@ bool SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     // doesn't have to decrement the number of pending MAY_BLOCK workers.
     may_block_start_time_ = TimeTicks();
     --outer_->num_pending_may_block_workers_;
-    if (is_running_background_task_)
-      --outer_->num_pending_background_may_block_workers_;
+    if (is_running_best_effort_task_)
+      --outer_->num_pending_best_effort_may_block_workers_;
 
     return true;
   }
@@ -932,7 +932,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
         static_cast<SchedulerWorkerDelegateImpl*>(worker->delegate());
     if (delegate->MustIncrementMaxTasksLockRequired()) {
       IncrementMaxTasksLockRequired(
-          delegate->is_running_background_task_lock_required());
+          delegate->is_running_best_effort_task_lock_required());
     }
   }
 
@@ -999,17 +999,17 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
   lock_.AssertAcquired();
 
-  // The maximum number of background tasks that can run concurrently must be
-  // adjusted periodically when (1) the number of background tasks that are
+  // The maximum number of best-effort tasks that can run concurrently must be
+  // adjusted periodically when (1) the number of best-effort tasks that are
   // currently running is equal to it and (2) there are workers running
-  // background tasks within the scope of a MAY_BLOCK ScopedBlockingCall but
-  // haven't cause a max background tasks increment yet.
-  // - When (1) is false: A newly posted background task will be allowed to run
-  //   normally. There is no hurry to increase max background tasks.
+  // best-effort tasks within the scope of a MAY_BLOCK ScopedBlockingCall but
+  // haven't cause a max best-effort tasks increment yet.
+  // - When (1) is false: A newly posted best-effort task will be allowed to run
+  //   normally. There is no hurry to increase max best-effort tasks.
   // - When (2) is false: AdjustMaxTasks() wouldn't affect
-  //   |max_background_tasks_|.
-  if (num_running_background_tasks_ >= max_background_tasks_ &&
-      num_pending_background_may_block_workers_ > 0) {
+  //   |max_best_effort_tasks_|.
+  if (num_running_best_effort_tasks_ >= max_best_effort_tasks_ &&
+      num_pending_best_effort_may_block_workers_ > 0) {
     return true;
   }
 
@@ -1028,19 +1028,19 @@ bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
 }
 
 void SchedulerWorkerPoolImpl::DecrementMaxTasksLockRequired(
-    bool is_running_background_task) {
+    bool is_running_best_effort_task) {
   lock_.AssertAcquired();
   --max_tasks_;
-  if (is_running_background_task)
-    --max_background_tasks_;
+  if (is_running_best_effort_task)
+    --max_best_effort_tasks_;
 }
 
 void SchedulerWorkerPoolImpl::IncrementMaxTasksLockRequired(
-    bool is_running_background_task) {
+    bool is_running_best_effort_task) {
   lock_.AssertAcquired();
   ++max_tasks_;
-  if (is_running_background_task)
-    ++max_background_tasks_;
+  if (is_running_best_effort_task)
+    ++max_best_effort_tasks_;
 }
 
 }  // namespace internal

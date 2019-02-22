@@ -26,8 +26,6 @@ bool ChromeProxyMainDialog::Create() {
   return true;
 }
 
-void ChromeProxyMainDialog::StartScanning() {}
-
 void ChromeProxyMainDialog::NoPUPsFound() {
   chrome_prompt_ipc_->PostPromptUserTask(
       std::vector<base::FilePath>(), std::vector<base::string16>(),
@@ -48,8 +46,6 @@ void ChromeProxyMainDialog::ConfirmCleanup(
                      base::Unretained(this),
                      base::SequencedTaskRunnerHandle::Get()));
 }
-
-void ChromeProxyMainDialog::StartCleanup(size_t num_pups) {}
 
 void ChromeProxyMainDialog::CleanupDone(ResultCode cleanup_result) {
   delegate()->OnClose();

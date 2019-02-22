@@ -174,6 +174,9 @@ bool AccessiblePaneView::AcceleratorPressed(
     case ui::VKEY_ESCAPE: {
       RemovePaneFocus();
       View* last_focused_view = last_focused_view_tracker_->view();
+      // Ignore |last_focused_view| if it's no longer in the same widget.
+      if (last_focused_view && GetWidget() != last_focused_view->GetWidget())
+        last_focused_view = nullptr;
       if (last_focused_view) {
         focus_manager_->SetFocusedViewWithReason(
             last_focused_view, FocusManager::kReasonFocusRestore);

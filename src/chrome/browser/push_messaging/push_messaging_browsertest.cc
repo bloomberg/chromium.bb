@@ -127,7 +127,11 @@ void InstanceIDResultCallback(base::Closure done_callback,
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
  public:
-  PushMessagingBrowserTest() : gcm_service_(nullptr), gcm_driver_(nullptr) {}
+  PushMessagingBrowserTest()
+      : scoped_testing_factory_installer_(
+            base::BindRepeating(&gcm::FakeGCMProfileService::Build)),
+        gcm_service_(nullptr),
+        gcm_driver_(nullptr) {}
   ~PushMessagingBrowserTest() override {}
 
   // InProcessBrowserTest:
@@ -148,11 +152,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
-    gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(
-        gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            GetBrowser()->profile(), &gcm::FakeGCMProfileService::Build));
-    gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
-        gcm_service_->driver());
+    KeyedService* keyed_service =
+        gcm::GCMProfileServiceFactory::GetForProfile(GetBrowser()->profile());
+    if (keyed_service) {
+      gcm_service_ = static_cast<gcm::FakeGCMProfileService*>(keyed_service);
+      gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
+          gcm_service_->driver());
+    }
 
     notification_tester_ = std::make_unique<NotificationDisplayServiceTester>(
         GetBrowser()->profile());
@@ -171,8 +177,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
   void RestartPushService() {
     Profile* profile = GetBrowser()->profile();
-    PushMessagingServiceFactory::GetInstance()->SetTestingFactory(profile,
-                                                                  nullptr);
+    PushMessagingServiceFactory::GetInstance()->SetTestingFactory(
+        profile, BrowserContextKeyedServiceFactory::TestingFactory());
     ASSERT_EQ(nullptr, PushMessagingServiceFactory::GetForProfile(profile));
     PushMessagingServiceFactory::GetInstance()->RestoreFactoryForTests(profile);
     PushMessagingServiceImpl::InitializeForProfile(profile);
@@ -315,6 +321,9 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   }
 
   virtual Browser* GetBrowser() const { return browser(); }
+
+  gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
+      scoped_testing_factory_installer_;
 
   gcm::FakeGCMProfileService* gcm_service_;
   instance_id::FakeGCMDriverForInstanceID* gcm_driver_;

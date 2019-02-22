@@ -70,7 +70,7 @@ class HardwareDisplayPlane {
     DrmDevice::Property plane_ctm;
   };
 
-  uint32_t id_;
+  const uint32_t id_;
   uint32_t crtc_mask_ = 0;
 
   Properties properties_ = {};

@@ -58,7 +58,7 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
       });
 });
 
-TEST_F('DiscardsTest', 'LastActiveToString', function() {
+TEST_F('DiscardsTest', 'DurationToString', function() {
   // Test cases have the form [ 'expected output', input_in_seconds ].
   [['just now', 0], ['just now', 10], ['just now', 59], ['1 minute ago', 60],
    ['10 minutes ago', 10 * 60 + 30], ['59 minutes ago', 59 * 60 + 59],
@@ -74,7 +74,7 @@ TEST_F('DiscardsTest', 'LastActiveToString', function() {
    ['over 1 year ago', 365 * 24 * 60 * 60],
    ['over 2 years ago', 2.3 * 365 * 24 * 60 * 60]]
       .forEach((data) => {
-        assertEquals(data[0], discards.lastActiveToString(data[1]));
+        assertEquals(data[0], discards.durationToString(data[1]));
       });
 });
 

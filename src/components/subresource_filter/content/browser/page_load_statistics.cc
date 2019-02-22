@@ -10,13 +10,13 @@
 
 namespace subresource_filter {
 
-PageLoadStatistics::PageLoadStatistics(const ActivationState& state)
+PageLoadStatistics::PageLoadStatistics(const mojom::ActivationState& state)
     : activation_state_(state) {}
 
 PageLoadStatistics::~PageLoadStatistics() {}
 
 void PageLoadStatistics::OnDocumentLoadStatistics(
-    const DocumentLoadStatistics& statistics) {
+    const mojom::DocumentLoadStatistics& statistics) {
   // Note: Chances of overflow are negligible.
   aggregated_document_statistics_.num_loads_total += statistics.num_loads_total;
   aggregated_document_statistics_.num_loads_evaluated +=
@@ -33,7 +33,7 @@ void PageLoadStatistics::OnDocumentLoadStatistics(
 }
 
 void PageLoadStatistics::OnDidFinishLoad() {
-  if (activation_state_.activation_level != ActivationLevel::DISABLED) {
+  if (activation_state_.activation_level != mojom::ActivationLevel::kDisabled) {
     UMA_HISTOGRAM_COUNTS_1000(
         "SubresourceFilter.PageLoad.NumSubresourceLoads.Total",
         aggregated_document_statistics_.num_loads_total);
@@ -49,7 +49,8 @@ void PageLoadStatistics::OnDidFinishLoad() {
   }
 
   if (activation_state_.measure_performance) {
-    DCHECK(activation_state_.activation_level != ActivationLevel::DISABLED);
+    DCHECK(activation_state_.activation_level !=
+           mojom::ActivationLevel::kDisabled);
     UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
         "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration",
         aggregated_document_statistics_.evaluation_total_wall_duration,

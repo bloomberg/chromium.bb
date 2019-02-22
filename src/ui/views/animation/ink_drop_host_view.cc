@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/style/platform_style.h"
+#include "ui/views/view_properties.h"
 
 namespace views {
 namespace {
@@ -170,6 +171,9 @@ std::unique_ptr<InkDropHighlight> InkDropHostView::CreateInkDropHighlight()
 }
 
 std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
+  if (gfx::Path* highlight_path = GetProperty(kHighlightPathKey))
+    return std::make_unique<views::PathInkDropMask>(size(), *highlight_path);
+
   return nullptr;
 }
 

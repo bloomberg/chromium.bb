@@ -54,7 +54,8 @@ const char kRequestIncludeSpecificsInitialState[] =
     "requestIncludeSpecificsInitialState";
 const char kRequestListOfTypes[] = "requestListOfTypes";
 const char kRequestStart[] = "requestStart";
-const char kRequestStop[] = "requestStop";
+const char kRequestStopKeepData[] = "requestStopKeepData";
+const char kRequestStopClearData[] = "requestStopClearData";
 const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
 const char kRequestUserEventsVisibility[] = "requestUserEventsVisibility";
 const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
@@ -312,6 +313,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_summary->AddStringStat("Disable Reasons");
   Stat<bool>* feature_enabled =
       section_summary->AddBoolStat("Sync Feature Enabled");
+  Stat<bool>* setup_in_progress =
+      section_summary->AddBoolStat("Setup In Progress");
 
   Section* section_version = section_list.AddSection("Version Info");
   Stat<std::string>* client_version =
@@ -325,14 +328,15 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* invalidator_id =
       section_identity->AddStringStat("Invalidator Client ID");
   Stat<std::string>* username = section_identity->AddStringStat("Username");
+  Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
       section_credentials->AddStringStat("Requested Token");
   Stat<std::string>* receive_token_time =
       section_credentials->AddStringStat("Received Token");
-  Stat<std::string>* token_request_status =
-      section_credentials->AddStringStat("Token Request Status");
+  Stat<std::string>* last_token_request_result =
+      section_credentials->AddStringStat("Last Token Request Result");
   Stat<std::string>* next_token_request =
       section_credentials->AddStringStat("Next Token Request");
 
@@ -443,6 +447,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   transport_state->Set(GetTransportStateString(service->GetTransportState()));
   disable_reasons->Set(GetDisableReasonsString(service->GetDisableReasons()));
   feature_enabled->Set(service->IsSyncFeatureEnabled());
+  setup_in_progress->Set(service->IsSetupInProgress());
 
   SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
@@ -459,12 +464,13 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (is_status_valid && !full_status.invalidator_client_id.empty())
     invalidator_id->Set(full_status.invalidator_client_id);
   username->Set(service->GetAuthenticatedAccountInfo().email);
+  user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
   receive_token_time->Set(GetTimeStr(token_status.token_receive_time, "n/a"));
   std::string err = token_status.last_get_token_error.error_message();
-  token_request_status->Set(err.empty() ? "OK" : err);
+  last_token_request_result->Set(err.empty() ? "OK" : err);
   next_token_request->Set(
       GetTimeStr(token_status.next_token_request_time, "not scheduled"));
 
@@ -489,7 +495,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     are_notifications_enabled->Set(full_status.notifications_enabled);
 
   // Encryption.
-  if (service->IsSyncActive()) {
+  if (service->IsSyncFeatureActive()) {
     is_using_explicit_passphrase->Set(service->IsUsingSecondaryPassphrase());
     is_passphrase_required->Set(service->IsPassphraseRequired());
     passphrase_time->Set(

@@ -5,6 +5,7 @@
 #include "chromecast/graphics/cast_window_manager_default.h"
 
 #include "base/memory/ptr_util.h"
+#include "chromecast/graphics/cast_touch_activity_observer.h"
 
 namespace chromecast {
 
@@ -28,5 +29,12 @@ void CastWindowManagerDefault::AddGestureHandler(CastGestureHandler* handler) {}
 // Remove the registration of a system gesture events handler.
 void CastWindowManagerDefault::RemoveGestureHandler(
     CastGestureHandler* handler) {}
+
+void CastWindowManagerDefault::SetTouchInputDisabled(bool disabled) {}
+
+void CastWindowManagerDefault::AddTouchActivityObserver(
+    CastTouchActivityObserver* observer) {}
+void CastWindowManagerDefault::RemoveTouchActivityObserver(
+    CastTouchActivityObserver* observer) {}
 
 }  // namespace chromecast

@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_MINI_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_MINI_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -43,6 +44,7 @@ class AssistantMiniView : public views::Button,
   ~AssistantMiniView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -52,7 +54,8 @@ class AssistantMiniView : public views::Button,
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
-  void OnResponseChanged(const AssistantResponse& response) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,

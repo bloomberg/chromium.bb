@@ -162,16 +162,7 @@ class NET_EXPORT ProxyResolutionService
                    ProxyInfo* results,
                    CompletionOnceCallback callback,
                    std::unique_ptr<Request>* request,
-                   ProxyDelegate* proxy_delegate,
                    const NetLogWithSource& net_log);
-
-  // Returns true if the proxy information could be determined without spawning
-  // an asynchronous task.  Otherwise, |result| is unmodified.
-  bool TryResolveProxySynchronously(const GURL& raw_url,
-                                    const std::string& method,
-                                    ProxyInfo* result,
-                                    ProxyDelegate* proxy_delegate,
-                                    const NetLogWithSource& net_log);
 
   // Explicitly trigger proxy fallback for the given |results| by updating our
   // list of bad proxies to include the first entry of |results|, and,
@@ -189,10 +180,8 @@ class NET_EXPORT ProxyResolutionService
 
   // Called to report that the last proxy connection succeeded.  If |proxy_info|
   // has a non empty proxy_retry_info map, the proxies that have been tried (and
-  // failed) for this request will be marked as bad. If non-null,
-  // |proxy_delegate| will be notified of any proxy fallbacks.
-  void ReportSuccess(const ProxyInfo& proxy_info,
-                     ProxyDelegate* proxy_delegate);
+  // failed) for this request will be marked as bad.
+  void ReportSuccess(const ProxyInfo& proxy_info);
 
   // Sets the PacFileFetcher and DhcpPacFileFetcher dependencies. This
   // is needed if the ProxyResolver is of type ProxyResolverWithoutFetch.
@@ -200,6 +189,16 @@ class NET_EXPORT ProxyResolutionService
       std::unique_ptr<PacFileFetcher> pac_file_fetcher,
       std::unique_ptr<DhcpPacFileFetcher> dhcp_pac_file_fetcher);
   PacFileFetcher* GetPacFileFetcher() const;
+
+  // Associates a delegate that with this ProxyResolutionService. |delegate|
+  // must outlive |this|.
+  // TODO(eroman): Specify this as a dependency at construction time rather
+  //               than making it a mutable property.
+  void SetProxyDelegate(ProxyDelegate* delegate);
+
+  // In builds with DCHECKs enabled, asserts that there isn't already a
+  // delegate associated with |this|.
+  void AssertNoProxyDelegate() const;
 
   // Cancels all network requests, and prevents the service from creating new
   // ones.  Must be called before the URLRequestContext the
@@ -344,20 +343,7 @@ class NET_EXPORT ProxyResolutionService
   // Returns ERR_IO_PENDING if the request cannot be completed synchronously.
   // Otherwise it fills |result| with the proxy information for |url|.
   // Completing synchronously means we don't need to query ProxyResolver.
-  int TryToCompleteSynchronously(const GURL& url,
-                                 ProxyDelegate* proxy_delegate,
-                                 ProxyInfo* result);
-
-  // Identical to ResolveProxy, except that |callback| is permitted to be null.
-  // if |callback.is_null()|, this function becomes a thin wrapper around
-  // |TryToCompleteSynchronously|.
-  int ResolveProxyHelper(const GURL& url,
-                         const std::string& method,
-                         ProxyInfo* results,
-                         CompletionOnceCallback callback,
-                         std::unique_ptr<Request>* request,
-                         ProxyDelegate* proxy_delegate,
-                         const NetLogWithSource& net_log);
+  int TryToCompleteSynchronously(const GURL& url, ProxyInfo* result);
 
   // Cancels all of the requests sent to the ProxyResolver. These will be
   // restarted when calling SetReady().
@@ -378,7 +364,6 @@ class NET_EXPORT ProxyResolutionService
   // bad entries from the results list.
   int DidFinishResolvingProxy(const GURL& url,
                               const std::string& method,
-                              ProxyDelegate* proxy_delegate,
                               ProxyInfo* result,
                               int result_code,
                               const NetLogWithSource& net_log);
@@ -404,6 +389,9 @@ class NET_EXPORT ProxyResolutionService
   void OnProxyConfigChanged(
       const ProxyConfigWithAnnotation& config,
       ProxyConfigService::ConfigAvailability availability) override;
+
+  // When using a PAC script, don't let it decide the proxy for localhost URLs.
+  bool ApplyPacBypassRules(const GURL& url, ProxyInfo* results);
 
   std::unique_ptr<ProxyConfigService> config_service_;
   std::unique_ptr<ProxyResolverFactory> resolver_factory_;
@@ -471,6 +459,8 @@ class NET_EXPORT ProxyResolutionService
   SanitizeUrlPolicy sanitize_url_policy_;
 
   THREAD_CHECKER(thread_checker_);
+
+  ProxyDelegate* proxy_delegate_ = nullptr;
 
   // Flag used by |SetReady()| to check if |this| has been deleted by a
   // synchronous callback.

@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
@@ -91,6 +92,9 @@ class TabActivityWatcher::WebContentsData
     // Copy the replaced tab's stats.
     tab_metrics_.page_metrics = replaced_tab.tab_metrics_.page_metrics;
     tab_metrics_.page_transition = replaced_tab.tab_metrics_.page_transition;
+
+    // Record previous ukm_source_id from the |replaced_tab|.
+    previous_ukm_source_id_ = replaced_tab.ukm_source_id_;
   }
 
   // Call when the WebContents is detached from its tab. If the tab is later
@@ -147,6 +151,11 @@ class TabActivityWatcher::WebContentsData
 
     // A navigation may already have completed if this is a replacement tab.
     ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents);
+
+    // When a tab is discarded, a new null_web_contents will be created (with
+    // WasDiscarded set as true) applied as a replacement of the discarded tab.
+    // We want to record this discarded state for later logging.
+    discarded_since_backgrounded_ = web_contents->WasDiscarded();
   }
 
   void WasHidden() {
@@ -169,6 +178,7 @@ class TabActivityWatcher::WebContentsData
     }
 
     backgrounded_time_ = NowTicks();
+    discarded_since_backgrounded_ = false;
     LogTabIfBackgrounded();
   }
 
@@ -181,9 +191,13 @@ class TabActivityWatcher::WebContentsData
       return;
 
     // Log the event before updating times.
+    const ukm::SourceId source_id = discarded_since_backgrounded_
+                                        ? previous_ukm_source_id_
+                                        : ukm_source_id_;
     TabActivityWatcher::GetInstance()
         ->tab_metrics_logger_->LogBackgroundTabShown(
-            ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUFeatures());
+            source_id, NowTicks() - backgrounded_time_, GetMRUFeatures(),
+            discarded_since_backgrounded_);
 
     backgrounded_time_ = base::TimeTicks();
     foregrounded_time_ = NowTicks();
@@ -323,7 +337,7 @@ class TabActivityWatcher::WebContentsData
       for (int i = 0; i < count; i++) {
         auto* other = WebContentsData::FromWebContents(
             browser->tab_strip_model()->GetWebContentsAt(i));
-        if (this == other)
+        if (!other || this == other)
           continue;
 
         if (!MoreRecentlyUsed(this, other))
@@ -348,6 +362,8 @@ class TabActivityWatcher::WebContentsData
 
   // Updated when a navigation is finished.
   ukm::SourceId ukm_source_id_ = 0;
+  // Recorded when a WebContents is replaced by another.
+  ukm::SourceId previous_ukm_source_id_ = 0;
 
   // When the tab was created.
   base::TimeTicks creation_time_;
@@ -382,6 +398,9 @@ class TabActivityWatcher::WebContentsData
   // MRUFeatures of this WebContents, updated only before ForegroundedOrClosed
   // event is logged.
   tab_ranker::MRUFeatures mru_features_;
+
+  // Whether this tab is currently in discarded state.
+  bool discarded_since_backgrounded_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -485,8 +504,8 @@ void TabActivityWatcher::ResetForTesting() {
 
 // static
 TabActivityWatcher* TabActivityWatcher::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(TabActivityWatcher, instance, ());
-  return &instance;
+  static base::NoDestructor<TabActivityWatcher> instance;
+  return instance.get();
 }
 
 // When a WillCloseAllTabs is invoked, all MRU index of that tab_strip_model
@@ -505,7 +524,8 @@ void TabActivityWatcher::WillCloseAllTabs(TabStripModel* tab_strip_model) {
       for (int i = 0; i < count; i++) {
         auto* other = WebContentsData::FromWebContents(
             browser->tab_strip_model()->GetWebContentsAt(i));
-        web_contents_data.push_back(other);
+        if (other)
+          web_contents_data.push_back(other);
       }
     }
 
@@ -545,12 +565,16 @@ void TabActivityWatcher::OnTabClosed(WebContentsData* web_contents_data) {
 
   // Log ForegroundedOrClosed event.
   if (!web_contents_data->backgrounded_time_.is_null()) {
-    tab_metrics_logger_->LogBackgroundTabClosed(
-        web_contents_data->ukm_source_id_,
-        NowTicks() - web_contents_data->backgrounded_time_,
-        web_contents_data->GetMRUFeatures());
-  }
+    const ukm::SourceId source_id =
+        web_contents_data->discarded_since_backgrounded_
+            ? web_contents_data->previous_ukm_source_id_
+            : web_contents_data->ukm_source_id_;
 
+    tab_metrics_logger_->LogBackgroundTabClosed(
+        source_id, NowTicks() - web_contents_data->backgrounded_time_,
+        web_contents_data->GetMRUFeatures(),
+        web_contents_data->discarded_since_backgrounded_);
+  }
   // Erase the pointer in |all_closing_tabs_| only when all logging finished.
   all_closing_tabs_.erase(web_contents_data);
 }

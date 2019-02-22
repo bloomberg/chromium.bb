@@ -11,18 +11,22 @@
 
 namespace tools {
 
-AXEventServer::AXEventServer(base::ProcessId pid)
+AXEventServer::AXEventServer(base::ProcessId pid,
+                             const base::StringPiece& pattern)
     : recorder_(
-          content::AccessibilityEventRecorder::GetInstance(nullptr, pid)) {
-  recorder_.ListenToEvents(
+          content::AccessibilityEventRecorder::Create(nullptr, pid, pattern)) {
+  recorder_->ListenToEvents(
       base::BindRepeating(&AXEventServer::OnEvent, base::Unretained(this)));
-  std::cout << "Events for process id: " << pid << std::endl;
+
+  std::stringstream output;
+  output << "Events for process id: " << pid;
+  printf("%s", output.str().c_str());
 }
 
 AXEventServer::~AXEventServer() = default;
 
 void AXEventServer::OnEvent(const std::string& event) const {
-  std::cout << event << std::endl;
+  printf("%s\n", event.c_str());
 }
 
 }  // namespace tools

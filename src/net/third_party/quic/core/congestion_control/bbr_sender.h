@@ -244,6 +244,10 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void CalculateRecoveryWindow(QuicByteCount bytes_acked,
                                QuicByteCount bytes_lost);
 
+  // Returns true if there are enough bytes in flight to ensure more bandwidth
+  // will be observed if present.
+  bool IsPipeSufficientlyFull() const;
+
   const RttStats* rtt_stats_;
   const QuicUnackedPacketMap* unacked_packets_;
   QuicRandom* random_;
@@ -252,7 +256,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Bandwidth sampler provides BBR with the bandwidth measurements at
   // individual points.
-  std::unique_ptr<BandwidthSamplerInterface> sampler_;
+  BandwidthSampler sampler_;
 
   // The number of the round trips that have occurred during the connection.
   QuicRoundTripCount round_trip_count_;
@@ -346,6 +350,9 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   bool last_sample_is_app_limited_;
   // Indicates whether any non app-limited samples have been recorded.
   bool has_non_app_limited_sample_;
+  // Indicates app-limited calls should be ignored as long as there's
+  // enough data inflight to see more bandwidth when necessary.
+  bool flexible_app_limited_;
 
   // Current state of recovery.
   RecoveryState recovery_state_;

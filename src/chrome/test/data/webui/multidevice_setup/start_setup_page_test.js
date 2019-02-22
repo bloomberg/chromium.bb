@@ -47,7 +47,7 @@ cr.define('multidevice_setup', () => {
 
       let selectOptionByTextContent = function(optionText) {
         const optionNodeList =
-            startSetupPageElement.querySelectorAll('* /deep/ option');
+            startSetupPageElement.$.deviceDropdown.querySelectorAll('option');
         for (option of optionNodeList.values()) {
           if (option.textContent.trim() == optionText) {
             MockInteractions.tap(option);
@@ -60,7 +60,8 @@ cr.define('multidevice_setup', () => {
           'Finding devices populates dropdown and defines selected device',
           () => {
             assertEquals(
-                startSetupPageElement.querySelectorAll('* /deep/ option')
+                startSetupPageElement.$.deviceDropdown
+                    .querySelectorAll('option')
                     .length,
                 DEVICES.length);
             assertEquals(startSetupPageElement.selectedDeviceId, 'abcdxl');

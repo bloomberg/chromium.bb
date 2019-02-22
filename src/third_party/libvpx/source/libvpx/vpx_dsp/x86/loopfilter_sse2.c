@@ -13,6 +13,7 @@
 #include "./vpx_dsp_rtcd.h"
 #include "vpx_ports/mem.h"
 #include "vpx_ports/emmintrin_compat.h"
+#include "vpx_dsp/x86/mem_sse2.h"
 
 static INLINE __m128i abs_diff(__m128i a, __m128i b) {
   return _mm_or_si128(_mm_subs_epu8(a, b), _mm_subs_epu8(b, a));
@@ -212,21 +213,21 @@ void vpx_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   // 00 10 20 30 01 11 21 31  02 12 22 32 03 13 23 33
   ps1ps0 = _mm_unpacklo_epi8(ps1ps0, x0);
 
-  *(int *)(s + 0 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
+  storeu_uint32(s + 0 * p - 2, _mm_cvtsi128_si32(ps1ps0));
   ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 1 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
+  storeu_uint32(s + 1 * p - 2, _mm_cvtsi128_si32(ps1ps0));
   ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 2 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
+  storeu_uint32(s + 2 * p - 2, _mm_cvtsi128_si32(ps1ps0));
   ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 3 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
+  storeu_uint32(s + 3 * p - 2, _mm_cvtsi128_si32(ps1ps0));
 
-  *(int *)(s + 4 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
+  storeu_uint32(s + 4 * p - 2, _mm_cvtsi128_si32(qs1qs0));
   qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 5 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
+  storeu_uint32(s + 5 * p - 2, _mm_cvtsi128_si32(qs1qs0));
   qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 6 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
+  storeu_uint32(s + 6 * p - 2, _mm_cvtsi128_si32(qs1qs0));
   qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 7 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
+  storeu_uint32(s + 7 * p - 2, _mm_cvtsi128_si32(qs1qs0));
 }
 
 void vpx_lpf_horizontal_16_sse2(unsigned char *s, int p,
@@ -1626,16 +1627,12 @@ static INLINE void transpose(unsigned char *src[], int in_p,
     x5 = _mm_unpacklo_epi16(x2, x3);
     // 00 10 20 30 40 50 60 70 01 11 21 31 41 51 61 71
     x6 = _mm_unpacklo_epi32(x4, x5);
-    _mm_storel_pd((double *)(out + 0 * out_p),
-                  _mm_castsi128_pd(x6));  // 00 10 20 30 40 50 60 70
-    _mm_storeh_pd((double *)(out + 1 * out_p),
-                  _mm_castsi128_pd(x6));  // 01 11 21 31 41 51 61 71
+    mm_storelu(out + 0 * out_p, x6);  // 00 10 20 30 40 50 60 70
+    mm_storehu(out + 1 * out_p, x6);  // 01 11 21 31 41 51 61 71
     // 02 12 22 32 42 52 62 72 03 13 23 33 43 53 63 73
     x7 = _mm_unpackhi_epi32(x4, x5);
-    _mm_storel_pd((double *)(out + 2 * out_p),
-                  _mm_castsi128_pd(x7));  // 02 12 22 32 42 52 62 72
-    _mm_storeh_pd((double *)(out + 3 * out_p),
-                  _mm_castsi128_pd(x7));  // 03 13 23 33 43 53 63 73
+    mm_storelu(out + 2 * out_p, x7);  // 02 12 22 32 42 52 62 72
+    mm_storehu(out + 3 * out_p, x7);  // 03 13 23 33 43 53 63 73
 
     // 04 14 24 34 05 15 25 35 06 16 26 36 07 17 27 37
     x4 = _mm_unpackhi_epi16(x0, x1);
@@ -1643,17 +1640,13 @@ static INLINE void transpose(unsigned char *src[], int in_p,
     x5 = _mm_unpackhi_epi16(x2, x3);
     // 04 14 24 34 44 54 64 74 05 15 25 35 45 55 65 75
     x6 = _mm_unpacklo_epi32(x4, x5);
-    _mm_storel_pd((double *)(out + 4 * out_p),
-                  _mm_castsi128_pd(x6));  // 04 14 24 34 44 54 64 74
-    _mm_storeh_pd((double *)(out + 5 * out_p),
-                  _mm_castsi128_pd(x6));  // 05 15 25 35 45 55 65 75
+    mm_storelu(out + 4 * out_p, x6);  // 04 14 24 34 44 54 64 74
+    mm_storehu(out + 5 * out_p, x6);  // 05 15 25 35 45 55 65 75
     // 06 16 26 36 46 56 66 76 07 17 27 37 47 57 67 77
     x7 = _mm_unpackhi_epi32(x4, x5);
 
-    _mm_storel_pd((double *)(out + 6 * out_p),
-                  _mm_castsi128_pd(x7));  // 06 16 26 36 46 56 66 76
-    _mm_storeh_pd((double *)(out + 7 * out_p),
-                  _mm_castsi128_pd(x7));  // 07 17 27 37 47 57 67 77
+    mm_storelu(out + 6 * out_p, x7);  // 06 16 26 36 46 56 66 76
+    mm_storehu(out + 7 * out_p, x7);  // 07 17 27 37 47 57 67 77
   } while (++idx8x8 < num_8x8_to_transpose);
 }
 

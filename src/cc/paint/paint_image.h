@@ -149,6 +149,7 @@ class CC_PAINT_EXPORT PaintImage {
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
+  bool is_high_bit_depth() const { return is_high_bit_depth_; }
   int repetition_count() const { return repetition_count_; }
   bool ShouldAnimate() const;
   AnimationSequenceId reset_animation_sequence_id() const {
@@ -164,6 +165,9 @@ class CC_PAINT_EXPORT PaintImage {
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
+
+  // Returns the color type of this image.
+  SkColorType GetColorType() const;
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;
@@ -222,6 +226,9 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Whether the data fetched for this image is a part of a multpart response.
   bool is_multipart_ = false;
+
+  // Whether this image has more than 8 bits per color channel.
+  bool is_high_bit_depth_ = false;
 
   // An incrementing sequence number maintained by the painter to indicate if
   // this animation should be reset in the compositor. Incrementing this number

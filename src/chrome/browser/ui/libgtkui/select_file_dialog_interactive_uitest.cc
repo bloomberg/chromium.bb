@@ -51,7 +51,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 
 
     while (!file_dialog->dialogs_.empty())
-      gtk_widget_destroy(file_dialog->dialogs_.begin()->first);
+      gtk_widget_destroy(*(file_dialog->dialogs_.begin()));
   }
 
   // SelectFileDialog::Listener implementation.

@@ -12,9 +12,17 @@ namespace subresource_filter {
 
 // Given |unindexed_path|, which is a path to an unindexed ruleset, writes the
 // indexed (flatbuffer) version to |indexed_path|. Returns false if there was
-// something wrong with the given paths.
+// something wrong with the given paths. If successful, stores the checksum of
+// the ruleset in the outparam.
 bool IndexAndWriteRuleset(const base::FilePath& unindexed_path,
-                          const base::FilePath& indexed_path);
+                          const base::FilePath& indexed_path,
+                          int* out_checksum = nullptr);
+
+// Write version JSON to |path|. This matches the version JSON found in
+// preferences.
+void WriteVersionMetadata(const base::FilePath& path,
+                          const std::string& content_version,
+                          int checksum);
 
 }  // namespace subresource_filter
 

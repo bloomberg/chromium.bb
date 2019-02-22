@@ -60,6 +60,7 @@ struct CC_EXPORT AnimationWorkletInput {
   std::vector<AddAndUpdateState> added_and_updated_animations;
   std::vector<UpdateState> updated_animations;
   std::vector<WorkletAnimationId> removed_animations;
+  std::vector<WorkletAnimationId> peeked_animations;
 
   AnimationWorkletInput();
   ~AnimationWorkletInput();
@@ -80,6 +81,12 @@ class CC_EXPORT MutatorInputState {
   void Add(AnimationWorkletInput::AddAndUpdateState&& state);
   void Update(AnimationWorkletInput::UpdateState&& state);
   void Remove(WorkletAnimationId worklet_animation_id);
+  // |Update| asks for the animation to *animate* given a current time and
+  // return the output value while |Peek| only asks for the last output value
+  // (if one available) without requiring animate or providing a current time.
+  // In particular, composited animations are updated from compositor and peeked
+  // from main thread.
+  void Peek(WorkletAnimationId worklet_animation_id);
 
   // Returns input for animation worklet with the given |scope_id| and nullptr
   // if there is no input.
@@ -141,7 +148,7 @@ class CC_EXPORT LayerTreeMutator {
 
   virtual void Mutate(std::unique_ptr<MutatorInputState> input_state) = 0;
   // TODO(majidvp): Remove when timeline inputs are known.
-  virtual bool HasAnimators() = 0;
+  virtual bool HasMutators() = 0;
 };
 
 }  // namespace cc

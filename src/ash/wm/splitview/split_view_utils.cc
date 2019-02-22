@@ -9,7 +9,6 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -32,7 +31,7 @@ constexpr base::TimeDelta kLabelAnimationDelayMs =
     base::TimeDelta::FromMilliseconds(167);
 // The time duration for the window transformation animations.
 constexpr base::TimeDelta kWindowTransformMs =
-    base::TimeDelta::FromMilliseconds(300);
+    base::TimeDelta::FromMilliseconds(250);
 
 constexpr float kHighlightOpacity = 0.3f;
 constexpr float kPreviewAreaHighlightOpacity = 0.18f;
@@ -78,9 +77,9 @@ void GetAnimationValuesForType(
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
       return;
-    case SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW:
+    case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
       *out_duration = kWindowTransformMs;
-      *out_tween_type = gfx::Tween::EASE_OUT;
+      *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       *out_preemption_strategy =
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
       return;
@@ -168,7 +167,7 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
-    case SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW:
+    case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
       break;
@@ -189,10 +188,6 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   ApplyAnimationSettings(&settings, animator, duration, tween,
                          preemption_strategy, delay);
   layer->SetTransform(target_transform);
-}
-
-void TransposeRect(gfx::Rect* rect) {
-  rect->SetRect(rect->y(), rect->x(), rect->height(), rect->width());
 }
 
 }  // namespace ash

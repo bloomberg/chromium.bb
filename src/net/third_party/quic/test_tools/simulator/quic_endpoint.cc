@@ -273,7 +273,7 @@ bool QuicEndpoint::IsFrameOutstanding(const QuicFrame& frame) const {
   return notifier_->IsFrameOutstanding(frame);
 }
 
-bool QuicEndpoint::HasPendingCryptoData() const {
+bool QuicEndpoint::HasUnackedCryptoData() const {
   return false;
 }
 
@@ -338,7 +338,9 @@ bool QuicEndpoint::Writer::IsBatchMode() const {
   return false;
 }
 
-char* QuicEndpoint::Writer::GetNextWriteLocation() const {
+char* QuicEndpoint::Writer::GetNextWriteLocation(
+    const QuicIpAddress& self_address,
+    const QuicSocketAddress& peer_address) {
   return nullptr;
 }
 
@@ -346,12 +348,13 @@ WriteResult QuicEndpoint::Writer::Flush() {
   return WriteResult(WRITE_STATUS_OK, 0);
 }
 
-bool QuicEndpoint::DataProducer::WriteStreamData(QuicStreamId id,
-                                                 QuicStreamOffset offset,
-                                                 QuicByteCount data_length,
-                                                 QuicDataWriter* writer) {
+WriteStreamDataResult QuicEndpoint::DataProducer::WriteStreamData(
+    QuicStreamId id,
+    QuicStreamOffset offset,
+    QuicByteCount data_length,
+    QuicDataWriter* writer) {
   writer->WriteRepeatedByte(kStreamDataContents, data_length);
-  return true;
+  return WRITE_SUCCESS;
 }
 
 void QuicEndpoint::WriteStreamData() {

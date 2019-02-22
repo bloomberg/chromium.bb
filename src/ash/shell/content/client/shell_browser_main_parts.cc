@@ -10,7 +10,6 @@
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
-#include "ash/content/content_gpu_interface_provider.h"
 #include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/shell/example_session_controller_client.h"
@@ -32,6 +31,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
+#include "content/public/browser/gpu_interface_provider_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -80,7 +80,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // is absent.
   chromeos::CrasAudioHandler::InitializeForTesting();
 
-  bluez::BluezDBusManager::Initialize(nullptr, true /* use stub */);
+  bluez::BluezDBusManager::Initialize();
 
   chromeos::PowerPolicyController::Initialize(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
@@ -90,8 +90,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  init_params.gpu_interface_provider =
-      std::make_unique<ContentGpuInterfaceProvider>();
+  init_params.gpu_interface_provider = content::CreateGpuInterfaceProvider();
   init_params.connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   ash::Shell::CreateInstance(std::move(init_params));
@@ -105,9 +104,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   window_watcher_ = std::make_unique<WindowWatcher>();
 
-  ash::shell::InitWindowTypeLauncher(base::Bind(
-      &views::examples::ShowExamplesWindowWithContent,
-      views::examples::DO_NOTHING_ON_CLOSE, browser_context_.get(), nullptr));
+  ash::shell::InitWindowTypeLauncher(
+      base::Bind(&views::examples::ShowExamplesWindowWithContent,
+                 base::Passed(base::OnceClosure()),
+                 base::Unretained(browser_context_.get()), nullptr));
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 

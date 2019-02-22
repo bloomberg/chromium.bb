@@ -23,9 +23,9 @@
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/add_string_to_digestor.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
@@ -113,8 +113,10 @@ BuildObjectForAnimationEffect(KeyframeEffect* effect, bool is_transition) {
           .setFill(computed_timing.fill())
           .setEasing(easing)
           .build();
-  if (effect->target())
-    animation_object->setBackendNodeId(DOMNodeIds::IdForNode(effect->target()));
+  if (effect->target()) {
+    animation_object->setBackendNodeId(
+        IdentifiersFactory::IntIdForNode(effect->target()));
+  }
   return animation_object;
 }
 
@@ -142,7 +144,7 @@ BuildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
   std::unique_ptr<protocol::Array<protocol::Animation::KeyframeStyle>>
       keyframes = protocol::Array<protocol::Animation::KeyframeStyle>::create();
 
-  for (size_t i = 0; i < model->GetFrames().size(); i++) {
+  for (wtf_size_t i = 0; i < model->GetFrames().size(); i++) {
     const Keyframe* keyframe = model->GetFrames().at(i);
     // Ignore CSS Transitions
     if (!keyframe->IsStringKeyframe())

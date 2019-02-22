@@ -22,8 +22,9 @@ PaymentRequestUnitTestBase::~PaymentRequestUnitTestBase() {}
 
 void PaymentRequestUnitTestBase::SetUp() {
   TestChromeBrowserState::Builder test_cbs_builder;
-  test_cbs_builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
-                                     &ios::BuildFakeSigninManager);
+  test_cbs_builder.AddTestingFactory(
+      ios::SigninManagerFactory::GetInstance(),
+      base::BindRepeating(&ios::BuildFakeSigninManager));
   chrome_browser_state_ = test_cbs_builder.Build();
   web_state_.SetBrowserState(chrome_browser_state_.get());
   personal_data_manager_.SetPrefService(pref_service_.get());

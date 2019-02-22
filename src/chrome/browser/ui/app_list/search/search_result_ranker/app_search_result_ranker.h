@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
-
-class Profile;
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 
 namespace app_list {
 
@@ -22,11 +24,15 @@ class AppLaunchPredictor;
 class AppSearchResultRanker {
  public:
   // Construct a AppSearchResultRanker with profile. It (possibly)
-  // asynchronously loads model from disk from profile->GetPath(); and sets
+  // asynchronously loads model from disk from |profile_path|; and sets
   // |load_from_disk_success_| to true when the loading finishes.
   // The internal |predictor_| is constructed with param
   // SearchResultRankerPredictorName() in "app_list_features.h".
-  explicit AppSearchResultRanker(Profile* profile);
+  // Ephemeral users are speically handled since their profiles are cleaned up
+  // after logging out.
+  AppSearchResultRanker(const base::FilePath& profile_path,
+                        bool is_ephemeral_user);
+
   ~AppSearchResultRanker();
 
   // Trains on the |app_id| and (possibly) updates its internal representation.
@@ -39,9 +45,25 @@ class AppSearchResultRanker {
   base::flat_map<std::string, float> Rank();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AppSearchResultRankerSerializationTest,
+                           LoadFromDiskSucceed);
+  FRIEND_TEST_ALL_PREFIXES(AppSearchResultRankerSerializationTest,
+                           LoadFromDiskFailIfNoFileExists);
+  FRIEND_TEST_ALL_PREFIXES(AppSearchResultRankerSerializationTest,
+                           LoadFromDiskFailWithInvalidProto);
+  FRIEND_TEST_ALL_PREFIXES(AppSearchResultRankerSerializationTest,
+                           SaveToDiskSucceed);
+
+  // Sets |predictor_| and |load_from_disk_completed_| when
+  // LoadPredictorFromDiskOnWorkerThread completes.
+  void OnLoadFromDiskComplete(std::unique_ptr<AppLaunchPredictor> predictor);
+
   // Internal predictor used for train and rank.
   std::unique_ptr<AppLaunchPredictor> predictor_;
-  bool load_from_disk_success_ = false;
+  bool load_from_disk_completed_ = false;
+  const base::FilePath predictor_filename_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::WeakPtrFactory<AppSearchResultRanker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchResultRanker);
 };

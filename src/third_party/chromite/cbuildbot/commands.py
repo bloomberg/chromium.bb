@@ -284,7 +284,7 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
   RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
 
 
-def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
+def SetupBoard(buildroot, board, usepkg,
                extra_env=None, force=False, profile=None, chroot_upgrade=True,
                chroot_args=None):
   """Wrapper around setup_board.
@@ -293,8 +293,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
     buildroot: The buildroot of the current build.
     board: The board to set up.
     usepkg: Whether to use binary packages when setting up the board.
-    chrome_binhost_only: If set, only use binary packages on the board for
-      Chrome itself.
     extra_env: A dictionary of environmental variables to set during generation.
     force: Whether to remove the board prior to setting it up.
     profile: The profile to use with this board.
@@ -316,9 +314,6 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
-
-  if chrome_binhost_only:
-    cmd.append('--chrome_binhost_only')
 
   if force:
     cmd.append('--force')
@@ -367,7 +362,7 @@ def RunBinhostTest(buildroot, incremental=True):
     buildroot: The buildroot of the current build.
     incremental: If True, run the incremental compatibility test.
   """
-  cmd = ['../cbuildbot/binhost_test', '--log-level=debug']
+  cmd = ['../cbuildbot/binhost_test', '-v', '--log-level=debug']
 
   # Non incremental tests are listed in a special test suite.
   if not incremental:
@@ -433,7 +428,7 @@ def UpdateBinhostJson(buildroot):
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
-def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
+def Build(buildroot, board, build_autotest, usepkg,
           packages=(), skip_chroot_upgrade=True,
           extra_env=None, chrome_root=None, noretry=False,
           chroot_args=None, event_file=None, run_goma=False):
@@ -444,8 +439,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     board: The board to set up.
     build_autotest: Whether to build autotest-related packages.
     usepkg: Whether to use binary packages.
-    chrome_binhost_only: If set, only use binary packages on the board for
-      Chrome itself.
     packages: Tuple of specific packages we want to build. If empty,
       build_packages will calculate a list of packages automatically.
     skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
@@ -469,9 +462,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if not usepkg:
     cmd.extend(_LOCAL_BUILD_FLAGS)
-
-  if chrome_binhost_only:
-    cmd.append('--chrome_binhost_only')
 
   if noretry:
     cmd.append('--nobuildretry')
@@ -1325,7 +1315,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
       'priority': priority,
   }
   if run_skylab:
-    tags['luci_project'] = 'chromiumos'
+    tags['luci_project'] = 'chromeos'
     tags['skylab'] = 'run_suite'
 
   return {
@@ -1534,7 +1524,7 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
                        ('pool', SKYLAB_SUITE_BOT_POOL)],
         'print_status_updates': True,
         'expiration_secs': _SWARMING_EXPIRATION,
-        'tags': {'luci_project':'chromiumos',
+        'tags': {'luci_project':'chromeos',
                  'skylab':'abort_suite'}}
     if debug:
       logging.info('AbortSkylabHWTests would run the cmd via '
@@ -1783,18 +1773,16 @@ def CleanupChromeKeywordsFile(boards, buildroot):
       cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
-def UprevPackages(buildroot, boards, overlays=None, overlay_type=None,
-                  workspace=None):
+def UprevPackages(buildroot, boards, overlay_type, workspace=None):
   """Uprevs non-browser chromium os packages that have changed.
 
   Args:
     buildroot: Root directory where build occurs.
     boards: List of boards to uprev.
-    overlays: The overlays to check for ebuilds to uprev.
     overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
-  assert not (overlays and overlay_type)
+  assert overlay_type
 
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
   cmd = [
@@ -1803,13 +1791,8 @@ def UprevPackages(buildroot, boards, overlays=None, overlay_type=None,
       '--boards=%s' % ':'.join(boards),
       '--drop_file=%s' % drop_file,
       '--buildroot', workspace or buildroot,
+      '--overlay-type', overlay_type,
   ]
-
-  if overlays:
-    cmd.extend(['--overlays', ':'.join(overlays)])
-
-  if overlay_type:
-    cmd.extend(['--overlay-type', overlay_type])
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
@@ -1820,29 +1803,25 @@ def RegenPortageCache(overlays):
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
 
 
-def UprevPush(buildroot, overlays=None, dryrun=True, staging_branch=None,
-              overlay_type=None, workspace=None):
+def UprevPush(buildroot, overlay_type, dryrun=True, staging_branch=None,
+              workspace=None):
   """Pushes uprev changes to the main line.
 
   Args:
     buildroot: Root directory where build occurs.
-    overlays: The overlays to push uprevs.
     dryrun: If True, do not actually push.
     staging_branch: If not None, push uprev commits to this
                     staging_branch.
     overlay_type: A value from constants.VALID_OVERLAYS.
     workspace: Alternative buildroot directory to uprev.
   """
-  assert not (overlays and overlay_type)
+  assert overlay_type
 
   cmd = [
       'cros_mark_as_stable', 'push',
       '--buildroot', workspace or buildroot,
+      '--overlay-type', overlay_type,
   ]
-  if overlays:
-    cmd.extend(['--overlays', ':'.join(overlays)])
-  if overlay_type:
-    cmd.extend(['--overlay-type', overlay_type])
   if staging_branch is not None:
     cmd.append('--staging_branch=%s' % staging_branch)
   if dryrun:
@@ -2719,19 +2698,18 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
     packages = portage_util.FindPackageNameMatches(pattern, board,
                                                    buildroot=buildroot)
     for cpv in packages:
-      pkg = '%s/%s' % (cpv.category, cpv.pv)
-      cmd = ['strip_package', '--board', board, pkg]
+      cmd = ['strip_package', '--board', board, cpv.cpf]
       cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
       # Find the stripped package.
-      files = glob.glob(os.path.join(stripped_pkg_dir, pkg) + '.*')
+      files = glob.glob(os.path.join(stripped_pkg_dir, cpv.cpf) + '.*')
       if not files:
         raise AssertionError('Silent failure to strip binary %s? '
                              'Failed to find stripped files at %s.' %
-                             (pkg, os.path.join(stripped_pkg_dir, pkg)))
+                             (cpv.cpf, os.path.join(stripped_pkg_dir, cpv.cpf)))
       if len(files) > 1:
         logging.PrintBuildbotStepWarnings()
         logging.warning('Expected one stripped package for %s, found %d',
-                        pkg, len(files))
+                        cpv.cpf, len(files))
 
       tarball = sorted(files)[-1]
       tarball_paths.append(os.path.abspath(tarball))
@@ -2942,8 +2920,6 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   suffix = 'dev.bin'
 
   cwd = os.path.join(build_root, 'src', 'scripts')
-  path = path_util.ToChrootPath(
-      os.path.join(build_root, 'src', 'platform', 'dev', 'host'))
   chroot_dir = os.path.join(build_root, 'chroot')
   chroot_tmp = os.path.join(chroot_dir, 'tmp')
   chroot_target = path_util.ToChrootPath(target_image_path)
@@ -2986,7 +2962,7 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
 
     if stateful:
       cmd = [
-          os.path.join(path, 'cros_generate_stateful_update_payload'),
+          'cros_generate_stateful_update_payload',
           '--image', chroot_target,
           '--output', chroot_temp_dir
       ]

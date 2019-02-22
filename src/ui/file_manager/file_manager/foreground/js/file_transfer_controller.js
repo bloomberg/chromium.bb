@@ -30,7 +30,7 @@ var FileAsyncData;
  * @param {!MetadataModel} metadataModel Metadata cache service.
  * @param {!ThumbnailModel} thumbnailModel
  * @param {!DirectoryModel} directoryModel Directory model instance.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!VolumeManager} volumeManager Volume manager instance.
  * @param {!FileSelectionHandler} selectionHandler Selection handler.
  * @param {function((!Entry|!FakeEntry)): boolean} shouldShowCommandFor
  * @struct
@@ -78,7 +78,7 @@ function FileTransferController(
   this.directoryModel_ = directoryModel;
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;
@@ -167,7 +167,7 @@ function FileTransferController(
       queryRequiredElement('command#cut', this.document_));
 
   /**
-   * @private {DirectoryEntry|FilesAppDirEntry}
+   * @private {DirectoryEntry|FakeEntry}
    */
   this.destinationEntry_ = null;
 
@@ -1501,7 +1501,7 @@ FileTransferController.prototype.onBeforePaste_ = function(event) {
 
 /**
  * @param {!ClipboardData} clipboardData Clipboard data object.
- * @param {DirectoryEntry|FakeEntry|FilesAppEntry} destinationEntry Destination
+ * @param {DirectoryEntry|FilesAppEntry} destinationEntry Destination
  *    entry.
  * @return {boolean} Returns true if items stored in {@code clipboardData} can
  *     be pasted to {@code destinationEntry}. Otherwise, returns false.
@@ -1541,7 +1541,7 @@ FileTransferController.prototype.canPasteOrDrop_ =
 /**
  * Execute paste command.
  *
- * @param {DirectoryEntry|FakeEntry|FilesAppEntry} destinationEntry
+ * @param {DirectoryEntry|FilesAppEntry} destinationEntry
  * @return {boolean}  Returns true, the paste is success. Otherwise, returns
  *     false.
  */
@@ -1649,7 +1649,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
  * @param {!Event} event Drag event.
  * @param {Object<string>} dragAndDropData drag & drop data from
  *     getDragAndDropGlobalData_().
- * @param {DirectoryEntry|FakeEntry|FilesAppEntry} destinationEntry Destination
+ * @param {DirectoryEntry|FilesAppEntry} destinationEntry Destination
  *     entry.
  * @return {DropEffectAndLabel} Returns the appropriate drop query type
  *     ('none', 'move' or copy') to the current modifiers status and the

@@ -180,11 +180,10 @@ std::string InstanceIDDriverTest::GetToken(
   token_.clear();
   result_ = InstanceID::UNKNOWN_ERROR;
   instance_id->GetToken(
-      authorized_entity,
-      scope,
-      options,
-      base::Bind(&InstanceIDDriverTest::GetTokenCompleted,
-                 base::Unretained(this)));
+      authorized_entity, scope, options,
+      /*is_lazy=*/false,
+      base::BindRepeating(&InstanceIDDriverTest::GetTokenCompleted,
+                          base::Unretained(this)));
   WaitForAsyncOperation();
   return token_;
 }

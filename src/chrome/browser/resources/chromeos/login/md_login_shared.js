@@ -184,13 +184,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows dialog to create a supervised user.
-   */
-  Oobe.showSupervisedUserCreationScreen = function() {
-    DisplayManager.showSupervisedUserCreationScreen();
-  };
-
-  /**
    * Shows TPM error screen.
    */
   Oobe.showTpmError = function() {

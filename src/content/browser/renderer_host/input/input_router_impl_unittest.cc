@@ -255,12 +255,12 @@ class InputRouterImplTest : public testing::Test {
   }
 
   void SimulateWheelEvent(float x,
-                                   float y,
-                                   float dX,
-                                   float dY,
-                                   int modifiers,
-                                   bool precise,
-                                   WebMouseWheelEvent::Phase phase) {
+                          float y,
+                          float dX,
+                          float dY,
+                          int modifiers,
+                          bool precise,
+                          WebMouseWheelEvent::Phase phase) {
     WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
         x, y, dX, dY, modifiers, precise);
     wheel_event.phase = phase;
@@ -422,6 +422,33 @@ class InputRouterImplTest : public testing::Test {
     input_router_->OnSetTouchAction(cc::kTouchActionAuto);
     GetAndResetDispatchedMessages();
     disposition_handler_->GetAndResetAckCount();
+  }
+
+  void ActiveTouchSequenceCountTest(
+      const base::Optional<cc::TouchAction>& touch_action,
+      InputEventAckState state) {
+    PressTouchPoint(1, 1);
+    base::Optional<ui::DidOverscrollParams> overscroll;
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
+    input_router_->TouchEventHandled(
+        TouchEventWithLatencyInfo(touch_event_), InputEventAckSource::BROWSER,
+        ui::LatencyInfo(), state, overscroll, touch_action);
+    EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 1);
+    ReleaseTouchPoint(0);
+    input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
+                                   InputEventAckSource::BROWSER, state);
+    EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 0);
+  }
+
+  void OnTouchEventAckWithAckState(InputEventAckState ack_state) {
+    input_router_->OnHasTouchEventHandlers(true);
+    EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
+    PressTouchPoint(1, 1);
+    input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
+    input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
+                                   InputEventAckSource::BROWSER, ack_state);
+    EXPECT_EQ(input_router_->AllowedTouchAction().value(),
+              cc::kTouchActionAuto);
   }
 
   InputRouter::Config config_;
@@ -590,6 +617,64 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   dispatched_messages = GetAndResetDispatchedMessages();
   EXPECT_EQ(0u, dispatched_messages.size());
+}
+
+// Test that the active touch sequence count increment when the touch start is
+// not ACKed from the main thread.
+TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithoutTouchAction) {
+  base::Optional<cc::TouchAction> touch_action;
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+}
+
+TEST_F(InputRouterImplTest,
+       ActiveTouchSequenceCountWithoutTouchActionNoConsumer) {
+  base::Optional<cc::TouchAction> touch_action;
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+// Test that the active touch sequence count increment when the touch start is
+// ACKed from the main thread.
+TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchAction) {
+  base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+}
+
+TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
+  base::Optional<cc::TouchAction> touch_action(cc::kTouchActionPanY);
+  ActiveTouchSequenceCountTest(touch_action,
+                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNotConsumed) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumedShouldBubble) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNoConsumerExists) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateIgnored) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_IGNORED);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlocking) {
+  OnTouchEventAckWithAckState(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+}
+
+TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateNonBlockingDueToFling) {
+  OnTouchEventAckWithAckState(
+      INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING);
 }
 
 // Tests that touch-events are sent properly.

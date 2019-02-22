@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace {
 
@@ -39,7 +41,7 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
                        const base::FilePath& symlink_path,
                        const base::FilePath& version_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Delete in reverse order of creation.
   if (!version_path.empty())
@@ -94,7 +96,7 @@ AppShimHostManager::~AppShimHostManager() {
 }
 
 void AppShimHostManager::InitOnBackgroundThread() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;
@@ -142,7 +144,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
   base::CreateSymbolicLink(base::FilePath(version_info::GetVersionNumber()),
                            version_path);
 
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::Bind(&AppShimHostManager::ListenOnIOThread, this));
 }
@@ -150,7 +152,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
 void AppShimHostManager::ListenOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!acceptor_->Listen()) {
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
                    base::Bind(&AppShimHostManager::OnListenError, this));
   }
@@ -159,7 +161,7 @@ void AppShimHostManager::ListenOnIOThread() {
 void AppShimHostManager::OnClientConnected(
     mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&CreateAppShimHost, std::move(endpoint)));
 }

@@ -49,12 +49,15 @@ ArcNotificationView::ArcNotificationView(
   AddChildView(content_view_);
 
   if (content_view_->background()) {
-    background_view()->background()->SetNativeControlColor(
+    background()->SetNativeControlColor(
         content_view_->background()->get_color());
   }
 
   focus_painter_ = views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
+
+  UpdateCornerRadius(message_center::kNotificationCornerRadius,
+                     message_center::kNotificationCornerRadius);
 }
 
 ArcNotificationView::~ArcNotificationView() {

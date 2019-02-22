@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
@@ -62,9 +63,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return unpositioned_list_marker_;
   }
 
-  const NGExclusionSpace* ExclusionSpace() const {
-    return exclusion_space_.get();
-  }
+  const NGExclusionSpace& ExclusionSpace() const { return exclusion_space_; }
 
   NGLayoutResultStatus Status() const {
     return static_cast<NGLayoutResultStatus>(status_);
@@ -78,7 +77,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentBox);
+    DCHECK(root_fragment_->Type() == NGPhysicalFragment::kFragmentBox ||
+           root_fragment_->Type() ==
+               NGPhysicalFragment::kFragmentRenderedLegend);
     return intrinsic_block_size_;
   }
 
@@ -116,11 +117,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   friend class NGLineBoxFragmentBuilder;
 
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
-                 Vector<NGOutOfFlowPositionedDescendant>&
+                 Vector<NGOutOfFlowPositionedDescendant>&&
                      out_of_flow_positioned_descendants,
-                 Vector<NGPositionedFloat>& positioned_floats,
+                 Vector<NGPositionedFloat>&& positioned_floats,
                  const NGUnpositionedListMarker& unpositioned_list_marker,
-                 std::unique_ptr<const NGExclusionSpace> exclusion_space,
+                 NGExclusionSpace&& exclusion_space,
                  LayoutUnit bfc_line_offset,
                  const base::Optional<LayoutUnit> bfc_block_offset,
                  const NGMarginStrut end_margin_strut,
@@ -140,7 +141,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   NGUnpositionedListMarker unpositioned_list_marker_;
 
-  const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
+  const NGExclusionSpace exclusion_space_;
   const LayoutUnit bfc_line_offset_;
   const base::Optional<LayoutUnit> bfc_block_offset_;
   const NGMarginStrut end_margin_strut_;

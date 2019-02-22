@@ -221,7 +221,7 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSVGValue(
       InterpolableList::Create(svg_list.length());
 
   Vector<SVGTransformType> transform_types;
-  for (size_t i = 0; i < svg_list.length(); i++) {
+  for (wtf_size_t i = 0; i < svg_list.length(); i++) {
     const SVGTransform* transform = svg_list.at(i);
     SVGTransformType transform_type(transform->TransformType());
     if (transform_type == kSvgTransformMatrix) {
@@ -268,10 +268,10 @@ InterpolationValue SVGTransformListInterpolationType::MaybeConvertSingle(
 
   std::unique_ptr<InterpolableList> interpolable_list =
       InterpolableList::Create(types.size());
-  size_t interpolable_list_index = 0;
+  wtf_size_t interpolable_list_index = 0;
   for (auto& part : interpolable_parts) {
     InterpolableList& list = ToInterpolableList(*part);
-    for (size_t i = 0; i < list.length(); ++i) {
+    for (wtf_size_t i = 0; i < list.length(); ++i) {
       interpolable_list->Set(interpolable_list_index,
                              std::move(list.GetMutable(i)));
       ++interpolable_list_index;
@@ -290,7 +290,7 @@ SVGPropertyBase* SVGTransformListInterpolationType::AppliedSVGValue(
   const Vector<SVGTransformType>& transform_types =
       ToSVGTransformNonInterpolableValue(non_interpolable_value)
           ->TransformTypes();
-  for (size_t i = 0; i < list.length(); ++i)
+  for (wtf_size_t i = 0; i < list.length(); ++i)
     result->Append(FromInterpolableValue(*list.Get(i), transform_types.at(i)));
   return result;
 }

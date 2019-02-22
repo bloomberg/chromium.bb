@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -20,6 +20,7 @@ class WebDocumentLoader;
 namespace content {
 
 class DocumentState;
+class NavigationState;
 
 // Stores internal state per WebDocumentLoader.
 class InternalDocumentStateData : public base::SupportsUserData::Data {
@@ -31,18 +32,11 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
       blink::WebDocumentLoader* document_loader);
   static InternalDocumentStateData* FromDocumentState(DocumentState* ds);
 
+  void CopyFrom(InternalDocumentStateData* other);
+
   int http_status_code() const { return http_status_code_; }
   void set_http_status_code(int http_status_code) {
     http_status_code_ = http_status_code;
-  }
-
-  const GURL& searchable_form_url() const { return searchable_form_url_; }
-  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
-  const std::string& searchable_form_encoding() const {
-    return searchable_form_encoding_;
-  }
-  void set_searchable_form_encoding(const std::string& encoding) {
-    searchable_form_encoding_ = encoding;
   }
 
   // True if the user agent was overridden for this page.
@@ -78,14 +72,16 @@ class InternalDocumentStateData : public base::SupportsUserData::Data {
     return cache_policy_override_set_;
   }
 
+  NavigationState* navigation_state() { return navigation_state_.get(); }
+  void set_navigation_state(std::unique_ptr<NavigationState> navigation_state);
+
  private:
   int http_status_code_;
-  GURL searchable_form_url_;
-  std::string searchable_form_encoding_;
   bool is_overriding_user_agent_;
   bool must_reset_scroll_and_scale_state_;
   bool cache_policy_override_set_;
   blink::mojom::FetchCacheMode cache_policy_override_;
+  std::unique_ptr<NavigationState> navigation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalDocumentStateData);
 };

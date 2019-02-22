@@ -17,7 +17,7 @@
 #include "modules/audio_processing/include/audio_processing.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/numerics/safe_minmax.h"
-#include "system_wrappers/include/field_trial_default.h"
+#include "system_wrappers/include/field_trial.h"
 #include "test/fuzzers/audio_processing_fuzzer_helper.h"
 #include "test/fuzzers/fuzz_data_helper.h"
 
@@ -51,7 +51,16 @@ const std::string kFieldTrialNames[] = {
     "WebRTC-Aec3EarlyLinearFilterUsageKillSwitch",
     "WebRTC-Aec3ShortInitialStateKillSwitch",
     "WebRTC-Aec3StandardNonlinearReverbModelKillSwitch",
-    "WebRTC-Aec3EnableAdaptiveEchoReverbEstimation"};
+    "WebRTC-Aec3EnableAdaptiveEchoReverbEstimation",
+    "WebRTC-Aec3StrictDivergenceCheckKillSwitch",
+    "WebRTC-Aec3UseLegacyNormalSuppressorTuning",
+    "WebRTC-Aec3UseOffsetBlocks",
+    "WebRTC-Aec3UseShortDelayEstimatorWindow",
+    "WebRTC-Aec3UseStationarityPropertiesKillSwitch",
+    "WebRTC-Aec3UtilizeShadowFilterOutputKillSwitch",
+    "WebRTC-Aec3ZeroExternalDelayHeadroomKillSwitch",
+    "WebRTC-Aec3EarlyDelayDetectionKillSwitch",
+};
 
 std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
                                            std::string* field_trial_string) {
@@ -63,7 +72,7 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   bool ef = fuzz_data->ReadOrDefaultValue(true);
   bool raf = fuzz_data->ReadOrDefaultValue(true);
   static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
-  bool ie = fuzz_data->ReadOrDefaultValue(true);
+  static_cast<void>(fuzz_data->ReadOrDefaultValue(true));
   bool red = fuzz_data->ReadOrDefaultValue(true);
   bool hpf = fuzz_data->ReadOrDefaultValue(true);
   bool aec3 = fuzz_data->ReadOrDefaultValue(true);
@@ -123,7 +132,6 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
   config.Set<ExtendedFilter>(new ExtendedFilter(ef));
   config.Set<RefinedAdaptiveFilter>(new RefinedAdaptiveFilter(raf));
   config.Set<DelayAgnostic>(new DelayAgnostic(true));
-  config.Set<Intelligibility>(new Intelligibility(ie));
 
   std::unique_ptr<AudioProcessing> apm(
       AudioProcessingBuilder()
@@ -134,6 +142,8 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
       absl::make_unique<testing::NiceMock<webrtc::test::MockAecDump>>());
 
   webrtc::AudioProcessing::Config apm_config;
+  apm_config.echo_canceller.enabled = use_aec || use_aecm;
+  apm_config.echo_canceller.mobile_mode = use_aecm;
   apm_config.residual_echo_detector.enabled = red;
   apm_config.high_pass_filter.enabled = hpf;
   apm_config.gain_controller2.enabled = use_agc2_limiter;
@@ -142,8 +152,6 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
 
   apm->ApplyConfig(apm_config);
 
-  apm->echo_cancellation()->Enable(use_aec);
-  apm->echo_control_mobile()->Enable(use_aecm);
   apm->gain_control()->Enable(use_agc);
   apm->noise_suppression()->Enable(use_ns);
   apm->level_estimator()->Enable(use_le);
@@ -157,7 +165,7 @@ std::unique_ptr<AudioProcessing> CreateApm(test::FuzzDataHelper* fuzz_data,
 void FuzzOneInput(const uint8_t* data, size_t size) {
   test::FuzzDataHelper fuzz_data(rtc::ArrayView<const uint8_t>(data, size));
   // This string must be in scope during execution, according to documentation
-  // for field_trial_default.h. Hence it's created here and not in CreateApm.
+  // for field_trial.h. Hence it's created here and not in CreateApm.
   std::string field_trial_string = "";
   auto apm = CreateApm(&fuzz_data, &field_trial_string);
 

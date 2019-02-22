@@ -45,6 +45,10 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   void DeviceMTUChanged(device::BluetoothAdapter* adapter,
                         device::BluetoothDevice* device,
                         uint16_t mtu) override;
+  void DeviceAdvertisementReceived(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   int16_t rssi,
+                                   const std::vector<uint8_t>& eir) override;
 #endif
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
@@ -102,6 +106,10 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   bool device_new_paired_status() const { return device_new_paired_status_; }
   int device_mtu_changed_count() const { return device_mtu_changed_count_; }
   uint16_t last_mtu_value() const { return device_mtu_; }
+  int device_advertisement_received_count() const {
+    return device_advertisement_received_count_;
+  }
+  const std::vector<uint8_t>& device_eir() const { return device_eir_; }
 #endif
   int device_removed_count() const { return device_removed_count_; }
   BluetoothDevice* last_device() const { return last_device_; }
@@ -187,6 +195,8 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   bool device_new_paired_status_;
   int device_mtu_changed_count_;
   uint16_t device_mtu_;
+  int device_advertisement_received_count_;
+  std::vector<uint8_t> device_eir_;
 #endif
   int device_removed_count_;
   BluetoothDevice* last_device_;

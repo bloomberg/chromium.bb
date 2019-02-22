@@ -7,10 +7,10 @@
 
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -40,7 +40,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   static void Fetch(
       const KURL&,
       FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      WebURLRequest::RequestContext destination,
+      mojom::RequestContextType destination,
       const ScriptFetchOptions&,
       Modulator*,
       ModuleScriptCustomFetchType,
@@ -51,7 +51,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   static void FetchDescendantsForInlineScript(
       ModuleScript*,
       FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      WebURLRequest::RequestContext destination,
+      mojom::RequestContextType destination,
       Modulator*,
       ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
@@ -68,7 +68,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  private:
   ModuleTreeLinker(
       FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      WebURLRequest::RequestContext destination,
+      mojom::RequestContextType destination,
       Modulator*,
       ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
@@ -113,7 +113,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
   const Member<FetchClientSettingsObjectSnapshot> fetch_client_settings_object_;
-  const WebURLRequest::RequestContext destination_;
+  const mojom::RequestContextType destination_;
   const Member<Modulator> modulator_;
   const ModuleScriptCustomFetchType custom_fetch_type_;
   HashSet<KURL> visited_set_;

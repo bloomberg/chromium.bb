@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,6 +18,8 @@
 
 namespace feed {
 
+class JournalMutation;
+class JournalOperation;
 class JournalStorageProto;
 
 // FeedJournalDatabase is leveldb backend store for Feed's journal storage data.
@@ -32,7 +35,17 @@ class FeedJournalDatabase {
   // Returns the journal data as a vector of strings when calling loading data
   // or keys.
   using JournalLoadCallback =
-      base::OnceCallback<void(std::vector<std::string>)>;
+      base::OnceCallback<void(bool, std::vector<std::string>)>;
+
+  // Return whether the entry exists when calling for checking
+  // the entry's existence.
+  using CheckExistingCallback = base::OnceCallback<void(bool, bool)>;
+
+  // Returns whether the commit operation succeeded when calling for database
+  // operations.
+  using ConfirmationCallback = base::OnceCallback<void(bool)>;
+
+  using JournalMap = base::flat_map<std::string, JournalStorageProto>;
 
   // Initializes the database with |database_folder|.
   explicit FeedJournalDatabase(const base::FilePath& database_folder);
@@ -54,13 +67,63 @@ class FeedJournalDatabase {
   // Loads the journal data for the |key| and passes it to |callback|.
   void LoadJournal(const std::string& key, JournalLoadCallback callback);
 
+  // Checks if the journal for the |key| exists, and return the result to
+  // |callback|.
+  void DoesJournalExist(const std::string& key, CheckExistingCallback callback);
+
+  // Commits the operations in the |journal_mutation|. |callback| will be called
+  // when all the operations are committed. Or if any operation failed, database
+  // will stop process any operations and passed error to |callback|.
+  void CommitJournalMutation(std::unique_ptr<JournalMutation> journal_mutation,
+                             ConfirmationCallback callback);
+
+  // Loads all journal keys in the storage, and passes them to |callback|.
+  void LoadAllJournalKeys(JournalLoadCallback callback);
+
+  // Delete all journals, |callback| will be called when all journals are
+  // deleted or if there is an error.
+  void DeleteAllJournals(ConfirmationCallback callback);
+
  private:
-  void OnGetEntryForLoadJournal(JournalLoadCallback callback,
-                                bool success,
-                                std::unique_ptr<JournalStorageProto> journal);
+  // This method performs JournalOperation in the |journal_mutation|.
+  // If the first operation in |journal_mutation| is JOURNAL_DELETE, journal can
+  // be empty, otherwise we need to load |journal| from database and then pass
+  // to this method.
+  void PerformOperations(std::unique_ptr<JournalStorageProto> journal,
+                         std::unique_ptr<JournalMutation> journal_mutation,
+                         ConfirmationCallback callback);
+  void CommitOperations(base::TimeTicks start_time,
+                        std::unique_ptr<JournalStorageProto> journal,
+                        JournalMap copy_to_journal,
+                        ConfirmationCallback callback);
 
   // Callback methods given to |storage_database_| for async responses.
   void OnDatabaseInitialized(bool success);
+  void OnGetEntryForLoadJournal(base::TimeTicks start_time,
+                                JournalLoadCallback callback,
+                                bool success,
+                                std::unique_ptr<JournalStorageProto> journal);
+  void OnGetEntryForDoesJournalExist(
+      base::TimeTicks start_time,
+      CheckExistingCallback callback,
+      bool success,
+      std::unique_ptr<JournalStorageProto> journal);
+  void OnGetEntryForCommitJournalMutation(
+      std::unique_ptr<JournalMutation> journal_mutation,
+      ConfirmationCallback callback,
+      bool success,
+      std::unique_ptr<JournalStorageProto> journal);
+  void OnLoadKeysForLoadAllJournalKeys(
+      base::TimeTicks start_time,
+      JournalLoadCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<std::string>> keys);
+  void OnOperationCommitted(base::TimeTicks start_time,
+                            ConfirmationCallback callback,
+                            bool success);
+
+  JournalStorageProto CopyJouarnal(const std::string& new_journal_name,
+                                   const JournalStorageProto& source_journal);
 
   // Status of the database initialization.
   State database_status_;

@@ -14,16 +14,17 @@ class MatchResultTest : public testing::Test {
   void SetUp() override;
 
   const CSSPropertyValueSet* PropertySet(unsigned index) const {
-    return property_sets[index].Get();
+    return property_sets->at(index).Get();
   }
 
  private:
-  PersistentHeapVector<Member<MutableCSSPropertyValueSet>, 8> property_sets;
+  Persistent<HeapVector<Member<MutableCSSPropertyValueSet>, 8>> property_sets;
 };
 
 void MatchResultTest::SetUp() {
+  property_sets = new HeapVector<Member<MutableCSSPropertyValueSet>, 8>();
   for (unsigned i = 0; i < 8; i++) {
-    property_sets.push_back(
+    property_sets->push_back(
         MutableCSSPropertyValueSet::Create(kHTMLQuirksMode));
   }
 }

@@ -38,13 +38,13 @@ void DistributedNodes::Swap(DistributedNodes& other) {
 void DistributedNodes::Append(Node* node) {
   DCHECK(node);
   DCHECK(node->CanParticipateInFlatTree());
-  size_t size = nodes_.size();
+  wtf_size_t size = nodes_.size();
   indices_.Set(node, size);
   nodes_.push_back(node);
 }
 
-size_t DistributedNodes::Find(const Node* node) const {
-  HeapHashMap<Member<const Node>, size_t>::const_iterator it =
+wtf_size_t DistributedNodes::Find(const Node* node) const {
+  HeapHashMap<Member<const Node>, wtf_size_t>::const_iterator it =
       indices_.find(node);
   if (it == indices_.end())
     return kNotFound;
@@ -53,14 +53,14 @@ size_t DistributedNodes::Find(const Node* node) const {
 }
 
 Node* DistributedNodes::NextTo(const Node* node) const {
-  size_t index = Find(node);
+  wtf_size_t index = Find(node);
   if (index == kNotFound || index + 1 == size())
     return nullptr;
   return at(index + 1);
 }
 
 Node* DistributedNodes::PreviousTo(const Node* node) const {
-  size_t index = Find(node);
+  wtf_size_t index = Find(node);
   if (index == kNotFound || !index)
     return nullptr;
   return at(index - 1);

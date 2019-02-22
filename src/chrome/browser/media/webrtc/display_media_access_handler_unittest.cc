@@ -93,6 +93,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   EXPECT_EQ(content::MEDIA_DEVICE_OK, result);
   EXPECT_EQ(1u, devices.size());
   EXPECT_EQ(content::MEDIA_DISPLAY_VIDEO_CAPTURE, devices[0].type);
+  EXPECT_TRUE(devices[0].display_media_info.has_value());
 }
 
 TEST_F(DisplayMediaAccessHandlerTest, PermissionDenied) {

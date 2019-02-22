@@ -191,6 +191,7 @@ HeapVector<PaymentMethodData> BuildPaymentMethodDataForTest() {
 payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest() {
   payments::mojom::blink::PaymentResponsePtr result =
       payments::mojom::blink::PaymentResponse::New();
+  result->payer = payments::mojom::blink::PayerDetail::New();
   return result;
 }
 

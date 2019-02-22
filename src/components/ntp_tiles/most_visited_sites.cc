@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
@@ -86,6 +87,37 @@ std::string StripFirstGenericPrefix(const std::string& host) {
 
 bool ShouldShowPopularSites() {
   return base::FeatureList::IsEnabled(kUsePopularSitesSuggestions);
+}
+
+// Generate a short title for Most Visited items before they're converted to
+// custom links.
+base::string16 GenerateShortTitle(const base::string16& title) {
+  // Empty title only happened in the unittests.
+  if (title.empty())
+    return base::string16();
+  std::vector<base::string16> short_title_list =
+      SplitString(title, base::UTF8ToUTF16("-:|;"), base::TRIM_WHITESPACE,
+                  base::SPLIT_WANT_NONEMPTY);
+  // Make sure it doesn't crash when the title only contains spaces.
+  if (short_title_list.empty())
+    return base::string16();
+  base::string16 short_title_front = short_title_list.front();
+  base::string16 short_title_back = short_title_list.back();
+  base::string16 short_title = short_title_front;
+  if (short_title_front != short_title_back) {
+    int words_in_front =
+        SplitString(short_title_front, base::kWhitespaceASCIIAs16,
+                    base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)
+            .size();
+    int words_in_back =
+        SplitString(short_title_back, base::kWhitespaceASCIIAs16,
+                    base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)
+            .size();
+    if (words_in_front >= 3 && words_in_back >= 1 && words_in_back <= 3) {
+      short_title = short_title_back;
+    }
+  }
+  return short_title;
 }
 
 }  // namespace
@@ -260,11 +292,13 @@ bool MostVisitedSites::AddCustomLink(const GURL& url,
 
 bool MostVisitedSites::UpdateCustomLink(const GURL& url,
                                         const GURL& new_url,
-                                        const base::string16& new_title) {
+                                        const base::string16& new_title,
+                                        bool is_user_action) {
   if (!custom_links_ || !custom_links_enabled_)
     return false;
 
-  bool success = custom_links_->UpdateLink(url, new_url, new_title);
+  bool success =
+      custom_links_->UpdateLink(url, new_url, new_title, is_user_action);
   if (success)
     BuildCurrentTiles();
   return success;
@@ -376,7 +410,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       continue;
 
     NTPTile tile;
-    tile.title = visited.title;
+    tile.title = IsCustomLinksEnabled() ? GenerateShortTitle(visited.title)
+                                        : visited.title;
     tile.url = visited.url;
     tile.source = TileSource::TOP_SITES;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
@@ -441,7 +476,10 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
       continue;
 
     NTPTile tile;
-    tile.title = base::UTF8ToUTF16(suggestion_pb.title());
+    tile.title =
+        IsCustomLinksEnabled()
+            ? GenerateShortTitle(base::UTF8ToUTF16(suggestion_pb.title()))
+            : base::UTF8ToUTF16(suggestion_pb.title());
     tile.url = url;
     tile.source = TileSource::SUGGESTIONS_SERVICE;
     // The title is an aggregation of multiple history entries of one site.

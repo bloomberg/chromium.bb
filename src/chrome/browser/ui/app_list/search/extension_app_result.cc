@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
+#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -44,7 +45,16 @@ ExtensionAppResult::ExtensionAppResult(Profile* profile,
   is_platform_app_ = extension->is_platform_app();
   icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
       this, app_id,
-      AppListConfig::instance().GetPreferredIconDimension(display_type()));
+      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
+  // Load an additional chip icon when it is a recommendation result
+  // so that it renders clearly in both a chip and a tile.
+  if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
+    chip_icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
+        this, app_id,
+        AppListConfig::instance().suggestion_chip_icon_dimension(),
+        base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd));
+  }
 
   StartObservingExtensionRegistry();
 }
@@ -119,7 +129,22 @@ AppContextMenu* ExtensionAppResult::GetAppContextMenu() {
 }
 
 void ExtensionAppResult::OnIconUpdated(extensions::ChromeAppIcon* icon) {
-  SetIcon(icon->image_skia());
+  const gfx::Size icon_size(
+      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      AppListConfig::instance().GetPreferredIconDimension(display_type()));
+  const gfx::Size chip_icon_size(
+      AppListConfig::instance().suggestion_chip_icon_dimension(),
+      AppListConfig::instance().suggestion_chip_icon_dimension());
+  DCHECK(icon_size != chip_icon_size);
+
+  if (icon->image_skia().size() == icon_size) {
+    SetIcon(icon->image_skia());
+  } else if (icon->image_skia().size() == chip_icon_size) {
+    DCHECK(display_type() == ash::SearchResultDisplayType::kRecommendation);
+    SetChipIcon(icon->image_skia());
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ExtensionAppResult::ExecuteLaunchCommand(int event_flags) {
@@ -144,6 +169,10 @@ void ExtensionAppResult::OnExtensionLoaded(
   // updated. In this case we need re-create icon again.
   if (!icon_->IsValid())
     icon_->Reload();
+  if (display_type() == ash::SearchResultDisplayType::kRecommendation &&
+      !chip_icon_->IsValid()) {
+    chip_icon_->Reload();
+  }
 }
 
 void ExtensionAppResult::OnShutdown(extensions::ExtensionRegistry* registry) {

@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/return_on_failure.h"
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -25,20 +26,15 @@
 namespace media {
 class CdmProxyContext;
 class D3D11H264Accelerator;
-class D3D11PictureBuffer;
+class MediaLog;
 
-class D3D11VideoDecoderClient {
- public:
-  virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(D3D11PictureBuffer* picture,
-                            const VideoColorSpace& buffer_colorspace) = 0;
-};
 
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
   // |cdm_proxy_context| may be null for clear content.
   D3D11H264Accelerator(
       D3D11VideoDecoderClient* client,
+      MediaLog* media_log,
       CdmProxyContext* cdm_proxy_context,
       Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
       Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
@@ -70,7 +66,11 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   bool SubmitSliceData();
   bool RetrieveBitstreamBuffer();
 
+  // Record a failure to DVLOG and |media_log_|.
+  void RecordFailure(const std::string& reason, HRESULT hr = S_OK) const;
+
   D3D11VideoDecoderClient* client_;
+  MediaLog* media_log_ = nullptr;
   CdmProxyContext* const cdm_proxy_context_;
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;

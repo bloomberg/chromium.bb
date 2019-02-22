@@ -38,7 +38,6 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
 
   virtual void OnNewBuffer(VideoCaptureControllerID id,
                            media::mojom::VideoBufferHandlePtr buffer_handle,
-                           int length,
                            int buffer_id) = 0;
 
   // A previously created buffer has been freed and will no longer be used.

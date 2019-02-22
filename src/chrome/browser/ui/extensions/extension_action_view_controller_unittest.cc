@@ -81,7 +81,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   // Blocked actions are only present with the runtime host permissions feature.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> browser_action_ext =
       extensions::ExtensionBuilder("browser action")
@@ -253,7 +253,7 @@ void ExtensionActionViewControllerGrayscaleTest::RunGrayscaleTest(
     PermissionType permission_type) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> extension =
       CreateExtension(permission_type);
@@ -419,7 +419,7 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("extension name")
@@ -475,7 +475,7 @@ TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
 TEST_P(ToolbarActionsBarUnitTest, TestGetIconWithNullWebContents) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      extensions::features::kRuntimeHostPermissions);
+      extensions_features::kRuntimeHostPermissions);
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("extension name")

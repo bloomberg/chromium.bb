@@ -16,6 +16,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -104,7 +105,7 @@ MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
 bool MimeHandlerViewGuest::CanUseCrossProcessFrames() {
-  return false;
+  return content::MimeHandlerViewMode::UsesCrossProcessFrame();
 }
 
 content::RenderWidgetHost* MimeHandlerViewGuest::GetOwnerRenderWidgetHost() {
@@ -115,8 +116,7 @@ content::RenderWidgetHost* MimeHandlerViewGuest::GetOwnerRenderWidgetHost() {
 
 content::SiteInstance* MimeHandlerViewGuest::GetOwnerSiteInstance() {
   DCHECK_NE(embedder_frame_routing_id_, MSG_ROUTING_NONE);
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      embedder_frame_process_id_, embedder_frame_routing_id_);
+  content::RenderFrameHost* rfh = GetEmbedderFrame();
   return rfh ? rfh->GetSiteInstance() : nullptr;
 }
 
@@ -131,8 +131,7 @@ void MimeHandlerViewGuest::SetEmbedderFrame(int process_id, int routing_id) {
   embedder_frame_process_id_ = process_id;
   embedder_frame_routing_id_ = routing_id;
 
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(process_id, routing_id);
+  content::RenderFrameHost* rfh = GetEmbedderFrame();
 
   if (rfh && rfh->GetView()) {
     embedder_widget_routing_id_ =
@@ -416,6 +415,11 @@ void MimeHandlerViewGuest::FuseBeforeUnloadControl(
 
   mojo::FuseInterface(std::move(request),
                       std::move(pending_before_unload_control_));
+}
+
+content::RenderFrameHost* MimeHandlerViewGuest::GetEmbedderFrame() const {
+  return content::RenderFrameHost::FromID(embedder_frame_process_id_,
+                                          embedder_frame_routing_id_);
 }
 
 }  // namespace extensions

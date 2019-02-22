@@ -19,7 +19,6 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
@@ -33,6 +32,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 #include "net/url_request/url_request_context.h"
@@ -49,7 +49,6 @@ class HashValue;
 class HostPortPair;
 class NetLogWithSource;
 class SpdySessionKey;
-class SpdySessionPool;
 class SpdyStream;
 class SpdyStreamRequest;
 class TransportSecurityState;
@@ -212,9 +211,9 @@ struct SpdySessionDependencies {
   size_t session_max_recv_window_size;
   spdy::SettingsMap http2_settings;
   SpdySession::TimeFunc time_func;
-  std::unique_ptr<ProxyDelegate> proxy_delegate;
   bool enable_http2_alternative_service;
   bool enable_websocket_over_http2;
+  base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
   NetLog* net_log;
   bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;

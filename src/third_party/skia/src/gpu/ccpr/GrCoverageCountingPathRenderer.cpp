@@ -18,36 +18,10 @@
 
 using PathInstance = GrCCPathProcessor::Instance;
 
-// If a path spans more pixels than this, we need to crop it or else analytic AA can run out of fp32
-// precision.
-static constexpr float kPathCropThreshold = 1 << 16;
-
-static void crop_path(const SkPath& path, const SkIRect& cropbox, SkPath* out) {
-    SkPath cropboxPath;
-    cropboxPath.addRect(SkRect::Make(cropbox));
-    if (!Op(cropboxPath, path, kIntersect_SkPathOp, out)) {
-        // This can fail if the PathOps encounter NaN or infinities.
-        out->reset();
-    }
-    out->setIsVolatile(true);
-}
-
-
-GrCCPerOpListPaths::~GrCCPerOpListPaths() {
-    // Ensure there are no surviving DrawPathsOps with a dangling pointer into this class.
-    if (!fDrawOps.isEmpty()) {
-        SK_ABORT("GrCCDrawPathsOp(s) not deleted during flush");
-    }
-    // Clip lazy proxies also reference this class from their callbacks, but those callbacks
-    // are only invoked at flush time while we are still alive. (Unlike DrawPathsOps, that
-    // unregister themselves upon destruction.) So it shouldn't matter if any clip proxies
-    // are still around.
-}
-
 bool GrCoverageCountingPathRenderer::IsSupported(const GrCaps& caps) {
     const GrShaderCaps& shaderCaps = *caps.shaderCaps();
-    return shaderCaps.integerSupport() && shaderCaps.flatInterpolationSupport() &&
-           caps.instanceAttribSupport() && GrCaps::kNone_MapFlags != caps.mapBufferFlags() &&
+    return caps.instanceAttribSupport() && shaderCaps.integerSupport() &&
+           shaderCaps.floatIs32Bits() && GrCaps::kNone_MapFlags != caps.mapBufferFlags() &&
            caps.isConfigTexturable(kAlpha_half_GrPixelConfig) &&
            caps.isConfigRenderable(kAlpha_half_GrPixelConfig) &&
            caps.isConfigTexturable(kAlpha_8_GrPixelConfig) &&
@@ -67,12 +41,6 @@ GrCoverageCountingPathRenderer::GrCoverageCountingPathRenderer(AllowCaching allo
     }
 }
 
-GrCoverageCountingPathRenderer::~GrCoverageCountingPathRenderer() {
-    // Ensure callers are actually flushing paths they record, not causing us to leak memory.
-    SkASSERT(fPendingPaths.empty());
-    SkASSERT(!fFlushing);
-}
-
 GrCCPerOpListPaths* GrCoverageCountingPathRenderer::lookupPendingPaths(uint32_t opListID) {
     auto it = fPendingPaths.find(opListID);
     if (fPendingPaths.end() == it) {
@@ -84,45 +52,82 @@ GrCCPerOpListPaths* GrCoverageCountingPathRenderer::lookupPendingPaths(uint32_t 
 
 GrPathRenderer::CanDrawPath GrCoverageCountingPathRenderer::onCanDrawPath(
         const CanDrawPathArgs& args) const {
-    if (!args.fShape->style().isSimpleFill() || args.fShape->inverseFilled() ||
-        args.fViewMatrix->hasPerspective() || GrAAType::kCoverage != args.fAAType) {
+    const GrShape& shape = *args.fShape;
+    if (GrAAType::kCoverage != args.fAAType || shape.style().hasPathEffect() ||
+        args.fViewMatrix->hasPerspective() || shape.inverseFilled()) {
         return CanDrawPath::kNo;
     }
 
     SkPath path;
-    args.fShape->asPath(&path);
+    shape.asPath(&path);
 
-    SkRect devBounds;
-    args.fViewMatrix->mapRect(&devBounds, path.getBounds());
+    const SkStrokeRec& stroke = shape.style().strokeRec();
+    switch (stroke.getStyle()) {
+        case SkStrokeRec::kFill_Style: {
+            SkRect devBounds;
+            args.fViewMatrix->mapRect(&devBounds, path.getBounds());
 
-    SkIRect clippedIBounds;
-    devBounds.roundOut(&clippedIBounds);
-    if (!clippedIBounds.intersect(*args.fClipConservativeBounds)) {
-        // Path is completely clipped away. Our code will eventually notice this before doing any
-        // real work.
-        return CanDrawPath::kYes;
+            SkIRect clippedIBounds;
+            devBounds.roundOut(&clippedIBounds);
+            if (!clippedIBounds.intersect(*args.fClipConservativeBounds)) {
+                // The path is completely clipped away. Our code will eventually notice this before
+                // doing any real work.
+                return CanDrawPath::kYes;
+            }
+
+            int64_t numPixels = sk_64_mul(clippedIBounds.height(), clippedIBounds.width());
+            if (path.countVerbs() > 1000 && path.countPoints() > numPixels) {
+                // This is a complicated path that has more vertices than pixels! Let's let the SW
+                // renderer have this one: It will probably be faster and a bitmap will require less
+                // total memory on the GPU than CCPR instance buffers would for the raw path data.
+                return CanDrawPath::kNo;
+            }
+
+            if (numPixels > 256 * 256) {
+                // Large paths can blow up the atlas fast. And they are not ideal for a two-pass
+                // rendering algorithm. Give the simpler direct renderers a chance before we commit
+                // to drawing it.
+                return CanDrawPath::kAsBackup;
+            }
+
+            if (args.fShape->hasUnstyledKey() && path.countVerbs() > 50) {
+                // Complex paths do better cached in an SDF, if the renderer will accept them.
+                return CanDrawPath::kAsBackup;
+            }
+
+            return CanDrawPath::kYes;
+        }
+
+        case SkStrokeRec::kStroke_Style:
+            if (!args.fViewMatrix->isSimilarity()) {
+                // The stroker currently only supports rigid-body transfoms for the stroke lines
+                // themselves. This limitation doesn't affect hairlines since their stroke lines are
+                // defined relative to device space.
+                return CanDrawPath::kNo;
+            }
+            // fallthru
+        case SkStrokeRec::kHairline_Style: {
+            float inflationRadius;
+            GetStrokeDevWidth(*args.fViewMatrix, stroke, &inflationRadius);
+            if (!(inflationRadius <= kMaxBoundsInflationFromStroke)) {
+                // Let extremely wide strokes be converted to fill paths and drawn by the CCPR
+                // filler instead. (Cast the logic negatively in order to also catch r=NaN.)
+                return CanDrawPath::kNo;
+            }
+            SkASSERT(!SkScalarIsNaN(inflationRadius));
+            if (SkPathPriv::ConicWeightCnt(path)) {
+                // The stroker does not support conics yet.
+                return CanDrawPath::kNo;
+            }
+            return CanDrawPath::kYes;
+        }
+
+        case SkStrokeRec::kStrokeAndFill_Style:
+            return CanDrawPath::kNo;
     }
 
-    int64_t numPixels = sk_64_mul(clippedIBounds.height(), clippedIBounds.width());
-    if (path.countVerbs() > 1000 && path.countPoints() > numPixels) {
-        // This is a complicated path that has more vertices than pixels! Let's let the SW renderer
-        // have this one: It will probably be faster and a bitmap will require less total memory on
-        // the GPU than CCPR instance buffers would for the raw path data.
-        return CanDrawPath::kNo;
-    }
-
-    if (numPixels > 256 * 256) {
-        // Large paths can blow up the atlas fast. And they are not ideal for a two-pass rendering
-        // algorithm. Give the simpler direct renderers a chance before we commit to drawing it.
-        return CanDrawPath::kAsBackup;
-    }
-
-    if (args.fShape->hasUnstyledKey() && path.countVerbs() > 50) {
-        // Complex paths do better cached in an SDF, if the renderer will accept them.
-        return CanDrawPath::kAsBackup;
-    }
-
-    return CanDrawPath::kYes;
+    SK_ABORT("Invalid stroke style.");
+    return CanDrawPath::kNo;
 }
 
 bool GrCoverageCountingPathRenderer::onDrawPath(const DrawPathArgs& args) {
@@ -132,24 +137,8 @@ bool GrCoverageCountingPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GrRenderTargetContext* rtc = args.fRenderTargetContext;
     args.fClip->getConservativeBounds(rtc->width(), rtc->height(), &clipIBounds, nullptr);
 
-    SkRect devBounds;
-    args.fViewMatrix->mapRect(&devBounds, args.fShape->bounds());
-
-    std::unique_ptr<GrCCDrawPathsOp> op;
-    if (SkTMax(devBounds.height(), devBounds.width()) > kPathCropThreshold) {
-        // The path is too large. Crop it or analytic AA can run out of fp32 precision.
-        SkPath croppedPath;
-        args.fShape->asPath(&croppedPath);
-        croppedPath.transform(*args.fViewMatrix, &croppedPath);
-        crop_path(croppedPath, clipIBounds, &croppedPath);
-        // FIXME: This breaks local coords: http://skbug.com/8003
-        op = GrCCDrawPathsOp::Make(args.fContext, clipIBounds, SkMatrix::I(), GrShape(croppedPath),
-                                   croppedPath.getBounds(), std::move(args.fPaint));
-    } else {
-        op = GrCCDrawPathsOp::Make(args.fContext, clipIBounds, *args.fViewMatrix, *args.fShape,
-                                   devBounds, std::move(args.fPaint));
-    }
-
+    auto op = GrCCDrawPathsOp::Make(args.fContext, clipIBounds, *args.fViewMatrix, *args.fShape,
+                                    std::move(args.fPaint));
     this->recordOp(std::move(op), args);
     return true;
 }
@@ -159,7 +148,7 @@ void GrCoverageCountingPathRenderer::recordOp(std::unique_ptr<GrCCDrawPathsOp> o
     if (GrCCDrawPathsOp* op = opHolder.get()) {
         GrRenderTargetContext* rtc = args.fRenderTargetContext;
         if (uint32_t opListID = rtc->addDrawOp(*args.fClip, std::move(opHolder))) {
-            op->wasRecorded(this->lookupPendingPaths(opListID));
+            op->wasRecorded(sk_ref_sp(this->lookupPendingPaths(opListID)));
         }
     }
 }
@@ -180,7 +169,7 @@ std::unique_ptr<GrFragmentProcessor> GrCoverageCountingPathRenderer::makeClipPro
             // The path is too large. Crop it or analytic AA can run out of fp32 precision.
             SkPath croppedPath;
             int maxRTSize = caps.maxRenderTargetSize();
-            crop_path(deviceSpacePath, SkIRect::MakeWH(maxRTSize, maxRTSize), &croppedPath);
+            CropPath(deviceSpacePath, SkIRect::MakeWH(maxRTSize, maxRTSize), &croppedPath);
             clipPath.init(croppedPath, accessRect, rtWidth, rtHeight, caps);
         } else {
             clipPath.init(deviceSpacePath, accessRect, rtWidth, rtHeight, caps);
@@ -256,11 +245,14 @@ void GrCoverageCountingPathRenderer::preFlush(GrOnFlushResourceProvider* onFlush
 
     // Determine if there are enough reusable paths from last flush for it to be worth our time to
     // copy them to cached atlas(es).
-    DoCopiesToCache doCopies = DoCopiesToCache(specs.fNumCopiedPaths > 100 ||
+    int numCopies = specs.fNumCopiedPaths[GrCCPerFlushResourceSpecs::kFillIdx] +
+                    specs.fNumCopiedPaths[GrCCPerFlushResourceSpecs::kStrokeIdx];
+    DoCopiesToCache doCopies = DoCopiesToCache(numCopies > 100 ||
                                                specs.fCopyAtlasSpecs.fApproxNumPixels > 256 * 256);
-    if (specs.fNumCopiedPaths && DoCopiesToCache::kNo == doCopies) {
+    if (numCopies && DoCopiesToCache::kNo == doCopies) {
         specs.convertCopiesToRenders();
-        SkASSERT(!specs.fNumCopiedPaths);
+        SkASSERT(!specs.fNumCopiedPaths[GrCCPerFlushResourceSpecs::kFillIdx]);
+        SkASSERT(!specs.fNumCopiedPaths[GrCCPerFlushResourceSpecs::kStrokeIdx]);
     }
 
     auto resources = sk_make_sp<GrCCPerFlushResources>(onFlushRP, specs);
@@ -315,4 +307,36 @@ void GrCoverageCountingPathRenderer::postFlush(GrDeferredUploadToken, const uint
     }
 
     SkDEBUGCODE(fFlushing = false);
+}
+
+void GrCoverageCountingPathRenderer::CropPath(const SkPath& path, const SkIRect& cropbox,
+                                              SkPath* out) {
+    SkPath cropboxPath;
+    cropboxPath.addRect(SkRect::Make(cropbox));
+    if (!Op(cropboxPath, path, kIntersect_SkPathOp, out)) {
+        // This can fail if the PathOps encounter NaN or infinities.
+        out->reset();
+    }
+    out->setIsVolatile(true);
+}
+
+float GrCoverageCountingPathRenderer::GetStrokeDevWidth(const SkMatrix& m,
+                                                        const SkStrokeRec& stroke,
+                                                        float* inflationRadius) {
+    float strokeDevWidth;
+    if (stroke.isHairlineStyle()) {
+        strokeDevWidth = 1;
+    } else {
+        SkASSERT(SkStrokeRec::kStroke_Style == stroke.getStyle());
+        SkASSERT(m.isSimilarity());  // Otherwise matrixScaleFactor = m.getMaxScale().
+        float matrixScaleFactor = SkVector::Length(m.getScaleX(), m.getSkewY());
+        strokeDevWidth = stroke.getWidth() * matrixScaleFactor;
+    }
+    if (inflationRadius) {
+        // Inflate for a minimum stroke width of 1. In some cases when the stroke is less than 1px
+        // wide, we may inflate it to 1px and instead reduce the opacity.
+        *inflationRadius = SkStrokeRec::GetInflationRadius(
+                stroke.getJoin(), stroke.getMiter(), stroke.getCap(), SkTMax(strokeDevWidth, 1.f));
+    }
+    return strokeDevWidth;
 }

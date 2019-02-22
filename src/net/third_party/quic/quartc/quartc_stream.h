@@ -35,6 +35,14 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
       const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener)
       override;
 
+  void OnStreamFrameRetransmitted(QuicStreamOffset offset,
+                                  QuicByteCount data_length,
+                                  bool fin_retransmitted) override;
+
+  void OnStreamFrameLost(QuicStreamOffset offset,
+                         QuicByteCount data_length,
+                         bool fin_lost) override;
+
   void OnCanWrite() override;
 
   // QuartcStream interface methods.
@@ -44,6 +52,13 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
   // stream frames.  Defaults to false.
   bool cancel_on_loss();
   void set_cancel_on_loss(bool cancel_on_loss);
+
+  // If true, stream data will only be delivered after the FIN bit arrives and
+  // all data has been received.
+  bool deliver_on_complete();
+  void set_deliver_on_complete(bool deliver_on_complete);
+
+  QuicByteCount BytesPendingRetransmission();
 
   // Marks this stream as finished writing.  Asynchronously sends a FIN and
   // closes the write-side.  It is not necessary to call FinishWriting() if the
@@ -83,6 +98,9 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
 
   // Whether the stream should cancel itself instead of retransmitting frames.
   bool cancel_on_loss_ = false;
+
+  // Whether stream data should only be delivered after all data is received.
+  bool deliver_on_complete_ = true;
 };
 
 }  // namespace quic

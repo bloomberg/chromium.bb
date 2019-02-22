@@ -19,36 +19,50 @@
 #include <sqlite3.h>
 #include <functional>
 
+#include "perfetto/base/time.h"
+#include "src/trace_processor/counters_table.h"
 #include "src/trace_processor/json_trace_parser.h"
 #include "src/trace_processor/process_table.h"
 #include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/proto_trace_parser.h"
+#include "src/trace_processor/proto_trace_tokenizer.h"
 #include "src/trace_processor/sched_slice_table.h"
 #include "src/trace_processor/sched_tracker.h"
 #include "src/trace_processor/slice_table.h"
+#include "src/trace_processor/slice_tracker.h"
+#include "src/trace_processor/span_operator_table.h"
 #include "src/trace_processor/string_table.h"
 #include "src/trace_processor/table.h"
 #include "src/trace_processor/thread_table.h"
+#include "src/trace_processor/trace_sorter.h"
+#include "src/trace_processor/window_operator_table.h"
 
 #include "perfetto/trace_processor/raw_query.pb.h"
 
 namespace perfetto {
 namespace trace_processor {
 
-TraceProcessor::TraceProcessor() {
+TraceProcessor::TraceProcessor(const Config& cfg) {
   sqlite3* db = nullptr;
   PERFETTO_CHECK(sqlite3_open(":memory:", &db) == SQLITE_OK);
   db_.reset(std::move(db));
 
-  context_.sched_tracker.reset(new SchedTracker(&context_));
-  context_.process_tracker.reset(new ProcessTracker(&context_));
   context_.storage.reset(new TraceStorage());
+  context_.slice_tracker.reset(new SliceTracker(&context_));
+  context_.sched_tracker.reset(new SchedTracker(&context_));
+  context_.proto_parser.reset(new ProtoTraceParser(&context_));
+  context_.process_tracker.reset(new ProcessTracker(&context_));
+  context_.sorter.reset(
+      new TraceSorter(&context_, cfg.optimization_mode, cfg.window_size_ns));
 
   ProcessTable::RegisterTable(*db_, context_.storage.get());
   SchedSliceTable::RegisterTable(*db_, context_.storage.get());
   SliceTable::RegisterTable(*db_, context_.storage.get());
   StringTable::RegisterTable(*db_, context_.storage.get());
   ThreadTable::RegisterTable(*db_, context_.storage.get());
+  CountersTable::RegisterTable(*db_, context_.storage.get());
+  SpanOperatorTable::RegisterTable(*db_, context_.storage.get());
+  WindowOperatorTable::RegisterTable(*db_, context_.storage.get());
 }
 
 TraceProcessor::~TraceProcessor() = default;
@@ -61,22 +75,26 @@ bool TraceProcessor::Parse(std::unique_ptr<uint8_t[]> data, size_t size) {
 
   // If this is the first Parse() call, guess the trace type and create the
   // appropriate parser.
-  if (!context_.parser) {
+  if (!context_.chunk_reader) {
     char buf[32];
     memcpy(buf, &data[0], std::min(size, sizeof(buf)));
     buf[sizeof(buf) - 1] = '\0';
     const size_t kPreambleLen = strlen(JsonTraceParser::kPreamble);
     if (strncmp(buf, JsonTraceParser::kPreamble, kPreambleLen) == 0) {
       PERFETTO_DLOG("Legacy JSON trace detected");
-      context_.parser.reset(new JsonTraceParser(&context_));
+      context_.chunk_reader.reset(new JsonTraceParser(&context_));
     } else {
-      context_.parser.reset(new ProtoTraceParser(&context_));
+      context_.chunk_reader.reset(new ProtoTraceTokenizer(&context_));
     }
   }
 
-  bool res = context_.parser->Parse(std::move(data), size);
+  bool res = context_.chunk_reader->Parse(std::move(data), size);
   unrecoverable_parse_error_ |= !res;
   return res;
+}
+
+void TraceProcessor::NotifyEndOfFile() {
+  context_.sorter->FlushEventsForced();
 }
 
 void TraceProcessor::ExecuteQuery(
@@ -84,6 +102,8 @@ void TraceProcessor::ExecuteQuery(
     std::function<void(const protos::RawQueryResult&)> callback) {
   protos::RawQueryResult proto;
   query_interrupted_.store(false, std::memory_order_relaxed);
+
+  base::TimeNanos t_start = base::GetWallTimeNs();
 
   const auto& sql = args.sql_query();
   sqlite3_stmt* raw_stmt;
@@ -158,6 +178,8 @@ void TraceProcessor::ExecuteQuery(
     query_interrupted_ = false;
   }
 
+  base::TimeNanos t_end = base::GetWallTimeNs();
+  proto.set_execution_time_ns(static_cast<uint64_t>((t_end - t_start).count()));
   callback(proto);
 }
 

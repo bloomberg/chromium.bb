@@ -40,19 +40,19 @@ DocumentResource* DocumentResource::FetchSVGDocument(FetchParameters& params,
             network::mojom::RequestContextFrameType::kNone);
   DCHECK_EQ(params.GetResourceRequest().GetFetchRequestMode(),
             network::mojom::FetchRequestMode::kSameOrigin);
-  params.SetRequestContext(WebURLRequest::kRequestContextImage);
+  params.SetRequestContext(mojom::RequestContextType::IMAGE);
   return ToDocumentResource(
       fetcher->RequestResource(params, SVGDocumentResourceFactory(), client));
 }
 
 DocumentResource::DocumentResource(
     const ResourceRequest& request,
-    Type type,
+    ResourceType type,
     const ResourceLoaderOptions& options,
     const TextResourceDecoderOptions& decoder_options)
     : TextResource(request, type, options, decoder_options) {
   // FIXME: We'll support more types to support HTMLImports.
-  DCHECK_EQ(type, kSVGDocument);
+  DCHECK_EQ(type, ResourceType::kSVGDocument);
 }
 
 DocumentResource::~DocumentResource() = default;
@@ -73,7 +73,7 @@ void DocumentResource::NotifyFinished() {
 }
 
 bool DocumentResource::MimeTypeAllowed() const {
-  DCHECK_EQ(GetType(), kSVGDocument);
+  DCHECK_EQ(GetType(), ResourceType::kSVGDocument);
   AtomicString mime_type = GetResponse().MimeType();
   if (GetResponse().IsHTTP())
     mime_type = HttpContentType();
@@ -83,7 +83,7 @@ bool DocumentResource::MimeTypeAllowed() const {
 
 Document* DocumentResource::CreateDocument(const KURL& url) {
   switch (GetType()) {
-    case kSVGDocument:
+    case ResourceType::kSVGDocument:
       return XMLDocument::CreateSVG(DocumentInit::Create().WithURL(url));
     default:
       // FIXME: We'll add more types to support HTMLImports.

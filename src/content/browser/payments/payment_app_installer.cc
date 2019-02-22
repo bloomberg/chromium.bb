@@ -4,14 +4,18 @@
 
 #include "content/browser/payments/payment_app_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/post_task.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -26,12 +30,10 @@ class SelfDeleteInstaller
     : public WebContentsObserver,
       public base::RefCountedThreadSafe<SelfDeleteInstaller> {
  public:
-  SelfDeleteInstaller(WebContents* web_contents,
-                      const std::string& app_name,
+  SelfDeleteInstaller(const std::string& app_name,
                       const std::string& app_icon,
                       const GURL& sw_url,
                       const GURL& scope,
-                      bool use_cache,
                       const std::string& method,
                       PaymentAppInstaller::InstallPaymentAppCallback callback)
       : app_name_(app_name),
@@ -41,6 +43,12 @@ class SelfDeleteInstaller
         method_(method),
         callback_(std::move(callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  }
+
+  void Init(WebContents* web_contents, bool use_cache) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    AddRef();  // Balanced by Release() in FinishInstallation.
 
     // TODO(crbug.com/782270): Listen for web contents events to terminate
     // installation early.
@@ -66,7 +74,7 @@ class SelfDeleteInstaller
           blink::mojom::ServiceWorkerUpdateViaCache::kNone;
     }
     service_worker_context->RegisterServiceWorker(
-        sw_url, option,
+        sw_url_, option,
         base::BindOnce(&SelfDeleteInstaller::OnRegisterServiceWorkerResult,
                        this));
   }
@@ -131,8 +139,8 @@ class SelfDeleteInstaller
     scoped_refptr<PaymentAppContextImpl> payment_app_context =
         partition->GetPaymentAppContext();
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnIO, this,
                        payment_app_context, registration_id_, scope_.spec(),
                        app_name_, app_icon_, method_));
@@ -156,8 +164,8 @@ class SelfDeleteInstaller
   void OnSetPaymentAppInfo(payments::mojom::PaymentHandlerStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SelfDeleteInstaller::FinishInstallation, this,
                        status == payments::mojom::PaymentHandlerStatus::SUCCESS
                            ? true
@@ -184,6 +192,7 @@ class SelfDeleteInstaller
     }
 
     Observe(nullptr);
+    Release();  // Balanced by AddRef() in the constructor.
   }
 
   std::string app_name_;
@@ -212,8 +221,9 @@ void PaymentAppInstaller::Install(WebContents* web_contents,
                                   InstallPaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  new SelfDeleteInstaller(web_contents, app_name, app_icon, sw_url, scope,
-                          use_cache, method, std::move(callback));
+  auto installer = base::MakeRefCounted<SelfDeleteInstaller>(
+      app_name, app_icon, sw_url, scope, method, std::move(callback));
+  installer->Init(web_contents, use_cache);
 }
 
 }  // namespace content

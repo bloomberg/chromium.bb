@@ -9,17 +9,21 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_task_observer.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/error_translation_util.h"
+#include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,10 +41,10 @@ using DataBlock = void (^)(scoped_refptr<net::IOBufferWithSize> buffer,
 
 // Translates an CFNetwork error code to a net error code. Returns 0 if |error|
 // is nil.
-int GetNetErrorCodeFromNSError(NSError* error) {
+int GetNetErrorCodeFromNSError(NSError* error, NSURL* url) {
   int error_code = 0;
   if (error) {
-    if (!web::GetNetErrorFromIOSErrorCode(error.code, &error_code)) {
+    if (!web::GetNetErrorFromIOSErrorCode(error.code, &error_code, url)) {
       error_code = net::ERR_FAILED;
     }
   }
@@ -107,11 +111,11 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
                     task:(NSURLSessionTask*)task
     didCompleteWithError:(nullable NSError*)error {
   __weak CRWURLSessionDelegate* weakSelf = self;
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                        CRWURLSessionDelegate* strongSelf = weakSelf;
-                        if (strongSelf.propertiesBlock)
-                          strongSelf.propertiesBlock(task, error);
-                      }));
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                             CRWURLSessionDelegate* strongSelf = weakSelf;
+                             if (strongSelf.propertiesBlock)
+                               strongSelf.propertiesBlock(task, error);
+                           }));
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -123,25 +127,25 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   using Bytes = const void* _Nonnull;
   [data enumerateByteRangesUsingBlock:^(Bytes bytes, NSRange range, BOOL*) {
     auto buffer = GetBuffer(bytes, range.length);
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                          CRWURLSessionDelegate* strongSelf = weakSelf;
-                          if (!strongSelf.dataBlock) {
-                            dispatch_semaphore_signal(semaphore);
-                            return;
-                          }
-                          strongSelf.dataBlock(std::move(buffer), ^{
-                            // Data was written to disk, unblock queue to read
-                            // the next chunk of downloaded data.
-                            dispatch_semaphore_signal(semaphore);
-                          });
-                        }));
+    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                               CRWURLSessionDelegate* strongSelf = weakSelf;
+                               if (!strongSelf.dataBlock) {
+                                 dispatch_semaphore_signal(semaphore);
+                                 return;
+                               }
+                               strongSelf.dataBlock(std::move(buffer), ^{
+                                 // Data was written to disk, unblock queue to
+                                 // read the next chunk of downloaded data.
+                                 dispatch_semaphore_signal(semaphore);
+                               });
+                             }));
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
   }];
-  WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                        CRWURLSessionDelegate* strongSelf = weakSelf;
-                        if (strongSelf.propertiesBlock)
-                          weakSelf.propertiesBlock(task, nil);
-                      }));
+  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                             CRWURLSessionDelegate* strongSelf = weakSelf;
+                             if (strongSelf.propertiesBlock)
+                               weakSelf.propertiesBlock(task, nil);
+                           }));
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -170,14 +174,13 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
       content_disposition_(content_disposition),
       mime_type_(mime_type),
       page_transition_(page_transition),
+      identifier_([identifier copy]),
       web_state_(web_state),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  session_ = CreateSession(identifier);
   DCHECK(web_state_);
   DCHECK(delegate_);
-  DCHECK(session_);
 
   observer_ = [NSNotificationCenter.defaultCenter
       addObserverForName:UIApplicationWillResignActiveNotification
@@ -222,8 +225,13 @@ void DownloadTaskImpl::Start(
   percent_complete_ = 0;
   received_bytes_ = 0;
   state_ = State::kInProgress;
-  GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
-                        weak_factory_.GetWeakPtr()));
+
+  if (original_url_.SchemeIs(url::kDataScheme)) {
+    StartDataUrlParsing();
+  } else {
+    GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
+                          weak_factory_.GetWeakPtr()));
+  }
 }
 
 void DownloadTaskImpl::Cancel() {
@@ -241,7 +249,7 @@ net::URLFetcherResponseWriter* DownloadTaskImpl::GetResponseWriter() const {
 
 NSString* DownloadTaskImpl::GetIndentifier() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return session_.configuration.identifier;
+  return identifier_;
 }
 
 const GURL& DownloadTaskImpl::GetOriginalUrl() const {
@@ -329,7 +337,8 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
           return;
         }
 
-        error_code_ = GetNetErrorCodeFromNSError(error);
+        error_code_ =
+            GetNetErrorCodeFromNSError(error, task.currentRequest.URL);
         percent_complete_ = GetTaskPercentComplete(task);
         received_bytes_ = task.countOfBytesReceived;
         if (total_bytes_ == -1 || task.countOfBytesExpectedToReceive) {
@@ -381,9 +390,9 @@ void DownloadTaskImpl::GetCookies(
   if (@available(iOS 11, *)) {
     GetWKCookies(callback);
   } else {
-    WebThread::PostTask(WebThread::UI, FROM_HERE, base::BindOnce(^{
-                          callback.Run([NSArray array]);
-                        }));
+    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                               callback.Run([NSArray array]);
+                             }));
   }
 }
 
@@ -403,6 +412,11 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(writer_);
 
+  if (!session_) {
+    session_ = CreateSession(identifier_);
+    DCHECK(session_);
+  }
+
   has_performed_background_download_ =
       UIApplication.sharedApplication.applicationState !=
       UIApplicationStateActive;
@@ -415,15 +429,45 @@ void DownloadTaskImpl::StartWithCookies(NSArray<NSHTTPCookie*>* cookies) {
   OnDownloadUpdated();
 }
 
+void DownloadTaskImpl::StartDataUrlParsing() {
+  mime_type_.clear();
+  std::string charset;
+  std::string data;
+  if (!net::DataURL::Parse(original_url_, &mime_type_, &charset, &data)) {
+    OnDownloadFinished(net::ERR_INVALID_URL);
+    return;
+  }
+  auto callback = base::BindOnce(&DownloadTaskImpl::OnDataUrlWritten,
+                                 weak_factory_.GetWeakPtr());
+  auto buffer = base::MakeRefCounted<net::IOBuffer>(data.size());
+  memcpy(buffer->data(), data.c_str(), data.size());
+  int written = writer_->Write(buffer.get(), data.size(), std::move(callback));
+  if (written != net::ERR_IO_PENDING) {
+    OnDataUrlWritten(written);
+  }
+}
+
 void DownloadTaskImpl::OnDownloadUpdated() {
   for (auto& observer : observers_)
     observer.OnDownloadUpdated(this);
 }
 
 void DownloadTaskImpl::OnDownloadFinished(int error_code) {
+  error_code_ = error_code;
   state_ = State::kComplete;
   session_task_ = nil;
   OnDownloadUpdated();
+}
+
+void DownloadTaskImpl::OnDataUrlWritten(int bytes_written) {
+  percent_complete_ = 100;
+  total_bytes_ = bytes_written;
+  received_bytes_ = total_bytes_;
+  auto callback = base::BindOnce(&DownloadTaskImpl::OnDownloadFinished,
+                                 weak_factory_.GetWeakPtr());
+  if (writer_->Finish(net::OK, std::move(callback)) != net::ERR_IO_PENDING) {
+    OnDownloadFinished(net::OK);
+  }
 }
 
 }  // namespace web

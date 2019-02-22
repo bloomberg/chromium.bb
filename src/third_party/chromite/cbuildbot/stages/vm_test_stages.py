@@ -783,6 +783,63 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
                  whitelist_chrome_crashes, archive_dir, ssh_private_key=None,
                  ssh_port=9228):
   """Runs the test harness suite."""
+  if (test_config.use_ctest or
+      test_config.test_type != constants.VM_SUITE_TEST_TYPE):
+    _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
+                            test_config, whitelist_chrome_crashes, archive_dir,
+                            ssh_private_key, ssh_port)
+  else:
+    _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
+                               whitelist_chrome_crashes, ssh_private_key,
+                               ssh_port)
+
+
+# TODO(zamorzaev): absorb this function into RunTestSuite after deprecating
+# ctest.
+def _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
+                               whitelist_chrome_crashes, ssh_private_key=None,
+                               ssh_port=9228):
+  """Runs the test harness suite using the chromite code path."""
+  image_dir = os.path.dirname(image_path)
+  vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
+
+  cmd = ['cros_run_vm_test',
+         '--debug',
+         '--board=%s' % board,
+         '--image-path=%s' % path_util.ToChrootPath(vm_image_path),
+         '--ssh-port=%s' % ssh_port,
+         '--autotest=suite:%s' % test_config.test_suite,
+         '--results-dir=%s' % results_dir,
+        ]
+
+  if whitelist_chrome_crashes:
+    cmd.append('--test_that-args=--whitelist-chrome-crashes')
+
+  if ssh_private_key is not None:
+    cmd.append('--private-key=%s' % path_util.ToChrootPath(ssh_private_key))
+
+  # Give tests 10 minutes to clean up before shutting down.
+  result = cros_build_lib.RunCommand(cmd,
+                                     error_code_ok=True,
+                                     kill_timeout=10 * 60,
+                                     enter_chroot=True)
+  if result.returncode:
+    results_dir_in_chroot = os.path.join(constants.SOURCE_ROOT,
+                                         constants.DEFAULT_CHROOT_DIR,
+                                         results_dir.lstrip('/'))
+    if os.path.exists(results_dir_in_chroot):
+      error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
+      with open(results_dir_in_chroot + '/failed_test_command', 'w') as failed:
+        failed.write(error)
+
+    raise failures_lib.TestFailure(
+        '** VMTests failed with code %d **' % result.returncode)
+
+
+def _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
+                            test_config, whitelist_chrome_crashes, archive_dir,
+                            ssh_private_key=None, ssh_port=9228):
+  """Runs the test harness suite using the ctest code path."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
   osutils.RmDir(results_dir_in_chroot, ignore_missing=True)

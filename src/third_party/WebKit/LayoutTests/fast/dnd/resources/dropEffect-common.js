@@ -46,6 +46,8 @@ const dropEffectTest = testCase => {
     if (window.eventSender) {
       if (dragged) {
         mouseMoveToCenter(dragged);
+        if ('keyPressed' in testCase)
+          eventSender.keyDown(testCase.keyPressed);
         eventSender.mouseDown();
       } else {
         eventSender.mouseMoveTo(0, 0);
@@ -54,6 +56,8 @@ const dropEffectTest = testCase => {
       setTimeout(() => {
         mouseMoveToCenter(dropZone);
         eventSender.mouseUp();
+        //TODO(huangdarwin): Use eventSender.keyUp() here when it becomes
+        //available, to mirror eventSender.keyDown()
         if (doneButton) {
           setTimeout(() => {
             const clickEvent = new Event('click');
@@ -71,7 +75,7 @@ const dropEffectTest = testCase => {
           !gotDrop, 'drop target should not have received a drop event');
       assert_equals(dragOperation, 'none');
     }
-  }), `effectAllowed: ${testCase.allowed} dropEffect: ${testCase.drop}`);
+  }), `effectAllowed: ${testCase.allowed} keyPressed: ${testCase.keyPressed} dropEffect: ${testCase.drop}`);
 };
 
 const dropEffectTests = testCases => {

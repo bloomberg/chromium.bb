@@ -71,14 +71,7 @@ bool CheckAttachmentCompleteness(const Context *context, const FramebufferAttach
         return false;
     }
 
-    const InternalFormat &format = *attachment.getFormat().info;
-    if (attachment.type() == GL_RENDERBUFFER &&
-        !format.renderbufferSupport(context->getClientVersion(), context->getExtensions()))
-    {
-        return false;
-    }
-    if (attachment.type() == GL_TEXTURE &&
-        !format.textureAttachmentSupport(context->getClientVersion(), context->getExtensions()))
+    if (!attachment.isRenderable(context))
     {
         return false;
     }
@@ -222,14 +215,14 @@ static_assert(static_cast<size_t>(IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS + 1
                   Framebuffer::DIRTY_BIT_STENCIL_ATTACHMENT,
               "Framebuffer Dirty bit mismatch");
 
-Error InitAttachment(const Context *context, FramebufferAttachment *attachment)
+angle::Result InitAttachment(const Context *context, FramebufferAttachment *attachment)
 {
     ASSERT(attachment->isAttached());
     if (attachment->initState() == InitState::MayNeedInit)
     {
         ANGLE_TRY(attachment->initializeContents(context));
     }
-    return NoError();
+    return angle::Result::Continue();
 }
 
 bool IsColorMaskedOut(const BlendState &blend)
@@ -594,16 +587,6 @@ bool FramebufferState::hasStencil() const
     return (mStencilAttachment.isAttached() && mStencilAttachment.getStencilSize() > 0);
 }
 
-GLsizei FramebufferState::getNumViews() const
-{
-    const FramebufferAttachment *attachment = getFirstNonNullAttachment();
-    if (attachment == nullptr)
-    {
-        return FramebufferAttachment::kDefaultNumViews;
-    }
-    return attachment->getNumViews();
-}
-
 const std::vector<Offset> *FramebufferState::getViewportOffsets() const
 {
     const FramebufferAttachment *attachment = getFirstNonNullAttachment();
@@ -753,7 +736,7 @@ bool Framebuffer::detachResourceById(const Context *context, GLenum resourceType
     for (size_t colorIndex = 0; colorIndex < mState.mColorAttachments.size(); ++colorIndex)
     {
         if (detachMatchingAttachment(context, &mState.mColorAttachments[colorIndex], resourceType,
-                                     resourceId, DIRTY_BIT_COLOR_ATTACHMENT_0 + colorIndex))
+                                     resourceId))
         {
             found = true;
         }
@@ -766,23 +749,19 @@ bool Framebuffer::detachResourceById(const Context *context, GLenum resourceType
              &mState.mWebGLStencilAttachment}};
         for (FramebufferAttachment *attachment : attachments)
         {
-            if (attachment->isAttached() && attachment->type() == resourceType &&
-                attachment->id() == resourceId)
+            if (detachMatchingAttachment(context, attachment, resourceType, resourceId))
             {
-                resetAttachment(context, attachment->getBinding());
                 found = true;
             }
         }
     }
     else
     {
-        if (detachMatchingAttachment(context, &mState.mDepthAttachment, resourceType, resourceId,
-                                     DIRTY_BIT_DEPTH_ATTACHMENT))
+        if (detachMatchingAttachment(context, &mState.mDepthAttachment, resourceType, resourceId))
         {
             found = true;
         }
-        if (detachMatchingAttachment(context, &mState.mStencilAttachment, resourceType, resourceId,
-                                     DIRTY_BIT_STENCIL_ATTACHMENT))
+        if (detachMatchingAttachment(context, &mState.mStencilAttachment, resourceType, resourceId))
         {
             found = true;
         }
@@ -794,14 +773,13 @@ bool Framebuffer::detachResourceById(const Context *context, GLenum resourceType
 bool Framebuffer::detachMatchingAttachment(const Context *context,
                                            FramebufferAttachment *attachment,
                                            GLenum matchType,
-                                           GLuint matchId,
-                                           size_t dirtyBit)
+                                           GLuint matchId)
 {
     if (attachment->isAttached() && attachment->type() == matchType && attachment->id() == matchId)
     {
-        attachment->detach(context);
-        mDirtyBits.set(dirtyBit);
-        mState.mResourceNeedsInit.set(dirtyBit, false);
+        // We go through resetAttachment to make sure that all the required bookkeeping will be done
+        // such as updating enabled draw buffer state.
+        resetAttachment(context, attachment->getBinding());
         return true;
     }
 
@@ -999,6 +977,7 @@ void Framebuffer::invalidateCompletenessCache(const Context *context)
     if (mState.mId != 0)
     {
         mCachedStatus.reset();
+        onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
     }
 }
 
@@ -1789,8 +1768,6 @@ void Framebuffer::setAttachmentImpl(const Context *context,
         }
         break;
     }
-
-    mAttachedTextures.reset();
 }
 
 void Framebuffer::updateAttachment(const Context *context,
@@ -1820,7 +1797,7 @@ void Framebuffer::resetAttachment(const Context *context, GLenum binding)
     setAttachment(context, GL_NONE, binding, ImageIndex(), nullptr);
 }
 
-Error Framebuffer::syncState(const Context *context)
+angle::Result Framebuffer::syncState(const Context *context)
 {
     if (mDirtyBits.any())
     {
@@ -1829,20 +1806,23 @@ Error Framebuffer::syncState(const Context *context)
         mDirtyBits.reset();
         mDirtyBitsGuard.reset();
     }
-    return NoError();
+    return angle::Result::Continue();
 }
 
 void Framebuffer::onSubjectStateChange(const Context *context,
                                        angle::SubjectIndex index,
                                        angle::SubjectMessage message)
 {
-    if (message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS)
+    if (message != angle::SubjectMessage::STORAGE_CHANGED)
     {
-        ASSERT(!mDirtyBitsGuard.valid() || mDirtyBitsGuard.value().test(index));
-        mDirtyBits.set(index);
-        onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
+        // This can be triggered by the GL back-end TextureGL class.
+        ASSERT(message == angle::SubjectMessage::DEPENDENT_DIRTY_BITS);
         return;
     }
+
+    ASSERT(!mDirtyBitsGuard.valid() || mDirtyBitsGuard.value().test(index));
+    mDirtyBits.set(index);
+    onStateChange(context, angle::SubjectMessage::STORAGE_CHANGED);
 
     invalidateCompletenessCache(context);
 
@@ -1892,12 +1872,9 @@ bool Framebuffer::formsRenderingFeedbackLoopWith(const State &state) const
         }
     }
 
-    // Validate depth-stencil feedback loop.
-    const auto &dsState = state.getDepthStencilState();
-
-    // We can skip the feedback loop checks if depth/stencil is masked out or disabled.
+    // Validate depth-stencil feedback loop. This is independent of Depth/Stencil state.
     const FramebufferAttachment *depth = getDepthbuffer();
-    if (depth && depth->type() == GL_TEXTURE && dsState.depthTest && dsState.depthMask)
+    if (depth && depth->type() == GL_TEXTURE)
     {
         if (program->samplesFromTexture(state, depth->id()))
         {
@@ -1906,23 +1883,14 @@ bool Framebuffer::formsRenderingFeedbackLoopWith(const State &state) const
     }
 
     const FramebufferAttachment *stencil = getStencilbuffer();
-    if (dsState.stencilTest && stencil)
+    if (stencil && stencil->type() == GL_TEXTURE)
     {
-        GLuint stencilSize = stencil->getStencilSize();
-        ASSERT(stencilSize <= 8);
-        GLuint maxStencilValue = (1 << stencilSize) - 1;
-        // We assume the front and back masks are the same for WebGL.
-        ASSERT((dsState.stencilBackWritemask & maxStencilValue) ==
-               (dsState.stencilWritemask & maxStencilValue));
-        if (stencil->type() == GL_TEXTURE && dsState.stencilWritemask != 0)
+        // Skip the feedback loop check if depth/stencil point to the same resource.
+        if (!depth || *stencil != *depth)
         {
-            // Skip the feedback loop check if depth/stencil point to the same resource.
-            if (!depth || *stencil != *depth)
+            if (program->samplesFromTexture(state, stencil->id()))
             {
-                if (program->samplesFromTexture(state, stencil->id()))
-                {
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -2099,11 +2067,11 @@ Error Framebuffer::ensureClearBufferAttachmentsInitialized(const Context *contex
     return NoError();
 }
 
-Error Framebuffer::ensureDrawAttachmentsInitialized(const Context *context)
+angle::Result Framebuffer::ensureDrawAttachmentsInitialized(const Context *context)
 {
     if (!context->isRobustResourceInitEnabled())
     {
-        return NoError();
+        return angle::Result::Continue();
     }
 
     // Note: we don't actually filter by the draw attachment enum. Just init everything.
@@ -2124,7 +2092,7 @@ Error Framebuffer::ensureDrawAttachmentsInitialized(const Context *context)
     }
 
     mState.mResourceNeedsInit.reset();
-    return NoError();
+    return angle::Result::Continue();
 }
 
 Error Framebuffer::ensureReadAttachmentInitialized(const Context *context, GLbitfield blitMask)
@@ -2334,37 +2302,4 @@ bool Framebuffer::partialBufferClearNeedsInit(const Context *context, GLenum buf
             return false;
     }
 }
-
-bool Framebuffer::hasTextureAttachment(const Texture *texture) const
-{
-    if (!mAttachedTextures.valid())
-    {
-        FramebufferTextureAttachmentVector attachedTextures;
-
-        for (const auto &colorAttachment : mState.mColorAttachments)
-        {
-            if (colorAttachment.isAttached() && colorAttachment.type() == GL_TEXTURE)
-            {
-                attachedTextures.push_back(colorAttachment.getResource());
-            }
-        }
-
-        if (mState.mDepthAttachment.isAttached() && mState.mDepthAttachment.type() == GL_TEXTURE)
-        {
-            attachedTextures.push_back(mState.mDepthAttachment.getResource());
-        }
-
-        if (mState.mStencilAttachment.isAttached() &&
-            mState.mStencilAttachment.type() == GL_TEXTURE)
-        {
-            attachedTextures.push_back(mState.mStencilAttachment.getResource());
-        }
-
-        mAttachedTextures = std::move(attachedTextures);
-    }
-
-    return std::find(mAttachedTextures.value().begin(), mAttachedTextures.value().end(), texture) !=
-           mAttachedTextures.value().end();
-}
-
 }  // namespace gl

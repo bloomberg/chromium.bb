@@ -39,10 +39,11 @@ class CORE_EXPORT StringUtil {
   STATIC_ONLY(StringUtil);
 
  public:
-  static String substring(const String& s, unsigned pos, unsigned len) {
-    return s.Substring(pos, len);
+  static String substring(const String& s, size_t pos, size_t len) {
+    return s.Substring(static_cast<wtf_size_t>(pos),
+                       static_cast<wtf_size_t>(len));
   }
-  static String fromInteger(int number) { return String::Number(number); }
+  static String fromInteger(int64_t number) { return String::Number(number); }
   static String fromDouble(double number) {
     return Decimal::FromDouble(number).ToString();
   }
@@ -63,11 +64,11 @@ class CORE_EXPORT StringUtil {
     builder.Append(c);
   }
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
-    builder.Append(s, len);
+    builder.Append(s, static_cast<wtf_size_t>(len));
   }
   static void builderAppendQuotedString(StringBuilder&, const String&);
-  static void builderReserve(StringBuilder& builder, unsigned capacity) {
-    builder.ReserveCapacity(capacity);
+  static void builderReserve(StringBuilder& builder, uint64_t capacity) {
+    builder.ReserveCapacity(static_cast<wtf_size_t>(capacity));
   }
   static String builderToString(StringBuilder& builder) {
     return builder.ToString();

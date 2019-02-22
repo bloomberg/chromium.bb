@@ -128,14 +128,10 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       network::mojom::FetchRequestMode::kSameOrigin;
   network::mojom::FetchCredentialsMode fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kSameOrigin;
-  if ((static_cast<KURL>(script_request_url_)).ProtocolIsData()) {
-    fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
-    fetch_credentials_mode = network::mojom::FetchCredentialsMode::kInclude;
-  }
 
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), script_request_url_,
-      WebURLRequest::kRequestContextSharedWorker, fetch_request_mode,
+      mojom::RequestContextType::SHARED_WORKER, fetch_request_mode,
       fetch_credentials_mode, creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
@@ -201,10 +197,9 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
   DCHECK(worker_thread_->IsCurrentThread());
   WorkerGlobalScope* worker_global_scope =
       ToWorkerGlobalScope(worker_thread_->GlobalScope());
-  MessagePort* port = MessagePort::Create(*worker_global_scope);
-  port->Entangle(std::move(channel));
   SECURITY_DCHECK(worker_global_scope->IsSharedWorkerGlobalScope());
-  worker_global_scope->DispatchEvent(*CreateConnectEvent(port));
+  static_cast<SharedWorkerGlobalScope*>(worker_global_scope)
+      ->ConnectPausable(std::move(channel));
 }
 
 void WebSharedWorkerImpl::StartWorkerContext(
@@ -371,9 +366,10 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   worker_inspector_proxy_->WorkerThreadCreated(document, GetWorkerThread(),
                                                script_response_url);
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
-  GetWorkerThread()->EvaluateClassicScript(script_response_url, source_code,
-                                           nullptr /* cached_meta_data */,
-                                           v8_inspector::V8StackTraceId());
+  // Shared worker is origin-bound, so use kSharableCrossOrigin.
+  GetWorkerThread()->EvaluateClassicScript(
+      script_response_url, kSharableCrossOrigin, source_code,
+      nullptr /* cached_meta_data */, v8_inspector::V8StackTraceId());
   client_->WorkerScriptLoaded();
 }
 
@@ -387,9 +383,14 @@ void WebSharedWorkerImpl::PauseWorkerContextOnStart() {
 }
 
 void WebSharedWorkerImpl::BindDevToolsAgent(
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
     mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->BindDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest(
-      std::move(devtools_agent_request)));
+  shadow_page_->DevToolsAgent()->BindRequest(
+      mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
+          std::move(devtools_agent_host_ptr_info),
+          mojom::blink::DevToolsAgentHost::Version_),
+      mojom::blink::DevToolsAgentAssociatedRequest(
+          std::move(devtools_agent_request)));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> WebSharedWorkerImpl::GetTaskRunner(

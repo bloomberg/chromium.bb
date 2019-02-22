@@ -66,13 +66,15 @@ class TabMetricsLogger {
   // shown after being inactive.
   void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
                              base::TimeDelta inactive_duration,
-                             const tab_ranker::MRUFeatures& mru_metrics);
+                             const tab_ranker::MRUFeatures& mru_metrics,
+                             bool is_discarded);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
   // closed after being inactive.
   void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
                               base::TimeDelta inactive_duration,
-                              const tab_ranker::MRUFeatures& mru_metrics);
+                              const tab_ranker::MRUFeatures& mru_metrics,
+                              bool is_discarded);
 
   // Logs TabManager.TabLifetime UKM for a closed tab.
   void LogTabLifetime(ukm::SourceId ukm_source_id,

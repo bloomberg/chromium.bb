@@ -141,8 +141,8 @@ class RtcpXrObserver : public test::EndToEndTest {
       (*receive_configs)[0].decoders.resize(1);
       (*receive_configs)[0].decoders[0].payload_type =
           send_config->rtp.payload_type;
-      (*receive_configs)[0].decoders[0].payload_name =
-          send_config->rtp.payload_name;
+      (*receive_configs)[0].decoders[0].video_format =
+          SdpVideoFormat(send_config->rtp.payload_name);
     }
     if (enable_target_bitrate_) {
       // TargetBitrate only signaled for screensharing.
@@ -170,7 +170,7 @@ class RtcpXrObserver : public test::EndToEndTest {
   bool sent_rtcp_target_bitrate_ RTC_GUARDED_BY(&crit_);
   bool sent_zero_rtcp_target_bitrate_ RTC_GUARDED_BY(&crit_);
   int sent_rtcp_dlrr_;
-  DefaultNetworkSimulationConfig forward_transport_config_;
+  BuiltInNetworkBehaviorConfig forward_transport_config_;
   SimulatedNetwork* send_simulated_network_;
 };
 

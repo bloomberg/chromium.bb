@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -82,31 +85,30 @@ std::vector<std::string> FileWatcher::GetExtensionIds() const {
 void FileWatcher::WatchLocalFile(
     const base::FilePath& local_path,
     const base::FilePathWatcher::Callback& file_watcher_callback,
-    const BoolCallback& callback) {
+    BoolCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
 
   base::PostTaskAndReplyWithResult(
       sequenced_task_runner_.get(), FROM_HERE,
-      base::Bind(&CreateAndStartFilePathWatcher, local_path,
-                 google_apis::CreateRelayCallback(file_watcher_callback)),
-      base::Bind(&FileWatcher::OnWatcherStarted, weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      base::BindOnce(&CreateAndStartFilePathWatcher, local_path,
+                     google_apis::CreateRelayCallback(file_watcher_callback)),
+      base::BindOnce(&FileWatcher::OnWatcherStarted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FileWatcher::OnWatcherStarted(
-    const BoolCallback& callback,
-    base::FilePathWatcher* file_watcher) {
+void FileWatcher::OnWatcherStarted(BoolCallback callback,
+                                   base::FilePathWatcher* file_watcher) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
 
   if (file_watcher) {
     local_file_watcher_ = file_watcher;
-    callback.Run(true);
+    std::move(callback).Run(true);
   } else {
-    callback.Run(false);
+    std::move(callback).Run(false);
   }
 }
 

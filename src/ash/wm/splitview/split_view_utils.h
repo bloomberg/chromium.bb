@@ -7,10 +7,6 @@
 
 #include "ui/gfx/transform.h"
 
-namespace gfx {
-class Rect;
-}  // namespace gfx
-
 namespace ui {
 class Layer;
 }  // namespace ui
@@ -58,8 +54,9 @@ enum SplitviewAnimationType {
   // Used to slide in the text labels.
   SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
   SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
-  // Used to apply window transform on the selector item after it gets snapped.
-  SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
+  // Used to apply window transform on the selector item after it gets snapped
+  // or on the dragged window after the drag ends.
+  SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,
 };
 
 // Animates |layer|'s opacity based on |type|.
@@ -69,9 +66,6 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer, SplitviewAnimationType type);
 void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
-
-// Transposes the given |rect|.
-void TransposeRect(gfx::Rect* rect);
 
 }  // namespace ash
 

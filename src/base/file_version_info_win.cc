@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/resource_util.h"
 
 using base::FilePath;
@@ -68,7 +68,7 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForModule(
 // static
 FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
     const FilePath& file_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   DWORD dummy;
   const wchar_t* path = file_path.value().c_str();

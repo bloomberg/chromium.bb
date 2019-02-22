@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/presentation_feedback_utils.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
@@ -103,7 +104,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         init_params.attribs.bind_generates_resource, channel_->image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
         manager->watchdog() /* progress_reporter */,
-        manager->gpu_feature_info(), manager->discardable_manager());
+        manager->gpu_feature_info(), manager->discardable_manager(),
+        manager->shared_image_manager());
   }
 
 #if defined(OS_MACOSX)
@@ -193,8 +195,9 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       surface_ = gl::init::CreateOffscreenGLSurfaceWithFormat(gfx::Size(),
                                                               surface_format);
       if (!surface_) {
-        LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-        return gpu::ContextResult::kFatalFailure;
+        LOG(ERROR)
+            << "ContextResult::kSurfaceFailure: Failed to create surface.";
+        return gpu::ContextResult::kSurfaceFailure;
       }
     } else {
       surface_ = default_surface;
@@ -217,8 +220,8 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         weak_ptr_factory_.GetWeakPtr(), surface_handle_, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
-      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-      return gpu::ContextResult::kFatalFailure;
+      LOG(ERROR) << "ContextResult::kSurfaceFailure: Failed to create surface.";
+      return gpu::ContextResult::kSurfaceFailure;
     }
     if (init_params.attribs.enable_swap_timestamps_if_supported &&
         surface_->SupportsSwapTimestamps())
@@ -231,7 +234,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     if (share_command_buffer_stub) {
       share_group_ = share_command_buffer_stub->share_group();
     } else {
-      share_group_ = new gl::GLShareGroup();
+      share_group_ = base::MakeRefCounted<gl::GLShareGroup>();
     }
   } else {
     // When using the validating command decoder, always use the global share
@@ -397,9 +400,7 @@ void GLES2CommandBufferStub::BufferPresented(
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
-  if (params.flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
-      (params.flags & gpu::SwapBuffersFlags::kVSyncParams &&
-       feedback.flags & gfx::PresentationFeedback::kVSync)) {
+  if (ShouldSendBufferPresented(params.flags, feedback.flags)) {
     Send(new GpuCommandBufferMsg_BufferPresented(route_id_, params.swap_id,
                                                  feedback));
   }

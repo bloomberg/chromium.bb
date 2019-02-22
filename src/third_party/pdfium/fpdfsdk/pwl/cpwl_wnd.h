@@ -7,7 +7,6 @@
 #ifndef FPDFSDK_PWL_CPWL_WND_H_
 #define FPDFSDK_PWL_CPWL_WND_H_
 
-#include <memory>
 #include <vector>
 
 #include "core/fpdfdoc/cpdf_formcontrol.h"
@@ -107,7 +106,7 @@ class CPWL_Wnd : public CPWL_TimerHandler, public Observable<CPWL_Wnd> {
 
   class ProviderIface : public Observable<ProviderIface> {
    public:
-    virtual ~ProviderIface() {}
+    virtual ~ProviderIface() = default;
 
     // get a matrix which map user space to CWnd client space
     virtual CFX_Matrix GetWindowMatrix(PrivateData* pAttached) = 0;
@@ -115,7 +114,7 @@ class CPWL_Wnd : public CPWL_TimerHandler, public Observable<CPWL_Wnd> {
 
   class FocusHandlerIface {
    public:
-    virtual ~FocusHandlerIface() {}
+    virtual ~FocusHandlerIface() = default;
     virtual void OnSetFocus(CPWL_Edit* pEdit) = 0;
   };
 
@@ -149,8 +148,6 @@ class CPWL_Wnd : public CPWL_TimerHandler, public Observable<CPWL_Wnd> {
 
   CPWL_Wnd();
   ~CPWL_Wnd() override;
-
-  virtual ByteString GetClassName() const;
 
   // Returns |true| iff this instance is still allocated.
   virtual bool InvalidateRect(CFX_FloatRect* pRect);

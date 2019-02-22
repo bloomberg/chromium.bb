@@ -19,6 +19,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/web_preferences.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -94,16 +95,12 @@ void UpdateRendererOnMixedContentFound(NavigationHandleImpl* navigation_handle,
 std::unique_ptr<NavigationThrottle>
 MixedContentNavigationThrottle::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
-  if (IsBrowserSideNavigationEnabled())
-    return base::WrapUnique(
-        new MixedContentNavigationThrottle(navigation_handle));
-  return nullptr;
+  return std::make_unique<MixedContentNavigationThrottle>(navigation_handle);
 }
 
 MixedContentNavigationThrottle::MixedContentNavigationThrottle(
     NavigationHandle* navigation_handle)
     : NavigationThrottle(navigation_handle) {
-  DCHECK(IsBrowserSideNavigationEnabled());
 }
 
 MixedContentNavigationThrottle::~MixedContentNavigationThrottle() {}
@@ -298,7 +295,7 @@ void MixedContentNavigationThrottle::MaybeSendBlinkFeatureUsageReport() {
 
 // Based off of MixedContentChecker::count.
 void MixedContentNavigationThrottle::ReportBasicMixedContentFeatures(
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     const WebPreferences& prefs) {
   mixed_content_features_.insert(MIXED_CONTENT_PRESENT);
@@ -315,19 +312,19 @@ void MixedContentNavigationThrottle::ReportBasicMixedContentFeatures(
   // ever be found here.
   UseCounterFeature feature;
   switch (request_context_type) {
-    case REQUEST_CONTEXT_TYPE_INTERNAL:
+    case blink::mojom::RequestContextType::INTERNAL:
       feature = MIXED_CONTENT_INTERNAL;
       break;
-    case REQUEST_CONTEXT_TYPE_PREFETCH:
+    case blink::mojom::RequestContextType::PREFETCH:
       feature = MIXED_CONTENT_PREFETCH;
       break;
 
-    case REQUEST_CONTEXT_TYPE_AUDIO:
-    case REQUEST_CONTEXT_TYPE_DOWNLOAD:
-    case REQUEST_CONTEXT_TYPE_FAVICON:
-    case REQUEST_CONTEXT_TYPE_IMAGE:
-    case REQUEST_CONTEXT_TYPE_PLUGIN:
-    case REQUEST_CONTEXT_TYPE_VIDEO:
+    case blink::mojom::RequestContextType::AUDIO:
+    case blink::mojom::RequestContextType::DOWNLOAD:
+    case blink::mojom::RequestContextType::FAVICON:
+    case blink::mojom::RequestContextType::IMAGE:
+    case blink::mojom::RequestContextType::PLUGIN:
+    case blink::mojom::RequestContextType::VIDEO:
     default:
       NOTREACHED() << "RequestContextType has value " << request_context_type
                    << " and has WebMixedContentContextType of "

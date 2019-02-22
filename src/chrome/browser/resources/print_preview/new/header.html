@@ -1,8 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="button_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -11,62 +13,48 @@
 
 <dom-module id="print-preview-header">
   <template>
-    <style include="print-preview-shared button">
+    <style include="print-preview-shared paper-button-style">
       :host {
-        background-color: #f6f6f6;
-        border-bottom: 1px solid #d2d2d2;
+        background-color: white;
+        border-bottom: var(--print-preview-settings-border);
         display: block;
-        padding-bottom: 20px;
-        padding-inline-end: 19px;
-        padding-inline-start: 20px;
-        padding-top: 6px;
+        padding-bottom: 8px;
+        padding-inline-end: 16px;
+        padding-inline-start: 19px;
+        padding-top: 20px;
       }
 
       .title {
-        color: black;
-        font-size: 1.25em;
-        font-weight: normal;
+        color: var(--google-grey-900);
+        font-size: calc(16/13 * 1em);
+        font-weight: 400;
+        line-height: 1.54em;
         margin: 0;
         padding-bottom: 12px;
-        padding-top: 10px;
       }
 
       .summary {
         display: block;
-        min-height: 34px;
+        min-height: 20px;
+      }
+
+      .summary b {
+        font-weight: 500;
       }
 
       #button-strip {
         display: flex;
         flex-direction: row;
         justify-content: flex-end;
+        padding-top: 16px;
       }
 
-      #button-strip button {
-        display: block;
-        margin-inline-start: 9px;
+      #button-strip paper-button:first-child {
+        margin-inline-end: 8px;
       }
 
-      #button-strip button.loading {
-        cursor: progress;
-      }
-
-      #button-strip button.default {
-        font-kerning: none;
-        font-weight: bold;
-      }
-
-      #button-strip button.default:not(:focus):not(:disabled) {
-        border-color: #808080;
-      }
-
-      #button-strip button.print:enabled {
-        background-color: rgb(77, 144, 254);
-        background-image:
-            linear-gradient(to bottom, rgb(77, 144, 254), rgb(71, 135, 237));
-        border: 1px solid rgb(48, 121, 237);
-        color: #fff;
-        text-shadow: 0 1px rgba(0,0,0,0.1);
+      #button-strip paper-button:last-child {
+        margin-inline-end: 0;
       }
     </style>
     <h1 class="title">$i18n{title}</h1>
@@ -74,15 +62,19 @@
         inner-h-t-m-l="[[summary_]]">
     </span>
     <div id="button-strip">
-<if expr="not chromeos and not is_win">
-      <button class="cancel" on-click="onCancelClick_">$i18n{cancel}</button>
+<if expr="not is_win">
+      <paper-button class="cancel-button" on-click="onCancelClick_">
+        $i18n{cancel}
+      </paper-button>
 </if>
-      <button class="print default" on-click="onPrintClick_"
+      <paper-button class="action-button" on-click="onPrintClick_"
           disabled$="[[!printButtonEnabled_]]">
-        [[getPrintButton_(destination.id)]]
-      </button>
-<if expr="chromeos or is_win">
-      <button class="cancel" on-click="onCancelClick_">$i18n{cancel}</button>
+        [[printButtonLabel_]]
+      </paper-button>
+<if expr="is_win">
+      <paper-button class="cancel-button" on-click="onCancelClick_">
+        $i18n{cancel}
+      </paper-button>
 </if>
     </div>
   </template>

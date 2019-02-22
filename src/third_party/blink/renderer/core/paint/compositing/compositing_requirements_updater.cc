@@ -337,8 +337,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
           : CompositingReason::kNone;
 
   if (has_non_root_composited_scrolling_ancestor) {
-    Vector<size_t> unclipped_descendants_to_remove;
-    for (size_t i = 0; i < unclipped_descendants.size(); i++) {
+    Vector<wtf_size_t> unclipped_descendants_to_remove;
+    for (wtf_size_t i = 0; i < unclipped_descendants.size(); i++) {
       PaintLayer* unclipped_descendant = unclipped_descendants.at(i);
       // If we've reached the containing block of one of the unclipped
       // descendants, that element is no longer relevant to whether or not we
@@ -356,7 +356,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
     // Remove irrelevant unclipped descendants in reverse order so our stored
     // indices remain valid.
-    for (size_t i = 0; i < unclipped_descendants_to_remove.size(); i++) {
+    for (wtf_size_t i = 0; i < unclipped_descendants_to_remove.size(); i++) {
       unclipped_descendants.EraseAt(unclipped_descendants_to_remove.at(
           unclipped_descendants_to_remove.size() - i - 1));
     }
@@ -427,7 +427,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   bool will_have_foreground_layer = false;
 
   bool needs_recursion_for_composited_scrolling_plus_fixed_or_sticky =
-      layer->HasDescendantWithStickyOrFixed() &&
+      (layer->HasFixedPositionDescendant() ||
+       layer->HasStickyPositionDescendant()) &&
       (has_non_root_composited_scrolling_ancestor ||
        (layer->GetScrollableArea() &&
         layer->GetScrollableArea()->NeedsCompositedScrolling()));

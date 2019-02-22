@@ -4,8 +4,10 @@
 
 #include "content/browser/background_fetch/storage/create_metadata_task.h"
 
+#include <set>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
@@ -19,24 +21,148 @@ namespace content {
 
 namespace background_fetch {
 
+namespace {
+
+// TODO(crbug.com/889401): Consider making this configurable by finch.
+constexpr size_t kRegistrationLimitPerOrigin = 5u;
+
+// Finds the number of active registrations associated with the provided origin,
+// and compares it with the limit to determine whether this registration can go
+// through.
+class CanCreateRegistrationTask : public DatabaseTask {
+ public:
+  using CanCreateRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError, bool)>;
+
+  CanCreateRegistrationTask(DatabaseTaskHost* host,
+                            const url::Origin& origin,
+                            CanCreateRegistrationCallback callback)
+      : DatabaseTask(host),
+        origin_(origin),
+        callback_(std::move(callback)),
+        weak_factory_(this) {}
+
+  ~CanCreateRegistrationTask() override = default;
+
+  void Start() override {
+    service_worker_context()->GetRegistrationsForOrigin(
+        origin_,
+        base::BindOnce(&CanCreateRegistrationTask::DidGetRegistrationsForOrigin,
+                       weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void DidGetRegistrationsForOrigin(
+      blink::ServiceWorkerStatusCode status,
+      const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+          registrations) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kOk:
+        break;
+      case DatabaseStatus::kNotFound:
+        FinishWithError(blink::mojom::BackgroundFetchError::NONE);
+        return;
+      case DatabaseStatus::kFailed:
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
+    }
+
+    std::set<int64_t> registration_ids;
+    for (const auto& registration : registrations)
+      registration_ids.insert(registration->id());
+
+    base::RepeatingClosure barrier_closure = base::BarrierClosure(
+        registration_ids.size(),
+        base::BindOnce(&CanCreateRegistrationTask::FinishWithError,
+                       weak_factory_.GetWeakPtr(),
+                       blink::mojom::BackgroundFetchError::NONE));
+
+    for (int64_t registration_id : registration_ids) {
+      service_worker_context()->GetRegistrationUserDataByKeyPrefix(
+          registration_id, kActiveRegistrationUniqueIdKeyPrefix,
+          base::BindOnce(&CanCreateRegistrationTask::DidGetActiveRegistrations,
+                         weak_factory_.GetWeakPtr(), barrier_closure));
+    }
+  }
+
+  void DidGetActiveRegistrations(base::OnceClosure done_closure,
+                                 const std::vector<std::string>& data,
+                                 blink::ServiceWorkerStatusCode status) {
+    switch (ToDatabaseStatus(status)) {
+      case DatabaseStatus::kNotFound:
+        std::move(done_closure).Run();
+        return;
+      case DatabaseStatus::kOk:
+        num_active_registrations_ += data.size();
+        std::move(done_closure).Run();
+        return;
+      case DatabaseStatus::kFailed:
+        FinishWithError(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+        return;
+    }
+  }
+
+  void FinishWithError(blink::mojom::BackgroundFetchError error) override {
+    std::move(callback_).Run(
+        error, num_active_registrations_ < kRegistrationLimitPerOrigin);
+    Finished();  // Destroys |this|.
+  }
+
+  url::Origin origin_;
+  CanCreateRegistrationCallback callback_;
+
+  // The number of existing registrations found for |origin_|.
+  size_t num_active_registrations_ = 0u;
+
+  base::WeakPtrFactory<CanCreateRegistrationTask>
+      weak_factory_;  // Keep as last.
+};
+
+}  // namespace
+
 CreateMetadataTask::CreateMetadataTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
       requests_(requests),
       options_(options),
       icon_(icon),
+      start_paused_(start_paused),
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
 CreateMetadataTask::~CreateMetadataTask() = default;
 
 void CreateMetadataTask::Start() {
+  // Check if the registration can be created.
+  AddSubTask(std::make_unique<CanCreateRegistrationTask>(
+      this, registration_id_.origin(),
+      base::BindOnce(&CreateMetadataTask::DidGetCanCreateRegistration,
+                     weak_factory_.GetWeakPtr())));
+}
+
+void CreateMetadataTask::DidGetCanCreateRegistration(
+    blink::mojom::BackgroundFetchError error,
+    bool can_create) {
+  if (error == blink::mojom::BackgroundFetchError::STORAGE_ERROR) {
+    SetStorageErrorAndFinish(
+        BackgroundFetchStorageError::kServiceWorkerStorageError);
+    return;
+  }
+
+  DCHECK_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  if (!can_create) {
+    FinishWithError(
+        blink::mojom::BackgroundFetchError::REGISTRATION_LIMIT_EXCEEDED);
+    return;
+  }
+
   // Check if there is enough quota to download the data first.
   if (options_.download_total > 0) {
     IsQuotaAvailable(registration_id_.origin(), options_.download_total,
@@ -101,8 +227,8 @@ void CreateMetadataTask::InitializeMetadataProto() {
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
   registration_proto->set_download_total(options_.download_total);
-  registration_proto->set_state(
-      proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING);
+  registration_proto->set_result(
+      proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
       proto::BackgroundFetchRegistration_BackgroundFetchFailureReason_NONE);
 
@@ -236,7 +362,7 @@ void CreateMetadataTask::FinishWithError(
 
     for (auto& observer : data_manager()->observers()) {
       observer.OnRegistrationCreated(registration_id_, registration, options_,
-                                     icon_, requests_.size());
+                                     icon_, requests_.size(), start_paused_);
     }
   }
 

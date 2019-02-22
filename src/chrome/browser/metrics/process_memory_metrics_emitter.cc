@@ -20,7 +20,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
@@ -164,6 +163,69 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetV8},
     {"v8", "V8.AllocatedObjects", kLargeMetric, kAllocatedObjectsSize,
      EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetV8_AllocatedObjects},
+    {"v8/main", "V8.Main", kLargeMetric, kEffectiveSize,
+     EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetV8_Main},
+    {"v8/main", "V8.Main.AllocatedObjects", kLargeMetric, kAllocatedObjectsSize,
+     EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_AllocatedObjects},
+    {"v8/main/heap", "V8.Main.Heap", kLargeMetric, kEffectiveSize,
+     EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetV8_Main_Heap},
+    {"v8/main/heap", "V8.Main.Heap.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_AllocatedObjects},
+    {"v8/main/heap/code_space", "V8.Main.Heap.CodeSpace", kLargeMetric,
+     kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_CodeSpace},
+    {"v8/main/heap/code_space", "V8.Main.Heap.CodeSpace.AllocatedObjects",
+     kLargeMetric, kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_CodeSpace_AllocatedObjects},
+    {"v8/main/heap/large_object_space", "V8.Main.Heap.LargeObjectSpace",
+     kLargeMetric, kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_LargeObjectSpace},
+    {"v8/main/heap/large_object_space",
+     "V8.Main.Heap.LargeObjectSpace.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_LargeObjectSpace_AllocatedObjects},
+    {"v8/main/heap/map_space", "V8.Main.Heap.MapSpace", kLargeMetric,
+     kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_MapSpace},
+    {"v8/main/heap/map_space", "V8.Main.Heap.MapSpace.AllocatedObjects",
+     kLargeMetric, kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_MapSpace_AllocatedObjects},
+    {"v8/main/heap/new_large_object_space", "V8.Main.Heap.NewLargeObjectSpace",
+     kLargeMetric, kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_NewLargeObjectSpace},
+    {"v8/main/heap/new_large_object_space",
+     "V8.Main.Heap.NewLargeObjectSpace.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::
+         SetV8_Main_Heap_NewLargeObjectSpace_AllocatedObjects},
+    {"v8/main/heap/new_space", "V8.Main.Heap.NewSpace", kLargeMetric,
+     kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_NewSpace},
+    {"v8/main/heap/new_space", "V8.Main.Heap.NewSpace.AllocatedObjects",
+     kLargeMetric, kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_NewSpace_AllocatedObjects},
+    {"v8/main/heap/old_space", "V8.Main.Heap.OldSpace", kLargeMetric,
+     kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_OldSpace},
+    {"v8/main/heap/old_space", "V8.Main.Heap.OldSpace.AllocatedObjects",
+     kLargeMetric, kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_OldSpace_AllocatedObjects},
+    {"v8/main/heap/read_only_space", "V8.Main.Heap.ReadOnlySpace", kLargeMetric,
+     kEffectiveSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_ReadOnlySpace},
+    {"v8/main/heap/read_only_space",
+     "V8.Main.Heap.ReadOnlySpace.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Main_Heap_ReadOnlySpace_AllocatedObjects},
+    {"v8/main/malloc", "V8.Main.Malloc", kLargeMetric, kEffectiveSize,
+     EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetV8_Main_Malloc},
+    {"v8/workers", "V8.Workers", kLargeMetric, kEffectiveSize,
+     EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetV8_Workers},
+    {"v8/workers", "V8.Workers.AllocatedObjects", kLargeMetric,
+     kAllocatedObjectsSize, EmitTo::kUkmAndUmaAsSize,
+     &Memory_Experimental::SetV8_Workers_AllocatedObjects},
     {"web_cache", "WebCache", !kLargeMetric, kEffectiveSize,
      EmitTo::kUkmAndUmaAsSize, &Memory_Experimental::SetWebCache},
     {"web_cache/Image_resources", "WebCache.ImageResources", !kLargeMetric,
@@ -376,21 +438,18 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   }
 
   // The callback keeps this object alive until the callback is invoked.
-  if (IsResourceCoordinatorEnabled()) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(resource_coordinator::mojom::kServiceName,
-                             mojo::MakeRequest(&introspector_));
-    auto callback2 =
-        base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
-    introspector_->GetProcessToURLMap(callback2);
-  }
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           mojo::MakeRequest(&introspector_));
+  auto callback2 =
+      base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
+  introspector_->GetProcessToURLMap(callback2);
 }
 
 void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
   memory_dump_in_progress_ = true;
-  if (IsResourceCoordinatorEnabled())
-    get_process_urls_in_progress_ = true;
+  get_process_urls_in_progress_ = true;
 }
 
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
@@ -418,10 +477,6 @@ void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
     process_infos_[pid] = std::move(process_info);
   }
   CollateResults();
-}
-
-bool ProcessMemoryMetricsEmitter::IsResourceCoordinatorEnabled() {
-  return resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
 ukm::UkmRecorder* ProcessMemoryMetricsEmitter::GetUkmRecorder() {

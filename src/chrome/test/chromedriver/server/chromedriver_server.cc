@@ -41,16 +41,21 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/log/net_log_source.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "url/gurl.h"
 
 namespace {
 
-const int kBufferSize = 100 * 1024 * 1024;  // 100 MB
+// Maximum message size between app and ChromeDriver. Data larger than 150 MB
+// or so can cause crashes in Chrome (https://crbug.com/890854), so there is no
+// need to support messages that are too large.
+const int kBufferSize = 256 * 1024 * 1024;  // 256 MB
 
 typedef base::Callback<
     void(const net::HttpServerRequestInfo&, const HttpResponseSenderFunc&)>
@@ -70,15 +75,39 @@ int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   return socket->ListenWithAddressAndPort(binding_ip, port, 1);
 }
 
+bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
+  // To guard against browser-originating cross-site requests, when host header
+  // and/or origin header are present, serve only those coming from localhost.
+  std::string host_header = info.headers["host"];
+  if (!host_header.empty()) {
+    GURL url = GURL("http://" + host_header);
+    if (!net::IsLocalhost(url)) {
+      LOG(ERROR) << "Rejecting request with host: " << host_header;
+      return false;
+    }
+  }
+  std::string origin_header = info.headers["origin"];
+  if (!origin_header.empty()) {
+    GURL url = GURL(origin_header);
+    if (!net::IsLocalhost(url)) {
+      LOG(ERROR) << "Rejecting request with origin: " << origin_header;
+      return false;
+    }
+  }
+  return true;
+}
+
 class HttpServer : public net::HttpServer::Delegate {
  public:
   explicit HttpServer(const HttpRequestHandlerFunc& handle_request_func)
       : handle_request_func_(handle_request_func),
+        allow_remote_(false),
         weak_factory_(this) {}
 
   ~HttpServer() override {}
 
   int Start(uint16_t port, bool allow_remote, bool use_ipv4) {
+    allow_remote_ = allow_remote;
     std::unique_ptr<net::ServerSocket> server_socket(
         new net::TCPServerSocket(NULL, net::NetLogSource()));
     int status = use_ipv4
@@ -101,6 +130,13 @@ class HttpServer : public net::HttpServer::Delegate {
   }
   void OnHttpRequest(int connection_id,
                      const net::HttpServerRequestInfo& info) override {
+    if (!allow_remote_ && !RequestIsSafeToServe(info)) {
+      server_->Send500(
+          connection_id,
+          "Host header or origin header is specified and is not localhost.",
+          TRAFFIC_ANNOTATION_FOR_TESTS);
+      return;
+    }
     handle_request_func_.Run(
         info,
         base::Bind(&HttpServer::OnResponse,
@@ -128,6 +164,7 @@ class HttpServer : public net::HttpServer::Delegate {
 
   HttpRequestHandlerFunc handle_request_func_;
   std::unique_ptr<net::HttpServer> server_;
+  bool allow_remote_;
   base::WeakPtrFactory<HttpServer> weak_factory_;  // Should be last.
 };
 
@@ -360,6 +397,8 @@ int main(int argc, char *argv[]) {
         "log verbosely (equivalent to --log-level=ALL)",
         "silent",
         "log nothing (equivalent to --log-level=OFF)",
+        "append-log",
+        "append log file instead of rewriting",
         "replayable",
         "(experimental) log verbosely and don't truncate long "
         "strings so that the log can be replayed.",
@@ -449,6 +488,7 @@ int main(int argc, char *argv[]) {
     } else {
       printf("All remote connections are allowed. Use a whitelist instead!\n");
     }
+    printf("%s\n", kPortProtectionMessage);
     fflush(stdout);
   }
 

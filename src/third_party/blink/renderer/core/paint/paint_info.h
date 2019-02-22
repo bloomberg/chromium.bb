@@ -181,7 +181,7 @@ struct CORE_EXPORT PaintInfo {
   const bool suppress_painting_descendants_;
 
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
-  friend class SVGPaintContext;
+  friend class ScopedSVGPaintState;
   friend class SVGShapePainter;
 };
 

@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
@@ -36,17 +36,14 @@
 namespace blink {
 namespace {
 
-class MockAnimationWorkletProxyClient
-    : public GarbageCollected<MockAnimationWorkletProxyClient>,
-      public AnimationWorkletProxyClient {
-  USING_GARBAGE_COLLECTED_MIXIN(MockAnimationWorkletProxyClient);
-
+class MockAnimationWorkletProxyClient : public AnimationWorkletProxyClient {
  public:
-  MockAnimationWorkletProxyClient() : did_set_global_scope_(false) {}
+  MockAnimationWorkletProxyClient()
+      : AnimationWorkletProxyClient(0, nullptr, nullptr, nullptr, nullptr),
+        did_set_global_scope_(false) {}
   void SetGlobalScope(WorkletGlobalScope*) override {
     did_set_global_scope_ = true;
   }
-  void Dispose() override {}
   bool did_set_global_scope() { return did_set_global_scope_; }
 
  private:
@@ -60,7 +57,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   AnimationWorkletGlobalScopeTest() = default;
 
   void SetUp() override {
-    AnimationWorkletThread::CreateSharedBackingThreadForTest();
+    AnimationWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));
@@ -262,13 +259,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
@@ -307,13 +305,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;
@@ -355,13 +354,14 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
 
     ScriptState::Scope scope(script_state);
     global_scope->ScriptController()->Evaluate(ScriptSourceCode(
-        R"JS(
+                                                   R"JS(
             registerAnimator('test', class {
               animate (currentTime, effect) {
                 effect.localTime = 123;
               }
             });
-          )JS"));
+          )JS"),
+                                               kSharableCrossOrigin);
 
     cc::WorkletAnimationId animation_id = {1, 1};
     AnimationWorkletInput state;

@@ -7,13 +7,11 @@
 #ifndef CORE_FXCODEC_BMP_CFX_BMPDECOMPRESSOR_H_
 #define CORE_FXCODEC_BMP_CFX_BMPDECOMPRESSOR_H_
 
-#include "core/fxcodec/bmp/fx_bmp.h"
-
 #include <setjmp.h>
 
-#include <memory>
 #include <vector>
 
+#include "core/fxcodec/bmp/fx_bmp.h"
 #include "core/fxcodec/codec/cfx_codec_memory.h"
 #include "third_party/base/span.h"
 
@@ -27,8 +25,8 @@ class CFX_BmpDecompressor {
   void Error();
   int32_t DecodeImage();
   int32_t ReadHeader();
-  void SetInputBuffer(pdfium::span<uint8_t> src_buf);
-  FX_FILESIZE GetAvailInput(uint8_t** avail_buf);
+  void SetInputBuffer(RetainPtr<CFX_CodecMemory> codec_memory);
+  FX_FILESIZE GetAvailInput() const;
 
   jmp_buf jmpbuf_;
   CFX_BmpContext* context_ptr_;

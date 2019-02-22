@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -52,10 +53,14 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+// TODO(ajwong): Remove widget_messages.h when WidgetHostMsg_Close is moved to
+// only RenderWidgetHostImpl.
+#include "content/common/widget_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -70,8 +75,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/file_chooser_file_info.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -93,7 +96,6 @@
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_client_metrics.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/platform_font_win.h"
@@ -118,30 +120,33 @@ using RoutingIDViewMap = base::hash_map<RenderViewHostID, RenderViewHostImpl*>;
 base::LazyInstance<RoutingIDViewMap>::Leaky g_routing_id_view_map =
     LAZY_INSTANCE_INITIALIZER;
 
+#if defined(OS_WIN)
+// Fetches the name and font size of a particular Windows system font.
+void GetFontInfo(gfx::PlatformFontWin::SystemFont system_font,
+                 base::string16* name,
+                 int32_t* size) {
+  const gfx::Font& font = gfx::PlatformFontWin::GetSystemFont(system_font);
+  *name = base::UTF8ToUTF16(font.GetFontName());
+  *size = font.GetFontSize();
+}
+#endif  // OS_WIN
+
 void GetPlatformSpecificPrefs(RendererPreferences* prefs) {
 #if defined(OS_WIN)
-  NONCLIENTMETRICS_XP metrics = {0};
-  base::win::GetNonClientMetrics(&metrics);
-
-  prefs->caption_font_family_name = metrics.lfCaptionFont.lfFaceName;
-  prefs->caption_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfCaptionFont);
-
-  prefs->small_caption_font_family_name = metrics.lfSmCaptionFont.lfFaceName;
-  prefs->small_caption_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfSmCaptionFont);
-
-  prefs->menu_font_family_name = metrics.lfMenuFont.lfFaceName;
-  prefs->menu_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfMenuFont);
-
-  prefs->status_font_family_name = metrics.lfStatusFont.lfFaceName;
-  prefs->status_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfStatusFont);
-
-  prefs->message_font_family_name = metrics.lfMessageFont.lfFaceName;
-  prefs->message_font_height = gfx::PlatformFontWin::GetFontSize(
-      metrics.lfMessageFont);
+  // Note that what is called "height" in this struct is actually the font size;
+  // font "height" typically includes ascender, descender, and padding and is
+  // often a third or so larger than the given font size.
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kCaption,
+              &prefs->caption_font_family_name, &prefs->caption_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kSmallCaption,
+              &prefs->small_caption_font_family_name,
+              &prefs->small_caption_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMenu,
+              &prefs->menu_font_family_name, &prefs->menu_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kMessage,
+              &prefs->message_font_family_name, &prefs->message_font_height);
+  GetFontInfo(gfx::PlatformFontWin::SystemFont::kStatus,
+              &prefs->status_font_family_name, &prefs->status_font_height);
 
   prefs->vertical_scroll_bar_width_in_dips =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);
@@ -182,8 +187,7 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
 RenderViewHostImpl* RenderViewHostImpl::FromID(int process_id, int routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDViewMap* views = g_routing_id_view_map.Pointer();
-  RoutingIDViewMap::iterator it =
-      views->find(RenderViewHostID(process_id, routing_id));
+  auto it = views->find(RenderViewHostID(process_id, routing_id));
   return it == views->end() ? nullptr : it->second;
 }
 
@@ -244,16 +248,13 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active_)
     GetWidget()->UpdatePriority();
 
-  if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-            base::Unretained(ResourceDispatcherHostImpl::Get()),
-            GetProcess()->GetID(), GetRoutingID(),
-            base::RetainedRef(
-                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
+          GetProcess()->GetID(), GetRoutingID(),
+          base::RetainedRef(
+              GetProcess()->GetStoragePartition()->GetURLRequestContext())));
 
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
@@ -262,13 +263,10 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
-  if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                       base::Unretained(ResourceDispatcherHostImpl::Get()),
-                       GetProcess()->GetID(), GetRoutingID()));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
+                     GetProcess()->GetID(), GetRoutingID()));
 
   // Detach the routing ID as the object is going away.
   GetProcess()->RemoveRoute(GetRoutingID());
@@ -584,9 +582,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   if (delegate_ && delegate_->HasPersistentVideo())
     prefs.media_controls_enabled = false;
 
-  prefs.background_video_track_optimization_enabled =
-      base::FeatureList::IsEnabled(media::kBackgroundVideoTrackOptimization);
-
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;
 }
@@ -723,8 +718,7 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
     int request_id,
     const std::vector<base::FilePath>& files) {
   // Grant the security access requested to the given files.
-  for (std::vector<base::FilePath>::const_iterator file = files.begin();
-       file != files.end(); ++file) {
+  for (auto file = files.begin(); file != files.end(); ++file) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         GetProcess()->GetID(), *file);
   }
@@ -734,14 +728,10 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
 }
 
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
-  if (ResourceDispatcherHostImpl::Get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
-            base::Unretained(ResourceDispatcherHostImpl::Get()),
-            GetProcess()->GetID(), GetRoutingID(), is_loading));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
+                     GetProcess()->GetID(), GetRoutingID(), is_loading));
 }
 
 bool RenderViewHostImpl::SuddenTerminationAllowed() const {
@@ -778,13 +768,13 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderViewHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestSetBounds, OnRequestSetBounds)
+    // TODO:(ajwong): Move OnClose to RenderWidgetHostOwnerDelegate.
+    // https://crbug.com/545684
+    IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
@@ -809,44 +799,37 @@ void RenderViewHostImpl::ShutdownAndDestroy() {
   // in the renderer has wound down.
   if (GetProcess()->IsInitializedAndNotDead()) {
     RenderProcessHostImpl::ReleaseOnCloseACK(
-        GetProcess(),
-        delegate_->GetSessionStorageNamespaceMap(),
-        GetRoutingID());
+        GetProcess(), delegate_->GetSessionStorageNamespaceMap(),
+        GetWidget()->GetRoutingID());
   }
 
   GetWidget()->ShutdownAndDestroyWidget(false);
   delete this;
 }
 
-void RenderViewHostImpl::CreateNewWidget(int32_t route_id,
-                                         mojom::WidgetPtr widget,
-                                         blink::WebPopupType popup_type) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, std::move(widget),
-                             popup_type);
+void RenderViewHostImpl::CreateNewWidget(int32_t widget_route_id,
+                                         mojom::WidgetPtr widget) {
+  delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
+                             std::move(widget));
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t route_id,
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32_t widget_route_id,
                                                    mojom::WidgetPtr widget) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id,
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
                                        std::move(widget));
 }
 
-void RenderViewHostImpl::OnShowWidget(int route_id,
+void RenderViewHostImpl::OnShowWidget(int widget_route_id,
                                       const gfx::Rect& initial_rect) {
-  delegate_->ShowCreatedWidget(GetProcess()->GetID(), route_id, initial_rect);
-  Send(new ViewMsg_SetBounds_ACK(route_id));
+  delegate_->ShowCreatedWidget(GetProcess()->GetID(), widget_route_id,
+                               initial_rect);
+  Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
 }
 
-void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
-  delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(), route_id);
-  Send(new ViewMsg_SetBounds_ACK(route_id));
-}
-
-void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // Do nothing, otherwise RenderWidgetHostImpl will assume it is not a
-  // RenderViewHostImpl and destroy itself.
-  // TODO(nasko): Remove this hack once RenderViewHost and RenderWidgetHost are
-  // decoupled.
+void RenderViewHostImpl::OnShowFullscreenWidget(int widget_route_id) {
+  delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(),
+                                         widget_route_id);
+  Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {
@@ -861,12 +844,6 @@ void RenderViewHostImpl::OnClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   ClosePageIgnoringUnloadEvents();
-}
-
-void RenderViewHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
-  if (is_active_)
-    delegate_->RequestSetBounds(bounds);
-  Send(new ViewMsg_SetBounds_ACK(GetRoutingID()));
 }
 
 void RenderViewHostImpl::OnDocumentAvailableInMainFrame(
@@ -933,9 +910,9 @@ bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
   return is_active_;
 }
 
-void RenderViewHostImpl::RenderWidgetDidShutdown() {
-  bool rv = Send(new ViewMsg_Close(GetRoutingID()));
-  DCHECK(rv);
+void RenderViewHostImpl::RequestSetBounds(const gfx::Rect& bounds) {
+  if (is_active_)
+    delegate_->RequestSetBounds(bounds);
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
@@ -985,10 +962,6 @@ void RenderViewHostImpl::ExecutePluginActionAtLocation(
 
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(GetRoutingID()));
-}
-
-void RenderViewHostImpl::SelectWordAroundCaret() {
-  Send(new ViewMsg_SelectWordAroundCaret(GetRoutingID()));
 }
 
 void RenderViewHostImpl::PostRenderViewReady() {

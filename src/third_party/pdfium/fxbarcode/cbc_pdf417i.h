@@ -25,8 +25,6 @@ class CBC_PDF417I final : public CBC_CodeBase {
                     const CFX_Matrix* matrix) override;
   BC_TYPE GetType() override;
 
-  bool SetErrorCorrectionLevel(int32_t level);
-
  private:
   CBC_PDF417Writer* GetPDF417Writer();
 };

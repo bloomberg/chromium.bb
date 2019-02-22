@@ -67,7 +67,7 @@ bool GetFakeCertificateDER(const base::TimeDelta& expiry,
   }
   return net::x509_util::CreateSelfSignedCert(
       test_key->key(), net::x509_util::DIGEST_SHA256, "CN=subject", 12345,
-      valid_start, valid_expiry, certificate);
+      valid_start, valid_expiry, {}, certificate);
 }
 
 bool GetFakeCertificatePEM(const base::TimeDelta& expiry,

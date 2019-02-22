@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
@@ -26,15 +25,9 @@
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/transform.h"
 
 struct FrameHostMsg_HittestData_Params;
-
-#if defined(OS_WIN)
-// Flaky on Windows. https://crbug.com/868308
-#define MAYBE_TouchpadPinchOverOOPIF DISABLED_TouchpadPinchOverOOPIF
-#else
-#define MAYBE_TouchpadPinchOverOOPIF TouchpadPinchOverOOPIF
-#endif  // OS_WIN
 
 namespace blink {
 class WebGestureEvent;
@@ -60,6 +53,7 @@ class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class RenderWidgetTargeter;
 class TouchEmulator;
+class TouchEventAckQueue;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
 // to the correct RenderWidgetHost on pages with multiple RenderWidgetHosts.
@@ -133,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // Allows a target to claim or release capture of mouse events.
   void SetMouseCaptureTarget(RenderWidgetHostViewBase* target,
                              bool captures_dragging);
+  RenderWidgetHostImpl* GetMouseCaptureWidgetForTests() const;
 
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
   RenderWidgetTargeter* GetRenderWidgetTargeterForTests();
@@ -171,6 +166,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   struct TargetData {
     RenderWidgetHostViewBase* target;
     gfx::Vector2dF delta;
+    gfx::Transform transform;
 
     TargetData() : target(nullptr) {}
   };
@@ -253,7 +249,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                           RenderWidgetHostViewBase* target,
                           const blink::WebTouchEvent& touch_event,
                           const ui::LatencyInfo& latency,
-                          const base::Optional<gfx::PointF>& target_location);
+                          const base::Optional<gfx::PointF>& target_location,
+                          bool is_emulated);
   // Assumes |gesture_event| has coordinates in root view's coordinate space.
   void DispatchTouchscreenGestureEvent(
       RenderWidgetHostViewBase* root_view,
@@ -336,6 +333,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   bool events_being_flushed_ = false;
 
   std::unique_ptr<TouchEmulator> touch_emulator_;
+  std::unique_ptr<TouchEventAckQueue> touch_event_ack_queue_;
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_;
 
@@ -350,7 +348,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            InputEventRouterTouchpadGestureTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
-                           MAYBE_TouchpadPinchOverOOPIF);
+                           TouchpadPinchOverOOPIF);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMouseWheelHitTestBrowserTest,
                            InputEventRouterWheelTargetTest);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessMacBrowserTest,

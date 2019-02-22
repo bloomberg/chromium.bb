@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -32,7 +33,11 @@ public class BottomSheetObserverTest {
 
     @Before
     public void setUp() throws Exception {
-        mBottomSheetTestRule.startMainActivityOnBlankPage();
+        mBottomSheetTestRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheetTestRule.getBottomSheet().showContent(new TestBottomSheetContent(
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH));
+        });
         mObserver = mBottomSheetTestRule.getObserver();
     }
 
@@ -118,6 +123,7 @@ public class BottomSheetObserverTest {
     @Test
     @MediumTest
     public void testOffsetChangedEvent() throws InterruptedException, TimeoutException {
+        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
         CallbackHelper callbackHelper = mObserver.mOffsetChangedCallbackHelper;
 
         BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
@@ -152,6 +158,7 @@ public class BottomSheetObserverTest {
     @Test
     @MediumTest
     public void testPeekToHalfTransition() throws InterruptedException, TimeoutException {
+        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.FULL, false);
         CallbackHelper callbackHelper = mObserver.mPeekToHalfCallbackHelper;
 
         BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();

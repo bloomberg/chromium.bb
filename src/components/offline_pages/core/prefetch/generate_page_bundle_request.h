@@ -13,8 +13,8 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/version_info/channel.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace offline_pages {
@@ -29,7 +29,7 @@ class GeneratePageBundleRequest {
       int max_bundle_size_bytes,
       const std::vector<std::string>& page_urls,
       version_info::Channel channel,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleRequest();
 

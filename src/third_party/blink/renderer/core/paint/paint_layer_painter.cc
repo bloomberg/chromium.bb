@@ -196,8 +196,7 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
 static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
     const PaintLayerPaintingInfo& painting_info,
-    ShouldRespectOverflowClipType respect_overflow_clip,
-    bool& should_clear_empty_paint_phase_flags) {
+    ShouldRespectOverflowClipType respect_overflow_clip) {
   bool needs_repaint = false;
 
   // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted
@@ -222,48 +221,72 @@ static bool ShouldRepaintSubsequence(
        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) &&
       paint_layer.PreviousPaintDirtyRect() != painting_info.paint_dirty_rect) {
     needs_repaint = true;
-    should_clear_empty_paint_phase_flags = true;
   }
   paint_layer.SetPreviousPaintDirtyRect(painting_info.paint_dirty_rect);
 
   return needs_repaint;
 }
 
+static bool ShouldUseInfiniteDirtyRect(const GraphicsContext& context,
+                                       const PaintLayer& layer,
+                                       PaintLayerPaintingInfo& painting_info) {
+  // Cull rects and clips can't be propagated across a filter which moves
+  // pixels, since the input of the filter may be outside the cull rect /
+  // clips yet still result in painted output.
+  if (layer.HasFilterThatMovesPixels())
+    return true;
+
+  // Cull rect mapping doesn't work under perspective in some cases.
+  // See http://crbug.com/887558 for details.
+  if (painting_info.root_layer->GetLayoutObject().StyleRef().HasPerspective())
+    return true;
+
+  // We do not apply cull rect optimizations across transforms for two
+  // reasons:
+  //   1) Performance: We can optimize transform changes by not repainting.
+  //   2) Complexity: Difficulty updating clips when ancestor transforms
+  //      change.
+  // For these reasons, we use an infinite dirty rect here.
+  if (layer.PaintsWithTransform(painting_info.GetGlobalPaintFlags())) {
+    // The reasons don't apply for printing though, because when we enter and
+    // leaving printing mode, full invalidations occur.
+    return !context.Printing();
+  }
+
+  return false;
+}
+
 void PaintLayerPainter::AdjustForPaintProperties(
+    const GraphicsContext& context,
     PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags& paint_flags) {
-  // TODO(wangxianzhu): Make this function fragment aware.
-  const auto& current_fragment = paint_layer_.GetLayoutObject().FirstFragment();
+  const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
-  bool use_infinite_dirty_rect =
-      // Cull rects and clips can't be propagated across a filter which moves
-      // pixels, since the input of the filter may be outside the cull rect /
-      // clips yet still result in painted output.
-      paint_layer_.HasFilterThatMovesPixels() ||
-      // We do not apply cull rect optimizations across transforms for two
-      // reasons:
-      //   1) Performance: We can optimize transform changes by not repainting.
-      //   2) Complexity: Difficulty updating clips when ancestor transforms
-      //      change.
-      // For these reasons, we use an infinite dirty rect here.
-      paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags());
-
-  if (use_infinite_dirty_rect)
+  bool is_using_infinite_dirty_rect = painting_info.paint_dirty_rect ==
+                                      LayoutRect(LayoutRect::InfiniteIntRect());
+  bool should_use_infinite_dirty_rect =
+      ShouldUseInfiniteDirtyRect(context, paint_layer_, painting_info);
+  if (!is_using_infinite_dirty_rect && should_use_infinite_dirty_rect) {
     painting_info.paint_dirty_rect = LayoutRect(LayoutRect::InfiniteIntRect());
+    is_using_infinite_dirty_rect = true;
+  }
 
   if (painting_info.root_layer == &paint_layer_)
     return;
 
-  if (!use_infinite_dirty_rect) {
-    const auto* current_transform =
-        current_fragment.LocalBorderBoxProperties().Transform();
-    const auto& root_fragment =
-        painting_info.root_layer->GetLayoutObject().FirstFragment();
-    const auto* root_transform =
-        root_fragment.LocalBorderBoxProperties().Transform();
-    if (current_transform == root_transform)
-      return;
+  const auto& first_root_fragment =
+      painting_info.root_layer->GetLayoutObject().FirstFragment();
+  bool transform_changed =
+      first_root_fragment.LocalBorderBoxProperties().Transform() !=
+      first_fragment.LocalBorderBoxProperties().Transform();
 
+  // Will use the current layer as the new root layer if the layer requires
+  // infinite dirty rect or has different transform space from the current
+  // root layer.
+  if (!should_use_infinite_dirty_rect && !transform_changed)
+    return;
+
+  if (!is_using_infinite_dirty_rect && transform_changed) {
     // painting_info.paint_dirty_rect is currently in
     // |painting_info.root_layer|'s pixel-snapped border box space. We need to
     // adjust it into |paint_layer_|'s space.
@@ -272,14 +295,8 @@ void PaintLayerPainter::AdjustForPaintProperties(
     // - The current layer's transform state escapes the root layers contents
     //   transform, e.g. a fixed-position layer;
     // - Scroll offsets.
-    const auto& matrix = GeometryMapper::SourceToDestinationProjection(
-        root_transform, current_transform);
-    painting_info.paint_dirty_rect.MoveBy(
-        RoundedIntPoint(root_fragment.PaintOffset()));
-    painting_info.paint_dirty_rect =
-        matrix.MapRect(painting_info.paint_dirty_rect);
-    painting_info.paint_dirty_rect.MoveBy(
-        -RoundedIntPoint(current_fragment.PaintOffset()));
+    first_root_fragment.MapRectToFragment(first_fragment,
+                                          painting_info.paint_dirty_rect);
   }
 
   // Make the current layer the new root layer.
@@ -289,11 +306,10 @@ void PaintLayerPainter::AdjustForPaintProperties(
   paint_flags &= ~kPaintLayerPaintingOverflowContents;
   paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
 
-  // TODO(wangxianzhu): Make this function fragment aware.
-  if (current_fragment.PaintProperties() &&
-      current_fragment.PaintProperties()->PaintOffsetTranslation()) {
+  if (first_fragment.PaintProperties() &&
+      first_fragment.PaintProperties()->PaintOffsetTranslation()) {
     painting_info.sub_pixel_accumulation =
-        ToLayoutSize(current_fragment.PaintOffset());
+        ToLayoutSize(first_fragment.PaintOffset());
   }
 }
 
@@ -352,7 +368,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           : painting_info_arg.sub_pixel_accumulation;
 
   PaintLayerPaintingInfo painting_info = painting_info_arg;
-  AdjustForPaintProperties(painting_info, paint_flags);
+  AdjustForPaintProperties(context, painting_info, paint_flags);
 
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
@@ -361,24 +377,15 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       paint_layer_, context, painting_info_arg, paint_flags);
 
   base::Optional<SubsequenceRecorder> subsequence_recorder;
-  bool should_clear_empty_paint_phase_flags = false;
   if (should_create_subsequence) {
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
-                                  respect_overflow_clip,
-                                  should_clear_empty_paint_phase_flags) &&
+                                  respect_overflow_clip) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
-                                                            paint_layer_))
-      return result;
+                                                            paint_layer_)) {
+      return paint_layer_.PreviousPaintResult();
+    }
     DCHECK(paint_layer_.SupportsSubsequenceCaching());
     subsequence_recorder.emplace(context, paint_layer_);
-  } else {
-    should_clear_empty_paint_phase_flags = true;
-  }
-
-  if (should_clear_empty_paint_phase_flags) {
-    paint_layer_.SetPreviousPaintPhaseDescendantOutlinesEmpty(false);
-    paint_layer_.SetPreviousPaintPhaseFloatEmpty(false);
-    paint_layer_.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
   }
 
   LayoutPoint offset_from_root;
@@ -465,7 +472,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       for (auto& fragment : layer_fragments) {
         fragment.background_rect.Move(negative_offset);
         fragment.foreground_rect.Move(negative_offset);
-        fragment.pagination_offset.Move(negative_offset);
       }
     } else if (should_paint_content) {
       should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
@@ -602,7 +608,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         paint_layer_.GetCompositedLayerMapping()->MaskLayer();
     ClipRect layer_rect = LayoutRect(
         LayoutPoint(LayoutSize(mask_layer->OffsetFromLayoutObject())),
-        LayoutSize(mask_layer->Size()));
+        LayoutSize(IntSize(mask_layer->Size())));
     FillMaskingFragment(context, layer_rect, *mask_layer);
   }
 
@@ -633,36 +639,26 @@ bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags local_paint_flags,
     const LayoutPoint& offset_from_root) {
-  if (paint_layer_.EnclosingPaginationLayer())
-    return true;  // The fragments created have already been found to intersect
-                  // with the damage rect.
-
   if (&paint_layer_ == local_painting_info.root_layer &&
       (local_paint_flags & kPaintLayerPaintingOverflowContents))
     return true;
 
-  for (PaintLayerFragment& fragment : fragments) {
-    LayoutPoint new_offset_from_root =
-        offset_from_root + fragment.pagination_offset;
-    // Note that this really only works reliably on the first fragment. If the
-    // layer has visible overflow and a subsequent fragment doesn't intersect
-    // with the border box of the layer (i.e. only contains an overflow portion
-    // of the layer), intersection will fail. The reason for this is that
-    // fragment.layerBounds is set to the border box, not the bounding box, of
-    // the layer.
-    if (paint_layer_.IntersectsDamageRect(fragment.layer_bounds,
-                                          fragment.background_rect.Rect(),
-                                          new_offset_from_root))
-      return true;
-  }
-  return false;
+  // Skip the optimization if the layer is fragmented to avoid complexity
+  // about overflows in fragments. LayoutObject painters will do cull rect
+  // optimization later.
+  if (paint_layer_.EnclosingPaginationLayer() || fragments.size() > 1)
+    return true;
+
+  return paint_layer_.IntersectsDamageRect(fragments[0].layer_bounds,
+                                           fragments[0].background_rect.Rect(),
+                                           offset_from_root);
 }
 
 template <typename Function>
 static void ForAllFragments(GraphicsContext& context,
                             const PaintLayerFragments& fragments,
                             const Function& function) {
-  for (size_t i = 0; i < fragments.size(); ++i) {
+  for (wtf_size_t i = 0; i < fragments.size(); ++i) {
     base::Optional<ScopedDisplayItemFragment> scoped_display_item_fragment;
     if (i)
       scoped_display_item_fragment.emplace(context, i);
@@ -772,13 +768,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       DisplayItem::PaintPhaseToDrawingType(phase));
 
   LayoutRect new_cull_rect(clip_rect.Rect());
-  // We paint in the containing transform node's space. Now |new_cull_rect| is
-  // in the pixel-snapped border box space of |painting_info.root_layer|.
-  // Adjust it to the correct space.
+  // Now |new_cull_rect| is in the pixel-snapped border box space of
+  // |fragment.root_fragment_data|. Adjust it to the containing transform node's
+  // space in which we will paint.
   new_cull_rect.MoveBy(
-      RoundedIntPoint(painting_info.root_layer->GetLayoutObject()
-                          .FirstFragment()
-                          .PaintOffset()));
+      RoundedIntPoint(fragment.root_fragment_data->PaintOffset()));
+
   // If we had pending stylesheets, we should avoid painting descendants of
   // layout view to avoid FOUC.
   bool suppress_painting_descendants = paint_layer_.GetLayoutObject()
@@ -826,21 +821,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
       }
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
           PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
           local_painting_info, paint_flags);
-      // Don't set the empty flag if we are not painting the whole background.
-      if (!(paint_flags & kPaintLayerPaintingSkipRootBackground)) {
-        bool phase_is_empty =
-            context.GetPaintController().NewDisplayItemList().size() ==
-            size_before;
-        DCHECK(phase_is_empty ||
-               paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds());
-        paint_layer_.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(
-            phase_is_empty);
-      }
     }
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
@@ -849,16 +832,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
         context.GetPaintController().ForceNewChunk(
             paint_layer_, DisplayItem::kLayerChunkFloat);
       }
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
                                            context, local_painting_info,
                                            paint_flags);
-      bool phase_is_empty =
-          context.GetPaintController().NewDisplayItemList().size() ==
-          size_before;
-      DCHECK(phase_is_empty || paint_layer_.NeedsPaintPhaseFloat());
-      paint_layer_.SetPreviousPaintPhaseFloatEmpty(phase_is_empty);
     }
 
     if (force_paint_chunks) {
@@ -872,17 +848,9 @@ void PaintLayerPainter::PaintForegroundForFragments(
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
-      size_t size_before =
-          context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kDescendantOutlinesOnly,
                                            layer_fragments, context,
                                            local_painting_info, paint_flags);
-      bool phase_is_empty =
-          context.GetPaintController().NewDisplayItemList().size() ==
-          size_before;
-      DCHECK(phase_is_empty ||
-             paint_layer_.NeedsPaintPhaseDescendantOutlines());
-      paint_layer_.SetPreviousPaintPhaseDescendantOutlinesEmpty(phase_is_empty);
     }
   }
 }

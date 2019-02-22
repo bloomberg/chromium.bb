@@ -26,7 +26,7 @@ error::Error GenHelper(GLsizei n,
   DCHECK(n >= 0);
   std::vector<ClientType> client_ids_copy(client_ids, client_ids + n);
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (id_map->GetServiceID(client_ids_copy[ii], nullptr)) {
+    if (id_map->HasClientID(client_ids_copy[ii])) {
       return error::kInvalidArguments;
     }
   }
@@ -47,7 +47,7 @@ template <typename ClientType, typename ServiceType, typename GenFunction>
 error::Error CreateHelper(ClientType client_id,
                           ClientServiceMap<ClientType, ServiceType>* id_map,
                           GenFunction create_function) {
-  if (id_map->GetServiceID(client_id, nullptr)) {
+  if (id_map->HasClientID(client_id)) {
     return error::kInvalidArguments;
   }
   ServiceType service_id = create_function();
@@ -110,12 +110,19 @@ GLuint GetTextureServiceID(gl::GLApi* api,
                            GLuint client_id,
                            PassthroughResources* resources,
                            bool create_if_missing) {
-  return GetServiceID(client_id, &resources->texture_id_map, create_if_missing,
-                      [api]() {
-                        GLuint service_id = 0;
-                        api->glGenTexturesFn(1, &service_id);
-                        return service_id;
-                      });
+  GLuint service_id = resources->texture_id_map.invalid_service_id();
+  if (resources->texture_id_map.GetServiceID(client_id, &service_id)) {
+    return service_id;
+  }
+
+  if (create_if_missing) {
+    GLuint service_id = 0;
+    api->glGenTexturesFn(1, &service_id);
+    resources->texture_id_map.SetIDMapping(client_id, service_id);
+    return service_id;
+  }
+
+  return resources->texture_id_map.invalid_service_id();
 }
 
 GLuint GetBufferServiceID(gl::GLApi* api,
@@ -482,11 +489,9 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   DCHECK(GLenumToTextureTarget(target) != TextureTarget::kUnkown);
   scoped_refptr<TexturePassthrough> texture_passthrough = nullptr;
 
-  TargetUnitPair target_unit_pair(target, active_texture_unit_);
-
-  // If there was anything bound to |target_unit_pair| that required an image
-  // bind / copy, forget it since it's no longer bound to a sampler.
-  textures_pending_binding_.erase(target_unit_pair);
+  // If there was anything bound that required an image bind / copy,
+  // forget it since it's no longer bound to a sampler.
+  RemovePendingBindingTexture(target, active_texture_unit_);
 
   if (service_id != 0) {
     // Create a new texture object to track this texture
@@ -505,8 +510,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
     // If |texture_passthrough| has a bound image that requires processing
     // before a draw, then keep track of it.
     if (texture_passthrough->is_bind_pending()) {
-      textures_pending_binding_[target_unit_pair] =
-          texture_passthrough->AsWeakPtr();
+      textures_pending_binding_.emplace_back(target, active_texture_unit_,
+                                             texture_passthrough->AsWeakPtr());
     }
   }
 
@@ -1093,7 +1098,7 @@ error::Error GLES2DecoderPassthroughImpl::DoEnableVertexAttribArray(
 error::Error GLES2DecoderPassthroughImpl::DoFenceSync(GLenum condition,
                                                       GLbitfield flags,
                                                       GLuint client_id) {
-  if (resources_->sync_id_map.GetServiceID(client_id, nullptr)) {
+  if (resources_->sync_id_map.HasClientID(client_id)) {
     return error::kInvalidArguments;
   }
 
@@ -3203,10 +3208,19 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
   pending_query.shm = std::move(active_query.shm);
   pending_query.sync = active_query.sync;
   pending_query.submit_count = submit_count;
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
-    pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
-    pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
-    buffer_shadow_updates_.clear();
+  switch (target) {
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
+      pending_query.commands_completed_fence = gl::GLFence::Create();
+      break;
+
+    case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
+      pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
+      pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
+      buffer_shadow_updates_.clear();
+      break;
+
+    default:
+      break;
   }
   pending_queries_.push_back(std::move(pending_query));
   return ProcessQueries(false);
@@ -3982,16 +3996,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoCompressedCopyTextureCHROMIUM(
-    GLuint source_id,
-    GLuint dest_id) {
-  BindPendingImageForClientIDIfNeeded(source_id);
-  api()->glCompressedCopyTextureCHROMIUMFn(
-      GetTextureServiceID(api(), source_id, resources_, false),
-      GetTextureServiceID(api(), dest_id, resources_, false));
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLenum mode,
     GLint first,
@@ -4041,7 +4045,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
     GLuint texture_client_id,
     const volatile GLbyte* mailbox) {
   if (!texture_client_id ||
-      resources_->texture_id_map.GetServiceID(texture_client_id, nullptr)) {
+      resources_->texture_id_map.HasClientID(texture_client_id)) {
     return error::kInvalidArguments;
   }
 
@@ -4858,6 +4862,12 @@ GLES2DecoderPassthroughImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
 
   buffer_shadow_updates_.emplace(buffer_id, std::move(update));
 
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoMaxShaderCompilerThreadsKHR(
+    GLuint count) {
+  api()->glMaxShaderCompilerThreadsKHRFn(count);
   return error::kNoError;
 }
 

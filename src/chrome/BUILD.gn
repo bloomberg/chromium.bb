@@ -163,6 +163,9 @@ if (!is_android && !is_mac) {
           "$root_out_dir/locales/en-US.pak",
           "$root_out_dir/locales/fr.pak",
         ]
+        if (enable_hidpi || enable_mus) {
+          data += [ "$root_out_dir/chrome_200_percent.pak" ]
+        }
       }
 
       data_deps = []
@@ -360,9 +363,6 @@ if (!is_android && !is_mac) {
       # what telemetry test-runner expects.
       output_name = "test_chrome"
       sources = []
-      data = [
-        "$root_out_dir/chrome_200_percent.pak",
-      ]
       if (!is_win && use_aura) {
         sources += [ "app/chrome_exe_main_aura.cc" ]
       }
@@ -985,10 +985,8 @@ if (is_win) {
     }
   }
 
-  # EGL on MacOS can be used in dev builds and on bots for test
-  # related purposes, but it is not yet desired to ship these
-  # libraries with official chrome (http://crbug.com/757974).
-  bundle_egl_libraries = use_egl && !(is_chrome_branded && is_official_build)
+  # EGL on MacOS ships with official chrome
+  bundle_egl_libraries = use_egl
 
   if (bundle_egl_libraries) {
     # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
@@ -1036,7 +1034,7 @@ if (is_win) {
     }
   }
 
-  if (should_bundle_widevine_cdm) {
+  if (bundle_widevine_cdm) {
     bundle_data("widevine_cdm_library_binaries") {
       sources = [
         "$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
@@ -1067,7 +1065,7 @@ if (is_win) {
   }
 
   group("widevine_cdm_library") {
-    if (should_bundle_widevine_cdm) {
+    if (bundle_widevine_cdm) {
       deps = [
         ":widevine_cdm_library_binaries",
         ":widevine_cdm_library_manifest",
@@ -1350,6 +1348,8 @@ if (is_win) {
       "$root_out_dir/$chrome_helper_name.app/Contents/MacOS/$chrome_helper_name",
       "$root_out_dir/$chrome_product_full_name.app/Contents/MacOS/$chrome_product_full_name",
       "$root_out_dir/crashpad_handler",
+      "$root_out_dir/libswiftshader_libEGL.dylib",
+      "$root_out_dir/libswiftshader_libGLESv2.dylib",
     ]
 
     # It is possible to run dump_syms on unstripped products without dSYMs,
@@ -1368,7 +1368,7 @@ if (is_win) {
                rebase_path("$root_out_dir/dump_syms"),
                "-g",
                rebase_path(
-                   "$root_out_dir/{{source_name_part}}.dSYM/Contents/Resources/DWARF/{{source_name_part}}",
+                   "$root_out_dir/{{source_file_part}}.dSYM/Contents/Resources/DWARF/{{source_file_part}}",
                    root_out_dir),
                "{{source}}",
              ]
@@ -1380,6 +1380,8 @@ if (is_win) {
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//third_party/breakpad:dump_syms",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
 
@@ -1396,6 +1398,8 @@ if (is_win) {
         "$root_out_dir/$chrome_helper_name.dSYM",
         "$root_out_dir/$chrome_product_full_name.dSYM",
         "$root_out_dir/crashpad_handler.dSYM",
+        "$root_out_dir/libswiftshader_libEGL.dylib.dSYM",
+        "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
       ]
 
       sources = _chrome_symbols_sources
@@ -1415,6 +1419,8 @@ if (is_win) {
         ":chrome_helper_app",
         "//chrome/browser/ui/cocoa/notifications:alert_notification_xpc_service",
         "//third_party/crashpad/crashpad/handler:crashpad_handler",
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
   } else {
@@ -1430,6 +1436,7 @@ group("browser_dependencies") {
     "//chrome/browser",
     "//chrome/common",
     "//components/sync",
+    "//components/tracing",
   ]
   if (enable_plugins) {
     public_deps += [ "//ppapi/host" ]
@@ -1471,6 +1478,7 @@ group("child_dependencies") {
     "//chrome/utility",
     "//components/services/heap_profiling",
     "//components/sync",
+    "//components/tracing",
     "//content/public/child",
     "//pdf",
     "//third_party/blink/public:blink_devtools_frontend_resources",
@@ -1793,6 +1801,7 @@ if (is_android) {
       "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
+      "//components/tracing",
       "//content/public/app:both",
       "//content/public/common:service_names",
       "//services/service_manager/embedder",
@@ -1826,7 +1835,14 @@ if (enable_resource_whitelist_generation) {
 
 if (is_linux) {
   if (is_official_build) {
-    extract_symbols("linux") {
+    group("linux_symbols") {
+      deps = [
+        ":chrome_symbols",
+        ":swiftshader_egl_symbols",
+        ":swiftshader_gles_symbols",
+      ]
+    }
+    extract_symbols("chrome_symbols") {
       binary = "$root_out_dir/chrome"
 
       if (current_cpu == "x86") {
@@ -1838,6 +1854,34 @@ if (is_linux) {
 
       deps = [
         ":chrome",
+      ]
+    }
+    extract_symbols("swiftshader_egl_symbols") {
+      binary = "$root_out_dir/swiftshader/libEGL.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/swiftshader_libegl.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libEGL:swiftshader_libEGL",
+      ]
+    }
+    extract_symbols("swiftshader_gles_symbols") {
+      binary = "$root_out_dir/swiftshader/libGLESv2.so"
+
+      if (current_cpu == "x86") {
+        # GYP used "ia32" so keep that naming for back-compat.
+        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.ia32"
+      } else {
+        symbol_file = "$root_out_dir/swiftshader_libgles.breakpad.$current_cpu"
+      }
+
+      deps = [
+        "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
       ]
     }
   }

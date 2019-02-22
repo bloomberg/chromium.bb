@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 
 namespace blink {
 namespace {
@@ -41,18 +41,20 @@ TEST_F(ImageDataTest,
   float f32_pixels[kNumColorComponents];
   for (unsigned i = 0; i < kNumColorComponents; i++)
     f32_pixels[i] = rgba32_pixels[i] / 255.0;
+
   const unsigned kNumPixels = kNumColorComponents / 4;
+
   // Source pixels in F16
   unsigned char f16_pixels[kNumColorComponents * 2];
+  EXPECT_TRUE(skcms_Transform(f32_pixels, skcms_PixelFormat_RGBA_ffff,
+                              skcms_AlphaFormat_Unpremul, nullptr, f16_pixels,
+                              skcms_PixelFormat_RGBA_hhhh,
+                              skcms_AlphaFormat_Unpremul, nullptr, 4));
 
-  // Filling F16 source pixels
-  std::unique_ptr<SkColorSpaceXform> xform =
-      SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                             SkColorSpace::MakeSRGBLinear().get());
-  EXPECT_TRUE(xform->apply(
-      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat, f16_pixels,
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat, rgba32_pixels, 4,
-      SkAlphaType::kUnpremul_SkAlphaType));
+  // Source pixels in U16
+  uint16_t u16_pixels[kNumColorComponents];
+  for (unsigned i = 0; i < kNumColorComponents; i++)
+    u16_pixels[i] = f32_pixels[i] * 65535.0;
 
   // Creating ArrayBufferContents objects. We need two buffers for RGBA32 data
   // because kRGBA8CanvasPixelFormat->kUint8ClampedArrayStorageFormat consumes
@@ -62,18 +64,13 @@ TEST_F(ImageDataTest,
       WTF::ArrayBufferContents::kDontInitialize);
   std::memcpy(contents_rgba32.Data(), rgba32_pixels, kNumColorComponents);
 
-  WTF::ArrayBufferContents contents2rgba32(
-      kNumColorComponents, 1, WTF::ArrayBufferContents::kNotShared,
-      WTF::ArrayBufferContents::kDontInitialize);
-  std::memcpy(contents2rgba32.Data(), rgba32_pixels, kNumColorComponents);
+  WTF::ArrayBufferContents contents_rgba32_2;
+  contents_rgba32.CopyTo(contents_rgba32_2);
 
   WTF::ArrayBufferContents contents_f16(
       kNumColorComponents * 2, 1, WTF::ArrayBufferContents::kNotShared,
       WTF::ArrayBufferContents::kDontInitialize);
   std::memcpy(contents_f16.Data(), f16_pixels, kNumColorComponents * 2);
-
-  // Uint16 is not supported as the storage format for ImageData created from a
-  // canvas, so this conversion is neither implemented nor tested here.
 
   // Testing kRGBA8CanvasPixelFormat -> kUint8ClampedArrayStorageFormat
   DOMArrayBufferView* data =
@@ -82,16 +79,23 @@ TEST_F(ImageDataTest,
           kUint8ClampedArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint8Clamped);
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-      data->BaseAddress(), rgba32_pixels, kNumPixels,
-      kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
-      kNoUnpremulRoundTripTolerance);
+      data->BaseAddress(), rgba32_pixels, kNumPixels, kPixelFormat_8888,
+      kAlphaUnmultiplied, kNoUnpremulRoundTripTolerance);
+
+  // Testing kRGBA8CanvasPixelFormat -> kUint16ArrayStorageFormat
+  data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
+      contents_rgba32_2, kRGBA8CanvasPixelFormat, kUint16ArrayStorageFormat);
+  DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint16);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), u16_pixels, kNumPixels, kPixelFormat_16161616,
+      kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 
   // Testing kRGBA8CanvasPixelFormat -> kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-      contents2rgba32, kRGBA8CanvasPixelFormat, kFloat32ArrayStorageFormat);
+      contents_rgba32_2, kRGBA8CanvasPixelFormat, kFloat32ArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeFloat32);
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-      data->BaseAddress(), f32_pixels, kNumPixels, kFloat32ArrayStorageFormat,
+      data->BaseAddress(), f32_pixels, kNumPixels, kPixelFormat_ffff,
       kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 
   // Testing kF16CanvasPixelFormat -> kUint8ClampedArrayStorageFormat
@@ -99,16 +103,23 @@ TEST_F(ImageDataTest,
       contents_f16, kF16CanvasPixelFormat, kUint8ClampedArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint8Clamped);
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-      data->BaseAddress(), rgba32_pixels, kNumPixels,
-      kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
-      kNoUnpremulRoundTripTolerance);
+      data->BaseAddress(), rgba32_pixels, kNumPixels, kPixelFormat_8888,
+      kAlphaUnmultiplied, kNoUnpremulRoundTripTolerance);
+
+  // Testing kF16CanvasPixelFormat -> kUint16ArrayStorageFormat
+  data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
+      contents_f16, kF16CanvasPixelFormat, kUint16ArrayStorageFormat);
+  DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeUint16);
+  ColorCorrectionTestUtils::CompareColorCorrectedPixels(
+      data->BaseAddress(), u16_pixels, kNumPixels, kPixelFormat_16161616,
+      kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 
   // Testing kF16CanvasPixelFormat -> kFloat32ArrayStorageFormat
   data = ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       contents_f16, kF16CanvasPixelFormat, kFloat32ArrayStorageFormat);
   DCHECK(data->GetType() == DOMArrayBufferView::ViewType::kTypeFloat32);
   ColorCorrectionTestUtils::CompareColorCorrectedPixels(
-      data->BaseAddress(), f32_pixels, kNumPixels, kFloat32ArrayStorageFormat,
+      data->BaseAddress(), f32_pixels, kNumPixels, kPixelFormat_ffff,
       kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
 }
 
@@ -220,8 +231,7 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
                     data_array->BaseAddress(), data_length,
                     image_data_color_spaces[i], image_data_storage_formats[j],
                     canvas_color_spaces[k], canvas_pixel_formats[k],
-                    pixels_converted_manually,
-                    SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat));
+                    pixels_converted_manually, kPixelFormat_hhhh));
 
         // Convert the image data to the color settings of the canvas.
         EXPECT_TRUE(image_data->ImageDataInCanvasColorSettings(
@@ -231,10 +241,11 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
         // Compare the converted pixels
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(
             pixels_converted_manually.get(),
-            pixels_converted_in_image_data.get(), image_data->Size().Area(),
+            pixels_converted_in_image_data.get(),
+            static_cast<int>(image_data->Size().Area()),
             (canvas_pixel_formats[k] == kRGBA8CanvasPixelFormat)
-                ? kUint8ClampedArrayStorageFormat
-                : kUint16ArrayStorageFormat,
+                ? kPixelFormat_8888
+                : kPixelFormat_hhhh,
             kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
       }
     }
@@ -264,26 +275,26 @@ TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
   float expected_f32_pixels_premul[kNumColorComponents];
 
   auto prepareSourcePixels = [&expected_u8_pixels_unpremul, &kNumPixels](
-                                 auto buffer, bool is_premul, auto color_type) {
-    auto xform = SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                                        SkColorSpace::MakeSRGBLinear().get());
-    EXPECT_TRUE(
-        xform->apply(color_type, buffer,
-                     SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat,
-                     expected_u8_pixels_unpremul, kNumPixels,
-                     is_premul ? kPremul_SkAlphaType : kUnpremul_SkAlphaType));
+                                 auto buffer, bool is_premul,
+                                 auto pixel_format) {
+    EXPECT_TRUE(skcms_Transform(
+        expected_u8_pixels_unpremul, skcms_PixelFormat_RGBA_8888,
+        skcms_AlphaFormat_Unpremul, nullptr, buffer, pixel_format,
+        is_premul ? skcms_AlphaFormat_PremulAsEncoded
+                  : skcms_AlphaFormat_Unpremul,
+        nullptr, kNumPixels));
   };
 
   prepareSourcePixels(expected_u8_pixels_premul, true,
-                      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat);
+                      skcms_PixelFormat_RGBA_8888);
   prepareSourcePixels(expected_f16_pixels_unpremul, false,
-                      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat);
+                      skcms_PixelFormat_RGBA_hhhh);
   prepareSourcePixels(expected_f16_pixels_premul, true,
-                      SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat);
+                      skcms_PixelFormat_RGBA_hhhh);
   prepareSourcePixels(expected_f32_pixels_unpremul, false,
-                      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat);
+                      skcms_PixelFormat_RGBA_ffff);
   prepareSourcePixels(expected_f32_pixels_premul, true,
-                      SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat);
+                      skcms_PixelFormat_RGBA_ffff);
 
   // Preparing ArrayBufferContents objects
   auto createBufferContent = [](auto& array, unsigned size) {
@@ -358,16 +369,14 @@ TEST_F(ImageDataTest, TestCreateImageDataFromStaticBitmapImage) {
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         expected_pixel_arrays_u8[i],
         actual_image_data_u8[i]->BufferBase()->Data(), kNumPixels,
-        kUint8ClampedArrayStorageFormat, kAlphaUnmultiplied,
-        kUnpremulRoundTripTolerance);
+        kPixelFormat_8888, kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
 
   for (unsigned i = 0; i < 4; i++) {
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         expected_pixel_arrays_f32[i],
         actual_image_data_f32[i]->BufferBase()->Data(), kNumPixels,
-        kFloat32ArrayStorageFormat, kAlphaUnmultiplied,
-        kUnpremulRoundTripTolerance);
+        kPixelFormat_ffff, kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
 }
 

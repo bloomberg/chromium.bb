@@ -57,15 +57,11 @@
 
 - (BOOL)webViewScrollViewShouldScrollToTop:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
-  if (self.model->progress() > 0.05) {
-    // Inform FullscreenUIElements that the content is going to be scrolled to
-    // the top.
-    self.mediator->ScrollToTop();
-    return YES;
-  } else {
-    self.mediator->AnimateModelReset();
-    return NO;
-  }
+  // Exit fullscreen when the status bar is tapped, but don't allow the scroll-
+  // to-top animation to occur if the toolbars are fully collapsed.
+  BOOL scrollToTop = !AreCGFloatsEqual(self.model->progress(), 0.0);
+  self.mediator->ExitFullscreen();
+  return scrollToTop;
 }
 
 @end

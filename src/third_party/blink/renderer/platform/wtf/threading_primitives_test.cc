@@ -25,18 +25,13 @@ class MockBlockingObserver : public base::internal::BlockingObserver {
 
 class ThreadConditionTest : public testing::Test {
  public:
+  ThreadConditionTest() : condition_(mutex_) {}
+
   void RunOtherThreadInfiniteWait() {
     base::internal::SetBlockingObserverForCurrentThread(&observer_);
     MutexLocker lock(mutex_);
     ready_.Signal();
-    condition_.Wait(mutex_);
-  }
-
-  void RunOtherThreadTimedWait() {
-    base::internal::SetBlockingObserverForCurrentThread(&observer_);
-    MutexLocker lock(mutex_);
-    ready_.Signal();
-    condition_.TimedWait(mutex_, CurrentTime() + 10.0);
+    condition_.Wait();
   }
 
  protected:
@@ -56,21 +51,6 @@ TEST_F(ThreadConditionTest, WaitReportsBlockingCall) {
       FROM_HERE,
       base::BindOnce(&ThreadConditionTest::RunOtherThreadInfiniteWait,
                      base::Unretained(this)));
-
-  ready_.Wait();
-  MutexLocker lock(mutex_);
-  condition_.Signal();
-}
-
-TEST_F(ThreadConditionTest, TimedWaitReportsBlockingCall) {
-  EXPECT_CALL(observer_, BlockingStarted(base::BlockingType::MAY_BLOCK));
-  EXPECT_CALL(observer_, BlockingEnded());
-
-  base::Thread other_thread("other thread");
-  other_thread.StartAndWaitForTesting();
-  other_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ThreadConditionTest::RunOtherThreadTimedWait,
-                                base::Unretained(this)));
 
   ready_.Wait();
   MutexLocker lock(mutex_);

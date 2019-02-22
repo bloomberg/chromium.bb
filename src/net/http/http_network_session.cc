@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -78,8 +77,7 @@ namespace {
 spdy::SettingsMap AddDefaultHttp2Settings(spdy::SettingsMap http2_settings) {
   // Set default values only if |http2_settings| does not have
   // a value set for given setting.
-  spdy::SettingsMap::iterator it =
-      http2_settings.find(spdy::SETTINGS_HEADER_TABLE_SIZE);
+  auto it = http2_settings.find(spdy::SETTINGS_HEADER_TABLE_SIZE);
   if (it == http2_settings.end())
     http2_settings[spdy::SETTINGS_HEADER_TABLE_SIZE] = kSpdyMaxHeaderTableSize;
 
@@ -129,6 +127,7 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early_v2(false),
       quic_retry_on_alternate_network_before_handshake(false),
+      quic_race_stale_dns_on_connection(false),
       quic_go_away_on_path_degrading(false),
       quic_max_time_on_non_default_network(
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
@@ -143,7 +142,6 @@ HttpNetworkSession::Params::Params()
       quic_race_cert_verification(false),
       quic_estimate_initial_rtt(false),
       quic_headers_include_h2_stream_dependency(false),
-      enable_token_binding(false),
       enable_channel_id(false),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
@@ -171,8 +169,7 @@ HttpNetworkSession::Context::Context()
       quic_clock(nullptr),
       quic_random(nullptr),
       quic_crypto_client_stream_factory(
-          QuicCryptoClientStreamFactory::GetDefaultFactory()),
-      proxy_delegate(nullptr) {}
+          QuicCryptoClientStreamFactory::GetDefaultFactory()) {}
 
 HttpNetworkSession::Context::Context(const Context& other) = default;
 
@@ -222,6 +219,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
           params.quic_retry_on_alternate_network_before_handshake,
+          params.quic_race_stale_dns_on_connection,
           params.quic_go_away_on_path_degrading,
           params.quic_max_time_on_non_default_network,
           params.quic_max_migrations_to_non_default_network_on_write_error,
@@ -232,7 +230,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_headers_include_h2_stream_dependency,
           params.quic_connection_options,
           params.quic_client_connection_options,
-          params.enable_token_binding,
           params.enable_channel_id,
           params.quic_enable_socket_recv_optimization),
       spdy_session_pool_(context.host_resolver,
@@ -244,6 +241,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          params.support_ietf_format_quic_altsvc,
                          params.spdy_session_max_recv_window_size,
                          AddDefaultHttp2Settings(params.http2_settings),
+                         params.greased_http2_frame,
                          params.time_func),
       http_stream_factory_(std::make_unique<HttpStreamFactory>(this)),
       params_(params),
@@ -275,8 +273,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
         new base::MemoryPressureListener(base::BindRepeating(
             &HttpNetworkSession::OnMemoryPressure, base::Unretained(this))));
   }
-
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
@@ -285,7 +281,6 @@ HttpNetworkSession::~HttpNetworkSession() {
   // TODO(bnc): CloseAllSessions() is also called in SpdySessionPool destructor,
   // one of the two calls should be removed.
   spdy_session_pool_.CloseAllSessions();
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void HttpNetworkSession::AddResponseDrainer(
@@ -387,6 +382,8 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_migrate_sessions_early_v2);
   dict->SetBoolean("retry_on_alternate_network_before_handshake",
                    params_.quic_retry_on_alternate_network_before_handshake);
+  dict->SetBoolean("race_stale_dns_on_connection",
+                   params_.quic_race_stale_dns_on_connection);
   dict->SetBoolean("go_away_on_path_degrading",
                    params_.quic_go_away_on_path_degrading);
   dict->SetInteger("max_time_on_non_default_network_seconds",
@@ -462,9 +459,6 @@ void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
   } else {
     server_config->channel_id_enabled = params_.enable_channel_id;
     proxy_config->channel_id_enabled = params_.enable_channel_id;
-    if (params_.enable_token_binding && context_.channel_id_service) {
-      server_config->token_binding_params.push_back(TB_PARAM_ECDSAP256);
-    }
   }
 }
 
@@ -533,10 +527,6 @@ void HttpNetworkSession::OnMemoryPressure(
       CloseIdleConnections();
       break;
   }
-}
-
-void HttpNetworkSession::OnPurgeMemory() {
-  CloseIdleConnections();
 }
 
 }  // namespace net

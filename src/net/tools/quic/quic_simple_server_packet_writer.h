@@ -60,7 +60,9 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
       const quic::QuicSocketAddress& peer_address) const override;
   bool SupportsReleaseTime() const override;
   bool IsBatchMode() const override;
-  char* GetNextWriteLocation() const override;
+  char* GetNextWriteLocation(
+      const quic::QuicIpAddress& self_address,
+      const quic::QuicSocketAddress& peer_address) override;
   quic::WriteResult Flush() override;
 
  private:

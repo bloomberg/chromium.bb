@@ -186,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
 class SystemTrayClientClockTest : public chromeos::LoginManagerTest {
  public:
   SystemTrayClientClockTest()
-      : LoginManagerTest(false /* should_launch_browser */),
+      : LoginManagerTest(false /* should_launch_browser */,
+                         true /* should_initialize_webui */),
         // Use consumer emails to avoid having to fake a policy fetch.
         account_id1_(
             AccountId::FromUserEmailGaiaId("user1@gmail.com", "1111111111")),

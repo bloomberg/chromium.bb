@@ -193,9 +193,9 @@ void MediaClient::ToggleMediaSessionPlayPause(
     return;
 
   if (media_session->IsActuallyPaused())
-    media_session->Resume(content::MediaSession::SuspendType::UI);
+    media_session->Resume(content::MediaSession::SuspendType::kUI);
   else
-    media_session->Suspend(content::MediaSession::SuspendType::UI);
+    media_session->Suspend(content::MediaSession::SuspendType::kUI);
 }
 
 void MediaClient::HandleMediaPrevTrack() {
@@ -218,7 +218,7 @@ void MediaClient::RequestCaptureState() {
 void MediaClient::SuspendMediaSessions() {
   for (auto* web_contents : AllTabContentses()) {
     content::MediaSession::Get(web_contents)
-        ->Suspend(content::MediaSession::SuspendType::SYSTEM);
+        ->Suspend(content::MediaSession::SuspendType::kSystem);
   }
 }
 

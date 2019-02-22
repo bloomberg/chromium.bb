@@ -21,6 +21,8 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
@@ -35,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationState;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -67,7 +70,7 @@ public class NetworkChangeNotifierTest {
      */
     private static class NetworkChangeNotifierTestObserver
             implements NetworkChangeNotifier.ConnectionTypeObserver {
-        private boolean mReceivedNotification = false;
+        private boolean mReceivedNotification;
 
         @Override
         public void onConnectionTypeChanged(int connectionType) {
@@ -100,7 +103,7 @@ public class NetworkChangeNotifierTest {
             mReceivedConnectionSubtypeNotification = false;
         }
 
-        private boolean mReceivedConnectionSubtypeNotification = false;
+        private boolean mReceivedConnectionSubtypeNotification;
     }
 
     private static class Helper {
@@ -187,14 +190,17 @@ public class NetworkChangeNotifierTest {
         private boolean mActiveNetworkExists;
         private int mNetworkType;
         private int mNetworkSubtype;
+        private boolean mIsPrivateDnsActive;
         private NetworkCallback mLastRegisteredNetworkCallback;
+        private NetworkCallback mLastRegisteredDefaultNetworkCallback;
 
         @Override
         public NetworkState getNetworkState(WifiManagerDelegate wifiManagerDelegate) {
             return new NetworkState(mActiveNetworkExists, mNetworkType, mNetworkSubtype,
                     mNetworkType == ConnectivityManager.TYPE_WIFI
                             ? wifiManagerDelegate.getWifiSsid()
-                            : null);
+                            : null,
+                    mIsPrivateDnsActive);
         }
 
         @Override
@@ -246,8 +252,15 @@ public class NetworkChangeNotifierTest {
         // Dummy implementation that also records the last registered callback.
         @Override
         public void registerNetworkCallback(
-                NetworkRequest networkRequest, NetworkCallback networkCallback) {
+                NetworkRequest networkRequest, NetworkCallback networkCallback, Handler handler) {
             mLastRegisteredNetworkCallback = networkCallback;
+        }
+
+        // Dummy implementation that also records the last registered callback.
+        @Override
+        public void registerDefaultNetworkCallback(
+                NetworkCallback networkCallback, Handler handler) {
+            mLastRegisteredDefaultNetworkCallback = networkCallback;
         }
 
         public void setActiveNetworkExists(boolean networkExists) {
@@ -262,8 +275,16 @@ public class NetworkChangeNotifierTest {
             mNetworkSubtype = networkSubtype;
         }
 
+        public void setIsPrivateDnsActive(boolean isPrivateDnsActive) {
+            mIsPrivateDnsActive = isPrivateDnsActive;
+        }
+
         public NetworkCallback getLastRegisteredNetworkCallback() {
             return mLastRegisteredNetworkCallback;
+        }
+
+        public NetworkCallback getDefaultNetworkCallback() {
+            return mLastRegisteredDefaultNetworkCallback;
         }
 
         /**
@@ -413,6 +434,8 @@ public class NetworkChangeNotifierTest {
             // Mock out to avoid unintended system interaction.
             @Override
             public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+                // Should not be used starting with Pie.
+                Assert.assertFalse(BuildInfo.isAtLeastP());
                 return null;
             }
 
@@ -582,6 +605,19 @@ public class NetworkChangeNotifierTest {
     }
 
     /**
+     * Indicate to NetworkChangeNotifierAutoDetect that a connectivity change has occurred.
+     * Uses same signals that system would use.
+     */
+    private void notifyConnectivityChange() {
+        if (BuildInfo.isAtLeastP()) {
+            mConnectivityDelegate.getDefaultNetworkCallback().onAvailable(null);
+        } else {
+            Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+            mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        }
+    }
+
+    /**
      * Tests that when Chrome gets an intent indicating a change in network connectivity, it sends a
      * notification to Java observers.
      */
@@ -598,31 +634,51 @@ public class NetworkChangeNotifierTest {
         // We shouldn't be re-notified if the connection hasn't actually changed.
         NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        notifyConnectivityChange();
         Assert.assertFalse(observer.hasReceivedNotification());
 
         // We shouldn't be notified if we're connected to non-Wifi and the Wifi SSID changes.
         mWifiDelegate.setWifiSSID("bar");
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        notifyConnectivityChange();
         Assert.assertFalse(observer.hasReceivedNotification());
         // We should be notified when we change to Wifi.
         mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        notifyConnectivityChange();
         Assert.assertTrue(observer.hasReceivedNotification());
         observer.resetHasReceivedNotification();
         // We should be notified when the Wifi SSID changes.
         mWifiDelegate.setWifiSSID("foo");
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        notifyConnectivityChange();
         Assert.assertTrue(observer.hasReceivedNotification());
         observer.resetHasReceivedNotification();
         // We shouldn't be re-notified if the Wifi SSID hasn't actually changed.
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        notifyConnectivityChange();
         Assert.assertFalse(observer.hasReceivedNotification());
+
+        // We should be notified if use of DNS-over-TLS changes.
+        if (BuildInfo.isAtLeastP()) {
+            // Verify notification for enabling.
+            mConnectivityDelegate.setIsPrivateDnsActive(true);
+            mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
+            Assert.assertTrue(observer.hasReceivedNotification());
+            observer.resetHasReceivedNotification();
+            // Verify no notification for no change.
+            mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
+            Assert.assertFalse(observer.hasReceivedNotification());
+            // Verify notification for disbling.
+            mConnectivityDelegate.setIsPrivateDnsActive(false);
+            mConnectivityDelegate.getDefaultNetworkCallback().onLinkPropertiesChanged(null, null);
+            Assert.assertTrue(observer.hasReceivedNotification());
+            observer.resetHasReceivedNotification();
+        }
 
         // Mimic that connectivity has been lost and ensure that Chrome notifies our observer.
         mConnectivityDelegate.setActiveNetworkExists(false);
-        Intent noConnectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
-        mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), noConnectivityIntent);
+        if (BuildInfo.isAtLeastP()) {
+            mConnectivityDelegate.getDefaultNetworkCallback().onLost(null);
+        } else {
+            mReceiver.onReceive(InstrumentationRegistry.getTargetContext(), connectivityIntent);
+        }
         Assert.assertTrue(observer.hasReceivedNotification());
 
         observer.resetHasReceivedNotification();
@@ -730,7 +786,8 @@ public class NetworkChangeNotifierTest {
             delegate.getDefaultNetwork();
             NetworkCallback networkCallback = new NetworkCallback();
             NetworkRequest networkRequest = new NetworkRequest.Builder().build();
-            delegate.registerNetworkCallback(networkRequest, networkCallback);
+            delegate.registerNetworkCallback(
+                    networkRequest, networkCallback, new Handler(Looper.myLooper()));
             delegate.unregisterNetworkCallback(networkCallback);
         }
     }

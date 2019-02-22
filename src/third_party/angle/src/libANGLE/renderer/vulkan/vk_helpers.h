@@ -75,6 +75,7 @@ class DynamicBuffer : angle::NonCopyable
     size_t mMinSize;
     Buffer mBuffer;
     DeviceMemory mMemory;
+    bool mHostCoherent;
     uint32_t mNextAllocationOffset;
     uint32_t mLastFlushOrInvalidateOffset;
     size_t mSize;
@@ -100,7 +101,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
     DynamicDescriptorPool();
     ~DynamicDescriptorPool();
 
-    // The DynamicDescriptorPool only handles one pool size at at time.
+    // The DynamicDescriptorPool only handles one pool size at this time.
     angle::Result init(Context *context, const VkDescriptorPoolSize &poolSize);
     void destroy(VkDevice device);
 
@@ -124,6 +125,95 @@ class DynamicDescriptorPool final : angle::NonCopyable
     uint32_t mFreeDescriptorSets;
 };
 
+// DynamicQueryPool allocates indices out of QueryPool as needed.  Once a QueryPool is exhausted,
+// another is created.  The query pools live permanently, but are recycled as indices get freed.
+
+// This is an arbitrary default size for occlusion query pools.
+constexpr uint32_t kDefaultOcclusionQueryPoolSize = 64;
+
+class QueryHelper;
+
+class DynamicQueryPool final : angle::NonCopyable
+{
+  public:
+    DynamicQueryPool();
+    ~DynamicQueryPool();
+
+    angle::Result init(Context *context, VkQueryType type, uint32_t poolSize);
+    void destroy(VkDevice device);
+
+    bool isValid() { return mPoolSize > 0; }
+
+    angle::Result allocateQuery(Context *context, QueryHelper *queryOut);
+    void freeQuery(Context *context, QueryHelper *query);
+
+    const QueryPool *getQueryPool(size_t index) const { return &mQueryPools[index]; }
+
+  private:
+    angle::Result allocateNewPool(Context *context);
+
+    // Information required to create new query pools
+    uint32_t mPoolSize;
+    VkQueryType mQueryType;
+
+    // A list of query pools to allocate from
+    std::vector<QueryPool> mQueryPools;
+
+    struct QueryPoolStats
+    {
+        // A count corresponding to each query pool indicating how many of its allocated indices
+        // have been freed. Once that value reaches mPoolSize for each pool, that pool is considered
+        // free and reusable.  While keeping a bitset would allow allocation of each index, the
+        // slight runtime overhead of finding free indices is not worth the slight memory overhead
+        // of creating new pools when unnecessary.
+        uint32_t freedCount;
+        // When the pool is completely emptied, the serial of the renderer is stored to make sure no
+        // new allocations are made from the pool until it's not in use.
+        Serial serial;
+    };
+    std::vector<QueryPoolStats> mQueryPoolStats;
+
+    // Index into mQueryPools indicating query pool we are currently allocating from
+    size_t mCurrentQueryPool;
+    // Bit index inside mQueryPools[mCurrentQueryPool] indicating which index can be allocated next
+    uint32_t mCurrentFreeQuery;
+};
+
+// Queries in vulkan are identified by the query pool and an index for a query within that pool.
+// Unlike other pools, such as descriptor pools where an allocation returns an independent object
+// from the pool, the query allocations are not done through a Vulkan function and are only an
+// integer index.
+//
+// Furthermore, to support arbitrarily large number of queries, DynamicQueryPool creates query pools
+// of a fixed size as needed and allocates indices within those pools.
+//
+// The QueryHelper class below keeps the pool and index pair together.
+class QueryHelper final : public CommandGraphResource
+{
+  public:
+    QueryHelper();
+    ~QueryHelper();
+
+    void init(const DynamicQueryPool *dynamicQueryPool,
+              const size_t queryPoolIndex,
+              uint32_t query);
+    void deinit();
+
+    const QueryPool *getQueryPool() const
+    {
+        return mDynamicQueryPool ? mDynamicQueryPool->getQueryPool(mQueryPoolIndex) : nullptr;
+    }
+    uint32_t getQuery() const { return mQuery; }
+
+    // Used only by DynamicQueryPool.
+    size_t getQueryPoolIndex() const { return mQueryPoolIndex; }
+
+  private:
+    const DynamicQueryPool *mDynamicQueryPool;
+    size_t mQueryPoolIndex;
+    uint32_t mQuery;
+};
+
 // This class' responsibility is to create index buffers needed to support line loops in Vulkan.
 // In the setup phase of drawing, the createIndexBuffer method should be called with the
 // current draw call parameters. If an element array buffer is bound for an indexed draw, use
@@ -131,27 +221,31 @@ class DynamicDescriptorPool final : angle::NonCopyable
 //
 // If the user wants to draw a loop between [v1, v2, v3], we will create an indexed buffer with
 // these indexes: [0, 1, 2, 3, 0] to emulate the loop.
-class LineLoopHelper final : public vk::CommandGraphResource
+class LineLoopHelper final : angle::NonCopyable
 {
   public:
     LineLoopHelper(RendererVk *renderer);
     ~LineLoopHelper();
 
-    angle::Result getIndexBufferForDrawArrays(Context *context,
+    angle::Result getIndexBufferForDrawArrays(ContextVk *contextVk,
                                               const gl::DrawCallParams &drawCallParams,
                                               VkBuffer *bufferHandleOut,
                                               VkDeviceSize *offsetOut);
-    angle::Result getIndexBufferForElementArrayBuffer(Context *context,
+
+    angle::Result getIndexBufferForElementArrayBuffer(ContextVk *contextVk,
                                                       BufferVk *elementArrayBufferVk,
-                                                      VkIndexType indexType,
+                                                      GLenum glIndexType,
                                                       int indexCount,
                                                       intptr_t elementArrayOffset,
                                                       VkBuffer *bufferHandleOut,
                                                       VkDeviceSize *bufferOffsetOut);
-    angle::Result getIndexBufferForClientElementArray(Context *context,
-                                                      const gl::DrawCallParams &drawCallParams,
-                                                      VkBuffer *bufferHandleOut,
-                                                      VkDeviceSize *bufferOffsetOut);
+
+    angle::Result streamIndices(ContextVk *contextVk,
+                                GLenum glIndexType,
+                                GLsizei indexCount,
+                                const uint8_t *srcPtr,
+                                VkBuffer *bufferHandleOut,
+                                VkDeviceSize *bufferOffsetOut);
 
     void destroy(VkDevice device);
 
@@ -161,14 +255,36 @@ class LineLoopHelper final : public vk::CommandGraphResource
     DynamicBuffer mDynamicIndexBuffer;
 };
 
-class ImageHelper final : angle::NonCopyable
+class BufferHelper final : public CommandGraphResource
+{
+  public:
+    BufferHelper();
+    ~BufferHelper();
+
+    angle::Result init(ContextVk *contextVk,
+                       const VkBufferCreateInfo &createInfo,
+                       VkMemoryPropertyFlags memoryPropertyFlags);
+    void release(RendererVk *renderer);
+
+    bool valid() const { return mBuffer.valid(); }
+    const Buffer &getBuffer() const { return mBuffer; }
+    const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
+
+  private:
+    // Vulkan objects.
+    Buffer mBuffer;
+    DeviceMemory mDeviceMemory;
+
+    // Cached properties.
+    VkMemoryPropertyFlags mMemoryPropertyFlags;
+};
+
+class ImageHelper final : public CommandGraphResource
 {
   public:
     ImageHelper();
     ImageHelper(ImageHelper &&other);
     ~ImageHelper();
-
-    bool valid() const;
 
     angle::Result init(Context *context,
                        gl::TextureType textureType,
@@ -180,6 +296,14 @@ class ImageHelper final : angle::NonCopyable
     angle::Result initMemory(Context *context,
                              const MemoryProperties &memoryProperties,
                              VkMemoryPropertyFlags flags);
+    angle::Result initLayerImageView(Context *context,
+                                     gl::TextureType textureType,
+                                     VkImageAspectFlags aspectMask,
+                                     const gl::SwizzleState &swizzleMap,
+                                     ImageView *imageViewOut,
+                                     uint32_t levelCount,
+                                     uint32_t baseArrayLayer,
+                                     uint32_t layerCount);
     angle::Result initImageView(Context *context,
                                 gl::TextureType textureType,
                                 VkImageAspectFlags aspectMask,
@@ -192,8 +316,11 @@ class ImageHelper final : angle::NonCopyable
                                 const gl::Extents &extent,
                                 StagingUsage usage);
 
+    void release(RendererVk *renderer);
+
+    bool valid() const { return mImage.valid(); }
+
     VkImageAspectFlags getAspectFlags() const;
-    void release(Serial serial, RendererVk *renderer);
     void destroy(VkDevice device);
     void dumpResources(Serial serial, std::vector<GarbageObject> *garbageQueue);
 
@@ -211,7 +338,6 @@ class ImageHelper final : angle::NonCopyable
     GLint getSamples() const;
 
     VkImageLayout getCurrentLayout() const { return mCurrentLayout; }
-    void updateLayout(VkImageLayout layout) { mCurrentLayout = layout; }
 
     void changeLayoutWithStages(VkImageAspectFlags aspectMask,
                                 VkImageLayout newLayout,
@@ -220,9 +346,16 @@ class ImageHelper final : angle::NonCopyable
                                 CommandBuffer *commandBuffer);
 
     void clearColor(const VkClearColorValue &color,
-                    uint32_t mipLevel,
+                    uint32_t baseMipLevel,
                     uint32_t levelCount,
                     CommandBuffer *commandBuffer);
+
+    void clearColorLayer(const VkClearColorValue &color,
+                         uint32_t baseMipLevel,
+                         uint32_t levelCount,
+                         uint32_t baseArrayLayer,
+                         uint32_t layerCount,
+                         CommandBuffer *commandBuffer);
 
     void clearDepthStencil(VkImageAspectFlags aspectFlags,
                            const VkClearDepthStencilValue &depthStencil,
@@ -236,6 +369,8 @@ class ImageHelper final : angle::NonCopyable
                      const gl::Extents &copySize,
                      VkImageAspectFlags aspectMask,
                      CommandBuffer *commandBuffer);
+
+    angle::Result generateMipmapsWithBlit(ContextVk *contextVk, GLuint maxLevel);
 
   private:
     // Vulkan objects.
@@ -253,6 +388,35 @@ class ImageHelper final : angle::NonCopyable
     // Cached properties.
     uint32_t mLayerCount;
 };
+
+class FramebufferHelper : public CommandGraphResource
+{
+  public:
+    FramebufferHelper();
+    ~FramebufferHelper();
+
+    angle::Result init(ContextVk *contextVk, const VkFramebufferCreateInfo &createInfo);
+    void release(RendererVk *renderer);
+
+    bool valid() { return mFramebuffer.valid(); }
+
+    const Framebuffer &getFramebuffer() const
+    {
+        ASSERT(mFramebuffer.valid());
+        return mFramebuffer;
+    }
+
+    Framebuffer &getFramebuffer()
+    {
+        ASSERT(mFramebuffer.valid());
+        return mFramebuffer;
+    }
+
+  private:
+    // Vulkan object.
+    Framebuffer mFramebuffer;
+};
+
 }  // namespace vk
 }  // namespace rx
 

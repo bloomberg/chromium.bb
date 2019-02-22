@@ -16,7 +16,6 @@
 
 #include "src/trace_processor/sched_slice_table.h"
 #include "src/trace_processor/process_tracker.h"
-#include "src/trace_processor/proto_trace_parser.h"
 #include "src/trace_processor/sched_tracker.h"
 #include "src/trace_processor/trace_processor_context.h"
 
@@ -71,15 +70,16 @@ TEST_F(SchedSliceTableTest, RowsReturnedInCorrectOrderWithinCpu) {
   static const char kCommProc2[] = "process2";
   uint32_t pid_2 = 4;
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 3, pid_2, prev_state,
-                                          kCommProc2, pid_1);
+                                          pid_1, kCommProc2);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 4, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
 
-  PrepareValidStatement("SELECT dur, ts, cpu FROM sched ORDER BY dur");
+  PrepareValidStatement(
+      "SELECT dur, ts, cpu FROM sched where dur != 0 ORDER BY dur");
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 1 /* duration */);
@@ -110,19 +110,20 @@ TEST_F(SchedSliceTableTest, RowsReturnedInCorrectOrderBetweenCpu) {
   static const char kCommProc2[] = "process2";
   uint32_t pid_2 = 4;
   context_.sched_tracker->PushSchedSwitch(cpu_3, timestamp - 2, pid_1,
-                                          prev_state, kCommProc1, pid_2);
+                                          prev_state, pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu_3, timestamp - 1, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
   context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 3, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
   context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 4, pid_1,
-                                          prev_state, kCommProc1, pid_2);
+                                          prev_state, pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
 
-  PrepareValidStatement("SELECT dur, ts, cpu FROM sched ORDER BY dur desc");
+  PrepareValidStatement(
+      "SELECT dur, ts, cpu FROM sched where dur != 0 ORDER BY dur desc");
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 7 /* duration */);
@@ -152,138 +153,21 @@ TEST_F(SchedSliceTableTest, FilterCpus) {
   static const char kCommProc2[] = "process2";
   uint32_t pid_2 = 4;
   context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 3, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
   context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 4, pid_1,
-                                          prev_state, kCommProc1, pid_2);
+                                          prev_state, pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
 
-  PrepareValidStatement("SELECT dur, ts, cpu FROM sched WHERE cpu = 3");
+  PrepareValidStatement(
+      "SELECT dur, ts, cpu FROM sched WHERE dur != 0 and cpu = 3");
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 4 /* duration */);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_1);
-
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
-}
-
-TEST_F(SchedSliceTableTest, QuanitsiationCpuNativeOrder) {
-  uint32_t cpu_1 = 3;
-  uint32_t cpu_2 = 8;
-  uint64_t timestamp = 100;
-  uint32_t pid_1 = 2;
-  uint32_t prev_state = 32;
-  static const char kCommProc1[] = "process1";
-  static const char kCommProc2[] = "process2";
-  uint32_t pid_2 = 4;
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 3, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 4, pid_1,
-                                          prev_state, kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-
-  PrepareValidStatement(
-      "SELECT dur, ts, cpu FROM sched WHERE quantum = 5 ORDER BY cpu");
-
-  // Event at ts + 3 sliced off at quantum boundary (105).
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 2 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp + 3);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_1);
-
-  // Remainder of event at ts + 3 after quantum boundary (105 onwards).
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 5 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp + 5);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_1);
-
-  // Full event at ts.
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 4 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_2);
-
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
-}
-
-TEST_F(SchedSliceTableTest, QuantizationSqliteDurationOrder) {
-  uint32_t cpu_1 = 3;
-  uint32_t cpu_2 = 8;
-  uint64_t timestamp = 100;
-  uint32_t pid_1 = 2;
-  uint32_t prev_state = 32;
-  static const char kCommProc1[] = "process1";
-  static const char kCommProc2[] = "process2";
-  uint32_t pid_2 = 4;
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 3, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 4, pid_1,
-                                          prev_state, kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-
-  PrepareValidStatement(
-      "SELECT dur, ts, cpu FROM sched WHERE quantum = 5 ORDER BY dur");
-
-  // Event at ts + 3 sliced off at quantum boundary (105).
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 2 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp + 3);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_2);
-
-  // Full event at ts.
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 4 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_1);
-
-  // Remainder of event at ts + 3 after quantum boundary (105 onwards).
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 5 /* duration */);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 1), timestamp + 5);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 2), cpu_2);
-
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
-}
-
-TEST_F(SchedSliceTableTest, QuantizationGroupAndSum) {
-  uint32_t cpu_1 = 3;
-  uint32_t cpu_2 = 8;
-  uint64_t timestamp = 100;
-  uint32_t pid_1 = 2;
-  uint32_t prev_state = 32;
-  static const char kCommProc1[] = "process1";
-  static const char kCommProc2[] = "process2";
-  uint32_t pid_2 = 4;
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 3, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-  context_.sched_tracker->PushSchedSwitch(cpu_1, timestamp + 4, pid_1,
-                                          prev_state, kCommProc1, pid_2);
-  context_.sched_tracker->PushSchedSwitch(cpu_2, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
-
-  PrepareValidStatement(
-      "SELECT SUM(dur) as sum_dur "
-      "FROM sched "
-      "WHERE quantum = 5 "
-      "GROUP BY quantized_group "
-      "ORDER BY sum_dur");
-
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 5 /* SUM(duration) */);
-
-  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
-  ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 6 /* SUM(duration) */);
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
 }
@@ -297,15 +181,15 @@ TEST_F(SchedSliceTableTest, UtidTest) {
   static const char kCommProc2[] = "process2";
   uint32_t pid_2 = 4;
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 3, pid_2, prev_state,
-                                          kCommProc2, pid_1);
+                                          pid_1, kCommProc2);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 4, pid_1, prev_state,
-                                          kCommProc1, pid_2);
+                                          pid_2, kCommProc1);
   context_.sched_tracker->PushSchedSwitch(cpu, timestamp + 10, pid_2,
-                                          prev_state, kCommProc2, pid_1);
+                                          prev_state, pid_1, kCommProc2);
 
-  PrepareValidStatement("SELECT utid FROM sched ORDER BY utid");
+  PrepareValidStatement("SELECT utid FROM sched where dur != 0 ORDER BY utid");
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
   ASSERT_EQ(sqlite3_column_int64(*stmt_, 0), 1 /* duration */);
@@ -330,13 +214,16 @@ TEST_F(SchedSliceTableTest, TimestampFiltering) {
   // respectively, @ T=50 and T=70.
   for (uint64_t i = 0; i <= 11; i++) {
     context_.sched_tracker->PushSchedSwitch(cpu_5, 50 + i, pid_1, prev_state,
-                                            "pid_1", pid_1);
+                                            pid_1, "pid_1");
+  }
+  for (uint64_t i = 0; i <= 11; i++) {
     context_.sched_tracker->PushSchedSwitch(cpu_7, 70 + i, pid_2, prev_state,
-                                            "pid_2", pid_2);
+                                            pid_2, "pid_2");
   }
 
   auto query = [this](const std::string& where_clauses) {
-    PrepareValidStatement("SELECT ts from sched WHERE " + where_clauses);
+    PrepareValidStatement("SELECT ts from sched WHERE dur != 0 and " +
+                          where_clauses);
     std::vector<int> res;
     while (sqlite3_step(*stmt_) == SQLITE_ROW) {
       res.push_back(sqlite3_column_int(*stmt_, 0));
@@ -348,21 +235,6 @@ TEST_F(SchedSliceTableTest, TimestampFiltering) {
   ASSERT_THAT(query("ts >= 55 and ts < 52"), IsEmpty());
   ASSERT_THAT(query("ts >= 70 and ts < 71"), ElementsAre(70));
   ASSERT_THAT(query("ts >= 59 and ts < 73"), ElementsAre(59, 60, 70, 71, 72));
-
-  // Test the special ts_lower_bound column.
-  ASSERT_THAT(query("ts_lower_bound = 1 and ts < 10"), IsEmpty());
-  ASSERT_THAT(query("ts_lower_bound = 50 and ts <= 50"), ElementsAre(50));
-  ASSERT_THAT(query("ts_lower_bound = 100"), ElementsAre(80));
-  ASSERT_THAT(query("ts_lower_bound = 100 and cpu = 5"), ElementsAre(60));
-  ASSERT_THAT(query("ts_lower_bound = 100 and cpu = 7"), ElementsAre(80));
-  ASSERT_THAT(query("ts_lower_bound = 1 and ts <= 52"),
-              ElementsAre(50, 51, 52));
-  ASSERT_THAT(query("ts_lower_bound = 70 and ts <= 71"),
-              ElementsAre(60, 70, 71));
-  ASSERT_THAT(query("ts_lower_bound = 60 and ts > 58 and ts <= 71"),
-              ElementsAre(59, 60, 70, 71));
-  ASSERT_THAT(query("ts_lower_bound = 70 and ts > 70 and ts <= 71"),
-              ElementsAre(71));
 }
 
 }  // namespace

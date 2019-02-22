@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -47,7 +46,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -71,6 +69,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_network_transaction_factory.h"
 #include "content/public/browser/network_service_instance.h"
@@ -210,75 +209,6 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
   }
 };
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
-  std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
-  bundled_path_prefix = "/" + bundled_path_prefix + "/";
-
-  if (!url.SchemeIs(content::kChromeDevToolsScheme) ||
-      url.host_piece() != chrome::kChromeUIDevToolsHost ||
-      !base::StartsWith(url.path_piece(), bundled_path_prefix,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-
-  if (!url.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Remove Query and Ref from URL.
-  GURL stripped_url;
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  replacements.ClearRef();
-  stripped_url = url.ReplaceComponents(replacements);
-
-  std::string relative_path;
-  const std::string& spec = stripped_url.possibly_invalid_spec();
-  const url::Parsed& parsed = stripped_url.parsed_for_possibly_invalid_spec();
-  int offset = parsed.CountCharactersBefore(url::Parsed::PATH, false);
-  if (offset < static_cast<int>(spec.size()))
-    relative_path.assign(spec.substr(offset + bundled_path_prefix.length()));
-
-  // Check that |relative_path| is not an absolute path (otherwise
-  // AppendASCII() will DCHECK).  The awkward use of StringType is because on
-  // some systems FilePath expects a std::string, but on others a std::wstring.
-  base::FilePath p(
-      base::FilePath::StringType(relative_path.begin(), relative_path.end()));
-  if (p.IsAbsolute())
-    return false;
-
-  base::FilePath inspector_debug_dir;
-  if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
-                              &inspector_debug_dir))
-    return false;
-
-  DCHECK(!inspector_debug_dir.empty());
-
-  *path = inspector_debug_dir.AppendASCII(relative_path);
-  return true;
-}
-
-class DebugDevToolsInterceptor : public net::URLRequestInterceptor {
- public:
-  // net::URLRequestInterceptor implementation.
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    base::FilePath path;
-    if (IsSupportedDevToolsURL(request->url(), &path))
-      return new net::URLRequestFileJob(
-          request, network_delegate, path,
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-
-    return NULL;
-  }
-};
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
-
 #if defined(OS_CHROMEOS)
 // The following four functions are responsible for initializing NSS for each
 // profile on ChromeOS, which has a separate NSS database and TPM slot
@@ -324,9 +254,9 @@ void DidGetTPMInfoForUserOnUIThread(
   if (token_info.has_value() && token_info->slot != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
              << token_info->slot;
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&crypto::InitializeTPMForChromeOSUser,
-                                       username_hash, token_info->slot));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                             base::Bind(&crypto::InitializeTPMForChromeOSUser,
+                                        username_hash, token_info->slot));
   } else {
     NOTREACHED() << "TPMTokenInfoGetter reported invalid token.";
   }
@@ -357,8 +287,8 @@ void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
                                           const std::string& username_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::Bind(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
 
@@ -476,8 +406,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
       DCHECK(!params->username_hash.empty());
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::Bind(&StartNSSInitOnIOThread, user->GetAccountId(),
                      user->username_hash(), profile->GetPath()));
 
@@ -504,16 +434,16 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
   force_google_safesearch_.MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
   force_youtube_restrict_.MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
   allowed_domains_for_apps_.MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
   // These members are used only for sign in, which is not enabled
   // in incognito mode.  So no need to initialize them.
@@ -702,14 +632,8 @@ ProfileIOData::~ProfileIOData() {
   if (domain_reliability_monitor_unowned_)
     domain_reliability_monitor_unowned_->Shutdown();
 
-  // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
-  // are already done in the URLRequestContext destructor.
-  if (extensions_request_context_)
-    extensions_request_context_->AssertNoURLRequests();
-
   current_context = 0;
-  for (URLRequestContextMap::iterator it =
-           isolated_media_request_context_map_.begin();
+  for (auto it = isolated_media_request_context_map_.begin();
        it != isolated_media_request_context_map_.end(); ++it) {
     if (current_context < kMaxCachedContexts) {
       CHECK_EQ(media_context_cache[current_context], it->second);
@@ -775,9 +699,7 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
 void ProfileIOData::InstallProtocolHandlers(
     net::URLRequestJobFactoryImpl* job_factory,
     content::ProtocolHandlerMap* protocol_handlers) {
-  for (content::ProtocolHandlerMap::iterator it =
-           protocol_handlers->begin();
-       it != protocol_handlers->end();
+  for (auto it = protocol_handlers->begin(); it != protocol_handlers->end();
        ++it) {
     bool set_protocol =
         job_factory->SetProtocolHandler(it->first, std::move(it->second));
@@ -817,11 +739,6 @@ net::URLRequestContext* ProfileIOData::GetMediaRequestContext() const {
   net::URLRequestContext* context = AcquireMediaRequestContext();
   DCHECK(context);
   return context;
-}
-
-net::URLRequestContext* ProfileIOData::GetExtensionsRequestContext() const {
-  DCHECK(initialized_);
-  return extensions_request_context_.get();
 }
 
 net::URLRequestContext* ProfileIOData::GetIsolatedAppRequestContext(
@@ -951,7 +868,7 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
@@ -1036,10 +953,6 @@ void ProfileIOData::Init(
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
   account_consistency_ = profile_params_->account_consistency;
-
-  // Create extension request context.  Only used for cookies.
-  extensions_request_context_.reset(new net::URLRequestContext());
-  extensions_request_context_->set_name("extensions");
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -1256,10 +1169,6 @@ ProfileIOData::SetUpJobFactoryDefaults(
       url::kFtpScheme, net::FtpProtocolHandler::Create(host_resolver));
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
-#endif
-
   // Set up interceptors in the reverse order.
   std::unique_ptr<net::URLRequestJobFactory> top_job_factory =
       std::move(job_factory);
@@ -1313,10 +1222,6 @@ void ProfileIOData::SetUpJobFactoryDefaultsForBuilder(
       url::kAboutScheme,
       std::make_unique<about_handler::AboutProtocolHandler>());
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  request_interceptors.push_back(std::make_unique<DebugDevToolsInterceptor>());
-#endif
-
   builder->SetInterceptors(std::move(request_interceptors));
 
   if (protocol_handler_interceptor) {
@@ -1353,8 +1258,8 @@ void ProfileIOData::ShutdownOnUIThread(
 
   if (!context_getters->empty()) {
     if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
                          std::move(context_getters)));
     }

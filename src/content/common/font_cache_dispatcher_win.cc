@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/thread_annotations.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
@@ -125,8 +126,8 @@ class FontCache {
   FontCache() {
   }
 
-  std::map<base::string16, CacheElement> cache_;
-  DispatcherToFontNames dispatcher_font_map_;
+  std::map<base::string16, CacheElement> cache_ GUARDED_BY(mutex_);
+  DispatcherToFontNames dispatcher_font_map_ GUARDED_BY(mutex_);
   base::Lock mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(FontCache);

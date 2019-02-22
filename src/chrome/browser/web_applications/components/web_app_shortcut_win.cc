@@ -26,7 +26,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -488,8 +487,7 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
   base::FilePath chrome_apps_dir;
   if (ShellUtil::GetShortcutPath(
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
-          BrowserDistribution::GetDistribution(), ShellUtil::CURRENT_USER,
-          &chrome_apps_dir)) {
+          ShellUtil::CURRENT_USER, &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
@@ -504,8 +502,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
   base::FilePath chrome_apps_dir;
   if (ShellUtil::GetShortcutPath(
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
-          BrowserDistribution::GetDistribution(), ShellUtil::CURRENT_USER,
-          &chrome_apps_dir)) {
+          ShellUtil::CURRENT_USER, &chrome_apps_dir)) {
     if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
@@ -530,12 +527,11 @@ std::vector<base::FilePath> GetShortcutPaths(
            base::win::CanPinShortcutToTaskbar(),
        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH}};
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   // Populate shortcut_paths.
   for (size_t i = 0; i < base::size(locations); ++i) {
     if (locations[i].use_this_location) {
       base::FilePath path;
-      if (!ShellUtil::GetShortcutPath(locations[i].location_id, dist,
+      if (!ShellUtil::GetShortcutPath(locations[i].location_id,
                                       ShellUtil::CURRENT_USER, &path)) {
         NOTREACHED();
         continue;

@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/scoped_blocking_call.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
@@ -257,7 +257,7 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
     const SkBitmap& bitmap,
     const GURL& url,
     bool* is_generated) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::AssertLongCPUWorkAllowed();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> result;

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_coordinate_system.h"
 
+#include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
@@ -29,9 +30,18 @@ DOMFloat32Array* XRCoordinateSystem::getTransformTo(
   return nullptr;
 }
 
+ExecutionContext* XRCoordinateSystem::GetExecutionContext() const {
+  return session()->GetExecutionContext();
+}
+
+const AtomicString& XRCoordinateSystem::InterfaceName() const {
+  return EventTargetNames::XRCoordinateSystem;
+}
+
 void XRCoordinateSystem::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
 }
 
 }  // namespace blink

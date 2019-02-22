@@ -40,6 +40,11 @@ int main(int argc, const char* argv[]) {
       return 1;
     }
 
+    // Synchronously eliminating the dirty pages from pagecache allows to
+    // minimize adhoc waiting after all of the per-file pagecache dropping is
+    // done.
+    base::SyncPageCacheToDisk();
+
     if (base::DirectoryExists(path)) {
       base::FileEnumerator enumerator(path, should_recurse,
                                       base::FileEnumerator::FILES);

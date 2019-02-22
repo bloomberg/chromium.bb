@@ -12,8 +12,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,22 +57,6 @@ import java.util.function.Consumer;
 public final class FetchHelperTest {
     private static final String STARTING_URL = "https://starting.url";
     private static final String DIFFERENT_URL = "https://different.url";
-
-    private class TestFetchHelper extends FetchHelper {
-        public TestFetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
-            super(delegate, tabModelSelector);
-        }
-
-        @Override
-        boolean requireCurrentPageFromSRP() {
-            return false;
-        }
-
-        @Override
-        boolean requireNavChainFromSRP() {
-            return false;
-        }
-    }
 
     @Mock
     private TabModelSelector mTabModelSelector;
@@ -126,9 +112,7 @@ public final class FetchHelperTest {
 
         // Ensure Chrome feature list does not switch to native.
         Map<String, Boolean> testFeatures = new HashMap<>();
-        testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET, true);
-        // TODO(twellington): write some tests for the button variant.
-        testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, false);
+        testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, true);
         ChromeFeatureList.setTestFeatures(testFeatures);
     }
 
@@ -402,32 +386,6 @@ public final class FetchHelperTest {
     }
 
     @Test
-    public void switchTabs_suggestionsDismissed() {
-        FetchHelper helper = createFetchHelper();
-        addTab(mTab2);
-
-        // Wait for the fetch delay and verify that suggestions are requested for the first tab.
-        verify(mDelegate, times(1)).reportFetchDelayed(eq(mWebContents));
-        runUntilFetchPossible();
-        verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
-
-        // Simulate suggestions dismissed by user on the first tab.
-        helper.onSuggestionsDismissed(mTab);
-
-        // Switch to the second tab, and verify that suggestions are requested without a delay.
-        selectTab(mTab2);
-        verify(mDelegate, times(1)).clearState();
-        verify(mDelegate, times(0)).reportFetchDelayed(eq(mWebContents2));
-        verify(mDelegate, times(1)).requestSuggestions(eq(DIFFERENT_URL));
-
-        // Switch back to the first tab, and verify that fetch is not requested.
-        selectTab(mTab);
-        verify(mDelegate, times(2)).clearState();
-        verify(mDelegate, times(1)).reportFetchDelayed(eq(mWebContents));
-        verify(mDelegate, times(1)).requestSuggestions(eq(STARTING_URL));
-    }
-
-    @Test
     public void canonicalUrl_isResolved() {
         doReturn(false).when(mTab).isLoading();
         doReturn(mFrameHost).when(mWebContents).getMainFrame();
@@ -506,8 +464,9 @@ public final class FetchHelperTest {
     }
 
     private FetchHelper createFetchHelper() {
-        FetchHelper helper = new TestFetchHelper(mDelegate, mTabModelSelector);
-        helper.initialize();
+        FetchHelper helper = spy(new FetchHelper(mDelegate, mTabModelSelector));
+        when(helper.requireCurrentPageFromSRP()).thenReturn(false);
+        when(helper.requireNavChainFromSRP()).thenReturn(false);
 
         if (mTabModelSelector.getCurrentTab() != null && !mTab.isIncognito()) {
             verify(mTab, times(1)).addObserver(mTabObserverCaptor.capture());

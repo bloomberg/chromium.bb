@@ -121,7 +121,13 @@ TEST_F('CrExtensionsToolbarTest', 'DevModeToggle', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.DevModeToggle);
 });
 
-TEST_F('CrExtensionsToolbarTest', 'ClickHandlers', function() {
+// TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
+GEN('#if !defined(OS_MACOSX)');
+GEN('#define MAYBE_ClickHandlers DISABLED_ClickHandlers');
+GEN('#else');
+GEN('#define MAYBE_ClickHandlers ClickHandlers');
+GEN('#endif');
+TEST_F('CrExtensionsToolbarTest', 'MAYBE_ClickHandlers', function() {
   this.runMochaTest(extension_toolbar_tests.TestNames.ClickHandlers);
 });
 
@@ -661,36 +667,6 @@ TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
 TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
   this.runMochaTest(
       extension_navigation_helper_tests.TestNames.SupportedRoutes);
-});
-
-////////////////////////////////////////////////////////////////////////////////
-// Extension View Manager Tests
-
-CrExtensionsViewManagerTest = class extends CrExtensionsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://extensions/view_manager.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      'view_manager_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return extension_view_manager_tests.suiteName;
-  }
-};
-
-TEST_F('CrExtensionsViewManagerTest', 'VisibilityTest', function() {
-  this.runMochaTest(extension_view_manager_tests.TestNames.Visibility);
-});
-
-TEST_F('CrExtensionsViewManagerTest', 'EventFiringTest', function() {
-  this.runMochaTest(extension_view_manager_tests.TestNames.EventFiring);
 });
 
 ////////////////////////////////////////////////////////////////////////////////

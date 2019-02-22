@@ -71,18 +71,11 @@
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
-#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
-#include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
-#endif
-
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
 #endif  // defined(OS_WIN)
 
@@ -774,11 +767,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
-  if (HasPendingUncleanExit(browser->profile()) &&
-      !SessionCrashedBubble::Show(browser)) {
-#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
-    SessionCrashedInfoBarDelegate::Create(browser);
-#endif
+  if (HasPendingUncleanExit(browser->profile())) {
+    SessionCrashedBubble::Show(browser);
   }
 
   if (command_line_.HasSwitch(switches::kEnableAutomation))

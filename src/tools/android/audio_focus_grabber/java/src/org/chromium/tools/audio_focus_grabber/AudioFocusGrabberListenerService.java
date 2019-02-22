@@ -31,9 +31,9 @@ public class AudioFocusGrabberListenerService extends Service {
 
     private static final int NOTIFICATION_ID = 1;
 
-    AudioManager mAudioManager = null;
-    MediaPlayer mMediaPlayer = null;
-    boolean mIsDucking = false;
+    AudioManager mAudioManager;
+    MediaPlayer mMediaPlayer;
+    boolean mIsDucking;
 
     @Override
     public void onCreate() {

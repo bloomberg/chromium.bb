@@ -58,8 +58,7 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   } headers[] = {{"X-Foo", "bar"}, {"X-Quux", "foop"}, {nullptr, nullptr}};
   const String referrer = "http://www.referrer.com/";
   const WebReferrerPolicy kReferrerPolicy = kWebReferrerPolicyAlways;
-  const WebURLRequest::RequestContext kContext =
-      WebURLRequest::kRequestContextAudio;
+  const mojom::RequestContextType kContext = mojom::RequestContextType::AUDIO;
   const network::mojom::FetchRequestMode kMode =
       network::mojom::FetchRequestMode::kNavigate;
   const network::mojom::FetchCredentialsMode kCredentialsMode =

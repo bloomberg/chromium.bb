@@ -17,7 +17,6 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
@@ -31,7 +30,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -72,6 +71,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -147,44 +147,43 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 NSString* kLogJavascriptKey = @"LogJavascript";
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
-#pragma mark - SigninObserverBridge Class
+#pragma mark - IdentityObserverBridge Class
 
-class SigninObserverBridge : public SigninManagerBase::Observer {
+class IdentityObserverBridge : public identity::IdentityManager::Observer {
  public:
-  SigninObserverBridge(ios::ChromeBrowserState* browserState,
-                       SettingsCollectionViewController* owner);
-  ~SigninObserverBridge() override {}
+  IdentityObserverBridge(ios::ChromeBrowserState* browserState,
+                         SettingsCollectionViewController* owner);
+  ~IdentityObserverBridge() override {}
 
-  // SigninManagerBase::Observer implementation:
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // IdentityManager::Observer implementation:
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
  private:
   __weak SettingsCollectionViewController* owner_;
-  ScopedObserver<SigninManager, SigninObserverBridge> observer_;
+  ScopedObserver<identity::IdentityManager, IdentityObserverBridge> observer_;
 };
 
-SigninObserverBridge::SigninObserverBridge(
+IdentityObserverBridge::IdentityObserverBridge(
     ios::ChromeBrowserState* browserState,
     SettingsCollectionViewController* owner)
     : owner_(owner), observer_(this) {
   DCHECK(owner_);
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browserState);
-  if (!signin_manager)
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
+  if (!identity_manager)
     return;
-  observer_.Add(signin_manager);
+  observer_.Add(identity_manager);
 }
 
-void SigninObserverBridge::GoogleSigninSucceeded(const std::string& account_id,
-                                                 const std::string& username) {
+void IdentityObserverBridge::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 
-void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
-                                           const std::string& username) {
+void IdentityObserverBridge::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   [owner_ onSignInStateChanged];
 }
 
@@ -205,7 +204,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // The current browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _browserState;  // weak
 
-  std::unique_ptr<SigninObserverBridge> _notificationBridge;
+  std::unique_ptr<IdentityObserverBridge> _notificationBridge;
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
   // Whether the impression of the Signin button has already been recorded.
   BOOL _hasRecordedSigninImpression;
@@ -283,7 +282,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     _browserState = browserState;
     self.title = l10n_util::GetNSStringWithFixup(IDS_IOS_SETTINGS_TITLE);
     self.collectionViewAccessibilityIdentifier = kSettingsCollectionViewId;
-    _notificationBridge.reset(new SigninObserverBridge(_browserState, self));
+    _notificationBridge.reset(new IdentityObserverBridge(_browserState, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));
@@ -416,15 +415,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    SettingsTextItem* basicsHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-    basicsHeader.text =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_GENERAL_TAB_LABEL);
-    basicsHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:basicsHeader
-        forSectionWithIdentifier:SectionIdentifierBasics];
-  }
   [model addItem:[self searchEngineDetailItem]
       toSectionWithIdentifier:SectionIdentifierBasics];
   [model addItem:[self savePasswordsDetailItem]
@@ -436,15 +426,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   // Advanced Section
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];
-  if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-    SettingsTextItem* advancedHeader =
-        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-    advancedHeader.text =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_ADVANCED_TAB_LABEL);
-    advancedHeader.textColor = [[MDCPalette greyPalette] tint500];
-    [model setHeader:advancedHeader
-        forSectionWithIdentifier:SectionIdentifierAdvanced];
-  }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
@@ -469,14 +450,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Debug Section
   if ([self hasDebugSection]) {
     [model addSectionWithIdentifier:SectionIdentifierDebug];
-    if (!experimental_flags::IsSettingsUIRebootEnabled()) {
-      SettingsTextItem* debugHeader =
-          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
-      debugHeader.text = @"Debug";
-      debugHeader.textColor = [[MDCPalette greyPalette] tint500];
-      [model setHeader:debugHeader
-          forSectionWithIdentifier:SectionIdentifierDebug];
-    }
   }
 
   if (experimental_flags::IsMemoryDebuggingEnabled()) {
@@ -564,10 +537,15 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 }
 
 - (CollectionViewItem*)savePasswordsDetailItem {
+  BOOL savePasswordsEnabled = _browserState->GetPrefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableService);
+  NSString* passwordsDetail = savePasswordsEnabled
+                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _savePasswordsDetailItem =
       [self detailItemWithType:ItemTypeSavedPasswords
                           text:l10n_util::GetNSString(IDS_IOS_PASSWORDS)
-                    detailText:nil
+                    detailText:passwordsDetail
                  iconImageName:kSettingsPasswordsImageName];
 
   return _savePasswordsDetailItem;
@@ -777,12 +755,13 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
         detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
         detailCell.detailTextLabel.textColor =
             [[MDCPalette greyPalette] tint400];
+        return cell;
       }
-    } else {
-      [detailCell setUserInteractionEnabled:YES];
-      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
     }
+
+    [detailCell setUserInteractionEnabled:YES];
+    detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
   }
 
   switch (itemType) {
@@ -1094,7 +1073,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       !IsTransientSyncError(syncSetupService->GetSyncServiceState());
   if (identityAccountItem.shouldDisplayError) {
     identityAccountItem.detailText =
-        GetSyncErrorDescriptionForBrowserState(_browserState);
+        GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
   } else {
     identityAccountItem.detailText =
         syncSetupService->IsSyncEnabled()
@@ -1286,7 +1265,6 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     NSString* passwordsDetail =
         savePasswordsEnabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-
     _savePasswordsDetailItem.detailText = passwordsDetail;
     [self reconfigureCellsForItems:@[ _savePasswordsDetailItem ]];
   }

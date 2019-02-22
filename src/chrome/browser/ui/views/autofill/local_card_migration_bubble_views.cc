@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
 
 namespace autofill {
@@ -84,7 +85,6 @@ int LocalCardMigrationBubbleViews::GetDialogButtons() const {
 
 base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  // TODO(crbug.com/859254): Update OK button label once mock is finalized.
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK
           ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL
@@ -100,20 +100,41 @@ gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {
 
 void LocalCardMigrationBubbleViews::AddedToWidget() {
   auto title_container = std::make_unique<views::View>();
-  title_container->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  title_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
       gfx::CreateVectorIcon(kGooglePayLogoIcon, gfx::kPlaceholderColor),
       /*x=*/0, /*y=*/0, kMigrationBubbleGooglePayLogoWidth,
       kMigrationBubbleGooglePayLogoHeight);
   views::ImageView* icon_view = new views::ImageView();
   icon_view->SetImage(&image);
+  icon_view->SetHorizontalAlignment(views::ImageView::LEADING);
+  icon_view->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   title_container->AddChildView(icon_view);
+
+  auto* title =
+      new views::Label(GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Need to set title's preferred size otherwise the long title
+  // would not be two-lined but would change the width of bubble.
+  title->SetPreferredSize(gfx::Size(0, 0));
+  title->SetMultiLine(true);
+  title_container->AddChildView(title);
+
   GetBubbleFrameView()->SetTitleView(std::move(title_container));
 }
 
 bool LocalCardMigrationBubbleViews::ShouldShowCloseButton() const {
   return true;
+}
+
+base::string16 LocalCardMigrationBubbleViews::GetWindowTitle() const {
+  return controller_ ? l10n_util::GetStringUTF16(
+                           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE)
+                     : base::string16();
 }
 
 void LocalCardMigrationBubbleViews::WindowClosing() {
@@ -126,10 +147,11 @@ void LocalCardMigrationBubbleViews::WindowClosing() {
 LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() {}
 
 void LocalCardMigrationBubbleViews::Init() {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  views::Label* explanatory_message = new views::Label(
-      controller_->GetBubbleMessage(), CONTEXT_BODY_TEXT_LARGE);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  auto* explanatory_message = new views::Label(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT),
+      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
   explanatory_message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   explanatory_message->SetMultiLine(true);
   AddChildView(explanatory_message);

@@ -223,7 +223,7 @@ static bool validate_extension_reqs(const instance_layer_data *instance_data, co
         return skip;  // Unknown extensions cannot be checked so report OK
     }
 
-    // Check agains the reqs list in the info
+    // Check against the required list in the info
     std::vector<const char *> missing;
     for (const auto &req : info.requires) {
         if (!(extensions.*(req.enabled))) {
@@ -235,8 +235,8 @@ static bool validate_extension_reqs(const instance_layer_data *instance_data, co
     if (missing.size()) {
         std::string missing_joined_list = string_join(", ", missing);
         skip |= log_msg(instance_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT,
-                        HandleToUint64(instance_data->instance), vuid, "Missing required extensions for %s extension %s, %s.",
-                        extension_type, extension_name, missing_joined_list.c_str());
+                        HandleToUint64(instance_data->instance), vuid, "Missing extension%s required by the %s extension %s: %s.",
+                        ((missing.size() > 1) ? "s" : ""), extension_type, extension_name, missing_joined_list.c_str());
     }
     return skip;
 }
@@ -324,11 +324,11 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCreateInfo *pCre
                                    ? pCreateInfo->pApplicationInfo->apiVersion
                                    : VK_API_VERSION_1_0;
 
-        uint32_t effective_api_version = my_instance_data->extensions.InitFromInstanceCreateInfo(api_version, pCreateInfo);
+        my_instance_data->api_version = my_instance_data->extensions.InitFromInstanceCreateInfo(api_version, pCreateInfo);
 
         // Ordinarily we'd check these before calling down the chain, but none of the layer support is in place until now, if we
         // survive we can report the issue now.
-        validate_api_version(my_instance_data, api_version, effective_api_version);
+        validate_api_version(my_instance_data, api_version, my_instance_data->api_version);
         validate_instance_extensions(my_instance_data, pCreateInfo);
 
         parameter_validation_vkCreateInstance(*pInstance, pCreateInfo, pAllocator, pInstance);
@@ -588,10 +588,10 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
     VkPhysicalDeviceProperties device_properties = {};
     my_instance_data->dispatch_table.GetPhysicalDeviceProperties(physicalDevice, &device_properties);
 
-    // Set up the extension structure also for validation.
+    // Setup the validation tables based on the application API version from the instance and the capabilities of the device driver.
+    uint32_t effective_api_version = std::min(device_properties.apiVersion, my_instance_data->api_version);
     DeviceExtensions extensions;
-    uint32_t api_version =
-        extensions.InitFromDeviceCreateInfo(&my_instance_data->extensions, device_properties.apiVersion, pCreateInfo);
+    uint32_t api_version = extensions.InitFromDeviceCreateInfo(&my_instance_data->extensions, effective_api_version, pCreateInfo);
 
     std::unique_lock<std::mutex> lock(global_lock);
 
@@ -641,6 +641,22 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
             memcpy(&my_device_data->device_limits, &device_properties.limits, sizeof(VkPhysicalDeviceLimits));
             my_device_data->physical_device = physicalDevice;
             my_device_data->device = *pDevice;
+
+            if (my_device_data->extensions.vk_nv_shading_rate_image) {
+                // Get the needed shading rate image limits
+                auto shading_rate_image_props = lvl_init_struct<VkPhysicalDeviceShadingRateImagePropertiesNV>();
+                auto prop2 = lvl_init_struct<VkPhysicalDeviceProperties2KHR>(&shading_rate_image_props);
+                my_instance_data->dispatch_table.GetPhysicalDeviceProperties2KHR(physicalDevice, &prop2);
+                my_device_data->phys_dev_ext_props.shading_rate_image_props = shading_rate_image_props;
+            }
+
+            if (my_device_data->extensions.vk_nv_mesh_shader) {
+                // Get the needed mesh shader limits
+                auto mesh_shader_props = lvl_init_struct<VkPhysicalDeviceMeshShaderPropertiesNV>();
+                auto prop2 = lvl_init_struct<VkPhysicalDeviceProperties2KHR>(&mesh_shader_props);
+                my_instance_data->dispatch_table.GetPhysicalDeviceProperties2KHR(physicalDevice, &prop2);
+                my_device_data->phys_dev_ext_props.mesh_shader_props = mesh_shader_props;
+            }
 
             // Save app-enabled features in this device's layer_data structure
             // The enabled features can come from either pEnabledFeatures, or from the pNext chain
@@ -1017,14 +1033,25 @@ bool pv_vkCreateImage(VkDevice device, const VkImageCreateInfo *pCreateInfo, con
             }
         }
 
-        // mipLevels must be less than or equal to floor(log2(max(extent.width,extent.height,extent.depth)))+1
+        // mipLevels must be less than or equal to the number of levels in the complete mipmap chain
         uint32_t maxDim = std::max(std::max(pCreateInfo->extent.width, pCreateInfo->extent.height), pCreateInfo->extent.depth);
-        if (maxDim > 0 && pCreateInfo->mipLevels > (floor(log2(maxDim)) + 1)) {
+        // Max mip levels is different for corner-sampled images vs normal images.
+        uint32_t maxMipLevels = (pCreateInfo->flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV)
+                                ? (uint32_t)(ceil(log2(maxDim)))
+                                : (uint32_t)(floor(log2(maxDim)) + 1);
+        if (maxDim > 0 && pCreateInfo->mipLevels > maxMipLevels) {
             skip |=
                 log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
                         "VUID-VkImageCreateInfo-mipLevels-00958",
                         "vkCreateImage(): pCreateInfo->mipLevels must be less than or equal to "
                         "floor(log2(max(pCreateInfo->extent.width, pCreateInfo->extent.height, pCreateInfo->extent.depth)))+1.");
+        }
+
+        if ((pCreateInfo->flags & VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT) && (pCreateInfo->imageType != VK_IMAGE_TYPE_3D)) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT, VK_NULL_HANDLE,
+                            "VUID-VkImageCreateInfo-flags-00950",
+                            "vkCreateImage(): pCreateInfo->flags contains VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT but "
+                            "pCreateInfo->imageType is not VK_IMAGE_TYPE_3D.");
         }
 
         if ((pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) && (!device_data->physical_device_features.sparseBinding)) {
@@ -1108,7 +1135,65 @@ bool pv_vkCreateImage(VkDevice device, const VkImageCreateInfo *pCreateInfo, con
                 }
             }
         }
+
+        if (pCreateInfo->usage & VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV) {
+            if (pCreateInfo->imageType != VK_IMAGE_TYPE_2D) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-imageType-02082",
+                                "vkCreateImage: if usage includes VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV, "
+                                "imageType must be VK_IMAGE_TYPE_2D.");
+            }
+            if (pCreateInfo->samples != VK_SAMPLE_COUNT_1_BIT) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-samples-02083",
+                                "vkCreateImage: if usage includes VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV, "
+                                "samples must be VK_SAMPLE_COUNT_1_BIT.");
+            }
+            if (pCreateInfo->tiling != VK_IMAGE_TILING_OPTIMAL) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-tiling-02084",
+                                "vkCreateImage: if usage includes VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV, "
+                                "tiling must be VK_IMAGE_TILING_OPTIMAL.");
+            }
+        }
+
+        if (pCreateInfo->flags & VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV) {
+            if (pCreateInfo->imageType != VK_IMAGE_TYPE_2D &&
+                pCreateInfo->imageType != VK_IMAGE_TYPE_3D) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-flags-02050",
+                                "vkCreateImage: If flags contains VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV, "
+                                "imageType must be VK_IMAGE_TYPE_2D or VK_IMAGE_TYPE_3D.");
+            }
+
+            if ((pCreateInfo->flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT) ||
+                FormatIsDepthOrStencil(pCreateInfo->format)) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-flags-02051",
+                                "vkCreateImage: If flags contains VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV, "
+                                "it must not also contain VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT and format must "
+                                "not be a depth/stencil format.");
+            }
+
+            if (pCreateInfo->imageType == VK_IMAGE_TYPE_2D &&
+                (pCreateInfo->extent.width == 1 || pCreateInfo->extent.height == 1)) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-flags-02052",
+                                "vkCreateImage: If flags contains VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV and "
+                                "imageType is VK_IMAGE_TYPE_2D, extent.width and extent.height must be "
+                                "greater than 1.");
+            } else if (pCreateInfo->imageType == VK_IMAGE_TYPE_3D &&
+                (pCreateInfo->extent.width == 1 || pCreateInfo->extent.height == 1 || pCreateInfo->extent.depth == 1)) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                                "VUID-VkImageCreateInfo-flags-02053",
+                                "vkCreateImage: If flags contains VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV and "
+                                "imageType is VK_IMAGE_TYPE_3D, extent.width, extent.height, and extent.depth "
+                                "must be greater than 1.");
+
+            }
+        }
     }
+
     return skip;
 }
 
@@ -1297,6 +1382,112 @@ bool pv_VkViewport(const layer_data *device_data, const VkViewport &viewport, co
     return skip;
 }
 
+struct SampleOrderInfo
+{
+    VkShadingRatePaletteEntryNV shadingRate;
+    uint32_t width;
+    uint32_t height;
+};
+
+// All palette entries with more than one pixel per fragment
+static SampleOrderInfo sampleOrderInfos[] = 
+{
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_1X2_PIXELS_NV, 1, 2},
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_2X1_PIXELS_NV, 2, 1},
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_2X2_PIXELS_NV, 2, 2},
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_4X2_PIXELS_NV, 4, 2},
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_2X4_PIXELS_NV, 2, 4},
+    { VK_SHADING_RATE_PALETTE_ENTRY_1_INVOCATION_PER_4X4_PIXELS_NV, 4, 4},
+};
+
+bool ValidateCoarseSampleOrderCustomNV(layer_data *device_data, const VkCoarseSampleOrderCustomNV *order)
+{
+    bool skip = false;
+    debug_report_data *report_data = device_data->report_data;
+
+    SampleOrderInfo *sampleOrderInfo;
+    uint32_t infoIdx = 0;
+    for (sampleOrderInfo = nullptr; infoIdx < ARRAY_SIZE(sampleOrderInfos); ++infoIdx) {
+        if (sampleOrderInfos[infoIdx].shadingRate == order->shadingRate) {
+            sampleOrderInfo = &sampleOrderInfos[infoIdx];
+            break;
+        }
+    }
+
+    if (sampleOrderInfo == nullptr) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                        "VUID-VkCoarseSampleOrderCustomNV-shadingRate-02073",
+                        "VkCoarseSampleOrderCustomNV shadingRate must be a shading rate "
+                        "that generates fragments with more than one pixel.");
+        return skip;
+    }
+
+    if (order->sampleCount == 0 ||
+        (order->sampleCount & (order->sampleCount - 1)) ||
+        !(order->sampleCount & device_data->device_limits.framebufferNoAttachmentsSampleCounts)) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                        "VUID-VkCoarseSampleOrderCustomNV-sampleCount-02074",
+                        "VkCoarseSampleOrderCustomNV sampleCount (=%" PRIu32 ") must "
+                        "correspond to a sample count enumerated in VkSampleCountFlags whose corresponding bit "
+                        "is set in framebufferNoAttachmentsSampleCounts.",
+                        order->sampleCount);
+    }
+
+    if (order->sampleLocationCount != order->sampleCount * sampleOrderInfo->width * sampleOrderInfo->height) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                        "VUID-VkCoarseSampleOrderCustomNV-sampleLocationCount-02075",
+                        "VkCoarseSampleOrderCustomNV sampleLocationCount (=%" PRIu32 ") must "
+                        "be equal to the product of sampleCount (=%" PRIu32 "), the fragment width for shadingRate "
+                        "(=%" PRIu32 "), and the fragment height for shadingRate (=%" PRIu32 ").",
+                        order->sampleLocationCount, order->sampleCount, sampleOrderInfo->width, sampleOrderInfo->height);
+    }
+
+    if (order->sampleLocationCount > device_data->phys_dev_ext_props.shading_rate_image_props.shadingRateMaxCoarseSamples) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                        "VUID-VkCoarseSampleOrderCustomNV-sampleLocationCount-02076",
+                        "VkCoarseSampleOrderCustomNV sampleLocationCount (=%" PRIu32 ") must "
+                        "be less than or equal to VkPhysicalDeviceShadingRateImagePropertiesNV shadingRateMaxCoarseSamples (=%" PRIu32 ").",
+                        order->sampleLocationCount, device_data->phys_dev_ext_props.shading_rate_image_props.shadingRateMaxCoarseSamples);
+    }
+
+    // Accumulate a bitmask tracking which (x,y,sample) tuples are seen. Expect
+    // the first width*height*sampleCount bits to all be set. Note: There is no
+    // guarantee that 64 bits is enough, but practically it's unlikely for an
+    // implementation to support more than 32 bits for samplemask.
+    assert(device_data->phys_dev_ext_props.shading_rate_image_props.shadingRateMaxCoarseSamples <= 64);
+    uint64_t sampleLocationsMask = 0;
+    for (uint32_t i = 0; i < order->sampleLocationCount; ++i) {
+        const VkCoarseSampleLocationNV *sampleLoc = &order->pSampleLocations[i];
+        if (sampleLoc->pixelX >= sampleOrderInfo->width) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                            "VUID-VkCoarseSampleLocationNV-pixelX-02078",
+                            "pixelX must be less than the width (in pixels) of the fragment.");
+        }
+        if (sampleLoc->pixelY >= sampleOrderInfo->height) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                            "VUID-VkCoarseSampleLocationNV-pixelY-02079",
+                            "pixelY must be less than the height (in pixels) of the fragment.");
+        }
+        if (sampleLoc->sample >= order->sampleCount) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                            "VUID-VkCoarseSampleLocationNV-sample-02080",
+                            "sample must be less than the number of coverage samples in each pixel belonging to the fragment.");
+        }
+        uint32_t idx = sampleLoc->sample + order->sampleCount * (sampleLoc->pixelX + sampleOrderInfo->width * sampleLoc->pixelY);
+        sampleLocationsMask |= 1ULL << idx;
+    }
+
+    uint64_t expectedMask = (order->sampleLocationCount == 64) ? ~0ULL : ((1ULL << order->sampleLocationCount) - 1);
+    if (sampleLocationsMask != expectedMask) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT, 0,
+                        "VUID-VkCoarseSampleOrderCustomNV-pSampleLocations-02077",
+                        "The array pSampleLocations must contain exactly one entry for "
+                        "every combination of valid values for pixelX, pixelY, and sample in the structure VkCoarseSampleOrderCustomNV.");
+    }
+
+    return skip;
+}
+
 bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t createInfoCount,
                                   const VkGraphicsPipelineCreateInfo *pCreateInfos, const VkAllocationCallbacks *pAllocator,
                                   VkPipeline *pPipelines) {
@@ -1312,6 +1503,8 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
             bool has_dynamic_viewport_w_scaling_nv = false;
             bool has_dynamic_discard_rectangle_ext = false;
             bool has_dynamic_sample_locations_ext = false;
+            bool has_dynamic_exclusive_scissor_nv = false;
+            bool has_dynamic_shading_rate_palette_nv = false;
             if (pCreateInfos[i].pDynamicState != nullptr) {
                 const auto &dynamic_state_info = *pCreateInfos[i].pDynamicState;
                 for (uint32_t state_index = 0; state_index < dynamic_state_info.dynamicStateCount; ++state_index) {
@@ -1322,6 +1515,8 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                     if (dynamic_state == VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_NV) has_dynamic_viewport_w_scaling_nv = true;
                     if (dynamic_state == VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT) has_dynamic_discard_rectangle_ext = true;
                     if (dynamic_state == VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT) has_dynamic_sample_locations_ext = true;
+                    if (dynamic_state == VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV) has_dynamic_exclusive_scissor_nv = true;
+                    if (dynamic_state == VK_DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV) has_dynamic_shading_rate_palette_nv = true;
                 }
             }
 
@@ -1517,11 +1712,17 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
 
                     const VkStructureType allowed_structs_VkPipelineViewportStateCreateInfo[] = {
                         VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SWIZZLE_STATE_CREATE_INFO_NV,
-                        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV};
+                        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_W_SCALING_STATE_CREATE_INFO_NV,
+                        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_EXCLUSIVE_SCISSOR_STATE_CREATE_INFO_NV,
+                        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_SHADING_RATE_IMAGE_STATE_CREATE_INFO_NV,
+                        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_COARSE_SAMPLE_ORDER_STATE_CREATE_INFO_NV,
+                    };
                     skip |= validate_struct_pnext(
                         report_data, "vkCreateGraphicsPipelines",
                         ParameterName("pCreateInfos[%i].pViewportState->pNext", ParameterName::IndexVector{i}),
-                        "VkPipelineViewportSwizzleStateCreateInfoNV, VkPipelineViewportWScalingStateCreateInfoNV",
+                        "VkPipelineViewportSwizzleStateCreateInfoNV, VkPipelineViewportWScalingStateCreateInfoNV, "
+                        "VkPipelineViewportExclusiveScissorStateCreateInfoNV, VkPipelineViewportShadingRateImageStateCreateInfoNV, "
+                        "VkPipelineViewportCoarseSampleOrderStateCreateInfoNV",
                         viewport_state.pNext, ARRAY_SIZE(allowed_structs_VkPipelineViewportStateCreateInfo),
                         allowed_structs_VkPipelineViewportStateCreateInfo, 65,
                         "VUID-VkPipelineViewportStateCreateInfo-pNext-pNext");
@@ -1530,6 +1731,10 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                         report_data, "vkCreateGraphicsPipelines",
                         ParameterName("pCreateInfos[%i].pViewportState->flags", ParameterName::IndexVector{i}),
                         viewport_state.flags, "VUID-VkPipelineViewportStateCreateInfo-flags-zerobitmask");
+
+                    auto exclusive_scissor_struct = lvl_find_in_chain<VkPipelineViewportExclusiveScissorStateCreateInfoNV>(pCreateInfos[i].pViewportState->pNext);
+                    auto shading_rate_image_struct = lvl_find_in_chain<VkPipelineViewportShadingRateImageStateCreateInfoNV>(pCreateInfos[i].pViewportState->pNext);
+                    auto coarse_sample_order_struct = lvl_find_in_chain<VkPipelineViewportCoarseSampleOrderStateCreateInfoNV>(pCreateInfos[i].pViewportState->pNext);
 
                     if (!device_data->physical_device_features.multiViewport) {
                         if (viewport_state.viewportCount != 1) {
@@ -1549,6 +1754,29 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                                             ") is not 1.",
                                             i, viewport_state.scissorCount);
                         }
+
+                        if (exclusive_scissor_struct &&
+                            (exclusive_scissor_struct->exclusiveScissorCount != 0 && exclusive_scissor_struct->exclusiveScissorCount != 1)) {
+                            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                            VK_NULL_HANDLE, "VUID-VkPipelineViewportExclusiveScissorStateCreateInfoNV-exclusiveScissorCount-02027",
+                                            "vkCreateGraphicsPipelines: The VkPhysicalDeviceFeatures::multiViewport feature is "
+                                            "disabled, but pCreateInfos[%" PRIu32 "] VkPipelineViewportExclusiveScissorStateCreateInfoNV::exclusiveScissorCount (=%" PRIu32
+                                            ") is not 1.",
+                                            i, exclusive_scissor_struct->exclusiveScissorCount);
+
+                        }
+
+                        if (shading_rate_image_struct &&
+                            (shading_rate_image_struct->viewportCount != 0 && shading_rate_image_struct->viewportCount != 1)) {
+                            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                            VK_NULL_HANDLE, "VUID-VkPipelineViewportShadingRateImageStateCreateInfoNV-viewportCount-02054",
+                                            "vkCreateGraphicsPipelines: The VkPhysicalDeviceFeatures::multiViewport feature is "
+                                            "disabled, but pCreateInfos[%" PRIu32 "] VkPipelineViewportShadingRateImageStateCreateInfoNV::viewportCount (=%" PRIu32
+                                            ") is neither 0 nor 1.",
+                                            i, shading_rate_image_struct->viewportCount);
+
+                        }
+
                     } else {  // multiViewport enabled
                         if (viewport_state.viewportCount == 0) {
                             skip |= log_msg(
@@ -1579,6 +1807,26 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                         }
                     }
 
+                    if (exclusive_scissor_struct &&
+                        exclusive_scissor_struct->exclusiveScissorCount > device_data->device_limits.maxViewports) {
+                        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                        VK_NULL_HANDLE, "VUID-VkPipelineViewportExclusiveScissorStateCreateInfoNV-exclusiveScissorCount-02028",
+                                        "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32
+                                        "] exclusiveScissorCount (=%" PRIu32
+                                        ") is greater than VkPhysicalDeviceLimits::maxViewports (=%" PRIu32 ").",
+                                        i, exclusive_scissor_struct->exclusiveScissorCount, device_data->device_limits.maxViewports);
+                    }
+
+                    if (shading_rate_image_struct &&
+                        shading_rate_image_struct->viewportCount > device_data->device_limits.maxViewports) {
+                        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                        VK_NULL_HANDLE, "VUID-VkPipelineViewportShadingRateImageStateCreateInfoNV-viewportCount-02055",
+                                        "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32
+                                        "] VkPipelineViewportShadingRateImageStateCreateInfoNV viewportCount (=%" PRIu32
+                                        ") is greater than VkPhysicalDeviceLimits::maxViewports (=%" PRIu32 ").",
+                                        i, shading_rate_image_struct->viewportCount, device_data->device_limits.maxViewports);
+                    }
+
                     if (viewport_state.scissorCount != viewport_state.viewportCount) {
                         skip |=
                             log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
@@ -1586,6 +1834,29 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                                     "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32 "].pViewportState->scissorCount (=%" PRIu32
                                     ") is not identical to pCreateInfos[%" PRIu32 "].pViewportState->viewportCount (=%" PRIu32 ").",
                                     i, viewport_state.scissorCount, i, viewport_state.viewportCount);
+                    }
+
+                    if (exclusive_scissor_struct &&
+                        exclusive_scissor_struct->exclusiveScissorCount != 0 &&
+                        exclusive_scissor_struct->exclusiveScissorCount != viewport_state.viewportCount) {
+                        skip |=
+                            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                    VK_NULL_HANDLE, "VUID-VkPipelineViewportExclusiveScissorStateCreateInfoNV-exclusiveScissorCount-02029",
+                                    "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32 "] exclusiveScissorCount (=%" PRIu32
+                                    ") must be zero or identical to pCreateInfos[%" PRIu32 "].pViewportState->viewportCount (=%" PRIu32 ").",
+                                    i, exclusive_scissor_struct->exclusiveScissorCount, i, viewport_state.viewportCount);
+                    }
+
+                    if (shading_rate_image_struct &&
+                        shading_rate_image_struct->shadingRateImageEnable &&
+                        shading_rate_image_struct->viewportCount != viewport_state.viewportCount) {
+                        skip |=
+                            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                    VK_NULL_HANDLE, "VUID-VkPipelineViewportShadingRateImageStateCreateInfoNV-shadingRateImageEnable-02056",
+                                    "vkCreateGraphicsPipelines: If shadingRateImageEnable is enabled, pCreateInfos[%" PRIu32 "] "
+                                    "VkPipelineViewportShadingRateImageStateCreateInfoNV viewportCount (=%" PRIu32
+                                    ") must identical to pCreateInfos[%" PRIu32 "].pViewportState->viewportCount (=%" PRIu32 ").",
+                                    i, shading_rate_image_struct->viewportCount, i, viewport_state.viewportCount);
                     }
 
                     if (!has_dynamic_viewport && viewport_state.viewportCount > 0 && viewport_state.pViewports == nullptr) {
@@ -1605,6 +1876,28 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                             "vkCreateGraphicsPipelines: The scissor state is static (pCreateInfos[%" PRIu32
                             "].pDynamicState->pDynamicStates does not contain VK_DYNAMIC_STATE_SCISSOR), but pCreateInfos[%" PRIu32
                             "].pViewportState->pScissors (=NULL) is an invalid pointer.",
+                            i, i);
+                    }
+
+                    if (!has_dynamic_exclusive_scissor_nv && exclusive_scissor_struct &&
+                        exclusive_scissor_struct->exclusiveScissorCount > 0 && exclusive_scissor_struct->pExclusiveScissors == nullptr) {
+                        skip |= log_msg(
+                            report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, VK_NULL_HANDLE,
+                            "VUID-VkPipelineViewportExclusiveScissorStateCreateInfoNV-pDynamicStates-02030",
+                            "vkCreateGraphicsPipelines: The exclusive scissor state is static (pCreateInfos[%" PRIu32
+                            "].pDynamicState->pDynamicStates does not contain VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV), but pCreateInfos[%" PRIu32
+                            "] pExclusiveScissors (=NULL) is an invalid pointer.",
+                            i, i);
+                    }
+
+                    if (!has_dynamic_shading_rate_palette_nv && shading_rate_image_struct &&
+                        shading_rate_image_struct->viewportCount > 0 && shading_rate_image_struct->pShadingRatePalettes == nullptr) {
+                        skip |= log_msg(
+                            report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT, VK_NULL_HANDLE,
+                            "VUID-VkPipelineViewportShadingRateImageStateCreateInfoNV-pDynamicStates-02057",
+                            "vkCreateGraphicsPipelines: The shading rate palette state is static (pCreateInfos[%" PRIu32
+                            "].pDynamicState->pDynamicStates does not contain VK_DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV), but pCreateInfos[%" PRIu32
+                            "] pShadingRatePalettes (=NULL) is an invalid pointer.",
                             i, i);
                     }
 
@@ -1645,6 +1938,33 @@ bool pv_vkCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache
                                         "].pDynamicState->pDynamicStates contains VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT, but "
                                         "VK_EXT_sample_locations extension is not enabled.",
                                         i);
+                    }
+
+                    if (has_dynamic_exclusive_scissor_nv && !device_data->extensions.vk_nv_scissor_exclusive) {
+                        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                        VK_NULL_HANDLE, kVUID_PVError_ExtensionNotEnabled,
+                                        "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32
+                                        "].pDynamicState->pDynamicStates contains VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV, but "
+                                        "VK_NV_scissor_exclusive extension is not enabled.",
+                                        i);
+                    }
+
+                    if (coarse_sample_order_struct &&
+                        coarse_sample_order_struct->sampleOrderType != VK_COARSE_SAMPLE_ORDER_TYPE_CUSTOM_NV &&
+                        coarse_sample_order_struct->customSampleOrderCount != 0) {
+                        skip |=
+                            log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT,
+                                    VK_NULL_HANDLE, "VUID-VkPipelineViewportCoarseSampleOrderStateCreateInfoNV-sampleOrderType-02072",
+                                    "vkCreateGraphicsPipelines: pCreateInfos[%" PRIu32 "] "
+                                    "VkPipelineViewportCoarseSampleOrderStateCreateInfoNV sampleOrderType is not "
+                                    "VK_COARSE_SAMPLE_ORDER_TYPE_CUSTOM_NV and customSampleOrderCount is not 0.",
+                                    i);
+                    }
+
+                    if (coarse_sample_order_struct) {
+                        for (uint32_t order_i = 0; order_i < coarse_sample_order_struct->customSampleOrderCount; ++order_i) {
+                            skip |= ValidateCoarseSampleOrderCustomNV(device_data, &coarse_sample_order_struct->pCustomSampleOrders[order_i]);
+                        }
                     }
                 }
 
@@ -2941,6 +3261,14 @@ bool pv_vkCreateDescriptorPool(VkDevice device, const VkDescriptorPoolCreateInfo
                         VK_NULL_HANDLE, "VUID-VkDescriptorPoolSize-descriptorCount-00302",
                         "vkCreateDescriptorPool(): pCreateInfo->pPoolSizes[%" PRIu32 "].descriptorCount is not greater than 0.", i);
                 }
+                if (pCreateInfo->pPoolSizes[i].type == VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT &&
+                    (pCreateInfo->pPoolSizes[i].descriptorCount % 4) != 0) {
+                    skip |= log_msg(
+                        device_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT,
+                        VK_NULL_HANDLE, "VUID-VkDescriptorPoolSize-type-02218",
+                        "vkCreateDescriptorPool(): pCreateInfo->pPoolSizes[%" PRIu32 "].type is VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT "
+                        " and pCreateInfo->pPoolSizes[%" PRIu32 "].descriptorCount is not a multiple of 4.", i, i);
+                }
             }
         }
     }
@@ -3033,6 +3361,255 @@ bool pv_vkCmdDispatchBaseKHR(VkCommandBuffer commandBuffer, uint32_t baseGroupX,
     return skip;
 }
 
+bool pv_vkCmdSetExclusiveScissorNV(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    firstExclusiveScissor,
+    uint32_t                                    exclusiveScissorCount,
+    const VkRect2D*                             pExclusiveScissors)
+{
+    bool skip = false;
+
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    debug_report_data *report_data = device_data->report_data;
+
+    if (!device_data->physical_device_features.multiViewport) {
+        if (firstExclusiveScissor != 0) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                            HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-firstExclusiveScissor-02035",
+                            "vkCmdSetExclusiveScissorNV: The multiViewport feature is disabled, but firstExclusiveScissor (=%" PRIu32 ") is not 0.",
+                            firstExclusiveScissor);
+        }
+        if (exclusiveScissorCount > 1) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                            HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-exclusiveScissorCount-02036",
+                            "vkCmdSetExclusiveScissorNV: The multiViewport feature is disabled, but exclusiveScissorCount (=%" PRIu32 ") is not 1.",
+                            exclusiveScissorCount);
+        }
+    } else {  // multiViewport enabled
+        const uint64_t sum = static_cast<uint64_t>(firstExclusiveScissor) + static_cast<uint64_t>(exclusiveScissorCount);
+        if (sum > device_data->device_limits.maxViewports) {
+            skip |= log_msg(device_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                            HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-firstExclusiveScissor-02034",
+                            "vkCmdSetExclusiveScissorNV: firstExclusiveScissor + exclusiveScissorCount (=%" PRIu32 " + %" PRIu32 " = %" PRIu64
+                            ") is greater than VkPhysicalDeviceLimits::maxViewports (=%" PRIu32 ").",
+                            firstExclusiveScissor, exclusiveScissorCount, sum, device_data->device_limits.maxViewports);
+        }
+    }
+
+    if (firstExclusiveScissor >= device_data->device_limits.maxViewports) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-firstExclusiveScissor-02033",
+                        "vkCmdSetExclusiveScissorNV: firstExclusiveScissor (=%" PRIu32 ") must be less than maxViewports (=%" PRIu32 ").",
+                        firstExclusiveScissor, device_data->device_limits.maxViewports);
+    }
+
+    if (pExclusiveScissors) {
+        for (uint32_t scissor_i = 0; scissor_i < exclusiveScissorCount; ++scissor_i) {
+            const auto &scissor = pExclusiveScissors[scissor_i];  // will crash on invalid ptr
+
+            if (scissor.offset.x < 0) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                                HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-x-02037",
+                                "vkCmdSetExclusiveScissorNV: pScissors[%" PRIu32 "].offset.x (=%" PRIi32 ") is negative.", scissor_i,
+                                scissor.offset.x);
+            }
+
+            if (scissor.offset.y < 0) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                                HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-x-02037",
+                                "vkCmdSetExclusiveScissorNV: pScissors[%" PRIu32 "].offset.y (=%" PRIi32 ") is negative.", scissor_i,
+                                scissor.offset.y);
+            }
+
+            const int64_t x_sum = static_cast<int64_t>(scissor.offset.x) + static_cast<int64_t>(scissor.extent.width);
+            if (x_sum > INT32_MAX) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                                HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-offset-02038",
+                                "vkCmdSetExclusiveScissorNV: offset.x + extent.width (=%" PRIi32 " + %" PRIu32 " = %" PRIi64
+                                ") of pScissors[%" PRIu32 "] will overflow int32_t.",
+                                scissor.offset.x, scissor.extent.width, x_sum, scissor_i);
+            }
+
+            const int64_t y_sum = static_cast<int64_t>(scissor.offset.y) + static_cast<int64_t>(scissor.extent.height);
+            if (y_sum > INT32_MAX) {
+                skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                                HandleToUint64(commandBuffer), "VUID-vkCmdSetExclusiveScissorNV-offset-02039",
+                                "vkCmdSetExclusiveScissorNV: offset.y + extent.height (=%" PRIi32 " + %" PRIu32 " = %" PRIi64
+                                ") of pScissors[%" PRIu32 "] will overflow int32_t.",
+                                scissor.offset.y, scissor.extent.height, y_sum, scissor_i);
+            }
+        }
+    }
+
+    return skip;
+}
+
+bool pv_vkCmdSetViewportShadingRatePaletteNV(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    firstViewport,
+    uint32_t                                    viewportCount,
+    const VkShadingRatePaletteNV*               pShadingRatePalettes)
+{
+    bool skip = false;
+
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    debug_report_data *report_data = device_data->report_data;
+
+    if (!device_data->physical_device_features.multiViewport) {
+        if (firstViewport != 0) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                            HandleToUint64(commandBuffer), "VUID-vkCmdSetViewportShadingRatePaletteNV-firstViewport-02068",
+                            "vkCmdSetViewportShadingRatePaletteNV: The multiViewport feature is disabled, but firstViewport (=%" PRIu32 ") is not 0.",
+                            firstViewport);
+        }
+        if (viewportCount > 1) {
+            skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                            HandleToUint64(commandBuffer), "VUID-vkCmdSetViewportShadingRatePaletteNV-viewportCount-02069",
+                            "vkCmdSetViewportShadingRatePaletteNV: The multiViewport feature is disabled, but viewportCount (=%" PRIu32 ") is not 1.",
+                            viewportCount);
+        }
+    }
+
+    if (firstViewport >= device_data->device_limits.maxViewports) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdSetViewportShadingRatePaletteNV-firstViewport-02066",
+                        "vkCmdSetViewportShadingRatePaletteNV: firstViewport (=%" PRIu32 ") must be less than maxViewports (=%" PRIu32 ").",
+                        firstViewport, device_data->device_limits.maxViewports);
+    }
+
+    const uint64_t sum = static_cast<uint64_t>(firstViewport) + static_cast<uint64_t>(viewportCount);
+    if (sum > device_data->device_limits.maxViewports) {
+        skip |= log_msg(device_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdSetViewportShadingRatePaletteNV-firstViewport-02067",
+                        "vkCmdSetViewportShadingRatePaletteNV: firstViewport + viewportCount (=%" PRIu32 " + %" PRIu32 " = %" PRIu64
+                        ") is greater than VkPhysicalDeviceLimits::maxViewports (=%" PRIu32 ").",
+                        firstViewport, viewportCount, sum, device_data->device_limits.maxViewports);
+    }
+
+    return skip;
+}
+
+
+bool pv_vkCmdSetCoarseSampleOrderNV(
+    VkCommandBuffer                             commandBuffer,
+    VkCoarseSampleOrderTypeNV                   sampleOrderType,
+    uint32_t                                    customSampleOrderCount,
+    const VkCoarseSampleOrderCustomNV*          pCustomSampleOrders)
+{
+    bool skip = false;
+
+    layer_data *device_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    debug_report_data *report_data = device_data->report_data;
+
+    if (sampleOrderType != VK_COARSE_SAMPLE_ORDER_TYPE_CUSTOM_NV &&
+        customSampleOrderCount != 0) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdSetCoarseSampleOrderNV-sampleOrderType-02081",
+                        "vkCmdSetCoarseSampleOrderNV: If sampleOrderType is not VK_COARSE_SAMPLE_ORDER_TYPE_CUSTOM_NV, "
+                        "customSampleOrderCount must be 0.");
+    }
+
+    for (uint32_t order_i = 0; order_i < customSampleOrderCount; ++order_i) {
+        skip |= ValidateCoarseSampleOrderCustomNV(device_data, &pCustomSampleOrders[order_i]);
+    }
+
+    return skip;
+}
+
+
+bool pv_vkCmdDrawMeshTasksNV(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    taskCount,
+    uint32_t                                    firstTask)
+{
+    bool skip = false;
+
+    layer_data *dev_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+
+    if (taskCount > dev_data->phys_dev_ext_props.mesh_shader_props.maxDrawMeshTasksCount) {
+        skip |= log_msg(dev_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksNV-taskCount-02119",
+                        "vkCmdDrawMeshTasksNV() parameter, uint32_t taskCount (0x%" PRIxLEAST32
+                        "), must be less than or equal to VkPhysicalDeviceMeshShaderPropertiesNV::maxDrawMeshTasksCount (0x%" PRIxLEAST32").",
+                        taskCount, dev_data->phys_dev_ext_props.mesh_shader_props.maxDrawMeshTasksCount);
+    }
+
+    return skip;
+}
+
+
+bool pv_vkCmdDrawMeshTasksIndirectNV(
+    VkCommandBuffer                             commandBuffer,
+    VkBuffer                                    buffer,
+    VkDeviceSize                                offset,
+    uint32_t                                    drawCount,
+    uint32_t                                    stride)
+{
+    bool skip = false;
+
+    layer_data *dev_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+    debug_report_data *report_data = dev_data->report_data;
+
+    if (offset & 3) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksIndirectNV-offset-02145",
+                        "vkCmdDrawMeshTasksIndirectNV() parameter, VkDeviceSize offset (0x%" PRIxLEAST64
+                        "), is not a multiple of 4.",
+                        offset);
+    }
+
+    if (drawCount > 1 && ((stride & 3) || stride < sizeof(VkDrawMeshTasksIndirectCommandNV))) {
+        skip |= log_msg(report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksIndirectNV-drawCount-02146",
+                        "vkCmdDrawMeshTasksIndirectNV() parameter, uint32_t stride (0x%" PRIxLEAST32
+                        "), is not a multiple of 4 or smaller than sizeof (VkDrawMeshTasksIndirectCommandNV).",
+                        stride);
+    }
+
+    return skip;
+}
+
+bool pv_vkCmdDrawMeshTasksIndirectCountNV(
+    VkCommandBuffer                             commandBuffer,
+    VkBuffer                                    buffer,
+    VkDeviceSize                                offset,
+    VkBuffer                                    countBuffer,
+    VkDeviceSize                                countBufferOffset,
+    uint32_t                                    maxDrawCount,
+    uint32_t                                    stride)
+{
+    bool skip = false;
+
+    layer_data *dev_data = GetLayerDataPtr(get_dispatch_key(commandBuffer), layer_data_map);
+
+    if (offset & 3) {
+        skip |= log_msg(dev_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksIndirectCountNV-offset-02180",
+                        "vkCmdDrawMeshTasksIndirectCountNV() parameter, VkDeviceSize offset (0x%" PRIxLEAST64
+                        "), is not a multiple of 4.",
+                        offset);
+    }
+
+    if (countBufferOffset & 3) {
+        skip |= log_msg(dev_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksIndirectCountNV-countBufferOffset-02181",
+                        "vkCmdDrawMeshTasksIndirectCountNV() parameter, VkDeviceSize countBufferOffset (0x%" PRIxLEAST64
+                        "), is not a multiple of 4.",
+                        countBufferOffset);
+    }
+
+    if ((stride & 3) || stride < sizeof(VkDrawMeshTasksIndirectCommandNV)) {
+        skip |= log_msg(dev_data->report_data, VK_DEBUG_REPORT_ERROR_BIT_EXT, VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT,
+                        HandleToUint64(commandBuffer), "VUID-vkCmdDrawMeshTasksIndirectCountNV-stride-02182",
+                        "vkCmdDrawMeshTasksIndirectCountNV() parameter, uint32_t stride (0x%" PRIxLEAST32
+                        "), is not a multiple of 4 or smaller than sizeof (VkDrawMeshTasksIndirectCommandNV).",
+                        stride);
+    }
+
+    return skip;
+}
+
+
 VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDevice device, const char *funcName) {
     layer_data *device_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!ApiParentExtensionEnabled(funcName, device_data->extensions.device_extension_set)) {
@@ -3099,6 +3676,12 @@ void InitializeManualParameterValidationFunctionPointers() {
     custom_functions["vkCreateDescriptorPool"] = (void *)pv_vkCreateDescriptorPool;
     custom_functions["vkCmdDispatch"] = (void *)pv_vkCmdDispatch;
     custom_functions["vkCmdDispatchBaseKHR"] = (void *)pv_vkCmdDispatchBaseKHR;
+    custom_functions["vkCmdSetExclusiveScissorNV"] = (void *)pv_vkCmdSetExclusiveScissorNV;
+    custom_functions["vkCmdSetViewportShadingRatePaletteNV"] = (void *)pv_vkCmdSetViewportShadingRatePaletteNV;
+    custom_functions["vkCmdSetCoarseSampleOrderNV"] = (void *)pv_vkCmdSetCoarseSampleOrderNV;
+    custom_functions["vkCmdDrawMeshTasksNV"] = (void *)pv_vkCmdDrawMeshTasksNV;
+    custom_functions["vkCmdDrawMeshTasksIndirectNV"] = (void *)pv_vkCmdDrawMeshTasksIndirectNV;
+    custom_functions["vkCmdDrawMeshTasksIndirectCountNV"] = (void *)pv_vkCmdDrawMeshTasksIndirectCountNV;
 }
 
 }  // namespace parameter_validation

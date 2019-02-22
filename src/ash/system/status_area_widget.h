@@ -121,6 +121,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
  private:
   friend class StatusAreaWidgetTestApi;
 
+  // views::Widget:
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;

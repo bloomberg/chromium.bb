@@ -39,6 +39,7 @@ from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.host import Host
 from blinkpy.common.host_mock import MockHost
+from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.system.path import abspath_to_uri
 from blinkpy.common.system.system_host import SystemHost
 
@@ -409,12 +410,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_gtest_repeat(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
         tests_run = get_tests_run(['--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
 
-    def test_gtest_repeat_overrides_repeat_each(self):
+    def test_gtest_repeat_overrides_iterations(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--repeat-each', '4', '--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
-        self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
+        tests_run = get_tests_run(['--iterations', '4', '--gtest_repeat', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
 
     def test_ignore_flag(self):
         # Note that passes/image.html is expected to be run since we specified it directly.
@@ -442,15 +443,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Now check that we don't run anything.
         self.assertEqual(get_tests_run(['--skipped=always', 'passes/skipped/skip.html']), [])
 
-    def test_gtest_also_run_disabled_tests(self):
+    def test_isolated_script_test_also_run_disabled_tests(self):
         self.assertEqual(
-            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
+            sorted(get_tests_run(['--isolated-script-test-also-run-disabled-tests', 'passes'])),
             sorted(get_tests_run(['--skipped=ignore', 'passes']))
         )
 
-    def test_gtest_also_run_disabled_tests_overrides_skipped(self):
+    def test_gtest_also_run_disabled_tests(self):
         self.assertEqual(
-            sorted(get_tests_run(['--gtest_also_run_disabled_tests', '--skipped=always', 'passes'])),
+            sorted(get_tests_run(['--gtest_also_run_disabled_tests', 'passes'])),
             sorted(get_tests_run(['--skipped=ignore', 'passes']))
         )
 
@@ -487,7 +488,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(tests_run, ['passes/text.html'])
 
     def test_single_file_with_prefix(self):
-        tests_run = get_tests_run(['LayoutTests/passes/text.html'])
+        tests_run = get_tests_run([WEB_TESTS_LAST_COMPONENT + '/passes/text.html'])
         self.assertEqual(['passes/text.html'], tests_run)
 
     def test_stderr_is_saved(self):
@@ -517,9 +518,17 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_test_list_with_prefix(self):
         host = MockHost()
         filename = '/tmp/foo.txt'
-        host.filesystem.write_text_file(filename, 'LayoutTests/passes/text.html')
+        host.filesystem.write_text_file(filename, WEB_TESTS_LAST_COMPONENT + '/passes/text.html')
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
+
+    def test_isolated_script_test_filter(self):
+        host = MockHost()
+        tests_run = get_tests_run(
+            ['--isolated-script-test-filter=passes/text.html::passes/image.html', 'passes/error.html'],
+            host=host
+        )
+        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
 
     def test_gtest_filter(self):
         host = MockHost()
@@ -620,9 +629,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         _, err, __ = logging_run(['--smoke'], host=host, tests_included=True)
         self.assertIn('Retrying', err.getvalue())
 
-        # Do not retry if additional tests are given.
+        # Retry if additional tests are given.
         _, err, __ = logging_run(['--smoke', 'passes/image.html'], host=host, tests_included=True)
-        self.assertNotIn('Retrying', err.getvalue())
+        self.assertIn('Retrying', err.getvalue())
 
     def test_missing_and_unexpected_results(self):
         # Test that we update expectations in place. If the expectation
@@ -802,7 +811,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, err, _ = logging_run(['--test-list=%s' % filename, '--order', 'natural'],
                                       tests_included=True, host=host)
         self.assertEqual(details.exit_code, 2)
-        self.assertNotIn('Retrying', err.getvalue())
+        self.assertIn('Retrying', err.getvalue())
 
         host = MockHost()
         filename = '/tmp/foo.txt'

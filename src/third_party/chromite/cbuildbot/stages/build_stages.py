@@ -411,20 +411,26 @@ class InitSDKStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+    chroot_exists = os.path.isdir(self._build_root)
     replace = self._run.config.chroot_replace or self.force_chroot_replace
-    pre_ver = post_ver = None
-    if os.path.isdir(self._build_root) and not replace:
-      try:
-        pre_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
-        if pre_ver is not None:
-          commands.RunChrootUpgradeHooks(
-              self._build_root, chrome_root=self._run.options.chrome_root,
-              extra_env=self._portage_extra_env)
-      except failures_lib.BuildScriptFailure:
+    pre_ver = None
+
+    if chroot_exists and not replace:
+      # Make sure the chroot has a valid version before we update it.
+      pre_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
+      if pre_ver is None:
         logging.PrintBuildbotStepText('Replacing broken chroot')
         logging.PrintBuildbotStepWarnings()
+        replace = True
 
-    if not os.path.isdir(chroot_path) or replace:
+    if chroot_exists and not replace:
+      # The chroot exists, we are not replacing it, and it is valid.
+      # Update the chroot.
+      usepkg_toolchain = (self._run.config.usepkg_toolchain and
+                          not self._latest_toolchain)
+      commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
+                            extra_env=self._portage_extra_env)
+    else:
       use_sdk = (self._run.config.use_sdk and not self._run.options.nosdk)
       pre_ver = None
       commands.MakeChroot(
@@ -435,7 +441,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           extra_env=self._portage_extra_env,
           use_image=self._run.config.chroot_use_image)
 
-    post_ver = cros_sdk_lib.GetChrootVersion(chroot=chroot_path)
+    post_ver = cros_sdk_lib.GetChrootVersion(chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
       logging.PrintBuildbotStepText('%s->%s' % (pre_ver, post_ver))
     else:
@@ -466,7 +472,6 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
-        chrome_binhost_only=self._run.config.chrome_binhost_only,
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env, chroot_upgrade=False,
         profile=self._run.options.profile or self._run.config.profile)
@@ -599,7 +604,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    self._current_board,
                    build_autotest=self._run.ShouldBuildAutotest(),
                    usepkg=self._run.config.usepkg_build_packages,
-                   chrome_binhost_only=self._run.config.chrome_binhost_only,
                    packages=packages,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
@@ -817,11 +821,9 @@ class UprevStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     # Perform other uprevs.
-    overlays = portage_util.FindOverlays(
-        self._run.config.overlays, buildroot=self._build_root)
     commands.UprevPackages(self._build_root,
                            self._boards,
-                           overlays)
+                           overlay_type=self._run.config.overlays)
 
 
 class RegenPortageCacheStage(generic_stages.BuilderStage):

@@ -7,7 +7,7 @@
 [
     Constructor(Request request, Response response),
     Exposed=ServiceWorker,
-    RuntimeEnabled=BackgroundFetch
+    OriginTrialEnabled=BackgroundFetch
 ] interface BackgroundFetchSettledFetch : BackgroundFetchFetch {
     readonly attribute Response? response;
 };

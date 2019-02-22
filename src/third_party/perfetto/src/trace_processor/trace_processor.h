@@ -21,6 +21,7 @@
 #include <functional>
 #include <memory>
 
+#include "src/trace_processor/basic_types.h"
 #include "src/trace_processor/scoped_db.h"
 #include "src/trace_processor/trace_processor_context.h"
 
@@ -37,7 +38,11 @@ namespace trace_processor {
 // execution of SQL queries on the events in these traces.
 class TraceProcessor {
  public:
-  TraceProcessor();
+  struct Config {
+    OptimizationMode optimization_mode = OptimizationMode::kMaxBandwidth;
+    uint64_t window_size_ns = 60 * 1000 * 1000 * 1000ULL;  // 60 seconds.
+  };
+  explicit TraceProcessor(const Config&);
   ~TraceProcessor();
 
   // The entry point to push trace data into the processor. The trace format
@@ -47,6 +52,12 @@ class TraceProcessor {
   // unrecoverable error happened. If this happens, the TraceProcessor will
   // ignore the following Parse() requests and drop data on the floor.
   bool Parse(std::unique_ptr<uint8_t[]>, size_t);
+
+  // When parsing a bounded file (as opposite to streaming from a device) this
+  // function should be called when the last chunk of the file has been passed
+  // into Parse(). This allows to flush the events queued in the ordering stage,
+  // without having to wait for their time window to expire.
+  void NotifyEndOfFile();
 
   // Executes a SQLite query on the loaded portion of the trace. |result| will
   // be invoked once after the result of the query is available.

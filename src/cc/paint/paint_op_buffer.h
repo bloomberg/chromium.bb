@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <limits>
 #include <string>
 #include <type_traits>
 
@@ -930,8 +931,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void push(Args&&... args) {
     static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
     static_assert(alignof(T) <= PaintOpAlign, "");
-
-    size_t skip = ComputeOpSkip(sizeof(T));
+    static_assert(sizeof(T) < std::numeric_limits<uint16_t>::max(),
+                  "Cannot fit op code in skip");
+    uint16_t skip = static_cast<uint16_t>(ComputeOpSkip(sizeof(T)));
     T* op = reinterpret_cast<T*>(AllocatePaintOp(skip));
 
     new (op) T{std::forward<Args>(args)...};

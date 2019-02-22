@@ -586,6 +586,12 @@ void SpdyStream::OnFrameWriteComplete(spdy::SpdyFrameType frame_type,
     return;
   }
 
+  // Frame types reserved in
+  // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00 ought to be
+  // ignored.
+  if (static_cast<uint8_t>(frame_type) % 0x1f == 0x0b)
+    return;
+
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK(frame_type == spdy::SpdyFrameType::HEADERS ||
         frame_type == spdy::SpdyFrameType::DATA)
@@ -746,12 +752,6 @@ void SpdyStream::SendData(IOBuffer* data,
 
 bool SpdyStream::GetSSLInfo(SSLInfo* ssl_info) const {
   return session_->GetSSLInfo(ssl_info);
-}
-
-Error SpdyStream::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                           TokenBindingType tb_type,
-                                           std::vector<uint8_t>* out) const {
-  return session_->GetTokenBindingSignature(key, tb_type, out);
 }
 
 bool SpdyStream::WasAlpnNegotiated() const {

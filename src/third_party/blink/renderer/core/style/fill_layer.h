@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/length_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -37,7 +38,7 @@
 namespace blink {
 
 struct FillSize {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
   FillSize() : type(EFillSizeType::kSizeLength) {}
 
   FillSize(EFillSizeType t, const LengthSize& l) : type(t), size(l) {}

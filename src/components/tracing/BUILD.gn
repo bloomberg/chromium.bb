@@ -17,6 +17,8 @@ component("tracing") {
     "common/graphics_memory_dump_provider_android.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
+    "common/tracing_sampler_profiler.cc",
+    "common/tracing_sampler_profiler.h",
     "tracing_export.h",
   ]
 
@@ -68,9 +70,11 @@ source_set("unit_tests") {
   sources = [
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
+    "common/tracing_sampler_profiler_unittest.cc",
   ]
 
   deps = [
+    ":startup_tracing",
     ":tracing",
     "//base/test:test_support",
     "//ipc",

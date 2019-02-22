@@ -24,6 +24,7 @@ const displayInfocard = (() => {
     [_FLAGS.CLONE, 'clone'],
     [_FLAGS.HOT, 'hot'],
     [_FLAGS.COVERAGE, 'covered'],
+    [_FLAGS.UNCOMPRESSED, 'uncompressed'],
   ]);
 
   class Infocard {

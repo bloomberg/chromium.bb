@@ -22,7 +22,7 @@ FingerprintStorage::FingerprintStorage(PrefService* pref_service)
 
 FingerprintStorage::~FingerprintStorage() {}
 
-bool FingerprintStorage::IsFingerprintAuthenticationAvailable() const {
+bool FingerprintStorage::IsFingerprintAvailable() const {
   return !ExceededUnlockAttempts() && IsFingerprintEnabled() && HasRecord();
 }
 

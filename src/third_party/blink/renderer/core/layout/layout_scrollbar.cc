@@ -90,9 +90,10 @@ int LayoutScrollbar::HypotheticalScrollbarThickness(
     ScrollbarOrientation orientation,
     const LayoutBox& enclosing_box,
     const LayoutObject& style_source) {
-  scoped_refptr<ComputedStyle> part_style = style_source.GetUncachedPseudoStyle(
-      PseudoStyleRequest(kPseudoIdScrollbar, nullptr, kScrollbarBGPart),
-      style_source.Style());
+  scoped_refptr<const ComputedStyle> part_style =
+      style_source.GetUncachedPseudoStyle(
+          PseudoStyleRequest(kPseudoIdScrollbar, nullptr, kScrollbarBGPart),
+          style_source.Style());
   if (orientation == kHorizontalScrollbar) {
     return LayoutScrollbarPart::ComputeScrollbarHeight(
         enclosing_box.ClientHeight().ToInt(), part_style.get());

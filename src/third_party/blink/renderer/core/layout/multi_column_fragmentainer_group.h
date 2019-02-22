@@ -31,7 +31,7 @@ namespace blink {
 // need more columns than what a group has room for, we'll create another group
 // and put them there (and make them appear in the next outer fragmentainer).
 class CORE_EXPORT MultiColumnFragmentainerGroup {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   MultiColumnFragmentainerGroup(const LayoutMultiColumnSet&);

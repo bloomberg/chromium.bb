@@ -203,7 +203,7 @@ angle::Result Framebuffer9::readPixelsImpl(const gl::Context *context,
     packParams.area.height = rect.bottom - rect.top;
     packParams.destFormat  = &GetFormatFromFormatType(format, type);
     packParams.outputPitch = static_cast<GLuint>(outputPitch);
-    packParams.pack        = pack;
+    packParams.reverseRowOrder = pack.reverseRowOrder;
 
     PackPixels(packParams, d3dFormatInfo.info(), inputPitch, source, pixels);
 
@@ -398,11 +398,11 @@ gl::Error Framebuffer9::getSamplePosition(const gl::Context *context,
     return gl::InternalError() << "getSamplePosition is unsupported to d3d9.";
 }
 
-gl::Error Framebuffer9::syncState(const gl::Context *context,
-                                  const gl::Framebuffer::DirtyBits &dirtyBits)
+angle::Result Framebuffer9::syncState(const gl::Context *context,
+                                      const gl::Framebuffer::DirtyBits &dirtyBits)
 {
     ANGLE_TRY(FramebufferD3D::syncState(context, dirtyBits));
     ANGLE_TRY(mRenderTargetCache.update(context, mState, dirtyBits));
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 }  // namespace rx

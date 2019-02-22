@@ -3086,13 +3086,13 @@ void Context::applyTextures(sw::SamplerType samplerType)
 			TextureType textureType = programObject->getSamplerTextureType(samplerType, samplerIndex);
 
 			Texture *texture = getSamplerTexture(textureUnit, textureType);
+			Sampler *samplerObject = mState.sampler[textureUnit];
 
-			if(texture->isSamplerComplete())
+			if(texture->isSamplerComplete(samplerObject))
 			{
 				GLenum wrapS, wrapT, wrapR, minFilter, magFilter, compFunc, compMode;
 				GLfloat minLOD, maxLOD, maxAnisotropy;
 
-				Sampler *samplerObject = mState.sampler[textureUnit];
 				if(samplerObject)
 				{
 					wrapS = samplerObject->getWrapS();
@@ -3298,9 +3298,9 @@ void Context::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum
 		return error(GL_INVALID_OPERATION);
 	}
 
-	if(!IsValidReadPixelsFormatType(framebuffer, format, type))
+	if(!ValidateReadPixelsFormatType(framebuffer, format, type))
 	{
-		return error(GL_INVALID_OPERATION);
+		return;
 	}
 
 	GLsizei outputWidth = (mState.packParameters.rowLength > 0) ? mState.packParameters.rowLength : width;
@@ -3322,8 +3322,12 @@ void Context::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum
 	egl::Image *renderTarget = nullptr;
 	switch(format)
 	{
-	case GL_DEPTH_COMPONENT:   // GL_NV_read_depth
+	case GL_DEPTH_COMPONENT:     // GL_NV_read_depth
+	case GL_DEPTH_STENCIL_OES:   // GL_NV_read_depth_stencil
 		renderTarget = framebuffer->getDepthBuffer();
+		break;
+	case GL_STENCIL_INDEX_OES:   // GL_NV_read_stencil
+		renderTarget = framebuffer->getStencilBuffer();
 		break;
 	default:
 		renderTarget = framebuffer->getReadRenderTarget();
@@ -3335,17 +3339,68 @@ void Context::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum
 		return error(GL_INVALID_OPERATION);
 	}
 
-	sw::RectF rect((float)x, (float)y, (float)(x + width), (float)(y + height));
-	sw::Rect dstRect(0, 0, width, height);
-	rect.clip(0.0f, 0.0f, (float)renderTarget->getWidth(), (float)renderTarget->getHeight());
+	sw::SliceRectF srcRect((float)x, (float)y, (float)(x + width), (float)(y + height), 0);
+	sw::SliceRect dstRect(0, 0, width, height, 0);
+	srcRect.clip(0.0f, 0.0f, (float)renderTarget->getWidth(), (float)renderTarget->getHeight());
 
-	sw::Surface *externalSurface = sw::Surface::create(width, height, 1, gl::ConvertReadFormatType(format, type), pixels, outputPitch, outputPitch * outputHeight);
-	sw::SliceRectF sliceRect(rect);
-	sw::SliceRect dstSliceRect(dstRect);
-	device->blit(renderTarget, sliceRect, externalSurface, dstSliceRect, false, false, false);
-	externalSurface->lockExternal(0, 0, 0, sw::LOCK_READONLY, sw::PUBLIC);
-	externalSurface->unlockExternal();
-	delete externalSurface;
+	if(format != GL_DEPTH_STENCIL_OES)   // The blitter only handles reading either depth or stencil.
+	{
+		sw::Surface *externalSurface = sw::Surface::create(width, height, 1, es2::ConvertReadFormatType(format, type), pixels, outputPitch, outputPitch  *  outputHeight);
+		device->blit(renderTarget, srcRect, externalSurface, dstRect, false, false, false);
+		externalSurface->lockExternal(0, 0, 0, sw::LOCK_READONLY, sw::PUBLIC);
+		externalSurface->unlockExternal();
+		delete externalSurface;
+	}
+	else   // format == GL_DEPTH_STENCIL_OES
+	{
+		ASSERT(renderTarget->getInternalFormat() == sw::FORMAT_D32F_LOCKABLE);
+		float *depth = (float*)renderTarget->lockInternal((int)srcRect.x0, (int)srcRect.y0, 0, sw::LOCK_READONLY, sw::PUBLIC);
+		uint8_t *stencil = (uint8_t*)renderTarget->lockStencil((int)srcRect.x0, (int)srcRect.y0, 0, sw::PUBLIC);
+
+		switch(type)
+		{
+		case GL_UNSIGNED_INT_24_8_OES:
+			{
+				uint32_t *output = (uint32_t*)pixels;
+
+				for(int y = 0; y < height; y++)
+				{
+					for(int x = 0; x < width; x++)
+					{
+						output[x] = ((uint32_t)roundf(depth[x] * 0xFFFFFF00) & 0xFFFFFF00) | stencil[x];
+					}
+
+					depth += renderTarget->getInternalPitchP();
+					stencil += renderTarget->getStencilPitchB();
+					(uint8_t*&)output += outputPitch;
+				}
+			}
+			break;
+		case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+			{
+				struct D32FS8 { float depth32f; unsigned int stencil24_8; };
+				D32FS8 *output = (D32FS8*)pixels;
+
+				for(int y = 0; y < height; y++)
+				{
+					for(int x = 0; x < width; x++)
+					{
+						output[x].depth32f = depth[x];
+						output[x].stencil24_8 = stencil[x];
+					}
+
+					depth += renderTarget->getInternalPitchP();
+					stencil += renderTarget->getStencilPitchB();
+					(uint8_t*&)output += outputPitch;
+				}
+			}
+			break;
+		default: UNREACHABLE(type);
+		}
+
+		renderTarget->unlockInternal();
+		renderTarget->unlockStencil();
+	}
 
 	renderTarget->release();
 }
@@ -4317,12 +4372,12 @@ EGLenum Context::validateSharedImage(EGLenum target, GLuint name, GLuint texture
 			return EGL_BAD_ACCESS;
 		}
 
-		if(textureLevel != 0 && !texture->isSamplerComplete())
+		if(textureLevel != 0 && !texture->isSamplerComplete(nullptr))
 		{
 			return EGL_BAD_PARAMETER;
 		}
 
-		if(textureLevel == 0 && !(texture->isSamplerComplete() && texture->getTopLevel() == 0))
+		if(textureLevel == 0 && !(texture->isSamplerComplete(nullptr) && texture->getTopLevel() == 0))
 		{
 			return EGL_BAD_PARAMETER;
 		}
@@ -4405,6 +4460,7 @@ const GLubyte *Context::getExtensions(GLuint index, GLuint *numExt) const
 		"GL_OES_EGL_image_external",
 		"GL_OES_EGL_sync",
 		"GL_OES_element_index_uint",
+		"GL_OES_fbo_render_mipmap",
 		"GL_OES_framebuffer_object",
 		"GL_OES_packed_depth_stencil",
 		"GL_OES_rgb8_rgba8",
@@ -4442,9 +4498,12 @@ const GLubyte *Context::getExtensions(GLuint index, GLuint *numExt) const
 		"GL_APPLE_texture_format_BGRA8888",
 		"GL_CHROMIUM_color_buffer_float_rgba", // A subset of EXT_color_buffer_float on top of OpenGL ES 2.0
 		"GL_CHROMIUM_texture_filtering_hint",
+		"GL_NV_depth_buffer_float2",
 		"GL_NV_fence",
 		"GL_NV_framebuffer_blit",
 		"GL_NV_read_depth",
+		"GL_NV_read_depth_stencil",
+		"GL_NV_read_stencil",
 	};
 
 	GLuint numExtensions = sizeof(extensions) / sizeof(extensions[0]);

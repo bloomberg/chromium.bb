@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 // A class that gives access to the Chromoting service.
@@ -35,8 +35,9 @@ class ServiceClient {
    protected:
     virtual ~Delegate() {}
   };
-  ServiceClient(const std::string& chromoting_hosts_url,
-                net::URLRequestContextGetter* context_getter);
+  ServiceClient(
+      const std::string& chromoting_hosts_url,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~ServiceClient();
 
   // Register a host.

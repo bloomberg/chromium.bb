@@ -9,8 +9,10 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -23,6 +25,7 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using browsing_data::BrowsingDataCounter;
@@ -111,10 +114,24 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, AutofillCounter) {
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing autofill, and this should restart the counter.
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
+  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
   ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
   WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
+
+  // When the unified consent was given, it needs to be revoked here before
+  // the sync_everything flag can be set to false below. This restarts the
+  // counter.
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  if (consent_service && consent_service->IsUnifiedConsentGiven()) {
+    consent_service->SetUnifiedConsentGiven(false);
+    ASSERT_TRUE(
+        GetClient(kFirstProfileIndex)
+            ->AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false));
+    WaitForCounting();
+    ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL));
+  }
 
   // We stop syncing autofill in particular. This restarts the counter.
   syncer::ModelTypeSet everything_except_autofill =
@@ -173,10 +190,24 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, PasswordCounter) {
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing passwords, and this should restart the counter.
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
+  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
   ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
   WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
+
+  // When the unified consent was given, it needs to be revoked here before
+  // the sync_everything flag can be set to false below. This restarts the
+  // counter.
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  if (consent_service && consent_service->IsUnifiedConsentGiven()) {
+    consent_service->SetUnifiedConsentGiven(false);
+    ASSERT_TRUE(
+        GetClient(kFirstProfileIndex)
+            ->AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false));
+    WaitForCounting();
+    ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS));
+  }
 
   // We stop syncing passwords in particular. This restarts the counter.
   syncer::ModelTypeSet everything_except_passwords =
@@ -239,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   // We sync all datatypes by default, so starting Sync means that we start
   // syncing history deletion, and this should restart the counter.
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(sync_service->IsSyncActive());
+  ASSERT_TRUE(sync_service->IsSyncFeatureActive());
   ASSERT_TRUE(sync_service->GetPreferredDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
   ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(
@@ -247,6 +278,21 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
 
   WaitForCounting();
   EXPECT_TRUE(IsSyncEnabled());
+
+  // When the unified consent was given, it needs to be revoked here before
+  // the sync_everything flag can be set to false below. This restarts the
+  // counter.
+  unified_consent::UnifiedConsentService* consent_service =
+      UnifiedConsentServiceFactory::GetForProfile(profile);
+  if (consent_service && consent_service->IsUnifiedConsentGiven()) {
+    consent_service->SetUnifiedConsentGiven(false);
+    ASSERT_TRUE(
+        GetClient(kFirstProfileIndex)
+            ->AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false));
+    WaitForCounting();
+    ASSERT_TRUE(sync_service->GetActiveDataTypes().Has(
+        syncer::HISTORY_DELETE_DIRECTIVES));
+  }
 
   // We stop syncing history deletion in particular. This restarts the counter.
   syncer::ModelTypeSet everything_except_history =

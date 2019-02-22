@@ -313,22 +313,22 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   GetUploadDetailsRequest(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
-      const std::string& pan_first_six,
       const std::vector<const char*>& active_experiments,
       const bool full_sync_enabled,
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
                               std::unique_ptr<base::DictionaryValue>)> callback,
-      const int billable_service_number)
+      const int billable_service_number,
+      PaymentsClient::MigrationSource migration_source)
       : addresses_(addresses),
         detected_values_(detected_values),
-        pan_first_six_(pan_first_six),
         active_experiments_(active_experiments),
         full_sync_enabled_(full_sync_enabled),
         app_locale_(app_locale),
         callback_(std::move(callback)),
-        billable_service_number_(billable_service_number) {}
+        billable_service_number_(billable_service_number),
+        migration_source_(migration_source) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -369,11 +369,21 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     // Payments will decide if the provided data is enough to offer upload save.
     request_dict.SetInteger("detected_values", detected_values_);
 
-    if (features::IsAutofillUpstreamSendPanFirstSixExperimentEnabled() &&
-        !pan_first_six_.empty())
-      request_dict.SetString("pan_first6", pan_first_six_);
-
     SetActiveExperiments(active_experiments_, &request_dict);
+
+    switch (migration_source_) {
+      case PaymentsClient::MigrationSource::UNKNOWN_MIGRATION_SOURCE:
+        request_dict.SetString("migration_source", "UNKNOWN_MIGRATION_SOURCE");
+        break;
+      case PaymentsClient::MigrationSource::CHECKOUT_FLOW:
+        request_dict.SetString("migration_source", "CHECKOUT_FLOW");
+        break;
+      case PaymentsClient::MigrationSource::SETTINGS_PAGE:
+        request_dict.SetString("migration_source", "SETTINGS_PAGE");
+        break;
+      default:
+        NOTREACHED();
+    }
 
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
@@ -399,7 +409,6 @@ class GetUploadDetailsRequest : public PaymentsRequest {
  private:
   const std::vector<AutofillProfile> addresses_;
   const int detected_values_;
-  const std::string pan_first_six_;
   const std::vector<const char*> active_experiments_;
   const bool full_sync_enabled_;
   std::string app_locale_;
@@ -410,6 +419,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
   const int billable_service_number_;
+  PaymentsClient::MigrationSource migration_source_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -569,17 +579,15 @@ class MigrateCardsRequest : public PaymentsRequest {
     std::string all_pans_data = std::string();
     std::unique_ptr<base::ListValue> migrate_cards(new base::ListValue());
     for (size_t index = 0; index < migratable_credit_cards_.size(); ++index) {
-      if (migratable_credit_cards_[index].is_chosen()) {
-        std::string pan_field_name = GetPanFieldName(index);
-        // Generate credit card dictionary.
-        migrate_cards->Append(BuildCreditCardDictionary(
-            migratable_credit_cards_[index].credit_card(), app_locale,
-            pan_field_name));
-        // Append pan data to the |all_pans_data|.
-        all_pans_data +=
-            GetAppendPan(migratable_credit_cards_[index].credit_card(),
-                         app_locale, pan_field_name);
-      }
+      std::string pan_field_name = GetPanFieldName(index);
+      // Generate credit card dictionary.
+      migrate_cards->Append(BuildCreditCardDictionary(
+          migratable_credit_cards_[index].credit_card(), app_locale,
+          pan_field_name));
+      // Append pan data to the |all_pans_data|.
+      all_pans_data +=
+          GetAppendPan(migratable_credit_cards_[index].credit_card(),
+                       app_locale, pan_field_name);
     }
     request_dict.Set("local_card", std::move(migrate_cards));
 
@@ -704,18 +712,18 @@ void PaymentsClient::UnmaskCard(
 void PaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const int detected_values,
-    const std::string& pan_first_six,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
                             std::unique_ptr<base::DictionaryValue>)> callback,
-    const int billable_service_number) {
+    const int billable_service_number,
+    MigrationSource migration_source) {
   IssueRequest(
       std::make_unique<GetUploadDetailsRequest>(
-          addresses, detected_values, pan_first_six, active_experiments,
+          addresses, detected_values, active_experiments,
           account_info_getter_->IsSyncFeatureEnabled(), app_locale,
-          std::move(callback), billable_service_number),
+          std::move(callback), billable_service_number, migration_source),
       false);
 }
 

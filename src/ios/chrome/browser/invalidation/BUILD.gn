@@ -5,8 +5,8 @@
 source_set("invalidation") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "ios_chrome_profile_invalidation_provider_factory.h",
-    "ios_chrome_profile_invalidation_provider_factory.mm",
+    "ios_chrome_deprecated_profile_invalidation_provider_factory.h",
+    "ios_chrome_deprecated_profile_invalidation_provider_factory.mm",
   ]
   deps = [
     "//base",
@@ -16,6 +16,7 @@ source_set("invalidation") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/gcm",
     "//ios/chrome/browser/signin",

@@ -44,7 +44,8 @@ class DataPipeToSourceStreamTest
     : public ::testing::TestWithParam<DataPipeToSourceStreamTestParam> {
  protected:
   DataPipeToSourceStreamTest()
-      : output_buffer_(new net::IOBufferWithSize(GetParam().buffer_size)) {}
+      : output_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(
+            GetParam().buffer_size)) {}
 
   void Init(base::StringPiece message) {
     message_ = message;

@@ -22,12 +22,6 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-// Creates a button with the default Assistant styles.
-views::ImageButton* CreateButton(
-    views::ButtonListener* listener,
-    int size_in_dip,
-    base::Optional<int> accessible_name_id = base::nullopt);
-
 // Creates an ImageButton with the default Assistant styles.
 views::ImageButton* CreateImageButton(views::ButtonListener* listener,
                                       const gfx::VectorIcon& icon,

@@ -12,10 +12,10 @@ import org.chromium.base.Log;
 import org.chromium.base.test.SetUpStatement;
 import org.chromium.base.test.SetUpTestRule;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
@@ -27,7 +27,7 @@ import java.lang.annotation.Annotation;
 public class JavaBridgeActivityTestRule
         extends ContentShellActivityTestRule implements SetUpTestRule<JavaBridgeActivityTestRule> {
     private TestCallbackHelperContainer mTestCallbackHelperContainer;
-    private boolean mSetup = false;
+    private boolean mSetup;
 
     public static class Controller {
         private static final int RESULT_WAIT_TIME = 5000;

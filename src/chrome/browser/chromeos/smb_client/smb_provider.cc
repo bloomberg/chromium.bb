@@ -25,8 +25,6 @@ SmbProvider::SmbProvider(UnmountCallback unmount_callback)
                     false /* watchable */,
                     true /* multiple_mounts */,
                     extensions::SOURCE_NETWORK),
-      // TODO(baileyberro): Localize this string, so it shows correctly in all
-      // languages. See l10n_util::GetStringUTF8.
       name_(l10n_util::GetStringUTF8(IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION)),
       unmount_callback_(std::move(unmount_callback)) {
   icon_set_.SetIcon(IconSet::IconSize::SIZE_16x16,

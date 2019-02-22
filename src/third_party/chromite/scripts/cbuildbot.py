@@ -940,7 +940,8 @@ def main(argv):
     _BackupPreviousLog(log_file)
 
   with cros_build_lib.ContextManagerStack() as stack:
-    options.preserve_paths = set()
+    # Preserve chromite; we might be running from there!
+    options.preserve_paths = set(['chromite'])
     if log_file is not None:
       # We don't want the critical section to try to clean up the tee process,
       # so we run Tee (forked off) outside of it. This prevents a deadlock

@@ -75,7 +75,7 @@ void ScriptPromisePropertyBase::ResolveOrReject(State target_state) {
   state_ = target_state;
 
   v8::HandleScope handle_scope(isolate_);
-  size_t i = 0;
+  wtf_size_t i = 0;
   while (i < wrappers_.size()) {
     const std::unique_ptr<ScopedPersistent<v8::Object>>& persistent =
         wrappers_[i];
@@ -129,7 +129,7 @@ void ScriptPromisePropertyBase::ResolveOrRejectInternal(
 v8::Local<v8::Object> ScriptPromisePropertyBase::EnsureHolderWrapper(
     ScriptState* script_state) {
   v8::Local<v8::Context> context = script_state->GetContext();
-  size_t i = 0;
+  wtf_size_t i = 0;
   while (i < wrappers_.size()) {
     const std::unique_ptr<ScopedPersistent<v8::Object>>& persistent =
         wrappers_[i];

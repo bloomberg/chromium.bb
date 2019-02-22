@@ -12,7 +12,8 @@ namespace blink {
 void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   outset_for_raster_effects_ = chunk.outset_for_raster_effects;
 
-  const auto& new_chunk_state = chunk.properties.GetPropertyTreeState();
+  const auto& new_chunk_state =
+      chunk.properties.GetPropertyTreeState().Unalias();
   if (new_chunk_state == chunk_state_)
     return;
 
@@ -35,7 +36,8 @@ void ChunkToLayerMapper::SwitchToChunk(const PaintChunk& chunk) {
   if (new_chunk_state.Effect() != chunk_state_.Effect()) {
     new_has_filter_that_moves_pixels = false;
     for (const auto* effect = new_chunk_state.Effect();
-         effect && effect != layer_state_.Effect(); effect = effect->Parent()) {
+         effect && effect != layer_state_.Effect();
+         effect = effect->Parent() ? effect->Parent()->Unalias() : nullptr) {
       if (effect->HasFilterThatMovesPixels()) {
         new_has_filter_that_moves_pixels = true;
         break;

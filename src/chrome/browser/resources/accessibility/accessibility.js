@@ -128,6 +128,9 @@ cr.define('accessibility', function() {
 
     if ('tree' in data) {
       row.appendChild(createShowAccessibilityTreeElement(data, row, true));
+      if (navigator.clipboard) {
+        row.appendChild(createCopyAccessibilityTreeElement(row.id));
+      }
       row.appendChild(createHideAccessibilityTreeElement(row.id));
       row.appendChild(createAccessibilityTreeElement(data));
     } else {
@@ -173,15 +176,15 @@ cr.define('accessibility', function() {
   function getNameForAccessibilityMode(mode) {
     switch (mode) {
       case AXMode.kNativeAPIs:
-        return 'native';
+        return 'Native';
       case AXMode.kWebContents:
-        return 'web';
+        return 'Web';
       case AXMode.kInlineTextBoxes:
-        return 'inline text';
+        return 'Inline text';
       case AXMode.kScreenReader:
-        return 'screen reader';
+        return 'Screen reader';
       case AXMode.kHTML:
-        return 'html';
+        return 'HTML';
     }
     return 'unknown';
   }
@@ -200,32 +203,55 @@ cr.define('accessibility', function() {
   }
 
   function createShowAccessibilityTreeElement(data, row, opt_refresh) {
-    var link = document.createElement('a', 'action-link');
-    link.setAttribute('role', 'button');
-    if (opt_refresh)
-      link.textContent = 'refresh accessibility tree';
-    else
-      link.textContent = 'show accessibility tree';
-    link.id = row.id + ':showTree';
-    link.addEventListener(
-        'click', requestWebContentsTree.bind(this, data, link));
-    return link;
+    let show = document.createElement('button');
+    if (opt_refresh) {
+      show.textContent = 'Refresh accessibility tree';
+    } else {
+      show.textContent = 'Show accessibility tree';
+    }
+    show.id = row.id + ':showTree';
+    show.addEventListener(
+        'click', requestWebContentsTree.bind(this, data, show));
+    return show;
   }
 
   function createHideAccessibilityTreeElement(id) {
-    var link = document.createElement('a', 'action-link');
-    link.setAttribute('role', 'button');
-    link.textContent = 'hide accessibility tree';
-    link.addEventListener('click', function() {
-      $(id + ':showTree').textContent = 'show accessibility tree';
+    let hide = document.createElement('button');
+    hide.textContent = 'Hide accessibility tree';
+    hide.addEventListener('click', function() {
+      $(id + ':showTree').textContent = 'Show accessibility tree';
       var existingTreeElements = $(id).getElementsByTagName('pre');
-      for (var i = 0; i < existingTreeElements.length; i++)
+      for (var i = 0; i < existingTreeElements.length; i++) {
         $(id).removeChild(existingTreeElements[i]);
+      }
       var row = $(id);
-      while (row.lastChild != $(id + ':showTree'))
+      while (row.lastChild != $(id + ':showTree')) {
         row.removeChild(row.lastChild);
+      }
     });
-    return link;
+    return hide;
+  }
+
+  function createCopyAccessibilityTreeElement(id) {
+    let copy = document.createElement('button');
+    copy.textContent = 'Copy accessibility tree';
+    copy.addEventListener('click', () => {
+      // |id| refers to the div containing accessibility information for a
+      // single page, so there should only be one <pre> child containing the
+      // accessibility tree as a string.
+      let tree = $(id).getElementsByTagName('pre')[0];
+      navigator.clipboard.writeText(tree.textContent)
+          .then(() => {
+            copy.textContent = 'Copied to clipboard!';
+            setTimeout(() => {
+              copy.textContent = 'Copy accessibility tree';
+            }, 5000);
+          })
+          .catch(err => {
+            console.err('Unable to copy accessibility tree.', err);
+          });
+    });
+    return copy;
   }
 
   function createErrorMessageElement(data) {

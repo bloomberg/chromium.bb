@@ -23,7 +23,7 @@
 #endif  // defined(OS_FUCHSIA)
 
 namespace {
-int64_t kSyncedPlaybackStartDelayUs = 0;
+int64_t kSyncedPlaybackStartDelayUs = 50000;
 }  // namespace
 
 namespace chromecast {
@@ -77,8 +77,8 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
 
   video_ready_to_play_ = !video_decoder_;
   audio_ready_to_play_ = !audio_decoder_;
-  first_resume_processed_ = false;
 
+  start_playback_timestamp_us_ = INT64_MIN;
   start_playback_pts_us_ = start_pts;
 
   int64_t effective_start_pts =
@@ -93,6 +93,9 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
     return false;
 
   state_ = kStatePlaying;
+  playback_started_ = !av_sync_;
+  starting_playback_rate_ = 1.0;
+
   return true;
 }
 
@@ -112,13 +115,18 @@ void MediaPipelineBackendForMixer::Stop() {
 
 bool MediaPipelineBackendForMixer::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
-  if (!first_resume_processed_) {
+  if (!playback_started_) {
+    state_ = kStatePaused;
+    LOG(INFO) << "Pause received while playback has not started yet.";
     return true;
   }
-  if (audio_decoder_ && !audio_decoder_->Pause())
+
+  if (audio_decoder_ && !audio_decoder_->Pause()) {
     return false;
-  if (video_decoder_ && !video_decoder_->Pause())
+  }
+  if (video_decoder_ && !video_decoder_->Pause()) {
     return false;
+  }
   if (av_sync_) {
     av_sync_->NotifyPause();
   }
@@ -128,16 +136,15 @@ bool MediaPipelineBackendForMixer::Pause() {
 }
 
 bool MediaPipelineBackendForMixer::Resume() {
-  if (!first_resume_processed_) {
-    DCHECK_EQ(kStatePlaying, state_);
+  DCHECK_EQ(kStatePaused, state_);
 
-    LOG(INFO) << "First resume received.";
-    first_resume_processed_ = true;
+  if (!playback_started_) {
+    LOG(INFO) << "Resume received while playback has not started yet.";
+    state_ = kStatePlaying;
     TryStartPlayback();
     return true;
   }
 
-  DCHECK_EQ(kStatePaused, state_);
   if (av_sync_) {
     av_sync_->NotifyResume();
   }
@@ -151,24 +158,31 @@ bool MediaPipelineBackendForMixer::Resume() {
 }
 
 bool MediaPipelineBackendForMixer::SetPlaybackRate(float rate) {
-  LOG(INFO) << __func__ << " rate=" << rate;
+  if (!playback_started_) {
+    LOG(INFO) << "Got playback rate change before playback has started.";
 
-  // If av_sync_ is available, only set the playback rate of the video master,
-  // and let av_sync_ handle syncing the audio to the video.
-  if (av_sync_) {
-    DCHECK(video_decoder_);
-    if (!video_decoder_->SetPlaybackRate(rate))
+    // Some vendor VideoDecoderForMixer implementations may not properly handle
+    // the rate change before playback has started. It needs to be moved to
+    // after we start playback
+    starting_playback_rate_ = rate;
+  } else {
+    LOG(INFO) << __func__ << " rate=" << rate;
+
+    // If av_sync_ is available, only change the audio rate of playback. This
+    // will notify us of when the audio playback rate change goes into effect,
+    // and then we'll change the video rate of playback.
+    if (av_sync_) {
+      DCHECK(audio_decoder_);
+      audio_decoder_->SetPlaybackRate(rate);
+      return true;
+    }
+
+    if (audio_decoder_) {
+      rate = audio_decoder_->SetPlaybackRate(rate);
+    }
+    if (video_decoder_ && !video_decoder_->SetPlaybackRate(rate))
       return false;
-    av_sync_->NotifyPlaybackRateChange(rate);
-    return true;
   }
-
-  // If there is no av_sync_, then we must manually set the playback rate of
-  // the audio decoder.
-  if (video_decoder_ && !video_decoder_->SetPlaybackRate(rate))
-    return false;
-  if (audio_decoder_ && !audio_decoder_->SetPlaybackRate(rate))
-    return false;
 
   return true;
 }
@@ -238,55 +252,63 @@ void MediaPipelineBackendForMixer::VideoReadyToPlay() {
 void MediaPipelineBackendForMixer::OnVideoReadyToPlay() {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!video_ready_to_play_);
+  DCHECK(video_decoder_);
 
   LOG(INFO) << "Video ready to play";
-
   video_ready_to_play_ = true;
 
-  TryStartPlayback();
-}
+  if (av_sync_) {
+    TryStartPlayback();
+  } else if (!IsIgnorePtsMode()) {
+    start_playback_timestamp_us_ = MonotonicClockNow();
+    LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
 
-void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
-  LOG(INFO) << "The audio is ready for playback.";
-  DCHECK(!audio_ready_to_play_);
-
-  audio_ready_to_play_ = true;
-
-  TryStartPlayback();
-}
-
-void MediaPipelineBackendForMixer::TryStartPlayback() {
-  DCHECK(state_ == kStatePlaying || state_ == kStatePaused);
-
-  if (av_sync_ && !(audio_ready_to_play_ && first_resume_processed_ &&
-                    video_ready_to_play_)) {
-    return;
-  }
-
-  if (IsIgnorePtsMode()) {
-    start_playback_timestamp_us_ = INT64_MIN;
-  } else {
-    start_playback_timestamp_us_ =
-        MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
-  }
-
-  LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
-
-  // Note that SetPts needs to be called even if the playback is not AV sync'd
-  // (for example we only have a video stream).
-  if (video_decoder_ && !IsIgnorePtsMode()) {
     video_decoder_->SetPts(start_playback_timestamp_us_,
                            start_playback_pts_us_);
   }
+}
 
-  if (audio_decoder_ && av_sync_) {
-    audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
-  }
+void MediaPipelineBackendForMixer::OnAudioReadyForPlayback() {
+  DCHECK(!audio_ready_to_play_);
+
+  LOG(INFO) << "Audio ready to play";
+  audio_ready_to_play_ = true;
 
   if (av_sync_) {
-    av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
+    TryStartPlayback();
   }
-  state_ = kStatePlaying;
+}
+
+void MediaPipelineBackendForMixer::TryStartPlayback() {
+  DCHECK(av_sync_);
+  DCHECK(!IsIgnorePtsMode());
+  DCHECK(video_decoder_);
+  DCHECK(audio_decoder_);
+  DCHECK(!playback_started_);
+
+  if (!audio_ready_to_play_ || !video_ready_to_play_ ||
+      state_ != kStatePlaying) {
+    return;
+  }
+
+  start_playback_timestamp_us_ =
+      MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
+  LOG(INFO) << "Starting playback at=" << start_playback_timestamp_us_;
+
+  video_decoder_->SetPts(start_playback_timestamp_us_, start_playback_pts_us_);
+  audio_decoder_->StartPlaybackAt(start_playback_timestamp_us_);
+  av_sync_->NotifyStart(start_playback_timestamp_us_, start_playback_pts_us_);
+
+  playback_started_ = true;
+  if (starting_playback_rate_ != 1.0) {
+    SetPlaybackRate(starting_playback_rate_);
+  }
+}
+
+void MediaPipelineBackendForMixer::NewAudioPlaybackRateInEffect(float rate) {
+  if (av_sync_) {
+    av_sync_->NotifyPlaybackRateChange(rate);
+  }
 }
 
 }  // namespace media

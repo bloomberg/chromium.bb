@@ -29,12 +29,14 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.ViewEventSink;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayDeque;
@@ -197,9 +199,10 @@ public class ContentViewFocusTest {
     @Test
     @MediumTest
     public void testPauseTriggersBlur() throws Exception {
+        final WebContents webContents = mActivityTestRule.getWebContents();
         final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
         final WebContentsObserver observer =
-                new WebContentsObserver(mActivityTestRule.getWebContents()) {
+                new WebContentsObserver(webContents) {
                     @Override
                     public void titleWasSet(String title) {
                         mTitle = title;
@@ -210,7 +213,7 @@ public class ContentViewFocusTest {
         String url = UrlUtils.getIsolatedTestFileUrl(
                 "chrome/test/data/android/content_view_focus/content_view_blur_focus.html");
         mActivityTestRule.loadUrl(url);
-        ViewEventSink eventSink = ViewEventSink.from(mActivityTestRule.getWebContents());
+        ViewEventSink eventSink = WebContentsUtils.getViewEventSink(webContents);
         onTitleUpdatedHelper.waitForCallback(callCount);
         Assert.assertEquals("initial", mTitle);
         callCount = onTitleUpdatedHelper.getCallCount();

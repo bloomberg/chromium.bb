@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "core/fxge/cfx_pathdata.h"
@@ -24,27 +25,14 @@ constexpr float kScrollBarTriangleHalfLength = 2.0f;
 
 #define PWL_DEFAULT_HEAVYGRAYCOLOR CFX_Color(CFX_Color::kGray, 0.50)
 
-PWL_FLOATRANGE::PWL_FLOATRANGE() {
-  Default();
+void PWL_FLOATRANGE::Reset() {
+  fMin = 0.0f;
+  fMax = 0.0f;
 }
 
-PWL_FLOATRANGE::PWL_FLOATRANGE(float min, float max) {
-  Set(min, max);
-}
-
-void PWL_FLOATRANGE::Default() {
-  fMin = 0;
-  fMax = 0;
-}
-
-void PWL_FLOATRANGE::Set(float min, float max) {
-  if (min > max) {
-    fMin = max;
-    fMax = min;
-  } else {
-    fMin = min;
-    fMax = max;
-  }
+void PWL_FLOATRANGE::Set(float f1, float f2) {
+  fMin = std::min(f1, f2);
+  fMax = std::max(f1, f2);
 }
 
 bool PWL_FLOATRANGE::In(float x) const {
@@ -61,7 +49,7 @@ PWL_SCROLL_PRIVATEDATA::PWL_SCROLL_PRIVATEDATA() {
 }
 
 void PWL_SCROLL_PRIVATEDATA::Default() {
-  ScrollRange.Default();
+  ScrollRange.Reset();
   fScrollPos = ScrollRange.fMin;
   fClientWidth = 0;
   fBigStep = 10;
@@ -126,10 +114,6 @@ CPWL_SBButton::CPWL_SBButton(PWL_SCROLLBAR_TYPE eScrollBarType,
 }
 
 CPWL_SBButton::~CPWL_SBButton() {}
-
-ByteString CPWL_SBButton::GetClassName() const {
-  return "CPWL_SBButton";
-}
 
 void CPWL_SBButton::OnCreate(CreateParams* pParamsToAdjust) {
   pParamsToAdjust->eCursorType = FXCT_ARROW;
@@ -325,10 +309,6 @@ CPWL_ScrollBar::CPWL_ScrollBar(PWL_SCROLLBAR_TYPE sbType)
       m_bNotifyForever(true) {}
 
 CPWL_ScrollBar::~CPWL_ScrollBar() {}
-
-ByteString CPWL_ScrollBar::GetClassName() const {
-  return "CPWL_ScrollBar";
-}
 
 void CPWL_ScrollBar::OnCreate(CreateParams* pParamsToAdjust) {
   pParamsToAdjust->eCursorType = FXCT_ARROW;

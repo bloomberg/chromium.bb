@@ -189,6 +189,8 @@ bool FillLayer::VisuallyEqual(const FillLayer& o) const {
   if (image_ || o.image_) {
     if (!LayerPropertiesEqual(o))
       return false;
+  } else if (clip_ != o.clip_) {
+    return false;
   }
   if (next_ && o.next_)
     return next_->VisuallyEqual(*o.next_);

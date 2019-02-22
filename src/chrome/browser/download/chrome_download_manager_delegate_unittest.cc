@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -214,6 +214,14 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     ChromeDownloadManagerDelegate::RequestConfirmation(download_item, path,
                                                        reason, callback);
   }
+
+  void ShowFilePickerForDownload(
+      DownloadItem* download,
+      const base::FilePath& path,
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback&) override {}
+
+ private:
+  friend class ChromeDownloadManagerDelegateTest;
 };
 
 class ChromeDownloadManagerDelegateTest
@@ -247,6 +255,11 @@ class ChromeDownloadManagerDelegateTest
   // method.
   bool CheckForFileExistence(DownloadItem* download);
 
+  void OnConfirmationCallbackComplete(
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      DownloadConfirmationResult result,
+      const base::FilePath& virtual_path);
+
   base::FilePath GetDefaultDownloadPath() const;
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
@@ -257,8 +270,6 @@ class ChromeDownloadManagerDelegateTest
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
  private:
-  // Resets the global cached DefaultDownloadDirectory instance.
-  base::ShadowingAtExitManager at_exit_manager_;
   base::ScopedPathOverride download_dir_override_{
       chrome::DIR_DEFAULT_DOWNLOADS};
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
@@ -273,6 +284,7 @@ ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
 }
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
+  DownloadPrefs::ReinitializeDefaultDownloadDirectoryForTesting();
   ChromeRenderViewHostTestHarness::SetUp();
 
   CHECK(profile());
@@ -329,8 +341,12 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
       .WillByDefault(Return(false));
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
+  std::string guid = base::GenerateGUID();
+  ON_CALL(*item, GetGuid()).WillByDefault(ReturnRefOfCopy(guid));
   content::DownloadItemUtils::AttachInfo(item.get(), profile(), web_contents());
   EXPECT_CALL(*download_manager_, GetDownload(id))
+      .WillRepeatedly(Return(item.get()));
+  EXPECT_CALL(*download_manager_, GetDownloadByGuid(guid))
       .WillRepeatedly(Return(item.get()));
   return item;
 }
@@ -391,6 +407,13 @@ base::FilePath ChromeDownloadManagerDelegateTest::GetDefaultDownloadPath()
   base::FilePath path;
   CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
   return path;
+}
+
+void ChromeDownloadManagerDelegateTest::OnConfirmationCallbackComplete(
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+    DownloadConfirmationResult result,
+    const base::FilePath& virtual_path) {
+  delegate_->OnConfirmationCallbackComplete(callback, result, virtual_path);
 }
 
 TestChromeDownloadManagerDelegate*
@@ -711,6 +734,76 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
   std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
   EXPECT_EQ(expected_ids, download_ids());
 }
+
+#if !defined(OS_ANDROID)
+namespace {
+// Verify the file picker confirmation result matches |expected_result|. Run
+// |completion_closure| on completion.
+void VerifyFilePickerConfirmation(DownloadConfirmationResult expected_result,
+                                  base::RepeatingClosure completion_closure,
+                                  DownloadConfirmationResult result,
+                                  const base::FilePath& virtual_path) {
+  ASSERT_EQ(result, expected_result);
+  base::ResetAndReturn(&completion_closure).Run();
+}
+}  // namespace
+
+// Test that it is fine to remove a download before its file picker is being
+// shown.
+TEST_F(ChromeDownloadManagerDelegateTest,
+       RemovingDownloadBeforeShowingFilePicker) {
+  GURL download_url("http://example.com/foo.txt");
+
+  std::unique_ptr<download::MockDownloadItem> download1 =
+      CreateActiveDownloadItem(0);
+  EXPECT_CALL(*download1, GetURL())
+      .Times(AnyNumber())
+      .WillRepeatedly(ReturnRef(download_url));
+  EXPECT_CALL(*download1, GetTargetDisposition())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
+
+  std::unique_ptr<download::MockDownloadItem> download2 =
+      CreateActiveDownloadItem(1);
+  EXPECT_CALL(*download2, GetURL())
+      .Times(AnyNumber())
+      .WillRepeatedly(ReturnRef(download_url));
+  EXPECT_CALL(*download2, GetTargetDisposition())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
+
+  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _))
+      .WillRepeatedly(Invoke(
+          delegate(),
+          &TestChromeDownloadManagerDelegate::RequestConfirmationConcrete));
+
+  base::FilePath expected_prompt_path(GetPathInDownloadDir("foo.txt"));
+  delegate()->RequestConfirmation(download1.get(), expected_prompt_path,
+                                  DownloadConfirmationReason::NAME_TOO_LONG,
+                                  base::DoNothing());
+  base::RunLoop run_loop;
+  // Verify that the second download's file picker will be canceled, because
+  // it will be removed from the DownloadManager.
+  delegate()->RequestConfirmation(
+      download2.get(), expected_prompt_path,
+      DownloadConfirmationReason::NAME_TOO_LONG,
+      base::BindRepeating(&VerifyFilePickerConfirmation,
+                          DownloadConfirmationResult::CANCELED,
+                          run_loop.QuitClosure()));
+  // Make the manager no longer return the 2nd download as if the latter is
+  // removed.
+  EXPECT_CALL(*download_manager(), GetDownloadByGuid(download2->GetGuid()))
+      .WillRepeatedly(Return(nullptr));
+  // Complete the first download, so the second download's file picker should
+  // be handled. And since the second download is removed from the manager,
+  // the file picker should be canceled.
+  OnConfirmationCallbackComplete(base::DoNothing(),
+                                 DownloadConfirmationResult::CONFIRMED,
+                                 expected_prompt_path);
+
+  run_loop.Run();
+}
+#endif  // OS_ANDROID
 
 #if defined(FULL_SAFE_BROWSING)
 namespace {

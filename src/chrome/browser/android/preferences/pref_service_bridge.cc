@@ -298,6 +298,12 @@ static jboolean JNI_PrefServiceBridge_GetBackgroundSyncEnabled(
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
 }
 
+static jboolean JNI_PrefServiceBridge_GetAutomaticDownloadsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
+}
+
 static jboolean JNI_PrefServiceBridge_GetBlockThirdPartyCookiesEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -403,7 +409,8 @@ static jboolean JNI_PrefServiceBridge_GetSearchSuggestManaged(
 static jboolean JNI_PrefServiceBridge_IsScoutExtendedReportingActive(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return safe_browsing::IsScout(*GetPrefService());
+  // TODO(lpz/scout): Remove this method and refactor calling code.
+  return true;
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingEnabled(
@@ -426,7 +433,7 @@ static jboolean JNI_PrefServiceBridge_GetSafeBrowsingExtendedReportingManaged(
     const JavaParamRef<jobject>& obj) {
   PrefService* pref_service = GetPrefService();
   return pref_service->IsManagedPreference(
-      safe_browsing::GetExtendedReportingPrefName(*pref_service));
+      prefs::kSafeBrowsingScoutReportingEnabled);
 }
 
 static jboolean JNI_PrefServiceBridge_GetSafeBrowsingEnabled(
@@ -747,6 +754,17 @@ static void JNI_PrefServiceBridge_SetBackgroundSyncEnabled(
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_PrefServiceBridge_SetAutomaticDownloadsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_PrefServiceBridge_SetBlockThirdPartyCookiesEnabled(
@@ -1310,11 +1328,9 @@ static void JNI_PrefServiceBridge_SetDownloadAndSaveFileDefaultDirectory(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& directory) {
-  std::string path(ConvertJavaStringToUTF8(env, directory));
-  GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory,
-                                base::FilePath(FILE_PATH_LITERAL(path)));
-  GetPrefService()->SetFilePath(prefs::kSaveFileDefaultDirectory,
-                                base::FilePath(FILE_PATH_LITERAL(path)));
+  base::FilePath path(ConvertJavaStringToUTF8(env, directory));
+  GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory, path);
+  GetPrefService()->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
 static jint JNI_PrefServiceBridge_GetPromptForDownloadAndroid(

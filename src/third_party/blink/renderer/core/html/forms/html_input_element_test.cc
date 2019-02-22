@@ -211,9 +211,9 @@ TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
   HTMLInputElement* input =
       ToHTMLInputElement(GetDocument().body()->firstChild());
 
-  Vector<FileChooserFileInfo> files;
-  files.push_back(
-      FileChooserFileInfo("/native/path/native-file", "display-name"));
+  FileChooserFileInfoList files;
+  files.push_back(CreateFileChooserFileInfoNative("/native/path/native-file",
+                                                  "display-name"));
   FileList* list = FileInputType::CreateFileList(files, false);
   ASSERT_TRUE(list);
   EXPECT_EQ(1u, list->length());

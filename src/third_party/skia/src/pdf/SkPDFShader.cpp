@@ -11,7 +11,7 @@
 #include "SkData.h"
 #include "SkPDFCanon.h"
 #include "SkPDFDevice.h"
-#include "SkPDFDocument.h"
+#include "SkPDFDocumentPriv.h"
 #include "SkPDFFormXObject.h"
 #include "SkPDFGradientShader.h"
 #include "SkPDFGraphicState.h"
@@ -245,8 +245,9 @@ static sk_sp<SkPDFStream> make_image_shader(SkPDFDocument* doc,
     }
 
     auto imageShader = sk_make_sp<SkPDFStream>(patternDevice->content());
+    sk_sp<SkPDFDict> resourceDict = patternDevice->makeResourceDict();
     SkPDFUtils::PopulateTilingPatternDict(imageShader->dict(), patternBBox,
-                                          patternDevice->makeResourceDict(), finalMatrix);
+                                          std::move(resourceDict), finalMatrix);
     return imageShader;
 }
 

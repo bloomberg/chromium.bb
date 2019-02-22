@@ -10,12 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/features.h"
 
 namespace {
 
 base::LazyInstance<content_settings::WebsiteSettingsRegistry>::DestructorAtExit
-    g_instance = LAZY_INSTANCE_INITIALIZER;
+    g_website_settings_registry_instance = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -23,7 +22,7 @@ namespace content_settings {
 
 // static
 WebsiteSettingsRegistry* WebsiteSettingsRegistry::GetInstance() {
-  return g_instance.Pointer();
+  return g_website_settings_registry_instance.Pointer();
 }
 
 WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
@@ -181,17 +180,13 @@ void WebsiteSettingsRegistry::Init() {
            WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
            DESKTOP | PLATFORM_ANDROID,
            WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO);
-  Register(
-      CONTENT_SETTINGS_TYPE_PLUGINS_DATA, "flash-data", nullptr,
-      // To counteract the reduced usability of the Flash permission
-      // when it becomes ephemeral, we sync the bit indicating that
-      // the Flash permission should be displayed in the page info.
-      base::FeatureList::IsEnabled(features::kEnableEphemeralFlashPermission)
-          ? WebsiteSettingsInfo::SYNCABLE
-          : WebsiteSettingsInfo::UNSYNCABLE,
-      WebsiteSettingsInfo::NOT_LOSSY,
-      WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
-      DESKTOP, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
+  // To counteract the reduced usability of the Flash permission when it becomes
+  // ephemeral, we sync the bit indicating that the Flash permission should be
+  // displayed in the page info.
+  Register(CONTENT_SETTINGS_TYPE_PLUGINS_DATA, "flash-data", nullptr,
+           WebsiteSettingsInfo::SYNCABLE, WebsiteSettingsInfo::NOT_LOSSY,
+           WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
+           DESKTOP, WebsiteSettingsInfo::INHERIT_IN_INCOGNITO);
 }
 
 }  // namespace content_settings

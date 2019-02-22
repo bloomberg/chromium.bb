@@ -7,13 +7,16 @@ import json
 import mock
 
 from dashboard.api import api_auth
+from dashboard.common import datastore_hooks
 from dashboard.common import namespaced_stored_object
+from dashboard.common import stored_object
 from dashboard.common import testing_common
 from dashboard.common import utils
 from dashboard.pinpoint import test
 from dashboard.pinpoint.handlers import new
 from dashboard.pinpoint.models import job as job_module
-from dashboard.pinpoint.models.change import patch as patch_module
+from dashboard.pinpoint.models import quest as quest_module
+from dashboard.pinpoint.models.change import change_test
 
 
 _BASE_REQUEST = {
@@ -41,7 +44,12 @@ class _NewTest(test.TestCase):
   def setUp(self):
     super(_NewTest, self).setUp()
 
-    namespaced_stored_object.Set('bot_configurations', {
+    self.SetCurrentUserOAuth(testing_common.INTERNAL_USER)
+    self.SetCurrentClientIdOAuth(api_auth.OAUTH_CLIENT_ID_WHITELIST[0])
+
+    key = namespaced_stored_object.NamespaceKey(
+        'bot_configurations', datastore_hooks.INTERNAL)
+    stored_object.Set(key, {
         'chromium-rel-mac11-pro': _CONFIGURATION_ARGUMENTS
     })
 
@@ -51,6 +59,8 @@ class NewAuthTest(_NewTest):
   @mock.patch.object(api_auth, 'Authorize',
                      mock.MagicMock(side_effect=api_auth.NotLoggedInError()))
   def testPost_NotLoggedIn(self):
+    self.SetCurrentUserOAuth(None)
+
     response = self.Post('/api/new', _BASE_REQUEST, status=401)
     result = json.loads(response.body)
     self.assertEqual(result, {'error': 'User not authenticated'})
@@ -58,6 +68,8 @@ class NewAuthTest(_NewTest):
   @mock.patch.object(api_auth, 'Authorize',
                      mock.MagicMock(side_effect=api_auth.OAuthError()))
   def testFailsOauth(self):
+    self.SetCurrentUserOAuth(testing_common.EXTERNAL_USER)
+
     response = self.Post('/api/new', _BASE_REQUEST, status=403)
     result = json.loads(response.body)
     self.assertEqual(result, {'error': 'User authentication error'})
@@ -92,19 +104,15 @@ class NewTest(_NewTest):
     request = dict(_BASE_REQUEST)
     request['comparison_mode'] = 'functional'
     response = self.Post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    job = job_module.JobFromId(result['jobId'])
-    self.assertEqual(job.state.comparison_mode, 'functional')
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'functional')
 
   def testComparisonModePerformance(self):
     request = dict(_BASE_REQUEST)
     request['comparison_mode'] = 'performance'
     response = self.Post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    job = job_module.JobFromId(result['jobId'])
-    self.assertEqual(job.state.comparison_mode, 'performance')
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.comparison_mode, 'performance')
 
   def testComparisonModeUnknown(self):
     request = dict(_BASE_REQUEST)
@@ -115,34 +123,41 @@ class NewTest(_NewTest):
   def testComparisonMagnitude(self):
     request = dict(_BASE_REQUEST)
     request['comparison_magnitude'] = '123.456'
-    response = self.testapp.post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    job = job_module.JobFromId(result['jobId'])
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.state._comparison_magnitude, 123.456)
 
+  def testQuests(self):
+    request = dict(_BASE_REQUEST)
+    request['quests'] = ['FindIsolate', 'RunTelemetryTest']
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(len(job.state._quests), 2)
+    self.assertIsInstance(job.state._quests[0], quest_module.FindIsolate)
+    self.assertIsInstance(job.state._quests[1], quest_module.RunTelemetryTest)
+
+  def testQuestsString(self):
+    request = dict(_BASE_REQUEST)
+    request['quests'] = 'FindIsolate,RunTelemetryTest'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(len(job.state._quests), 2)
+    self.assertIsInstance(job.state._quests[0], quest_module.FindIsolate)
+    self.assertIsInstance(job.state._quests[1], quest_module.RunTelemetryTest)
+
+  def testUnknownQuest(self):
+    request = dict(_BASE_REQUEST)
+    request['quests'] = 'FindIsolate,UnknownQuest'
+    response = self.Post('/api/new', request, status=400)
+    self.assertIn('error', json.loads(response.body))
+
   def testWithChanges(self):
-    base_request = {}
-    base_request.update(_BASE_REQUEST)
-    del base_request['start_git_hash']
-    del base_request['end_git_hash']
-    base_request['changes'] = json.dumps([
+    request = dict(_BASE_REQUEST)
+    del request['start_git_hash']
+    del request['end_git_hash']
+    request['changes'] = json.dumps([
         {'commits': [{'repository': 'chromium', 'git_hash': '1'}]},
         {'commits': [{'repository': 'chromium', 'git_hash': '3'}]}])
-
-    response = self.Post('/api/new', base_request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
-
-  @mock.patch('dashboard.pinpoint.models.change.patch.FromDict')
-  def testWithPatch(self, mock_patch):
-    mock_patch.return_value = patch_module.GerritPatch(
-        'https://lalala', '123', None)
-    request = dict(_BASE_REQUEST)
-    request['patch'] = 'https://lalala/c/foo/bar/+/123'
 
     response = self.Post('/api/new', request, status=200)
     result = json.loads(response.body)
@@ -150,10 +165,15 @@ class NewTest(_NewTest):
     self.assertEqual(
         result['jobUrl'],
         'https://testbed.example.com/job/%s' % result['jobId'])
-    mock_patch.assert_called_with(request['patch'])
-    job = job_module.JobFromId(result['jobId'])
-    self.assertEqual('123', job.gerrit_change_id)
+
+  def testWithPatch(self):
+    request = dict(_BASE_REQUEST)
+    request['patch'] = 'https://lalala/c/foo/bar/+/123'
+
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual('https://lalala', job.gerrit_server)
+    self.assertEqual('repo~branch~id', job.gerrit_change_id)
 
   def testMissingTarget(self):
     request = dict(_BASE_REQUEST)
@@ -178,27 +198,16 @@ class NewTest(_NewTest):
     request = dict(_BASE_REQUEST)
     request['bug_id'] = ''
     response = self.Post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
-    job = job_module.JobFromId(result['jobId'])
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertIsNone(job.bug_id)
 
-  @mock.patch('dashboard.pinpoint.models.change.patch.FromDict')
-  def testPin(self, mock_patch):
-    mock_patch.return_value = 'patch'
+  def testPin(self):
     request = dict(_BASE_REQUEST)
-    request['pin'] = 'https://lalala/c/foo/bar/+/123'
+    request['pin'] = 'https://codereview.com/c/foo/bar/+/123'
 
     response = self.Post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    self.assertIn('jobId', result)
-    self.assertEqual(
-        result['jobUrl'],
-        'https://testbed.example.com/job/%s' % result['jobId'])
-    mock_patch.assert_called_with(request['pin'])
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.state._pin, change_test.Change(patch=True))
 
   def testValidTags(self):
     request = dict(_BASE_REQUEST)
@@ -223,12 +232,10 @@ class NewTest(_NewTest):
     request = dict(_BASE_REQUEST)
     request['user'] = 'foo@example.org'
     response = self.Post('/api/new', request, status=200)
-    result = json.loads(response.body)
-    job = job_module.JobFromId(result['jobId'])
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.user, 'foo@example.org')
 
   def testUserFromAuth(self):
     response = self.Post('/api/new', _BASE_REQUEST, status=200)
-    result = json.loads(response.body)
-    job = job_module.JobFromId(result['jobId'])
-    self.assertEqual(job.user, testing_common.EXTERNAL_USER.email())
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(job.user, testing_common.INTERNAL_USER.email())

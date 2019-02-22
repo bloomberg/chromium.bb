@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow (anonymous) at (0,36) size 784x168
         LayoutBR {BR} at (300,54) size 0x0
         LayoutBR {BR} at (0,54) size 0x19
-        LayoutBR {BR} at (320,113) size 0x19
+        LayoutBR {BR} at (320,128) size 0x0
         LayoutBR {BR} at (0,128) size 0x19
         LayoutBR {BR} at (0,148) size 0x19
 layer at (8,44) size 300x54
@@ -44,6 +44,18 @@ layer at (139,69) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
 layer at (139,69) size 111x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 111x4 [bgcolor=#0000008A]
+layer at (266,47) size 0x48 transparent
+  LayoutSlider {INPUT} at (258,3) size 0x48 [color=#9D968E]
+    LayoutFlexibleBox {DIV} at (0,22) size 0x4
+layer at (266,69) size 12x4
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 12x4 [bgcolor=#00000033]
+    LayoutBlockFlow {DIV} at (0,-4) size 12x12 [bgcolor=#000000DE]
+layer at (266,69) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4
+layer at (266,69) size 0x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
+layer at (266,69) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4 [bgcolor=#0000008A]
 layer at (8,118) size 320x54
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x54
 layer at (8,118) size 320x54
@@ -72,6 +84,18 @@ layer at (139,143) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
 layer at (139,143) size 131x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 131x4 [bgcolor=#0000008A]
+layer at (286,121) size 0x48 transparent
+  LayoutSlider {INPUT} at (278,3) size 0x48 [color=#9D968E]
+    LayoutFlexibleBox {DIV} at (0,22) size 0x4
+layer at (286,143) size 12x4
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 12x4 [bgcolor=#00000033]
+    LayoutBlockFlow {DIV} at (0,-4) size 12x12 [bgcolor=#000000DE]
+layer at (286,143) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4
+layer at (286,143) size 0x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
+layer at (286,143) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4 [bgcolor=#0000008A]
 layer at (8,192) size 320x100
   LayoutMedia (positioned) {AUDIO} at (8,192) size 320x100 [bgcolor=#0000FF]
 layer at (8,192) size 320x100
@@ -102,3 +126,15 @@ layer at (139,263) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
 layer at (139,263) size 131x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 131x4 [bgcolor=#0000008A]
+layer at (286,241) size 0x48 transparent
+  LayoutSlider {INPUT} at (278,3) size 0x48 [color=#9D968E]
+    LayoutFlexibleBox {DIV} at (0,22) size 0x4
+layer at (286,263) size 12x4
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 12x4 [bgcolor=#00000033]
+    LayoutBlockFlow {DIV} at (0,-4) size 12x12 [bgcolor=#000000DE]
+layer at (286,263) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4
+layer at (286,263) size 0x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#000000DE]
+layer at (286,263) size 12x4
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 12x4 [bgcolor=#0000008A]

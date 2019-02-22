@@ -102,7 +102,6 @@
 <translation id="3171922709365450819">هذا الجهاز لا يعمل مع هذا البرنامج لأنه يتطلب مصادقة جهة خارجية.</translation>
 <translation id="3194245623920924351">‏سطح المكتب البعيد من Chrome</translation>
 <translation id="3197730452537982411">سطح المكتب البعيد</translation>
-<translation id="3212472844831225214">‏• توفير دعم إضافي لنظام Android 9.0 Pie</translation>
 <translation id="324272851072175193">إرسال هذه التعليمات بالبريد الإلكتروني</translation>
 <translation id="3258789396564295715">‏يمكنك الدخول بأمان إلى هذا الكمبيوتر باستخدام سطح المكتب البعيد من Chrome.</translation>
 <translation id="3286521253923406898">‏أداة التحكم في مضيف التوافق مع نظام التشغيل Chrome</translation>
@@ -332,6 +331,8 @@
 <translation id="8525306231823319788">ملء الشاشة</translation>
 <translation id="8548209692293300397">‏لقد سجّلت الدخول سابقًا كالآتي <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  للوصول إلى أجهزة الكمبيوتر من خلال هذا الحساب، <ph name="LINK_BEGIN" />سجّل الدخول إلى Google Chrome<ph name="LINK_END" /> بهذا الحساب ثم أعد تثبيت سطح المكتب البعيد من Chrome.</translation>
 <translation id="8642984861538780905">متوسطة</translation>
+<translation id="8705151241155781642">‏• توفير دعم إضافي لنظام Android 9.0 Pie.
+• الدعم من أجل تغيير حجم درجة دقة سطح المكتب البعيد للمطابقة مع شاشة جهاز Android.</translation>
 <translation id="8712909229180978490">‏لا أستطيع أن أرى الملفات المحفوظة على الإنترنت في Google Drive.</translation>
 <translation id="8743328882720071828">هل تريد السماح لـ <ph name="CLIENT_USERNAME" /> برؤية جهاز الكمبيوتر والتحكم فيه؟</translation>
 <translation id="8747048596626351634">‏تعطلت الجلسة أو تعذّر بدء تشغيلها. في حال وجود ~/.chrome-remote-desktop-session على جهاز الكمبيوتر البعيد، تأكد من بدء تشغيلها لعملية مقدمة لفترة زمنية طويلة، مثل بيئة سطح المكتب أو مدير النوافذ.</translation>

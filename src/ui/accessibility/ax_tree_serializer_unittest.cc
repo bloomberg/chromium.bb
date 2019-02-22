@@ -389,4 +389,76 @@ TEST_F(AXTreeSerializerTest, DuplicateIdsReturnsErrorAndFlushes) {
   ASSERT_EQ(static_cast<size_t>(5), update.nodes.size());
 }
 
+// If a tree serializer is reset, that means it doesn't know about
+// the state of the client tree anymore. The safest thing to do in
+// that circumstance is to force the client to clear everything.
+TEST_F(AXTreeSerializerTest, ResetUpdatesNodeIdToClear) {
+  // (1 (2 (3 (4 (5)))))
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(5);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[1].id = 2;
+  treedata0_.nodes[1].child_ids.push_back(3);
+  treedata0_.nodes[2].id = 3;
+  treedata0_.nodes[2].child_ids.push_back(4);
+  treedata0_.nodes[3].id = 4;
+  treedata0_.nodes[3].child_ids.push_back(5);
+  treedata0_.nodes[4].id = 5;
+
+  // Node 5 has been reparented from being a child of node 4,
+  // to a child of node 2.
+  // (1 (2 (3 (4) 5)))
+  treedata1_.root_id = 1;
+  treedata1_.nodes.resize(5);
+  treedata1_.nodes[0].id = 1;
+  treedata1_.nodes[0].child_ids.push_back(2);
+  treedata1_.nodes[1].id = 2;
+  treedata1_.nodes[1].child_ids.push_back(3);
+  treedata1_.nodes[1].child_ids.push_back(5);
+  treedata1_.nodes[2].id = 3;
+  treedata1_.nodes[2].child_ids.push_back(4);
+  treedata1_.nodes[3].id = 4;
+  treedata1_.nodes[4].id = 5;
+
+  CreateTreeSerializer();
+
+  serializer_->Reset();
+
+  AXTreeUpdate update;
+  ASSERT_TRUE(serializer_->SerializeChanges(tree1_->GetFromId(4), &update));
+
+  // The update should unserialize without errors.
+  AXTree dst_tree(treedata0_);
+  EXPECT_TRUE(dst_tree.Unserialize(update)) << dst_tree.error();
+}
+
+// Ensure that calling Reset doesn't cause any problems if
+// the root changes.
+TEST_F(AXTreeSerializerTest, ResetWorksWithNewRootId) {
+  // (1 (2))
+  treedata0_.root_id = 1;
+  treedata0_.nodes.resize(2);
+  treedata0_.nodes[0].id = 1;
+  treedata0_.nodes[0].child_ids.push_back(2);
+  treedata0_.nodes[1].id = 2;
+
+  // (3 (4))
+  treedata1_.root_id = 3;
+  treedata1_.nodes.resize(2);
+  treedata1_.nodes[0].id = 3;
+  treedata1_.nodes[0].child_ids.push_back(4);
+  treedata1_.nodes[1].id = 4;
+
+  CreateTreeSerializer();
+  serializer_->Reset();
+
+  AXTreeUpdate update;
+  ASSERT_TRUE(serializer_->SerializeChanges(tree1_->GetFromId(4), &update));
+
+  // The update should unserialize without errors.
+  AXTree dst_tree(treedata0_);
+  EXPECT_TRUE(dst_tree.Unserialize(update)) << dst_tree.error();
+}
+
 }  // namespace ui

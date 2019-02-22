@@ -56,7 +56,8 @@ class VrGLThread;
 class VrInputConnection;
 class VrShellDelegate;
 class VrWebContentsObserver;
-enum class VrUiTestActivityResult;
+enum class UiTestOperationType;
+enum class UiTestOperationResult;
 struct Assets;
 struct AutocompleteRequest;
 
@@ -113,7 +114,6 @@ class VrShell : device::GvrGamepadDataProvider,
   base::android::ScopedJavaLocalRef<jobject> GetVrInputConnectionForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void OnFullscreenChanged(bool enabled);
   void OnLoadProgressChanged(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              double progress);
@@ -280,7 +280,19 @@ class VrShell : device::GvrGamepadDataProvider,
       const base::android::JavaParamRef<jobject>& obj,
       jint quiescence_timeout_ms);
 
-  void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
+  void SaveNextFrameBufferToDiskForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jstring filepath_base);
+
+  void WatchElementForVisibilityChangeForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint element_name,
+      jint timeout_ms);
+
+  void ReportUiOperationResultForTesting(UiTestOperationType action_type,
+                                         UiTestOperationResult result);
 
   void PerformControllerActionForTesting(
       JNIEnv* env,
@@ -289,6 +301,12 @@ class VrShell : device::GvrGamepadDataProvider,
       jint action_type,
       jfloat x,
       jfloat y);
+
+  void PerformKeyboardInputForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint input_type,
+      jstring input_string);
   gfx::AcceleratedWidget GetRenderSurface();
 
  private:

@@ -60,6 +60,10 @@ const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 const char kArcPackages[] = "arc.packages";
 // A preference that indicates that Play Auto Install flow was already started.
 const char kArcPaiStarted[] = "arc.pai.started";
+// A preference that indicates that provisioning was initiated from OOBE. This
+// is preserved across Chrome restart.
+const char kArcProvisioningInitiatedFromOobe[] =
+    "arc.provisioning.initiated.from.oobe";
 // A preference that indicates that Play Fast App Reinstall flow was already
 // started.
 const char kArcFastAppReinstallStarted[] = "arc.fast.app.reinstall.started";
@@ -93,17 +97,21 @@ const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
 // control settings.
 const char kVoiceInteractionActivityControlAccepted[] =
     "settings.voice_interaction.activity_control.accepted";
-// A preference that indicates the user has enabled voice interaction services.
-const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 // A preference that indicates the user has allowed voice interaction services
 // to access the "context" (text and graphic content that is currently on
 // screen).
 const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
+// A preference that indicates the user has enabled voice interaction services.
+const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
 // A preference that indicates the user has allowed voice interaction services
 // to use hotword listening.
 const char kVoiceInteractionHotwordEnabled[] =
     "settings.voice_interaction.hotword.enabled";
+// A preference that indicates whether microphone should be open when the voice
+// interaction launches.
+const char kVoiceInteractionLaunchWithMicOpen[] =
+    "settings.voice_interaction.launch_with_mic_open";
 // A preference that indicates the user has allowed voice interaction services
 // to send notification.
 const char kVoiceInteractionNotificationEnabled[] =
@@ -143,6 +151,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcFastAppReinstallStarted, false);
   registry->RegisterListPref(kArcFastAppReinstallPackages);
   registry->RegisterBooleanPref(kArcPolicyComplianceReported, false);
+  registry->RegisterBooleanPref(kArcProvisioningInitiatedFromOobe, false);
   registry->RegisterBooleanPref(kArcSignedIn, false);
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
@@ -152,6 +161,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionNotificationEnabled, true);
+  registry->RegisterBooleanPref(kVoiceInteractionLaunchWithMicOpen, false);
 }
 
 }  // namespace prefs

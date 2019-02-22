@@ -12,6 +12,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_service.h"
@@ -50,6 +51,7 @@
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/net/request_tracker_impl.h"
+#include "ios/web/public/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -59,7 +61,7 @@
 namespace {
 // Helper method to post |closure| on the UI thread.
 void PostTaskOnUIThread(base::OnceClosure closure) {
-  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, std::move(closure));
+  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, std::move(closure));
 }
 NSString* const kStartupAttemptReset = @"StartupAttempReset";
 }  // namespace
@@ -198,20 +200,16 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         std::max(CGRectGetWidth(screenBounds), CGRectGetHeight(screenBounds));
     _incognitoBlocker = [[UIView alloc]
         initWithFrame:CGRectMake(0, 0, maxDimension, maxDimension)];
-    if (IsUIRefreshPhase1Enabled()) {
-      NSBundle* mainBundle = base::mac::FrameworkBundle();
-      NSArray* topObjects =
-          [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
-      UIViewController* launchScreenController =
-          base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
-      [_incognitoBlocker addSubview:[launchScreenController view]];
-      [launchScreenController view].autoresizingMask =
-          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-      _incognitoBlocker.autoresizingMask =
-          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    } else {
-      InstallBackgroundInView(_incognitoBlocker);
-    }
+    NSBundle* mainBundle = base::mac::FrameworkBundle();
+    NSArray* topObjects =
+        [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+    UIViewController* launchScreenController =
+        base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+    [_incognitoBlocker addSubview:[launchScreenController view]];
+    [launchScreenController view].autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    _incognitoBlocker.autoresizingMask =
+        UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     [_window addSubview:_incognitoBlocker];
   }
 
@@ -229,8 +227,8 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
           _savingCookies = NO;
         }));
-    web::WebThread::PostTask(
-        web::WebThread::IO, FROM_HERE, base::BindOnce(^{
+    base::PostTaskWithTraits(
+        FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
           net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
               getter->GetURLRequestContext()->cookie_store());
           // FlushStore() runs its callback on any thread. Jump back to UI.

@@ -25,7 +25,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_background_sync_context.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -90,14 +89,13 @@ class BackgroundSyncServiceImplTest : public testing::Test {
  public:
   BackgroundSyncServiceImplTest()
       : thread_bundle_(
-            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
+            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)) {
     default_sync_registration_ = blink::mojom::SyncRegistration::New();
   }
 
   void SetUp() override {
     // Don't let the tests be confused by the real-world device connectivity
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    background_sync_test_util::SetIgnoreNetworkChanges(true);
 
     CreateTestHelper();
     CreateStoragePartition();
@@ -115,7 +113,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     background_sync_context_ = nullptr;
 
     // Restore the network observer functionality for subsequent tests
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(false);
+    background_sync_test_util::SetIgnoreNetworkChanges(false);
   }
 
   // SetUp helper methods
@@ -158,8 +156,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     BackgroundSyncNetworkObserver* network_observer =
         background_sync_context_->background_sync_manager()
             ->GetNetworkObserverForTesting();
-    network_observer->NotifyManagerIfNetworkChangedForTesting(
-        net::NetworkChangeNotifier::CONNECTION_NONE);
+    network_observer->NotifyManagerIfConnectionChangedForTesting(
+        network::mojom::ConnectionType::CONNECTION_NONE);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -211,7 +209,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   scoped_refptr<BackgroundSyncContext> background_sync_context_;

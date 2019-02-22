@@ -76,7 +76,8 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    if (pattern.Parse(extension->url().spec()) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(extension->url().spec()) !=
+        URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidURLPatternError, extension->url().spec());
       return false;

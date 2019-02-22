@@ -8,6 +8,8 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -15,12 +17,18 @@
 #include "content/public/browser/content_browser_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+class PrefService;
+
 namespace content {
 class RenderFrameHost;
 }
 
 namespace net {
 class NetLog;
+}
+
+namespace policy {
+class BrowserPolicyConnectorBase;
 }
 
 namespace safe_browsing {
@@ -44,7 +52,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
 
   // Allows AwBrowserMainParts to initialize a BrowserContext at the right
   // moment during startup. AwContentBrowserClient owns the result.
-  AwBrowserContext* InitBrowserContext();
+  AwBrowserContext* InitBrowserContext(
+      std::unique_ptr<PrefService> pref_service,
+      std::unique_ptr<policy::BrowserPolicyConnectorBase> policy_connector);
 
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
@@ -191,7 +201,15 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
+  bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldEnableStrictSiteIsolation() override;
+  bool WillCreateURLLoaderFactory(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* frame,
+      bool is_navigation,
+      const url::Origin& request_initiator,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      bool* bypass_redirect_checks) override;
 
   static void DisableCreatingTaskScheduler();
 

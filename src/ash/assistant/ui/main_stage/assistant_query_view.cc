@@ -4,11 +4,14 @@
 
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -36,9 +39,14 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(SkColor color) {
 
 AssistantQueryView::AssistantQueryView() {
   InitLayout();
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kHeading);
 }
 
 AssistantQueryView::~AssistantQueryView() = default;
+
+const char* AssistantQueryView::GetClassName() const {
+  return "AssistantQueryView";
+}
 
 gfx::Size AssistantQueryView::CalculatePreferredSize() const {
   return gfx::Size(kMaxWidthDip, GetHeightForWidth(kMaxWidthDip));

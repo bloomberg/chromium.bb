@@ -1,15 +1,19 @@
 <!DOCTYPE HTML>
 <script>
 
-function checkPermission() {
-  navigator.storage.persisted().then(function(is_persistent) {
-    window.domAutomationController.send(is_persistent);
-  });
+async function checkPermission() {
+  const is_persistent = await navigator.storage.persisted();
+  window.domAutomationController.send(is_persistent);
 }
 
-function requestPermission() {
-  navigator.storage.persist().then(function(is_persistent) {
-    window.domAutomationController.send(is_persistent);
-  });
+async function checkPermissionUsingPermissionApi() {
+  const status =
+    await navigator.permissions.query({name: 'persistent-storage'});
+  window.domAutomationController.send(status.state);
+}
+
+async function requestPermission() {
+  const is_persistent = await navigator.storage.persist()
+  window.domAutomationController.send(is_persistent);
 }
 </script>

@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -65,10 +64,22 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
   const SecurityOrigin* accessing_origin =
       accessing_window->document()->GetSecurityOrigin();
   const LocalDOMWindow* local_target_window = ToLocalDOMWindow(target_window);
-  if (!accessing_origin->CanAccess(
-          local_target_window->document()->GetSecurityOrigin())) {
-    return false;
+
+  SecurityOrigin::AccessResultDomainDetail detail;
+  bool can_access = accessing_origin->CanAccess(
+      local_target_window->document()->GetSecurityOrigin(), detail);
+  if (detail ==
+          SecurityOrigin::AccessResultDomainDetail::kDomainSetByOnlyOneOrigin ||
+      detail ==
+          SecurityOrigin::AccessResultDomainDetail::kDomainMatchNecessary ||
+      detail == SecurityOrigin::AccessResultDomainDetail::kDomainMismatch) {
+    UseCounter::Count(
+        accessing_window->GetFrame(),
+        can_access ? WebFeature::kDocumentDomainEnabledCrossOriginAccess
+                   : WebFeature::kDocumentDomainBlockedCrossOriginAccess);
   }
+  if (!can_access)
+    return false;
 
   // Notify the loader's client if the initial document has been accessed.
   LocalFrame* target_frame = local_target_window->GetFrame();

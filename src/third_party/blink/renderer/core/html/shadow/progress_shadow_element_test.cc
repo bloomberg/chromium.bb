@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -40,7 +41,7 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
 
   progress->LazyReattachIfAttached();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().documentElement()->RecalcStyle(kForce);
+  GetDocument().GetStyleEngine().RecalcStyle(kForce);
   EXPECT_TRUE(shadow_element->GetNonAttachedStyle());
 
   scoped_refptr<ComputedStyle> style = shadow_element->StyleForLayoutObject();

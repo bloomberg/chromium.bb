@@ -8,8 +8,6 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
-#include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
@@ -28,28 +26,6 @@ HeadsUpDisplayLayer::HeadsUpDisplayLayer()
 }
 
 HeadsUpDisplayLayer::~HeadsUpDisplayLayer() = default;
-
-void HeadsUpDisplayLayer::PrepareForCalculateDrawProperties(
-    const gfx::Size& device_viewport, float device_scale_factor) {
-  gfx::Size device_viewport_in_layout_pixels = gfx::Size(
-      device_viewport.width() / device_scale_factor,
-      device_viewport.height() / device_scale_factor);
-
-  gfx::Size bounds;
-  gfx::Transform matrix;
-  matrix.MakeIdentity();
-
-  if (layer_tree_host()->GetDebugState().ShowHudRects()) {
-    bounds = device_viewport_in_layout_pixels;
-  } else {
-    int size = 256;
-    bounds.SetSize(size, size);
-    matrix.Translate(device_viewport_in_layout_pixels.width() - size, 0.0);
-  }
-
-  SetBounds(bounds);
-  SetTransform(matrix);
-}
 
 bool HeadsUpDisplayLayer::HasDrawableContent() const {
   return true;

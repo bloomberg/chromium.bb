@@ -79,7 +79,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     """Send a Put slave build request to Buildbucket.
 
     Args:
-      build_name: Salve build name to put to Buildbucket.
+      build_name: Slave build name to put to Buildbucket.
       build_config: Slave build config to put to Buildbucket.
       master_build_id: CIDB id of the master scheduling the slave build.
       master_buildbucket_id: buildbucket id of the master scheduling the

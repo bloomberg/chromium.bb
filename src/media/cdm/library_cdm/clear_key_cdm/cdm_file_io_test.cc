@@ -500,7 +500,7 @@ void FileIOTestRunner::RunNextTest() {
                      << (total_num_tests_ - num_passed_tests_) << " failed in "
                      << total_num_tests_ << " tests.";
     bool success = (num_passed_tests_ == total_num_tests_);
-    base::ResetAndReturn(&completion_cb_).Run(success);
+    std::move(completion_cb_).Run(success);
     return;
   }
 
@@ -639,7 +639,7 @@ bool FileIOTest::CheckResult(const TestStep& result) {
     return false;
 
   // If there are multiple results expected, the order does not matter.
-  std::list<TestStep>::iterator iter = test_steps_.begin();
+  auto iter = test_steps_.begin();
   for (; iter != test_steps_.end(); ++iter) {
     if (!IsResult(*iter))
       return false;
@@ -661,7 +661,7 @@ void FileIOTest::OnTestComplete(bool success) {
   }
   FILE_IO_DVLOG(3) << test_name_ << (success ? " PASSED" : " FAILED");
   DLOG_IF(WARNING, !success) << test_name_ << " FAILED";
-  base::ResetAndReturn(&completion_cb_).Run(success);
+  std::move(completion_cb_).Run(success);
 }
 
 }  // namespace media

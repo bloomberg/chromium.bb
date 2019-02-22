@@ -72,7 +72,7 @@ BleListenerOperation::BleListenerOperation(
 
 BleListenerOperation::~BleListenerOperation() = default;
 
-void BleListenerOperation::AttemptConnectionToDevice(
+void BleListenerOperation::PerformAttemptConnectionToDevice(
     ConnectionPriority connection_priority) {
   is_attempt_active_ = true;
   ble_connection_manager_->AttemptBleListenerConnection(

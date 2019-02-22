@@ -901,7 +901,10 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     int rv = quic_request_.Request(
         destination, quic_version_, request_info_.privacy_mode, priority_,
         request_info_.socket_tag, ssl_config->GetCertVerifyFlags(), url,
-        net_log_, &net_error_details_, io_callback_);
+        net_log_, &net_error_details_,
+        base::BindOnce(&Job::OnFailedOnDefaultNetwork,
+                       ptr_factory_.GetWeakPtr()),
+        io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else if (rv == ERR_IO_PENDING) {
@@ -997,6 +1000,12 @@ void HttpStreamFactory::Job::OnQuicHostResolution(int result) {
   DCHECK(expect_on_quic_host_resolution_);
   expect_on_quic_host_resolution_ = false;
   delegate_->OnConnectionInitialized(this, result);
+}
+
+void HttpStreamFactory::Job::OnFailedOnDefaultNetwork(int result) {
+  DCHECK_EQ(job_type_, ALTERNATIVE);
+  DCHECK(using_quic_);
+  delegate_->OnFailedOnDefaultNetwork(this);
 }
 
 int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
@@ -1294,8 +1303,7 @@ int HttpStreamFactory::Job::DoCreateStreamComplete(int result) {
   if (result < 0)
     return result;
 
-  session_->proxy_resolution_service()->ReportSuccess(
-      proxy_info_, session_->context().proxy_delegate);
+  session_->proxy_resolution_service()->ReportSuccess(proxy_info_);
   next_state_ = STATE_NONE;
   return OK;
 }

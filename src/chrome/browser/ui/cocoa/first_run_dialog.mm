@@ -139,20 +139,23 @@ void ShowFirstRunDialog(Profile* profile) {
   scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
   base::RunLoop run_loop;
 
-  // Swap-out the BrowserProcessImpl's quit-closure with the one for our
-  // modal RunLoop, so that it can be exit either by the dialog being closed,
-  // or in response to SIGTERM being handled.
-  base::OnceClosure browser_quit_closure =
-      static_cast<BrowserProcessImpl*>(g_browser_process)
-          ->SwapQuitClosure(run_loop.QuitClosure());
+  // At this point during startup, ChromeBrowserMain has yet to start the main
+  // message loop. Consequently, this run loop will effectively be the main
+  // message loop for the duration of the dialog's lifetime. Tell the
+  // BrowserProcessImpl how to quit the loop if any of the shutdown signal
+  // handlers is received. (The ShutdownDetector posts a task to the UI thread's
+  // TaskRunner to begin shutdown upon receiving a SIGTERM.)
+  static_cast<BrowserProcessImpl*>(g_browser_process)
+      ->SetQuitClosure(run_loop.QuitClosure());
 
+  // Barring a shutdown signal, the run loop will quit when the user closes the
+  // first run dialog.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get(),
                             run_loop.QuitClosure()));
   run_loop.Run();
 
-  static_cast<BrowserProcessImpl*>(g_browser_process)
-      ->SwapQuitClosure(std::move(browser_quit_closure));
+  static_cast<BrowserProcessImpl*>(g_browser_process)->ClearQuitClosure();
 }
 
 - (void)show {

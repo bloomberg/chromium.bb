@@ -27,23 +27,21 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "answer_finance.icon",
     "answer_sunrise.icon",
     "answer_when_is.icon",
+    "bookmark.icon",
+    "clear.icon",
     "drive_docs.icon",
+    "drive_forms.icon",
     "drive_logo.icon",
     "drive_sheets.icon",
     "drive_slides.icon",
     "blank.icon",
     "calculator.icon",
     "extension_app.icon",
-    "http.icon",
     "keyword_search.icon",
-    "md_page.icon",
-    "star.icon",
+    "page.icon",
+    "pedal.icon",
     "switch.icon",
     "tab.icon",
-    "touchable_bookmark.icon",
-    "touchable_clear.icon",
-    "touchable_page.icon",
-    "touchable_search.icon",
   ]
 }
 
@@ -117,6 +115,12 @@ jumbo_static_library("browser") {
     "omnibox_metrics_provider.cc",
     "omnibox_metrics_provider.h",
     "omnibox_navigation_observer.h",
+    "omnibox_pedal.cc",
+    "omnibox_pedal.h",
+    "omnibox_pedal_implementations.cc",
+    "omnibox_pedal_implementations.h",
+    "omnibox_pedal_provider.cc",
+    "omnibox_pedal_provider.h",
     "omnibox_popup_model.cc",
     "omnibox_popup_model.h",
     "omnibox_popup_view.h",
@@ -209,9 +213,6 @@ jumbo_static_library("browser") {
       "//components/vector_icons",
     ]
   }
-
-  # TODO(brettw) Fix the include cycle and remove this line.
-  allow_circular_includes_from = [ "//components/search_engines" ]
 }
 
 if (is_android) {
@@ -320,6 +321,8 @@ source_set("unit_tests") {
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
+    "omnibox_pedal_provider_unittest.cc",
+    "omnibox_pedal_unittest.cc",
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
     "query_in_omnibox_unittest.cc",

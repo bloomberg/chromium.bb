@@ -63,6 +63,7 @@ if (!is_ios) {
     ]
     deps = [
       ":tools_lib",
+      "../core/common",
       "//base",
     ]
   }
@@ -109,6 +110,10 @@ if (!is_ios) {
     args = [
       rebase_path(inputs[0], root_build_dir),
       rebase_path("$target_gen_dir/GeneratedRulesetData", root_build_dir),
+      "--version_output=" +
+          rebase_path("$target_gen_dir/default_local_state.json",
+                      root_build_dir),
+      "--content_version=1000",
     ]
   }
 }

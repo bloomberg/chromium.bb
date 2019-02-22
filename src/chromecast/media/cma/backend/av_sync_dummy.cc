@@ -9,35 +9,11 @@
 namespace chromecast {
 namespace media {
 
-class AvSyncDummy : public AvSync {
- public:
-  AvSyncDummy();
-
-  // AvSync implementation:
-  void NotifyStart(int64_t timestamp, int64_t pts) override;
-  void NotifyStop() override;
-  void NotifyPause() override;
-  void NotifyResume() override;
-  void NotifyPlaybackRateChange(float rate) override;
-};
-
 std::unique_ptr<AvSync> AvSync::Create(
-    const scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaPipelineBackendForMixer* const backend) {
-  return std::make_unique<AvSyncDummy>();
+  return nullptr;
 }
-
-AvSyncDummy::AvSyncDummy() {}
-
-void AvSyncDummy::NotifyStart(int64_t timestamp, int64_t pts) {}
-
-void AvSyncDummy::NotifyStop() {}
-
-void AvSyncDummy::NotifyPause() {}
-
-void AvSyncDummy::NotifyResume() {}
-
-void AvSyncDummy::NotifyPlaybackRateChange(float rate) {}
 
 }  // namespace media
 }  // namespace chromecast

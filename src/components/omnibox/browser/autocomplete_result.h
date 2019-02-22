@@ -55,6 +55,13 @@ class AutocompleteResult {
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);
 
+  // Creates and adds any dedicated Pedal matches triggered by existing match.
+  void AppendDedicatedPedalMatches(AutocompleteProviderClient* client,
+                                   const AutocompleteInput& input);
+
+  // Sets |pedal| in matches that have Pedal-triggering text.
+  void ConvertInSuggestionPedalMatches(AutocompleteProviderClient* client);
+
   // Sets |has_tab_match| in matches whose URL matches an open tab's URL.
   // Also, fixes up the description if not using another UI element to
   // annotate (e.g. tab switch button). |input| can be null; if provided,
@@ -160,6 +167,14 @@ class AutocompleteResult {
       metrics::OmniboxEventProto::PageClassification page_classification,
       const ACMatches& old_matches,
       const ACMatches& new_matches);
+
+  // This pulls the relevant fields out of a match for comparison with other
+  // matches for the purpose of deduping. It uses the stripped URL, so that we
+  // collapse similar URLs if necessary, and whether the match is a calculator
+  // suggestion, because we don't want to dedupe them against URLs that simply
+  // happen to go to the same destination.
+  static std::pair<GURL, bool> GetMatchComparisonFields(
+      const AutocompleteMatch& match);
 
   ACMatches matches_;
 

@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_context.h"
@@ -24,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -131,13 +133,15 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   ~BackgroundSyncBrowserTest() override {}
 
   void SetUp() override {
-    background_sync_test_util::SetIgnoreNetworkChangeNotifier(true);
+    background_sync_test_util::SetIgnoreNetworkChanges(true);
 
     ContentBrowserTest::SetUp();
   }
 
   void SetIncognitoMode(bool incognito) {
     shell_ = incognito ? CreateOffTheRecordBrowser() : shell();
+    // Let any async shell creation logic finish.
+    base::RunLoop().RunUntilIdle();
   }
 
   StoragePartitionImpl* GetStorage() {
@@ -233,8 +237,8 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
       base::BindOnce(&RegistrationPendingCallback, run_loop.QuitClosure(),
                      base::ThreadTaskRunnerHandle::Get(), &is_pending);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &RegistrationPendingOnIOThread, base::WrapRefCounted(sync_context),
           base::WrapRefCounted(service_worker_context), tag,
@@ -251,8 +255,8 @@ void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
   StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
 
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SetMaxSyncAttemptsOnIOThread,
                      base::WrapRefCounted(sync_context), max_sync_attempts),
       run_loop.QuitClosure());

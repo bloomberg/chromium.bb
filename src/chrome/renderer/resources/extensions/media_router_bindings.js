@@ -20,6 +20,7 @@ loadScript('extensions/common/mojo/keep_alive.mojom');
 loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
 loadScript('media/mojo/interfaces/remoting_common.mojom');
 loadScript('mojo/public/mojom/base/time.mojom');
+loadScript('mojo/public/mojom/base/unguessable_token.mojom');
 loadScript('net/interfaces/ip_address.mojom');
 loadScript('net/interfaces/ip_endpoint.mojom');
 loadScript('url/mojom/origin.mojom');
@@ -1020,6 +1021,17 @@ MediaRouter.prototype.getMirroringServiceHostForDesktop = function(
 }
 
 /**
+ * @param {!url.mojom.Url} presentation_url
+ * @param {!string} presentation_id
+ * @param {!mojo.InterfaceRequest} request
+ */
+MediaRouter.prototype.getMirroringServiceHostForOffscreenTab = function(
+    presentation_url, presentation_id, request) {
+  this.service_.getMirroringServiceHostForOffscreenTab(presentation_url,
+      presentation_id, request);
+}
+
+/**
  * Object containing callbacks set by the provider manager.
  *
  * @constructor
@@ -1310,36 +1322,22 @@ MediaRouteProvider.prototype.terminateRoute = function(routeId) {
  * Posts a message to the route designated by |routeId|.
  * @param {!string} routeId
  * @param {!string} message
- * @return {!Promise.<boolean>} Resolved with true if the message was sent,
- *    or false on failure.
  */
 MediaRouteProvider.prototype.sendRouteMessage = function(
   routeId, message) {
   this.handlers_.onBeforeInvokeHandler();
-  return this.handlers_.sendRouteMessage(routeId, message)
-      .then(function() {
-        return {'sent': true};
-      }, function() {
-        return {'sent': false};
-      });
+  this.handlers_.sendRouteMessage(routeId, message);
 };
 
 /**
  * Sends a binary message to the route designated by |routeId|.
  * @param {!string} routeId
  * @param {!Array<number>} data
- * @return {!Promise.<boolean>} Resolved with true if the data was sent,
- *    or false on failure.
  */
 MediaRouteProvider.prototype.sendRouteBinaryMessage = function(
   routeId, data) {
   this.handlers_.onBeforeInvokeHandler();
-  return this.handlers_.sendRouteBinaryMessage(routeId, new Uint8Array(data))
-      .then(function() {
-        return {'sent': true};
-      }, function() {
-        return {'sent': false};
-      });
+  this.handlers_.sendRouteBinaryMessage(routeId, new Uint8Array(data));
 };
 
 /**

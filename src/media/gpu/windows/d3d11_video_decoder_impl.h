@@ -13,116 +13,76 @@
 #include <string>
 #include <tuple>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
-#include "media/base/callback_registry.h"
-#include "media/base/video_decoder.h"
-#include "media/base/video_decoder_config.h"
-#include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/windows/d3d11_h264_accelerator.h"
-#include "media/gpu/windows/output_with_release_mailbox_cb.h"
+
+namespace gpu {
+class CommandBufferStub;
+struct SyncToken;
+}  // namespace gpu
 
 namespace media {
 
-class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
-                                               public D3D11VideoDecoderClient {
+class MediaLog;
+class D3D11PictureBuffer;
+
+// Does the gpu main thread work for D3D11VideoDecoder.  Except as noted, this
+// class lives on the GPU main thread.
+// TODO(liberato): Rename this class as a follow-on to this refactor.
+class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl
+    : public gpu::CommandBufferStub::DestructionObserver {
  public:
+  // May be constructed on any thread.
   explicit D3D11VideoDecoderImpl(
+      std::unique_ptr<MediaLog> media_log,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
   ~D3D11VideoDecoderImpl() override;
 
-  // VideoDecoder implementation:
-  std::string GetDisplayName() const override;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
-  void Decode(scoped_refptr<DecoderBuffer> buffer,
-              const DecodeCB& decode_cb) override;
-  void Reset(const base::Closure& closure) override;
-  bool NeedsBitstreamConversion() const override;
-  bool CanReadWithoutStalling() const override;
-  int GetMaxDecodeRequests() const override;
+  using InitCB = base::OnceCallback<void(bool success)>;
 
-  // D3D11VideoDecoderClient implementation.
-  D3D11PictureBuffer* GetPicture() override;
-  void OutputResult(D3D11PictureBuffer* buffer,
-                    const VideoColorSpace& buffer_colorspace) override;
+  // Returns a picture buffer that's no longer in use by the client.
+  using ReturnPictureBufferCB =
+      base::RepeatingCallback<void(scoped_refptr<D3D11PictureBuffer>)>;
+
+  // We will call back |init_cb| with the init status.  |try_decoding_cb| should
+  // try to re-start decoding.  We'll call this when we do something that might
+  // allow decoding to make progress, such as reclaim a picture buffer.
+  virtual void Initialize(InitCB init_cb,
+                          ReturnPictureBufferCB return_picture_buffer_cb);
+
+  // Called when the VideoFrame that uses |buffer| is freed.
+  void OnMailboxReleased(scoped_refptr<D3D11PictureBuffer> buffer,
+                         const gpu::SyncToken& sync_token);
 
   // Return a weak ptr, since D3D11VideoDecoder constructs callbacks for us.
+  // May be called from any thread.
   base::WeakPtr<D3D11VideoDecoderImpl> GetWeakPtr();
 
  private:
-  enum class State {
-    // Initializing resources required to create a codec.
-    kInitializing,
-    // Initialization has completed and we're running. This is the only state
-    // in which |codec_| might be non-null. If |codec_| is null, a codec
-    // creation is pending.
-    kRunning,
-    // The decoder cannot make progress because it doesn't have the key to
-    // decrypt the buffer. Waiting for a new key to be available.
-    // This should only be transitioned from kRunning, and should only
-    // transition to kRunning.
-    kWaitingForNewKey,
-    // A fatal error occurred. A terminal state.
-    kError,
-  };
-
-  void DoDecode();
-  void CreatePictureBuffers();
-
-  void OnMailboxReleased(scoped_refptr<D3D11PictureBuffer> buffer,
-                         const gpu::SyncToken& sync_token);
   void OnSyncTokenReleased(scoped_refptr<D3D11PictureBuffer> buffer);
 
-  // Callback to notify that new usable key is available.
-  void NotifyNewKey();
+  void OnWillDestroyStub(bool have_context) override;
 
-  // Enter the kError state.  This will fail any pending |init_cb_| and / or
-  // pending decode as well.
-  void NotifyError(const char* reason);
+  void DestroyStub();
+
+  std::unique_ptr<MediaLog> media_log_;
 
   base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
   gpu::CommandBufferStub* stub_ = nullptr;
 
-  Microsoft::WRL::ComPtr<ID3D11Device> device_;
-  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
-  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context_;
-
-  std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
-
-  GUID decoder_guid_;
-
-  std::list<std::pair<scoped_refptr<DecoderBuffer>, DecodeCB>>
-      input_buffer_queue_;
-  scoped_refptr<DecoderBuffer> current_buffer_;
-  DecodeCB current_decode_cb_;
-  base::TimeDelta current_timestamp_;
-
-  // During init, these will be set.
-  InitCB init_cb_;
-  OutputCB output_cb_;
-  bool is_encrypted_ = false;
-
-  // It would be nice to unique_ptr these, but we give a ref to the VideoFrame
-  // so that the texture is retained until the mailbox is opened.
-  std::vector<scoped_refptr<D3D11PictureBuffer>> picture_buffers_;
-
-  State state_ = State::kInitializing;
-
-  // Callback registration to keep the new key callback registered.
-  std::unique_ptr<CallbackRegistration> new_key_callback_registration_;
-
   // Wait sequence for sync points.
   gpu::SequenceId wait_sequence_id_;
+
+  // Called when we get a picture buffer back from the client.
+  ReturnPictureBufferCB return_picture_buffer_cb_;
+
+  // Has thread affinity -- must be run on the gpu main thread.
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<D3D11VideoDecoderImpl> weak_factory_;
 

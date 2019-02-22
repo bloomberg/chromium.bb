@@ -74,6 +74,14 @@ bool WebGLProgram::LinkStatus(WebGLRenderingContextBase* context) {
   return link_status_;
 }
 
+bool WebGLProgram::CompletionStatus(WebGLRenderingContextBase* context) {
+  GLint completed = 0;
+  gpu::gles2::GLES2Interface* gl = context->ContextGL();
+  gl->GetProgramiv(object_, GL_COMPLETION_STATUS_KHR, &completed);
+
+  return completed;
+}
+
 void WebGLProgram::IncreaseLinkCount() {
   ++link_count_;
   info_valid_ = false;

@@ -16,7 +16,7 @@
 namespace blink {
 
 inline int Blend(int from, int to, double progress) {
-  return lround(from + (to - from) * progress);
+  return static_cast<int>(lround(from + (to - from) * progress));
 }
 
 // For unsigned types.

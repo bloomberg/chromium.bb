@@ -54,6 +54,10 @@ class CORE_EXPORT SVGImageElement final
     return preserve_aspect_ratio_.Get();
   }
 
+  IntSize GetOverriddenIntrinsicSize() const {
+    return overridden_intrinsic_size_;
+  }
+
   bool HasPendingActivity() const final {
     return GetImageLoader().HasPendingActivity();
   }
@@ -63,6 +67,10 @@ class CORE_EXPORT SVGImageElement final
   // Exposed for testing.
   ImageResourceContent* CachedImage() const {
     return GetImageLoader().GetContent();
+  }
+
+  bool IsDefaultIntrinsicSize() const {
+    return is_default_overridden_intrinsic_size_;
   }
 
  private:
@@ -92,6 +100,9 @@ class CORE_EXPORT SVGImageElement final
   bool SelfHasRelativeLengths() const override;
   void DidMoveToNewDocument(Document& old_document) override;
   SVGImageLoader& GetImageLoader() const override { return *image_loader_; }
+
+  IntSize overridden_intrinsic_size_;
+  bool is_default_overridden_intrinsic_size_;
 
   Member<SVGAnimatedLength> x_;
   Member<SVGAnimatedLength> y_;

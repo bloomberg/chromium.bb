@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -190,9 +191,7 @@ void PasswordAccessoryController::SavePasswordsForOrigin(
   for (const auto& pair : best_matches) {
     const PasswordForm* form = pair.second;
     suggestions->emplace_back(form->password_value, GetDisplayUsername(*form),
-                              form->username_value.empty()
-                                  ? Item::Type::NON_INTERACTIVE_SUGGESTION
-                                  : Item::Type::SUGGESTION);
+                              Item::Type::NON_INTERACTIVE_SUGGESTION);
   }
 }
 
@@ -254,16 +253,22 @@ void PasswordAccessoryController::RefreshSuggestionsForField(
 }
 
 void PasswordAccessoryController::DidNavigateMainFrame() {
-  if (current_origin_.IsSameOriginWith(
-          web_contents_->GetMainFrame()->GetLastCommittedOrigin()))
-    return;  // Clean requests only if the navigation was across origins.
   favicon_tracker_.TryCancelAll();  // If there is a request pending, cancel it.
   current_origin_ = url::Origin();
   icons_request_data_.clear();
   origin_suggestions_.clear();
 }
 
+void PasswordAccessoryController::ShowWhenKeyboardIsVisible() {
+  view_->ShowWhenKeyboardIsVisible();
+}
+
+void PasswordAccessoryController::Hide() {
+  view_->Hide();
+}
+
 void PasswordAccessoryController::GetFavicon(
+    int desired_size_in_pixel,
     base::OnceCallback<void(const gfx::Image&)> icon_callback) {
   url::Origin origin = current_origin_;  // Copy origin in case it changes.
   // Check whether this request can be immediately answered with a cached icon.
@@ -283,8 +288,10 @@ void PasswordAccessoryController::GetFavicon(
   if (icon_request->pending_requests.size() > 1)
     return;  // The favicon for this origin was already requested.
 
-  favicon_service_->GetFaviconImageForPageURL(
-      origin.GetURL(),
+  favicon_service_->GetRawFaviconForPageURL(
+      origin.GetURL(), {favicon_base::IconType::kFavicon},
+      desired_size_in_pixel,
+      /* fallback_to_host = */ false,
       base::BindRepeating(  // FaviconService doesn't support BindOnce yet.
           &PasswordAccessoryController::OnImageFetched,
           weak_factory_.GetWeakPtr(), origin),
@@ -376,6 +383,10 @@ std::vector<Item> PasswordAccessoryController::CreateViewItems(
   std::vector<Item> items;
   base::string16 passwords_title_str;
 
+  // Create a horizontal divider line before the title.
+  items.emplace_back(base::string16(), base::string16(), false,
+                     Item::Type::TOP_DIVIDER);
+
   // Create the title element
   passwords_title_str = l10n_util::GetStringFUTF16(
       suggestions.empty()
@@ -413,8 +424,14 @@ std::vector<Item> PasswordAccessoryController::CreateViewItems(
 
 void PasswordAccessoryController::OnImageFetched(
     url::Origin origin,
-    const favicon_base::FaviconImageResult& image_result) {
+    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   FaviconRequestData* icon_request = &icons_request_data_[origin];
+
+  favicon_base::FaviconImageResult image_result;
+  if (bitmap_result.is_valid()) {
+    image_result.image = gfx::Image::CreateFrom1xPNGBytes(
+        bitmap_result.bitmap_data->front(), bitmap_result.bitmap_data->size());
+  }
   icon_request->cached_icon = image_result.image;
   // Only trigger all the callbacks if they still affect a displayed origin.
   if (origin == current_origin_) {

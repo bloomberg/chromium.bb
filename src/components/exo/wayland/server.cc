@@ -14,6 +14,7 @@
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
 #include <linux/input.h>
+#include <notification-shell-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
 #include <presentation-time-server-protocol.h>
 #include <remote-shell-unstable-v1-server-protocol.h>
@@ -39,14 +40,16 @@
 #include <vector>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/frame/caption_buttons/caption_button_types.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_resizer.h"
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -77,6 +80,7 @@
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/keyboard_observer.h"
+#include "components/exo/notification.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
@@ -152,6 +156,14 @@ const base::FilePath::CharType kSocketName[] = FILE_PATH_LITERAL("wayland-0");
 // Group used for wayland socket.
 const char kWaylandSocketGroup[] = "wayland";
 
+// Notification id and notifier id used for NotificationShell.
+constexpr char kNotificationShellNotificationIdFormat[] =
+    "exo-notification-shell.%d.%s";
+constexpr char kNotificationShellNotifierId[] = "exo-notification-shell";
+
+// Incremental id for notification shell instance.
+base::AtomicSequenceNumber g_next_notification_shell_id;
+
 template <class T>
 T* GetUserDataAs(wl_resource* resource) {
   return static_cast<T*>(wl_resource_get_user_data(resource));
@@ -189,6 +201,50 @@ double GetDefaultDeviceScaleFactor() {
       return std::max(1.0, scale);
   }
   return WMHelper::GetInstance()->GetDefaultDeviceScaleFactor();
+}
+
+// Scale the |child_bounds| in such a way that if it should fill the
+// |parent_size|'s width/height, it returns the |parent_size_in_pixel|'s
+// width/height.
+gfx::Rect ScaleBoundsToPixelSnappedToParent(
+    const gfx::Size& parent_size_in_pixel,
+    const gfx::Size& parent_size,
+    float device_scale_factor,
+    const gfx::Rect& child_bounds) {
+  int right = child_bounds.right();
+  int bottom = child_bounds.bottom();
+
+  int new_x = std::round(child_bounds.x() * device_scale_factor);
+  int new_y = std::round(child_bounds.y() * device_scale_factor);
+
+  int new_right = right == parent_size.width()
+                      ? parent_size_in_pixel.width()
+                      : std::round(right * device_scale_factor);
+
+  int new_bottom = bottom == parent_size.height()
+                       ? parent_size_in_pixel.height()
+                       : std::round(bottom * device_scale_factor);
+
+  return gfx::Rect(new_x, new_y, new_right - new_x, new_bottom - new_y);
+}
+
+// Create the insets make sure that work area will be within the chrome's
+// work area when converted to the pixel on client side.
+// TODO(oshima): We should send these information in pixel so that
+// client do not have to convert it back.
+gfx::Insets GetAdjustedInsets(const display::Display& display) {
+  float scale = display.device_scale_factor();
+  gfx::Size size_in_pixel = display.GetSizeInPixel();
+  gfx::Rect work_area_in_display = display.work_area();
+  work_area_in_display.Offset(-display.bounds().x(), -display.bounds().y());
+  gfx::Rect work_area_in_pixel = ScaleBoundsToPixelSnappedToParent(
+      size_in_pixel, display.bounds().size(), scale, work_area_in_display);
+  gfx::Insets insets_in_pixel =
+      gfx::Rect(size_in_pixel).InsetsFrom(work_area_in_pixel);
+  return gfx::Insets(std::ceil(insets_in_pixel.top() / scale),
+                     std::ceil(insets_in_pixel.left() / scale),
+                     std::ceil(insets_in_pixel.bottom() / scale),
+                     std::ceil(insets_in_pixel.right() / scale));
 }
 
 // Convert a timestamp to a time value that can be used when interfacing
@@ -2659,18 +2715,41 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
     for (const auto& display : screen->GetAllDisplays()) {
       const gfx::Rect& bounds = display.bounds();
-      const gfx::Insets& insets = display.GetWorkAreaInsets();
+      const gfx::Insets& insets = GetAdjustedInsets(display);
 
-      double device_scale_factor = WMHelper::GetInstance()
-                                       ->GetDisplayInfo(display.id())
-                                       .device_scale_factor();
+      double device_scale_factor = display.device_scale_factor();
+
+      uint32_t display_id_hi = static_cast<uint32_t>(display.id() >> 32);
+      uint32_t display_id_lo = static_cast<uint32_t>(display.id());
 
       zcr_remote_shell_v1_send_workspace(
-          remote_shell_resource_, static_cast<uint32_t>(display.id() >> 32),
-          static_cast<uint32_t>(display.id()), bounds.x(), bounds.y(),
-          bounds.width(), bounds.height(), insets.left(), insets.top(),
-          insets.right(), insets.bottom(), DisplayTransform(display.rotation()),
+          remote_shell_resource_, display_id_hi, display_id_lo, bounds.x(),
+          bounds.y(), bounds.width(), bounds.height(), insets.left(),
+          insets.top(), insets.right(), insets.bottom(),
+          DisplayTransform(display.rotation()),
           wl_fixed_from_double(device_scale_factor), display.IsInternal());
+
+      if (wl_resource_get_version(remote_shell_resource_) >= 19) {
+        gfx::Size size_in_pixel = display.GetSizeInPixel();
+
+        wl_array data;
+        wl_array_init(&data);
+
+        const auto& bytes =
+            WMHelper::GetInstance()->GetDisplayIdentificationData(display.id());
+        for (uint8_t byte : bytes) {
+          uint8_t* ptr =
+              static_cast<uint8_t*>(wl_array_add(&data, sizeof(uint8_t)));
+          DCHECK(ptr);
+          *ptr = byte;
+        }
+
+        zcr_remote_shell_v1_send_display_info(
+            remote_shell_resource_, display_id_hi, display_id_lo,
+            size_in_pixel.width(), size_in_pixel.height(), &data);
+
+        wl_array_release(&data);
+      }
     }
 
     zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
@@ -2952,7 +3031,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_get_notification_surface,
     remote_shell_get_input_method_surface};
 
-const uint32_t remote_shell_version = 18;
+const uint32_t remote_shell_version = 19;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
@@ -3097,8 +3176,21 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
       DCHECK(rv);
       const int32_t current_output_scale =
           std::round(display_info.zoom_factor() * 1000.f);
-      for (double zoom_factor : display::GetDisplayZoomFactors(active_mode)) {
-        int32_t output_scale = std::round(zoom_factor * 1000.0);
+      std::vector<float> zoom_factors =
+          display::GetDisplayZoomFactors(active_mode);
+
+      // Ensure that the current zoom factor is a part of the list.
+      auto it = std::find_if(
+          zoom_factors.begin(), zoom_factors.end(),
+          [&display_info](float zoom_factor) -> bool {
+            return std::abs(display_info.zoom_factor() - zoom_factor) <=
+                   std::numeric_limits<float>::epsilon();
+          });
+      if (it == zoom_factors.end())
+        zoom_factors.push_back(display_info.zoom_factor());
+
+      for (float zoom_factor : zoom_factors) {
+        int32_t output_scale = std::round(zoom_factor * 1000.f);
         uint32_t flags = 0;
         if (output_scale == 1000)
           flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
@@ -3108,7 +3200,7 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
         // TODO(malaykeshav): This can be removed in the future when client
         // has been updated.
         if (wl_resource_get_version(resource_) < 6)
-          output_scale = std::round(1000.0 / zoom_factor);
+          output_scale = std::round(1000.f / zoom_factor);
 
         zaura_output_send_scale(resource_, flags, output_scale);
       }
@@ -5627,6 +5719,128 @@ void bind_text_input_manager(wl_client* client,
                                  data, nullptr);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// zcr_notification_shell_notification_v1 interface:
+
+// Implements notification interface.
+class WaylandNotificationShellNotification {
+ public:
+  WaylandNotificationShellNotification(const std::string& title,
+                                       const std::string& message,
+                                       const std::string& display_source,
+                                       const std::string& notification_id,
+                                       wl_resource* resource)
+      : resource_(resource), weak_ptr_factory_(this) {
+    notification_ = std::make_unique<Notification>(
+        title, message, display_source, notification_id,
+        kNotificationShellNotifierId,
+        base::BindRepeating(&WaylandNotificationShellNotification::OnClose,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void Close() { notification_->Close(); }
+
+ private:
+  void OnClose(bool by_user) {
+    zcr_notification_shell_notification_v1_send_closed(resource_, by_user);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
+  wl_resource* const resource_;
+  std::unique_ptr<Notification> notification_;
+
+  base::WeakPtrFactory<WaylandNotificationShellNotification> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandNotificationShellNotification);
+};
+
+void notification_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void notification_close(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<WaylandNotificationShellNotification>(resource)->Close();
+}
+
+const struct zcr_notification_shell_notification_v1_interface
+    notification_implementation = {notification_destroy, notification_close};
+
+////////////////////////////////////////////////////////////////////////////////
+// zcr_notification_shell_v1 interface:
+
+// Implements notification shell interface.
+class WaylandNotificationShell {
+ public:
+  WaylandNotificationShell() : id_(g_next_notification_shell_id.GetNext()) {}
+
+  ~WaylandNotificationShell() = default;
+
+  // Creates a notification on message center from textual information.
+  std::unique_ptr<WaylandNotificationShellNotification> CreateNotification(
+      const std::string& title,
+      const std::string& message,
+      const std::string& display_source,
+      const std::string& notification_key,
+      wl_resource* notification_resource) {
+    auto notification_id = base::StringPrintf(
+        kNotificationShellNotificationIdFormat, id_, notification_key.c_str());
+
+    return std::make_unique<WaylandNotificationShellNotification>(
+        title, message, display_source, notification_id, notification_resource);
+  }
+
+ private:
+  // Id for this notification shell instance.
+  const uint32_t id_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandNotificationShell);
+};
+
+void notification_shell_create_notification(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t id,
+                                            const char* title,
+                                            const char* message,
+                                            const char* display_source,
+                                            const char* notification_key) {
+  wl_resource* notification_resource = wl_resource_create(
+      client, &zcr_notification_shell_notification_v1_interface,
+      wl_resource_get_version(resource), id);
+
+  std::unique_ptr<WaylandNotificationShellNotification> notification =
+      GetUserDataAs<WaylandNotificationShell>(resource)->CreateNotification(
+          title, message, display_source, notification_key,
+          notification_resource);
+
+  SetImplementation(notification_resource, &notification_implementation,
+                    std::move(notification));
+}
+
+void notification_shell_get_notification_surface(wl_client* client,
+                                                 wl_resource* resource,
+                                                 uint32_t id,
+                                                 wl_resource* surface,
+                                                 const char* notification_key) {
+  NOTIMPLEMENTED();
+}
+
+const struct zcr_notification_shell_v1_interface
+    zcr_notification_shell_v1_implementation = {
+        notification_shell_create_notification,
+        notification_shell_get_notification_surface,
+};
+
+void bind_notification_shell(wl_client* client,
+                             void* data,
+                             uint32_t version,
+                             uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zcr_notification_shell_v1_interface, 1, id);
+
+  SetImplementation(resource, &zcr_notification_shell_v1_implementation,
+                    std::make_unique<WaylandNotificationShell>());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -5699,6 +5913,8 @@ Server::Server(Display* display)
                    bind_input_timestamps_manager);
   wl_global_create(wl_display_.get(), &zwp_text_input_manager_v1_interface, 1,
                    display_, bind_text_input_manager);
+  wl_global_create(wl_display_.get(), &zcr_notification_shell_v1_interface, 1,
+                   display_, bind_notification_shell);
 }
 
 Server::~Server() {

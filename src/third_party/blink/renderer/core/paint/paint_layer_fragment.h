@@ -43,65 +43,46 @@ class FragmentData;
 // fragments are called "paginated fragments". Note that this is a Blink
 // vocabulary extension and doesn't come from the specification.
 //
-// The fragments are collected by calling PaintLayer::collectFragments
+// The fragments are collected by calling PaintLayer::CollectFragments
 // on every box once per paint/hit-testing operation.
 struct PaintLayerFragment {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
-  void MoveBy(const LayoutPoint& offset) {
-    layer_bounds.MoveBy(offset);
-    background_rect.MoveBy(offset);
-    foreground_rect.MoveBy(offset);
-  }
+  // See |root_fragment_data| for the coordinate space of |layer_bounds|,
+  // |background_rect| and |foreground_rect|.
 
-  void Intersect(const LayoutRect& rect) {
-    background_rect.Intersect(rect);
-    foreground_rect.Intersect(rect);
-  }
-
-  // Set on all fragments.
-  //
-  // The PaintLayer's size in the associated ClipRectsContext's
-  // rootLayer coordinate system. See PaintLayer::m_size for the
-  // exact rectangle.
-  //
-  // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
-  // mix coordinate systems by mistake.
+  // The PaintLayer's size in the space defined by |root_fragment_data|.
+  // See PaintLayer::size_ for the exact rectangle.
   LayoutRect layer_bounds;
 
-  // Set on all fragments.
-  //
   // The rectangle used to clip the background.
   //
   // The rectangle is the rectangle-to-paint if no clip applies to the
-  // fragment. It is the intersection between the visual overflow rect
-  // and any overflow clips or 'clip' properties. It is also intersected with
-  // |paginationClip| if it is present.
+  // fragment. It is the intersection of
+  // - the visual overflow rect and
+  // - all clips between |root_fragment_data->LocalBorderBoxProperties()
+  //   .Clip()| (not included) and |fragment_data->PreClip()| (included).
   //
-  // See PaintLayerClipper::calculateRects.
+  // See PaintLayerClipper::CalculateRects.
   ClipRect background_rect;
 
-  // Set on all fragments.
-  //
   // The rectangle used to clip the content (foreground).
   //
   // The rectangle is the rectangle-to-paint if no clip applies to the
-  // fragment. If there is an overflow clip, the rectangle-to-paint is
-  // intersected with the border box rect without the scrollbars (content gets
-  // clipped at their edge). Also any enclosing 'clip' properties get applied
-  // to the intersected rectangle. It is also intersected with
-  // |paginationClip| if it is present.
+  // fragment. If the layer should apply overflow clip, the rectangle is the
+  // intersection of |background_rect| and the overflow clip rect. Otherwise
+  // it's the same as |background_rect|.
   //
-  // See PaintLayerClipper::calculateRects.
+  // See PaintLayerClipper::CalculateRects.
   ClipRect foreground_rect;
 
-  // Only set on paginated fragments.
-  //
-  // The physical translation to apply to shift the layer when
-  // painting/hit-testing.
-  LayoutPoint pagination_offset;
+  // Defines the coordinate space of the above rects:
+  // root_fragment_data->LocalBorderBoxProperties().Transform() +
+  // root_fragment_data.PaintOffset().
+  const FragmentData* root_fragment_data = nullptr;
 
+  // The corresponding FragmentData of this structure.
   const FragmentData* fragment_data = nullptr;
 };
 

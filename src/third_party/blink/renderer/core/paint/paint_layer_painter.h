@@ -118,7 +118,9 @@ class CORE_EXPORT PaintLayerPainter {
 
   void PaintEmptyContentForFilters(GraphicsContext&);
 
-  void AdjustForPaintProperties(PaintLayerPaintingInfo&, PaintLayerFlags&);
+  void AdjustForPaintProperties(const GraphicsContext&,
+                                PaintLayerPaintingInfo&,
+                                PaintLayerFlags&);
 
   PaintLayer& paint_layer_;
 };

@@ -8,11 +8,15 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/devtools/url_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
@@ -87,6 +91,7 @@ class DevToolsDataSource : public content::URLDataSource {
   explicit DevToolsDataSource(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : url_loader_factory_(std::move(url_loader_factory)) {}
+  ~DevToolsDataSource() override = default;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -98,8 +103,6 @@ class DevToolsDataSource : public content::URLDataSource {
 
  private:
   struct PendingRequest;
-
-  ~DevToolsDataSource() override = default;
 
   // content::URLDataSource overrides.
   std::string GetMimeType(const std::string& path) const override;
@@ -127,6 +130,11 @@ class DevToolsDataSource : public content::URLDataSource {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
       const GotDataCallback& callback);
+
+#if BUILDFLAG(DEBUG_DEVTOOLS)
+  void StartFileRequestForDebugDevtools(const std::string& path,
+                                        const GotDataCallback& callback);
+#endif
 
   struct PendingRequest {
     PendingRequest() = default;
@@ -163,8 +171,17 @@ void DevToolsDataSource::StartDataRequest(
   bundled_path_prefix += "/";
   if (base::StartsWith(path, bundled_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    StartBundledDataRequest(path.substr(bundled_path_prefix.length()),
-                            callback);
+    std::string path_without_params = PathWithoutParams(path);
+
+    DCHECK(base::StartsWith(path_without_params, bundled_path_prefix,
+                            base::CompareCase::INSENSITIVE_ASCII));
+    std::string path_under_bundled =
+        path_without_params.substr(bundled_path_prefix.length());
+#if BUILDFLAG(DEBUG_DEVTOOLS)
+    StartFileRequestForDebugDevtools(path_under_bundled, callback);
+#else
+    StartBundledDataRequest(path_under_bundled, callback);
+#endif
     return;
   }
 
@@ -237,12 +254,11 @@ bool DevToolsDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
 void DevToolsDataSource::StartBundledDataRequest(
     const std::string& path,
     const content::URLDataSource::GotDataCallback& callback) {
-  std::string filename = PathWithoutParams(path);
   base::StringPiece resource =
-      content::DevToolsFrontendHost::GetFrontendResource(filename);
+      content::DevToolsFrontendHost::GetFrontendResource(path);
 
   DLOG_IF(WARNING, resource.empty())
-      << "Unable to find dev tool resource: " << filename
+      << "Unable to find dev tool resource: " << path
       << ". If you compiled with debug_devtools=1, try running with "
          "--debug-devtools.";
   scoped_refptr<base::RefCountedStaticMemory> bytes(
@@ -340,6 +356,42 @@ void DevToolsDataSource::StartNetworkRequest(
                      base::Unretained(this), request_iter));
 }
 
+#if BUILDFLAG(DEBUG_DEVTOOLS)
+scoped_refptr<base::RefCountedMemory> ReadFile(const base::FilePath& path) {
+  std::string buffer;
+  if (!base::ReadFileToString(path, &buffer)) {
+    LOG(ERROR) << "Failed to read " << path;
+    return CreateNotFoundResponse();
+  }
+  return base::RefCountedString::TakeString(&buffer);
+}
+
+void DevToolsDataSource::StartFileRequestForDebugDevtools(
+    const std::string& path,
+    const GotDataCallback& callback) {
+  base::FilePath inspector_debug_dir;
+  if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
+                              &inspector_debug_dir)) {
+    callback.Run(CreateNotFoundResponse());
+    return;
+  }
+
+  DCHECK(!inspector_debug_dir.empty());
+
+  base::FilePath full_path = inspector_debug_dir.AppendASCII(path);
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::TaskPriority::USER_VISIBLE},
+      // The usage of BindRepeating below is only because the type of
+      // task callback needs to match that of response callback, which
+      // is currently a repeating callback.
+      base::BindRepeating(ReadFile, std::move(full_path)), callback);
+}
+
+#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
+
 void DevToolsDataSource::OnLoadComplete(
     std::list<PendingRequest>::iterator request_iter,
     std::unique_ptr<std::string> response_body) {
@@ -405,8 +457,9 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui)
   auto factory = content::BrowserContext::GetDefaultStoragePartition(
                      web_ui->GetWebContents()->GetBrowserContext())
                      ->GetURLLoaderFactoryForBrowserProcess();
-  content::URLDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                              new DevToolsDataSource(std::move(factory)));
+  content::URLDataSource::Add(
+      web_ui->GetWebContents()->GetBrowserContext(),
+      std::make_unique<DevToolsDataSource>(std::move(factory)));
 }
 
 DevToolsUI::~DevToolsUI() = default;

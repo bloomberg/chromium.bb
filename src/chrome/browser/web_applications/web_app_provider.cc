@@ -11,6 +11,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/external_web_apps.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
@@ -31,8 +33,11 @@ WebAppProvider::WebAppProvider(Profile* profile)
         profile, pending_app_manager_.get());
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile));
+  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
+      profile, pending_app_manager_.get());
+
+  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::Source<Profile>(profile));
 
   web_app::ScanForExternalWebApps(
       profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
@@ -52,6 +57,7 @@ void WebAppProvider::Reset() {
   // PendingAppManager is used by WebAppPolicyManager and therefore should be
   // deleted after it.
   web_app_policy_manager_.reset();
+  system_web_app_manager_.reset();
   pending_app_manager_.reset();
 }
 
@@ -69,7 +75,8 @@ void WebAppProvider::Observe(int type,
 
 void WebAppProvider::OnScanForExternalWebApps(
     std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
-  pending_app_manager_->InstallApps(std::move(app_infos), base::DoNothing());
+  pending_app_manager_->SynchronizeInstalledApps(
+      std::move(app_infos), InstallSource::kExternalDefault);
 }
 
 }  // namespace web_app

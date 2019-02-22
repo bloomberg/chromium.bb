@@ -95,6 +95,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoAutofill:
+    case CSSSelector::kPseudoAutofillPreviewed:
+    case CSSSelector::kPseudoAutofillSelected:
     case CSSSelector::kPseudoHover:
     case CSSSelector::kPseudoDrag:
     case CSSSelector::kPseudoFocus:
@@ -452,6 +454,8 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoWebkitAnyLink:
       case CSSSelector::kPseudoAnyLink:
       case CSSSelector::kPseudoAutofill:
+      case CSSSelector::kPseudoAutofillPreviewed:
+      case CSSSelector::kPseudoAutofillSelected:
       case CSSSelector::kPseudoHover:
       case CSSSelector::kPseudoDrag:
       case CSSSelector::kPseudoFocus:
@@ -499,7 +503,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
   return nullptr;
 }
 
-void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
+void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
   // Given a rule, update the descendant invalidation sets for the features
   // found in its selector. The first step is to extract the features from the
   // rightmost compound selector (extractInvalidationSetFeaturesFromCompound).
@@ -513,8 +517,8 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
   InvalidationSetFeatures* sibling_features = nullptr;
 
   const CSSSelector* last_in_compound =
-      ExtractInvalidationSetFeaturesFromCompound(rule_data.Selector(), features,
-                                                 kSubject);
+      ExtractInvalidationSetFeaturesFromCompound(rule_data->Selector(),
+                                                 features, kSubject);
 
   if (features.invalidation_flags.WholeSubtreeInvalid())
     features.has_features_for_rule_set_invalidation = false;
@@ -525,8 +529,9 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
   if (features.has_before_or_after)
     UpdateInvalidationSetsForContentAttribute(rule_data);
 
-  const CSSSelector* next_compound =
-      last_in_compound ? last_in_compound->TagHistory() : &rule_data.Selector();
+  const CSSSelector* next_compound = last_in_compound
+                                         ? last_in_compound->TagHistory()
+                                         : &rule_data->Selector();
   if (!next_compound) {
     UpdateRuleSetInvalidation(features);
     return;
@@ -563,12 +568,12 @@ void RuleFeatureSet::UpdateRuleSetInvalidation(
 }
 
 void RuleFeatureSet::UpdateInvalidationSetsForContentAttribute(
-    const RuleData& rule_data) {
+    const RuleData* rule_data) {
   // If any ::before and ::after rules specify 'content: attr(...)', we
   // need to create invalidation sets for those attributes to have content
   // changes applied through style recalc.
 
-  const CSSPropertyValueSet& property_set = rule_data.Rule()->Properties();
+  const CSSPropertyValueSet& property_set = rule_data->Rule()->Properties();
 
   int property_index = property_set.FindPropertyIndex(CSSPropertyContent);
 
@@ -860,10 +865,10 @@ void RuleFeatureSet::AddFeaturesToInvalidationSets(
 }
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
-    const RuleData& rule_data) {
+    const RuleData* rule_data) {
   CHECK(is_alive_);
   FeatureMetadata metadata;
-  if (CollectFeaturesFromSelector(rule_data.Selector(), metadata) ==
+  if (CollectFeaturesFromSelector(rule_data->Selector(), metadata) ==
       kSelectorNeverMatches)
     return kSelectorNeverMatches;
 

@@ -2,6 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// This api testing extension's ID.  Files referenced as Entry will
+// have this as part of their URL.
+const TEST_EXTENSION_ID = 'pkplfbidichfdicaijlchgnapepdginl';
+
+/**
+ * Get specified entry.
+ * @param {string} volumeType volume type for entry.
+ * @param {string} path path of entry.
+ * @return {!Entry} specified entry.
+ */
+function getEntry(volumeType, path) {
+  return new Promise(resolve => {
+    chrome.fileManagerPrivate.getVolumeMetadataList(list => {
+      const volume = list.find(v => v.volumeType === volumeType);
+      chrome.fileSystem.requestFileSystem({volumeId: volume.volumeId}, fs => {
+        fs.root.getDirectory(path, {}, entry => {
+          resolve(entry);
+        });
+      });
+    });
+  });
+}
+
 // Run the tests.
 chrome.test.runTests([
   function testIsCrostiniEnabled() {
@@ -10,8 +34,38 @@ chrome.test.runTests([
           chrome.test.assertTrue(enabled);
         }));
   },
-  function testMountCrostiniContainer() {
-    chrome.fileManagerPrivate.mountCrostiniContainer(
-        chrome.test.callbackPass(() => {}));
+  function testMountCrostini() {
+    chrome.fileManagerPrivate.mountCrostini(
+        chrome.test.callbackPass());
+  },
+  function testSharePathWithCrostiniSuccess() {
+    getEntry('downloads', 'share_dir').then((entry) => {
+      chrome.fileManagerPrivate.sharePathWithCrostini(
+          entry, chrome.test.callbackPass());
+    });
+  },
+  function testSharePathWithCrostiniNotDownloads() {
+    getEntry('testing', 'test_dir').then((entry) => {
+      chrome.fileManagerPrivate.sharePathWithCrostini(
+          entry, chrome.test.callbackFail('Path must be under Downloads'));
+    });
+  },
+  function testGetCrostiniSharedPaths() {
+    const urlPrefix = 'filesystem:chrome-extension://' + TEST_EXTENSION_ID +
+        '/external/Downloads-user';
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        chrome.test.callbackPass((entries) => {
+          // 2 entries inserted in setup, and 1 successful entry added above.
+          chrome.test.assertEq(3, entries.length);
+          chrome.test.assertEq(urlPrefix + '/shared1', entries[0].toURL());
+          chrome.test.assertTrue(entries[0].isDirectory);
+          chrome.test.assertEq('/shared1', entries[0].fullPath);
+          chrome.test.assertEq(urlPrefix + '/shared2', entries[1].toURL());
+          chrome.test.assertTrue(entries[1].isDirectory);
+          chrome.test.assertEq('/shared2', entries[1].fullPath);
+          chrome.test.assertEq(urlPrefix + '/share_dir', entries[2].toURL());
+          chrome.test.assertTrue(entries[2].isDirectory);
+          chrome.test.assertEq('/share_dir', entries[2].fullPath);
+        }));
   }
 ]);

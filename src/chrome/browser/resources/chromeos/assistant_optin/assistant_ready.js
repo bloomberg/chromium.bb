@@ -19,7 +19,13 @@ Polymer({
    * @private
    */
   onNextTap_: function() {
-    chrome.send('assistant.ReadyScreen.userActed', ['next-pressed']);
+    if (this.buttonsDisabled) {
+      return;
+    }
+    this.buttonsDisabled = true;
+    chrome.send(
+        'login.AssistantOptInFlowScreen.ReadyScreen.userActed',
+        ['next-pressed']);
   },
 
   /**
@@ -27,6 +33,6 @@ Polymer({
    */
   onShow: function() {
     this.$['next-button'].focus();
-    chrome.send('assistant.ReadyScreen.screenShown');
+    chrome.send('login.AssistantOptInFlowScreen.ReadyScreen.screenShown');
   },
 });

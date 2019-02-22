@@ -5,7 +5,11 @@
 #ifndef CHROMECAST_GRAPHICS_GESTURES_CAST_SYSTEM_GESTURE_DISPATCHER_H_
 #define CHROMECAST_GRAPHICS_GESTURES_CAST_SYSTEM_GESTURE_DISPATCHER_H_
 
+#include <queue>
+
 #include "base/containers/flat_set.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "chromecast/graphics/gestures/cast_gesture_handler.h"
 
 namespace chromecast {
@@ -15,6 +19,7 @@ namespace chromecast {
 class CastSystemGestureDispatcher : public CastGestureHandler {
  public:
   CastSystemGestureDispatcher();
+  explicit CastSystemGestureDispatcher(const base::TickClock* tick_clock);
 
   ~CastSystemGestureDispatcher() override;
 
@@ -35,6 +40,15 @@ class CastSystemGestureDispatcher : public CastGestureHandler {
   void HandleTapGesture(const gfx::Point& touch_location) override;
 
  private:
+  // Logs a completed gesture event.
+  struct GestureEvent {
+    base::TimeTicks event_time;
+    CastSideSwipeOrigin origin;
+  };
+
+  std::queue<GestureEvent> recent_events_;
+  bool send_gestures_to_root_;
+  const base::TickClock* const tick_clock_;
   base::flat_set<CastGestureHandler*> gesture_handlers_;
 };
 }  // namespace chromecast

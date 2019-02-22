@@ -258,7 +258,7 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}, {"testrequest", "1"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -271,7 +271,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
   // Sanity check the request.
   const auto& request = post_interceptor_->GetRequestBody(0);
   EXPECT_THAT(request,
-              testing::HasSubstr(R"(request protocol="3.1" extra="params")"));
+              testing::HasSubstr(
+                  R"(request protocol="3.1" extra="params" testrequest="1")"));
   // The request must not contain any "dlpref" in the default case.
   EXPECT_THAT(request, testing::Not(testing::HasSubstr(R"( dlpref=")")));
   EXPECT_THAT(request,
@@ -347,7 +348,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   component->crx_component_->installer_attributes["ap"] = std::string(257, 'a');
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
 
@@ -375,7 +376,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
 
@@ -403,7 +404,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -432,7 +433,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
 
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -457,7 +458,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
 
@@ -498,7 +499,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
   component->crx_component_->requires_network_encryption = true;
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -527,7 +528,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastRollCall) {
   activity_data_service_->SetDaysSinceLastRollCall(kUpdateItemId, 5);
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -535,7 +536,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastRollCall) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -570,7 +571,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
   activity_data_service_->SetDaysSinceLastActive(kUpdateItemId, 10);
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -582,7 +583,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -593,7 +594,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckLastActive) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
       update_context_->session_id, {kUpdateItemId}, components,
-      "extra=\"params\"", true,
+      {{"extra", "params"}}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -626,7 +627,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -639,7 +640,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -656,7 +657,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -673,7 +674,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInstallSource) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -696,7 +697,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -712,7 +713,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -727,7 +728,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -743,7 +744,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -759,7 +760,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -777,7 +778,7 @@ TEST_F(UpdateCheckerTest, ComponentDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -811,7 +812,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -831,7 +832,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", false,
+      update_context_->session_id, {kUpdateItemId}, components, {}, false,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -852,7 +853,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -872,7 +873,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -893,7 +894,7 @@ TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -930,7 +931,7 @@ TEST_F(UpdateCheckerTest, UpdatePauseResume) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -964,7 +965,7 @@ TEST_F(UpdateCheckerTest, UpdateResetUpdateChecker) {
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   runloop.Run();
@@ -983,7 +984,7 @@ TEST_F(UpdateCheckerTest, ParseErrorProtocolVersionMismatch) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();
@@ -1012,7 +1013,7 @@ TEST_F(UpdateCheckerTest, ParseErrorAppStatusErrorUnknownApplication) {
   components[kUpdateItemId] = MakeComponent();
 
   update_checker_->CheckForUpdates(
-      update_context_->session_id, {kUpdateItemId}, components, "", true,
+      update_context_->session_id, {kUpdateItemId}, components, {}, true,
       base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
                      base::Unretained(this)));
   RunThreads();

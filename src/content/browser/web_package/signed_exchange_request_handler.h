@@ -20,6 +20,7 @@ namespace content {
 
 class URLLoaderThrottle;
 class SignedExchangeLoader;
+class SignedExchangePrefetchMetricRecorder;
 
 class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
  public:
@@ -38,7 +39,8 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       bool report_raw_headers,
       int load_flags,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter);
+      URLLoaderThrottlesGetter url_loader_throttles_getter,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
   ~SignedExchangeRequestHandler() override;
 
   // NavigationLoaderInterceptor implementation
@@ -51,7 +53,8 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
-      ThrottlingURLLoader* url_loader) override;
+      ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors) override;
 
  private:
   void StartResponse(const network::ResourceRequest& resource_request,
@@ -73,6 +76,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   const int load_flags_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder_;
 
   base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_;
 

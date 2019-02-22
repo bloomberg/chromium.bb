@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/content_export.h"
 #include "net/base/hash_value.h"
 #include "url/gurl.h"
@@ -22,7 +21,7 @@ namespace content {
 
 class SignedExchangeDevToolsProxy;
 
-// SignedExchangeSignatureHeaderField provides parser for signed exchange's
+// SignedExchangeSignatureHeaderField provides a parser for signed exchange's
 // `Signature` header field.
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 class CONTENT_EXPORT SignedExchangeSignatureHeaderField {
@@ -49,14 +48,6 @@ class CONTENT_EXPORT SignedExchangeSignatureHeaderField {
   static base::Optional<std::vector<Signature>> ParseSignature(
       base::StringPiece signature_str,
       SignedExchangeDevToolsProxy* devtools_proxy);
-
-  // TODO(kouhei): Move this to another class.
-  // Parses |content_type| to get the value of "v=" parameter of the signed
-  // exchange, and converts to SignedExchangeVersion. Returns false if failed to
-  // parse.
-  static bool GetVersionParamFromContentType(
-      base::StringPiece content_type,
-      base::Optional<SignedExchangeVersion>* version_param);
 };
 
 }  // namespace content

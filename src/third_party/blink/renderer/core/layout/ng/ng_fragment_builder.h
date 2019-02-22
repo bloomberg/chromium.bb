@@ -39,10 +39,27 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   ~NGFragmentBuilder() override;
 
-  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
-  NGFragmentBuilder& SetBorders(const NGBoxStrut&);
-  NGFragmentBuilder& SetPadding(const NGBoxStrut&);
-  NGFragmentBuilder& SetPadding(const NGLineBoxStrut&);
+  NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
+    intrinsic_block_size_ = intrinsic_block_size;
+    return *this;
+  }
+  NGFragmentBuilder& SetBorders(const NGBoxStrut& border) {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    borders_ = border;
+    return *this;
+  }
+  NGFragmentBuilder& SetPadding(const NGBoxStrut& padding) {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    padding_ = padding;
+    return *this;
+  }
+  NGFragmentBuilder& SetPadding(const NGLineBoxStrut& padding) {
+    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+    // Convert to flow-relative, because ToInlineBoxFragment() will convert
+    // the padding to physical coordinates using flow-relative writing-mode.
+    padding_ = NGBoxStrut(padding, IsFlippedLinesWritingMode(GetWritingMode()));
+    return *this;
+  }
 
   using NGContainerFragmentBuilder::AddChild;
 
@@ -123,18 +140,37 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // do not provide a setter here.
 
   // Creates the fragment. Can only be called once.
-  scoped_refptr<NGLayoutResult> ToBoxFragment();
-  scoped_refptr<NGLayoutResult> ToInlineBoxFragment();
+  scoped_refptr<NGLayoutResult> ToBoxFragment() {
+    DCHECK_NE(BoxType(), NGPhysicalFragment::kInlineBox);
+    return ToBoxFragment(GetWritingMode());
+  }
+  scoped_refptr<NGLayoutResult> ToInlineBoxFragment() {
+    // The logical coordinate for inline box uses line-relative writing-mode,
+    // not
+    // flow-relative.
+    DCHECK_EQ(BoxType(), NGPhysicalFragment::kInlineBox);
+    return ToBoxFragment(ToLineWritingMode(GetWritingMode()));
+  }
 
   scoped_refptr<NGLayoutResult> Abort(NGLayoutResult::NGLayoutResultStatus);
 
   // A vector of child offsets. Initially set by AddChild().
-  const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
-  Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
+  const OffsetVector& Offsets() const { return offsets_; }
+  OffsetVector& MutableOffsets() { return offsets_; }
 
   NGPhysicalFragment::NGBoxType BoxType() const;
-  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType);
-  NGFragmentBuilder& SetIsOldLayoutRoot();
+  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
+    box_type_ = box_type;
+    return *this;
+  }
+  NGFragmentBuilder& SetIsFieldsetContainer() {
+    is_fieldset_container_ = true;
+    return *this;
+  }
+  NGFragmentBuilder& SetIsOldLayoutRoot() {
+    is_old_layout_root_ = true;
+    return *this;
+  }
 
   bool DidBreak() const { return did_break_; }
 
@@ -157,7 +193,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   // start and end. FragmentPair holds the information needed to compute
   // inline containing block geometry wrt enclosing container block.
   struct FragmentPair {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
     // Linebox that contains start_fragment.
     const NGPhysicalLineBoxFragment* start_linebox_fragment;
     // Offset of start_linebox from containing block.
@@ -191,6 +227,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   NGBoxStrut padding_;
 
   NGPhysicalFragment::NGBoxType box_type_;
+  bool is_fieldset_container_ = false;
   bool is_old_layout_root_;
   bool did_break_;
   bool has_forced_break_ = false;

@@ -33,22 +33,16 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
-# The browser frame is a work in progress.
--BrowserNonClientFrameViewAshTest.AvatarDisplayOnTeleportedWindow/*
--BrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
--BrowserNonClientFrameViewAshTest.ImmersiveModeTopViewInset/*
--BrowserNonClientFrameViewAshTest.TopViewInset/*
+# Touch gestures don't work in webcontents. https://crbug.com/866991.
+-TopControlsSlideControllerTest.TestScrollingMaximizedPageBeforeGoingToTabletMode
+-TopControlsSlideControllerTest.TestScrollingPage
+-TopControlsSlideControllerTest.TestScrollingPageAndSwitchingToNTP
+-TopControlsSlideControllerTest.TestClosingATab
+-TopControlsSlideControllerTest.TestFocusEditableElements
+-TopControlsSlideControllerTest.DisplayRotation
 
-# Direct access to ash window frames, tablet mode, overview mode, etc.
--NonHomeLauncherBrowserNonClientFrameViewAshTest.*
-
-# Fix immersive fullscreen mode in mash. https://crbug.com/844748.
-# Needs EventGenerator to work across window tree hosts. crbug.com/814675
--ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*
--ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
-
-# Null immersive_fullscreen_controller_.
--ChromeNativeAppWindowViewsAuraAshBrowserTest.*
+# Uses Shell/SplitViewController.
+-NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
@@ -122,11 +116,6 @@
 # http://crbug.com/831826
 -PolicyTest.UnifiedDesktopEnabledByDefault
 
-# IME accesses ash::Shell for root window.
--InputMethodEngineBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineComponentExtensionBrowserTest/InputMethodEngineBrowserTest.*
--InputMethodEngineIncognitoBrowserTest/InputMethodEngineBrowserTest.*
-
 # KeyboardOverlayUI uses ash::Shell.
 -KeyboardOverlayUIBrowserTest.*
 
@@ -181,12 +170,14 @@
 
 # content::WaitForChildFrameSurfaceReady hangs.
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
--WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
+-ChromeMimeHandlerViewBrowserPluginTest.TouchFocusesBrowserPluginInEmbedder
 
 # Function under test uses ash::Shell for window list.
 -SortWindowsByZIndexBrowserTest.*
 
-# Timeout.
+# Timeout because first non-empty paint isn't triggered.
+# https://crbug.com/885318
+-NoBackgroundTasksTest.FirstNonEmptyPaintWithoutBackgroundTasks
 -StartupMetricsTest.*
 
 # ash::Shell access in test for StatusAreaWidget.
@@ -214,7 +205,9 @@
 # Virtual keyboard not supported.
 -AccessibilityManagerLoginTest.ResumeSavedPref
 -DefaultKeyboardExtensionBrowserTest.*
--KeyboardEndToEndTest.*
+-KeyboardEndToEndFocusTest.*
+-KeyboardEndToEndFormTest.*
+-KeyboardEndToEndOverscrollTest.*
 -KioskVirtualKeyboardTest.*
 -VirtualKeyboardAppWindowTest.*
 -VirtualKeyboardStateTest.*
@@ -237,7 +230,7 @@
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
 
 # Needs EventGenerator to work across window tree hosts. crbug.com/814675
--RoundedOmniboxPopupContentsViewTest.ClickOmnibox*
+-OmniboxPopupContentsViewTest.ClickOmnibox
 
 # HostedAppMenu needs porting to BrowserNonClientFrameViewMash crbug.com/813666
 -HostedAppPWAOnlyTest.AppInfoOpensPageInfo*
@@ -254,10 +247,6 @@
 
 # Flaky segfaults: https://crbug.com/818147
 -ExtensionApiTest.BookmarkManager
-
-# Segfaults after massive recursion setting ash::kWindowStateTypeKey:
-# crbug.com/824458
--PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
 
 # RenderFrameMetadata observation not supported: https://crbug.com/820974
 -WebViewFocusBrowserPluginSpecificTest.*

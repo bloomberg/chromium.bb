@@ -429,6 +429,18 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
     TRACE_EVENT1("cc", "RenderSurfaceImpl::AppendQuads",
                  "mask_layer_gpu_memory_usage",
                  mask_layer->GPUMemoryUsageInBytes());
+
+    int64_t visible_geometry_area =
+        static_cast<int64_t>(unoccluded_content_rect.width()) *
+        unoccluded_content_rect.height();
+    append_quads_data->num_mask_layers++;
+    append_quads_data->visible_mask_layer_area += visible_geometry_area;
+    if (mask_layer->is_rounded_corner_mask()) {
+      append_quads_data->num_rounded_corner_mask_layers++;
+      append_quads_data->visible_rounded_corner_mask_layer_area +=
+          visible_geometry_area;
+    }
+
     if (mask_layer->mask_type() == Layer::LayerMaskType::MULTI_TEXTURE_MASK) {
       TileMaskLayer(render_pass, shared_quad_state, unoccluded_content_rect);
       return;
@@ -452,7 +464,8 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   quad->SetNew(shared_quad_state, content_rect(), unoccluded_content_rect, id(),
                mask_resource_id, mask_uv_rect, mask_texture_size,
                surface_contents_scale, FiltersOrigin(), tex_coord_rect,
-               !layer_tree_impl_->settings().enable_edge_anti_aliasing);
+               !layer_tree_impl_->settings().enable_edge_anti_aliasing,
+               OwningEffectNode()->backdrop_filter_quality);
 }
 
 void RenderSurfaceImpl::TileMaskLayer(
@@ -564,6 +577,7 @@ void RenderSurfaceImpl::TileMaskLayer(
         quad_space_to_surface_space_transform, gfx::RectF(quad_rect));
     tex_coord_rect.Offset(-content_rect().OffsetFromOrigin());
 
+    constexpr float backdrop_filter_quality = 1.0;
     switch (temp_quad->material) {
       case viz::DrawQuad::TILED_CONTENT: {
         DCHECK_EQ(1U, temp_quad->resources.count);
@@ -611,7 +625,8 @@ void RenderSurfaceImpl::TileMaskLayer(
                      temp_quad->resources.ids[0], mask_uv_rect,
                      mask_texture_size, owning_layer_to_surface_contents_scale,
                      FiltersOrigin(), tex_coord_rect,
-                     !layer_tree_impl_->settings().enable_edge_anti_aliasing);
+                     !layer_tree_impl_->settings().enable_edge_anti_aliasing,
+                     backdrop_filter_quality);
       } break;
       case viz::DrawQuad::SOLID_COLOR: {
         SkColor temp_color =
@@ -630,7 +645,8 @@ void RenderSurfaceImpl::TileMaskLayer(
                      gfx::RectF(), gfx::Size(),
                      owning_layer_to_surface_contents_scale, FiltersOrigin(),
                      tex_coord_rect,
-                     !layer_tree_impl_->settings().enable_edge_anti_aliasing);
+                     !layer_tree_impl_->settings().enable_edge_anti_aliasing,
+                     backdrop_filter_quality);
       } break;
       case viz::DrawQuad::DEBUG_BORDER:
         NOTIMPLEMENTED();

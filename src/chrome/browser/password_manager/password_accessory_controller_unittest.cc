@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
@@ -24,18 +25,19 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 using autofill::FillingStatus;
 using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
+using autofill::password_generation::PasswordGenerationUserEvent;
 using base::ASCIIToUTF16;
 using base::UTF16ToWide;
 using testing::_;
@@ -43,6 +45,7 @@ using testing::AnyNumber;
 using testing::ByMove;
 using testing::ElementsAre;
 using testing::Mock;
+using testing::NiceMock;
 using testing::NotNull;
 using testing::PrintToString;
 using testing::Return;
@@ -52,6 +55,7 @@ using ItemType = AccessoryItem::Type;
 
 constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
+constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 
 // The mock view mocks the platform-specific implementation. That also means
 // that we have to care about the lifespan of the Controller because that would
@@ -66,6 +70,8 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD0(CloseAccessorySheet, void());
   MOCK_METHOD0(SwapSheetWithKeyboard, void());
+  MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
+  MOCK_METHOD0(Hide, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
@@ -142,6 +148,13 @@ MATCHER(IsDivider, "is a divider") {
 MATCHER_P(MatchesOption, text, PrintItem(text, text, false, ItemType::OPTION)) {
   return arg.text == text && arg.is_password == false &&
          arg.content_description == text && arg.itemType == ItemType::OPTION;
+}
+
+// Compares whether a given AccessoryItem is a label with the given text.
+MATCHER(IsTopDivider, "is a top divider") {
+  return arg.text.empty() && arg.is_password == false &&
+         arg.content_description.empty() &&
+         arg.itemType == ItemType::TOP_DIVIDER;
 }
 
 // Compares whether a given AccessoryItem had the given properties.
@@ -260,6 +273,15 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
     EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(AnyNumber());
+
+    // Mock objects needed by password generation
+    mock_password_manager_driver_ =
+        std::make_unique<NiceMock<MockPasswordManagerDriver>>();
+    mock_generation_manager_ =
+        std::make_unique<NiceMock<MockPasswordGenerationManager>>(
+            nullptr, mock_password_manager_driver_.get());
+    mock_dialog_ =
+        std::make_unique<NiceMock<MockPasswordGenerationDialogView>>();
   }
 
   PasswordAccessoryController* controller() {
@@ -279,12 +301,43 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
     return mock_favicon_service_.get();
   }
 
+ protected:
+  // Sets up mocks needed by the generation flow and signals the
+  // |PasswordAccessoryController| that generation is available.
+  void InitializeGeneration(const base::string16& password);
+
+  std::unique_ptr<NiceMock<MockPasswordManagerDriver>>
+      mock_password_manager_driver_;
+  std::unique_ptr<NiceMock<MockPasswordGenerationManager>>
+      mock_generation_manager_;
+  std::unique_ptr<NiceMock<MockPasswordGenerationDialogView>> mock_dialog_;
+  base::HistogramTester histogram_tester_;
+
  private:
-  base::MockCallback<PasswordAccessoryController::CreateDialogFactory>
+  NiceMock<base::MockCallback<PasswordAccessoryController::CreateDialogFactory>>
       mock_dialog_factory_;
   std::unique_ptr<testing::StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_;
 };
+
+void PasswordAccessoryControllerTest::InitializeGeneration(
+    const base::string16& password) {
+  ON_CALL(*(mock_password_manager_driver_.get()),
+          GetPasswordGenerationManager())
+      .WillByDefault(Return(mock_generation_manager_.get()));
+
+  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
+
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, GetTestGenerationUIData1(),
+      mock_password_manager_driver_->AsWeakPtr());
+
+  ON_CALL(*(mock_generation_manager_.get()), GeneratePassword(_, _, _, _, _))
+      .WillByDefault(Return(password));
+
+  ON_CALL(mock_dialog_factory(), Run)
+      .WillByDefault(Return(ByMove(std::move(mock_dialog_))));
+}
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
   PasswordAccessoryController* initial_controller =
@@ -299,14 +352,15 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -320,7 +374,7 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
   EXPECT_CALL(
       *view(),
       OnItemsAvailable(ElementsAre(
-          MatchesLabel(passwords_title_str(kExampleDomain)),
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
           MatchesItem(no_user_str(), no_user_str(), false,
                       ItemType::NON_INTERACTIVE_SUGGESTION),
           MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str(no_user_str()),
@@ -338,30 +392,31 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
        CreateEntry("Alf", "PWD").first, CreateEntry("Cat", "M1@u").first},
       url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
 
-                  MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("PWD"), password_for_str("Alf"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("Cat"), ASCIIToUTF16("Cat"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M1@u"), password_for_str("Cat"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
 
-                  MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"),
-                              false, ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+          MatchesItem(ASCIIToUTF16("Zebra"), ASCIIToUTF16("Zebra"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M3h"), password_for_str("Zebra"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -373,14 +428,15 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
                                        url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -393,9 +449,9 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 
   EXPECT_CALL(
       *view(),
-      OnItemsAvailable(
-          ElementsAre(MatchesLabel(passwords_empty_str(kExampleDomain)),
-                      IsDivider(), MatchesOption(manage_passwords_str()))));
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -446,18 +502,14 @@ TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
 // are updated.
 TEST_F(PasswordAccessoryControllerTest,
        UpdatesSignaturesForDifferentGenerationForms) {
-  MockPasswordManagerDriver mock_driver;
-  password_manager::StubPasswordManagerClient stub_client;
-  MockPasswordGenerationManager mock_generation_manager(&stub_client,
-                                                        &mock_driver);
-
   // Called twice for different forms.
   EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true)).Times(2);
   controller()->OnAutomaticGenerationStatusChanged(
-      true, GetTestGenerationUIData1(), (&mock_driver)->AsWeakPtr());
+      true, GetTestGenerationUIData1(),
+      mock_password_manager_driver_->AsWeakPtr());
   PasswordGenerationUIData new_ui_data = GetTestGenerationUIData2();
-  controller()->OnAutomaticGenerationStatusChanged(true, new_ui_data,
-                                                   (&mock_driver)->AsWeakPtr());
+  controller()->OnAutomaticGenerationStatusChanged(
+      true, new_ui_data, mock_password_manager_driver_->AsWeakPtr());
 
   autofill::FormSignature form_signature =
       autofill::CalculateFormSignature(new_ui_data.password_form.form_data);
@@ -465,16 +517,15 @@ TEST_F(PasswordAccessoryControllerTest,
       autofill::CalculateFieldSignatureByNameAndType(
           new_ui_data.generation_element, "password");
 
-  std::unique_ptr<MockPasswordGenerationDialogView> dialog_view =
-      std::make_unique<MockPasswordGenerationDialogView>();
-  MockPasswordGenerationDialogView* raw_dialog_view = dialog_view.get();
+  MockPasswordGenerationDialogView* raw_dialog_view = mock_dialog_.get();
 
   base::string16 generated_password = ASCIIToUTF16("t3stp@ssw0rd");
   EXPECT_CALL(mock_dialog_factory(), Run)
-      .WillOnce(Return(ByMove(std::move(dialog_view))));
-  EXPECT_CALL(mock_driver, GetPasswordGenerationManager())
-      .WillOnce(Return(&mock_generation_manager));
-  EXPECT_CALL(mock_generation_manager,
+      .WillOnce(Return(ByMove(std::move(mock_dialog_))));
+  EXPECT_CALL(*(mock_password_manager_driver_.get()),
+              GetPasswordGenerationManager())
+      .WillOnce(Return(mock_generation_manager_.get()));
+  EXPECT_CALL(*(mock_generation_manager_.get()),
               GeneratePassword(_, form_signature, field_signature,
                                uint32_t(new_ui_data.max_length), _))
       .WillOnce(Return(generated_password));
@@ -487,14 +538,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
                                        url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -502,14 +554,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 
   // Pretend that we focus a password field now: By triggering a refresh with
   // |is_password_field| set to true, all suggestions should become interactive.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -519,14 +572,15 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -534,14 +588,15 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
 
   controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("M3lm4k"), password_for_str("Alf"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -553,14 +608,15 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
                                        url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -568,10 +624,11 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 
   // Pretend that the focus was lost or moved to an unfillable field. Now, only
   // the empty state message should be sent.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_empty_str(kExampleDomain)),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_empty_str(kExampleDomain)),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
@@ -583,14 +640,15 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // This should result in non-emtpy suggestions.
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(ElementsAre(
-                  MatchesLabel(passwords_title_str(kExampleDomain)),
-                  MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
-                              ItemType::SUGGESTION),
-                  MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"),
-                              true, ItemType::NON_INTERACTIVE_SUGGESTION),
-                  IsDivider(), MatchesOption(manage_passwords_str()))));
+  EXPECT_CALL(
+      *view(),
+      OnItemsAvailable(ElementsAre(
+          IsTopDivider(), MatchesLabel(passwords_title_str(kExampleDomain)),
+          MatchesItem(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          MatchesItem(ASCIIToUTF16("S3cur3"), password_for_str("Ben"), true,
+                      ItemType::NON_INTERACTIVE_SUGGESTION),
+          IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -603,6 +661,7 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Now, only the empty state message should be sent.
   EXPECT_CALL(*view(),
               OnItemsAvailable(ElementsAre(
+                  IsTopDivider(),
                   MatchesLabel(passwords_empty_str("random.other-site.org")),
                   IsDivider(), MatchesOption(manage_passwords_str()))));
   controller()->RefreshSuggestionsForField(
@@ -620,11 +679,11 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -637,16 +696,16 @@ TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run).Times(2);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   // The favicon service should already start to work on the request.
   Mock::VerifyAndClearExpectations(favicon_service());
 
   // This call is only enqueued (and the callback will be called afterwards).
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
 
   // After the async task is finished, both callbacks must be called.
   base::RunLoop().RunUntilIdle();
@@ -656,10 +715,16 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
 
   // We need a result with a non-empty image or it won't get cached.
-  favicon_base::FaviconImageResult non_empty_result;
+  favicon_base::FaviconRawBitmapResult non_empty_result;
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(32, 32);
-  non_empty_result.image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  bitmap.allocN32Pixels(kIconSize, kIconSize);
+  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data->data());
+  non_empty_result.bitmap_data = data;
+  non_empty_result.expired = false;
+  non_empty_result.pixel_size = gfx::Size(kIconSize, kIconSize);
+  non_empty_result.icon_type = favicon_base::IconType::kFavicon;
+  non_empty_result.icon_url = GURL(kExampleSite);
 
   // Populate the cache by requesting a favicon.
   EXPECT_CALL(*view(), OnItemsAvailable(_));
@@ -668,18 +733,18 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       /*is_fillable=*/true,
       /*is_password_field=*/false);
 
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(non_empty_result));
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
 
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&mock_callback);
 
   // This call is handled by the cache - no favicon service, no async request.
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   Mock::VerifyAndClearExpectations(&mock_callback);
   Mock::VerifyAndClearExpectations(favicon_service());
 
@@ -693,11 +758,11 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
       url::Origin::Create(GURL(kExampleSite)), true, false);
 
   // The cache was cleared, so now the service has to be queried again.
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(non_empty_result));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(non_empty_result));
   EXPECT_CALL(mock_callback, Run).Times(1);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -711,13 +776,91 @@ TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   // Right after starting the favicon request for example.com, another frame on
   // the same site is focused. Even if the request is completed, the callback
   // should not be called because the origin of the suggestions has changed.
-  EXPECT_CALL(*favicon_service(),
-              GetFaviconImageForPageURL(GURL(kExampleSite), _, _))
-      .WillOnce(favicon::PostReply<3>(favicon_base::FaviconImageResult()));
+  EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
+                                                          kIconSize, _, _, _))
+      .WillOnce(favicon::PostReply<6>(favicon_base::FaviconRawBitmapResult()));
   EXPECT_CALL(mock_callback, Run).Times(0);
-  controller()->GetFavicon(mock_callback.Get());
+  controller()->GetFavicon(kIconSize, mock_callback.Get());
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://other.frame.com/")), true, false);
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+
+  histogram_tester_.ExpectUniqueSample(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordAccepted, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordEdited) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+  controller()->MaybeGeneratedPasswordChanged(test_password);
+
+  // Since MaybeGeneratedPasswordChanged was called with the same password
+  // the histogram should not record an edit operation.
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 0);
+
+  controller()->MaybeGeneratedPasswordChanged(
+      ASCIIToUTF16("changed_t3stp@ssw0rd"));
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 1);
+
+  // Since the edit operation should only be logged once per lifetime
+  // of the generated password, check that changing the password again doesn't
+  // record editing again.
+  controller()->MaybeGeneratedPasswordChanged(
+      ASCIIToUTF16("changed_t3stp@ssw0rd_again"));
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordEdited, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordDeleted) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordAccepted(test_password);
+  controller()->GeneratedPasswordDeleted();
+
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordDeleted, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordRejected) {
+  base::string16 test_password = ASCIIToUTF16("t3stp@ssw0rd");
+
+  InitializeGeneration(test_password);
+
+  controller()->OnGenerationRequested();
+  controller()->GeneratedPasswordRejected();
+
+  histogram_tester_.ExpectBucketCount(
+      "PasswordGeneration.UserEvent",
+      PasswordGenerationUserEvent::kPasswordRejectedInDialog, 1);
+}
+
+TEST_F(PasswordAccessoryControllerTest, RelaysShowAndHideKeyboardAccessory) {
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  controller()->ShowWhenKeyboardIsVisible();
+  EXPECT_CALL(*view(), Hide());
+  controller()->Hide();
 }

@@ -56,7 +56,7 @@ cr.define('advanced_item_test', function() {
       assertEquals('Special', select.options[2].textContent.trim());
 
       // The input should not be shown for a select capability.
-      const input = item.$$('input');
+      const input = item.$$('cr-input');
       assertTrue(input.parentElement.hidden);
     });
 
@@ -71,9 +71,9 @@ cr.define('advanced_item_test', function() {
       assertEquals('Watermark', label.textContent);
 
       // The input should be shown.
-      const input = item.$$('input');
+      const input = item.$$('cr-input');
       assertFalse(input.parentElement.hidden);
-      assertEquals('', input.value);
+      assertEquals('', input.inputElement.value);
 
       // No select.
       assertEquals(null, item.$$('select'));
@@ -101,12 +101,12 @@ cr.define('advanced_item_test', function() {
       Polymer.dom.flush();
 
       // Check that the default value is set.
-      const input = item.$$('input');
-      assertEquals('', input.value);
+      const input = item.$$('cr-input');
+      assertEquals('', input.inputElement.value);
 
       // Update the setting.
       item.set('settings.vendorItems.value', {watermark: 'ABCD'});
-      assertEquals('ABCD', input.value);
+      assertEquals('ABCD', input.inputElement.value);
     });
 
     // Test that the setting is displayed correctly when the search query

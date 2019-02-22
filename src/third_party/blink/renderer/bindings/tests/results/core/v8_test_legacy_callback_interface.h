@@ -29,9 +29,11 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
   // Constants
   static constexpr uint16_t CONST_VALUE_USHORT_42 = 42;
 
-  static V8TestLegacyCallbackInterface* Create(v8::Local<v8::Object> callback_object) {
-    return new V8TestLegacyCallbackInterface(callback_object);
-  }
+  // Creates and returns a new instance. Returns nullptr when |callback_object|
+  // is an object in a remote context (e.g. cross origin window object). The
+  // call sites may want to throw a SecurityError in the case.
+  // See also crbug.com/886588
+  static V8TestLegacyCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
 
   ~V8TestLegacyCallbackInterface() override = default;
 
@@ -43,8 +45,11 @@ class CORE_EXPORT V8TestLegacyCallbackInterface final : public CallbackInterface
   v8::Maybe<uint16_t> acceptNode(ScriptWrappable* callback_this_value, Node* node) WARN_UNUSED_RESULT;
 
  private:
-  explicit V8TestLegacyCallbackInterface(v8::Local<v8::Object> callback_object)
-      : CallbackInterfaceBase(callback_object, kSingleOperation) {}
+  explicit V8TestLegacyCallbackInterface(
+      v8::Local<v8::Object> callback_object,
+      v8::Local<v8::Context> callback_object_creation_context)
+      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+                              kSingleOperation) {}
 };
 
 template <>

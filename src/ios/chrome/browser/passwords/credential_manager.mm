@@ -44,7 +44,8 @@ CredentialManager::~CredentialManager() {
 bool CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
                                             const GURL& origin_url,
                                             bool user_is_interacting,
-                                            bool is_main_frame) {
+                                            bool is_main_frame,
+                                            web::WebFrame* sender_frame) {
   if (!is_main_frame) {
     // Credentials manager is only supported on main frame.
     return false;

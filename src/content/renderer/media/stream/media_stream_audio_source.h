@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_AUDIO_SOURCE_H_
 
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -14,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_audio_deliverer.h"
 #include "content/renderer/media/stream/media_stream_source.h"
+#include "media/base/limits.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 
@@ -22,6 +24,15 @@ class SingleThreadTaskRunner;
 }
 
 namespace content {
+
+// Define a max limit on the latency equivalent to 5 seconds. This limit is
+// meant to avoid overflows when deriving buffersize or sample rate from the
+// latency.
+static constexpr int kMaxAudioLatencyMs = 5000;
+
+static_assert(std::numeric_limits<int>::max() / media::limits::kMaxSampleRate >
+                  kMaxAudioLatencyMs,
+              "The maxium audio latency can cause overflow.");
 
 class MediaStreamAudioTrack;
 

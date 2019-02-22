@@ -5,13 +5,11 @@
 <link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="stylesheet" href="enterprise_card.css">
 <link rel="stylesheet" href="gaia_card_parameters.css">
 
 <div id="oauth-enrollment" class="step no-logo hidden" hidden>
   <div id="oauth-enroll-step-contents">
     <link rel="stylesheet" href="oobe_flex_layout.css">
-    <link rel="stylesheet" href="enterprise_card_footer.css">
     <div id="oauth-enroll-step-signin">
       <oobe-dialog class="gaia-dialog" role="dialog" id="enrollment-gaia-dialog"
                    has-buttons no-header no-footer-padding>
@@ -21,26 +19,24 @@
         </div>
         <div slot="bottom-buttons" class="flex layout horizontal center">
           <oobe-back-button id="oobe-signin-back-button"></oobe-back-button>
-          <div class="flex">
-          </div>
         </div>
       </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-working">
-        <enterprise-card id="oauth-enroll-working"
-            class="with-progress" no-footer>
-            <enterprise-header slot="header"
-                i18n-values="header-title:oauthEnrollScreenTitle;">
-              <hd-iron-icon slot="enterprise-icon"
-                  icon1x="enterprise-header-32:briefcase"
-                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
-            </enterprise-header >
-            <div slot="content" class="layout vertical start">
-                <div class="oauth-enroll-step-message">
-                    <span i18n-content="oauthEnrollWorking"></span>
-                </div>
+        <oobe-dialog id="oauth-enroll-working">
+          <hd-iron-icon slot="oobe-icon"
+                        icon1x="oobe-enrollment-32:briefcase"
+                        icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+          <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
+          <paper-progress slot="progress" indeterminate>
+          </paper-progress>
+
+          <div slot="footer" class="flex layout vertical">
+            <div class="oauth-enroll-step-message">
+              <span i18n-content="oauthEnrollWorking"></span>
             </div>
-        </enterprise-card>
+          </div>
+        </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-license">
       <enrollment-license-card id="oauth-enroll-license-ui"
@@ -50,8 +46,7 @@
     <div id="oauth-enroll-step-ad-join">
       <offline-ad-login id="oauth-enroll-ad-join-ui" is-domain-join
           class="fit" i18n-values=
-              "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage;
-              user-name-label:adEnrollmentLoginUsername">
+              "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage">
       </offline-ad-login>
     </div>
     <div id="oauth-enroll-step-error" role="alert">
@@ -60,91 +55,82 @@
       </notification-card>
     </div>
     <div id="oauth-enroll-step-success" role="alert">
-      <enterprise-card id="oauth-enroll-success-card">
-        <enterprise-header slot="header"
-            i18n-values="header-title:oauthEnrollSuccessTitle">
-          <hd-iron-icon slot="enterprise-icon"
-              icon1x="enterprise-header-32:briefcase"
-              icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
-          <div slot="header-comment" class="header-comment"
-               i18n-content="oauthEnrollSuccess">
-          </div>
-        </enterprise-header >
-        <div slot="content" class="layout vertical center">
+      <oobe-dialog id="oauth-enroll-success-card" has-buttons>
+        <hd-iron-icon slot="oobe-icon"
+                      icon1x="oobe-enrollment-32:briefcase"
+                      icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+        <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
+        <div slot="subtitle" i18n-content="oauthEnrollSuccess"></div>
+        <div slot="footer" class="flex layout vertical center end-justified">
           <img srcset="images/enrollment_success_illustration_1x.png 1x,
                   images/enrollment_success_illustration_2x.png 2x"
-                i18n-values="alt:enrollmentSuccessIllustrationTitle">
+               i18n-values="alt:enrollmentSuccessIllustrationTitle">
         </div>
-        <div slot="footer"
-            class="footer horizontal-reverse justified layout center">
-          <gaia-button i18n-content="oauthEnrollDone"
-              id="enroll-success-done-button" class="autofocus"></gaia-button>
+        <div slot="bottom-buttons" class="layout horizontal end-justified">
+          <oobe-text-button inverse id="enroll-success-done-button"
+              class="focus-on-show">
+            <div i18n-content="oauthEnrollDone"></div>
+          </oobe-text-button>
         </div>
-      </enterprise-card>
+      </oobe-dialog>
     </div>
       <div id="oauth-enroll-step-abe-success" role="alert">
-        <enterprise-card id="oauth-enroll-abe-success-card">
-            <enterprise-header slot="header"
-               i18n-values="header-title:oauthEnrollSuccessTitle">
-              <hd-iron-icon slot="enterprise-icon"
-                  icon1x="enterprise-header-32:briefcase"
-                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
-              <div slot="header-comment" class="header-comment"
-                   id="oauth-enroll-abe-success-comment-no-domain"
-                   i18n-content="oauthEnrollSuccess"></div>
-              <div slot="header-comment" class="header-comment"
-                     id="oauth-enroll-abe-success-comment-domain" hidden></div>
-            </enterprise-header >
-            <div slot="content" class="layout vertical center">
-              <img srcset="images/enrollment_success_illustration_1x.png 1x,
-                    images/enrollment_success_illustration_2x.png 2x"
-                   i18n-values="alt:enrollmentSuccessIllustrationTitle">
-            </div>
-          <div slot="footer"
-              class="footer horizontal-reverse justified layout center">
-            <gaia-button i18n-content="oauthEnrollDone"
-                id="enroll-success-abe-done-button"
-                class="autofocus"></gaia-button>
-           </div>
-        </enterprise-card>
+        <oobe-dialog id="oauth-enroll-abe-success-card" has-buttons>
+          <hd-iron-icon slot="oobe-icon"
+                        icon1x="oobe-enrollment-32:briefcase"
+                        icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+          <h1 slot="title" i18n-content="oauthEnrollSuccessTitle"></h1>
+          <div slot="subtitle" id="oauth-enroll-abe-success-comment-no-domain"
+               i18n-content="oauthEnrollSuccess"></div>
+          <div slot="subtitle" id="oauth-enroll-abe-success-comment-domain"
+               hidden></div>
+          <div slot="footer" class="flex layout vertical center end-justified">
+            <img srcset="images/enrollment_success_illustration_1x.png 1x,
+                  images/enrollment_success_illustration_2x.png 2x"
+                 i18n-values="alt:enrollmentSuccessIllustrationTitle">
+          </div>
+          <div slot="bottom-buttons" class="layout horizontal end-justified">
+            <oobe-text-button inverse id="enroll-success-abe-done-button"
+                class="focus-on-show">
+              <div i18n-content="oauthEnrollDone"></div>
+            </oobe-text-button>
+          </div>
+        </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
-        <enterprise-card id="oauth-enroll-attribute-prompt-card">
-            <enterprise-header slot="header"
-               i18n-values="header-title:oauthEnrollScreenTitle">
-              <hd-iron-icon slot="enterprise-icon"
-                  icon1x="enterprise-header-32:briefcase"
-                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
-              <div slot="header-comment" class="header-comment"
-                   i18n-content="oauthEnrollDeviceInformation">
-              </div>
-            </enterprise-header >
-            <div slot="content" class="layout vertical start">
-                <div class="oauth-enroll-step-message">
+      <oobe-dialog id="oauth-enroll-attribute-prompt-card" has-buttons>
+        <hd-iron-icon slot="oobe-icon"
+                      icon1x="oobe-enrollment-32:briefcase"
+                      icon2x="oobe-enrollment-64:briefcase"></hd-iron-icon>
+        <h1 slot="title" i18n-content="oauthEnrollScreenTitle"></h1>
+        <div slot="subtitle" i18n-content="oauthEnrollDeviceInformation"></div>
+        <div slot="footer" class="layout vertical start">
+          <div class="oauth-enroll-step-message">
                     <span id="oauth-enroll-attribute-prompt-message"
-                        i18n-content="oauthEnrollAttributeExplanation"></span>
-                    <a href="#" id="oauth-enroll-learn-more-link"
-                        class="oauth-enroll-link"
-                        i18n-content="oauthEnrollExplainAttributeLink"></a>
-                </div>
-                <gaia-input id="oauth-enroll-asset-id" type="text"
-                    class="autofocus">
-                  <div slot="label" i18n-content="oauthEnrollAssetIdLabel">
-                  </div>
-                </gaia-input>
-                <gaia-input id="oauth-enroll-location" type="text">
-                  <div slot="label" i18n-content="oauthEnrollLocationLabel">
-                  </div>
-                </gaia-input>
+                          i18n-content="oauthEnrollAttributeExplanation"></span>
+            <a href="#" id="oauth-enroll-learn-more-link"
+               class="oauth-enroll-link"
+               i18n-content="oauthEnrollExplainAttributeLink"></a>
+          </div>
+          <gaia-input id="oauth-enroll-asset-id" type="text"
+                      class="focus-on-show">
+            <div slot="label" i18n-content="oauthEnrollAssetIdLabel">
             </div>
-            <div slot="footer" class="footer">
-                <oobe-next-button
-                    id="enroll-attributes-submit-button"></oobe-next-button>
-                <oobe-text-button
-                    id="enroll-attributes-skip-button"
-                    i18n-content="oauthEnrollSkip"></oobe-text-button>
+          </gaia-input>
+          <gaia-input id="oauth-enroll-location" type="text">
+            <div slot="label" i18n-content="oauthEnrollLocationLabel">
             </div>
-        </enterprise-card>
+          </gaia-input>
+        </div>
+        <div slot="bottom-buttons" class="layout horizontal end-justified">
+          <oobe-text-button id="enroll-attributes-skip-button">
+            <div i18n-content="oauthEnrollSkip"></div>
+          </oobe-text-button>
+          <div class="flex"></div>
+          <oobe-next-button
+              id="enroll-attributes-submit-button"></oobe-next-button>
+        </div>
+      </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-attribute-prompt-error">
       <notification-card id="oauth-enroll-attribute-prompt-error-card"

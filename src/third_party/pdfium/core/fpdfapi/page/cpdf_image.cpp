@@ -32,6 +32,16 @@
 #include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/ptr_util.h"
 
+// static
+bool CPDF_Image::IsValidJpegComponent(int32_t comps) {
+  return comps == 1 || comps == 3 || comps == 4;
+}
+
+// static
+bool CPDF_Image::IsValidJpegBitsPerComponent(int32_t bpc) {
+  return bpc == 1 || bpc == 2 || bpc == 4 || bpc == 8 || bpc == 16;
+}
+
 CPDF_Image::CPDF_Image(CPDF_Document* pDoc) : m_pDocument(pDoc) {}
 
 CPDF_Image::CPDF_Image(CPDF_Document* pDoc,
@@ -82,6 +92,8 @@ std::unique_ptr<CPDF_Dictionary> CPDF_Image::InitJPEG(
           src_span, &width, &height, &num_comps, &bits, &color_trans)) {
     return nullptr;
   }
+  if (!IsValidJpegComponent(num_comps) || !IsValidJpegBitsPerComponent(bits))
+    return nullptr;
 
   auto pDict =
       pdfium::MakeUnique<CPDF_Dictionary>(m_pDocument->GetByteStringPool());
@@ -322,10 +334,9 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
   FX_Free(dest_buf);
 }
 
-void CPDF_Image::ResetCache(CPDF_Page* pPage,
-                            const RetainPtr<CFX_DIBitmap>& pBitmap) {
+void CPDF_Image::ResetCache(CPDF_Page* pPage) {
   RetainPtr<CPDF_Image> pHolder(this);
-  pPage->GetRenderCache()->ResetBitmap(pHolder, pBitmap);
+  pPage->GetRenderCache()->ResetBitmap(pHolder);
 }
 
 RetainPtr<CFX_DIBBase> CPDF_Image::LoadDIBBase() const {

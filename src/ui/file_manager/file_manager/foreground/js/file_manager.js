@@ -18,7 +18,7 @@ function FileManager() {
 
   /**
    * Volume manager.
-   * @type {VolumeManagerWrapper}
+   * @type {FilteredVolumeManager}
    * @private
    */
   this.volumeManager_ = null;
@@ -466,7 +466,7 @@ FileManager.prototype = /** @struct */ {
     return this.backgroundPage_;
   },
   /**
-   * @return {VolumeManagerWrapper}
+   * @return {FilteredVolumeManager}
    */
   get volumeManager() {
     return this.volumeManager_;
@@ -905,7 +905,7 @@ FileManager.prototype = /** @struct */ {
     var writableOnly =
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
 
-    // VolumeManagerWrapper hides virtual file system related event and data
+    // FilteredVolumeManager hides virtual file system related event and data
     // even depends on the value of |supportVirtualPath|. If it is
     // VirtualPathSupport.NO_VIRTUAL_PATH, it hides Drive even if Drive is
     // enabled on preference.
@@ -914,7 +914,7 @@ FileManager.prototype = /** @struct */ {
     // true.
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
-    this.volumeManager_ = new VolumeManagerWrapper(
+    this.volumeManager_ = new FilteredVolumeManager(
         allowedPaths, writableOnly, this.backgroundPage_);
   };
 
@@ -1207,10 +1207,9 @@ FileManager.prototype = /** @struct */ {
                 str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT,
                 new FakeEntry(
                     str('RECENT_ROOT_LABEL'),
-                    VolumeManagerCommon.RootType.RECENT,
+                    VolumeManagerCommon.RootType.RECENT, true,
                     this.getSourceRestriction_())) :
             null,
-        null,  // TODO(crbug.com/869252) remove this null.
         this.commandLineFlags_['disable-my-files-navigation']);
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
@@ -1222,14 +1221,32 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.setupCrostini_ = function() {
     chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+      // Check for 'crostini-files' cmd line flag.
+      chrome.commandLinePrivate.hasSwitch('crostini-files', (filesEnabled) => {
+        Crostini.IS_CROSTINI_FILES_ENABLED = filesEnabled;
+      });
+
+      // Setup Linux files fake root.
       this.directoryTree.dataModel.linuxFilesItem = enabled ?
           new NavigationModelFakeItem(
               str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
               new FakeEntry(
                   str('LINUX_FILES_ROOT_LABEL'),
-                  VolumeManagerCommon.RootType.CROSTINI)) :
+                  VolumeManagerCommon.RootType.CROSTINI, true)) :
           null;
+
+      // Redraw the tree even if not enabled.  This is required for testing.
       this.directoryTree.redraw(false);
+
+      if (!enabled)
+        return;
+
+      // Load any existing shared paths.
+      chrome.fileManagerPrivate.getCrostiniSharedPaths((entries) => {
+        for (let i = 0; i < entries.length; i++) {
+          Crostini.registerSharedPath(entries[i], assert(this.volumeManager_));
+        }
+      });
     });
   };
 
@@ -1409,6 +1426,26 @@ FileManager.prototype = /** @struct */ {
           }.bind(this));
     }.bind(this));
 
+    queue.run((callback) => {
+      // If there is target to be selected, just move to next step.
+      if (nextCurrentDirEntry) {
+        callback();
+        return;
+      }
+
+      // Try to select MyFiles if anything else has failed.
+      nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
+      callback();
+    });
+
+    // If there is no target select MyFiles by default.
+    queue.run((callback) => {
+      if (!nextCurrentDirEntry)
+        nextCurrentDirEntry = this.directoryTree.dataModel.myFilesModel_.entry;
+
+      callback();
+    });
+
     // Finalize.
     queue.run(function(callback) {
       // Check directory change.
@@ -1427,7 +1464,7 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * @param {!DirectoryEntry} directoryEntry Directory to be opened.
+   * @param {DirectoryEntry} directoryEntry Directory to be opened.
    * @param {Entry=} opt_selectionEntry Entry to be selected.
    * @param {string=} opt_suggestedName Suggested name for a non-existing\
    *     selection.
@@ -1436,38 +1473,18 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
-    this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
-      if (opt_selectionEntry)
-        this.directoryModel_.selectEntry(opt_selectionEntry);
-    }.bind(this));
+    if (directoryEntry) {
+      this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+        if (opt_selectionEntry)
+          this.directoryModel_.selectEntry(opt_selectionEntry);
 
-    if (this.dialogType === DialogType.FULL_PAGE) {
-      // In the FULL_PAGE mode if the restored URL points to a file we might
-      // have to invoke a task after selecting it.
-      if (this.launchParams_.action === 'select')
-        return;
+        this.ui_.addLoadedAttribute();
+      }.bind(this));
+    } else {
+      this.ui_.addLoadedAttribute();
+    }
 
-      var task = null;
-
-      // TODO(mtomasz): Implement remounting archives after crash.
-      //                See: crbug.com/333139
-
-      // If there is a task to be run, run it after the scan is completed.
-      if (task) {
-        var listener = function() {
-          if (!util.isSameEntry(this.directoryModel_.getCurrentDirEntry(),
-                                directoryEntry)) {
-            // Opened on a different URL. Probably fallbacked. Therefore,
-            // do not invoke a task.
-            return;
-          }
-          this.directoryModel_.removeEventListener(
-              'scan-completed', listener);
-          task();
-        }.bind(this);
-        this.directoryModel_.addEventListener('scan-completed', listener);
-      }
-    } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
+    if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
       this.ui_.dialogFooter.selectTargetNameInFilenameInput();
     }
@@ -1570,18 +1587,5 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
-  };
-
-  /**
-   * Outputs the current state for debugging.
-   */
-  FileManager.prototype.debugMe = function() {
-    var out = 'Debug information.\n';
-
-    out += '1. VolumeManagerWrapper\n' +
-        this.volumeManager_.toString() + '\n';
-
-    out += 'End of debug information.';
-    console.log(out);
   };
 })();

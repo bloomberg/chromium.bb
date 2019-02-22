@@ -178,7 +178,8 @@ class FakePendingConnectionManagerFactory
   // PendingConnectionManagerImpl::Factory:
   std::unique_ptr<PendingConnectionManager> BuildInstance(
       PendingConnectionManager::Delegate* delegate,
-      BleConnectionManager* ble_connection_manager) override {
+      BleConnectionManager* ble_connection_manager,
+      scoped_refptr<device::BluetoothAdapter> bluetooth_adapter) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(fake_ble_connection_manager_factory_->instance(),
               ble_connection_manager);
@@ -321,6 +322,14 @@ class SecureChannelServiceTest : public testing::Test {
   void SetUp() override {
     mock_adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    is_adapter_powered_ = true;
+    is_adapter_present_ = true;
+    ON_CALL(*mock_adapter_, IsPresent())
+        .WillByDefault(
+            Invoke(this, &SecureChannelServiceTest::is_adapter_present));
+    ON_CALL(*mock_adapter_, IsPowered())
+        .WillByDefault(
+            Invoke(this, &SecureChannelServiceTest::is_adapter_powered));
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
 
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
@@ -583,6 +592,12 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   const cryptauth::RemoteDeviceList& test_devices() { return test_devices_; }
+
+  bool is_adapter_present() { return is_adapter_present_; }
+  void set_is_adapter_present(bool present) { is_adapter_present_ = present; }
+
+  bool is_adapter_powered() { return is_adapter_powered_; }
+  void set_is_adapter_powered(bool powered) { is_adapter_powered_ = powered; }
 
  private:
   void AttemptConnectionAndVerifyPendingConnection(
@@ -853,6 +868,9 @@ class SecureChannelServiceTest : public testing::Test {
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 
+  bool is_adapter_powered_;
+  bool is_adapter_present_;
+
   mojom::SecureChannelPtr secure_channel_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelServiceTest);
@@ -946,6 +964,48 @@ TEST_F(SecureChannelServiceTest, InitiateConnection_MissingLocalDevicePsk) {
   CallInitiateConnectionToDeviceAndVerifyRejection(
       test_devices()[0], local_device, "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::LOCAL_DEVICE_INVALID_PSK);
+}
+
+TEST_F(SecureChannelServiceTest,
+       ListenForConnection_BluetoothAdapterNotPresent) {
+  FinishInitialization();
+
+  set_is_adapter_present(false);
+
+  CallListenForConnectionFromDeviceAndVerifyRejection(
+      test_devices()[0], test_devices()[1], "feature", ConnectionPriority::kLow,
+      mojom::ConnectionAttemptFailureReason::ADAPTER_NOT_PRESENT);
+}
+
+TEST_F(SecureChannelServiceTest,
+       InitiateConnection_BluetoothAdapterNotPresent) {
+  FinishInitialization();
+
+  set_is_adapter_present(false);
+
+  CallInitiateConnectionToDeviceAndVerifyRejection(
+      test_devices()[0], test_devices()[1], "feature", ConnectionPriority::kLow,
+      mojom::ConnectionAttemptFailureReason::ADAPTER_NOT_PRESENT);
+}
+
+TEST_F(SecureChannelServiceTest, ListenForConnection_BluetoothAdapterDisabled) {
+  FinishInitialization();
+
+  set_is_adapter_powered(false);
+
+  CallListenForConnectionFromDeviceAndVerifyRejection(
+      test_devices()[0], test_devices()[1], "feature", ConnectionPriority::kLow,
+      mojom::ConnectionAttemptFailureReason::ADAPTER_DISABLED);
+}
+
+TEST_F(SecureChannelServiceTest, InitiateConnection_BluetoothAdapterDisabled) {
+  FinishInitialization();
+
+  set_is_adapter_powered(false);
+
+  CallInitiateConnectionToDeviceAndVerifyRejection(
+      test_devices()[0], test_devices()[1], "feature", ConnectionPriority::kLow,
+      mojom::ConnectionAttemptFailureReason::ADAPTER_DISABLED);
 }
 
 TEST_F(SecureChannelServiceTest, CallsQueuedBeforeInitializationComplete) {

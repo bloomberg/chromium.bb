@@ -38,7 +38,7 @@ class RuleFeatureSetTest : public testing::Test {
         StrictCSSParserContext(SecureContextMode::kInsecureContext), nullptr,
         selector_text);
 
-    std::vector<size_t> indices;
+    std::vector<wtf_size_t> indices;
     for (const CSSSelector* s = selector_list.First(); s;
          s = selector_list.Next(*s)) {
       indices.push_back(selector_list.SelectorIndex(*s));
@@ -51,7 +51,8 @@ class RuleFeatureSetTest : public testing::Test {
     RuleFeatureSet::SelectorPreMatch result =
         RuleFeatureSet::SelectorPreMatch::kSelectorNeverMatches;
     for (unsigned i = 0; i < indices.size(); ++i) {
-      RuleData rule_data(style_rule, indices[i], 0, kRuleHasNoSpecialState);
+      RuleData* rule_data =
+          new RuleData(style_rule, indices[i], 0, kRuleHasNoSpecialState);
       if (rule_feature_set_.CollectFeaturesFromRuleData(rule_data))
         result = RuleFeatureSet::SelectorPreMatch::kSelectorMayMatch;
     }

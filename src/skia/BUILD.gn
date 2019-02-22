@@ -6,10 +6,11 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//gpu/vulkan/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
-import("//gpu/vulkan/features.gni")
+import("//third_party/skia/third_party/skcms/skcms.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -34,14 +35,11 @@ config("skia_config") {
     "//third_party/skia/include/c",
     "//third_party/skia/include/config",
     "//third_party/skia/include/core",
+    "//third_party/skia/include/docs",
     "//third_party/skia/include/effects",
     "//third_party/skia/include/encode",
     "//third_party/skia/include/gpu",
-    "//third_party/skia/include/images",
-    "//third_party/skia/include/lazy",
     "//third_party/skia/include/pathops",
-    "//third_party/skia/include/pdf",
-    "//third_party/skia/include/pipe",
     "//third_party/skia/include/ports",
     "//third_party/skia/include/utils",
   ]
@@ -60,6 +58,7 @@ config("skia_config") {
   ]
 
   if (!is_ios) {
+    include_dirs += [ "//third_party/skia/include/codec" ]
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
   }
   if (enable_vulkan) {
@@ -237,7 +236,6 @@ config("skia_library_config") {
   }
 }
 
-import("//third_party/skia/third_party/skcms/skcms.gni")
 source_set("skcms") {
   cflags = []
   if (!is_win || is_clang) {
@@ -501,7 +499,7 @@ component("skia") {
       "ext/fontmgr_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/icu:icuuc",
     ]
   }
@@ -529,6 +527,7 @@ component("skia") {
   public_configs = [ ":skia_config" ]
 
   deps += [
+    ":skcms",
     ":skia_opts",
     "//base",
     "//base/third_party/dynamic_annotations",
@@ -604,9 +603,6 @@ component("skia") {
   if (is_fuchsia) {
     deps += [ "//third_party/expat" ]
   }
-
-  # skcms
-  deps += [ ":skcms" ]
 }
 
 # Template for things that are logically part of :skia, but need to be split out
@@ -827,7 +823,7 @@ test("skia_unittests") {
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
-      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/test_fonts",
     ]
     data_deps = [

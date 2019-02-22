@@ -6,19 +6,24 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/async/default.h>
+#include <lib/fdio/io.h>
+#include <lib/fdio/util.h>
 #include <lib/zx/job.h>
 #include <stdio.h>
 #include <zircon/processargs.h>
 
 #include <utility>
 
+#include "base/base_paths_fuchsia.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/default_job.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "webrunner/service/common.h"
 
@@ -29,6 +34,28 @@ namespace {
 base::Process LaunchContextProcess(const base::CommandLine& launch_command,
                                    const base::LaunchOptions& launch_options) {
   return base::LaunchProcess(launch_command, launch_options);
+}
+
+// Returns true if |handle| is connected to a directory.
+bool IsValidDirectory(zx_handle_t handle) {
+  base::File directory =
+      base::fuchsia::GetFileFromHandle(zx::handle(fdio_service_clone(handle)));
+  if (!directory.IsValid())
+    return false;
+
+  base::File::Info info;
+  if (!directory.GetInfo(&info)) {
+    LOG(ERROR) << "Could not query FileInfo for handle.";
+    directory.Close();
+    return false;
+  }
+
+  if (!info.is_directory) {
+    LOG(ERROR) << "Handle is not a directory.";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -94,13 +121,15 @@ void ContextProviderImpl::Create(
   launch_options.paths_to_transfer.push_back(base::PathToTransfer{
       base::FilePath("/svc"), std::move(params.service_directory.release())});
 
-  // Pass the data directory. If there is no data dir then --incognito flag is
-  // added instead.
+  // Bind |data_directory| to /data directory, if provided.
   if (params.data_directory) {
-    launch_options.paths_to_transfer.push_back(base::PathToTransfer{
-        base::FilePath(kWebContextDataPath), params.data_directory.release()});
-  } else {
-    launch_command.AppendSwitch(kIncognitoSwitch);
+    if (!IsValidDirectory(params.data_directory.get()))
+      return;
+
+    base::FilePath data_path;
+    CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_path));
+    launch_options.paths_to_transfer.push_back(
+        base::PathToTransfer{data_path, params.data_directory.release()});
   }
 
   // Isolate the child Context processes by containing them within their own

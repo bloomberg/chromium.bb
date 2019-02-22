@@ -29,16 +29,6 @@ gfx::BufferFormat BufferFormatForInternalFormat(unsigned internalformat) {
       return gfx::BufferFormat::RGBA_8888;
     case GL_BGRA_EXT:
       return gfx::BufferFormat::BGRA_8888;
-    case GL_ATC_RGB_AMD:
-      return gfx::BufferFormat::ATC;
-    case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
-      return gfx::BufferFormat::ATCIA;
-    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-      return gfx::BufferFormat::DXT1;
-    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-      return gfx::BufferFormat::DXT5;
-    case GL_ETC1_RGB8_OES:
-      return gfx::BufferFormat::ETC1;
     case GL_RGB_YCRCB_420_CHROMIUM:
       return gfx::BufferFormat::YVU_420;
     case GL_RGB_YCBCR_420V_CHROMIUM:
@@ -57,13 +47,8 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
     gfx::BufferFormat format) {
   switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
@@ -91,18 +76,9 @@ bool IsImageFromGpuMemoryBufferFormatSupported(
     gfx::BufferFormat format,
     const gpu::Capabilities& capabilities) {
   switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-      return capabilities.texture_format_atc;
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
       return capabilities.texture_format_bgra8888;
-    case gfx::BufferFormat::DXT1:
-      return capabilities.texture_format_dxt1;
-    case gfx::BufferFormat::DXT5:
-      return capabilities.texture_format_dxt5;
-    case gfx::BufferFormat::ETC1:
-      return capabilities.texture_format_etc1;
     case gfx::BufferFormat::R_16:
       return capabilities.texture_norm16;
     case gfx::BufferFormat::R_8:
@@ -133,14 +109,6 @@ bool IsImageFromGpuMemoryBufferFormatSupported(
 bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
                                               gfx::BufferFormat format) {
   switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-      // Compressed images must have a width and height that's evenly divisible
-      // by the block size.
-      return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:

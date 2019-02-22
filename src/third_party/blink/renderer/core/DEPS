@@ -24,6 +24,7 @@ include_rules = [
     "+cc/layers/layer_sticky_position_constraint.h",
     "+cc/layers/picture_layer.h",
     "+cc/layers/scrollbar_layer_interface.h",
+    "+cc/layers/surface_layer.h",
     "+cc/paint/display_item_list.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
@@ -83,5 +84,8 @@ specific_include_rules = {
     "clipboard_utilities.cc" : [ "+net/base/escape.h" ],
     "find_in_page.cc" : [
         "+third_party/blink/renderer/core/frame/web_local_frame_impl.h",
+    ],
+    "local_frame_ukm_aggregator_test.cc" : [
+        "+components/ukm/test_ukm_recorder.h"
     ],
 }

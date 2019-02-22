@@ -75,12 +75,14 @@ class AudioDecoderAndroid : public MediaPipelineBackend::AudioDecoder,
   void OnSinkError(SinkError error) override;
 
   void CleanUpPcm();
+  void ResetSinkForNewSampleRate(int sample_rate);
   void CreateDecoder();
   void CreateRateShifter(int samples_per_second);
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
-                       const scoped_refptr<DecoderBufferBase>& decoded);
+                       const AudioConfig& config,
+                       scoped_refptr<DecoderBufferBase> decoded);
   void CheckBufferComplete();
   void PushRateShifted();
   void PushMorePcm();

@@ -62,7 +62,8 @@
       </settings-clear-browsing-data-dialog>
     </template>
     <template id="doNotTrackDialogIf" is="dom-if"
-        if="[[showDoNotTrackDialog_]]" notify-dom-change>
+        if="[[showDoNotTrackDialog_]]" notify-dom-change
+        on-dom-change="onDoNotTrackDomChange_">
       <cr-dialog id="confirmDoNotTrackDialog"
           close-text="$i18n{close}" on-cancel="onDoNotTrackDialogCancel_"
           on-close="onDoNotTrackDialogClosed_">
@@ -410,12 +411,10 @@
       </template>
       <template is="dom-if" route-path="/content/flash" no-search>
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
-          <template is="dom-if" if="[[enableEphemeralFlashPermission_]]">
-            <a class="settings-box inherit-color no-outline" tabindex="-1"
-                target="_blank">
-              $i18n{siteSettingsFlashPermissionsEphemeral}
-            </a>
-          </template>
+          <a class="settings-box first" tabindex="-1"
+              target="_blank">
+            $i18n{siteSettingsFlashPermissionsEphemeral}
+          </a>
           <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
               toggle-off-label="$i18n{siteSettingsFlashBlock}"
               toggle-on-label="$i18n{siteSettingsFlashAskFirstRecommended}">
@@ -432,8 +431,7 @@
 </if>
           <category-setting-exceptions
               category="{{ContentSettingsTypes.PLUGINS}}"
-              block-header="$i18n{siteSettingsBlock}"
-              read-only-list="[[enableEphemeralFlashPermission_]]">
+              block-header="$i18n{siteSettingsBlock}" read-only-list>
           </category-setting-exceptions>
         </settings-subpage>
       </template>

@@ -57,7 +57,7 @@ class DrmDisplay {
   ScreenManager* screen_manager_;  // Not owned.
 
   int64_t display_id_ = -1;
-  scoped_refptr<DrmDevice> drm_;
+  const scoped_refptr<DrmDevice> drm_;
   uint32_t crtc_ = 0;
   uint32_t connector_ = 0;
   std::vector<drmModeModeInfo> modes_;

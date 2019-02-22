@@ -34,6 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -54,7 +55,7 @@ class MediaSourceRegistry final : public URLRegistry {
 
  private:
   MediaSourceRegistry();
-  PersistentHeapHashMap<String, Member<MediaSource>> media_sources_;
+  Persistent<HeapHashMap<String, Member<MediaSource>>> media_sources_;
 };
 
 }  // namespace blink

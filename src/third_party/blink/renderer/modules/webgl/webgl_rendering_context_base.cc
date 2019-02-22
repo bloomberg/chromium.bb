@@ -1119,7 +1119,7 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   // into account here?
 
   marked_canvas_dirty_ = false;
-  animation_frame_in_progress_ = false;
+  must_paint_to_canvas_ = false;
   active_texture_unit_ = 0;
   pack_alignment_ = 4;
   unpack_alignment_ = 4;
@@ -1348,6 +1348,11 @@ void WebGLRenderingContextBase::MarkContextChanged(
     return;
   }
 
+  // Regardless of whether dirty propagations are optimized away, the back
+  // buffer is now out of sync with respect to the canvas's internal backing
+  // store -- which is only used for certain purposes, like printing.
+  must_paint_to_canvas_ = true;
+
   if (!GetDrawingBuffer()->MarkContentsChanged() && marked_canvas_dirty_) {
     return;
   }
@@ -1361,10 +1366,8 @@ void WebGLRenderingContextBase::MarkContextChanged(
   if (!canvas())
     return;
 
-  marked_canvas_dirty_ = true;
-
-  if (!animation_frame_in_progress_) {
-    animation_frame_in_progress_ = true;
+  if (!marked_canvas_dirty_) {
+    marked_canvas_dirty_ = true;
     LayoutBox* layout_box = canvas()->GetLayoutBox();
     if (layout_box && layout_box->HasAcceleratedCompositing()) {
       layout_box->ContentChanged(change_type);
@@ -1397,7 +1400,7 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
-  animation_frame_in_progress_ = false;
+  marked_canvas_dirty_ = false;
 }
 
 void WebGLRenderingContextBase::OnErrorMessage(const char* message,
@@ -1545,10 +1548,10 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     return false;
 
   bool must_clear_now = ClearIfComposited() != kSkipped;
-  if (!marked_canvas_dirty_ && !must_clear_now)
+  if (!must_paint_to_canvas_ && !must_clear_now)
     return false;
 
-  marked_canvas_dirty_ = false;
+  must_paint_to_canvas_ = false;
 
   if (Host()->ResourceProvider() &&
       Host()->ResourceProvider()->Size() != GetDrawingBuffer()->Size()) {
@@ -1602,8 +1605,9 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
     // CopyToPlatformTexture is done correctly. See crbug.com/794706.
     gl->Flush();
 
+    bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, true, is_origin_top_left_,
+        gl, GL_TEXTURE_2D, texture_id, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
         source_buffer);
   }
@@ -1614,8 +1618,10 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
   if (!image)
     return false;
+  cc::PaintFlags paint_flags;
+  paint_flags.setBlendMode(SkBlendMode::kSrc);
   resource_provider->Canvas()->drawImage(image->PaintImageForCurrentFrame(), 0,
-                                         0, nullptr);
+                                         0, &paint_flags);
   return true;
 }
 
@@ -3342,6 +3348,13 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, WEBGL_multiview not enabled");
       return ScriptValue::CreateNull(script_state);
+    case GL_MAX_SHADER_COMPILER_THREADS_KHR:
+      if (ExtensionEnabled(kKHRParallelShaderCompileName))
+        return GetUnsignedIntParameter(script_state, pname);
+      SynthesizeGLError(
+          GL_INVALID_ENUM, "getParameter",
+          "invalid parameter name, KHR_parallel_shader_compile not enabled");
+      return ScriptValue::CreateNull(script_state);
     default:
       if ((ExtensionEnabled(kWebGLDrawBuffersName) || IsWebGL2OrHigher()) &&
           pname >= GL_DRAW_BUFFER0_EXT &&
@@ -3375,6 +3388,14 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
       return WebGLAny(script_state, static_cast<bool>(value));
     case GL_LINK_STATUS:
       return WebGLAny(script_state, program->LinkStatus(this));
+    case GL_COMPLETION_STATUS_KHR:
+      if (!ExtensionEnabled(kKHRParallelShaderCompileName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "getProgramParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state);
+      }
+
+      return WebGLAny(script_state, program->CompletionStatus(this));
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
       if (!IsWebGL2OrHigher()) {
@@ -3466,6 +3487,14 @@ ScriptValue WebGLRenderingContextBase::getShaderParameter(
     case GL_DELETE_STATUS:
       return WebGLAny(script_state, shader->IsDeleted());
     case GL_COMPILE_STATUS:
+      ContextGL()->GetShaderiv(ObjectOrZero(shader), pname, &value);
+      return WebGLAny(script_state, static_cast<bool>(value));
+    case GL_COMPLETION_STATUS_KHR:
+      if (!ExtensionEnabled(kKHRParallelShaderCompileName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "getShaderParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state);
+      }
       ContextGL()->GetShaderiv(ObjectOrZero(shader), pname, &value);
       return WebGLAny(script_state, static_cast<bool>(value));
     case GL_SHADER_TYPE:
@@ -5175,7 +5204,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
           IntPoint(xoffset, yoffset), source_sub_rectangle);
     } else {
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
-      if (gl->is_origin_top_left_)
+      if (gl->is_origin_top_left_ && !canvas()->LowLatencyEnabled())
         flip_y = !flip_y;
       ScopedTexture2DRestorer restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
@@ -5409,6 +5438,9 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                        yoffset, zoffset))
     return;
 
+  GLint adjusted_internalformat =
+      ConvertTexInternalFormat(internalformat, type);
+
   // For WebGL last-uploaded-frame-metadata API. https://crbug.com/639174
   WebMediaPlayer::VideoFrameUploadMetadata frame_metadata = {};
   int already_uploaded_id = -1;
@@ -5447,8 +5479,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // SW path.
 
     if (video->CopyVideoTextureToPlatformTexture(
-            ContextGL(), target, texture->Object(), internalformat, format,
-            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            ContextGL(), target, texture->Object(), adjusted_internalformat,
+            format, type, level, unpack_premultiply_alpha_, unpack_flip_y_,
             already_uploaded_id, frame_metadata_ptr)) {
       texture->UpdateLastUploadedFrame(frame_metadata);
       return;
@@ -5458,8 +5490,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // (e.g. video camera frames): upload them to the GPU, do a GPU decode, and
     // then copy into the target texture.
     if (video->CopyVideoYUVDataToPlatformTexture(
-            ContextGL(), target, texture->Object(), internalformat, format,
-            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            ContextGL(), target, texture->Object(), adjusted_internalformat,
+            format, type, level, unpack_premultiply_alpha_, unpack_flip_y_,
             already_uploaded_id, frame_metadata_ptr)) {
       texture->UpdateLastUploadedFrame(frame_metadata);
       return;
@@ -5474,8 +5506,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     if (video->TexImageImpl(
             static_cast<WebMediaPlayer::TexImageFunctionID>(function_id),
             target, ContextGL(), texture->Object(), level,
-            ConvertTexInternalFormat(internalformat, type), format, type,
-            xoffset, yoffset, zoffset, unpack_flip_y_,
+            adjusted_internalformat, format, type, xoffset, yoffset, zoffset,
+            unpack_flip_y_,
             unpack_premultiply_alpha_ &&
                 unpack_colorspace_conversion_ == GL_NONE)) {
       texture->ClearLastUploadedFrame();
@@ -5487,8 +5519,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
       VideoFrameToImage(video, already_uploaded_id, frame_metadata_ptr);
   if (!image)
     return;
-  TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-               zoffset, format, type, image.get(),
+  TexImageImpl(function_id, target, level, adjusted_internalformat, xoffset,
+               yoffset, zoffset, format, type, image.get(),
                WebGLImageConversion::kHtmlDomVideo, unpack_flip_y_,
                unpack_premultiply_alpha_, source_image_rect, depth,
                unpack_image_height);

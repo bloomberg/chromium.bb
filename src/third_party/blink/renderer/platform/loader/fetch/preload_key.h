@@ -30,7 +30,7 @@ struct PreloadKey final {
   };
 
   PreloadKey() = default;
-  PreloadKey(const KURL& url, Resource::Type type)
+  PreloadKey(const KURL& url, ResourceType type)
       : url(RemoveFragmentFromUrl(url)), type(type) {}
 
   bool operator==(const PreloadKey& x) const {
@@ -46,7 +46,7 @@ struct PreloadKey final {
   }
 
   KURL url;
-  Resource::Type type = Resource::kMainResource;
+  ResourceType type = ResourceType::kMainResource;
 };
 
 }  // namespace blink

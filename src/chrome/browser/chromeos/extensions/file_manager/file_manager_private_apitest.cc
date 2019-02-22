@@ -13,17 +13,23 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
+#include "chrome/browser/chromeos/extensions/file_manager/private_api_misc.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
@@ -153,27 +159,22 @@ void DispatchDirectoryChangeEventImpl(
 
 void AddFileWatchCallback(bool success) {}
 
-bool InitializeLocalFileSystem(std::string mount_point_name,
-                               base::ScopedTempDir* temp_dir,
-                               base::FilePath* mount_point_dir) {
+void AddLocalFileSystem(Profile* profile, base::FilePath root) {
+  const char kLocalMountPointName[] = "local";
   const char kTestFileContent[] = "The five boxing wizards jumped quickly";
-  if (!temp_dir->CreateUniqueTempDir())
-    return false;
 
-  *mount_point_dir = temp_dir->GetPath().AppendASCII(mount_point_name);
-  // Create the mount point.
-  if (!base::CreateDirectory(*mount_point_dir))
-    return false;
+  ASSERT_TRUE(base::CreateDirectory(root.AppendASCII("test_dir")));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      root.AppendASCII("test_dir").AppendASCII("test_file.txt"),
+      kTestFileContent));
 
-  const base::FilePath test_dir = mount_point_dir->AppendASCII("test_dir");
-  if (!base::CreateDirectory(test_dir))
-    return false;
-
-  const base::FilePath test_file = test_dir.AppendASCII("test_file.txt");
-  if (!google_apis::test_util::WriteStringToFile(test_file, kTestFileContent))
-    return false;
-
-  return true;
+  ASSERT_TRUE(
+      content::BrowserContext::GetMountPoints(profile)->RegisterFileSystem(
+          kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
+          storage::FileSystemMountOption(), root));
+  file_manager::VolumeManager::Get(profile)->AddVolumeForTesting(
+      root, file_manager::VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN,
+      false /* read_only */);
 }
 
 }  // namespace
@@ -343,6 +344,40 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
             chromeos::disks::MountCondition::MOUNT_CONDITION_NONE));
   }
 
+  void EnableCrostiniForProfile(
+      base::test::ScopedFeatureList* scoped_feature_list) {
+    // TODO(joelhockey): Setting prefs and features to allow crostini is not
+    // ideal.  It would be better if the crostini interface allowed for testing
+    // without such tight coupling.
+    browser()->profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kCrostiniEnabled, true);
+    scoped_feature_list->InitWithFeatures(
+        {features::kCrostini, features::kExperimentalCrostiniUI}, {});
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kCrostiniFiles);
+    // Profile must be signed in with email for crostini.
+    identity::SetPrimaryAccount(
+        SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
+        IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
+        "testuser@gmail.com");
+  }
+
+  void ExpectCrostiniMount() {
+    std::string known_hosts;
+    base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
+    std::string identity;
+    base::Base64Encode("privkey", &identity);
+    std::vector<std::string> mount_options = {
+        "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=" + identity,
+        "Port=2222"};
+    EXPECT_CALL(*disk_mount_manager_mock_,
+                MountPath("sshfs://testuser@hostname:", "",
+                          "crostini_user_termina_penguin", mount_options,
+                          chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                          chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+        .WillOnce(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
+  }
+
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
@@ -480,21 +515,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, OnFileChanged) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
   base::ScopedTempDir temp_dir;
-  base::FilePath mount_point_dir;
-  const char kLocalMountPointName[] = "local";
-
-  ASSERT_TRUE(InitializeLocalFileSystem(kLocalMountPointName, &temp_dir,
-                                        &mount_point_dir))
-      << "Failed to initialize test file system";
-
-  EXPECT_TRUE(content::BrowserContext::GetMountPoints(browser()->profile())
-                  ->RegisterFileSystem(
-                      kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
-                      storage::FileSystemMountOption(), mount_point_dir));
-  file_manager::VolumeManager::Get(browser()->profile())
-      ->AddVolumeForTesting(mount_point_dir, file_manager::VOLUME_TYPE_TESTING,
-                            chromeos::DEVICE_TYPE_UNKNOWN,
-                            false /* read_only */);
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }
@@ -518,37 +540,59 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Recent) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
-  // TODO(joelhockey): Setting prefs and features to allow crostini is not
-  // ideal.  It would be better if the crostini interface allowed for testing
-  // without such tight coupling.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniEnabled, true);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kCrostini, features::kExperimentalCrostiniUI}, {});
-  crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+  EnableCrostiniForProfile(&scoped_feature_list);
 
-  // Profile must be signed in with email for crostini.
-  identity::SetPrimaryAccount(
-      SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
-      IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
-      "testuser@gmail.com");
+  // Setup CrostiniManager for testing.
+  crostini::CrostiniManager* crostini_manager =
+      crostini::CrostiniManager::GetForProfile(browser()->profile());
+  crostini_manager->set_skip_restart_for_testing();
+  vm_tools::concierge::VmInfo vm_info;
+  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
+                                           std::move(vm_info));
 
-  // DiskMountManager mock.
-  std::string known_hosts;
-  base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
-  std::string identity;
-  base::Base64Encode("privkey", &identity);
-  std::vector<std::string> mount_options = {
-      "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=" + identity,
-      "Port=2222"};
-  EXPECT_CALL(*disk_mount_manager_mock_,
-              MountPath("sshfs://testuser@hostname:", "",
-                        "crostini_user_termina_penguin", mount_options,
-                        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                        chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
-      .WillOnce(
-          Invoke(this, &FileManagerPrivateApiTest_Crostini_Test::SshfsMount));
+  ExpectCrostiniMount();
+
+  // Add 'testing' volume with 'test_dir', create 'share_dir' in Downloads.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  AddLocalFileSystem(browser()->profile(), temp_dir.GetPath());
+  base::FilePath downloads;
+  ASSERT_TRUE(
+      storage::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
+          file_manager::util::GetDownloadsMountPointName(browser()->profile()),
+          &downloads));
+  ASSERT_TRUE(base::CreateDirectory(downloads.AppendASCII("share_dir")));
+
+  // Setup prefs crostini.shared_paths.
+  base::FilePath shared1 = downloads.AppendASCII("shared1");
+  base::FilePath shared2 = downloads.AppendASCII("shared2");
+  ASSERT_TRUE(base::CreateDirectory(shared1));
+  ASSERT_TRUE(base::CreateDirectory(shared2));
+  base::ListValue shared_paths;
+  shared_paths.AppendString(shared1.value());
+  shared_paths.AppendString(shared2.value());
+  browser()->profile()->GetPrefs()->Set(crostini::prefs::kCrostiniSharedPaths,
+                                        shared_paths);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, CrostiniIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  EnableCrostiniForProfile(&scoped_feature_list);
+  crostini::CrostiniManager::GetForProfile(browser()->profile())
+      ->set_skip_restart_for_testing();
+  ExpectCrostiniMount();
+
+  scoped_refptr<extensions::FileManagerPrivateMountCrostiniFunction> function(
+      new extensions::FileManagerPrivateMountCrostiniFunction());
+  // Use incognito profile.
+  function->set_browser_context(browser()->profile()->GetOffTheRecordProfile());
+
+  extensions::api_test_utils::SendResponseHelper response_helper(
+      function.get());
+  function->RunWithValidation()->Execute();
+  response_helper.WaitForResponse();
+  EXPECT_TRUE(response_helper.GetResponse());
 }

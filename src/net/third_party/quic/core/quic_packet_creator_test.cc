@@ -290,13 +290,13 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       if (client_framer_.transport_version() != QUIC_VERSION_99) {
         // pre-version 99; ensure that the error is gracefully
         // handled.
-        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
-            .WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1)).WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckFrameEnd(1)).WillOnce(Return(true));
       } else {
         // version 99; ensure that the correct packet is signalled
         // properly.
-        EXPECT_CALL(framer_visitor_, OnAckRange(0, 1, true))
-            .WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckRange(0, 1)).WillOnce(Return(true));
+        EXPECT_CALL(framer_visitor_, OnAckFrameEnd(0)).WillOnce(Return(true));
       }
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
@@ -955,8 +955,7 @@ TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
   message.set_minimum_size(kMaxPacketSize);
   CryptoFramer framer;
   std::unique_ptr<QuicData> message_data;
-  message_data.reset(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_CLIENT));
+  message_data.reset(framer.ConstructHandshakeMessage(message));
 
   struct iovec iov;
   MakeIOVector(QuicStringPiece(message_data->data(), message_data->length()),
@@ -1157,6 +1156,80 @@ TEST_P(QuicPacketCreatorTest, IetfAckGapErrorRegression) {
   QuicAckFrame ack_frame = InitAckFrame({{60, 61}, {125, 126}});
   frames_.push_back(QuicFrame(&ack_frame));
   SerializeAllFrames(frames_);
+}
+
+TEST_P(QuicPacketCreatorTest, AddMessageFrame) {
+  if (client_framer_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .Times(3)
+      .WillRepeatedly(
+          Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacketForTests));
+  // Verify that there is enough room for the largest message payload.
+  EXPECT_TRUE(
+      creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
+  QuicString message(creator_.GetLargestMessagePayload(), 'a');
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(1, message))));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  creator_.Flush();
+
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(2, "message"))));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  // Verify if a new frame is added, 1 byte message length will be added.
+  EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(3, "message2"))));
+  EXPECT_EQ(1u, creator_.ExpansionOnNewFrame());
+  creator_.Flush();
+
+  QuicFrame frame;
+  MakeIOVector("test", &iov_);
+  EXPECT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
+                                   0u, false, false, &frame));
+  EXPECT_TRUE(
+      creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(1, "message"))));
+  EXPECT_TRUE(creator_.HasPendingFrames());
+  // Verify there is not enough room for largest payload.
+  EXPECT_FALSE(
+      creator_.HasRoomForMessageFrame(creator_.GetLargestMessagePayload()));
+  // Add largest message will causes the flush of the stream frame.
+  QuicMessageFrame message_frame(2, message);
+  EXPECT_FALSE(creator_.AddSavedFrame(QuicFrame(&message_frame)));
+  EXPECT_FALSE(creator_.HasPendingFrames());
+}
+
+TEST_P(QuicPacketCreatorTest, MessageFrameConsumption) {
+  if (client_framer_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  QuicString message_data(kDefaultMaxPacketSize, 'a');
+  QuicStringPiece message_buffer(message_data);
+  // Test all possible size of message frames.
+  for (size_t message_size = 0;
+       message_size <= creator_.GetLargestMessagePayload(); ++message_size) {
+    EXPECT_TRUE(creator_.AddSavedFrame(QuicFrame(new QuicMessageFrame(
+        0, QuicStringPiece(message_buffer.data(), message_size)))));
+    EXPECT_TRUE(creator_.HasPendingFrames());
+
+    size_t expansion_bytes = message_size >= 64 ? 2 : 1;
+    EXPECT_EQ(expansion_bytes, creator_.ExpansionOnNewFrame());
+    // Verify BytesFree returns bytes available for the next frame, which should
+    // subtract the message length.
+    size_t expected_bytes_free =
+        creator_.GetLargestMessagePayload() - message_size < expansion_bytes
+            ? 0
+            : creator_.GetLargestMessagePayload() - expansion_bytes -
+                  message_size;
+    EXPECT_EQ(expected_bytes_free, creator_.BytesFree());
+    EXPECT_CALL(delegate_, OnSerializedPacket(_))
+        .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
+    creator_.Flush();
+    ASSERT_TRUE(serialized_packet_.encrypted_buffer);
+    DeleteSerializedPacket();
+  }
 }
 
 }  // namespace

@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/infobar_controller+protected.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
@@ -16,41 +17,40 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TranslateMessageInfoBarController () {
-  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
-}
+@interface TranslateMessageInfoBarController ()
+
+// Overrides superclass property.
+@property(nonatomic, readonly)
+    translate::TranslateInfoBarDelegate* infoBarDelegate;
 
 @end
 
 @implementation TranslateMessageInfoBarController
 
+@dynamic infoBarDelegate;
+
 - (instancetype)initWithInfoBarDelegate:
-    (translate::TranslateInfoBarDelegate*)delegate {
-  self = [super init];
-  if (self) {
-    _translateInfoBarDelegate = delegate;
-  }
-  return self;
+    (translate::TranslateInfoBarDelegate*)infoBarDelegate {
+  return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
   ConfirmInfoBarView* infoBarView =
       [[ConfirmInfoBarView alloc] initWithFrame:frame];
   // Icon
-  gfx::Image icon = _translateInfoBarDelegate->GetIcon();
+  gfx::Image icon = self.infoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
     [infoBarView addLeftIcon:icon.ToUIImage()];
   // Text.
-  [infoBarView
-      addLabel:base::SysUTF16ToNSString(
-                   _translateInfoBarDelegate->GetMessageInfoBarText())];
+  [infoBarView addLabel:base::SysUTF16ToNSString(
+                            self.infoBarDelegate->GetMessageInfoBarText())];
   // Close button.
   [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
                               target:self
                               action:@selector(infoBarButtonDidPress:)];
   // Other button.
   base::string16 buttonText(
-      _translateInfoBarDelegate->GetMessageInfoBarButtonText());
+      self.infoBarDelegate->GetMessageInfoBarButtonText());
   if (!buttonText.empty()) {
     [infoBarView addButton:base::SysUTF16ToNSString(buttonText)
                        tag:TranslateInfoBarIOSTag::MESSAGE
@@ -63,21 +63,17 @@
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {
-  // This press might have occurred after the user has already pressed a button,
-  // in which case the view has been detached from the delegate and this press
-  // should be ignored.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
   NSUInteger buttonId = base::mac::ObjCCastStrict<UIButton>(sender).tag;
   switch (buttonId) {
     case TranslateInfoBarIOSTag::CLOSE:
-      _translateInfoBarDelegate->InfoBarDismissed();
+      self.infoBarDelegate->InfoBarDismissed();
       self.delegate->RemoveInfoBar();
       break;
     case TranslateInfoBarIOSTag::MESSAGE:
-      _translateInfoBarDelegate->MessageInfoBarButtonPressed();
+      self.infoBarDelegate->MessageInfoBarButtonPressed();
       break;
     default:
       NOTREACHED() << "Unexpected Translate button label";

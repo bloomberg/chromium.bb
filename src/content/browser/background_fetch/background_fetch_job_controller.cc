@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/public/common/origin_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
@@ -10,6 +12,8 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
+
+using blink::mojom::BackgroundFetchFailureReason;
 
 BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDelegateProxy* delegate_proxy,
@@ -37,13 +41,15 @@ void BackgroundFetchJobController::InitializeRequestStatus(
     int total_downloads,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
         active_fetch_requests,
-    const std::string& ui_title) {
+    const std::string& ui_title,
+    bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't allow double initialization.
   DCHECK_GT(total_downloads, 0);
   DCHECK_EQ(total_downloads_, 0);
 
+  outstanding_requests_ = active_fetch_requests;
   completed_downloads_ = completed_downloads;
   total_downloads_ = total_downloads;
 
@@ -59,7 +65,7 @@ void BackgroundFetchJobController::InitializeRequestStatus(
       registration_id().unique_id(), ui_title, registration_id().origin(),
       icon_, completed_downloads, total_downloads,
       complete_requests_downloaded_bytes_cache_, total_downloads_size_,
-      std::move(active_guids));
+      std::move(active_guids), start_paused);
 
   delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
                                      std::move(active_fetch_requests));
@@ -73,6 +79,41 @@ bool BackgroundFetchJobController::HasMoreRequests() {
   return completed_downloads_ < total_downloads_;
 }
 
+bool BackgroundFetchJobController::IsMixedContent(
+    const BackgroundFetchRequestInfo& request) {
+  // Empty request is valid, it shouldn't fail the mixed content check.
+  if (request.fetch_request().url.is_empty())
+    return false;
+
+  return !IsOriginSecure(request.fetch_request().url);
+}
+
+bool BackgroundFetchJobController::RequiresCORSPreflight(
+    const BackgroundFetchRequestInfo& request) {
+  auto fetch_request = request.fetch_request();
+
+  // Same origin requests don't require a CORS preflight.
+  // https://fetch.spec.whatwg.org/#main-fetch
+  // TODO(crbug.com/711354): Make sure that cross-origin redirects are disabled.
+  if (url::IsSameOriginWith(registration_id().origin().GetURL(),
+                            fetch_request.url)) {
+    return false;
+  }
+
+  // Requests that are more involved than what is possible with HTML's form
+  // element require a CORS-preflight request.
+  // https://fetch.spec.whatwg.org/#main-fetch
+  if (!fetch_request.method.empty() &&
+      !network::cors::IsCORSSafelistedMethod(fetch_request.method)) {
+    return true;
+  }
+
+  net::HttpRequestHeaders::HeaderVector headers;
+  for (const auto& header : fetch_request.headers)
+    headers.emplace_back(header.first, header.second);
+  return !network::cors::CORSUnsafeRequestHeaderNames(headers).empty();
+}
+
 void BackgroundFetchJobController::StartRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request,
     RequestFinishedCallback request_finished_callback) {
@@ -84,15 +125,29 @@ void BackgroundFetchJobController::StartRequest(
   active_request_downloaded_bytes_ = 0;
   active_request_finished_callback_ = std::move(request_finished_callback);
 
+  if (IsMixedContent(*request.get()) || RequiresCORSPreflight(*request.get())) {
+    request->SetEmptyResultWithFailureReason(
+        BackgroundFetchResult::FailureReason::FETCH_ERROR);
+
+    ++completed_downloads_;
+    std::move(active_request_finished_callback_).Run(request);
+    return;
+  }
+
   delegate_proxy_->StartRequest(registration_id().unique_id(),
                                 registration_id().origin(), request);
+}
+
+std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+BackgroundFetchJobController::TakeOutstandingRequests() {
+  return std::move(outstanding_requests_);
 }
 
 void BackgroundFetchJobController::DidStartRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(delphick): Either add CORS check here or remove this function and do
-  // the CORS check in BackgroundFetchDelegateImpl (since
+  // TODO(crbug.com/884672): Either add CORS check here or remove this function
+  // and do the CORS check in BackgroundFetchDelegateImpl (since
   // download::Client::OnDownloadStarted returns a value that can abort the
   // download).
 }
@@ -107,9 +162,10 @@ void BackgroundFetchJobController::DidUpdateRequest(
 
   active_request_downloaded_bytes_ = bytes_downloaded;
 
-  progress_callback_.Run(registration_id().unique_id(), options_.download_total,
-                         complete_requests_downloaded_bytes_cache_ +
-                             GetInProgressDownloadedBytes());
+  auto registration =
+      NewRegistration(blink::mojom::BackgroundFetchResult::UNSET);
+  registration->downloaded += GetInProgressDownloadedBytes();
+  progress_callback_.Run(*registration);
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
@@ -140,43 +196,20 @@ void BackgroundFetchJobController::UpdateUI(
 
 std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchJobController::NewRegistration(
-    blink::mojom::BackgroundFetchState state) const {
+    blink::mojom::BackgroundFetchResult result) const {
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
       0 /* upload_total */, 0 /* uploaded */, total_downloads_size_,
-      complete_requests_downloaded_bytes_cache_, state, MojoFailureReason());
+      complete_requests_downloaded_bytes_cache_, result, failure_reason_);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
   return active_request_downloaded_bytes_;
 }
 
-// TODO(crbug.com/876691): Get rid of BackgroundFetchReasonToAbort and remove
-// this method.
-blink::mojom::BackgroundFetchFailureReason
-BackgroundFetchJobController::MojoFailureReason() const {
-  switch (reason_to_abort_) {
-    case BackgroundFetchReasonToAbort::NONE:
-      return blink::mojom::BackgroundFetchFailureReason::NONE;
-    case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
-      return blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI;
-    case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
-      return blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
-    case BackgroundFetchReasonToAbort::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-      return blink::mojom::BackgroundFetchFailureReason::
-          TOTAL_DOWNLOAD_SIZE_EXCEEDED;
-    case BackgroundFetchReasonToAbort::SERVICE_WORKER_UNAVAILABLE:
-      return blink::mojom::BackgroundFetchFailureReason::
-          SERVICE_WORKER_UNAVAILABLE;
-    case BackgroundFetchReasonToAbort::QUOTA_EXCEEDED:
-      return blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED;
-  }
-  NOTREACHED();
-}
-
 void BackgroundFetchJobController::Abort(
-    BackgroundFetchReasonToAbort reason_to_abort) {
-  reason_to_abort_ = reason_to_abort;
+    BackgroundFetchFailureReason failure_reason) {
+  failure_reason_ = failure_reason;
 
   // Stop propagating any in-flight events to the scheduler.
   active_request_finished_callback_.Reset();
@@ -184,7 +217,14 @@ void BackgroundFetchJobController::Abort(
   // Cancel any in-flight downloads and UI through the BGFetchDelegate.
   delegate_proxy_->Abort(registration_id().unique_id());
 
-  Finish(reason_to_abort);
+  Finish(failure_reason_);
+}
+
+BackgroundFetchFailureReason BackgroundFetchJobController::MergeFailureReason(
+    BackgroundFetchFailureReason failure_reason) {
+  if (failure_reason_ == BackgroundFetchFailureReason::NONE)
+    failure_reason_ = failure_reason;
+  return failure_reason_;
 }
 
 }  // namespace content

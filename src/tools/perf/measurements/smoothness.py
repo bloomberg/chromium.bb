@@ -10,6 +10,7 @@ from telemetry.web_perf import smooth_gesture_util
 from telemetry.web_perf import timeline_interaction_record as tir_module
 from telemetry.timeline import tracing_config
 
+from measurements import rendering_util
 
 def _CollectRecordsFromRendererThreads(model, renderer_thread):
   records = []
@@ -60,6 +61,8 @@ class Smoothness(legacy_page_test.LegacyPageTest):
 
   def ValidateAndMeasurePage(self, _, tab, results):
     self._results = results
+    tab.browser.platform.tracing_controller.telemetry_info = (
+        results.telemetry_info)
     trace_result = tab.browser.platform.tracing_controller.StopTracing()[0]
     trace_value = trace.TraceValue(
         results.current_page, trace_result,
@@ -74,6 +77,9 @@ class Smoothness(legacy_page_test.LegacyPageTest):
     records = _CollectRecordsFromRendererThreads(model, renderer_thread)
     metric = smoothness.SmoothnessMetric()
     metric.AddResults(model, renderer_thread, records, results)
+
+    rendering_util.AddTBMv2RenderingMetrics(
+        trace_value, results, import_experimental_metrics=False)
 
   def DidRunPage(self, platform):
     if platform.tracing_controller.is_tracing_running:

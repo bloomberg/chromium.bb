@@ -33,10 +33,11 @@ import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.TestBottomSheetContent;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
 
@@ -70,9 +71,10 @@ public class ScrimTest {
 
             mScrim = activity.getScrim();
 
-            mSheetController = new BottomSheetController(activity, activity.getTabModelSelector(),
-                    activity.getCompositorViewHolder().getLayoutManager(), mScrim, mBottomSheet,
-                    activity.getContextualSearchManager(), true);
+            mSheetController = new BottomSheetController(activity,
+                    activity.getActivityTabProvider(), mScrim, mBottomSheet,
+                    activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
+                    true);
         });
     }
 
@@ -119,8 +121,11 @@ public class ScrimTest {
                 mActivityTestRule.getActivity().isViewObscuringAllTabs());
         assertEquals("The scrim alpha should be 0.", 0f, mScrim.getAlpha(), MathUtils.EPSILON);
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheet.showContent(new TestBottomSheetContent(
+                    mActivityTestRule.getActivity(), BottomSheet.ContentPriority.HIGH));
+            mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false);
+        });
 
         assertScrimVisibility(true);
         assertTrue("A view should be obscuring the tab.",

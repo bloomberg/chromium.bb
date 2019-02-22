@@ -25,8 +25,7 @@ DevToolsNetworkInterceptor::FilterEntry::FilterEntry(
 DevToolsNetworkInterceptor::FilterEntry::FilterEntry(FilterEntry&&) {}
 DevToolsNetworkInterceptor::FilterEntry::~FilterEntry() {}
 
-DevToolsNetworkInterceptor::Modifications::Modifications()
-    : mark_as_canceled(false) {}
+DevToolsNetworkInterceptor::Modifications::Modifications() = default;
 
 DevToolsNetworkInterceptor::Modifications::Modifications(
     base::Optional<net::Error> error_reason,
@@ -36,16 +35,14 @@ DevToolsNetworkInterceptor::Modifications::Modifications(
     protocol::Maybe<std::string> modified_post_data,
     protocol::Maybe<protocol::Network::Headers> modified_headers,
     protocol::Maybe<protocol::Network::AuthChallengeResponse>
-        auth_challenge_response,
-    bool mark_as_canceled)
+        auth_challenge_response)
     : error_reason(std::move(error_reason)),
       raw_response(std::move(raw_response)),
       modified_url(std::move(modified_url)),
       modified_method(std::move(modified_method)),
       modified_post_data(std::move(modified_post_data)),
       modified_headers(std::move(modified_headers)),
-      auth_challenge_response(std::move(auth_challenge_response)),
-      mark_as_canceled(mark_as_canceled) {}
+      auth_challenge_response(std::move(auth_challenge_response)) {}
 
 DevToolsNetworkInterceptor::Modifications::~Modifications() {}
 

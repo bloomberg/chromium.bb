@@ -109,6 +109,7 @@ struct Box
     }
     bool operator==(const Box &other) const;
     bool operator!=(const Box &other) const;
+    Rectangle toRect() const;
 
     int x;
     int y;
@@ -195,32 +196,115 @@ struct DepthStencilState final
 bool operator==(const DepthStencilState &a, const DepthStencilState &b);
 bool operator!=(const DepthStencilState &a, const DepthStencilState &b);
 
-// State from Table 6.10 (state per sampler object)
-struct SamplerState final
+// Packs a sampler state for completeness checks:
+// * minFilter: 5 values (3 bits)
+// * magFilter: 2 values (1 bit)
+// * wrapS:     3 values (2 bits)
+// * wrapT:     3 values (2 bits)
+// * compareMode: 1 bit (for == GL_NONE).
+// This makes a total of 9 bits. We can pack this easily into 32 bits:
+// * minFilter: 8 bits
+// * magFilter: 8 bits
+// * wrapS:     8 bits
+// * wrapT:     4 bits
+// * compareMode: 4 bits
+
+struct PackedSamplerCompleteness
 {
+    uint8_t minFilter;
+    uint8_t magFilter;
+    uint8_t wrapS;
+    uint8_t wrapTCompareMode;
+};
+
+static_assert(sizeof(PackedSamplerCompleteness) == sizeof(uint32_t), "Unexpected size");
+
+// State from Table 6.10 (state per sampler object)
+class SamplerState final
+{
+  public:
     // This will zero-initialize the struct, including padding.
     SamplerState();
     SamplerState(const SamplerState &other);
 
     static SamplerState CreateDefaultForTarget(TextureType type);
 
-    GLenum minFilter;
-    GLenum magFilter;
+    GLenum getMinFilter() const { return mMinFilter; }
 
-    GLenum wrapS;
-    GLenum wrapT;
-    GLenum wrapR;
+    void setMinFilter(GLenum minFilter);
+
+    GLenum getMagFilter() const { return mMagFilter; }
+
+    void setMagFilter(GLenum magFilter);
+
+    GLenum getWrapS() const { return mWrapS; }
+
+    void setWrapS(GLenum wrapS);
+
+    GLenum getWrapT() const { return mWrapT; }
+
+    void setWrapT(GLenum wrapT);
+
+    GLenum getWrapR() const { return mWrapR; }
+
+    void setWrapR(GLenum wrapR);
+
+    float getMaxAnisotropy() const { return mMaxAnisotropy; }
+
+    void setMaxAnisotropy(float maxAnisotropy);
+
+    GLfloat getMinLod() const { return mMinLod; }
+
+    void setMinLod(GLfloat minLod);
+
+    GLfloat getMaxLod() const { return mMaxLod; }
+
+    void setMaxLod(GLfloat maxLod);
+
+    GLenum getCompareMode() const { return mCompareMode; }
+
+    void setCompareMode(GLenum compareMode);
+
+    GLenum getCompareFunc() const { return mCompareFunc; }
+
+    void setCompareFunc(GLenum compareFunc);
+
+    GLenum getSRGBDecode() const { return mSRGBDecode; }
+
+    void setSRGBDecode(GLenum sRGBDecode);
+
+    bool sameCompleteness(const SamplerState &samplerState) const
+    {
+        return mCompleteness.packed == samplerState.mCompleteness.packed;
+    }
+
+  private:
+    void updateWrapTCompareMode();
+
+    GLenum mMinFilter;
+    GLenum mMagFilter;
+
+    GLenum mWrapS;
+    GLenum mWrapT;
+    GLenum mWrapR;
 
     // From EXT_texture_filter_anisotropic
-    float maxAnisotropy;
+    float mMaxAnisotropy;
 
-    GLfloat minLod;
-    GLfloat maxLod;
+    GLfloat mMinLod;
+    GLfloat mMaxLod;
 
-    GLenum compareMode;
-    GLenum compareFunc;
+    GLenum mCompareMode;
+    GLenum mCompareFunc;
 
-    GLenum sRGBDecode;
+    GLenum mSRGBDecode;
+
+    union Completeness {
+        uint32_t packed;
+        PackedSamplerCompleteness typed;
+    };
+
+    Completeness mCompleteness;
 };
 
 bool operator==(const SamplerState &a, const SamplerState &b);
@@ -315,7 +399,7 @@ struct ComponentTypeMask final
 
 using ContextID = uintptr_t;
 
-constexpr size_t CUBE_FACE_COUNT = 6;
+constexpr size_t kCubeFaceCount = 6;
 
 using TextureMap = angle::PackedEnumMap<TextureType, BindingPointer<Texture>>;
 

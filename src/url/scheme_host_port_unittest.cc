@@ -53,7 +53,7 @@ TEST_F(SchemeHostPortTest, Invalid) {
   EXPECT_EQ("", invalid.host());
   EXPECT_EQ(0, invalid.port());
   EXPECT_TRUE(invalid.IsInvalid());
-  EXPECT_TRUE(invalid.Equals(invalid));
+  EXPECT_EQ(invalid, invalid);
 
   const char* urls[] = {
       "data:text/html,Hello!", "javascript:alert(1)",
@@ -77,9 +77,9 @@ TEST_F(SchemeHostPortTest, Invalid) {
     EXPECT_EQ("", tuple.host());
     EXPECT_EQ(0, tuple.port());
     EXPECT_TRUE(tuple.IsInvalid());
-    EXPECT_TRUE(tuple.Equals(tuple));
-    EXPECT_TRUE(tuple.Equals(invalid));
-    EXPECT_TRUE(invalid.Equals(tuple));
+    EXPECT_EQ(tuple, tuple);
+    EXPECT_EQ(tuple, invalid);
+    EXPECT_EQ(invalid, tuple);
     ExpectParsedUrlsEqual(GURL(tuple.Serialize()), tuple.GetURL());
   }
 }
@@ -106,7 +106,7 @@ TEST_F(SchemeHostPortTest, ExplicitConstruction) {
     EXPECT_EQ(test.host, tuple.host());
     EXPECT_EQ(test.port, tuple.port());
     EXPECT_FALSE(tuple.IsInvalid());
-    EXPECT_TRUE(tuple.Equals(tuple));
+    EXPECT_EQ(tuple, tuple);
     ExpectParsedUrlsEqual(GURL(tuple.Serialize()), tuple.GetURL());
   }
 }
@@ -142,7 +142,7 @@ TEST_F(SchemeHostPortTest, InvalidConstruction) {
     EXPECT_EQ("", tuple.host());
     EXPECT_EQ(0, tuple.port());
     EXPECT_TRUE(tuple.IsInvalid());
-    EXPECT_TRUE(tuple.Equals(tuple));
+    EXPECT_EQ(tuple, tuple);
     ExpectParsedUrlsEqual(GURL(tuple.Serialize()), tuple.GetURL());
   }
 }
@@ -206,7 +206,7 @@ TEST_F(SchemeHostPortTest, GURLConstruction) {
     EXPECT_EQ(test.host, tuple.host());
     EXPECT_EQ(test.port, tuple.port());
     EXPECT_FALSE(tuple.IsInvalid());
-    EXPECT_TRUE(tuple.Equals(tuple));
+    EXPECT_EQ(tuple, tuple);
     ExpectParsedUrlsEqual(GURL(tuple.Serialize()), tuple.GetURL());
   }
 }

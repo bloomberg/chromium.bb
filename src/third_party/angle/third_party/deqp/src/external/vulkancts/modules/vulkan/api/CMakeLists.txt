@@ -11,6 +11,8 @@ set(DEQP_VK_API_SRCS
 	vktApiSmokeTests.hpp
 	vktApiDeviceInitializationTests.cpp
 	vktApiDeviceInitializationTests.hpp
+	vktApiDriverPropertiesTests.cpp
+	vktApiDriverPropertiesTests.hpp
 	vktApiObjectManagementTests.cpp
 	vktApiObjectManagementTests.hpp
 	vktApiBufferTests.cpp
@@ -51,6 +53,8 @@ set(DEQP_VK_API_SRCS
 	vktApiDescriptorSetTests.cpp
 	vktApiPipelineTests.hpp
 	vktApiPipelineTests.cpp
+	vktApiMemoryRequirementInvarianceTests.cpp
+	vktApiMemoryRequirementInvarianceTests.hpp
 	)
 
 set(DEQP_VK_API_LIBS

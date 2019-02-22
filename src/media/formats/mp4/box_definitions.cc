@@ -521,8 +521,7 @@ bool EditList::Parse(BoxReader* reader) {
   RCHECK(count <= edits.max_size());
   edits.resize(count);
 
-  for (std::vector<EditListEntry>::iterator edit = edits.begin();
-       edit != edits.end(); ++edit) {
+  for (auto edit = edits.begin(); edit != edits.end(); ++edit) {
     if (reader->version() == 1) {
       RCHECK(reader->Read8(&edit->segment_duration) &&
              reader->Read8s(&edit->media_time));

@@ -7,8 +7,6 @@
 #ifndef FPDFSDK_PWL_CPWL_COMBO_BOX_H_
 #define FPDFSDK_PWL_CPWL_COMBO_BOX_H_
 
-#include <memory>
-
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
 #include "fpdfsdk/pwl/cpwl_list_box.h"
@@ -48,7 +46,6 @@ class CPWL_ComboBox final : public CPWL_Wnd {
   CPWL_Edit* GetEdit() const { return m_pEdit.Get(); }
 
   // CPWL_Wnd:
-  ByteString GetClassName() const override;
   void OnCreate(CreateParams* pParamsToAdjust) override;
   void OnDestroy() override;
   bool OnKeyDown(uint16_t nChar, uint32_t nFlag) override;

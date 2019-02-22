@@ -22,11 +22,15 @@
 //
 // metrics_base.js and metrics.js initiates load performance tracking
 // so we want to parse it as early as possible.
+// error_util.js must be loaded before all other scripts of the Files app.
+// <include src="../../common/js/error_util.js">
+//
 // <include src="../../common/js/metrics_base.js">
 // <include src="../../common/js/metrics.js">
 // <include src="metrics_start.js">
 //
 // <include src="../../common/js/lru_cache.js">
+// <include src="../../../image_loader/load_image_request.js">
 // <include src="../../../image_loader/image_loader_client.js">
 //
 // <include src="../../../../webui/resources/js/load_time_data.js">
@@ -43,8 +47,10 @@
 // <include src="../../../../webui/resources/js/cr/ui/dialogs.js">
 // <include src="../../../../webui/resources/js/cr/ui/list_item.js">
 // <include src="../../../../webui/resources/js/cr/ui/list_selection_model.js">
-// <include src="../../../../webui/resources/js/cr/ui/list_single_selection_model.js">
-// <include src="../../../../webui/resources/js/cr/ui/list_selection_controller.js">
+// <include
+// src="../../../../webui/resources/js/cr/ui/list_single_selection_model.js">
+// <include
+// src="../../../../webui/resources/js/cr/ui/list_selection_controller.js">
 // <include src="../../../../webui/resources/js/cr/ui/list.js">
 // <include src="../../../../webui/resources/js/cr/ui/tree.js">
 // <include src="../../../../webui/resources/js/cr/ui/autocomplete_list.js">
@@ -75,8 +81,6 @@
 // 'strict mode' is invoked for this scope.
 'use strict';
 
-// error_util.js must be loaded before all other scripts of the Files app.
-// <include src="../../common/js/error_util.js">
 //
 // <include src="../../common/js/async_util.js">
 // <include src="../../common/js/file_type.js">
@@ -108,6 +112,7 @@
 // <include src="actions_model.js">
 // <include src="app_state_controller.js">
 // <include src="column_visibility_controller.js">
+// <include src="crostini.js">
 // <include src="dialog_action_controller.js">
 // <include src="dialog_type.js">
 // <include src="directory_contents.js">
@@ -148,7 +153,6 @@
 // <include src="scan_controller.js">
 // <include src="search_controller.js">
 // <include src="selection_menu_controller.js">
-// <include src="share_client.js">
 // <include src="spinner_controller.js">
 // <include src="task_controller.js">
 // <include src="task_history.js">
@@ -182,10 +186,9 @@
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
 // <include src="ui/search_box.js">
-// <include src="ui/share_dialog.js">
 // <include src="ui/suggest_apps_dialog.js">
 // <include src="main_window_component.js">
-// <include src="volume_manager_wrapper.js">
+// <include src="../../../base/js/filtered_volume_manager.js">
 // <include src="webui_command_extender.js">
 
 // // For accurate load performance tracking place main.js should be

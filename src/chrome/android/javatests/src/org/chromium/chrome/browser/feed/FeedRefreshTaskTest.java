@@ -13,8 +13,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -30,7 +32,8 @@ import java.util.List;
  * Unit tests for {@link FeedSchedulerBridge}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+//@Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
 public class FeedRefreshTaskTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -69,6 +72,13 @@ public class FeedRefreshTaskTest {
 
     @Before
     public void setUp() throws InterruptedException {
+        // TODO(https://crbug.com/894334): Replace with @Features.EnableFeatures when presubmit
+        // forced format is fixed.
+        CommandLine commandLine = CommandLine.getInstance();
+        String oldValue = commandLine.getSwitchValue("enable-features");
+        commandLine.appendSwitchWithValue("enable-features",
+                oldValue + "," + ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+
         mTaskScheduler = new TestBackgroundTaskScheduler();
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
 
@@ -77,7 +87,7 @@ public class FeedRefreshTaskTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Accessing the bridge will create if needed, and may run initialization logic.
-            FeedProcessScopeFactory.getFeedSchedulerBridge();
+            FeedProcessScopeFactory.getFeedScheduler();
             mTaskScheduler.getTaskInfoList().clear();
         });
     }

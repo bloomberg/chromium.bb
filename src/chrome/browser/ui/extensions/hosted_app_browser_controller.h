@@ -77,7 +77,9 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   base::string16 GetFormattedUrlOrigin() const;
 
   // Gets the extension for this controller.
-  const Extension* GetExtension() const;
+  const Extension* GetExtensionForTesting() const;
+
+  bool CanUninstall() const;
 
   void Uninstall(UninstallReason reason, UninstallSource source);
 
@@ -97,6 +99,8 @@ class HostedAppBrowserController : public SiteEngagementObserver,
                      bool was_active) override;
 
  private:
+  const Extension* GetExtension() const;
+
   Browser* const browser_;
   const std::string extension_id_;
   const bool created_for_installed_pwa_;

@@ -157,6 +157,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kWasmThreadOpcodes:
       blink_feature = WebFeature::kV8WasmThreadOpcodes;
       break;
+    case v8::Isolate::kAtomicsNotify:
+      blink_feature = WebFeature::kV8AtomicsNotify;
+      break;
+    case v8::Isolate::kAtomicsWake:
+      blink_feature = WebFeature::kV8AtomicsWake;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

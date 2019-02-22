@@ -197,10 +197,8 @@ void DialMediaRouteProvider::TerminateRoute(const std::string& route_id,
   DoTerminateRoute(*activity, *sink, std::move(callback));
 }
 
-void DialMediaRouteProvider::SendRouteMessage(
-    const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+void DialMediaRouteProvider::SendRouteMessage(const std::string& media_route_id,
+                                              const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_decoder_->ParseJson(
       message,
@@ -208,9 +206,6 @@ void DialMediaRouteProvider::SendRouteMessage(
                           weak_ptr_factory_.GetWeakPtr(), media_route_id),
       base::BindRepeating(&ReportParseError,
                           DialParseMessageResult::kParseError));
-  // TODO(https://crbug.com/866551): SendRouteMessageCallback is no longer used.
-  // Always invoke it with true until it is removed.
-  std::move(callback).Run(true);
 }
 
 void DialMediaRouteProvider::HandleParsedRouteMessage(
@@ -393,10 +388,8 @@ void DialMediaRouteProvider::NotifyOnRoutesUpdated(
 
 void DialMediaRouteProvider::SendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false);
 }
 
 void DialMediaRouteProvider::StartObservingMediaSinks(

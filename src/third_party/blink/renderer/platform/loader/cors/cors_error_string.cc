@@ -7,6 +7,7 @@
 #include <initializer_list>
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -52,7 +53,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
                       const KURL& initial_request_url,
                       const KURL& last_request_url,
                       const SecurityOrigin& origin,
-                      Resource::Type resource_type,
+                      ResourceType resource_type,
                       const AtomicString& initiator_name) {
   StringBuilder builder;
   static constexpr char kNoCorsInformation[] =

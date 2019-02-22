@@ -20,10 +20,7 @@ class GraphData {
      * At first an attempt will be made to assign an unused color
      * from this array and failing that old colors are reused.
      */
-    this.colors_ = [
-      'green',
-      'orange',
-    ];
+    this.colors_ = d3.schemeCategory10;
     /** @private {function(*):} */
     this.interactiveCallback_ = undefined;
   }
@@ -82,17 +79,12 @@ class GraphData {
    * @param {string} key
    * @param {number} index
    */
-  interactiveCallbackForDotPlot(key, index) {
+  interactiveCallbackForSelectedDatum(key, index) {
     this.callInteractiveCallback_(key, index);
   }
 
-  /**
-   * Calls the provided callback if provided.
-   * @param {string} story
-   * @param {string} key
-   */
-  interactiveCallbackForBarPlot(story, key) {
-    this.callInteractiveCallback_(story, key);
+  interactiveCallbackForCategory(category) {
+    this.callInteractiveCallback_(category);
   }
 
   callInteractiveCallback_(...args) {
@@ -268,17 +260,28 @@ class GraphData {
     this.plotter_.plot(new BarPlotter());
   }
 
+  plotStackedBar() {
+    this.plotter_.plot(new StackedBarPlotter());
+  }
+
   /**
    * Computes the cumulative frequency for the list of values provided.
    * @param {Array<number>} data
    * @returns {Array<Object>}
    */
   static computeCumulativeFrequencies(data) {
-    const sortedData = data.sort((a, b) => a - b);
-    return sortedData.map((value, i) => {
+    const labeledData = data.map((value, id) => {
       return {
-        x: i,
-        y: value,
+        value,
+        id,
+      };
+    });
+    const sortedData = labeledData.sort((a, b) => a.value - b.value);
+    return sortedData.map(({value, id}, i) => {
+      return {
+        y: i,
+        x: value,
+        id
       };
     });
   }

@@ -27,9 +27,9 @@ namespace {
 
 constexpr char kDefaultFont[] = "Roboto";
 
-// Currently FontProvider doesn't support font aliases. The map below is used to
-// map common web fonts to font families that are expected to be present in
-// FontProvider.
+// Currently fonts::Provider doesn't support font aliases. The map below is
+// used to map common web fonts to font families that are expected to be present
+// in fonts::Provider.
 constexpr struct {
   const char* font_name_in;
   const char* font_name_out;
@@ -50,10 +50,9 @@ constexpr struct {
                 {"courier new", "RobotoMono"},
                 {"monospace", "RobotoMono"}};
 
-fuchsia::fonts::FontSlant ToFontSlant(SkFontStyle::Slant slant) {
-  return (slant == SkFontStyle::kItalic_Slant)
-             ? fuchsia::fonts::FontSlant::ITALIC
-             : fuchsia::fonts::FontSlant::UPRIGHT;
+fuchsia::fonts::Slant ToFontSlant(SkFontStyle::Slant slant) {
+  return (slant == SkFontStyle::kItalic_Slant) ? fuchsia::fonts::Slant::ITALIC
+                                               : fuchsia::fonts::Slant::UPRIGHT;
 }
 
 void UnmapMemory(const void* buffer, void* context) {
@@ -127,14 +126,14 @@ sk_sp<SkTypeface> CreateTypefaceFromSkStream(
                                     name, std::move(on_deleted));
 }
 
-sk_sp<SkTypeface> CreateTypefaceFromFontData(fuchsia::fonts::FontData font_data,
-                                             base::OnceClosure on_deleted) {
-  sk_sp<SkData> data = BufferToSkData(std::move(font_data.buffer));
+sk_sp<SkTypeface> CreateTypefaceFromBuffer(fuchsia::mem::Buffer buffer,
+                                           base::OnceClosure on_deleted) {
+  sk_sp<SkData> data = BufferToSkData(std::move(buffer));
   if (!data)
     return nullptr;
 
   // TODO(https://crbug.com/800156): Initialize font arguments with font index
-  // when font collection support is implemented in FontProvider.
+  // when font collection support is implemented in Provider.
   SkFontArguments args;
 
   return CreateTypefaceFromSkStream(
@@ -149,7 +148,7 @@ class FuchsiaFontManager::FontCache {
   FontCache();
   ~FontCache();
 
-  sk_sp<SkTypeface> GetTypefaceFromFontData(fuchsia::fonts::FontData font_data);
+  sk_sp<SkTypeface> GetTypefaceFromBuffer(fuchsia::mem::Buffer buffer);
 
  private:
   void OnTypefaceDeleted(zx_koid_t vmo_koid);
@@ -157,7 +156,7 @@ class FuchsiaFontManager::FontCache {
   THREAD_CHECKER(thread_checker_);
 
   // SkTypeface cache. They key is koid of the VMO that contains the typeface.
-  // This allows to reuse previously-created SkTypeface when FontProvider
+  // This allows to reuse previously-created SkTypeface when fonts::Provider
   // returns FontData with the same VMO.
   base::small_map<std::unordered_map<zx_koid_t, SkTypeface*>> typefaces_;
 
@@ -170,13 +169,13 @@ FuchsiaFontManager::FontCache::FontCache() : weak_factory_(this) {}
 
 FuchsiaFontManager::FontCache::~FontCache() = default;
 
-sk_sp<SkTypeface> FuchsiaFontManager::FontCache::GetTypefaceFromFontData(
-    fuchsia::fonts::FontData font_data) {
+sk_sp<SkTypeface> FuchsiaFontManager::FontCache::GetTypefaceFromBuffer(
+    fuchsia::mem::Buffer buffer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   zx_info_handle_basic_t vmo_info;
-  zx_status_t status = font_data.buffer.vmo.get_info(
-      ZX_INFO_HANDLE_BASIC, &vmo_info, sizeof(vmo_info), nullptr, nullptr);
+  zx_status_t status = buffer.vmo.get_info(ZX_INFO_HANDLE_BASIC, &vmo_info,
+                                           sizeof(vmo_info), nullptr, nullptr);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_object_get_info";
     return nullptr;
@@ -187,8 +186,8 @@ sk_sp<SkTypeface> FuchsiaFontManager::FontCache::GetTypefaceFromFontData(
   if (*cached_typeface) {
     result = sk_ref_sp(*cached_typeface);
   } else {
-    result = CreateTypefaceFromFontData(
-        std::move(font_data),
+    result = CreateTypefaceFromBuffer(
+        std::move(buffer),
         base::BindOnce(&FontCache::OnTypefaceDeleted,
                        weak_factory_.GetWeakPtr(), vmo_info.koid));
     *cached_typeface = result.get();
@@ -204,7 +203,7 @@ void FuchsiaFontManager::FontCache::OnTypefaceDeleted(zx_koid_t vmo_koid) {
 }
 
 FuchsiaFontManager::FuchsiaFontManager(
-    fuchsia::fonts::FontProviderSyncPtr font_provider)
+    fuchsia::fonts::ProviderSyncPtr font_provider)
     : font_provider_(std::move(font_provider)), font_cache_(new FontCache()) {
   for (auto& m : kFontMap) {
     font_map_[m.font_name_in] = m.font_name_out;
@@ -214,7 +213,7 @@ FuchsiaFontManager::FuchsiaFontManager(
   default_typeface_.reset(onMatchFamilyStyle(kDefaultFont, SkFontStyle()));
   if (!default_typeface_) {
     default_typeface_ = sk_make_sp<SkTypeface_Empty>();
-    LOG(ERROR) << "Failed to get default font from the FontProvider.";
+    LOG(ERROR) << "Failed to get default font from fonts::Provider.";
   }
 }
 
@@ -246,30 +245,32 @@ SkTypeface* FuchsiaFontManager::onMatchFamilyStyle(
     const SkFontStyle& style) const {
   std::string family_name_lowercase = base::ToLowerASCII(family_name);
 
-  fuchsia::fonts::FontRequest request;
+  fuchsia::fonts::Request request;
   auto it = font_map_.find(family_name_lowercase);
   request.family = (it != font_map_.end()) ? it->second.c_str() : family_name;
   request.weight = style.weight();
   request.width = style.width();
   request.slant = ToFontSlant(style.slant());
+  request.language = fidl::VectorPtr<fidl::StringPtr>::New(0);
 
-  fuchsia::fonts::FontResponsePtr response;
+  fuchsia::fonts::ResponsePtr response;
   zx_status_t status = font_provider_->GetFont(std::move(request), &response);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "Failed to query font provider.";
   } else if (response) {
     sk_sp<SkTypeface> result =
-        font_cache_->GetTypefaceFromFontData(std::move(response->data));
+        font_cache_->GetTypefaceFromBuffer(std::move(response->buffer));
     if (result)
       return result.release();
 
-    LOG(ERROR) << "FontProvider returned invalid FontData for " << family_name;
+    LOG(ERROR) << "fonts::Provider returned invalid FontData for "
+               << family_name;
   }
 
   // If Sans was requested and we failed to get a valid response from
-  // FontProvider then return |default_typeface_|. blink::FontCache queries Sans
-  // as a last-resort font. Returning |default_typeface_| here ensures that the
-  // renderer doesn't crash when FontProvider stops working.
+  // fonts::Provider then return |default_typeface_|. blink::FontCache queries
+  // Sans as a last-resort font. Returning |default_typeface_| here ensures that
+  // the renderer doesn't crash when fonts::Provider stops working.
   if (family_name_lowercase == "sans") {
     // Copy |default_typeface_| to increment ref-count before returning it.
     sk_sp<SkTypeface> result = default_typeface_;

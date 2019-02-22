@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/test/ios/wait_util.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
+#import "ios/chrome/browser/ui/main/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "testing/gtest_mac.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -30,10 +30,6 @@
 
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
   self.didEndCalled = YES;
-}
-
-- (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
-  return nil;
 }
 @end
 
@@ -96,7 +92,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
 // Tests that the tab grid view controller is the initial active view
 // controller.
 TEST_F(TabGridCoordinatorTest, InitialActiveViewController) {
-  EXPECT_EQ(coordinator_.mainViewController, coordinator_.activeViewController);
+  EXPECT_EQ(coordinator_.baseViewController, coordinator_.activeViewController);
 }
 
 // Tests that it is possible to set a TabViewController without first setting a
@@ -210,7 +206,7 @@ TEST_F(TabGridCoordinatorTest, SizeTabGridCoordinatorViewController) {
   CGRect rect = [UIScreen mainScreen].bounds;
   [coordinator_ start];
   EXPECT_TRUE(
-      CGRectEqualToRect(rect, coordinator_.mainViewController.view.frame));
+      CGRectEqualToRect(rect, coordinator_.baseViewController.view.frame));
 }
 
 }  // namespace

@@ -7,6 +7,7 @@ from telemetry.testing import page_test_test_case
 from telemetry.util import wpr_modes
 
 from measurements import smoothness
+from measurements import rendering_util
 
 
 class FakeTracingController(object):
@@ -64,31 +65,10 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertFalse(results.had_failures)
+    stat = rendering_util.ExtractStat(results)
 
-    frame_times = results.FindAllPageSpecificValuesNamed('frame_times')
-    self.assertEquals(len(frame_times), 1)
-    self.assertGreater(frame_times[0].GetRepresentativeNumber(), 0)
-
-    mean_frame_time = results.FindAllPageSpecificValuesNamed('mean_frame_time')
-    self.assertEquals(len(mean_frame_time), 1)
-    self.assertGreater(mean_frame_time[0].GetRepresentativeNumber(), 0)
-
-    frame_time_discrepancy = results.FindAllPageSpecificValuesNamed(
-        'frame_time_discrepancy')
-    self.assertEquals(len(frame_time_discrepancy), 1)
-    self.assertGreater(frame_time_discrepancy[0].GetRepresentativeNumber(), 0)
-
-    percentage_smooth = results.FindAllPageSpecificValuesNamed(
-        'percentage_smooth')
-    self.assertEquals(len(percentage_smooth), 1)
-    self.assertGreaterEqual(percentage_smooth[0].GetRepresentativeNumber(), 0)
-
-    mean_input_event_latency = results.FindAllPageSpecificValuesNamed(
-        'mean_input_event_latency')
-    if mean_input_event_latency:
-      self.assertEquals(len(mean_input_event_latency), 1)
-      self.assertGreater(
-          mean_input_event_latency[0].GetRepresentativeNumber(), 0)
+    self.assertGreater(stat['frame_times'].mean, 0)
+    self.assertGreaterEqual(stat['percentage_smooth'].mean, 0)
 
   @decorators.Enabled('android')  # SurfaceFlinger is android-only
   def testSmoothnessSurfaceFlingerMetricsCalculated(self):
@@ -96,22 +76,11 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertFalse(results.had_failures)
+    stat = rendering_util.ExtractStat(results)
 
-    avg_surface_fps = results.FindAllPageSpecificValuesNamed('avg_surface_fps')
-    self.assertEquals(1, len(avg_surface_fps))
-    self.assertGreater(avg_surface_fps[0].GetRepresentativeNumber, 0)
-
-    jank_count = results.FindAllPageSpecificValuesNamed('jank_count')
-    self.assertEquals(1, len(jank_count))
-    self.assertGreater(jank_count[0].GetRepresentativeNumber(), -1)
-
-    max_frame_delay = results.FindAllPageSpecificValuesNamed('max_frame_delay')
-    self.assertEquals(1, len(max_frame_delay))
-    self.assertGreater(max_frame_delay[0].GetRepresentativeNumber, 0)
-
-    frame_lengths = results.FindAllPageSpecificValuesNamed('frame_lengths')
-    self.assertEquals(1, len(frame_lengths))
-    self.assertGreater(frame_lengths[0].GetRepresentativeNumber, 0)
+    self.assertGreater(stat['avg_surface_fps'].mean, 0)
+    self.assertGreater(stat['jank_count'].mean, -1)
+    self.assertGreater(stat['frame_lengths'].mean, 0)
 
   def testCleanUpTrace(self):
     self.TestTracingCleanedUp(smoothness.Smoothness, self._options)

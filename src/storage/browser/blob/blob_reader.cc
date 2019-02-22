@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -139,7 +138,7 @@ BlobReader::Status BlobReader::ReadSideData(const StatusCallback& done) {
   const int disk_cache_side_stream_index = item->disk_cache_side_stream_index();
   const int side_data_size =
       item->disk_cache_entry()->GetDataSize(disk_cache_side_stream_index);
-  side_data_ = new net::IOBufferWithSize(side_data_size);
+  side_data_ = base::MakeRefCounted<net::IOBufferWithSize>(side_data_size);
   net_error_ = net::OK;
   const int result = item->disk_cache_entry()->ReadData(
       disk_cache_side_stream_index, 0, side_data_.get(), side_data_size,
@@ -226,14 +225,6 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
   if (net_error_ != net::OK)
     return Status::NET_ERROR;
 
-  // TODO(https://crbug.com/864351): Temporary diagnostics.
-  base::debug::Alias(&buffer);
-  base::debug::Alias(&dest_size);
-  uint64_t remaining_bytes = remaining_bytes_;
-  base::debug::Alias(&remaining_bytes);
-  const char* buffer_data = buffer->data();
-  base::debug::Alias(&buffer_data);
-
   DCHECK_GE(dest_size, 0ul);
   if (remaining_bytes_ < static_cast<uint64_t>(dest_size))
     dest_size = static_cast<int>(remaining_bytes_);
@@ -247,7 +238,7 @@ BlobReader::Status BlobReader::Read(net::IOBuffer* buffer,
 
   // Keep track of the buffer.
   DCHECK(!read_buf_.get());
-  read_buf_ = new net::DrainableIOBuffer(buffer, dest_size);
+  read_buf_ = base::MakeRefCounted<net::DrainableIOBuffer>(buffer, dest_size);
 
   Status status = ReadLoop(bytes_read);
   if (status == Status::IO_PENDING)
@@ -469,10 +460,6 @@ BlobReader::Status BlobReader::ReadLoop(int* bytes_read) {
 BlobReader::Status BlobReader::ReadItem() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/864351): Temporary diagnostics.
-  uint64_t remaining_bytes = remaining_bytes_;
-  base::debug::Alias(&remaining_bytes);
-
   // Are we done with reading all the blob data?
   if (remaining_bytes_ == 0)
     return Status::DONE;
@@ -494,29 +481,7 @@ BlobReader::Status BlobReader::ReadItem() {
 
   // Do the reading.
   const BlobDataItem& item = *items.at(current_item_index_);
-
-  // TODO(https://crbug.com/864351): Temporary diagnostics.
-  const BlobDataItem* item_ptr = &item;
-  base::debug::Alias(&item_ptr);
-  uint64_t item_offset = item.offset();
-  base::debug::Alias(&item_offset);
-  uint64_t item_length = item.length();
-  base::debug::Alias(&item_length);
-  int buf_bytes_remaining = read_buf_->BytesRemaining();
-  base::debug::Alias(&buf_bytes_remaining);
-  base::debug::Alias(&bytes_to_read);
-
   if (item.type() == BlobDataItem::Type::kBytes) {
-    // TODO(https://crbug.com/864351): Temporary diagnostics.
-    const char* item_bytes = item.bytes().data();
-    base::debug::Alias(&item_bytes);
-    const char* read_buf_bytes = read_buf_->data();
-    base::debug::Alias(&read_buf_bytes);
-    int read_buf_size = read_buf_->size();
-    base::debug::Alias(&read_buf_size);
-    int read_buf_remaining = read_buf_->BytesRemaining();
-    base::debug::Alias(&read_buf_remaining);
-
     ReadBytesItem(item, bytes_to_read);
     return Status::DONE;
   }

@@ -136,6 +136,7 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
   }
 
   const url::Origin kDummyOrigin = url::Origin::Create(GURL("foo.com"));
+  const url::Origin kDummyOrigin2 = url::Origin::Create(GURL("bar.com"));
 
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
@@ -151,9 +152,6 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
 TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   auto local_site_data =
       GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
-
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
 
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyLoadedSiteBackgrounded();
@@ -331,7 +329,6 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   SiteCharacteristicsFeatureProto unused_feature_proto;
   unused_feature_proto.set_observation_duration(
       kIntervalInternalRepresentation);
-  unused_feature_proto.set_use_timestamp(kZeroIntervalInternalRepresentation);
 
   expected_proto.mutable_updates_favicon_in_background()->CopyFrom(
       unused_feature_proto);
@@ -345,15 +342,10 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // loaded time in this case (as this feature has been used right before
   // unloading).
   SiteCharacteristicsFeatureProto used_feature_proto;
-  used_feature_proto.set_observation_duration(
-      kZeroIntervalInternalRepresentation);
   used_feature_proto.set_use_timestamp(expected_last_loaded_time);
   expected_proto.mutable_uses_audio_in_background()->CopyFrom(
       used_feature_proto);
 
-  EXPECT_TRUE(expected_proto.IsInitialized());
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
   EXPECT_EQ(
       expected_proto.SerializeAsString(),
       local_site_data->site_characteristics_for_testing().SerializeAsString());
@@ -410,11 +402,16 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Add a couple of performance samples.
   local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(100),
       base::TimeDelta::FromMicroseconds(1000), 2000u);
   local_site_data->NotifyLoadTimePerformanceMeasurement(
+      base::TimeDelta::FromMicroseconds(200),
       base::TimeDelta::FromMicroseconds(500), 1000u);
 
   // Make sure the local performance samples are averaged as expected.
+  EXPECT_EQ(2U, local_site_data->load_duration().num_datums());
+  EXPECT_EQ(150, local_site_data->load_duration().value());
+
   EXPECT_EQ(2U, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(750.0, local_site_data->cpu_usage_estimate().value());
 
@@ -424,16 +421,11 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   // This protobuf should have a valid |last_loaded| field and valid observation
   // durations for each features, but the |use_timestamp| field shouldn't have
   // been initialized for the features that haven't been used.
-  EXPECT_FALSE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().has_last_loaded());
   EXPECT_TRUE(local_site_data->site_characteristics_for_testing()
                   .uses_audio_in_background()
-                  .IsInitialized());
-  EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
-                   .uses_notifications_in_background()
-                   .IsInitialized());
+                  .has_use_timestamp());
   EXPECT_FALSE(local_site_data->site_characteristics_for_testing()
                    .uses_notifications_in_background()
                    .has_use_timestamp());
@@ -462,6 +454,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Set the previously saved performance averages.
   auto* estimates = test_proto->mutable_load_time_estimates();
+  estimates->set_avg_load_duration_us(50);
   estimates->set_avg_cpu_usage_us(250);
   estimates->set_avg_footprint_kb(500);
 
@@ -480,14 +473,15 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   // Make sure the local performance samples have been updated with the previous
   // averages.
+  EXPECT_EQ(3U, local_site_data->load_duration().num_datums());
+  EXPECT_EQ(137.5, local_site_data->load_duration().value());
+
   EXPECT_EQ(3U, local_site_data->cpu_usage_estimate().num_datums());
   EXPECT_EQ(562.5, local_site_data->cpu_usage_estimate().value());
 
   EXPECT_EQ(3U, local_site_data->private_footprint_kb_estimate().num_datums());
   EXPECT_EQ(1125, local_site_data->private_footprint_kb_estimate().value());
 
-  EXPECT_TRUE(
-      local_site_data->site_characteristics_for_testing().IsInitialized());
 
   // Verify that the in-memory data is flushed to the protobuffer on write.
   EXPECT_CALL(mock_db,
@@ -496,6 +490,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
           [](const url::Origin& origin, const SiteCharacteristicsProto& proto) {
             ASSERT_TRUE(proto.has_load_time_estimates());
             const auto& estimates = proto.load_time_estimates();
+            ASSERT_TRUE(estimates.has_avg_load_duration_us());
+            EXPECT_EQ(137.5, estimates.avg_load_duration_us());
             ASSERT_TRUE(estimates.has_avg_cpu_usage_us());
             EXPECT_EQ(562.5, estimates.avg_cpu_usage_us());
             ASSERT_TRUE(estimates.has_avg_footprint_kb());
@@ -656,6 +652,48 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
   local_site_data = nullptr;
   ::testing::Mock::VerifyAndClear(&mock_db);
+}
+
+TEST_F(LocalSiteCharacteristicsDataImplTest,
+       FlushingStateToProtoDoesntAffectData) {
+  // Create 2 DataImpl object and do the same operations on them, ensures that
+  // calling FlushStateToProto doesn't affect the data that gets recorded.
+
+  auto local_site_data =
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
+  auto local_site_data_ref =
+      GetDataImpl(kDummyOrigin2, &destroy_delegate_, &database_);
+
+  local_site_data->NotifySiteLoaded();
+  local_site_data->NotifyLoadedSiteBackgrounded();
+  local_site_data_ref->NotifySiteLoaded();
+  local_site_data_ref->NotifyLoadedSiteBackgrounded();
+
+  test_clock_.Advance(base::TimeDelta::FromSeconds(15));
+  local_site_data->FlushStateToProto();
+  test_clock_.Advance(base::TimeDelta::FromSeconds(15));
+
+  local_site_data->NotifyUsesAudioInBackground();
+  local_site_data_ref->NotifyUsesAudioInBackground();
+
+  local_site_data->FlushStateToProto();
+
+  EXPECT_EQ(local_site_data->FeatureObservationTimestamp(
+                local_site_data->site_characteristics_for_testing()
+                    .uses_audio_in_background()),
+            local_site_data_ref->FeatureObservationTimestamp(
+                local_site_data_ref->site_characteristics_for_testing()
+                    .uses_audio_in_background()));
+
+  EXPECT_EQ(local_site_data->FeatureObservationDuration(
+                local_site_data->site_characteristics_for_testing()
+                    .updates_title_in_background()),
+            local_site_data_ref->FeatureObservationDuration(
+                local_site_data_ref->site_characteristics_for_testing()
+                    .updates_title_in_background()));
+
+  local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
+  local_site_data_ref->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 }  // namespace internal

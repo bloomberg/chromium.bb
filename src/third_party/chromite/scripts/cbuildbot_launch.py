@@ -434,6 +434,12 @@ def _main(argv):
       'tryjob': options.remote_trybot,
   }
 
+  #TODO: Move error handling to lib.metrics
+  try:
+    metrics.SetupMetricFields(fields=metrics_fields)
+  except Exception:
+    logging.error('SetupMetricFields Exception:', exc_info=True)
+
   # Does the entire build pass or fail.
   with metrics.Presence(METRIC_ACTIVE, metrics_fields), \
        metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:

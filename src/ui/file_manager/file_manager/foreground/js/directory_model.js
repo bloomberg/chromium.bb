@@ -19,7 +19,7 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileFilter} fileFilter Instance of FileFilter.
  * @param {!MetadataModel} metadataModel Metadata model.
  *     service.
- * @param {VolumeManagerWrapper} volumeManager The volume manager.
+ * @param {!VolumeManager} volumeManager The volume manager.
  * @param {!FileOperationManager} fileOperationManager File operation manager.
  * @param {!analytics.Tracker} tracker
  */
@@ -315,7 +315,21 @@ DirectoryModel.prototype.onWatcherDirectoryChanged_ = function(event) {
  * @private
  */
 DirectoryModel.prototype.onFilterChanged_ = function() {
-  this.rescanSoon(false);
+  const currentDirectory = this.getCurrentDirEntry();
+  if (currentDirectory && util.isNativeEntry(currentDirectory) &&
+      !this.fileFilter_.filter(
+          /** @type {!DirectoryEntry} */ (currentDirectory))) {
+    // If the current directory should be hidden in the new filter setting,
+    // change the current directory to the current volume's root.
+    const volumeInfo = this.volumeManager_.getVolumeInfo(currentDirectory);
+    if (volumeInfo) {
+      volumeInfo.resolveDisplayRoot().then(displayRoot => {
+        this.changeDirectoryEntry(displayRoot);
+      });
+    }
+  } else {
+    this.rescanSoon(false);
+  }
 };
 
 /**
@@ -861,7 +875,7 @@ DirectoryModel.prototype.onRenameEntry = function(
     // new one.
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry())) {
       this.changeDirectoryEntry(
-          /** @type {!DirectoryEntry|!FilesAppDirEntry} */ (newEntry));
+          /** @type {!DirectoryEntry|!FakeEntry} */ (newEntry));
     }
 
     // Replace the old item with the new item. oldEntry instance itself may
@@ -946,18 +960,13 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
  * activateDirectoryEntry instead of this, which is higher-level function and
  * cares about the selection.
  *
- * @param {!DirectoryEntry|!FilesAppDirEntry} dirEntry The entry of the new
- *     directory to be opened.
+ * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
+ *     to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
-  // If it's a VolumeEntry which wraps an actual entry, we should use the
-  // unwrapped entry.
-  if (dirEntry instanceof VolumeEntry)
-    dirEntry = assert(dirEntry.rootEntry);
-
   // Increment the sequence value.
   this.changeDirectorySequence_++;
   this.clearSearch_();
@@ -1069,12 +1078,12 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
 /**
  * Activates the given directory.
  * This method:
- *  - Changes the current directory, if the given directory is the current
+ *  - Changes the current directory, if the given directory is not the current
  *    directory.
  *  - Clears the selection, if the given directory is the current directory.
  *
- * @param {!DirectoryEntry|!FilesAppDirEntry} dirEntry The entry of the new
- *     directory to be opened.
+ * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
+ *     to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
@@ -1187,9 +1196,10 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // since the current directory is initializing now.
   var entry = this.getCurrentDirEntry();
   if (entry && !this.volumeManager_.getVolumeInfo(entry)) {
-    this.volumeManager_.getDefaultDisplayRoot(function(displayRoot) {
-      this.changeDirectoryEntry(displayRoot);
-    }.bind(this));
+    this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
+      if (displayRoot)
+        this.changeDirectoryEntry(displayRoot);
+    });
   }
 
   // If a new file backed provided volume is mounted,
@@ -1214,7 +1224,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
  * Creates directory contents for the entry and query.
  *
  * @param {FileListContext} context File list context.
- * @param {!DirectoryEntry|!FakeEntry|!FilesAppEntry} entry Current directory.
+ * @param {!DirectoryEntry|!FilesAppEntry} entry Current directory.
  * @param {string=} opt_query Search query string.
  * @return {DirectoryContents} Directory contents.
  * @private

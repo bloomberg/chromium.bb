@@ -33,7 +33,8 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
 DistillerJsRenderFrameObserver::~DistillerJsRenderFrameObserver() {}
 
 void DistillerJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
+    blink::WebDocumentLoader* document_loader,
+    bool is_content_initiated) {
   load_active_ = true;
 }
 

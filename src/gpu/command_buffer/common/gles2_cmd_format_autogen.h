@@ -12933,43 +12933,6 @@ static_assert(
     offsetof(CopySubTextureCHROMIUM, unpack_unmultiply_alpha) == 56,
     "offset of CopySubTextureCHROMIUM unpack_unmultiply_alpha should be 56");
 
-struct CompressedCopyTextureCHROMIUM {
-  typedef CompressedCopyTextureCHROMIUM ValueType;
-  static const CommandId kCmdId = kCompressedCopyTextureCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _source_id, GLuint _dest_id) {
-    SetHeader();
-    source_id = _source_id;
-    dest_id = _dest_id;
-  }
-
-  void* Set(void* cmd, GLuint _source_id, GLuint _dest_id) {
-    static_cast<ValueType*>(cmd)->Init(_source_id, _dest_id);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t source_id;
-  uint32_t dest_id;
-};
-
-static_assert(sizeof(CompressedCopyTextureCHROMIUM) == 12,
-              "size of CompressedCopyTextureCHROMIUM should be 12");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, header) == 0,
-              "offset of CompressedCopyTextureCHROMIUM header should be 0");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, source_id) == 4,
-              "offset of CompressedCopyTextureCHROMIUM source_id should be 4");
-static_assert(offsetof(CompressedCopyTextureCHROMIUM, dest_id) == 8,
-              "offset of CompressedCopyTextureCHROMIUM dest_id should be 8");
-
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;
   static const CommandId kCmdId = kDrawArraysInstancedANGLE;
@@ -16701,5 +16664,38 @@ static_assert(offsetof(FramebufferTextureMultiviewLayeredANGLE,
 static_assert(
     offsetof(FramebufferTextureMultiviewLayeredANGLE, numViews) == 24,
     "offset of FramebufferTextureMultiviewLayeredANGLE numViews should be 24");
+
+struct MaxShaderCompilerThreadsKHR {
+  typedef MaxShaderCompilerThreadsKHR ValueType;
+  static const CommandId kCmdId = kMaxShaderCompilerThreadsKHR;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _count) {
+    SetHeader();
+    count = _count;
+  }
+
+  void* Set(void* cmd, GLuint _count) {
+    static_cast<ValueType*>(cmd)->Init(_count);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t count;
+};
+
+static_assert(sizeof(MaxShaderCompilerThreadsKHR) == 8,
+              "size of MaxShaderCompilerThreadsKHR should be 8");
+static_assert(offsetof(MaxShaderCompilerThreadsKHR, header) == 0,
+              "offset of MaxShaderCompilerThreadsKHR header should be 0");
+static_assert(offsetof(MaxShaderCompilerThreadsKHR, count) == 4,
+              "offset of MaxShaderCompilerThreadsKHR count should be 4");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

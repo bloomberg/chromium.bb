@@ -22,6 +22,7 @@ TestDictionary::TestDictionary() {
   setDoubleOrStringMember(DoubleOrString::FromDouble(3.14));
   setEnumMember("foo");
   setLongMember(1);
+  setMemberWithHyphenInName(false);
   setOtherDoubleOrStringMember(DoubleOrString::FromString("default string value"));
   setRestrictedDoubleMember(3.14);
   setStringOrNullMember("default string value");

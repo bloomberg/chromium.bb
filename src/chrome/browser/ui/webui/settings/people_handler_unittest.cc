@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -212,7 +213,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
 
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), BuildMockProfileSyncService));
+            profile(), base::BindRepeating(&BuildMockProfileSyncService)));
     ON_CALL(*mock_pss_, GetAuthError()).WillByDefault(ReturnRef(error_));
     ON_CALL(*mock_pss_, GetPassphraseType())
         .WillByDefault(Return(syncer::PassphraseType::IMPLICIT_PASSPHRASE));

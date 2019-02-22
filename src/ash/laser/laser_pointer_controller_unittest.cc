@@ -6,7 +6,6 @@
 
 #include "ash/laser/laser_pointer_controller_test_api.h"
 #include "ash/laser/laser_pointer_view.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "services/ws/server_window.h"

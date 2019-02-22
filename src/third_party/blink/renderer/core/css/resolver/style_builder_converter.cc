@@ -120,7 +120,7 @@ scoped_refptr<StyleSVGResource> StyleBuilderConverter::ConvertElementReference(
   SVGResource* resource =
       state.GetElementStyleResources().GetSVGResourceFromValue(
           state.GetTreeScope(), url_value);
-  return StyleSVGResource::Create(resource, AtomicString(url_value.Value()));
+  return StyleSVGResource::Create(resource, url_value.ValueForSerialization());
 }
 
 LengthBox StyleBuilderConverter::ConvertClip(StyleResolverState& state,
@@ -144,7 +144,8 @@ scoped_refptr<ClipPathOperation> StyleBuilderConverter::ConvertClipPath(
         state.GetElementStyleResources().GetSVGResourceFromValue(
             state.GetTreeScope(), url_value);
     // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
-    return ReferenceClipPathOperation::Create(url_value.Value(), resource);
+    return ReferenceClipPathOperation::Create(url_value.ValueForSerialization(),
+                                              resource);
   }
   DCHECK(value.IsIdentifierValue() &&
          ToCSSIdentifierValue(value).GetValueID() == CSSValueNone);
@@ -550,7 +551,7 @@ StyleBuilderConverter::ConvertFontVariantLigatures(StyleResolverState&,
   if (value.IsValueList()) {
     FontDescription::VariantLigatures ligatures;
     const CSSValueList& value_list = ToCSSValueList(value);
-    for (size_t i = 0; i < value_list.length(); ++i) {
+    for (wtf_size_t i = 0; i < value_list.length(); ++i) {
       const CSSValue& item = value_list.Item(i);
       switch (ToCSSIdentifierValue(item).GetValueID()) {
         case CSSValueNoCommonLigatures:
@@ -1236,7 +1237,7 @@ scoped_refptr<QuotesData> StyleBuilderConverter::ConvertQuotes(
   if (value.IsValueList()) {
     const CSSValueList& list = ToCSSValueList(value);
     scoped_refptr<QuotesData> quotes = QuotesData::Create();
-    for (size_t i = 0; i < list.length(); i += 2) {
+    for (wtf_size_t i = 0; i < list.length(); i += 2) {
       String start_quote = ToCSSStringValue(list.Item(i)).Value();
       String end_quote = ToCSSStringValue(list.Item(i + 1)).Value();
       quotes->AddPair(std::make_pair(start_quote, end_quote));
@@ -1370,8 +1371,8 @@ scoped_refptr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
   const CSSValueList& dashes = ToCSSValueList(value);
 
   scoped_refptr<SVGDashArray> array = SVGDashArray::Create();
-  size_t length = dashes.length();
-  for (size_t i = 0; i < length; ++i) {
+  wtf_size_t length = dashes.length();
+  for (wtf_size_t i = 0; i < length; ++i) {
     array->push_back(ConvertLength(state, ToCSSPrimitiveValue(dashes.Item(i))));
   }
 

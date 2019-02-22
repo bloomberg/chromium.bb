@@ -97,3 +97,35 @@ component("ui_devtools") {
     "//services/network/public/mojom",
   ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "ui_devtools_unittest_utils.cc",
+    "ui_devtools_unittest_utils.h",
+  ]
+  public_deps = [
+    ":ui_devtools",
+    "//testing/gmock",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  cflags = []
+  if (is_win) {
+    cflags += [ "/wd4800" ]  # Value forced to bool.
+  }
+
+  sources = [
+    "css_agent_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+}

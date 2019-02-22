@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/browser_process.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -32,7 +32,7 @@ constexpr char kIconFileExtension[] = ".png";
 // Save |raw_icon| for given |app_id|.
 void SaveIconToLocalOnBlockingPool(const base::FilePath& icon_path,
                                    std::vector<unsigned char> image_data) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const base::FilePath dir = icon_path.DirName();
   if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create directory to store kiosk icons";

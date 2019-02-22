@@ -175,8 +175,6 @@ class VIZ_COMMON_EXPORT SyntheticBeginFrameSource : public BeginFrameSource {
 
   virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                        base::TimeDelta interval) = 0;
-  // This overrides any past or future interval from updating vsync parameters.
-  virtual void SetAuthoritativeVSyncInterval(base::TimeDelta interval) = 0;
 };
 
 // A frame source which calls BeginFrame (at the next possible time) as soon as
@@ -198,7 +196,6 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
   // SyntheticBeginFrameSource implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override {}
-  void SetAuthoritativeVSyncInterval(base::TimeDelta interval) override {}
 
   // DelayBasedTimeSourceClient implementation.
   void OnTimerTick() override;
@@ -232,7 +229,6 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   // SyntheticBeginFrameSource implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override;
-  void SetAuthoritativeVSyncInterval(base::TimeDelta interval) override;
 
   // DelayBasedTimeSourceClient implementation.
   void OnTimerTick() override;
@@ -243,7 +239,6 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   std::unique_ptr<DelayBasedTimeSource> time_source_;
   std::unordered_set<BeginFrameObserver*> observers_;
   base::TimeTicks last_timebase_;
-  base::TimeDelta authoritative_interval_;
   BeginFrameArgs last_begin_frame_args_;
   uint64_t next_sequence_number_;
 

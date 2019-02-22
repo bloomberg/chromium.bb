@@ -125,6 +125,18 @@ class WebMediaPlayer {
     bool skipped = false;
   };
 
+  // Describes when we use SurfaceLayer for video instead of VideoLayer.
+  enum class SurfaceLayerMode {
+    // Always use VideoLayer
+    kNever,
+
+    // Use SurfaceLayer only when we switch to Picture-in-Picture.
+    kOnDemand,
+
+    // Always use SurfaceLayer for video.
+    kAlways,
+  };
+
   // Callback to get notified when the Picture-in-Picture window is opened.
   using PipWindowOpenedCallback = base::OnceCallback<void(const WebSize&)>;
   // Callback to get notified when Picture-in-Picture window is closed.
@@ -199,6 +211,8 @@ class WebMediaPlayer {
   virtual NetworkState GetNetworkState() const = 0;
   virtual ReadyState GetReadyState() const = 0;
 
+  virtual SurfaceLayerMode GetVideoSurfaceLayerMode() const = 0;
+
   // Returns an implementation-specific human readable error message, or an
   // empty string if no message is available. The message should begin with a
   // UA-specific-error-code (without any ':'), optionally followed by ': ' and
@@ -207,9 +221,10 @@ class WebMediaPlayer {
 
   virtual bool DidLoadingProgress() = 0;
 
-  virtual bool DidGetOpaqueResponseFromServiceWorker() const = 0;
-  virtual bool HasSingleSecurityOrigin() const = 0;
-  virtual bool DidPassCORSAccessCheck() const = 0;
+  // Returns true if the response is CORS-cross-origin and so we shouldn't be
+  // allowing media to play through webaudio.
+  // This should be called after the response has arrived.
+  virtual bool WouldTaintOrigin() const = 0;
 
   virtual double MediaTimeForTimeValue(double time_value) const = 0;
 
@@ -395,6 +410,9 @@ class WebMediaPlayer {
   // Test helper methods for exercising media suspension.
   virtual void ForceStaleStateForTesting(ReadyState target_state) {}
   virtual bool IsSuspendedForTesting() { return false; }
+
+  virtual bool DidLazyLoad() const { return false; }
+  virtual void OnBecameVisible() {}
 };
 
 }  // namespace blink

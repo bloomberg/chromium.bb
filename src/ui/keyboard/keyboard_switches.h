@@ -17,9 +17,6 @@ KEYBOARD_EXPORT extern const char kDisableInputView[];
 // Disables voice input.
 KEYBOARD_EXPORT extern const char kDisableVoiceInput[];
 
-// Enables experimental features for IME extensions.
-KEYBOARD_EXPORT extern const char kEnableExperimentalInputViewFeatures[];
-
 // Flag which disables gesture typing for the virtual keyboard.
 KEYBOARD_EXPORT extern const char kDisableGestureTyping[];
 

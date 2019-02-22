@@ -83,7 +83,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetLocalSurfaceIdToMainThread(
       const viz::LocalSurfaceId& local_surface_id);
   void PostRequestNewLocalSurfaceIdToMainThread();
-  void PostSetDeferCommitsToMainThread(bool defer_commits);
+  void PostGetDeferCommitsToMainThread(
+      std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
+  void PostReturnDeferCommitsToMainThread(
+      std::unique_ptr<ScopedDeferCommits> scoped_defer_commits);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
   void PostSetNeedsRedrawToMainThread();
@@ -183,7 +186,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
       double animation_duration);
   void DispatchSetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
   void DispatchRequestNewLocalSurfaceId();
-  void DispatchSetDeferCommits(bool defer_commits);
+  void DispatchGetDeferCommits(
+      std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
+  void DispatchReturnDeferCommits(
+      std::unique_ptr<ScopedDeferCommits> scoped_defer_commits);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();
   void DispatchSetNeedsRedraw();

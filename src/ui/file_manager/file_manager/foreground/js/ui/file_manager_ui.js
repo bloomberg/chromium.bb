@@ -89,13 +89,6 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.copyConfirmDialog.setOkLabel(str('CONFIRM_COPY_BUTTON_LABEL'));
 
   /**
-   * Share dialog.
-   * @type {!ShareDialog}
-   * @const
-   */
-  this.shareDialog = new ShareDialog(this.element);
-
-  /**
    * Multi-profile share dialog.
    * @type {!MultiProfileShareDialog}
    * @const
@@ -567,6 +560,14 @@ FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
 
   /** @type Object */ (customSplitter).decorate(splitterElement);
   splitterElement.resizeNextElement = !!opt_resizeNextElement;
+};
+
+/**
+ * Mark |element| with "loaded" attribute to indicate that File Manager has
+ * finished loading.
+ */
+FileManagerUI.prototype.addLoadedAttribute = function() {
+  this.element.setAttribute('loaded', '');
 };
 
 /**

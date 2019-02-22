@@ -29,7 +29,7 @@ class InterpolatedSVGPathSource {
 
  private:
   PathCoordinates current_coordinates_;
-  size_t current_index_;
+  wtf_size_t current_index_;
   const InterpolableList& interpolable_path_segs_;
   const Vector<SVGPathSegType>& path_seg_types_;
   DISALLOW_COPY_AND_ASSIGN(InterpolatedSVGPathSource);

@@ -813,7 +813,6 @@ error::Error DoCopySubTextureCHROMIUM(GLuint source_id,
                                       GLboolean unpack_flip_y,
                                       GLboolean unpack_premultiply_alpha,
                                       GLboolean unpack_unmultiply_alpha);
-error::Error DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id);
 error::Error DoDrawArraysInstancedANGLE(GLenum mode,
                                         GLint first,
                                         GLsizei count,
@@ -1066,5 +1065,5 @@ error::Error DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
                                                          GLuint shm_id,
                                                          GLuint shm_offset,
                                                          GLuint size);
-
+error::Error DoMaxShaderCompilerThreadsKHR(GLuint count);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

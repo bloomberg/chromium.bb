@@ -136,6 +136,8 @@ class TestRunner : public WebTestRunner {
   const base::Optional<std::vector<std::string>>& file_chooser_paths() const {
     return file_chooser_paths_;
   }
+  bool animation_requires_raster() const { return animation_requires_raster_; }
+  void SetAnimationRequiresRaster(bool do_raster);
 
   // To be called when |frame| starts loading - TestRunner will check if
   // there is currently no top-loading-frame being tracked and if so, then it
@@ -167,6 +169,8 @@ class TestRunner : public WebTestRunner {
   void SetDumpConsoleMessages(bool value);
 
   bool ShouldDumpJavaScriptDialogs() const;
+
+  void SetShouldUseInnerTextDump(bool value);
 
   blink::WebEffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
@@ -590,6 +594,11 @@ class TestRunner : public WebTestRunner {
 
   // True when running a test in LayoutTests/external/wpt/.
   bool is_web_platform_tests_mode_;
+
+  // True if rasterization should be performed during tests that examine
+  // fling-style animations. This includes middle-click auto-scroll behaviors.
+  // This does not include most "ordinary" animations, such as CSS animations.
+  bool animation_requires_raster_;
 
   // An effective connection type settable by layout tests.
   blink::WebEffectiveConnectionType effective_connection_type_;

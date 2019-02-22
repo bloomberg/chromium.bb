@@ -68,6 +68,7 @@ component("gpu") {
     "//chrome/gpu",
     "//components/arc/common:media",
     "//components/arc/video_accelerator",
+    "//components/mirroring/service:mirroring_service",
     "//components/viz/service/main",
     "//content/gpu:*",
     "//content/renderer:*",
@@ -153,11 +154,10 @@ component("gpu") {
       "android/android_video_decode_accelerator.h",
       "android/android_video_encode_accelerator.cc",
       "android/android_video_encode_accelerator.h",
+      "android/android_video_surface_chooser.cc",
       "android/android_video_surface_chooser.h",
       "android/android_video_surface_chooser_impl.cc",
       "android/android_video_surface_chooser_impl.h",
-      "android/avda_codec_allocator.cc",
-      "android/avda_codec_allocator.h",
       "android/avda_codec_image.cc",
       "android/avda_codec_image.h",
       "android/avda_picture_buffer_manager.cc",
@@ -167,6 +167,8 @@ component("gpu") {
       "android/avda_state_provider.h",
       "android/avda_surface_bundle.cc",
       "android/avda_surface_bundle.h",
+      "android/codec_allocator.cc",
+      "android/codec_allocator.h",
       "android/codec_image.cc",
       "android/codec_image.h",
       "android/codec_image_group.cc",
@@ -263,8 +265,13 @@ component("gpu") {
       "windows/d3d11_picture_buffer.h",
       "windows/d3d11_video_decoder.cc",
       "windows/d3d11_video_decoder.h",
+      "windows/d3d11_video_decoder_client.h",
       "windows/d3d11_video_decoder_impl.cc",
       "windows/d3d11_video_decoder_impl.h",
+      "windows/d3d11_vp9_accelerator.cc",
+      "windows/d3d11_vp9_accelerator.h",
+      "windows/d3d11_vp9_picture.cc",
+      "windows/d3d11_vp9_picture.h",
       "windows/dxva_picture_buffer_win.cc",
       "windows/dxva_picture_buffer_win.h",
       "windows/dxva_video_decode_accelerator_win.cc",
@@ -326,6 +333,10 @@ source_set("common") {
     "h264_decoder.h",
     "h264_dpb.cc",
     "h264_dpb.h",
+    "vp9_decoder.cc",
+    "vp9_decoder.h",
+    "vp9_picture.cc",
+    "vp9_picture.h",
   ]
   if (use_v4l2_codec || use_vaapi) {
     sources += [
@@ -336,10 +347,6 @@ source_set("common") {
       "vp8_picture.h",
       "vp8_reference_frame_vector.cc",
       "vp8_reference_frame_vector.h",
-      "vp9_decoder.cc",
-      "vp9_decoder.h",
-      "vp9_picture.cc",
-      "vp9_picture.h",
     ]
   }
 
@@ -434,7 +441,7 @@ source_set("android_video_decode_accelerator_unittests") {
     sources = [
       "android/android_video_decode_accelerator_unittest.cc",
       "android/android_video_surface_chooser_impl_unittest.cc",
-      "android/avda_codec_allocator_unittest.cc",
+      "android/codec_allocator_unittest.cc",
       "android/codec_image_group_unittest.cc",
       "android/codec_image_unittest.cc",
       "android/codec_wrapper_unittest.cc",
@@ -533,7 +540,7 @@ if (use_vaapi) {
   }
 }
 
-if (use_v4l2_codec || use_vaapi) {
+if (is_chromeos || is_linux) {
   test("jpeg_decode_accelerator_unittest") {
     deps = [
       "//base",
@@ -562,7 +569,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//media/test/data/peach_pi-41x23.jpg",
     ]
     if (use_vaapi) {
-      sources += [ "vaapi/vaapi_jpeg_decode_accelerator_unittest.cc" ]
+      deps += [ "//media/gpu/vaapi:jpeg_decode_accelerator_unit_test" ]
       data += [ "//media/test/data/pixel-1280x720.jpg" ]
     }
     if (use_x11) {
@@ -608,6 +615,9 @@ source_set("unit_tests") {
 
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]
+  }
+  if (use_v4l2_codec) {
+    sources += [ "v4l2/v4l2_device_unittest.cc" ]
   }
   if (use_v4l2_codec || use_vaapi) {
     sources += [ "vp8_decoder_unittest.cc" ]

@@ -8,6 +8,7 @@
 
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 
 namespace {
@@ -181,8 +182,8 @@ bool CPDF_OCContext::GetOCGVisible(const CPDF_Dictionary* pOCGDict) {
 }
 
 bool CPDF_OCContext::CheckObjectVisible(const CPDF_PageObject* pObj) {
-  for (size_t i = 0; i < pObj->m_ContentMark.CountItems(); ++i) {
-    const CPDF_ContentMarkItem* item = pObj->m_ContentMark.GetItem(i);
+  for (size_t i = 0; i < pObj->m_ContentMarks.CountItems(); ++i) {
+    const CPDF_ContentMarkItem* item = pObj->m_ContentMarks.GetItem(i);
     if (item->GetName() == "OC" &&
         item->GetParamType() == CPDF_ContentMarkItem::PropertiesDict &&
         !CheckOCGVisible(item->GetParam())) {

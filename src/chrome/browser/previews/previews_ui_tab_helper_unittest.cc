@@ -19,6 +19,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -30,14 +31,14 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_user_data.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -80,8 +81,8 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
             drp_test_context_->GetDataReductionProxyEnabledPrefName());
     data_reduction_proxy_settings->InitDataReductionProxySettings(
         drp_test_context_->io_data(), drp_test_context_->pref_service(),
-        drp_test_context_->request_context_getter(),
-        nullptr /* url_loader_factory */,
+        drp_test_context_->request_context_getter(), profile(),
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>(),
         base::WrapUnique(new data_reduction_proxy::DataStore()),
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
@@ -215,7 +216,11 @@ TEST_F(PreviewsUITabHelperUnitTest,
 }
 
 TEST_F(PreviewsUITabHelperUnitTest,
-       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
+       DidFinishNavigationDoesCreateLoFiPreviewsInfoBar) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kAndroidOmniboxPreviewsBadge);
+
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
@@ -224,8 +229,44 @@ TEST_F(PreviewsUITabHelperUnitTest,
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
+  EXPECT_TRUE(ui_tab_helper->displayed_preview_ui());
+#endif
+
+  // Navigate to reset the displayed state.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+#endif
+}
+
+TEST_F(PreviewsUITabHelperUnitTest,
+       DidFinishNavigationDoesNotCreateLoFiPreviewsInfoBar) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      previews::features::kAndroidOmniboxPreviewsBadge);
+
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+
+  SetCommittedPreviewsType(previews::PreviewsType::LOFI);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
+#else
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+#endif
 }
 
 TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {

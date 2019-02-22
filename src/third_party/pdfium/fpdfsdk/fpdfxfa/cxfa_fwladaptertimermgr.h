@@ -7,7 +7,6 @@
 #ifndef FPDFSDK_FPDFXFA_CXFA_FWLADAPTERTIMERMGR_H_
 #define FPDFSDK_FPDFXFA_CXFA_FWLADAPTERTIMERMGR_H_
 
-#include <memory>
 #include <vector>
 
 #include "core/fxcrt/unowned_ptr.h"
@@ -26,7 +25,7 @@ class CXFA_FWLAdapterTimerMgr final : public IFWL_AdapterTimerMgr {
              CFWL_TimerInfo** pTimerInfo) override;
   void Stop(CFWL_TimerInfo* pTimerInfo) override;
 
- protected:
+ private:
   static void TimerProc(int32_t idEvent);
 
   static std::vector<CFWL_TimerInfo*>* s_TimerArray;

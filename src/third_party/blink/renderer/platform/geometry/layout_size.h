@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -62,6 +63,8 @@ class PLATFORM_EXPORT LayoutSize {
       : width_(size.Width()), height_(size.Height()) {}
   explicit LayoutSize(const DoubleSize& size)
       : width_(size.Width()), height_(size.Height()) {}
+  explicit LayoutSize(const gfx::Size& size)
+      : width_(size.width()), height_(size.height()) {}
 
   constexpr LayoutUnit Width() const { return width_; }
   constexpr LayoutUnit Height() const { return height_; }

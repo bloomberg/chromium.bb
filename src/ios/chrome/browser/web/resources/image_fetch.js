@@ -33,9 +33,14 @@ __gCrWeb['imageFetch'] = __gCrWeb.imageFetch;
  * @param {string} url The URL of the requested image.
  */
 __gCrWeb.imageFetch.getImageData = function(id, url) {
-  var onData = function(data) {
-    __gCrWeb.message.invokeOnHost(
-        {'command': 'imageFetch.getImageData', 'id': id, 'data': data});
+  // |from| indicates where the |data| is fetched from.
+  var onData = function(data, from) {
+    __gCrWeb.message.invokeOnHost({
+      'command': 'imageFetch.getImageData',
+      'id': id,
+      'data': data,
+      'from': from
+    });
   };
   var onError = function() {
     __gCrWeb.message.invokeOnHost(
@@ -44,7 +49,7 @@ __gCrWeb.imageFetch.getImageData = function(id, url) {
 
   var data = getImageDataByCanvas(url);
   if (data) {
-    onData(data);
+    onData(data, 'canvas');
   } else {
     getImageDataByXMLHttpRequest(url, 100, onData, onError);
   }
@@ -62,9 +67,9 @@ __gCrWeb.imageFetch.getImageData = function(id, url) {
  *   3. Exporting data from <img> failed.
  */
 function getImageDataByCanvas(url) {
- var extension = url.split('.').pop().toLowerCase();
- if (extension == 'gif')
-  return null;
+  var extension = url.split('.').pop().toLowerCase();
+  if (extension == 'gif')
+    return null;
 
   for (var key in document.images) {
     var img = document.images[key];
@@ -111,7 +116,7 @@ function getImageDataByXMLHttpRequest(url, timeout, onData, onError) {
     var fr = new FileReader();
 
     fr.onload = function() {
-      onData(btoa(/** @type{string} */ (fr.result)));
+      onData(btoa(/** @type{string} */ (fr.result)), 'xhr');
     };
     fr.onabort = onError;
     fr.onerror = onError;

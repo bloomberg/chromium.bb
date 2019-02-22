@@ -67,8 +67,7 @@
             android:layout_marginStart="6dp"
             android:contentDescription="@string/accessibility_ntp_offline_badge"
             android:visibility="gone"
-            android:src="@drawable/offline_pin_round"
-            app:chrometint="@color/default_icon_color" />
+            android:src="@drawable/offline_pin_round" />
     </LinearLayout>
 
     <LinearLayout
@@ -81,7 +80,7 @@
         android:orientation="vertical">
 
         <org.chromium.ui.widget.TextViewWithLeading
-            style="@style/SuggestionCardTitleModern"
+            style="@style/ContextualSuggestionCardTitleModern"
             app:leading="27dp"
             android:id="@+id/article_headline"
             android:layout_width="match_parent"
@@ -89,7 +88,7 @@
             tools:text="Article headline" />
 
        <org.chromium.ui.widget.TextViewWithLeading
-            style="@style/SuggestionCardBodyModern"
+            style="@style/ContextualSuggestionCardBodyModern"
             app:leading="23dp"
             android:id="@+id/article_snippet"
             android:layout_width="match_parent"

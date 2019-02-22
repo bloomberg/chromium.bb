@@ -32,7 +32,6 @@
 #include "SkMutex.h"
 #include "SkOSFile.h"
 #include "SkOSPath.h"
-#include "SkPM4fPriv.h"
 #include "SkPngEncoder.h"
 #include "SkScan.h"
 #include "SkSpinlock.h"
@@ -41,7 +40,6 @@
 #include "SkTaskGroup.h"
 #include "SkTypeface_win.h"
 #include "Test.h"
-#include "Timer.h"
 #include "ios_utils.h"
 #include "sk_tool_utils.h"
 
@@ -96,6 +94,12 @@ DEFINE_int32(shard,  0, "Which shard do I run?");
 DEFINE_string(mskps, "", "Directory to read mskps from, or a single mskp file.");
 DEFINE_bool(forceRasterPipeline, false, "sets gSkForceRasterPipelineBlitter");
 
+DEFINE_string(bisect, "",
+        "Pair of: SKP file to bisect, followed by an l/r bisect trail string (e.g., 'lrll'). The "
+        "l/r trail specifies which half to keep at each step of a binary search through the SKP's "
+        "paths. An empty string performs no bisect. Only the SkPaths are bisected; all other draws "
+        "are thrown out. This is useful for finding a reduced repo case for path drawing bugs.");
+
 DEFINE_bool(ignoreSigInt, false, "ignore SIGINT signals during test execution");
 
 DEFINE_string(dont_write, "", "File extensions to skip writing to --writePath.");  // See skia:6821
@@ -109,16 +113,11 @@ using sk_gpu_test::ContextInfo;
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-static const double kStartMs = SkTime::GetMSecs();
-
 static FILE* gVLog;
 
 template <typename... Args>
 static void vlog(const char* fmt, Args&&... args) {
     if (gVLog) {
-        char s[64];
-        HumanizeMs(s, 64, SkTime::GetMSecs() - kStartMs);
-        fprintf(gVLog, "%s\t", s);
         fprintf(gVLog, fmt, args...);
         fflush(gVLog);
     }
@@ -182,11 +181,10 @@ static void done(const char* config, const char* src, const char* srcOptions, co
 
         int curr = sk_tools::getCurrResidentSetSizeMB(),
             peak = sk_tools::getMaxResidentSetSizeMB();
-        SkString elapsed = HumanizeMs(SkTime::GetMSecs() - kStartMs);
 
         SkAutoMutexAcquire lock(gMutex);
-        info("\n%dMB RAM, %dMB peak, %s elapsed, %d queued, %d active:\n",
-             curr, peak, elapsed.c_str(), gPending - gRunning.count(), gRunning.count());
+        info("\n%dMB RAM, %dMB peak, %d queued, %d active:\n",
+             curr, peak, gPending - gRunning.count(), gRunning.count());
         for (auto& task : gRunning) {
             task.dump();
         }
@@ -794,6 +792,11 @@ static bool gather_srcs() {
 #if defined(SK_XML)
     gather_file_srcs<SVGSrc>(FLAGS_svgs, "svg");
 #endif
+    if (!FLAGS_bisect.isEmpty()) {
+        // An empty l/r trail string will draw all the paths.
+        push_src("bisect", "",
+                 new BisectSrc(FLAGS_bisect[0], FLAGS_bisect.count() > 1 ? FLAGS_bisect[1] : ""));
+    }
 
     SkTArray<SkString> images;
     if (!CollectImages(FLAGS_images, &images)) {
@@ -826,6 +829,11 @@ static bool gather_srcs() {
     }
 
     return true;
+}
+
+static sk_sp<SkColorSpace> rec2020() {
+    return SkColorSpace::MakeRGB({2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
+                                 SkColorSpace::kRec2020_Gamut);
 }
 
 static void push_sink(const SkCommandLineConfig& config, Sink* s) {
@@ -918,29 +926,14 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         // Configs relevant to color management testing (and 8888 for reference).
 
         // 'narrow' has a gamut narrower than sRGB, and different transfer function.
-        SkMatrix44 narrow_gamut(SkMatrix44::kUninitialized_Constructor);
+        SkMatrix44 narrow_gamut;
         narrow_gamut.set3x3RowMajorf(gNarrow_toXYZD50);
-
-        // See https://en.wikipedia.org/wiki/Rec._2020
-        float alpha = 1.09929682680944f,
-              beta  = 0.018053968510807f,
-              gamma = 0.45f;
-        SkColorSpaceTransferFn rec2020_TF = SkColorSpaceTransferFn{
-            gamma,
-            powf(alpha, 1/gamma),
-            0.0f,
-            4.5f,
-            beta,
-            1 - alpha,
-            0.0f,
-        }.invert();
 
         auto narrow = SkColorSpace::MakeRGB(k2Dot2Curve_SkGammaNamed, narrow_gamut),
                srgb = SkColorSpace::MakeSRGB(),
          srgbLinear = SkColorSpace::MakeSRGBLinear(),
                  p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                            SkColorSpace::kDCIP3_D65_Gamut),
-            rec2020 = SkColorSpace::MakeRGB(rec2020_TF, SkColorSpace::kRec2020_Gamut);
+                                            SkColorSpace::kDCIP3_D65_Gamut);
 
         SINK(     "f16",  RasterSink,  kRGBA_F16_SkColorType, srgbLinear);
         SINK(    "srgb",  RasterSink, kRGBA_8888_SkColorType, srgb      );
@@ -949,8 +942,8 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
         SINK( "enarrow",  RasterSink,  kRGBA_F16_SkColorType, narrow    );
         SINK(      "p3",  RasterSink, kRGBA_8888_SkColorType, p3        );
         SINK(     "ep3",  RasterSink,  kRGBA_F16_SkColorType, p3        );
-        SINK( "rec2020",  RasterSink, kRGBA_8888_SkColorType, rec2020   );
-        SINK("erec2020",  RasterSink,  kRGBA_F16_SkColorType, rec2020   );
+        SINK( "rec2020",  RasterSink, kRGBA_8888_SkColorType, rec2020() );
+        SINK("erec2020",  RasterSink,  kRGBA_F16_SkColorType, rec2020() );
 
         SINK(    "f32",  RasterSink,  kRGBA_F32_SkColorType, srgbLinear);
     }
@@ -1065,6 +1058,15 @@ static bool dump_png(SkBitmap bitmap, const char* path, const char* md5) {
         strlen(comments[0])+1, strlen(comments[1])+1,
         strlen(comments[2])+1, strlen(comments[3])+1,
     };
+
+    // PNGs can't hold out-of-gamut values, so if we're likely to be holding them,
+    // convert to a wide gamut, giving us the best chance to have the PNG look like our colors.
+    SkBitmap wide;
+    if (pm.colorType() >= kRGBA_F16_SkColorType) {
+        wide.allocPixels(pm.info().makeColorSpace(rec2020()));
+        SkAssertResult(wide.writePixels(pm, 0,0));
+        SkAssertResult(wide.peekPixels(&pm));
+    }
 
     SkPngEncoder::Options options;
     options.fComments         = SkDataTable::MakeCopyArrays((const void**)comments, lengths, 4);

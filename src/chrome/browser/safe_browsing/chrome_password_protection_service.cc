@@ -27,6 +27,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -61,6 +63,7 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
@@ -453,7 +456,6 @@ void ChromePasswordProtectionService::ShowInterstitial(
     ReusedPasswordType password_type) {
   DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
          password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
-  DCHECK(base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1));
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreenForCurrentTab())
     web_contents->ExitFullscreen(/*will_cause_resize=*/true);
@@ -624,7 +626,7 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
 bool ChromePasswordProtectionService::IsHistorySyncEnabled() {
   browser_sync::ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  return sync && sync->IsSyncActive() && !sync->IsLocalSyncEnabled() &&
+  return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
@@ -978,15 +980,12 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
 }
 
 GURL ChromePasswordProtectionService::GetEnterpriseChangePasswordURL() const {
-  if (base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1)) {
-    // If change password URL is specified in preferences, returns the
-    // corresponding pref value.
-    GURL enterprise_change_password_url =
-        GetPasswordProtectionChangePasswordURLPref(*profile_->GetPrefs());
-    if (!enterprise_change_password_url.is_empty()) {
-      return enterprise_change_password_url;
-    }
-  }
+  // If change password URL is specified in preferences, returns the
+  // corresponding pref value.
+  GURL enterprise_change_password_url =
+      GetPasswordProtectionChangePasswordURLPref(*profile_->GetPrefs());
+  if (!enterprise_change_password_url.is_empty())
+    return enterprise_change_password_url;
 
   return GetDefaultChangePasswordURL();
 }
@@ -1169,10 +1168,8 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref()
     const {
-  bool is_policy_managed =
-      base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1) &&
-      profile_->GetPrefs()->HasPrefPath(
-          prefs::kPasswordProtectionWarningTrigger);
+  bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(
+      prefs::kPasswordProtectionWarningTrigger);
   PasswordProtectionTrigger trigger_level =
       static_cast<PasswordProtectionTrigger>(profile_->GetPrefs()->GetInteger(
           prefs::kPasswordProtectionWarningTrigger));
@@ -1222,12 +1219,8 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
   DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
          password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
   if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
-    return base::FeatureList::IsEnabled(
-               safe_browsing::kEnterprisePasswordProtectionV1)
-               ? l10n_util::GetStringUTF16(
-                     IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE)
-               : l10n_util::GetStringUTF16(
-                     IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
+    return l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
   }
 
   if (GetSyncAccountType() !=
@@ -1319,6 +1312,12 @@ bool ChromePasswordProtectionService::CanShowInterstitial(
 
 bool ChromePasswordProtectionService::IsUnderAdvancedProtection() {
   return AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile_);
+}
+
+gfx::Size ChromePasswordProtectionService::GetCurrentContentAreaSize() const {
+  return BrowserView::GetBrowserViewForBrowser(
+             BrowserList::GetInstance()->GetLastActive())
+      ->GetContentsSize();
 }
 
 }  // namespace safe_browsing

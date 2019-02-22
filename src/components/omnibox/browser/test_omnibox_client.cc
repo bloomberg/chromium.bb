@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/query_in_omnibox.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -20,6 +21,29 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
+class FakeQueryInOmnibox : public QueryInOmnibox {
+ public:
+  void set_fake_search_terms(const base::string16& terms) {
+    fake_search_terms_ = terms;
+  }
+
+  // QueryInOmnibox:
+  bool GetDisplaySearchTerms(security_state::SecurityLevel security_level,
+                             const GURL& url,
+                             base::string16* search_terms) override {
+    if (fake_search_terms_.empty())
+      return false;
+
+    if (search_terms)
+      *search_terms = fake_search_terms_;
+
+    return true;
+  }
+
+ private:
+  base::string16 fake_search_terms_;
+};
+
 TestOmniboxClient::TestOmniboxClient()
     : session_id_(SessionID::FromSerializedValue(1)),
       bookmark_model_(nullptr),
@@ -28,10 +52,16 @@ TestOmniboxClient::TestOmniboxClient()
               CreateAutocompleteProviderClient(),
               nullptr,
               AutocompleteClassifier::DefaultOmniboxProviders()),
-          std::make_unique<TestSchemeClassifier>()) {}
+          std::make_unique<TestSchemeClassifier>()),
+      fake_query_in_omnibox_(new FakeQueryInOmnibox) {}
 
 TestOmniboxClient::~TestOmniboxClient() {
   autocomplete_classifier_.Shutdown();
+}
+
+void TestOmniboxClient::SetFakeSearchTermsForQueryInOmnibox(
+    const base::string16& terms) {
+  fake_query_in_omnibox_->set_fake_search_terms(terms);
 }
 
 std::unique_ptr<AutocompleteProviderClient>
@@ -95,6 +125,10 @@ const AutocompleteSchemeClassifier& TestOmniboxClient::GetSchemeClassifier()
 
 AutocompleteClassifier* TestOmniboxClient::GetAutocompleteClassifier() {
   return &autocomplete_classifier_;
+}
+
+QueryInOmnibox* TestOmniboxClient::GetQueryInOmnibox() {
+  return fake_query_in_omnibox_.get();
 }
 
 gfx::Image TestOmniboxClient::GetSizedIcon(

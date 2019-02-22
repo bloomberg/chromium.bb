@@ -25,3 +25,21 @@ source_set("feed_content") {
     "//components/offline_pages/core/prefetch",
   ]
 }
+
+source_set("content_unit_tests") {
+  testonly = true
+  sources = [
+    "feed_offline_host_unittest.cc",
+  ]
+
+  deps = [
+    ":feed_content",
+    "//base",
+    "//base/test:test_support",
+    "//components/offline_pages/core",
+    "//components/offline_pages/core:test_support",
+    "//components/offline_pages/core/prefetch:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

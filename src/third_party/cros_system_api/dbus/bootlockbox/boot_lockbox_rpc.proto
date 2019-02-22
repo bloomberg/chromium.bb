@@ -42,5 +42,5 @@ message ReadBootLockboxReply {
   optional bytes data = 1;
 }
 
-message LockBootLockboxRequest {
+message FinalizeNVRamBootLockboxRequest {
 }

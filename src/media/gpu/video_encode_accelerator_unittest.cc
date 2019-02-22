@@ -172,11 +172,6 @@ bool g_verify_all_output = false;
 
 bool g_fake_encoder = false;
 
-// Skip checking the flush functionality. Currently only Chrome OS devices
-// support flush, so we need this to skip the check. This is set by the
-// command line switch "--disable_flush".
-bool g_disable_flush = false;
-
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
@@ -1300,6 +1295,8 @@ class VEAClient : public VEAClientBase {
   // time delay from input of each VideoFrame (VEA::Encode()) to output of the
   // corresponding BitstreamBuffer (VEA::Client::BitstreamBufferReady()).
   std::vector<base::TimeDelta> encode_latencies_;
+  // The 0-based indices of frames that we force as key frames.
+  std::queue<size_t> keyframe_indices_;
 
   // Ids for output BitstreamBuffers.
   typedef std::map<int32_t, base::SharedMemory*> IdToSHM;
@@ -1325,20 +1322,11 @@ class VEAClient : public VEAClientBase {
   // Frames since last bitrate verification.
   unsigned int num_frames_since_last_check_;
 
-  // True if received a keyframe while processing current bitstream buffer.
-  bool seen_keyframe_in_this_buffer_;
-
   // True if we are to save the encoded stream to a file.
   bool save_to_file_;
 
   // Request a keyframe every keyframe_period_ frames.
   const unsigned int keyframe_period_;
-
-  // Number of keyframes requested by now.
-  unsigned int num_keyframes_requested_;
-
-  // Next keyframe expected before next_keyframe_at_ + kMaxKeyframeDelay.
-  unsigned int next_keyframe_at_;
 
   // True if we are asking encoder for a particular bitrate.
   bool force_bitrate_;
@@ -1420,11 +1408,8 @@ VEAClient::VEAClient(TestStream* test_stream,
       num_frames_submitted_to_encoder_(0),
       num_encoded_frames_(0),
       num_frames_since_last_check_(0),
-      seen_keyframe_in_this_buffer_(false),
       save_to_file_(save_to_file),
       keyframe_period_(keyframe_period),
-      num_keyframes_requested_(0),
-      next_keyframe_at_(0),
       force_bitrate_(force_bitrate),
       current_requested_bitrate_(0),
       current_framerate_(0),
@@ -1581,6 +1566,7 @@ void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
 }
 
 double VEAClient::frames_per_second() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_encoded_frames_ != 0UL);
   base::TimeDelta duration = last_frame_ready_time_ - first_frame_start_time_;
   return num_encoded_frames_ / duration.InSecondsF();
@@ -1641,6 +1627,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
 }
 
 void VEAClient::VerifyOutputTimestamp(base::TimeDelta timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // One input frame may be mapped to multiple output frames, so the current
   // timestamp should be equal to previous timestamp or the top of
   // frame_timestamps_.
@@ -1691,8 +1678,10 @@ void VEAClient::BitstreamBufferReady(
           static_cast<int>(metadata.payload_size_bytes)));
       quality_validator_->AddDecodeBuffer(buffer);
     }
-    // If flush is disabled, pretend flush is done when all frames are received.
-    if (g_disable_flush && num_encoded_frames_ == num_frames_to_encode_) {
+    // If the encoder does not support flush, pretend flush is done when all
+    // frames are received.
+    if (!encoder_->IsFlushSupported() &&
+        num_encoded_frames_ == num_frames_to_encode_) {
       FlushEncoderSuccessfully();
     }
 
@@ -1707,9 +1696,6 @@ void VEAClient::BitstreamBufferReady(
           base::checked_cast<int>(metadata.payload_size_bytes)));
     }
   }
-
-  EXPECT_EQ(metadata.key_frame, seen_keyframe_in_this_buffer_);
-  seen_keyframe_in_this_buffer_ = false;
 
   FeedEncoderWithOutput(shm);
 }
@@ -1825,12 +1811,6 @@ void VEAClient::FeedEncoderWithOneInput() {
   frame_timestamps_.push(video_frame->timestamp());
   pos_in_input_stream_ += static_cast<off_t>(test_stream_->aligned_buffer_size);
 
-  bool force_keyframe = false;
-  if (keyframe_period_ && input_id % keyframe_period_ == 0) {
-    force_keyframe = true;
-    ++num_keyframes_requested_;
-  }
-
   if (input_id == 0) {
     first_frame_start_time_ = base::TimeTicks::Now();
   }
@@ -1840,6 +1820,12 @@ void VEAClient::FeedEncoderWithOneInput() {
     encode_start_time_.push_back(base::TimeTicks::Now());
   }
 
+  bool force_keyframe = (keyframe_period_ && input_id % keyframe_period_ == 0);
+  if (force_keyframe) {
+    // Because we increase |num_frames_submitted_to_encoder_| after calling
+    // Encode(), the value here is actually 0-based frame index.
+    keyframe_indices_.push(num_frames_submitted_to_encoder_);
+  }
   encoder_->Encode(video_frame, force_keyframe);
   ++num_frames_submitted_to_encoder_;
   if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
@@ -1898,17 +1884,18 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
   // earlier than we requested one (in time), and not later than
   // kMaxKeyframeDelay frames after the frame, for which we requested
   // it, comes back encoded.
-  if (keyframe) {
-    if (num_keyframes_requested_ > 0) {
-      --num_keyframes_requested_;
-      next_keyframe_at_ += keyframe_period_;
+  if (!keyframe_indices_.empty()) {
+    // Convert to 0-based index for encoded frame.
+    const unsigned int frame_index = num_encoded_frames_ - 1;
+    if (keyframe) {
+      EXPECT_LE(frame_index, keyframe_indices_.front() + kMaxKeyframeDelay);
+      keyframe_indices_.pop();
+    } else {
+      EXPECT_LT(frame_index, keyframe_indices_.front() + kMaxKeyframeDelay);
     }
-    seen_keyframe_in_this_buffer_ = true;
   }
-  EXPECT_EQ(test_stream_->visible_size, visible_size);
 
-  if (num_keyframes_requested_ > 0)
-    EXPECT_LE(num_encoded_frames_, next_keyframe_at_ + kMaxKeyframeDelay);
+  EXPECT_EQ(test_stream_->visible_size, visible_size);
 
   if (num_encoded_frames_ == num_frames_to_encode_ / 2) {
     VerifyStreamProperties();
@@ -1944,6 +1931,7 @@ bool VEAClient::HandleEncodedFrame(bool keyframe,
 }
 
 void VEAClient::LogPerf() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   g_env->LogToFile("Measured encoder FPS",
                    base::StringPrintf("%.3f", frames_per_second()));
 
@@ -1967,7 +1955,7 @@ void VEAClient::FlushEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
 
-  if (g_disable_flush)
+  if (!encoder_->IsFlushSupported())
     return;
 
   encoder_->Flush(
@@ -2015,11 +2003,13 @@ void VEAClient::FlushTimeout() {
 }
 
 void VEAClient::VerifyMinFPS() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (test_perf_)
     EXPECT_GE(frames_per_second(), kMinPerfFPS);
 }
 
 void VEAClient::VerifyStreamProperties() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_since_last_check_ > 0UL);
   LOG_ASSERT(encoded_stream_size_since_last_check_ > 0UL);
   unsigned int bitrate = static_cast<unsigned int>(
@@ -2037,19 +2027,11 @@ void VEAClient::VerifyStreamProperties() {
     EXPECT_NEAR(bitrate, current_requested_bitrate_,
                 kBitrateTolerance * current_requested_bitrate_);
   }
-
-  // All requested keyframes should've been provided. Allow the last requested
-  // frame to remain undelivered if we haven't reached the maximum frame number
-  // by which it should have arrived.
-  if (num_encoded_frames_ < next_keyframe_at_ + kMaxKeyframeDelay)
-    EXPECT_LE(num_keyframes_requested_, 1UL);
-  else
-    EXPECT_EQ(0UL, num_keyframes_requested_);
 }
 
 void VEAClient::WriteIvfFileHeader() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   IvfFileHeader header = {};
-
   memcpy(header.signature, kIvfHeaderSignature, sizeof(header.signature));
   header.version = 0;
   header.header_size = sizeof(header);
@@ -2069,6 +2051,7 @@ void VEAClient::WriteIvfFileHeader() {
 }
 
 void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   IvfFrameHeader header = {};
 
   header.frame_size = static_cast<uint32_t>(frame_size);
@@ -2168,6 +2151,7 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
 
 void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
                                                 size_t output_size) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
 
@@ -2598,13 +2582,6 @@ int main(int argc, char** argv) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   DCHECK(cmd_line);
 
-#if defined(OS_CHROMEOS)
-  // Currently only ARC++ uses flush function, we only verify it on Chrome OS.
-  media::g_disable_flush = false;
-#else
-  media::g_disable_flush = true;
-#endif
-
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -2633,10 +2610,6 @@ int main(int argc, char** argv) {
     }
     if (it->first == "run_at_fps") {
       media::g_run_at_fps = true;
-      continue;
-    }
-    if (it->first == "disable_flush") {
-      media::g_disable_flush = true;
       continue;
     }
     if (it->first == "verify_all_output") {

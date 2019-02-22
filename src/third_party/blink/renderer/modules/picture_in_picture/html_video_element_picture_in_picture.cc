@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_control.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 
@@ -28,8 +27,6 @@ const char kMetadataNotLoadedError[] =
     "Metadata for the video element are not loaded yet.";
 const char kVideoTrackNotAvailableError[] =
     "The video element has no video track.";
-const char kMediaStreamsNotSupportedYet[] =
-    "Media Streams are not supported yet.";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"picture-in-picture\" is disallowed by feature "
     "policy.";
@@ -64,11 +61,6 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
           script_state,
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                kVideoTrackNotAvailableError));
-    case Status::kMediaStreamsNotSupportedYet:
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                               kMediaStreamsNotSupportedYet));
     case Status::kDisabledByFeaturePolicy:
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -91,7 +83,7 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
   // `kFrameDetached`.
   LocalFrame* frame = element.GetFrame();
   DCHECK(frame);
-  if (!Frame::ConsumeTransientUserActivation(frame)) {
+  if (!LocalFrame::ConsumeTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                            kUserGestureRequired));

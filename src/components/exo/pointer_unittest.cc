@@ -27,6 +27,14 @@
 namespace exo {
 namespace {
 
+viz::SurfaceManager* GetSurfaceManager() {
+  return ash::Shell::Get()
+      ->aura_env()
+      ->context_factory_private()
+      ->GetFrameSinkManager()
+      ->surface_manager();
+}
+
 class MockPointerDelegate : public PointerDelegate {
  public:
   MockPointerDelegate() {}
@@ -98,10 +106,7 @@ TEST_F(MAYBE_PointerTest, SetCursor) {
   const viz::RenderPass* last_render_pass;
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
-    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                               ->context_factory_private()
-                                               ->GetFrameSinkManager()
-                                               ->surface_manager();
+    viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
@@ -117,10 +122,7 @@ TEST_F(MAYBE_PointerTest, SetCursor) {
   // Verify that adjustment to hotspot resulted in new frame.
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
-    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                               ->context_factory_private()
-                                               ->GetFrameSinkManager()
-                                               ->surface_manager();
+    viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
@@ -204,10 +206,7 @@ TEST_F(MAYBE_PointerTest, SetCursorType) {
 
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
-    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                               ->context_factory_private()
-                                               ->GetFrameSinkManager()
-                                               ->surface_manager();
+    viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
@@ -289,10 +288,7 @@ TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
 
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
-    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                               ->context_factory_private()
-                                               ->GetFrameSinkManager()
-                                               ->surface_manager();
+    viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
@@ -311,10 +307,7 @@ TEST_F(MAYBE_PointerTest, SetCursorAndSetCursorType) {
 
   {
     viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
-    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
-                                               ->context_factory_private()
-                                               ->GetFrameSinkManager()
-                                               ->surface_manager();
+    viz::SurfaceManager* surface_manager = GetSurfaceManager();
     ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
     const viz::CompositorFrame& frame =
         surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();

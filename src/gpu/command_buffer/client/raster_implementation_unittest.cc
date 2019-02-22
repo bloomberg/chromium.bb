@@ -515,6 +515,10 @@ TEST_F(RasterImplementationTest, BeginEndQueryEXT) {
   ClearCommands();
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   EXPECT_EQ(0u, available);
+  available = 1u;
+  gl_->GetQueryObjectuivEXT(
+      id1, GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT, &available);
+  EXPECT_EQ(0u, available);
 }
 
 TEST_F(RasterImplementationManualInitTest, BadQueryTargets) {

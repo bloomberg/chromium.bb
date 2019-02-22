@@ -40,7 +40,7 @@ from blinkpy.web_tests.port.driver import DeviceFailure, Driver, DriverOutput
 # Here we use a non-standard location for the layout tests, to ensure that
 # this works. The path contains a '.' in the name because we've seen bugs
 # related to this before.
-LAYOUT_TEST_DIR = '/test.checkout/LayoutTests'
+LAYOUT_TEST_DIR = '/test.checkout/wtests'
 PERF_TEST_DIR = '/test.checkout/PerformanceTests'
 
 

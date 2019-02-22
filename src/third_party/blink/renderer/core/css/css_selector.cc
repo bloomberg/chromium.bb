@@ -104,7 +104,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
     return 0;
   switch (match_) {
     case kId:
-      return 0x010000;
+      return kIdSpecificity;
     case kPseudoClass:
       switch (GetPseudoType()) {
         case kPseudoHost:
@@ -122,7 +122,7 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
         default:
           break;
       }
-      return 0x000100;
+      return kClassLikeSpecificity;
     case kClass:
     case kPseudoElement:
     case kAttributeExact:
@@ -132,11 +132,11 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
     case kAttributeContain:
     case kAttributeBegin:
     case kAttributeEnd:
-      return 0x000100;
+      return kClassLikeSpecificity;
     case kTag:
       if (TagQName().LocalName() == UniversalSelectorAtom())
         return 0;
-      return 0x000001;
+      return kTagSpecificity;
     case kUnknown:
       return 0;
   }
@@ -222,6 +222,8 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoAnyLink:
     case kPseudoWebkitAnyLink:
     case kPseudoAutofill:
+    case kPseudoAutofillPreviewed:
+    case kPseudoAutofillSelected:
     case kPseudoHover:
     case kPseudoDrag:
     case kPseudoFocus:
@@ -302,6 +304,8 @@ struct NameToPseudoStruct {
 
 // These tables should be kept sorted.
 const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
+    {"-internal-autofill-previewed", CSSSelector::kPseudoAutofillPreviewed},
+    {"-internal-autofill-selected", CSSSelector::kPseudoAutofillSelected},
     {"-internal-is-html", CSSSelector::kPseudoIsHtml},
     {"-internal-list-box", CSSSelector::kPseudoListBox},
     {"-internal-media-controls-overlay-cast-button",
@@ -584,6 +588,8 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoAny:
     case kPseudoAnyLink:
     case kPseudoAutofill:
+    case kPseudoAutofillPreviewed:
+    case kPseudoAutofillSelected:
     case kPseudoChecked:
     case kPseudoCornerPresent:
     case kPseudoDecrement:

@@ -21,7 +21,7 @@ bool SyncService::IsSyncFeatureEnabled() const {
          IsAuthenticatedAccountPrimary();
 }
 
-bool SyncService::CanSyncStart() const {
+bool SyncService::CanSyncFeatureStart() const {
   return GetDisableReasons() == DISABLE_REASON_NONE;
 }
 
@@ -41,7 +41,7 @@ bool SyncService::IsEngineInitialized() const {
   return false;
 }
 
-bool SyncService::IsSyncActive() const {
+bool SyncService::IsSyncFeatureActive() const {
   if (!IsSyncFeatureEnabled()) {
     return false;
   }

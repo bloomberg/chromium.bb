@@ -20,6 +20,7 @@
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
@@ -64,8 +65,8 @@ namespace {
 // ManageSpaceActivity.java.
 const int kMaxImportantSites = 10;
 
-const char* kHttpPortSuffix = ":80";
-const char* kHttpsPortSuffix = ":443";
+const char kHttpPortSuffix[] = ":80";
+const char kHttpsPortSuffix[] = ":443";
 
 Profile* GetActiveUserProfile(bool is_incognito) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -614,7 +615,8 @@ class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
     auto container = std::make_unique<LocalDataContainer>(
         new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
-        new BrowsingDataLocalStorageHelper(profile_), nullptr,
+        new BrowsingDataLocalStorageHelper(profile_),
+        nullptr /* session_storage_helper */,
         new BrowsingDataAppCacheHelper(profile_),
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
@@ -623,8 +625,9 @@ class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataSharedWorkerHelper(storage_partition,
                                            profile_->GetResourceContext()),
-        new BrowsingDataCacheStorageHelper(cache_storage_context), nullptr,
-        nullptr);
+        new BrowsingDataCacheStorageHelper(cache_storage_context),
+        nullptr /* flash_data_helper */,
+        BrowsingDataMediaLicenseHelper::Create(file_system_context));
 
     cookies_tree_model_ = std::make_unique<CookiesTreeModel>(
         std::move(container), profile_->GetExtensionSpecialStoragePolicy());

@@ -485,6 +485,7 @@
         'PopupsBlockedForUrls',
         'NotificationsAllowedForUrls',
         'NotificationsBlockedForUrls',
+        "WebUsbAllowDevicesForUrls",
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
       ],
@@ -559,6 +560,7 @@
         'PowerManagementUsesVideoActivity',
         'PresentationIdleDelayScale',
         'PresentationScreenDimDelayScale',
+        'AllowWakeLocks',
         'AllowScreenWakeLocks',
         'UserActivityScreenDimDelayScale',
         'WaitForInitialUserActivity',
@@ -670,6 +672,8 @@
       'policies': [
         'NetworkFileSharesAllowed',
         'NetBiosShareDiscoveryEnabled',
+        'NTLMShareAuthenticationEnabled',
+        'NetworkFileSharesPreconfiguredShares',
       ],
     },
     {
@@ -785,7 +789,9 @@
 
       If this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will never check if it is the default browser and will disable user controls for setting this option.
 
-      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.''',
+      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.
+
+      Note for administrators of <ph name="MS_WIN_NAME">Microsoft® Windows</ph>: Enabling this setting will only work for machines running Windows 7. For versions of Windows starting with Windows 8, you must deploy a "default application associations" file that makes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> the handler for the <ph name="HHTPS_PROTOCOL">https</ph> and <ph name="HTTP_PROTOCOL">http</ph> protocols (and, optionally, the <ph name="FTP_PROTOCOL">ftp</ph> protocol and file formats such as <ph name="HTML_EXTENSION">.html</ph>, <ph name="HTM_EXTENSION">.htm</ph>, <ph name="PDF_EXTENSION">.pdf</ph>, <ph name="SVG_EXTENSION">.svg</ph>, <ph name="WEBP_EXTENSION">.webp</ph>, etc...). See <ph name="SUPPORT_URL">https://support.google.com/chrome?p=make_chrome_default_win</ph> for more information.''',
       'label': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
     },
     {
@@ -3064,7 +3070,9 @@
 
           For example, <ph name="EXTENSION_POLICY_EXAMPLE">gbchcmhmhahfdphkhkmpfmihenigjmpp;https://clients2.google.com/service/update2/crx</ph> installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME">Chrome Remote Desktop</ph> app from the standard Chrome Web Store "update" URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2">https://developer.chrome.com/extensions/hosting</ph>.
 
-          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+          If this policy is left not set, no apps or extensions are installed automatically and the user can uninstall any app or extension in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+          Note that this policy doesn't apply to incognito mode.''',
       'label': '''Extension/App IDs and update URLs to be silently installed''',
       'arc_support': 'Android apps can be force-installed from the Google Admin console using Google Play. They do not use this policy.',
     },
@@ -4185,6 +4193,51 @@
           This policy can be overridden for specific URL patterns using the 'WebUsbAskForUrls' and 'WebUsbBlockedForUrls' policies.
 
           If this policy is left not set, '3' will be used, and the user will be able to change it.''',
+    },
+    {
+      'name': 'WebUsbAllowDevicesForUrls',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': { 'type': 'integer' },
+                  'product_id': { 'type': 'integer' }
+                }
+              }
+            },
+            'url_patterns': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'url_patterns']
+        }
+      },
+      'supported_on': ['chrome_os:71-', 'android:71-', 'chrome.*:71-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [{
+        'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+        'url_patterns': ['https://[*].google.com'],
+      }],
+      'id': 486,
+      'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
+      'tags': ['website-sharing'],
+      'desc': '''Allows you to set a list of url patterns that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and url patterns in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid. Invalid policy values are ignored.
+
+        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
+
+        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.''',
     },
     {
       'name': 'WebUsbAskForUrls',
@@ -6422,7 +6475,7 @@
       'tags': [],
       'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will show existing users on the login screen and allow to pick one.
 
-      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstital screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Public Session is configured. When a Public Session is configured, only the Public Session accounts will be shown, allowing to pick one of them.
+      If this policy is set to false, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not show existing users on the login screen. The normal sign-in screen (prompting for the user email and password or phone) or the SAML interstitial screen (if enabled via the <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME">LoginAuthenticationBehavior</ph> policy) will be shown, unless a Managed Session is configured. When a Managed Session is configured, only the Managed Session accounts will be shown, allowing to pick one of them.
 
       Note that this policy does not affect whether the device keeps or discards the local user data.''',
     },
@@ -6722,9 +6775,9 @@
           'caption': '''Do not roll back to target version if OS version is newer than target. Updates are also disabled.''',
         },
         {
-          'name': 'RollbackWithFullPowerwash',
+          'name': 'RollbackAndPowerwash',
           'value': 2,
-          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a full powerwash during the process.''',
+          'caption': '''Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.''',
         },
         {
           'name': 'RollbackAndRestoreIfPossible',
@@ -6733,7 +6786,7 @@
           Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
         },
         {
-          'name': 'RollbackWithRestoreOnly',
+          'name': 'RollbackOnlyIfRestorePossible',
           'value': 4,
           'caption': '''Roll back and stay on target version if OS version is newer than target and it's possible to carry over device-level configuration (including network credentials) through rollback, also skipping OOBE after rollback. Don't do or abort rollback if that's not possible (because the target version doesn't support restoring data or because of a backward-incompatible change).
           Supported on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 70 and higher. For older clients, this value means that rollback is disabled.''',
@@ -6863,11 +6916,11 @@
       },
       'example_value': "public@example.com",
       'id': 194,
-      'caption': '''Public session for auto-login''',
+      'caption': '''Device-local account for auto-login''',
       'tags': [],
-      'desc': '''A public session to auto-login after a delay.
+      'desc': '''A device-local account to auto-login after a delay.
 
-      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The public session must already be configured (see |DeviceLocalAccounts|).
+      If this policy is set, the specified session will be automatically logged in after a period of time has elapsed at the login screen without user interaction. The device-local account must already be configured (see |DeviceLocalAccounts|).
 
       If this policy is unset, there will be no auto-login.''',
     },
@@ -6883,13 +6936,13 @@
       },
       'example_value': 180000,
       'id': 195,
-      'caption': '''Public session auto-login timer''',
+      'caption': '''Device-local account auto-login timer''',
       'tags': [],
-      'desc': '''The public session auto-login delay.
+      'desc': '''The device-local account auto-login delay.
 
       If the |DeviceLocalAccountAutoLoginId| policy is unset, this policy has no effect. Otherwise:
 
-      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the public session specified by the |DeviceLocalAccountAutoLoginId| policy.
+      If this policy is set, it determines the amount of time without user activity that should elapse before automatically logging into the device-local account specified by the |DeviceLocalAccountAutoLoginId| policy.
 
       If this policy is unset, 0 milliseconds will be used as the timeout.
 
@@ -6948,9 +7001,9 @@
       'id': 463,
       'caption': '''Allow managed session on device''',
       'tags': [],
-      'desc': '''If this policy is set to false or left unset, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard "Public Session".
+      'desc': '''If this policy is set to false, managed guest session will behave as documented in https://support.google.com/chrome/a/answer/3017014 - the standard "Public Session".
 
-      If this policy is set to true, managed guest session will take on "Managed Session" behaviour which lifts many of the restrictions that are in place for regular "Public Sessions".
+      If this policy is set to true or left unset, managed guest session will take on "Managed Session" behaviour which lifts many of the restrictions that are in place for regular "Public Sessions".
 
       If this policy is set, the user cannot change or override it.''',
     },
@@ -7067,13 +7120,13 @@
       },
       'example_value': '.*@example.com',
       'id': 147,
-      'caption': '''Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'caption': '''Restrict which Google accounts are allowed to be set as browser primary accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
-      'desc': '''Contains a regular expression which is used to determine which users can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Contains a regular expression which is used to determine which Google accounts can be set as browser primary accounts in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (i.e. the account that is chosen during the Sync opt-in flow).
 
-      An appropriate error is displayed if a user tries to log in with a username that does not match this pattern.
+      An appropriate error is displayed if a user tries to set a browser primary account with a username that does not match this pattern.
 
-      If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      If this policy is left not set or blank, then the user can set any Google account as a browser primary account in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
       'name': 'DisableSafeBrowsingProceedAnyway',
@@ -8029,6 +8082,25 @@
           The scale factor must be 100% or more. Values that would make the screen dim delay in presentation mode shorter than the regular screen dim delay are not allowed.''',
     },
     {
+      'name': 'AllowWakeLocks',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 491,
+      'caption': '''Allow wake locks''',
+      'tags': [],
+      'desc': '''Specifies whether wake locks are allowed. Wake locks can be requested by extensions via the power management extension API and by ARC apps.
+
+          If this policy is set to true or left not set, wake locks will be honored for power management.
+
+          If this policy is set to false, wake lock requests will get ignored.''',
+    },
+    {
       'name': 'AllowScreenWakeLocks',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -8041,11 +8113,11 @@
       'id': 203,
       'caption': '''Allow screen wake locks''',
       'tags': [],
-      'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
+      'desc': '''Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API and by ARC apps.
 
-          If this policy is set to true or left not set, screen wake locks will be honored for power management.
+          If this policy is set to true or left not set, screen wake locks will be honored for power management, unless AllowWakeLocks is set to false.
 
-          If this policy is set to false, screen wake lock requests will get ignored.''',
+          If this policy is set to false, screen wake lock requests will be demoted to system wake lock requests.''',
     },
     {
       'name': 'UserActivityScreenDimDelayScale',
@@ -8968,7 +9040,8 @@
       'name': 'SupervisedUsersEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:29-'],
+      'deprecated': True,
+      'supported_on': ['chrome_os:29-70'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -8989,7 +9062,8 @@
       'name': 'SupervisedUserCreationEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:29-'],
+      'deprecated': True,
+      'supported_on': ['chrome.*:29-70'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -9010,7 +9084,8 @@
       'name': 'SupervisedUserContentProviderEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:49-'],
+      'deprecated': True,
+      'supported_on': ['android:49-70'],
       'features': {
         'dynamic_refresh': True,
         'per_profile' : True,
@@ -9291,19 +9366,19 @@
       },
       'example_value': ['de', 'fr'],
       'id': 274,
-      'caption': '''Set the recommended locales for a public session''',
+      'caption': '''Set the recommended locales for a managed session''',
       'tags': [],
-      'desc': '''Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
+      'desc': '''Sets one or more recommended locales for a managed session, allowing users to easily choose one of these locales.
 
-      The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
+      The user can choose a locale and a keyboard layout before starting a managed session. By default, all locales supported by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
 
       If this policy is not set, the current UI locale will be pre-selected.
 
       If this policy is set, the recommended locales will be moved to the top of the list and will be visually separated from all other locales. The recommended locales will be listed in the order in which they appear in the policy. The first recommended locale will be pre-selected.
 
-      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a public session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a public session.
+      If there is more than one recommended locale, it is assumed that users will want to select among these locales. Locale and keyboard layout selection will be prominently offered when starting a managed session. Otherwise, it is assumed that most users will want to use the pre-selected locale. Locale and keyboard layout selection will be less prominently offered when starting a managed session.
 
-      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started public session will use the first recommended locale and the most popular keyboard layout matching this locale.
+      When this policy is set and automatic login is enabled (see the |DeviceLocalAccountAutoLoginId| and |DeviceLocalAccountAutoLoginDelay| policies), the automatically started managed session will use the first recommended locale and the most popular keyboard layout matching this locale.
 
       The pre-selected keyboard layout will always be the most popular layout matching the pre-selected locale.
 
@@ -9519,9 +9594,9 @@
         },
       ],
       'supported_on': [
-        'chrome.*:58-',
-        'chrome_os:58-',
-        'android:58-',
+        'chrome.*:58-74',
+        'chrome_os:58-74',
+        'android:58-74',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -9531,7 +9606,7 @@
       'id': 361,
       'caption': '''Maximum SSL version enabled''',
       'tags': ['system-security'],
-      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 72 (around January 2019).
+      'desc': '''Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> around version 75 (around June 2019).
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default maximum version.
 
@@ -10421,13 +10496,13 @@
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in G Suite and prevents users from changing this setting.
 
       If you define this setting, the user will only be able to access Google
-      Apps using accounts from the specified domains (note that this does not
-      work for gmail.com/googlemail.com).
+      Apps using accounts from the specified domains (note that to allow
+      gmail.com/googlemail.com accounts, you should add "consumer_accounts"
+      (without quotes) to the list of domains).
 
-      This setting will NOT prevent the user from loging in on a managed device
-      that requires Google authentication. The user will still be allowed to
-      sign in to accounts from other domains, but they will receive an error
-      when trying to use G Suite with those accounts.
+      This setting will prevent the user from logging in, and adding a Secondary
+      Account, on a managed device that requires Google authentication, if that
+      account does not belong to the aforementioned list of allowed domains.
 
       If you leave this setting empty/not-configured, the user will be able to
       access G Suite with any account.
@@ -10442,14 +10517,13 @@
       'name': 'PacHttpsUrlStrippingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [ 'chrome.*:52-', 'chrome_os:52-' ],
+      'supported_on': [ 'chrome.*:52-74', 'chrome_os:52-74' ],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': False,
+      'example_value': True,
       'id': 332,
-      'default_for_enterprise_users': False,
       'caption': '''Enable PAC URL stripping (for https://)''',
       'tags': ['system-security'],
       'desc': '''Strips privacy and security sensitive parts of https:// URLs before passing them on to PAC scripts (Proxy Auto Config) used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> during proxy resolution.
@@ -10465,13 +10539,12 @@
       those fetched over an insecure transport, or discovered insecurely
       through WPAD).
 
-      This defaults to True (security feature enabled), except for Chrome OS
-      enterprise users for which this currently defaults to False.
+      This defaults to True (security feature enabled).
 
       It is recommended that this be set to True. The only reason to set it to
       False is if it causes a compatibility problem with existing PAC scripts.
 
-      The desire is to remove this override in the future.''',
+      The policy will be removed in M75.''',
     },
     {
       'name': 'EnableMediaRouter',
@@ -10697,7 +10770,8 @@
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
-      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${machine_name[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${machine_name,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${MACHINE_NAME[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${MACHINE_NAME,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+      <ph name="MACHINE_NAME_VARIABLE_LOWERCASE">${machine_name}</ph> (lowercase) is deprecated in M71 and will be removed in M72.
       ''',
     },
     {
@@ -11021,7 +11095,8 @@
           'type': 'string',
           'enum': [
             'all',
-            'PIN'
+            'PIN',
+            'FINGERPRINT',
           ],
         },
         'id': 'QuickUnlockModeWhitelist',
@@ -11038,9 +11113,9 @@
       'tags': [],
       'desc': '''A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
 
-          This value is a list of strings; valid list entries are: "all", "PIN". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
+          This value is a list of strings; valid list entries are: "all", "PIN", "FINGERPRINT". Adding "all" to the list means that every quick unlock mode is available to the user, including ones implemented in the future. Otherwise, only the quick unlock modes present in the list will be available.
 
-          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To disable all quick unlock modes, use [].
+          For example, to allow every quick unlock mode, use ["all"]. To allow only PIN unlock, use ["PIN"]. To allow PIN and fingerprint, use ["PIN", "FINGERPRINT"]. To disable all quick unlock modes, use [].
 
           By default, no quick unlock modes are available for managed devices.''',
     },
@@ -11237,6 +11312,26 @@
       If this setting is disabled, users will not be allowed to set up SMS syncing.
 
       If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.''',
+    },
+    {
+      'name': 'SmartLockSigninAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'id': 488,
+      'caption': '''Allow Smart Lock Signin to be used.''',
+      'tags': ['local-data-access', 'google-sharing'],
+      'desc': '''If this setting is enabled, users will be allowed to sign into their account with Smart Lock. This is more permissive than usual Smart Lock behavior which only allows users to unlock their screen.
+
+      If this setting is disabled, users will not be allowed to use Smart Lock Signin.
+
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.''',
     },
     {
       'name': 'InstantTetheringAllowed',
@@ -11895,22 +11990,21 @@
       'name': 'DeviceHostnameTemplate',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:64-'],
+      'supported_on': ['chrome_os:65-'],
       'device_only': True,
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
       'example_value': 'chromebook-${ASSET_ID}',
       'id': 403,
-      'caption': '''Device network hostname''',
+      'caption': '''Device network hostname template''',
       'tags': [],
       'desc': '''Determine the hostname of the device used in DHCP requests.
 
       If this policy is set to a non empty string, that string will be used as the device hostname during DHCP request.
 
-      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+      The string can contain variables ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },
@@ -13335,6 +13429,105 @@
 
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
     },
+    {
+      'name': 'EnterpriseHardwarePlatformAPIEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:71-', 'chrome_os:71-', 'android:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 483,
+      'caption': '''Enables managed extensions to use the Enterprise Hardware Platform API''',
+      'tags': [],
+      'desc': '''When this policy is set to enabled, extensions installed by enterprise policy are allowed to use the Enterprise Hardware Platform API.
+      When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
+      This policy also applies to component extensions such as the Hangout Services extension.''',
+    },
+    {
+      'name': 'VpnConfigAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 485,
+      'caption': '''Allow the user to manage VPN connections''',
+      'tags': [],
+      'desc': '''Allow the user to manage VPN connections.
+
+      If this policy is set to false, all <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> user interfaces that would allow the user to disconnect or modify VPN connections are disabled.
+
+      If this policy is unset or set to true, users can disconnect or modify VPN connections as usual.
+
+      If the VPN connection is created via a VPN app, the UI inside the app remains unaffected by this policy. Therefore, the user might still be able to use the app to modify the VPN connection.
+
+      This policy is meant to be used together with the "Always on VPN" feature, that lets the admin decide to establish a VPN connection on boot.''',
+    },
+    {
+      'id': 489,
+      'name': 'NTLMShareAuthenticationEnabled',
+      'type': 'main',
+      'schema': {'type': 'boolean', },
+      'tags': [],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome_os:71-'],
+      'caption': '''Controls enabling NTLM as an authentication protocol for SMB mounts''',
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> will use NTLM for authentication.
+
+      When this policy is set to True, NTLM will be used for authentication to SMB shares if necessary.
+      When this policy is set to False, NTLM authentication to SMB shares will be disabled.
+
+      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
+    },
+    {
+      'name': 'NetworkFileSharesPreconfiguredShares',
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'share_url': { 'type': 'string' },
+            'mode': {
+              'type': 'string',
+              'enum': [
+                'drop_down',
+              ]
+            }
+          },
+          'required': ['share_url', 'mode'],
+        }
+      },
+      'supported_on': ['chrome_os:71-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': [{
+        'share_url': 'smb://server/share',
+        'mode': 'drop_down'
+      }, {
+        'share_url': '\\\\server\\share',
+        'mode': 'drop_down'
+      }],
+      'id': 490,
+      'caption': '''List of preconfigured network file shares.''',
+      'tags': [],
+      'desc': '''Specifies a list of preconfigued network file shares.
+
+      Each list item of the policy is an object with two members: "share_url" and "mode". "share_url" should be the URL of the share and "mode" should be "drop_down" which indicates that "share_url" will be added to the share discovery drop down.''',
+    },
   ],
 
   'messages': {
@@ -13475,6 +13668,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
-  'deleted_policy_ids': [412, 485, 486],
-  'highest_id_currently_used': 487
+  'deleted_policy_ids': [412],
+  'highest_id_currently_used': 491
 }

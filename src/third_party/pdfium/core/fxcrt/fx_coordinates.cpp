@@ -9,18 +9,26 @@
 #include <utility>
 
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/fx_safe_types.h"
 
 namespace {
 
 void MatchFloatRange(float f1, float f2, int* i1, int* i2) {
-  int length = static_cast<int>(ceil(f2 - f1));
-  int i1_1 = static_cast<int>(floor(f1));
-  int i1_2 = static_cast<int>(ceil(f1));
-  float error1 = f1 - i1_1 + fabsf(f2 - i1_1 - length);
-  float error2 = i1_2 - f1 + fabsf(f2 - i1_2 - length);
-
-  *i1 = error1 > error2 ? i1_2 : i1_1;
-  *i2 = *i1 + length;
+  float length = ceilf(f2 - f1);
+  float f1_floor = floorf(f1);
+  float f1_ceil = ceilf(f1);
+  float error1 = f1 - f1_floor + fabsf(f2 - f1_floor - length);
+  float error2 = f1_ceil - f1 + fabsf(f2 - f1_ceil - length);
+  float start = error1 > error2 ? f1_ceil : f1_floor;
+  FX_SAFE_INT32 safe1 = start;
+  FX_SAFE_INT32 safe2 = start + length;
+  if (safe1.IsValid() && safe2.IsValid()) {
+    *i1 = safe1.ValueOrDie();
+    *i2 = safe2.ValueOrDie();
+  } else {
+    *i1 = 0;
+    *i2 = 0;
+  }
 }
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
@@ -195,6 +203,57 @@ void CFX_FloatRect::UpdateRect(const CFX_PointF& point) {
   bottom = std::min(bottom, point.y);
   right = std::max(right, point.x);
   top = std::max(top, point.y);
+}
+
+void CFX_FloatRect::Inflate(float x, float y) {
+  Inflate(x, y, x, y);
+}
+
+void CFX_FloatRect::Inflate(float other_left,
+                            float other_bottom,
+                            float other_right,
+                            float other_top) {
+  Normalize();
+  left -= other_left;
+  bottom -= other_bottom;
+  right += other_right;
+  top += other_top;
+}
+
+void CFX_FloatRect::Inflate(const CFX_FloatRect& rt) {
+  Inflate(rt.left, rt.bottom, rt.right, rt.top);
+}
+
+void CFX_FloatRect::Deflate(float x, float y) {
+  Deflate(x, y, x, y);
+}
+
+void CFX_FloatRect::Deflate(float other_left,
+                            float other_bottom,
+                            float other_right,
+                            float other_top) {
+  Inflate(-other_left, -other_bottom, -other_right, -other_top);
+}
+
+void CFX_FloatRect::Deflate(const CFX_FloatRect& rt) {
+  Deflate(rt.left, rt.bottom, rt.right, rt.top);
+}
+
+CFX_FloatRect CFX_FloatRect::GetDeflated(float x, float y) const {
+  if (IsEmpty())
+    return CFX_FloatRect();
+
+  CFX_FloatRect that = *this;
+  that.Deflate(x, y);
+  that.Normalize();
+  return that;
+}
+
+void CFX_FloatRect::Translate(float e, float f) {
+  left += e;
+  right += e;
+  top += f;
+  bottom += f;
 }
 
 void CFX_FloatRect::Scale(float fScale) {

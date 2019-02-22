@@ -20,6 +20,7 @@
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
@@ -48,7 +49,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
 
     // Called when the delegate aborts a Background Fetch registration.
-    virtual void Abort(BackgroundFetchReasonToAbort) = 0;
+    virtual void Abort(blink::mojom::BackgroundFetchFailureReason) = 0;
 
     virtual ~Controller() {}
   };
@@ -114,8 +115,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Called when the job identified by |job_unique|id| was cancelled by the
   // delegate. Should only be called on the IO thread.
-  void OnJobCancelled(const std::string& job_unique_id,
-                      BackgroundFetchReasonToAbort reason_to_abort);
+  void OnJobCancelled(
+      const std::string& job_unique_id,
+      blink::mojom::BackgroundFetchFailureReason reason_to_abort);
 
   // Called when the download identified by |guid| has succeeded/failed/aborted.
   // Should only be called on the IO thread.

@@ -10,7 +10,9 @@
 
       <div class="preview-area-unsupported-cloud-printer preview-area-message"
           hidden>
-        <span>$i18n{unsupportedCloudPrinter}</span>
+        <span class="unsupported-cloud-printer">
+          $i18nRaw{unsupportedCloudPrinter}
+        </span>
         <a is="action-link" class="learn-more-link">$i18n{learnMore}</a>
       </div>
 
@@ -25,12 +27,15 @@
         </div>
       </div>
 
-      <div class="preview-area-preview-failed-message preview-area-message" hidden>
+      <div class="preview-area-preview-failed-message preview-area-message"
+          hidden>
         $i18n{previewFailed}
       </div>
 
       <div class="preview-area-print-failed preview-area-message" hidden>
-        <div>$i18n{invalidPrinterSettings}</div>
+        <div class="invalid-printer-settings">
+          $i18nRaw{invalidPrinterSettings}
+        </div>
         <div class="preview-area-print-failed-action-area">
           <button class="preview-area-open-system-dialog-button">
             $i18n{launchNativeDialog}

@@ -15,7 +15,6 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     NGStyleVariant style_variant,
     NGPhysicalSize size,
     Vector<NGLink>& children,
-    const NGPhysicalOffsetRect& contents_ink_overflow,
     const NGLineHeightMetrics& metrics,
     TextDirection base_direction,
     scoped_refptr<NGBreakToken> break_token)
@@ -26,7 +25,6 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   kFragmentLineBox,
                                   0,
                                   children,
-                                  contents_ink_overflow,
                                   std::move(break_token)),
       metrics_(metrics) {
   base_direction_ = static_cast<unsigned>(base_direction);
@@ -42,6 +40,15 @@ NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
 
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::InkOverflow() const {
   return ContentsInkOverflow();
+}
+
+NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ContentsInkOverflow() const {
+  // Cannot be cached, because children might change their self-painting flag.
+  NGPhysicalOffsetRect overflow({}, Size());
+  for (const auto& child : Children()) {
+    child->PropagateContentsInkOverflow(&overflow, child.Offset());
+  }
+  return overflow;
 }
 
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::ScrollableOverflow(

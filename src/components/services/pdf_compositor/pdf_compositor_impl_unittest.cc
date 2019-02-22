@@ -26,7 +26,7 @@ class MockPdfCompositorImpl : public PdfCompositorImpl {
  protected:
   void FulfillRequest(uint64_t frame_guid,
                       base::Optional<uint32_t> page_num,
-                      std::unique_ptr<base::SharedMemory> serialized_content,
+                      base::ReadOnlySharedMemoryMapping serialized_content,
                       const ContentToFrameMap& subframe_content_map,
                       CompositeToPdfCallback callback) override {
     OnFulfillRequest(frame_guid, page_num.has_value() ? page_num.value() : -1);
@@ -58,8 +58,9 @@ class PdfCompositorImplTest : public testing::Test {
     // A stub for testing, no implementation.
   }
 
-  static mojo::ScopedSharedBufferHandle CreateTestData(size_t size) {
-    return mojo::SharedBufferHandle::Create(size);
+  static base::ReadOnlySharedMemoryRegion CreateTestData(size_t size) {
+    auto region_memory = base::ReadOnlySharedMemoryRegion::Create(size);
+    return std::move(region_memory.region);
   }
 
  private:

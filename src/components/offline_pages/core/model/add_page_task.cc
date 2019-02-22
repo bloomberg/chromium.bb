@@ -11,7 +11,7 @@
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 #include "sql/database.h"
 #include "sql/statement.h"
 

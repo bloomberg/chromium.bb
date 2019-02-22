@@ -12,5 +12,9 @@ class DescribeHandler(api_request_handler.ApiRequestHandler):
   def _AllowAnonymous(self):
     return True
 
-  def AuthorizedPost(self, *args):
-    return update_test_suite_descriptors.FetchCachedTestSuiteDescriptor(args[0])
+  def PrivilegedPost(self):
+    return self.UnprivilegedPost()
+
+  def UnprivilegedPost(self):
+    return update_test_suite_descriptors.FetchCachedTestSuiteDescriptor(
+        self.request.get('test_suite'))

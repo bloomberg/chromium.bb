@@ -24,7 +24,7 @@ gfx::Insets GetInsetsForAlignment(int distance, ShelfAlignment alignment) {
 }  // namespace
 
 ShelfWindowTargeter::ShelfWindowTargeter(aura::Window* container, Shelf* shelf)
-    : ::wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
+    : ::wm::EasyResizeWindowTargeter(gfx::Insets(), gfx::Insets()),
       shelf_(shelf) {
   WillChangeVisibilityState(shelf_->GetVisibilityState());
   container->AddObserver(this);

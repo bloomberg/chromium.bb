@@ -102,7 +102,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="3171922709365450819">Bu cihaz, üçüncü taraf kimlik doğrulaması gerektirdiği için bu istemci tarafından desteklenmiyor.</translation>
 <translation id="3194245623920924351">Chrome Uzaktan Masaüstü</translation>
 <translation id="3197730452537982411">Uzaktan Masaüstü</translation>
-<translation id="3212472844831225214">• Android 9.0 Pie için destek eklendi.</translation>
 <translation id="324272851072175193">Bu talimatları e-postayla gönder</translation>
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="3286521253923406898">Chromoting Ana Makine Denetleyicisi</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8548209692293300397">Daha önce <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) olarak oturum açmıştınız. Bu hesapla bilgisayarlarınıza erişmek için bu hesabı kullanarak <ph name="LINK_BEGIN" />Google Chrome'da oturum açın<ph name="LINK_END" /> ve Chrome Uzaktan Masaüstü'nü yeniden yükleyin.</translation>
 <translation id="8642984861538780905">Orta</translation>
+<translation id="8705151241155781642">• Android 9.0 Pie için destek eklendi.
+• Android cihazınızın ekranına uygun uzaktan masaüstü çözünürlüğünü yeniden boyutlandırmak için destek.</translation>
 <translation id="8712909229180978490">Google Drive'daki kaydedilmiş dosyalarımı çevrimiçi olarak göremiyorum.</translation>
 <translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> kullanıcısının bilgisayarınızı görmesine ve kontrol etmesine izin vermek istiyor musunuz?</translation>
 <translation id="8747048596626351634">Oturum kilitlendi veya başlatılamadı. Uzak bilgisayarda ~/.chrome-remote-desktop-session mevcutsa masaüstü ortamı veya pencere yöneticisi gibi uzun süre ön planda çalışan bir işlem başlattığından emin olun.</translation>

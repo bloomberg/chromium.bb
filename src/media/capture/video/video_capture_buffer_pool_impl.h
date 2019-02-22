@@ -44,13 +44,14 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   CreateSharedMemoryViaRawFileDescriptorStruct(int buffer_id) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) override;
-  int ReserveForProducer(const gfx::Size& dimensions,
-                         VideoPixelFormat format,
-                         int frame_feedback_id,
-                         int* buffer_id_to_drop) override;
+  VideoCaptureDevice::Client::ReserveResult ReserveForProducer(
+      const gfx::Size& dimensions,
+      VideoPixelFormat format,
+      const mojom::PlaneStridesPtr& strides,
+      int frame_feedback_id,
+      int* buffer_id,
+      int* buffer_id_to_drop) override;
   void RelinquishProducerReservation(int buffer_id) override;
-  int ResurrectLastForProducer(const gfx::Size& dimensions,
-                               VideoPixelFormat format) override;
   double GetBufferPoolUtilization() const override;
   void HoldForConsumers(int buffer_id, int num_clients) override;
   void RelinquishConsumerHold(int buffer_id, int num_clients) override;
@@ -59,10 +60,13 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
   friend class base::RefCountedThreadSafe<VideoCaptureBufferPoolImpl>;
   ~VideoCaptureBufferPoolImpl() override;
 
-  int ReserveForProducerInternal(const gfx::Size& dimensions,
-                                 VideoPixelFormat format,
-                                 int frame_feedback_id,
-                                 int* tracker_id_to_drop);
+  VideoCaptureDevice::Client::ReserveResult ReserveForProducerInternal(
+      const gfx::Size& dimensions,
+      VideoPixelFormat format,
+      const mojom::PlaneStridesPtr& strides,
+      int frame_feedback_id,
+      int* buffer_id,
+      int* tracker_id_to_drop);
 
   VideoCaptureBufferTracker* GetTracker(int buffer_id);
 
@@ -74,10 +78,6 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
 
   // The ID of the next buffer.
   int next_buffer_id_;
-
-  // The ID of the buffer last relinquished by the producer (a candidate for
-  // resurrection).
-  int last_relinquished_buffer_id_;
 
   // The buffers, indexed by the first parameter, a buffer id.
   std::map<int, std::unique_ptr<VideoCaptureBufferTracker>> trackers_;

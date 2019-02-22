@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -64,6 +65,11 @@ class DataReductionProxyConfigurator {
       const NetworkPropertiesManager& network_properties_manager,
       const std::vector<DataReductionProxyServer>& proxies_for_http) const;
 
+  void SetConfigUpdatedCallback(
+      base::RepeatingClosure config_updated_callback) {
+    config_updated_callback_ = config_updated_callback;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfiguratorTest, TestBypassList);
 
@@ -78,6 +84,8 @@ class DataReductionProxyConfigurator {
   // Used for logging of network- and Data Reduction Proxy-related events.
   net::NetLog* net_log_;
   DataReductionProxyEventCreator* data_reduction_proxy_event_creator_;
+
+  base::RepeatingClosure config_updated_callback_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

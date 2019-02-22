@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
@@ -99,8 +100,8 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
   if (!upload_requested)
     return;
 
-  UMA_HISTOGRAM_COUNTS("SBDownloadFeedback.SizeEligibleKB",
-                       download->GetReceivedBytes() / 1024);
+  UMA_HISTOGRAM_COUNTS_1M("SBDownloadFeedback.SizeEligibleKB",
+                          download->GetReceivedBytes() / 1024);
   if (download->GetReceivedBytes() > DownloadFeedback::kMaxUploadSize)
     return;
 
@@ -150,8 +151,10 @@ void DownloadFeedbackService::BeginFeedbackForDownload(
       base::Bind(&DownloadFeedbackService::BeginFeedbackOrDeleteFile,
                  file_task_runner_, weak_ptr_factory_.GetWeakPtr(),
                  pings->ping_request(), pings->ping_response()));
-  if (download_command == DownloadCommands::KEEP)
-    DownloadCommands(download).ExecuteCommand(download_command);
+  if (download_command == DownloadCommands::KEEP) {
+    DownloadItemModel model(download);
+    DownloadCommands(&model).ExecuteCommand(download_command);
+  }
 }
 
 // static

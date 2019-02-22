@@ -7,11 +7,10 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include <algorithm>
-#include <cstdio>
+
+#include "rtc_base/stringutils.h"
 
 #include "rtc_base/checks.h"
-#include "rtc_base/stringutils.h"
 
 namespace rtc {
 
@@ -144,6 +143,12 @@ std::string ToHex(const int i) {
   snprintf(buffer, sizeof(buffer), "%x", i);
 
   return std::string(buffer);
+}
+
+std::string LeftPad(char padding, unsigned length, std::string s) {
+  if (s.length() >= length)
+    return s;
+  return std::string(length - s.length(), padding) + s;
 }
 
 }  // namespace rtc

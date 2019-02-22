@@ -19,13 +19,14 @@ image_capture_test(async (t, imageCaptureTest) => {
   context.fillRect(0, 0, 10, 10);
 
   const constraints = { advanced : [{ whiteBalanceMode : 'single-shot',
-                                      exposureMode     : 'continuous',
+                                      exposureMode     : 'manual',
                                       focusMode        : 'single-shot',
 
                                       pointsOfInterest : [{x : 0.1, y : 0.2},
                                                           {x : 0.3, y : 0.4}],
 
                                       exposureCompensation : 133.77,
+                                      exposureTime         : 10000,
                                       colorTemperature     : 6000,
                                       iso                  : 120.0,
 
@@ -33,6 +34,7 @@ image_capture_test(async (t, imageCaptureTest) => {
                                       contrast             : 4,
                                       saturation           : 5,
                                       sharpness            : 6,
+                                      focusDistance        : 7,
 
                                       zoom                 : 3.141592,
 
@@ -89,6 +91,9 @@ image_capture_test(async (t, imageCaptureTest) => {
     assert_equals(constraintsDict.exposureCompensation,
                   theMock.options().exposureCompensation,
                   'exposureCompensation');
+    assert_equals(constraintsDict.exposureTime,
+                  theMock.options().exposureTime,
+                  'exposureTime');
     assert_equals(constraintsDict.colorTemperature,
                   theMock.options().colorTemperature, 'colorTemperature');
     assert_equals(constraintsDict.iso, theMock.options().iso, 'iso');
@@ -101,6 +106,9 @@ image_capture_test(async (t, imageCaptureTest) => {
                   'saturation');
     assert_equals(constraintsDict.sharpness, theMock.options().sharpness,
                   'sharpness');
+    assert_equals(constraintsDict.focusDistance, theMock.options().focusDistance
+                  ,'focusDistance');
+
 
     assert_equals(constraintsDict.torch, theMock.options().torch, 'torch');
 

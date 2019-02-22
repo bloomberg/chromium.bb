@@ -32,9 +32,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
+#include "components/os_crypt/os_crypt.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
@@ -68,10 +68,8 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
 
 ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack,
     ChromeFeatureListCreator* chrome_feature_list_creator)
     : ChromeBrowserMainPartsPosix(parameters,
-                                  std::move(data_pack),
                                   chrome_feature_list_creator) {}
 
 ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
@@ -86,15 +84,6 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
     base::CommandLine* singleton_command_line =
         base::CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
-  }
-
-  // If ui_task is not NULL, the app is actually a browser_test.
-  if (!parameters().ui_task) {
-    // The browser process only wants to support the language Cocoa will use,
-    // so force the app locale to be overriden with that value. This must
-    // happen before the ResourceBundle is loaded, which happens in
-    // ChromeBrowserMainParts::PreEarlyInitialization().
-    l10n_util::OverrideLocaleWithCocoaLocale();
   }
 
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
@@ -151,6 +140,11 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 
   chrome::KeychainReauthorizeIfNeeded(keychain_reauthorize_pref,
                                       kKeychainReauthorizeMaxTries);
+
+  // Initialize the OSCrypt.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  OSCrypt::Init(local_state);
 }
 
 void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {

@@ -43,9 +43,12 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
       CreateMediaCryptoSessionCallback callback) final;
   void SetKey(uint32_t crypto_session_id,
               const std::vector<uint8_t>& key_id,
-              const std::vector<uint8_t>& key_blob) final;
+              media::CdmProxy::KeyType key_type,
+              const std::vector<uint8_t>& key_blob,
+              SetKeyCallback callback) final;
   void RemoveKey(uint32_t crypto_session_id,
-                 const std::vector<uint8_t>& key_id) final;
+                 const std::vector<uint8_t>& key_id,
+                 RemoveKeyCallback callback) final;
 
   // CdmProxy::Client implementation.
   void NotifyHardwareReset() final;

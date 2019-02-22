@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -17,8 +18,8 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_model_worker.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
@@ -27,6 +28,7 @@
 #include "components/sync/user_events/user_event_service.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_string.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
@@ -57,13 +59,7 @@ syncer::ModelTypeSet GetDisabledTypes() {
 }  // namespace
 
 WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
-    : browser_state_(browser_state) {}
-
-WebViewSyncClient::~WebViewSyncClient() {}
-
-void WebViewSyncClient::Initialize() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-
+    : browser_state_(browser_state) {
   profile_web_data_service_ =
       WebViewWebDataServiceWrapperFactory::GetAutofillWebDataForBrowserState(
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
@@ -85,10 +81,13 @@ void WebViewSyncClient::Initialize() {
       this, version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
       prefs::kSavingBrowserHistoryDisabled,
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), db_thread_,
-      profile_web_data_service_, account_web_data_service_, password_store_,
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      db_thread_, profile_web_data_service_, account_web_data_service_,
+      password_store_,
       /*bookmark_sync_service=*/nullptr));
 }
+
+WebViewSyncClient::~WebViewSyncClient() {}
 
 syncer::SyncService* WebViewSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
@@ -118,6 +117,10 @@ favicon::FaviconService* WebViewSyncClient::GetFaviconService() {
 }
 
 history::HistoryService* WebViewSyncClient::GetHistoryService() {
+  return nullptr;
+}
+
+sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
   return nullptr;
 }
 
@@ -160,10 +163,6 @@ invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
 
 scoped_refptr<syncer::ExtensionsActivity>
 WebViewSyncClient::GetExtensionsActivity() {
-  return nullptr;
-}
-
-sync_sessions::SyncSessionsClient* WebViewSyncClient::GetSyncSessionsClient() {
   return nullptr;
 }
 
@@ -218,7 +217,7 @@ WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
       return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD:

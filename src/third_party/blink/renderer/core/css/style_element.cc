@@ -75,14 +75,14 @@ StyleElement::ProcessingResult StyleElement::ProcessStyleSheet(
 }
 
 void StyleElement::RemovedFrom(Element& element,
-                               ContainerNode* insertion_point) {
-  if (!insertion_point->isConnected())
+                               ContainerNode& insertion_point) {
+  if (!insertion_point.isConnected())
     return;
 
   Document& document = element.GetDocument();
   if (registered_as_candidate_) {
     document.GetStyleEngine().RemoveStyleSheetCandidateNode(element,
-                                                            *insertion_point);
+                                                            insertion_point);
     registered_as_candidate_ = false;
   }
 

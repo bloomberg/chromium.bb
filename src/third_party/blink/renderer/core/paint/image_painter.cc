@@ -15,8 +15,9 @@
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -61,8 +62,8 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   if (path.IsEmpty())
     return;
 
-  PaintInfoWithOffset paint_info_with_offset(layout_image_, paint_info);
-  auto paint_offset = paint_info_with_offset.PaintOffset();
+  ScopedPaintState paint_state(layout_image_, paint_info);
+  auto paint_offset = paint_state.PaintOffset();
   path.Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -133,12 +134,15 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
   paint_rect.MoveBy(paint_offset);
 
   DrawingRecorder recorder(context, layout_image_, paint_info.phase);
-  PaintIntoRect(context, paint_rect, content_rect);
+  DCHECK(paint_info.PaintContainer());
+  PaintIntoRect(context, paint_rect, content_rect,
+                paint_info.PaintContainer()->Layer());
 }
 
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
                                  const LayoutRect& dest_rect,
-                                 const LayoutRect& content_rect) {
+                                 const LayoutRect& content_rect,
+                                 const PaintLayer* painting_layer) {
   if (!layout_image_.ImageResource()->HasImage() ||
       layout_image_.ImageResource()->ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all
@@ -184,6 +188,13 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
+  if (RuntimeEnabledFeatures::ElementTimingEnabled() &&
+      IsHTMLImageElement(node) && !context.ContextDisabled()) {
+    LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
+    DCHECK(window);
+    ImageElementTiming::From(*window).NotifyImagePainted(
+        ToHTMLImageElement(node), &layout_image_, painting_layer);
+  }
 }
 
 }  // namespace blink

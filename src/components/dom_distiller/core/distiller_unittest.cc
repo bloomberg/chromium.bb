@@ -51,7 +51,9 @@ namespace {
 const char kTitle[] = "Title";
 const char kContent[] = "Content";
 const char kURL[] = "http://a.com/";
+const size_t kTotalGoodImages = 2;
 const size_t kTotalImages = 3;
+// Good images need to be in the front.
 const char* kImageURLs[kTotalImages] = {"http://a.com/img1.jpg",
                                         "http://a.com/img2.jpg",
                                         "./bad_url_should_fail"};
@@ -162,26 +164,33 @@ string GeneratePrevPageUrl(const std::string& url_prefix, size_t page_num) {
   return page_num > 0 ? url_prefix + base::NumberToString(page_num - 1) : "";
 }
 
-std::unique_ptr<MultipageDistillerData>
-CreateMultipageDistillerDataWithoutImages(size_t pages_size) {
+std::unique_ptr<MultipageDistillerData> CreateMultipageDistillerDataWithImages(
+    const vector<vector<int>>& image_ids) {
+  size_t pages_size = image_ids.size();
   std::unique_ptr<MultipageDistillerData> result(new MultipageDistillerData());
   string url_prefix = kURL;
+  result->image_ids = image_ids;
   for (size_t page_num = 0; page_num < pages_size; ++page_num) {
     result->page_urls.push_back(url_prefix + base::NumberToString(page_num));
     result->content.push_back("Content for page:" +
                               base::NumberToString(page_num));
-    result->image_ids.push_back(vector<int>());
     string next_page_url =
         GenerateNextPageUrl(url_prefix, page_num, pages_size);
     string prev_page_url =
         GeneratePrevPageUrl(url_prefix, page_num);
     std::unique_ptr<base::Value> distilled_value =
         CreateDistilledValueReturnedFromJS(kTitle, result->content[page_num],
-                                           result->image_ids[page_num],
-                                           next_page_url, prev_page_url);
+                                           image_ids[page_num], next_page_url,
+                                           prev_page_url);
     result->distilled_values.push_back(std::move(distilled_value));
   }
   return result;
+}
+
+std::unique_ptr<MultipageDistillerData>
+CreateMultipageDistillerDataWithoutImages(size_t pages_size) {
+  return CreateMultipageDistillerDataWithImages(
+      vector<vector<int>>(pages_size));
 }
 
 void VerifyArticleProtoMatchesMultipageData(
@@ -202,8 +211,12 @@ void VerifyArticleProtoMatchesMultipageData(
               static_cast<size_t>(page.image_size()));
     const vector<int>& image_ids_for_page = distiller_data->image_ids[page_num];
     for (size_t img_num = 0; img_num < image_ids_for_page.size(); ++img_num) {
-      EXPECT_EQ(kImageData[image_ids_for_page[img_num]],
-                page.image(img_num).data());
+      if (dom_distiller::DistillerImpl::DoesFetchImages()) {
+        EXPECT_EQ(kImageData[image_ids_for_page[img_num]],
+                  page.image(img_num).data());
+      } else {
+        EXPECT_EQ("", page.image(img_num).data());
+      }
       EXPECT_EQ(GetImageName(page_num + 1, img_num),
                 page.image(img_num).name());
     }
@@ -431,10 +444,20 @@ TEST_F(DistillerTest, DistillPageWithImages) {
   EXPECT_EQ(kContent, first_page.html());
   EXPECT_EQ(kURL, first_page.url());
   ASSERT_EQ(2, first_page.image_size());
-  EXPECT_EQ(kImageData[0], first_page.image(0).data());
+
+  if (DistillerImpl::DoesFetchImages()) {
+    EXPECT_EQ(kImageData[0], first_page.image(0).data());
+  } else {
+    EXPECT_EQ("", first_page.image(0).data());
+  }
   EXPECT_EQ(kImageURLs[0], first_page.image(0).url());
   EXPECT_EQ(GetImageName(1, 0), first_page.image(0).name());
-  EXPECT_EQ(kImageData[1], first_page.image(1).data());
+
+  if (DistillerImpl::DoesFetchImages()) {
+    EXPECT_EQ(kImageData[1], first_page.image(1).data());
+  } else {
+    EXPECT_EQ("", first_page.image(1).data());
+  }
   EXPECT_EQ(kImageURLs[1], first_page.image(1).url());
   EXPECT_EQ(GetImageName(1, 1), first_page.image(1).name());
 }
@@ -442,10 +465,9 @@ TEST_F(DistillerTest, DistillPageWithImages) {
 TEST_F(DistillerTest, DistillMultiplePages) {
   base::MessageLoopForUI loop;
   const size_t kNumPages = 8;
-  std::unique_ptr<MultipageDistillerData> distiller_data =
-      CreateMultipageDistillerDataWithoutImages(kNumPages);
 
   // Add images.
+  vector<vector<int>> image_ids;
   int next_image_number = 0;
   for (size_t page_num = 0; page_num < kNumPages; ++page_num) {
     // Each page has different number of images.
@@ -453,10 +475,13 @@ TEST_F(DistillerTest, DistillMultiplePages) {
     vector<int> image_indices;
     for (size_t img_num = 0; img_num < tot_images; img_num++) {
       image_indices.push_back(next_image_number);
-      next_image_number = (next_image_number + 1) % kTotalImages;
+      next_image_number = (next_image_number + 1) % kTotalGoodImages;
     }
-    distiller_data->image_ids.push_back(image_indices);
+    image_ids.push_back(image_indices);
   }
+
+  std::unique_ptr<MultipageDistillerData> distiller_data =
+      CreateMultipageDistillerDataWithImages(image_ids);
 
   distiller_.reset(
       new DistillerImpl(url_fetcher_factory_, DomDistillerOptions()));
@@ -721,6 +746,8 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
 }
 
 TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
+  if (!DistillerImpl::DoesFetchImages())
+    return;
   base::MessageLoopForUI loop;
   vector<int> image_indices;
   image_indices.push_back(0);

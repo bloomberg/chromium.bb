@@ -99,7 +99,8 @@ class AdbClientSocketTest : public testing::Test {
     // The following means "expect not to be called."
     EXPECT_CALL(response_callback, Run(0, "")).Times(0);
 
-    scoped_refptr<net::GrowableIOBuffer> buffer = new net::GrowableIOBuffer;
+    scoped_refptr<net::GrowableIOBuffer> buffer =
+        base::MakeRefCounted<net::GrowableIOBuffer>();
     buffer->SetCapacity(100);
     strcpy(buffer->data(), data_on_buffer);
     buffer->set_offset(strlen(data_on_buffer));
@@ -120,7 +121,8 @@ class AdbClientSocketTest : public testing::Test {
 
     base::MockCallback<AdbClientSocket::CommandCallback> response_callback;
     EXPECT_CALL(response_callback, Run(error_code, "IO error")).Times(1);
-    scoped_refptr<net::GrowableIOBuffer> buffer = new net::GrowableIOBuffer;
+    scoped_refptr<net::GrowableIOBuffer> buffer =
+        base::MakeRefCounted<net::GrowableIOBuffer>();
     buffer->SetCapacity(100);
     adb_socket.ReadUntilEOF(parse_callback.Get(), response_callback.Get(),
                             buffer, error_code);
@@ -139,7 +141,8 @@ class AdbClientSocketTest : public testing::Test {
     base::MockCallback<AdbClientSocket::CommandCallback> response_callback;
     // The following means "expect not to be called."
     EXPECT_CALL(response_callback, Run(0, "")).Times(0);
-    scoped_refptr<net::GrowableIOBuffer> buffer = new net::GrowableIOBuffer;
+    scoped_refptr<net::GrowableIOBuffer> buffer =
+        base::MakeRefCounted<net::GrowableIOBuffer>();
     int initial_capacity = 4;
     buffer->SetCapacity(initial_capacity);
     int result = adb_socket.socket_->Read(
@@ -165,7 +168,8 @@ class AdbClientSocketTest : public testing::Test {
                 Run(expected_result_code, expected_result_string))
         .Times(1);
 
-    scoped_refptr<net::GrowableIOBuffer> buffer = new net::GrowableIOBuffer;
+    scoped_refptr<net::GrowableIOBuffer> buffer =
+        base::MakeRefCounted<net::GrowableIOBuffer>();
     int initial_capacity = 100;
     buffer->SetCapacity(initial_capacity);
     if (result > 0) {

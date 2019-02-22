@@ -52,9 +52,8 @@ FileError ResolveSearchResultOnBlockingPool(
 
     if (error == FILE_ERROR_NOT_FOUND) {
       std::string original_parent_id;
-      if (!ConvertFileResourceToResourceEntry(*entries[i], &entry,
-                                              &original_parent_id))
-        continue;  // Skip non-file entries.
+      ConvertFileResourceToResourceEntry(*entries[i], &entry,
+                                         &original_parent_id);
 
       // The result is absent in local resource metadata. This can happen if
       // the metadata is not synced to the latest server state yet. In that

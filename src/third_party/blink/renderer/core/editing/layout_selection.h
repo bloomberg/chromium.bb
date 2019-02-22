@@ -36,6 +36,7 @@ class NGPaintFragment;
 class FrameSelection;
 struct LayoutSelectionStatus;
 struct LayoutTextSelectionStatus;
+class SelectionPaintRange;
 
 class LayoutSelection final : public GarbageCollected<LayoutSelection> {
  public:
@@ -43,7 +44,6 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
     return new LayoutSelection(frame_selection);
   }
 
-  bool HasPendingSelection() const { return has_pending_selection_; }
   void SetHasPendingSelection();
   void Commit();
 
@@ -52,6 +52,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   LayoutTextSelectionStatus ComputeSelectionStatus(const LayoutText&) const;
   LayoutSelectionStatus ComputeSelectionStatus(const NGPaintFragment&) const;
+  static bool IsSelected(const LayoutObject&);
 
   void OnDocumentShutdown();
 
@@ -62,25 +63,9 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
 
   Member<FrameSelection> frame_selection_;
   bool has_pending_selection_ : 1;
-  // Each offset represents text offsets on selection edge if it is text.
-  // For example, suppose we select "f^oo<br><img>|",
-  // |start_offset_| is 1 and |end_offset_| is nullopt.
-  // Each of them is only valid for a |Text| node without 'transform' or
-  // 'first-letter'.
-  // TODO(editing-dev): Clarify the meaning of "offset".
-  // editing/ passes them as offsets in the DOM tree but layout uses them as
-  // offset in the layout tree. This doesn't work in the cases of
-  // character transform. See crbug.com/17528.
-  base::Optional<unsigned> start_offset_;
-  base::Optional<unsigned> end_offset_;
-  // This is true if at least one LayoutObject has a valid SelectionState.
-  bool has_selection_;
-};
 
-void CORE_EXPORT PrintLayoutObjectForSelection(std::ostream&, LayoutObject*);
-#ifndef NDEBUG
-void ShowLayoutObjectForSelection(LayoutObject*);
-#endif
+  Member<SelectionPaintRange> paint_range_;
+};
 
 }  // namespace blink
 

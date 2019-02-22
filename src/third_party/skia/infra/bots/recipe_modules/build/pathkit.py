@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 DOCKER_IMAGE = 'gcr.io/skia-public/emsdk-release:1.38.6_jre'
-INNER_BUILD_SCRIPT = '/SRC/skia/infra/pathkit/docker/build_pathkit.sh'
+INNER_BUILD_SCRIPT = '/SRC/skia/infra/pathkit/build_pathkit.sh'
 
 BUILD_PRODUCTS_ISOLATE_WHITELIST_WASM = [
   'pathkit.*'
@@ -11,7 +11,7 @@ BUILD_PRODUCTS_ISOLATE_WHITELIST_WASM = [
 
 
 def compile_fn(api, checkout_root, _ignore):
-  out_dir = api.vars.cache_dir.join('docker', 'wasm')
+  out_dir = api.vars.cache_dir.join('docker', 'pathkit')
   configuration = api.vars.builder_cfg.get('configuration', '')
   target_arch   = api.vars.builder_cfg.get('target_arch',   '')
 
@@ -19,12 +19,12 @@ def compile_fn(api, checkout_root, _ignore):
   # because if that isn't the case, docker will make them and they will be
   # owned by root, which causes mysterious failures. To mitigate this risk
   # further, we don't use the same out_dir as everyone else (thus the _ignore)
-  # param. Instead, we use a "wasm" subdirectory in the "docker" named_cache.
+  # param. Instead, we use a "pathkit" subdirectory in the "docker" named_cache.
   api.file.ensure_directory('mkdirs out_dir', out_dir, mode=0777)
 
   # This uses the emscriptem sdk docker image and says "run the
   # build_pathkit.sh helper script in there". Additionally, it binds two
-  # folders: the skia checkout to /SRC and the output directory to /OUT
+  # folders: the Skia checkout to /SRC and the output directory to /OUT
   # The called helper script will make the compile happen and put the
   # output in the right spot.  The neat thing is that since the Skia checkout
   # (and, by extension, the build script) is not a part of the image, but
@@ -36,7 +36,7 @@ def compile_fn(api, checkout_root, _ignore):
          '-v', '%s:/OUT' % out_dir,
          DOCKER_IMAGE, INNER_BUILD_SCRIPT]
   if configuration == 'Debug':
-    cmd.append('debug') # It defaults to Relesae
+    cmd.append('debug') # It defaults to Release
   if target_arch == 'asmjs':
     cmd.append('asm.js') # It defaults to WASM
   api.run(
@@ -46,7 +46,7 @@ def compile_fn(api, checkout_root, _ignore):
 
 
 def copy_extra_build_products(api, _ignore, dst):
-  out_dir = api.vars.cache_dir.join('docker', 'wasm')
+  out_dir = api.vars.cache_dir.join('docker', 'pathkit')
   # We don't use the normal copy_build_products because it uses
   # shutil.move, which attempts to delete the previous file, which
   # doesn't work because the docker created outputs are read-only and

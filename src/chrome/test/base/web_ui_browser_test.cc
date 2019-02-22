@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
 #include "printing/buildflags/buildflags.h"
@@ -214,6 +215,17 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
   RunJavascriptUsingHandler("preloadJavascriptLibraries", std::move(args),
                             false, false, preload_host);
   libraries_preloaded_ = true;
+
+  bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::content::kWaitForDebuggerWebUI);
+
+  const std::string debugger_port =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          ::switches::kRemoteDebuggingPort);
+
+  // Only wait if there is a debugger port, so user can issue go() command.
+  if (should_wait_flag && !debugger_port.empty())
+    RunJavascriptUsingHandler("setWaitUser", {}, false, false, preload_host);
 }
 
 void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
@@ -323,10 +335,9 @@ namespace {
 class MockWebUIDataSource : public content::URLDataSource {
  public:
   MockWebUIDataSource() {}
-
- private:
   ~MockWebUIDataSource() override {}
 
+ private:
   std::string GetSource() const override { return "dummyurl"; }
 
   void StartDataRequest(
@@ -364,8 +375,8 @@ class MockWebUIProvider
   // Returns a new WebUI
   std::unique_ptr<WebUIController> NewWebUI(content::WebUI* web_ui,
                                             const GURL& url) override {
-    Profile* profile = Profile::FromWebUI(web_ui);
-    content::URLDataSource::Add(profile, new MockWebUIDataSource());
+    content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                                std::make_unique<MockWebUIDataSource>());
     return std::make_unique<content::WebUIController>(web_ui);
   }
 

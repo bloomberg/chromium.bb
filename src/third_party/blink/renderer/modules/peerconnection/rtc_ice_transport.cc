@@ -5,11 +5,13 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
@@ -17,6 +19,8 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/webrtc/api/jsepicecandidate.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/p2p/base/portallocator.h"
@@ -47,31 +51,100 @@ RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
       WebString::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 
+class DefaultIceTransportAdapterCrossThreadFactory
+    : public IceTransportAdapterCrossThreadFactory {
+ public:
+  void InitializeOnMainThread() override {
+    DCHECK(!port_allocator_);
+    DCHECK(!worker_thread_rtc_thread_);
+    port_allocator_ = Platform::Current()->CreateWebRtcPortAllocator(
+        WebLocalFrame::FrameForCurrentContext());
+    worker_thread_rtc_thread_ =
+        Platform::Current()->GetWebRtcWorkerThreadRtcThread();
+  }
+
+  std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
+      IceTransportAdapter::Delegate* delegate) override {
+    DCHECK(port_allocator_);
+    DCHECK(worker_thread_rtc_thread_);
+    return std::make_unique<IceTransportAdapterImpl>(
+        delegate, std::move(port_allocator_), worker_thread_rtc_thread_);
+  }
+
+ private:
+  std::unique_ptr<cricket::PortAllocator> port_allocator_;
+  rtc::Thread* worker_thread_rtc_thread_ = nullptr;
+};
+
 }  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  return new RTCIceTransport(context);
+  LocalFrame* frame = To<Document>(context)->GetFrame();
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
+      frame->GetTaskRunner(TaskType::kNetworking);
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread =
+      Platform::Current()->GetWebRtcWorkerThread();
+  return new RTCIceTransport(
+      context, std::move(proxy_thread), std::move(host_thread),
+      std::make_unique<DefaultIceTransportAdapterCrossThreadFactory>());
 }
 
-RTCIceTransport::RTCIceTransport(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
-  Document* document = ToDocument(GetExecutionContext());
-  LocalFrame* frame = document->GetFrame();
-  DCHECK(frame);
+RTCIceTransport* RTCIceTransport::Create(
+    ExecutionContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory) {
+  return new RTCIceTransport(context, std::move(proxy_thread),
+                             std::move(host_thread),
+                             std::move(adapter_factory));
+}
 
-  std::unique_ptr<cricket::PortAllocator> port_allocator =
-      Platform::Current()->CreateWebRtcPortAllocator(
-          WebLocalFrame::FrameForCurrentContext());
+RTCIceTransport::RTCIceTransport(
+    ExecutionContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
+    : ContextLifecycleObserver(context) {
+  DCHECK(context);
+  DCHECK(proxy_thread);
+  DCHECK(host_thread);
+  DCHECK(adapter_factory);
+  DCHECK(proxy_thread->BelongsToCurrentThread());
+
+  LocalFrame* frame = To<Document>(context)->GetFrame();
+  DCHECK(frame);
   proxy_.reset(new IceTransportProxy(
-      frame->GetFrameScheduler(), Platform::Current()->GetWebRtcWorkerThread(),
-      Platform::Current()->GetWebRtcWorkerThreadRtcThread(), this,
-      std::move(port_allocator)));
+      frame->GetFrameScheduler(), std::move(proxy_thread),
+      std::move(host_thread), this, std::move(adapter_factory)));
 
   GenerateLocalParameters();
 }
 
 RTCIceTransport::~RTCIceTransport() {
   DCHECK(!proxy_);
+}
+
+bool RTCIceTransport::HasConsumer() const {
+  return consumer_;
+}
+
+IceTransportProxy* RTCIceTransport::ConnectConsumer(
+    RTCQuicTransport* consumer) {
+  DCHECK(consumer);
+  DCHECK(proxy_);
+  if (!consumer_) {
+    consumer_ = consumer;
+  } else {
+    DCHECK_EQ(consumer_, consumer);
+  }
+  return proxy_.get();
+}
+
+void RTCIceTransport::DisconnectConsumer(RTCQuicTransport* consumer) {
+  DCHECK(consumer);
+  DCHECK(proxy_);
+  DCHECK_EQ(consumer, consumer_);
+  consumer_ = nullptr;
 }
 
 String RTCIceTransport::role() const {
@@ -187,6 +260,17 @@ ConvertIceServers(const HeapVector<RTCIceServer>& ice_servers) {
   return converted_ice_servers;
 }
 
+static IceTransportPolicy IceTransportPolicyFromString(const String& str) {
+  if (str == "relay") {
+    return IceTransportPolicy::kRelay;
+  }
+  if (str == "all") {
+    return IceTransportPolicy::kAll;
+  }
+  NOTREACHED();
+  return IceTransportPolicy::kAll;
+}
+
 void RTCIceTransport::gather(const RTCIceGatherOptions& options,
                              ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
@@ -214,14 +298,9 @@ void RTCIceTransport::gather(const RTCIceGatherOptions& options,
     return;
   }
   gathering_state_ = cricket::kIceGatheringGathering;
-  uint32_t candidate_filter = cricket::CF_ALL;
-  if (options.gatherPolicy() == "relay") {
-    candidate_filter = cricket::CF_RELAY;
-  } else {
-    DCHECK_EQ(options.gatherPolicy(), "all");
-  }
   proxy_->StartGathering(ConvertIceParameters(local_parameters_), stun_servers,
-                         turn_servers, candidate_filter);
+                         turn_servers,
+                         IceTransportPolicyFromString(options.gatherPolicy()));
 }
 
 static cricket::IceRole IceRoleFromString(const String& role_string) {
@@ -267,21 +346,26 @@ void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
   }
   if (!remote_parameters_) {
     // Calling start() for the first time.
-    proxy_->SetRole(role);
     role_ = role;
     if (remote_candidates_.size() > 0) {
-      for (RTCIceCandidate* remote_candidate : remote_candidates_) {
-        // This conversion is safe since we throw an exception in
-        // addRemoteCandidate on malformed ICE candidates.
-        proxy_->AddRemoteCandidate(
-            *ConvertToCricketIceCandidate(*remote_candidate));
-      }
       state_ = RTCIceTransportState::kChecking;
     }
+    std::vector<cricket::Candidate> initial_remote_candidates;
+    for (RTCIceCandidate* remote_candidate : remote_candidates_) {
+      // This conversion is safe since we throw an exception in
+      // addRemoteCandidate on malformed ICE candidates.
+      initial_remote_candidates.push_back(
+          *ConvertToCricketIceCandidate(*remote_candidate));
+    }
+    proxy_->Start(ConvertIceParameters(remote_parameters), role,
+                  initial_remote_candidates);
+    if (consumer_) {
+      consumer_->OnTransportStarted();
+    }
   } else {
-    proxy_->ClearRemoteCandidates();
     remote_candidates_.clear();
     state_ = RTCIceTransportState::kNew;
+    proxy_->HandleRemoteRestart(ConvertIceParameters(remote_parameters));
   }
   remote_parameters_ = remote_parameters;
 }
@@ -290,7 +374,13 @@ void RTCIceTransport::stop() {
   if (IsClosed()) {
     return;
   }
+  if (HasConsumer()) {
+    consumer_->stop();
+  }
+  // Stopping the consumer should cause it to disconnect.
+  DCHECK(!HasConsumer());
   state_ = RTCIceTransportState::kClosed;
+  selected_candidate_pair_ = base::nullopt;
   proxy_.reset();
 }
 
@@ -366,7 +456,23 @@ void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
     return;
   }
   state_ = local_new_state;
+  if (state_ == RTCIceTransportState::kFailed) {
+    selected_candidate_pair_ = base::nullopt;
+  }
   DispatchEvent(*Event::Create(EventTypeNames::statechange));
+}
+
+void RTCIceTransport::OnSelectedCandidatePairChanged(
+    const std::pair<cricket::Candidate, cricket::Candidate>&
+        selected_candidate_pair) {
+  RTCIceCandidate* local =
+      ConvertToRtcIceCandidate(selected_candidate_pair.first);
+  RTCIceCandidate* remote =
+      ConvertToRtcIceCandidate(selected_candidate_pair.second);
+  selected_candidate_pair_ = RTCIceCandidatePair();
+  selected_candidate_pair_->setLocal(local);
+  selected_candidate_pair_->setRemote(remote);
+  DispatchEvent(*Event::Create(EventTypeNames::selectedcandidatepairchange));
 }
 
 bool RTCIceTransport::RaiseExceptionIfClosed(
@@ -402,6 +508,7 @@ void RTCIceTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_candidates_);
   visitor->Trace(remote_candidates_);
   visitor->Trace(selected_candidate_pair_);
+  visitor->Trace(consumer_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

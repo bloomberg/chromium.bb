@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -132,7 +133,6 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kHierarchicalLevel:
     case ax::mojom::IntAttribute::kNameFrom:
     case ax::mojom::IntAttribute::kDescriptionFrom:
-    case ax::mojom::IntAttribute::kChildTreeId:
     case ax::mojom::IntAttribute::kSetSize:
     case ax::mojom::IntAttribute::kPosInSet:
     case ax::mojom::IntAttribute::kColorValue:
@@ -174,7 +174,6 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
     // add a new attribute without explicitly considering whether it's
     // a node id attribute or not.
     case ax::mojom::IntListAttribute::kNone:
-    case ax::mojom::IntListAttribute::kLineBreaks:
     case ax::mojom::IntListAttribute::kMarkerTypes:
     case ax::mojom::IntListAttribute::kMarkerStarts:
     case ax::mojom::IntListAttribute::kMarkerEnds:
@@ -311,9 +310,9 @@ bool AXNodeData::HasStringAttribute(
 
 const std::string& AXNodeData::GetStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::string, empty_string, ());
+  static base::NoDestructor<std::string> empty_string;
   auto iter = FindInVectorOfPairs(attribute, string_attributes);
-  return iter != string_attributes.end() ? iter->second : empty_string;
+  return iter != string_attributes.end() ? iter->second : *empty_string;
 }
 
 bool AXNodeData::GetStringAttribute(ax::mojom::StringAttribute attribute,
@@ -352,11 +351,11 @@ bool AXNodeData::HasIntListAttribute(
 
 const std::vector<int32_t>& AXNodeData::GetIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::vector<int32_t>, empty_vector, ());
+  static base::NoDestructor<std::vector<int32_t>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
   if (iter != intlist_attributes.end())
     return iter->second;
-  return empty_vector;
+  return *empty_vector;
 }
 
 bool AXNodeData::GetIntListAttribute(ax::mojom::IntListAttribute attribute,
@@ -378,11 +377,11 @@ bool AXNodeData::HasStringListAttribute(
 
 const std::vector<std::string>& AXNodeData::GetStringListAttribute(
     ax::mojom::StringListAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::vector<std::string>, empty_vector, ());
+  static base::NoDestructor<std::vector<std::string>> empty_vector;
   auto iter = FindInVectorOfPairs(attribute, stringlist_attributes);
   if (iter != stringlist_attributes.end())
     return iter->second;
-  return empty_vector;
+  return *empty_vector;
 }
 
 bool AXNodeData::GetStringListAttribute(
@@ -567,6 +566,11 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
 }
 
+void AXNodeData::RemoveState(ax::mojom::State state_enum) {
+  DCHECK_NE(state_enum, ax::mojom::State::kNone);
+  state = ModifyFlag(state, static_cast<uint32_t>(state_enum), false);
+}
+
 std::string AXNodeData::ToString() const {
   std::string result;
 
@@ -717,9 +721,6 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntAttribute::kPreviousOnLineId:
         result += " previous_on_line_id=" + value;
-        break;
-      case ax::mojom::IntAttribute::kChildTreeId:
-        result += " child_tree_id=" + value;
         break;
       case ax::mojom::IntAttribute::kColorValue:
         result += base::StringPrintf(" color_value=&%X", int_attribute.second);
@@ -915,8 +916,8 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kAutoComplete:
         result += " autocomplete=" + value;
         break;
-      case ax::mojom::StringAttribute::kChromeChannel:
-        result += " chrome_channel=" + value;
+      case ax::mojom::StringAttribute::kChildTreeId:
+        result += " child_tree_id=" + value;
         break;
       case ax::mojom::StringAttribute::kClassName:
         result += " class_name=" + value;
@@ -1072,9 +1073,6 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::IntListAttribute::kRadioGroupIds:
         result += " radio_group_ids=" + IntVectorToString(values);
-        break;
-      case ax::mojom::IntListAttribute::kLineBreaks:
-        result += " line_breaks=" + IntVectorToString(values);
         break;
       case ax::mojom::IntListAttribute::kMarkerTypes: {
         std::string types_str;

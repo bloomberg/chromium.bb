@@ -144,7 +144,7 @@ bool IncludeWriter::descriptionOut(const Definition* def, SkipFirstLine skipFirs
                     if (!fReturnOnWrite && !literalOutdent) {
                         fIndent += 4;
                     }
-                    wroteSomething |= this->writeBlockIndent(commentLen, commentStart);
+                    wroteSomething |= this->writeBlockIndent(commentLen, commentStart, false);
                     if (fReturnOnWrite) {
                         return true;
                     }
@@ -190,7 +190,7 @@ bool IncludeWriter::descriptionOut(const Definition* def, SkipFirstLine skipFirs
                 }
                 commentLen = (int) (prop->fContentEnd - commentStart);
                 if (commentLen > 0) {
-                    wroteSomething |= this->writeBlockIndent(commentLen, commentStart);
+                    wroteSomething |= this->writeBlockIndent(commentLen, commentStart, false);
                     if (wroteSomething && fReturnOnWrite) {
                         return true;
                     }
@@ -230,8 +230,7 @@ bool IncludeWriter::descriptionOut(const Definition* def, SkipFirstLine skipFirs
                         if (fReturnOnWrite) {
                             return true;
                         }
-                        if (commentLen > 1 && '\n' == prop->fStart[-1] &&
-                                '\n' == prop->fStart[-2]) {
+                        if (commentLen > 1 && '\n' == prop->fStart[-1]) {
                             this->lf(1);
                         } else {
                             this->writeSpace();
@@ -243,7 +242,7 @@ bool IncludeWriter::descriptionOut(const Definition* def, SkipFirstLine skipFirs
                 if (fIndent < fColumn + 1) {
                     fIndent = fColumn + 1;
                 }
-                wroteSomething |= this->writeBlockIndent(prop->length(), prop->fContentStart);
+                wroteSomething |= this->writeBlockIndent(prop->length(), prop->fContentStart, true);
                 fIndent = saveIndent;
                 if (wroteSomething && fReturnOnWrite) {
                     return true;
@@ -251,13 +250,8 @@ bool IncludeWriter::descriptionOut(const Definition* def, SkipFirstLine skipFirs
                 commentStart = prop->fTerminator;
                 commentLen = (int) (def->fContentEnd - commentStart);
                 if (!fReturnOnWrite) {
-                    if (commentLen > 1 && '\n' == commentStart[0] && '\n' == commentStart[1]) {
-                        this->lf(2);
-                    } else {
-                        SkASSERT('\n' == prop->fTerminator[0]);
-                        if ('.' != prop->fTerminator[1] && !fLinefeeds) {
-                            this->writeSpace();
-                        }
+                    if (commentLen > 1 && ' ' == commentStart[0] && !fLinefeeds) {
+                        this->writeSpace();
                     }
                 }
                 } break;
@@ -456,14 +450,17 @@ void IncludeWriter::enumHeaderOut(RootDefinition* root, const Definition& child)
     }
     Definition* codeBlock = nullptr;
     const char* commentStart = nullptr;
+    bool firstCodeBlocks = true;
     bool wroteHeader = false;
     bool lastAnchor = false;
-    SkDEBUGCODE(bool foundConst = false);
+//    SkDEBUGCODE(bool foundConst = false);
     for (auto test : enumDef->fChildren) {
-        if (MarkType::kCode == test->fMarkType && !codeBlock) {
+        if (MarkType::kCode == test->fMarkType && firstCodeBlocks) {
             codeBlock = test;
             commentStart = codeBlock->fTerminator;
             continue;
+        } else if (codeBlock) {
+            firstCodeBlocks = false;
         }
         if (!codeBlock) {
             continue;
@@ -517,12 +514,12 @@ void IncludeWriter::enumHeaderOut(RootDefinition* root, const Definition& child)
         commentStart = test->fTerminator;
         if (MarkType::kConst == test->fMarkType) {
             SkASSERT(codeBlock);  // FIXME: check enum for correct order earlier
-            SkDEBUGCODE(foundConst = true);
+//            SkDEBUGCODE(foundConst = true);
             break;
         }
     }
-    SkASSERT(codeBlock);
-    SkASSERT(foundConst);
+ //   SkASSERT(codeBlock);
+ //   SkASSERT(foundConst);
     if (wroteHeader) {
         this->indentOut();
         this->lfcr();
@@ -1512,6 +1509,11 @@ bool IncludeWriter::populate(Definition* def, ParentPair* prevPair, RootDefiniti
                 fContinuation = nullptr;
                 continue;
             }
+            if (KeyWord::kTemplate == child.fParent->fKeyWord) {
+                // incomplete; no support to template specialization in public includes
+                fContinuation = nullptr;
+                continue;
+            }
             return child.reportError<bool>("method not found");
         }
         if (Bracket::kSlashSlash == child.fBracket || Bracket::kSlashStar == child.fBracket) {
@@ -1522,6 +1524,10 @@ bool IncludeWriter::populate(Definition* def, ParentPair* prevPair, RootDefiniti
         }
         if (MarkType::kMethod == child.fMarkType) {
             if (this->isInternalName(child)) {
+                continue;
+            }
+            if (KeyWord::kTemplate == child.fParent->fKeyWord) {
+                // todo: support template specializations
                 continue;
             }
             const char* bodyEnd = fDeferComment ? fDeferComment->fContentStart - 1 :
@@ -1553,7 +1559,7 @@ bool IncludeWriter::populate(Definition* def, ParentPair* prevPair, RootDefiniti
                 inConstructor = false;
                 method = &mapFind->second;
                 methodName = child.fName;
-            } else {
+            } else if (root) {
                 methodName = root->fName + "::" + child.fName;
                 size_t lastName = root->fName.rfind(':');
                 lastName = string::npos == lastName ? 0 : lastName + 1;
@@ -1663,7 +1669,22 @@ bool IncludeWriter::populate(Definition* def, ParentPair* prevPair, RootDefiniti
                                 if (MarkType::kTopic == parent->fMarkType ||
                                         MarkType::kSubtopic == parent->fMarkType) {
                                     const char* commentStart = root->fContentStart;
+                                    unsigned index = 0;
                                     const char* commentEnd = root->fChildren[0]->fStart;
+                                    int line = 1;
+                                    do {
+                                        TextParser parser(root->fFileName, commentStart, commentEnd, line);
+                                        if (!parser.eof()) {
+                                            parser.skipWhiteSpace();
+                                        }
+                                        if (!parser.eof()) {
+                                            break;
+                                        }
+                                        commentStart = root->fChildren[index]->fTerminator;
+                                        ++index;
+                                        SkASSERT(index < root->fChildren.size());
+                                        commentEnd = root->fChildren[index]->fStart;
+                                    } while (true);
                                     this->structOut(root, *root, commentStart, commentEnd);
                                 } else {
                                     SkASSERT(0); // incomplete
@@ -1790,6 +1811,7 @@ bool IncludeWriter::populate(Definition* def, ParentPair* prevPair, RootDefiniti
                 case KeyWord::kInline:
                 case KeyWord::kSK_API:
                 case KeyWord::kTemplate:
+                case KeyWord::kUsing:
                     break;
                 case KeyWord::kTypedef:
                     SkASSERT(!memberStart);
@@ -2261,6 +2283,7 @@ string IncludeWriter::resolveRef(const char* start, const char* end, bool first,
                 } else if (!first) {
                     this->fChar = start;
                     this->fLine = start;
+                    this->fEnd = end;
                     this->reportError("reference unfound");
                     return "";
                 }
@@ -2296,6 +2319,10 @@ string IncludeWriter::resolveRef(const char* start, const char* end, bool first,
         }
         if (!substitute.length()) {
             for (auto child : rootDef->fChildren) {
+                if (MarkType::kSubstitute == child->fMarkType) {
+                    substitute = string(child->fContentStart, child->length());
+                    break;
+                }
                 // there may be more than one
                 // if so, it's a bug since it's unknown which is the right one
                 if (MarkType::kClass == child->fMarkType ||

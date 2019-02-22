@@ -25,15 +25,18 @@
 #include "ash/login/ui/note_action_launch_button.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,7 +102,8 @@ void SetPreferredWidthForView(views::View* view, int width) {
 class AuthErrorLearnMoreButton : public views::Button,
                                  public views::ButtonListener {
  public:
-  AuthErrorLearnMoreButton() : views::Button(this) {
+  AuthErrorLearnMoreButton(LoginBubble* parent_bubble)
+      : views::Button(this), parent_bubble_(parent_bubble) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
@@ -115,7 +119,13 @@ class AuthErrorLearnMoreButton : public views::Button,
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp();
+    parent_bubble_->Close();
   }
+
+ private:
+  LoginBubble* parent_bubble_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(AuthErrorLearnMoreButton);
 };
 
 // Returns the first or last focusable child of |root|. If |reverse| is false,
@@ -180,7 +190,7 @@ void MakeSectionBold(views::StyledLabel* label,
 keyboard::KeyboardController* GetKeyboardControllerForWidget(
     const views::Widget* widget) {
   auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled())
+  if (!keyboard_controller->IsEnabled())
     return nullptr;
 
   aura::Window* keyboard_window = keyboard_controller->GetRootWindow();
@@ -190,6 +200,12 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
 
 bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
   return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+}
+
+bool IsTabletMode() {
+  return Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
 }
 
 //
@@ -404,6 +420,9 @@ LockContentsView::~LockContentsView() {
 }
 
 void LockContentsView::FocusNextUser() {
+  if (users_.empty())
+    return;
+
   if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
     if (opt_secondary_big_view_) {
       SwapActiveAuthBetweenPrimaryAndSecondary(false /*is_primary*/);
@@ -440,6 +459,9 @@ void LockContentsView::FocusNextUser() {
 }
 
 void LockContentsView::FocusPreviousUser() {
+  if (users_.empty())
+    return;
+
   if (login_views_utils::HasFocusInAnyChildView(primary_big_view_)) {
     if (users_list_) {
       users_list_->user_view_at(users_list_->user_count() - 1)->RequestFocus();
@@ -882,6 +904,12 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
 void LockContentsView::OnFingerprintUnlockStateChanged(
     const AccountId& account_id,
     mojom::FingerprintUnlockState state) {
+  // Make sure the display backlight is not forced off if there is a fingerprint
+  // authentication attempt. If the display backlight is off, then the device
+  // will authenticate and dismiss the lock screen but it will not be visible to
+  // the user.
+  Shell::Get()->power_button_controller()->StopForcingBacklightsOff();
+
   UserState* user_state = FindStateForUser(account_id);
   if (!user_state)
     return;
@@ -892,8 +920,48 @@ void LockContentsView::OnFingerprintUnlockStateChanged(
   if (!big_view || !big_view->auth_user())
     return;
 
+  // TODO(crbug.com/893298): Re-enable animation once the error bubble supports
+  // being displayed on the left. This also requires that we dynamically
+  // track/update the position of the bubble, or alternatively we set the bubble
+  // location to the target animation position and not the current position.
+  bool animate = true;
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
+    animate = false;
+  }
+
   big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
-  LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, animate);
+
+  if (user_state->fingerprint_state ==
+      mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
+    base::string16 error_text = l10n_util::GetStringUTF16(
+        IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE);
+    auto* label = new views::Label(error_text);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetEnabledColor(SK_ColorWHITE);
+    label->SetSubpixelRenderingEnabled(false);
+    const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
+    label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
+                                             gfx::Font::Weight::NORMAL));
+    label->SetMultiLine(true);
+    label->SetAllowCharacterBreak(true);
+    // Make sure to set a maximum label width, otherwise text wrapping will
+    // significantly increase width and layout may not work correctly if
+    // the input string is very long.
+    label->SetMaximumWidth(
+        big_view->auth_user()->password_view()->GetPreferredSize().width());
+
+    auto* container = new NonAccessibleView();
+    container->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    container->AddChildView(label);
+
+    auth_error_bubble_->ShowErrorBubble(
+        container, big_view->auth_user()->password_view() /*anchor_view*/,
+        LoginBubble::kFlagPersistent);
+  }
 }
 
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
@@ -1282,10 +1350,19 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         if (state->enable_tap_auth)
           to_update_auth |= LoginAuthUserView::AUTH_TAP;
         if (state->fingerprint_state !=
-            mojom::FingerprintUnlockState::UNAVAILABLE) {
+                mojom::FingerprintUnlockState::UNAVAILABLE &&
+            state->fingerprint_state !=
+                mojom::FingerprintUnlockState::AUTH_DISABLED_FROM_TIMEOUT) {
           to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
         }
+
+        // External binary based authentication is only available for unlock.
+        if (screen_type_ == LockScreen::ScreenType::kLock &&
+            base::FeatureList::IsEnabled(features::kUnlockWithExternalBinary)) {
+          to_update_auth |= LoginAuthUserView::AUTH_EXTERNAL_BINARY;
+        }
       }
+
       view->auth_user()->SetAuthMethods(to_update_auth, state->show_pin);
     } else if (view->public_account()) {
       view->public_account()->SetAuthEnabled(true /*enabled*/, animate);
@@ -1462,8 +1539,8 @@ void LockContentsView::ShowAuthErrorMessage() {
   base::Optional<int> bold_start;
   int bold_length = 0;
   // Display a hint to switch keyboards if there are other active input
-  // methods.
-  if (ime_controller->available_imes().size() > 1) {
+  // methods in clamshell mode.
+  if (ime_controller->available_imes().size() > 1 && !IsTabletMode()) {
     error_text += base::ASCIIToUTF16(" ");
     bold_start = error_text.length();
     base::string16 shortcut =
@@ -1481,7 +1558,8 @@ void LockContentsView::ShowAuthErrorMessage() {
   MakeSectionBold(label, error_text, bold_start, bold_length);
   label->set_auto_color_readability_enabled(false);
 
-  auto* learn_more_button = new AuthErrorLearnMoreButton();
+  auto* learn_more_button =
+      new AuthErrorLearnMoreButton(auth_error_bubble_.get());
 
   auto* container = new NonAccessibleView(kAuthErrorContainerName);
   container->SetLayoutManager(std::make_unique<views::BoxLayout>(

@@ -20,7 +20,7 @@ WhitespaceAttacher::~WhitespaceAttacher() {
 void WhitespaceAttacher::DidReattach(Node* node, LayoutObject* prev_in_flow) {
   DCHECK(node);
   DCHECK(node->IsTextNode() || node->IsElementNode());
-  // See Invariants in WhitespaceAttacher.h
+  // See Invariants in whitespace_attacher.h
   DCHECK(!last_display_contents_ || !last_text_node_needs_reattach_);
 
   ForceLastTextNodeNeedsReattach();
@@ -55,6 +55,8 @@ void WhitespaceAttacher::DidReattachElement(Element* element,
 void WhitespaceAttacher::DidVisitText(Text* text) {
   DCHECK(text);
   if (!last_text_node_ || !last_text_node_needs_reattach_) {
+    if (text->data().IsEmpty())
+      return;
     SetLastTextNode(text);
     if (reattach_all_whitespace_nodes_ && text->ContainsOnlyWhitespace())
       last_text_node_needs_reattach_ = true;

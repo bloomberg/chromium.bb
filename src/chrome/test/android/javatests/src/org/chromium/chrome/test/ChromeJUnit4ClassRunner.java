@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.List;

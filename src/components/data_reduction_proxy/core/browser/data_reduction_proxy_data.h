@@ -107,6 +107,16 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     client_lofi_requested_ = client_lofi_requested;
   }
 
+  // This response was fetched from cache, but the original request used DRP.
+  bool was_cached_data_reduction_proxy_response() const {
+    return was_cached_data_reduction_proxy_response_;
+  }
+  void set_was_cached_data_reduction_proxy_response(
+      bool was_cached_data_reduction_proxy_response) {
+    was_cached_data_reduction_proxy_response_ =
+        was_cached_data_reduction_proxy_response;
+  }
+
   // The session key used for this request. Only set for main frame requests.
   std::string session_key() const { return session_key_; }
   void set_session_key(const std::string& session_key) {
@@ -188,6 +198,7 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Whether the DataReductionProxy was used for this request or navigation.
   // Also true if the user is the holdback experiment, and the request would
   // otherwise be eligible to use the proxy.
+  // Cached responses are not considered to have used DRP.
   bool used_data_reduction_proxy_;
 
   // Whether server Lo-Fi was requested for this request or navigation. True if
@@ -212,6 +223,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
 
   // Whether the blacklist prevented a preview.
   bool black_listed_;
+
+  // This response was fetched from cache, but the original request used DRP.
+  bool was_cached_data_reduction_proxy_response_;
 
   // The session key used for this request or navigation.
   std::string session_key_;

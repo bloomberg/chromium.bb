@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,12 @@ public class ChromeAnimationTest implements Animatable {
     public void setUp() throws Exception {
         mHasFinishedFastAnimation = false;
         mHasFinishedSlowAnimation = false;
+        ChromeAnimation.Animation.setAnimationMultiplierForTesting(1f);
+    }
+
+    @After
+    public void tearDown() {
+        ChromeAnimation.Animation.unsetAnimationMultiplierForTesting();
     }
 
     @Override

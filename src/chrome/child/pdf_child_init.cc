@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
+#include "base/no_destructor.h"
 #include "base/win/current_module.h"
 #include "base/win/iat_patch_function.h"
 #include "content/public/child/child_thread.h"
@@ -15,8 +16,6 @@
 namespace {
 
 #if defined(OS_WIN)
-base::win::IATPatchFunction g_iat_patch_createdca;
-
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
                           LPCSTR device_name,
                           LPCSTR output,
@@ -37,7 +36,6 @@ typedef DWORD (WINAPI* GetFontDataPtr) (HDC hdc,
                                         DWORD length);
 GetFontDataPtr g_original_get_font_data = nullptr;
 
-base::win::IATPatchFunction g_iat_patch_get_font_data;
 
 DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD table,
@@ -66,15 +64,19 @@ DWORD WINAPI GetFontDataPatch(HDC hdc,
 void InitializePDF() {
 #if defined(OS_WIN)
   // Need to patch a few functions for font loading to work correctly. This can
-  // be removed once we switch PDF to use Skia.
+  // be removed once we switch PDF to use Skia
+  // (https://bugs.chromium.org/p/pdfium/issues/detail?id=11).
   HMODULE current_module = CURRENT_MODULE();
-  g_iat_patch_createdca.PatchFromModule(
-      current_module, "gdi32.dll", "CreateDCA",
-      reinterpret_cast<void*>(CreateDCAPatch));
-  g_iat_patch_get_font_data.PatchFromModule(
+
+  static base::NoDestructor<base::win::IATPatchFunction> patch_createdca;
+  patch_createdca->PatchFromModule(current_module, "gdi32.dll", "CreateDCA",
+                                   reinterpret_cast<void*>(CreateDCAPatch));
+
+  static base::NoDestructor<base::win::IATPatchFunction> patch_get_font_data;
+  patch_get_font_data->PatchFromModule(
       current_module, "gdi32.dll", "GetFontData",
       reinterpret_cast<void*>(GetFontDataPatch));
   g_original_get_font_data = reinterpret_cast<GetFontDataPtr>(
-      g_iat_patch_get_font_data.original_function());
+      patch_get_font_data->original_function());
 #endif  // defined(OS_WIN)
 }

@@ -7,11 +7,10 @@
 
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/paint_text_blob.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_typeface.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -44,12 +43,10 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
   void FillTextEmphasisGlyphs(const StringView&,
-                              TextDirection,
                               unsigned from,
                               unsigned to,
                               const GlyphData& emphasis_data,
                               const ShapeResult*);
-
   void Add(Glyph glyph,
            const SimpleFontData* font_data,
            CanvasRotationInVertical canvas_rotation,
@@ -108,11 +105,8 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  // Where TextContainerType can be either a TextRun or a StringView.
-  // For legacy layout and LayoutNG respectively.
-  template <typename TextContainerType>
   float FillGlyphsForResult(const ShapeResult*,
-                            const TextContainerType&,
+                            const StringView&,
                             unsigned from,
                             unsigned to,
                             float initial_advance,
@@ -127,17 +121,6 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   bool CanUseFastPath(unsigned from, unsigned to, const ShapeResult*);
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
-
-  template <typename TextContainerType>
-  float FillTextEmphasisGlyphsForRun(const ShapeResult::RunInfo*,
-                                     const TextContainerType&,
-                                     unsigned text_length,
-                                     TextDirection,
-                                     unsigned from,
-                                     unsigned to,
-                                     const GlyphData& emphasis_data,
-                                     float initial_advance,
-                                     unsigned run_offset);
 
   void CommitPendingRun();
   void CommitPendingBlob();

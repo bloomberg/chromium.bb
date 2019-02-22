@@ -18,16 +18,15 @@
 
 namespace blink {
 
-using LayoutObjectTraversalFunctor = std::function<void(const LayoutObject&)>;
+template <typename Functor>
+static void TraverseNonCompositingDescendantsInPaintOrder(const LayoutObject&,
+                                                          const Functor&);
 
-static void TraverseNonCompositingDescendantsInPaintOrder(
-    const LayoutObject&,
-    const LayoutObjectTraversalFunctor&);
-
+template <typename Functor>
 static void
 TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
     const LayoutObject& object,
-    const LayoutObjectTraversalFunctor& functor) {
+    const Functor& functor) {
   // |object| is a paint invalidation container, but is not a stacking context
   // or is a non-block, so the paint invalidation container of stacked
   // descendants may not belong to |object| but belong to an ancestor. This
@@ -82,9 +81,10 @@ TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
   }
 }
 
+template <typename Functor>
 static void TraverseNonCompositingDescendantsInPaintOrder(
     const LayoutObject& object,
-    const LayoutObjectTraversalFunctor& functor) {
+    const Functor& functor) {
   functor(object);
   LayoutObject* descendant = object.NextInPreOrder(&object);
   while (descendant) {
@@ -158,18 +158,32 @@ void ObjectPaintInvalidator::
   // invalidation container. Clear previous visual rect on the original paint
   // invalidation container to avoid under-invalidation if the visual rect on
   // the new paint invalidation container happens to be the same as the old one.
-  std::function<void(const LayoutObject&)> traverse =
-      [&traverse](const LayoutObject& object) {
-        object.GetMutableForPainting().ClearPreviousVisualRects();
-        for (LayoutObject* child = object.SlowFirstChild(); child;
-             child = child->NextSibling()) {
-          if (!child->HasLayer() ||
-              !ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer())
-            traverse(*child);
-        }
-      };
-  traverse(object_);
+  struct Helper {
+    static void Traverse(const LayoutObject& object) {
+      object.GetMutableForPainting().ClearPreviousVisualRects();
+      for (LayoutObject* child = object.SlowFirstChild(); child;
+           child = child->NextSibling()) {
+        if (!child->HasLayer() ||
+            !ToLayoutBoxModelObject(child)->Layer()->IsSelfPaintingLayer())
+          Traverse(*child);
+      }
+    }
+  };
+  Helper::Traverse(object_);
 }
+
+namespace {
+bool IsClientNGPaintFragmentForObject(const DisplayItemClient& client,
+                                      const LayoutObject& object) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return false;
+  // TODO(crbug.com/880519): This hack only makes current invalidation tracking
+  // layout tests pass with LayoutNG. More work is needed if we want to launch
+  // the invalidation tracking feature.
+  return object.IsLayoutBlockFlow() &&
+         &client == ToLayoutBlockFlow(object).PaintFragment();
+}
+}  // namespace
 
 void ObjectPaintInvalidator::InvalidateDisplayItemClient(
     const DisplayItemClient& client,
@@ -180,7 +194,8 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
   // reduce the cost.
   DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
 
-  if (&client == &object_) {
+  if (&client == &object_ ||
+      IsClientNGPaintFragmentForObject(client, object_)) {
     TRACE_EVENT_INSTANT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "PaintInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",

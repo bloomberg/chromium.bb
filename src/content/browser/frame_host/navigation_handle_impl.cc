@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -34,6 +35,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
@@ -72,29 +74,49 @@ void UpdateThrottleCheckResult(
   *to_update = result;
 }
 
+// LOG_NAVIGATION_TIMING_HISTOGRAM logs |value| for "Navigation.<histogram>" UMA
+// as well as supplementary UMAs (depending on |transition| and |is_background|)
+// for BackForward/Reload/NewNavigation variants.
+//
+// kMaxTime and kBuckets constants are consistent with
+// UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
+// near the low end of measured values.
+//
 // TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
 // which will only have subframe-specific transition types. This means that all
 // subframes currently are tagged as NewNavigations.
-#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, value,      \
-                                        max_time)                          \
-  do {                                                                     \
-    const base::TimeDelta kMinTime = base::TimeDelta::FromMilliseconds(1); \
-    const int kBuckets = 50;                                               \
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram, value, kMinTime,   \
-                               max_time, kBuckets);                        \
-    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                   \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".BackForward",   \
-                                 value, kMinTime, max_time, kBuckets);     \
-    } else if (ui::PageTransitionCoreTypeIs(transition,                    \
-                                            ui::PAGE_TRANSITION_RELOAD)) { \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".Reload", value, \
-                                 kMinTime, max_time, kBuckets);            \
-    } else if (ui::PageTransitionIsNewNavigation(transition)) {            \
-      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation", \
-                                 value, kMinTime, max_time, kBuckets);     \
-    } else {                                                               \
-      NOTREACHED() << "Invalid page transition: " << transition;           \
-    }                                                                      \
+#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, is_background, \
+                                        duration)                             \
+  do {                                                                        \
+    const base::TimeDelta kMinTime = base::TimeDelta::FromMilliseconds(1);    \
+    const base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(3);         \
+    const int kBuckets = 50;                                                  \
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram, duration, kMinTime,   \
+                               kMaxTime, kBuckets);                           \
+    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                      \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".BackForward",      \
+                                 duration, kMinTime, kMaxTime, kBuckets);     \
+    } else if (ui::PageTransitionCoreTypeIs(transition,                       \
+                                            ui::PAGE_TRANSITION_RELOAD)) {    \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".Reload", duration, \
+                                 kMinTime, kMaxTime, kBuckets);               \
+    } else if (ui::PageTransitionIsNewNavigation(transition)) {               \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation",    \
+                                 duration, kMinTime, kMaxTime, kBuckets);     \
+    } else {                                                                  \
+      NOTREACHED() << "Invalid page transition: " << transition;              \
+    }                                                                         \
+    if (is_background.has_value()) {                                          \
+      if (is_background.value()) {                                            \
+        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
+                                   ".BackgroundProcessPriority",              \
+                                   duration, kMinTime, kMaxTime, kBuckets);   \
+      } else {                                                                \
+        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
+                                   ".ForegroundProcessPriority",              \
+                                   duration, kMinTime, kMaxTime, kBuckets);   \
+      }                                                                       \
+    }                                                                         \
   } while (0)
 
 void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
@@ -140,7 +162,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
@@ -172,7 +194,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
-    RequestContextType request_context_type,
+    blink::mojom::RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
     base::TimeTicks input_start)
     : url_(url),
@@ -207,11 +229,11 @@ NavigationHandleImpl::NavigationHandleImpl(
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       should_check_main_world_csp_(should_check_main_world_csp),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      is_transferring_(false),
       is_form_submission_(is_form_submission),
       should_replace_current_entry_(false),
       is_download_(false),
       is_stream_(false),
+      is_signed_exchange_inner_response_(false),
       started_from_context_menu_(started_from_context_menu),
       is_same_process_(true),
       weak_factory_(this) {
@@ -537,7 +559,10 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
                       net::HostPortPair(), net::SSLInfo(), GlobalRequestID(),
-                      false, false, false,
+                      /* should_replace_current_entry=*/false,
+                      /* is_download=*/false,
+                      /* is_stream=*/false,
+                      /* is_signed_exchange_inner_response=*/false,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -554,8 +579,6 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.transition = ui::PAGE_TRANSITION_TYPED;
   params.redirects = std::vector<GURL>();
   params.should_update_history = false;
-  params.searchable_form_url = GURL();
-  params.searchable_form_encoding = std::string();
   params.did_create_new_entry = false;
   params.gesture = NavigationGestureUser;
   params.method = "GET";
@@ -627,6 +650,10 @@ bool NavigationHandleImpl::IsDownload() {
 
 bool NavigationHandleImpl::IsFormSubmission() {
   return is_form_submission_;
+}
+
+bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
+  return is_signed_exchange_inner_response_;
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(
@@ -790,6 +817,7 @@ void NavigationHandleImpl::WillProcessResponse(
     bool should_replace_current_entry,
     bool is_download,
     bool is_stream,
+    bool is_signed_exchange_inner_response,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
@@ -802,6 +830,7 @@ void NavigationHandleImpl::WillProcessResponse(
   should_replace_current_entry_ = should_replace_current_entry;
   is_download_ = is_download;
   is_stream_ = is_stream;
+  is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
   state_ = WILL_PROCESS_RESPONSE;
   ssl_info_ = ssl_info;
   socket_address_ = socket_address;
@@ -857,30 +886,28 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
     LogIsSameProcess(transition_, is_same_process_);
 
-    // TODO(csharrison,nasko): Increase the max value to 3 minutes in M68 or
-    // M69.
+    // Don't log process-priority-specific UMAs for TimeToReadyToCommit metric
+    // (which shouldn't be influenced by renderer priority).
+    constexpr base::Optional<bool> kIsBackground = base::nullopt;
+
     base::TimeDelta delta = ready_to_commit_time_ - navigation_start_;
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_, delta,
-                                    base::TimeDelta::FromSeconds(10));
+    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_,
+                                    kIsBackground, delta);
 
     if (IsInMainFrame()) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.MainFrame",
-                                      transition_, delta,
-                                      base::TimeDelta::FromSeconds(10));
+                                      transition_, kIsBackground, delta);
     } else {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.Subframe",
-                                      transition_, delta,
-                                      base::TimeDelta::FromSeconds(10));
+                                      transition_, kIsBackground, delta);
     }
 
     if (is_same_process_) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.SameProcess",
-                                      transition_, delta,
-                                      base::TimeDelta::FromSeconds(10));
+                                      transition_, kIsBackground, delta);
     } else {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.CrossProcess",
-                                      transition_, delta,
-                                      base::TimeDelta::FromSeconds(10));
+                                      transition_, kIsBackground, delta);
     }
   }
 
@@ -932,44 +959,43 @@ void NavigationHandleImpl::DidCommitNavigation(
     base::TimeTicks now = base::TimeTicks::Now();
     base::TimeDelta delta = now - navigation_start_;
     ui::PageTransition transition = GetPageTransition();
-    // 3 minutes aligns with UMA_HISTOGRAM_MEDIUM_TIMES.
-    const base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(3);
-    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, delta,
-                                    kMaxTime);
+    base::Optional<bool> is_background =
+        render_frame_host->GetProcess()->IsProcessBackgrounded();
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, is_background,
+                                    delta);
     if (IsInMainFrame()) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.MainFrame", transition,
-                                      delta, kMaxTime);
+                                      is_background, delta);
     } else {
       LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.Subframe", transition,
-                                      delta, kMaxTime);
+                                      is_background, delta);
     }
     if (is_same_process_) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess", transition,
-                                      delta, kMaxTime);
+                                      is_background, delta);
       if (IsInMainFrame()) {
         LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.MainFrame",
-                                        transition, delta, kMaxTime);
+                                        transition, is_background, delta);
       } else {
         LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.Subframe",
-                                        transition, delta, kMaxTime);
+                                        transition, is_background, delta);
       }
     } else {
       LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess", transition,
-                                      delta, kMaxTime);
+                                      is_background, delta);
       if (IsInMainFrame()) {
         LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.MainFrame",
-                                        transition, delta, kMaxTime);
+                                        transition, is_background, delta);
       } else {
         LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.Subframe",
-                                        transition, delta, kMaxTime);
+                                        transition, is_background, delta);
       }
     }
 
-    // 10 seconds aligns with UMA_HISTOGRAM_TIMES.
     if (!ready_to_commit_time_.is_null()) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit", transition_,
-                                      now - ready_to_commit_time_,
-                                      base::TimeDelta::FromSeconds(10));
+                                      is_background,
+                                      now - ready_to_commit_time_);
     }
   }
 

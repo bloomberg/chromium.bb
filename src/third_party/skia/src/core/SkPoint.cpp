@@ -151,8 +151,8 @@ bool SkPointPriv::SetLengthFast(SkPoint* pt, float length) {
 ///////////////////////////////////////////////////////////////////////////////
 
 SkScalar SkPointPriv::DistanceToLineBetweenSqd(const SkPoint& pt, const SkPoint& a,
-                                           const SkPoint& b,
-                                           Side* side) {
+                                               const SkPoint& b,
+                                               Side* side) {
 
     SkVector u = b - a;
     SkVector v = pt - a;
@@ -165,13 +165,18 @@ SkScalar SkPointPriv::DistanceToLineBetweenSqd(const SkPoint& pt, const SkPoint&
                   1 == kRight_Side);
         *side = (Side) SkScalarSignAsInt(det);
     }
-    SkScalar temp = det / uLengthSqd;
+    SkScalar temp = sk_ieee_float_divide(det, uLengthSqd);
     temp *= det;
+    // It's possible we have a degenerate line vector, or we're so far away it looks degenerate
+    // In this case, return squared distance to point A.
+    if (!SkScalarIsFinite(temp)) {
+        return LengthSqd(v);
+    }
     return temp;
 }
 
 SkScalar SkPointPriv::DistanceToLineSegmentBetweenSqd(const SkPoint& pt, const SkPoint& a,
-                                                  const SkPoint& b) {
+                                                      const SkPoint& b) {
     // See comments to distanceToLineBetweenSqd. If the projection of c onto
     // u is between a and b then this returns the same result as that
     // function. Otherwise, it returns the distance to the closer of a and
@@ -194,14 +199,22 @@ SkScalar SkPointPriv::DistanceToLineSegmentBetweenSqd(const SkPoint& pt, const S
     SkScalar uLengthSqd = LengthSqd(u);
     SkScalar uDotV = SkPoint::DotProduct(u, v);
 
+    // closest point is point A
     if (uDotV <= 0) {
         return LengthSqd(v);
+    // closest point is point B
     } else if (uDotV > uLengthSqd) {
         return DistanceToSqd(b, pt);
+    // closest point is inside segment
     } else {
         SkScalar det = u.cross(v);
-        SkScalar temp = det / uLengthSqd;
+        SkScalar temp = sk_ieee_float_divide(det, uLengthSqd);
         temp *= det;
+        // It's possible we have a degenerate segment, or we're so far away it looks degenerate
+        // In this case, return squared distance to point A.
+        if (!SkScalarIsFinite(temp)) {
+            return LengthSqd(v);
+        }
         return temp;
     }
 }

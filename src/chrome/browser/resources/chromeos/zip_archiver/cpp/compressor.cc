@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "compressor.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor.h"
 
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <string>
+#include <utility>
 
-#include "compressor_archive_minizip.h"
-#include "compressor_io_javascript_stream.h"
-#include "request.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_message_sender_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_requestor_interface.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/request.h"
 
 namespace {
 
@@ -21,14 +26,14 @@ class JavaScriptCompressorRequestor
   explicit JavaScriptCompressorRequestor(Compressor* compressor)
       : compressor_(compressor) {}
 
-  virtual void WriteChunkRequest(int64_t offset,
-                                 int64_t length,
-                                 const pp::VarArrayBuffer& buffer) {
+  void WriteChunkRequest(int64_t offset,
+                         int64_t length,
+                         const pp::VarArrayBuffer& buffer) override {
     compressor_->message_sender()->SendWriteChunk(compressor_->compressor_id(),
                                                   buffer, offset, length);
   }
 
-  virtual void ReadFileChunkRequest(int64_t length) {
+  void ReadFileChunkRequest(int64_t length) override {
     compressor_->message_sender()->SendReadFileChunk(
         compressor_->compressor_id(), length);
   }
@@ -45,17 +50,15 @@ Compressor::Compressor(const pp::InstanceHandle& instance_handle,
     : compressor_id_(compressor_id),
       message_sender_(message_sender),
       worker_(instance_handle),
-      callback_factory_(this) {
-  requestor_ = new JavaScriptCompressorRequestor(this);
-  compressor_stream_ = new CompressorIOJavaScriptStream(requestor_);
-  compressor_archive_ = new CompressorArchiveMinizip(compressor_stream_);
-}
+      callback_factory_(this),
+      requestor_(std::make_unique<JavaScriptCompressorRequestor>(this)),
+      compressor_stream_(
+          std::make_unique<CompressorIOJavaScriptStream>(requestor_.get())),
+      compressor_archive_(std::make_unique<CompressorArchiveMinizip>(
+          compressor_stream_.get())) {}
 
 Compressor::~Compressor() {
   worker_.Join();
-  delete compressor_archive_;
-  delete compressor_stream_;
-  delete requestor_;
 }
 
 bool Compressor::Init() {

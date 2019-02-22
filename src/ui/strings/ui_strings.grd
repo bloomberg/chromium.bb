@@ -429,6 +429,9 @@ need to be translated for each locale.-->
           Disclosure triangle
         </message>
       </if>
+      <message name="IDS_APP_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
+        Back button
+      </message>
       <message name="IDS_APP_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>
@@ -443,6 +446,9 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_APP_ACCNAME_MENU" desc="The accessible name for the Menu button.">
         Menu
+      </message>
+      <message name="IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT" desc="The accessible name for the color chooser hexadecimal input field">
+        Hex color value
       </message>
 
       <!-- Scroll Bar Context Menu Labels -->
@@ -613,6 +619,12 @@ need to be translated for each locale.-->
       <message name="IDS_APP_SHIFT_KEY" desc="Shift key">
         Shift
       </message>
+      <if expr="is_win">
+        <message name="IDS_APP_WINDOWS_KEY" desc="This refers to the 'Windows' key on certain
+            keyboards (often between Ctrl and Alt). This may not need to be translated.">
+          Win
+        </message>
+      </if>
 
       <!-- Accelerator format -->
       <message name="IDS_APP_ACCELERATOR_WITH_MODIFIER" desc="Accelerator with a modifier key">

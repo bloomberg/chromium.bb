@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
@@ -18,7 +17,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
-#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -38,7 +36,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -72,9 +69,7 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
 
 LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
 
-void LocalCardMigrationDialogView::ShowDialog(
-    base::OnceClosure user_accepted_migration_closure) {
-  user_accepted_migration_closure_ = std::move(user_accepted_migration_closure);
+void LocalCardMigrationDialogView::ShowDialog() {
   Init();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
@@ -84,16 +79,19 @@ void LocalCardMigrationDialogView::CloseDialog() {
 }
 
 void LocalCardMigrationDialogView::OnMigrationFinished() {
-  show_close_button_timer_.Stop();
-  title_->SetText(GetDialogTitle());
-  explanation_text_->SetText(GetDialogInstruction());
-  for (int index = 0; index < card_list_view_->child_count(); index++) {
-    AsMigratableCardView(card_list_view_->child_at(index))
-        ->UpdateCardView(controller_->GetViewState());
+  // TODO(crbug/867194): Add feedback and tip value prompt.
+}
+
+const std::vector<std::string>
+LocalCardMigrationDialogView::GetSelectedCardGuids() const {
+  std::vector<std::string> selected_cards;
+  for (int index = 0; index < card_list_view_->child_count(); ++index) {
+    MigratableCardView* card =
+        AsMigratableCardView(card_list_view_->child_at(index));
+    if (card->IsSelected())
+      selected_cards.push_back(card->GetGuid());
   }
-  separator_->SetVisible(false);
-  // TODO(crbug/867194): Add tip value prompt.
-  SetMigrationIsPending(false);
+  return selected_cards;
 }
 
 gfx::Size LocalCardMigrationDialogView::CalculatePreferredSize() const {
@@ -113,13 +111,6 @@ void LocalCardMigrationDialogView::AddedToWidget() {
   GetWidget()->AddObserver(this);
 }
 
-views::View* LocalCardMigrationDialogView::CreateExtraView() {
-  close_migration_dialog_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_CLOSE));
-  close_migration_dialog_button_->SetVisible(false);
-  return close_migration_dialog_button_;
-}
-
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
   return false;
 }
@@ -132,16 +123,18 @@ base::string16 LocalCardMigrationDialogView::GetDialogButtonLabel(
 
 bool LocalCardMigrationDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  // The buttons will be disabled when card uploading is in progress.
-  return !migration_pending_;
+  // If all checkboxes are unchecked, disable the save button.
+  if (button == ui::DIALOG_BUTTON_OK)
+    return !GetSelectedCardGuids().empty();
+
+  return true;
 }
 
 bool LocalCardMigrationDialogView::Accept() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
-      OnSaveButtonClicked();
-      return !base::FeatureList::IsEnabled(
-          features::kAutofillLocalCardMigrationShowFeedback);
+      controller_->OnSaveButtonClicked(GetSelectedCardGuids());
+      return true;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
       return true;
@@ -151,11 +144,11 @@ bool LocalCardMigrationDialogView::Accept() {
 bool LocalCardMigrationDialogView::Cancel() {
   switch (controller_->GetViewState()) {
     case LocalCardMigrationDialogState::kOffered:
-      OnCancelButtonClicked();
+      controller_->OnCancelButtonClicked();
       return true;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
-      OnViewCardsButtonClicked();
+      controller_->OnViewCardsButtonClicked();
       return true;
   }
 }
@@ -168,17 +161,12 @@ void LocalCardMigrationDialogView::OnWidgetClosing(views::Widget* widget) {
 // TODO(crbug/867194): Add button pressed logic for kDeleteCardButtonTag.
 void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  // If button clicked is the |close_migration_dialog_button_|, close the
-  // dialog.
-  if (sender == close_migration_dialog_button_) {
-    CloseDialog();
-  } else {
-    // Checkbox is clicked.
-    controller_->OnCardSelected(sender->tag());
-  }
+  // The button clicked is a checkbox just clicked. Enable/disable the save
+  // button if needed.
+  DCHECK_EQ(sender->GetClassName(), views::Checkbox::kViewClassName);
+  DialogModelChanged();
 }
 
-// TODO(crbug/867194): Add metrics for legal message link clicking.
 void LocalCardMigrationDialogView::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
@@ -186,6 +174,9 @@ void LocalCardMigrationDialogView::StyledLabelLinkClicked(
   if (!controller_)
     return;
 
+  controller_->OnLegalMessageLinkClicked();
+  // TODO(crbug.com/867194): Should be controller's responsibility to open
+  // links.
   legal_message_container_->OnLinkClicked(label, range, web_contents_);
 }
 
@@ -206,17 +197,25 @@ void LocalCardMigrationDialogView::Init() {
       std::make_unique<views::View>();
   image_container->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  constexpr int kImageBorderBottom = 16;
+  constexpr int kImageBorderBottom = 8;
   image_container->SetBorder(
       views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
   std::unique_ptr<views::ImageView> image =
       std::make_unique<views::ImageView>();
   image->SetImage(rb.GetImageSkiaNamed(GetHeaderImageId()));
+  image->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   image_container->AddChildView(image.release());
   main_container->AddChildView(image_container.release());
 
-  title_ =
-      new views::Label(GetDialogTitle(), views::style::CONTEXT_DIALOG_TITLE);
+  title_ = new views::Label(GetDialogTitle());
+  constexpr int kMigrationDialogTitleFontSize = 8;
+  title_->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
+                                             gfx::Font::NORMAL,
+                                             gfx::Font::Weight::MEDIUM));
+  title_->SetEnabledColor(gfx::kGoogleGrey900);
+  constexpr int kMigrationDialogTitleLineHeight = 20;
+  title_->SetLineHeight(kMigrationDialogTitleLineHeight);
   main_container->AddChildView(title_);
 
   std::unique_ptr<views::View> contents_container =
@@ -225,7 +224,7 @@ void LocalCardMigrationDialogView::Init() {
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   constexpr int kMigrationDialogInsets = 24;
-  gfx::Insets migration_dialog_insets = gfx::Insets(kMigrationDialogInsets);
+  gfx::Insets migration_dialog_insets = gfx::Insets(0, kMigrationDialogInsets);
   contents_container->SetBorder(
       views::CreateEmptyBorder(migration_dialog_insets));
 
@@ -247,8 +246,9 @@ void LocalCardMigrationDialogView::Init() {
   card_list_view_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   for (size_t index = 0; index < migratable_credit_cards.size(); index++) {
-    card_list_view_->AddChildView(new MigratableCardView(
-        migratable_credit_cards[index], this, static_cast<int>(index)));
+    card_list_view_->AddChildView(
+        new MigratableCardView(migratable_credit_cards[index], this,
+                               migratable_credit_cards.size() != 1));
   }
 
   std::unique_ptr<views::ScrollView> card_list_scroll_bar =
@@ -331,42 +331,6 @@ base::string16 LocalCardMigrationDialogView::GetCancelButtonLabel() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_VIEW_CARDS);
   }
-}
-
-void LocalCardMigrationDialogView::OnSaveButtonClicked() {
-  for (int index = 0; index < card_list_view_->child_count(); index++) {
-    // Checkboxes will be disabled when card uploading is in progress.
-    AsMigratableCardView(card_list_view_->child_at(index))
-        ->SetCheckboxEnabled(false);
-  }
-  SetMigrationIsPending(true);
-  std::move(user_accepted_migration_closure_).Run();
-  show_close_button_timer_.Start(
-      FROM_HERE, features::GetTimeoutForMigrationPromptFeedbackCloseButton(),
-      this, &LocalCardMigrationDialogView::ShowCloseButton);
-}
-
-void LocalCardMigrationDialogView::OnCancelButtonClicked() {
-  user_accepted_migration_closure_.Reset();
-}
-
-void LocalCardMigrationDialogView::OnViewCardsButtonClicked() {
-  constexpr int kPaymentsProfileUserIndex = 0;
-  web_contents_->OpenURL(content::OpenURLParams(
-      payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
-}
-
-void LocalCardMigrationDialogView::SetMigrationIsPending(
-    bool migration_pending) {
-  migration_pending_ = migration_pending;
-  DialogModelChanged();
-  GetDialogClientView()->Layout();
-}
-
-void LocalCardMigrationDialogView::ShowCloseButton() {
-  close_migration_dialog_button_->SetVisible(true);
 }
 
 LocalCardMigrationDialog* CreateLocalCardMigrationDialogView(

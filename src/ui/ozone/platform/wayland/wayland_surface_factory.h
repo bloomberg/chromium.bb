@@ -7,17 +7,21 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "ui/gl/gl_surface.h"
+#include "ui/ozone/platform/wayland/wayland_util.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
 
 namespace ui {
 
-class WaylandConnectionProxy;
 class GbmSurfacelessWayland;
+class WaylandConnectionProxy;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
@@ -25,7 +29,10 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
   ~WaylandSurfaceFactory() override;
 
   // These methods are used, when a dmabuf based approach is used.
-  void ScheduleBufferSwap(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                          uint32_t buffer_id,
+                          const gfx::Rect& damage_region_,
+                          wl::BufferSwapCallback callback);
   void RegisterSurface(gfx::AcceleratedWidget widget,
                        GbmSurfacelessWayland* surface);
   void UnregisterSurface(gfx::AcceleratedWidget widget);

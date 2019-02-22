@@ -32,6 +32,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/painter.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/window_util.h"
@@ -39,6 +40,9 @@
 namespace ash {
 namespace wm {
 namespace {
+
+// TODO(edcourtney): Move this to a PIP specific file, once it's created.
+const int kPipRoundedCornerRadius = 8;
 
 bool IsTabletModeEnabled() {
   return Shell::Get()
@@ -629,7 +633,8 @@ void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
   SetBoundsDirect(bounds);
 }
 
-void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
+void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
+                                           gfx::Tween::Type animation_type) {
   // Some test results in invoking CrossFadeToBounds when window is not visible.
   // No animation is necessary in that case, thus just change the bounds and
   // quit.
@@ -656,7 +661,30 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // Resize the window to the new size, which will force a layout and paint.
   SetBoundsDirect(new_bounds);
 
-  CrossFadeAnimation(window_, std::move(old_layer_owner), gfx::Tween::EASE_OUT);
+  CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
+}
+
+void WindowState::UpdatePipRoundedCorners() {
+  auto* layer = window()->layer();
+  if (!IsPip()) {
+    // Only remove the mask layer if it is from the existing PIP mask.
+    if (layer && pip_mask_ && layer->layer_mask_layer() == pip_mask_->layer())
+      layer->SetMaskLayer(nullptr);
+    pip_mask_.reset();
+    return;
+  }
+
+  gfx::Rect bounds = window()->bounds();
+  if (layer && (!pip_mask_ || pip_mask_->layer()->size() != bounds.size())) {
+    layer->SetMaskLayer(nullptr);
+    pip_mask_ = views::Painter::CreatePaintedLayer(
+        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
+                                                    kPipRoundedCornerRadius));
+    pip_mask_->layer()->SetBounds(bounds);
+    pip_mask_->layer()->SetFillsBoundsOpaquely(false);
+    layer->SetFillsBoundsOpaquely(false);
+    layer->SetMaskLayer(pip_mask_->layer());
+  }
 }
 
 WindowState* GetActiveWindowState() {

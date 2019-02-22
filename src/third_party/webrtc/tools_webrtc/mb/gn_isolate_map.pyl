@@ -82,10 +82,6 @@
     "label": "//modules:modules_unittests",
     "type": "windowed_test_launcher",
   },
-  "ortc_unittests": {
-    "label": "//ortc:ortc_unittests",
-    "type": "console_test_launcher",
-  },
   "peerconnection_unittests": {
     "label": "//pc:peerconnection_unittests",
     "type": "console_test_launcher",
@@ -129,7 +125,7 @@
     "type": "console_test_launcher",
   },
   "video_quality_loopback_test": {
-    "label": "//examples:AppRTCMobile_stubbed_video_io_test_apk",
+    "label": "//examples:video_quality_loopback_test",
     "type": "script",
     "script": "//examples/androidtests/video_quality_loopback_test.py",
     "args": ["."],

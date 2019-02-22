@@ -198,7 +198,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
   }
   std::vector<const ::sessions::SessionWindow*>::const_iterator iter_begin =
       windows.begin() + (window_num < 0 ? 0 : window_num);
-  std::vector<const ::sessions::SessionWindow*>::const_iterator iter_end =
+  auto iter_end =
       window_num < 0
           ? std::vector<const ::sessions::SessionWindow*>::const_iterator(
                 windows.end())
@@ -215,7 +215,7 @@ sync_sessions::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Only return the delegate if it exists and it is done syncing sessions.
-  if (service && service->IsSyncActive())
+  if (service && service->IsSyncFeatureActive())
     return service->GetOpenTabsUIDelegate();
 
   return NULL;

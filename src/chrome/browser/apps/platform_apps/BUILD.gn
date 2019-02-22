@@ -8,8 +8,6 @@ assert(enable_extensions)
 
 source_set("platform_apps") {
   sources = [
-    "app_launch_for_metro_restart_win.cc",
-    "app_launch_for_metro_restart_win.h",
     "app_load_service.cc",
     "app_load_service.h",
     "app_load_service_factory.cc",
@@ -20,6 +18,8 @@ source_set("platform_apps") {
     "app_window_registry_util.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
+    "chrome_apps_browser_api_provider.cc",
+    "chrome_apps_browser_api_provider.h",
     "install_chrome_app.cc",
     "install_chrome_app.h",
     "platform_app_launch.cc",
@@ -36,6 +36,8 @@ source_set("platform_apps") {
 
   public_deps = [
     "//apps",
+    "//chrome/browser/apps/platform_apps/api:api_registration",
+    "//chrome/common/apps/platform_apps/api",
   ]
 
   deps = [

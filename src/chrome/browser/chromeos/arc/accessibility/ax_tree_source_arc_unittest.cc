@@ -77,6 +77,10 @@ class AXTreeSourceArcTest : public testing::Test,
     tree_->SerializeNode(node, out_data->get());
   }
 
+  mojom::AccessibilityNodeInfoData* CallGetFromId(int32_t id) const {
+    return tree_->GetFromId(id);
+  }
+
  private:
   void OnAction(const ui::AXActionData& data) const override {}
 
@@ -269,6 +273,68 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("label content description", name);
+}
+
+// TODO(katie): Maybe remove this test when adding AccessibilityWindowInfoData
+// support per go/a11y-arc++-window-mapping if it is no longer needed.
+TEST_F(AXTreeSourceArcTest, MultipleNodeSubtrees) {
+  // Run several times to try source_id from root, middle, or leaf of the tree.
+  int tree_size = 4;
+  for (int i = 0; i < 4; i++) {
+    auto event = AXEventData::New();
+    event->source_id = i + tree_size;
+    event->task_id = 1;
+    event->event_type = AXEventType::VIEW_FOCUSED;
+
+    // Make three non-overlapping trees. The middle tree in the list has the
+    // source_id of interest. Each tree has a root with one child, and that
+    // child has two leaf children.
+    int num_trees = 3;
+    for (int j = 0; j < num_trees; j++) {
+      event->node_data.push_back(AXNodeInfoData::New());
+      AXNodeInfoData* root = event->node_data.back().get();
+      root->id = j * tree_size;
+      SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+                  std::vector<int>({j * tree_size + 1}));
+
+      event->node_data.push_back(AXNodeInfoData::New());
+      AXNodeInfoData* child1 = event->node_data.back().get();
+      child1->id = j * tree_size + 1;
+      SetProperty(child1, AXIntListProperty::CHILD_NODE_IDS,
+                  std::vector<int>({j * tree_size + 2, j * tree_size + 3}));
+
+      event->node_data.push_back(AXNodeInfoData::New());
+      AXNodeInfoData* child2 = event->node_data.back().get();
+      child2->id = j * tree_size + 2;
+
+      event->node_data.push_back(AXNodeInfoData::New());
+      AXNodeInfoData* child3 = event->node_data.back().get();
+      child3->id = j * tree_size + 3;
+    }
+
+    CallNotifyAccessibilityEvent(event.get());
+
+    // Check that only the middle tree was added, and that it is correct.
+    std::vector<AXNodeInfoData*> children;
+    CallGetChildren(event->node_data.at(tree_size).get(), &children);
+    ASSERT_EQ(1U, children.size());
+    EXPECT_EQ(5, children[0]->id);
+    children.clear();
+    CallGetChildren(event->node_data.at(tree_size + 1).get(), &children);
+    ASSERT_EQ(2U, children.size());
+    EXPECT_EQ(6, children[0]->id);
+    EXPECT_EQ(7, children[1]->id);
+
+    // The first and third roots are not part of the tree.
+    EXPECT_EQ(nullptr, CallGetFromId(0));
+    EXPECT_EQ(nullptr, CallGetFromId(1));
+    EXPECT_EQ(nullptr, CallGetFromId(2));
+    EXPECT_EQ(nullptr, CallGetFromId(3));
+    EXPECT_EQ(nullptr, CallGetFromId(8));
+    EXPECT_EQ(nullptr, CallGetFromId(9));
+    EXPECT_EQ(nullptr, CallGetFromId(10));
+    EXPECT_EQ(nullptr, CallGetFromId(11));
+  }
 }
 
 }  // namespace arc

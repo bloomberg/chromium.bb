@@ -45,6 +45,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
@@ -269,7 +270,7 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
   base::ListValue* shortcut_list;
   if (!parsed_message || !parsed_message->GetAsList(&shortcut_list))
       return;
-  base::ListValue::iterator it = shortcut_list->begin();
+  auto it = shortcut_list->begin();
   for (; it != shortcut_list->end(); ++it) {
     base::DictionaryValue* dictionary;
     if (!it->GetAsDictionary(&dictionary))
@@ -421,8 +422,7 @@ DevToolsWindow::~DevToolsWindow() {
   owned_toolbox_web_contents_.reset();
 
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  DevToolsWindows::iterator it(
-      std::find(instances->begin(), instances->end(), this));
+  auto it(std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
   instances->erase(it);
 
@@ -484,8 +484,7 @@ DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
   if (!inspected_web_contents || !g_devtools_window_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
-       ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->GetInspectedWebContents() == inspected_web_contents)
       return *it;
   }
@@ -497,8 +496,7 @@ bool DevToolsWindow::IsDevToolsWindow(content::WebContents* web_contents) {
   if (!web_contents || !g_devtools_window_instances.IsCreated())
     return false;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
-       ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->main_web_contents_ == web_contents ||
         (*it)->toolbox_web_contents_ == web_contents)
       return true;
@@ -657,11 +655,11 @@ void DevToolsWindow::OpenExternalFrontend(
 }
 
 // static
-void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
+DevToolsWindow* DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
   for (DevToolsWindow* window : g_devtools_window_instances.Get()) {
     if (window->frontend_type_ == kFrontendNode) {
       window->ActivateWindow();
-      return;
+      return window;
     }
   }
 
@@ -669,9 +667,10 @@ void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
       Create(profile, nullptr, kFrontendNode, std::string(), false,
              std::string(), std::string(), false);
   if (!window)
-    return;
+    return nullptr;
   window->bindings_->AttachTo(DevToolsAgentHost::CreateForDiscovery());
   window->ScheduleShow(DevToolsToggleAction::Show());
+  return window;
 }
 
 // static
@@ -866,8 +865,11 @@ bool DevToolsWindow::InterceptPageBeforeUnload(WebContents* contents) {
   window->intercepted_page_beforeunload_ = true;
   // Handle case of devtools inspecting another devtools instance by passing
   // the call up to the inspecting devtools instance.
+  // TODO(chrisha): Make devtools handle |auto_cancel=false| unload handler
+  // dispatches; otherwise, discarding queries can cause unload dialogs to
+  // pop-up for tabs with an attached devtools.
   if (!DevToolsWindow::InterceptPageBeforeUnload(window->main_web_contents_)) {
-    window->main_web_contents_->DispatchBeforeUnload();
+    window->main_web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
   }
   return true;
 }
@@ -1090,8 +1092,7 @@ DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
   if (!agent_host || !g_devtools_window_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
-       ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->bindings_->IsAttachedTo(agent_host))
       return *it;
   }
@@ -1104,8 +1105,7 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   if (!web_contents || !g_devtools_window_instances.IsCreated())
     return NULL;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
-  for (DevToolsWindows::iterator it(instances->begin()); it != instances->end();
-       ++it) {
+  for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->main_web_contents_ == web_contents)
       return *it;
   }
@@ -1228,7 +1228,7 @@ void DevToolsWindow::BeforeUnloadFired(WebContents* tab,
     // Inspected page is attempting to close.
     WebContents* inspected_web_contents = GetInspectedWebContents();
     if (proceed) {
-      inspected_web_contents->DispatchBeforeUnload();
+      inspected_web_contents->DispatchBeforeUnload(false /* auto_cancel */);
     } else {
       bool should_proceed;
       inspected_web_contents->GetDelegate()->BeforeUnloadFired(
@@ -1273,9 +1273,12 @@ content::ColorChooser* DevToolsWindow::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void DevToolsWindow::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                                    const content::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+void DevToolsWindow::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 bool DevToolsWindow::PreHandleGestureEvent(
@@ -1297,7 +1300,7 @@ void DevToolsWindow::ActivateWindow() {
 void DevToolsWindow::CloseWindow() {
   DCHECK(is_docked_);
   life_stage_ = kClosing;
-  main_web_contents_->DispatchBeforeUnload();
+  main_web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
 }
 
 void DevToolsWindow::Inspect(scoped_refptr<content::DevToolsAgentHost> host) {

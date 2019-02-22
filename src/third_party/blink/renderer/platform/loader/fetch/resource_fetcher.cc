@@ -82,7 +82,7 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     base::TimeDelta::FromSeconds(30);
 
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                      \
-  case Resource::k##name: {                                                 \
+  case ResourceType::k##name: {                                             \
     DEFINE_THREAD_SAFE_STATIC_LOCAL(                                        \
         EnumerationHistogram, resource_histogram,                           \
         ("Blink.MemoryCache.RevalidationPolicy." prefix #name, kLoad + 1)); \
@@ -122,34 +122,34 @@ void AddRedirectsToTimingInfo(Resource* resource, ResourceTimingInfo* info) {
   }
 }
 
-ResourceLoadPriority TypeToPriority(Resource::Type type) {
+ResourceLoadPriority TypeToPriority(ResourceType type) {
   switch (type) {
-    case Resource::kMainResource:
-    case Resource::kCSSStyleSheet:
-    case Resource::kFont:
+    case ResourceType::kMainResource:
+    case ResourceType::kCSSStyleSheet:
+    case ResourceType::kFont:
       // Also parser-blocking scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kVeryHigh;
-    case Resource::kXSLStyleSheet:
+    case ResourceType::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
       FALLTHROUGH;
-    case Resource::kRaw:
-    case Resource::kImportResource:
-    case Resource::kScript:
+    case ResourceType::kRaw:
+    case ResourceType::kImportResource:
+    case ResourceType::kScript:
       // Also visible resources/images (set explicitly in loadPriority)
       return ResourceLoadPriority::kHigh;
-    case Resource::kManifest:
-    case Resource::kMock:
+    case ResourceType::kManifest:
+    case ResourceType::kMock:
       // Also late-body scripts discovered by the preload scanner (set
       // explicitly in loadPriority)
       return ResourceLoadPriority::kMedium;
-    case Resource::kImage:
-    case Resource::kTextTrack:
-    case Resource::kAudio:
-    case Resource::kVideo:
-    case Resource::kSVGDocument:
+    case ResourceType::kImage:
+    case ResourceType::kTextTrack:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
+    case ResourceType::kSVGDocument:
       // Also async scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kLow;
-    case Resource::kLinkPrefetch:
+    case ResourceType::kLinkPrefetch:
       return ResourceLoadPriority::kVeryLow;
   }
 
@@ -178,13 +178,14 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
-  DEFINE_STATIC_LOCAL(ResourceFetcher::ResourceFetcherSet, fetchers, ());
-  return fetchers;
+  DEFINE_STATIC_LOCAL(Persistent<ResourceFetcher::ResourceFetcherSet>, fetchers,
+                      (new ResourceFetcher::ResourceFetcherSet));
+  return *fetchers;
 }
 
 ResourceLoadPriority AdjustPriorityWithPriorityHint(
     ResourceLoadPriority priority_so_far,
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     FetchParameters::DeferOption defer_option,
     bool is_link_preload) {
@@ -204,9 +205,9 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
       // - Late and async scripts
       // - Images
       // - Prefetch
-      if ((type == Resource::kScript &&
+      if ((type == ResourceType::kScript &&
            (FetchParameters::kLazyLoad == defer_option)) ||
-          type == Resource::kImage || type == Resource::kLinkPrefetch) {
+          type == ResourceType::kImage || type == ResourceType::kLinkPrefetch) {
         new_priority = ResourceLoadPriority::kHigh;
       }
 
@@ -221,9 +222,9 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
       //     For this initial implementation we do a blanket demotion regardless
       //     of `as` value/type. TODO(domfarolino): maybe discuss a more
       //     granular approach with loading team
-      if (type == Resource::kImage ||
+      if (type == ResourceType::kImage ||
           resource_request.GetRequestContext() ==
-              WebURLRequest::RequestContext::kRequestContextFetch ||
+              mojom::RequestContextType::FETCH ||
           is_link_preload) {
         new_priority = ResourceLoadPriority::kLow;
       }
@@ -238,7 +239,7 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
 }  // namespace
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
-    Resource::Type type,
+    ResourceType type,
     const ResourceRequest& resource_request,
     ResourcePriority::VisibilityStatus visibility,
     FetchParameters::DeferOption defer_option,
@@ -255,17 +256,17 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   // note that this is based on when the preload scanner discovers a resource
   // for the most part so the main parser may not have reached the image element
   // yet.
-  if (type == Resource::kImage && !is_link_preload)
+  if (type == ResourceType::kImage && !is_link_preload)
     image_fetched_ = true;
 
   // A preloaded font should not take precedence over critical CSS or
   // parser-blocking scripts.
-  if (type == Resource::kFont && is_link_preload)
+  if (type == ResourceType::kFont && is_link_preload)
     priority = ResourceLoadPriority::kHigh;
 
   if (FetchParameters::kIdleLoad == defer_option) {
     priority = ResourceLoadPriority::kVeryLow;
-  } else if (type == Resource::kScript) {
+  } else if (type == ResourceType::kScript) {
     // Special handling for scripts.
     // Default/Parser-Blocking/Preload early in document: High (set in
     // typeToPriority)
@@ -283,11 +284,11 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   } else if (FetchParameters::kLazyLoad == defer_option) {
     priority = ResourceLoadPriority::kVeryLow;
   } else if (resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextBeacon ||
+                 mojom::RequestContextType::BEACON ||
              resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextPing ||
+                 mojom::RequestContextType::PING ||
              resource_request.GetRequestContext() ==
-                 WebURLRequest::kRequestContextCSPReport) {
+                 mojom::RequestContextType::CSP_REPORT) {
     priority = ResourceLoadPriority::kVeryLow;
   }
 
@@ -311,53 +312,53 @@ static void PopulateTimingInfo(ResourceTimingInfo* info, Resource* resource) {
   info->SetFinalResponse(resource->GetResponse());
 }
 
-WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
-    Resource::Type type,
+mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
+    ResourceType type,
     IsImageSet is_image_set,
     bool is_main_frame) {
   DCHECK((is_image_set == kImageNotImageSet) ||
-         (type == Resource::kImage && is_image_set == kImageIsImageSet));
+         (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
   switch (type) {
-    case Resource::kMainResource:
+    case ResourceType::kMainResource:
       if (!is_main_frame)
-        return WebURLRequest::kRequestContextIframe;
+        return mojom::RequestContextType::IFRAME;
       // FIXME: Change this to a context frame type (once we introduce them):
       // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
-      return WebURLRequest::kRequestContextHyperlink;
-    case Resource::kXSLStyleSheet:
+      return mojom::RequestContextType::HYPERLINK;
+    case ResourceType::kXSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
       FALLTHROUGH;
-    case Resource::kCSSStyleSheet:
-      return WebURLRequest::kRequestContextStyle;
-    case Resource::kScript:
-      return WebURLRequest::kRequestContextScript;
-    case Resource::kFont:
-      return WebURLRequest::kRequestContextFont;
-    case Resource::kImage:
+    case ResourceType::kCSSStyleSheet:
+      return mojom::RequestContextType::STYLE;
+    case ResourceType::kScript:
+      return mojom::RequestContextType::SCRIPT;
+    case ResourceType::kFont:
+      return mojom::RequestContextType::FONT;
+    case ResourceType::kImage:
       if (is_image_set == kImageIsImageSet)
-        return WebURLRequest::kRequestContextImageSet;
-      return WebURLRequest::kRequestContextImage;
-    case Resource::kRaw:
-      return WebURLRequest::kRequestContextSubresource;
-    case Resource::kImportResource:
-      return WebURLRequest::kRequestContextImport;
-    case Resource::kLinkPrefetch:
-      return WebURLRequest::kRequestContextPrefetch;
-    case Resource::kTextTrack:
-      return WebURLRequest::kRequestContextTrack;
-    case Resource::kSVGDocument:
-      return WebURLRequest::kRequestContextImage;
-    case Resource::kAudio:
-      return WebURLRequest::kRequestContextAudio;
-    case Resource::kVideo:
-      return WebURLRequest::kRequestContextVideo;
-    case Resource::kManifest:
-      return WebURLRequest::kRequestContextManifest;
-    case Resource::kMock:
-      return WebURLRequest::kRequestContextSubresource;
+        return mojom::RequestContextType::IMAGE_SET;
+      return mojom::RequestContextType::IMAGE;
+    case ResourceType::kRaw:
+      return mojom::RequestContextType::SUBRESOURCE;
+    case ResourceType::kImportResource:
+      return mojom::RequestContextType::IMPORT;
+    case ResourceType::kLinkPrefetch:
+      return mojom::RequestContextType::PREFETCH;
+    case ResourceType::kTextTrack:
+      return mojom::RequestContextType::TRACK;
+    case ResourceType::kSVGDocument:
+      return mojom::RequestContextType::IMAGE;
+    case ResourceType::kAudio:
+      return mojom::RequestContextType::AUDIO;
+    case ResourceType::kVideo:
+      return mojom::RequestContextType::VIDEO;
+    case ResourceType::kManifest:
+      return mojom::RequestContextType::MANIFEST;
+    case ResourceType::kMock:
+      return mojom::RequestContextType::SUBRESOURCE;
   }
   NOTREACHED();
-  return WebURLRequest::kRequestContextSubresource;
+  return mojom::RequestContextType::SUBRESOURCE;
 }
 
 ResourceFetcher::ResourceFetcher(FetchContext* new_context)
@@ -413,13 +414,13 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
                                         RevalidationPolicy policy) {
   // Defer a font load until it is actually needed unless this is a link
   // preload.
-  if (resource->GetType() == Resource::kFont && !params.IsLinkPreload())
+  if (resource->GetType() == ResourceType::kFont && !params.IsLinkPreload())
     return false;
 
   // Defer loading images either when:
   // - images are disabled
   // - instructed to defer loading images from network
-  if (resource->GetType() == Resource::kImage &&
+  if (resource->GetType() == ResourceType::kImage &&
       (ShouldDeferImageLoad(resource->Url()) ||
        params.GetImageRequestOptimization() ==
            FetchParameters::kDeferImageLoad)) {
@@ -450,7 +451,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         params.Options().initiator_info.name, CurrentTimeTicks(),
-        resource->GetType() == Resource::kMainResource);
+        resource->GetType() == ResourceType::kMainResource);
     PopulateTimingInfo(info.get(), resource);
     info->ClearLoadTimings();
     info->SetLoadFinishTime(info->InitialTime());
@@ -511,8 +512,8 @@ Resource* ResourceFetcher::ResourceForStaticData(
   // emulate the behavior it wants to test, which would otherwise be reserved
   // for network loads.
   if (!archive_ && !substitute_data.IsValid() &&
-      (factory.GetType() == Resource::kMainResource ||
-       factory.GetType() == Resource::kRaw))
+      (factory.GetType() == ResourceType::kMainResource ||
+       factory.GetType() == ResourceType::kRaw))
     return nullptr;
 
   const String cache_identifier = GetCacheIdentifier();
@@ -566,7 +567,6 @@ Resource* ResourceFetcher::ResourceForStaticData(
     resource->SetResourceBuffer(data);
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->Finish(TimeTicks(), Context().GetLoadingTaskRunner().get());
 
   if (!substitute_data.IsValid())
@@ -584,7 +584,6 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   if (client)
     client->SetResource(resource, Context().GetLoadingTaskRunner().get());
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
                               params.Url(), blocked_reason),
                           Context().GetLoadingTaskRunner().get());
@@ -652,12 +651,12 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
     const SubstituteData& substitute_data,
     unsigned long identifier) {
   ResourceRequest& resource_request = params.MutableResourceRequest();
-  Resource::Type resource_type = factory.GetType();
+  ResourceType resource_type = factory.GetType();
   const ResourceLoaderOptions& options = params.Options();
 
   DCHECK(options.synchronous_policy == kRequestAsynchronously ||
-         resource_type == Resource::kRaw ||
-         resource_type == Resource::kXSLStyleSheet);
+         resource_type == ResourceType::kRaw ||
+         resource_type == ResourceType::kXSLStyleSheet);
 
   params.OverrideContentType(factory.ContentType());
 
@@ -697,11 +696,11 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_request, resource_type, params.Defer()));
   }
   if (resource_request.GetRequestContext() ==
-      WebURLRequest::kRequestContextUnspecified) {
+      mojom::RequestContextType::UNSPECIFIED) {
     resource_request.SetRequestContext(DetermineRequestContext(
         resource_type, kImageNotImageSet, Context().IsMainFrame()));
   }
-  if (resource_type == Resource::kLinkPrefetch)
+  if (resource_type == ResourceType::kLinkPrefetch)
     resource_request.SetHTTPHeaderField(HTTPNames::Purpose, "prefetch");
 
   // Indicate whether the network stack can return a stale resource. If a
@@ -717,7 +716,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
       !IsRawResource(resource_type) && !params.IsStaleRevalidation());
 
   Context().AddAdditionalRequestHeaders(
-      resource_request, (resource_type == Resource::kMainResource)
+      resource_request, (resource_type == ResourceType::kMainResource)
                             ? kFetchMainResource
                             : kFetchSubresource);
 
@@ -738,20 +737,6 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (blocked_reason)
     return blocked_reason;
 
-  const scoped_refptr<const SecurityOrigin>& origin = options.security_origin;
-  if (origin && !origin->IsOpaque() &&
-      !origin->IsSameSchemeHostPort(Context().GetSecurityOrigin())) {
-    // |options.security_origin| may differ from the document's origin if
-    // this is a fetch initiated by an isolated world execution context, with a
-    // different SecurityOrigin. In this case, plumb it through as the
-    // RequestorOrigin so that the browser process can make policy decisions for
-    // this request, based on any special permissions the isolated world may
-    // have been granted.
-    // TODO(nick, dcheng): Find a way to formalize the isolated world origin
-    // check in https://crbug.com/792154.
-    resource_request.SetRequestorOrigin(origin);
-  }
-
   // For initial requests, call prepareRequest() here before revalidation
   // policy is determined.
   Context().PrepareRequest(resource_request,
@@ -763,27 +748,25 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
       options.cors_handling_by_resource_fetcher ==
           kEnableCORSHandlingByResourceFetcher) {
-    if (CORS::IsCORSEnabledRequestMode(
-            resource_request.GetFetchRequestMode())) {
-      DCHECK(origin);
-      if (!origin->CanRequest(params.Url())) {
-        params.MutableOptions().cors_flag = true;
-        // TODO(yhirano): Reject requests for non CORS-enabled schemes.
-        // See https://crrev.com/c/1298828.
-      }
-    }
-    bool allow_stored_credentials = false;
-    switch (resource_request.GetFetchCredentialsMode()) {
-      case network::mojom::FetchCredentialsMode::kOmit:
-        break;
-      case network::mojom::FetchCredentialsMode::kSameOrigin:
-        allow_stored_credentials = !params.Options().cors_flag;
-        break;
-      case network::mojom::FetchCredentialsMode::kInclude:
-        allow_stored_credentials = true;
-        break;
-    }
-    resource_request.SetAllowStoredCredentials(allow_stored_credentials);
+    const scoped_refptr<const SecurityOrigin> origin =
+        resource_request.RequestorOrigin();
+    DCHECK(!options.cors_flag);
+    params.MutableOptions().cors_flag = CORS::CalculateCORSFlag(
+        params.Url(), origin.get(), resource_request.GetFetchRequestMode());
+    // TODO(yhirano): Reject requests for non CORS-enabled schemes.
+    // See https://crrev.com/c/1298828.
+    resource_request.SetAllowStoredCredentials(CORS::CalculateCredentialsFlag(
+        resource_request.GetFetchCredentialsMode(),
+        CORS::CalculateResponseTainting(
+            params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
+            params.Options().cors_flag ? CORSFlag::Set : CORSFlag::Unset)));
+  }
+
+  if (RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+      resource_request.GetFetchCredentialsMode() ==
+          network::mojom::FetchCredentialsMode::kOmit) {
+    // See comments at network::ResourceRequest::fetch_credentials_mode.
+    resource_request.SetAllowStoredCredentials(false);
   }
 
   return base::nullopt;
@@ -816,6 +799,11 @@ Resource* ResourceFetcher::RequestResource(
     }
   }
 
+  // |resource_request|'s origin can be null here, corresponding to the "client"
+  // value in the spec. In that case client's origin is used.
+  if (!resource_request.RequestorOrigin())
+    resource_request.SetRequestorOrigin(Context().GetSecurityOrigin());
+
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       PrepareRequest(params, factory, substitute_data, identifier);
   if (blocked_reason) {
@@ -823,7 +811,7 @@ Resource* ResourceFetcher::RequestResource(
                                      client);
   }
 
-  Resource::Type resource_type = factory.GetType();
+  ResourceType resource_type = factory.GetType();
 
   if (!params.IsSpeculativePreload()) {
     // Only log if it's not for speculative preload.
@@ -965,6 +953,8 @@ void ResourceFetcher::InitializeRevalidation(
   // RawResource doesn't support revalidation.
   CHECK(!IsRawResource(*resource));
 
+  revalidating_request.SetIsRevalidating(true);
+
   const AtomicString& last_modified =
       resource->GetResponse().HttpHeaderField(HTTPNames::Last_Modified);
   const AtomicString& e_tag =
@@ -986,14 +976,6 @@ void ResourceFetcher::InitializeRevalidation(
     revalidating_request.SetHTTPHeaderField(HTTPNames::If_None_Match, e_tag);
 
   resource->SetRevalidatingRequest(revalidating_request);
-}
-
-scoped_refptr<const SecurityOrigin> ResourceFetcher::GetSourceOrigin(
-    const ResourceLoaderOptions& options) const {
-  if (options.security_origin)
-    return options.security_origin;
-
-  return Context().GetSecurityOrigin();
 }
 
 void ResourceFetcher::AddToMemoryCacheIfNeeded(const FetchParameters& params,
@@ -1019,7 +1001,6 @@ Resource* ResourceFetcher::CreateResourceForLoading(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   resource->SetLinkPreload(params.IsLinkPreload());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
 
   AddToMemoryCacheIfNeeded(params, resource);
   return resource;
@@ -1031,7 +1012,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
   if (fetch_initiator == FetchInitiatorTypeNames::internal)
     return;
 
-  bool is_main_resource = resource->GetType() == Resource::kMainResource;
+  bool is_main_resource = resource->GetType() == ResourceType::kMainResource;
 
   // The request can already be fetched in a previous navigation. Thus
   // startTime must be set accordingly.
@@ -1073,7 +1054,7 @@ void ResourceFetcher::RecordResourceTimingOnRedirect(
     it->value->AddRedirect(redirect_response, cross_origin);
   }
 
-  if (resource->GetType() == Resource::kMainResource) {
+  if (resource->GetType() == ResourceType::kMainResource) {
     DCHECK(navigation_timing_info_);
     navigation_timing_info_->AddRedirect(redirect_response, cross_origin);
   }
@@ -1086,7 +1067,7 @@ static bool IsDownloadOrStreamRequest(const ResourceRequest& request) {
 }
 
 Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
-                                        Resource::Type type) {
+                                        ResourceType type) {
   auto it = preloads_.find(PreloadKey(params.Url(), type));
   if (it == preloads_.end())
     return nullptr;
@@ -1117,8 +1098,7 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
     return nullptr;
   }
 
-  const Resource::MatchStatus match_status =
-      resource->CanReuse(params, GetSourceOrigin(params.Options()));
+  const Resource::MatchStatus match_status = resource->CanReuse(params);
   if (match_status != Resource::MatchStatus::kOk) {
     PrintPreloadWarning(resource, match_status);
     return nullptr;
@@ -1190,7 +1170,7 @@ void ResourceFetcher::PrintPreloadWarning(Resource* resource,
 
 void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
                                                  const FetchParameters& params,
-                                                 Resource::Type type) {
+                                                 ResourceType type) {
   if (!params.IsSpeculativePreload() && !params.IsLinkPreload())
     return;
   DCHECK(!params.IsStaleRevalidation());
@@ -1224,7 +1204,7 @@ bool ResourceFetcher::IsImageResourceDisallowedToBeReused(
   //
   // TODO(japhet): Can we get rid of one of these settings?
 
-  if (existing_resource.GetType() != Resource::kImage)
+  if (existing_resource.GetType() != ResourceType::kImage)
     return false;
 
   return !Context().AllowImage(images_enabled_, existing_resource.Url());
@@ -1232,7 +1212,7 @@ bool ResourceFetcher::IsImageResourceDisallowedToBeReused(
 
 ResourceFetcher::RevalidationPolicy
 ResourceFetcher::DetermineRevalidationPolicy(
-    Resource::Type type,
+    ResourceType type,
     const FetchParameters& fetch_params,
     const Resource& existing_resource,
     bool is_static_data) const {
@@ -1247,7 +1227,7 @@ ResourceFetcher::DetermineRevalidationPolicy(
 
 ResourceFetcher::RevalidationPolicy
 ResourceFetcher::DetermineRevalidationPolicyInternal(
-    Resource::Type type,
+    ResourceType type,
     const FetchParameters& fetch_params,
     const Resource& existing_resource,
     bool is_static_data) const {
@@ -1311,9 +1291,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   if (is_static_data)
     return kUse;
 
-  if (existing_resource.CanReuse(fetch_params,
-                                 GetSourceOrigin(fetch_params.Options())) !=
-      Resource::MatchStatus::kOk) {
+  if (existing_resource.CanReuse(fetch_params) != Resource::MatchStatus::kOk) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::DetermineRevalidationPolicy "
                                  "reloading due to Resource::CanReuse() "
                                  "returning false.";
@@ -1340,7 +1318,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // group loads of the same resource together. Raw resources are exempted, as
   // XHRs fall into this category and may have user-set Cache-Control: headers
   // or other factors that require separate requests.
-  if (type != Resource::kRaw) {
+  if (type != ResourceType::kRaw) {
     if (!Context().IsLoadComplete() &&
         cached_resources_map_.Contains(
             MemoryCache::RemoveFragmentIdentifierIfNeeded(
@@ -1369,7 +1347,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // List of available images logic allows images to be re-used without cache
   // validation. We restrict this only to images from memory cache which are the
   // same as the version in the current document.
-  if (type == Resource::kImage &&
+  if (type == ResourceType::kImage &&
       &existing_resource == CachedResource(request.Url())) {
     return kUse;
   }
@@ -1456,10 +1434,16 @@ bool ResourceFetcher::ShouldDeferImageLoad(const KURL& url) const {
 
 void ResourceFetcher::ReloadImagesIfNotDeferred() {
   for (Resource* resource : document_resources_) {
-    if (resource->GetType() == Resource::kImage && resource->StillNeedsLoad() &&
-        !ShouldDeferImageLoad(resource->Url()))
+    if (resource->GetType() == ResourceType::kImage &&
+        resource->StillNeedsLoad() && !ShouldDeferImageLoad(resource->Url()))
       StartLoad(resource);
   }
+}
+
+FetchContext& ResourceFetcher::Context() const {
+  return context_ ? *context_.Get()
+                  : FetchContext::NullInstance(
+                        Platform::Current()->CurrentThread()->GetTaskRunner());
 }
 
 void ResourceFetcher::ClearContext() {
@@ -1572,11 +1556,14 @@ void ResourceFetcher::HandleLoadCompletion(Resource* resource) {
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }
 
-void ResourceFetcher::HandleLoaderFinish(Resource* resource,
-                                         TimeTicks finish_time,
-                                         LoaderFinishType type,
-                                         uint32_t inflight_keepalive_bytes,
-                                         bool should_report_corb_blocking) {
+void ResourceFetcher::HandleLoaderFinish(
+    Resource* resource,
+    TimeTicks finish_time,
+    LoaderFinishType type,
+    uint32_t inflight_keepalive_bytes,
+    bool should_report_corb_blocking,
+    const std::vector<network::cors::PreflightTimingInfo>&
+        cors_preflight_timing_info) {
   DCHECK(resource);
 
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
@@ -1596,7 +1583,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
   const int64_t encoded_data_length =
       resource->GetResponse().EncodedDataLength();
 
-  if (resource->GetType() == Resource::kMainResource) {
+  if (resource->GetType() == ResourceType::kMainResource) {
     DCHECK(navigation_timing_info_);
     // Store redirect responses that were packed inside the final response.
     AddRedirectsToTimingInfo(resource, navigation_timing_info_.get());
@@ -1625,6 +1612,31 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       if (resource->Options().request_initiator_context == kDocumentContext)
         Context().AddResourceTiming(*info);
       resource->ReportResourceTimingToClients(*info);
+    }
+
+    // Store additional timing info if CORS preflights are performed.
+    for (const auto& timing_info : cors_preflight_timing_info) {
+      // InitiatorType and InitialURL should be the same with each of the
+      // original request.
+      scoped_refptr<ResourceTimingInfo> preflight_info =
+          ResourceTimingInfo::Create(info->InitiatorType(),
+                                     timing_info.start_time, false);
+      preflight_info->SetInitialURL(info->InitialURL());
+      preflight_info->SetLoadFinishTime(timing_info.finish_time);
+      preflight_info->AddFinalTransferSize(timing_info.transfer_size);
+
+      // Set a provisional response to provide possible other information.
+      ResourceResponse response(info->InitialURL());
+      response.SetAlpnNegotiatedProtocol(
+          WebString::FromUTF8(timing_info.alpn_negotiated_protocol));
+      response.SetConnectionInfo(timing_info.connection_info);
+      response.SetHTTPHeaderField(
+          HTTPNames::Timing_Allow_Origin,
+          WebString::FromUTF8(timing_info.timing_allow_origin));
+      response.SetEncodedDataLength(timing_info.transfer_size);
+      preflight_info->SetFinalResponse(response);
+
+      Context().AddResourceTiming(*preflight_info);
     }
   }
 
@@ -1797,14 +1809,14 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
       "blink",
       "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
   for (Resource* resource : document_resources_) {
-    if (!resource || resource->GetType() != Resource::kImage ||
+    if (!resource || resource->GetType() != ResourceType::kImage ||
         !resource->IsLoading())
       continue;
 
     ResourcePriority resource_priority = resource->PriorityFromObservers();
-    ResourceLoadPriority resource_load_priority =
-        ComputeLoadPriority(Resource::kImage, resource->GetResourceRequest(),
-                            resource_priority.visibility);
+    ResourceLoadPriority resource_load_priority = ComputeLoadPriority(
+        ResourceType::kImage, resource->GetResourceRequest(),
+        resource_priority.visibility);
     if (resource_load_priority == resource->GetResourceRequest().Priority())
       continue;
 
@@ -1840,7 +1852,7 @@ void ResourceFetcher::OnNetworkQuiet() {
 void ResourceFetcher::EmulateLoadStartedForInspector(
     Resource* resource,
     const KURL& url,
-    WebURLRequest::RequestContext request_context,
+    mojom::RequestContextType request_context,
     const AtomicString& initiator_name) {
   if (CachedResource(url))
     return;

@@ -8,13 +8,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "core/fxcodec/bmp/cfx_bmpcontext.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_system.h"
 #include "third_party/base/logging.h"
 #include "third_party/base/numerics/safe_math.h"
-#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -659,23 +659,16 @@ void CFX_BmpDecompressor::SaveDecodingStatus(int32_t status) {
   decode_status_ = status;
 }
 
-void CFX_BmpDecompressor::SetInputBuffer(pdfium::span<uint8_t> src_buf) {
-  input_buffer_ = pdfium::MakeRetain<CFX_CodecMemory>(src_buf);
+void CFX_BmpDecompressor::SetInputBuffer(
+    RetainPtr<CFX_CodecMemory> codec_memory) {
+  input_buffer_ = std::move(codec_memory);
 }
 
-FX_FILESIZE CFX_BmpDecompressor::GetAvailInput(uint8_t** avail_buf) {
+FX_FILESIZE CFX_BmpDecompressor::GetAvailInput() const {
   if (!input_buffer_)
     return 0;
 
-  FX_FILESIZE available =
-      input_buffer_->GetSize() - input_buffer_->GetPosition();
-  if (avail_buf) {
-    *avail_buf = nullptr;
-    if (available > 0)
-      *avail_buf = input_buffer_->GetBuffer() + available;
-  }
-
-  return available;
+  return input_buffer_->GetSize() - input_buffer_->GetPosition();
 }
 
 void CFX_BmpDecompressor::SetHeight(int32_t signed_height) {

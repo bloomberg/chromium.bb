@@ -43,7 +43,7 @@ function getMockMetadataModel() {
 function makeMockSavePromise(item, metadataModel, overwrite) {
   let canvas =
       assertInstanceof(document.createElement('canvas'), HTMLCanvasElement);
-  let mockVolumeManager = /**@type{!VolumeManagerWrapper} */ ({
+  let mockVolumeManager = /**@type{!VolumeManager} */ ({
     getLocationInfo: function() {
       return {};
     },

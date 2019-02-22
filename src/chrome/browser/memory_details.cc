@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +20,7 @@
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/navigation_controller.h"
@@ -146,8 +148,8 @@ void MemoryDetails::StartFetch() {
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 
@@ -160,10 +162,7 @@ std::string MemoryDetails::ToLogString() {
   // Sort by memory consumption, low to high.
   std::sort(processes.begin(), processes.end());
   // Print from high to low.
-  for (ProcessMemoryInformationList::reverse_iterator iter1 =
-          processes.rbegin();
-       iter1 != processes.rend();
-       ++iter1) {
+  for (auto iter1 = processes.rbegin(); iter1 != processes.rend(); ++iter1) {
     log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
             iter1->process_type, iter1->renderer_type);
     if (!iter1->titles.empty()) {
@@ -349,8 +348,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     return process.process_type == content::PROCESS_TYPE_UNKNOWN;
   };
   auto& vector = chrome_browser->processes;
-  vector.erase(std::remove_if(vector.begin(), vector.end(), is_unknown),
-               vector.end());
+  base::EraseIf(vector, is_unknown);
 
   // Grab a memory dump for all processes.
   // Using AdaptCallbackForRepeating allows for an easier transition to

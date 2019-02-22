@@ -8,11 +8,13 @@
 #include <limits>
 
 #include "base/feature_list.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/web/public/features.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
 
@@ -58,29 +60,22 @@ bool IsIPhoneX() {
           (height == 2436 || height == 2688 || height == 1792));
 }
 
-bool IsRefreshInfobarEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
-}
-
 // TODO(crbug.com/893314) : Remove this flag.
 bool IsClosingLastIncognitoTabEnabled() {
   return base::FeatureList::IsEnabled(kClosingLastIncognitoTab);
 }
 
 bool IsRefreshLocationBarEnabled() {
-  // Refresh location bar requires UIRefreshPhase1 as well.
-  return base::FeatureList::IsEnabled(kUIRefreshLocationBar) &&
-         IsUIRefreshPhase1Enabled();
-}
-
-bool IsRefreshPopupPresentationEnabled() {
-  return base::FeatureList::IsEnabled(kRefreshPopupPresentation);
+  return true;
 }
 
 bool IsUIRefreshPhase1Enabled() {
-  if (tests_hook::ForceUIRefreshPhase1())
-    return true;
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
+}
+
+// TODO(crbug.com/885003) : Remove this flag.
+bool IsWKWebViewSnapshotsEnabled() {
+  return base::FeatureList::IsEnabled(kWKWebViewSnapshots);
 }
 
 CGFloat StatusBarHeight() {

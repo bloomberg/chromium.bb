@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace subresource_filter {
@@ -49,7 +49,7 @@ class ActivationStateComputingNavigationThrottle
   static std::unique_ptr<ActivationStateComputingNavigationThrottle>
   CreateForSubframe(content::NavigationHandle* navigation_handle,
                     VerifiedRuleset::Handle* ruleset_handle,
-                    const ActivationState& parent_activation_state);
+                    const mojom::ActivationState& parent_activation_state);
 
   ~ActivationStateComputingNavigationThrottle() override;
 
@@ -65,7 +65,7 @@ class ActivationStateComputingNavigationThrottle
   // previously computed activation state.
   void NotifyPageActivationWithRuleset(
       VerifiedRuleset::Handle* ruleset_handle,
-      const ActivationState& page_activation_state);
+      const mojom::ActivationState& page_activation_state);
 
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
@@ -88,11 +88,11 @@ class ActivationStateComputingNavigationThrottle
 
  private:
   void CheckActivationState();
-  void OnActivationStateComputed(ActivationState state);
+  void OnActivationStateComputed(mojom::ActivationState state);
 
-  // In the case when main frame navigations get notified of ActivationState
-  // multiple times, a method is needed for overriding previously computed
-  // results with a more accurate ActivationState.
+  // In the case when main frame navigations get notified of
+  // mojom::ActivationState multiple times, a method is needed for overriding
+  // previously computed results with a more accurate mojom::ActivationState.
   //
   // This must be called at the end of the WillProcessResponse stage.
   void UpdateWithMoreAccurateState();
@@ -101,11 +101,11 @@ class ActivationStateComputingNavigationThrottle
 
   ActivationStateComputingNavigationThrottle(
       content::NavigationHandle* navigation_handle,
-      const base::Optional<ActivationState> parent_activation_state,
+      const base::Optional<mojom::ActivationState> parent_activation_state,
       VerifiedRuleset::Handle* ruleset_handle);
 
   // Optional to allow for DCHECKing.
-  base::Optional<ActivationState> parent_activation_state_;
+  base::Optional<mojom::ActivationState> parent_activation_state_;
 
   std::unique_ptr<AsyncDocumentSubresourceFilter> async_filter_;
 

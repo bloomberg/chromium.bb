@@ -34,9 +34,9 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
@@ -182,14 +182,23 @@ void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_execution_context_task_runners_);
 }
 
-void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
-  WorkerGlobalScope()->ReadyToEvaluateScript();
+void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
+    mojo::ScopedInterfaceEndpointHandle service_worker_host) {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  WorkerGlobalScope()->BindServiceWorkerHost(
+      mojom::blink::ServiceWorkerHostAssociatedPtrInfo(
+          std::move(service_worker_host),
+          mojom::blink::ServiceWorkerHost::Version_));
 }
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WorkerGlobalScope()->SetRegistration(std::move(handle));
+}
+
+void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
+  WorkerGlobalScope()->ReadyToEvaluateScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
@@ -348,7 +357,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
     int event_id,
     TransferableMessage message,
     const WebSecurityOrigin& source_origin,
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+    WebServiceWorkerObjectInfo info) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   auto msg = ToBlinkTransferableMessage(std::move(message));
   MessagePortArray* ports =
@@ -356,9 +365,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchExtendableMessageEvent(
   String origin;
   if (!source_origin.IsOpaque())
     origin = source_origin.ToString();
-  ServiceWorker* source =
-      ServiceWorker::From(worker_global_scope_->GetExecutionContext(),
-                          base::WrapUnique(handle.release()));
+  ServiceWorker* source = ServiceWorker::From(
+      worker_global_scope_->GetExecutionContext(), std::move(info));
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kMessage, event_id);
 
@@ -409,7 +417,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
     int fetch_event_id,
     std::unique_ptr<WebURLResponse> response,
-    std::unique_ptr<WebDataConsumerHandle> data_consume_handle) {
+    mojo::ScopedDataPipeConsumerHandle data_pipe) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   auto it = pending_preload_fetch_events_.find(fetch_event_id);
   DCHECK(it != pending_preload_fetch_events_.end());
@@ -417,7 +425,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
   DCHECK(fetch_event);
   fetch_event->OnNavigationPreloadResponse(
       WorkerGlobalScope()->ScriptController()->GetScriptState(),
-      std::move(response), std::move(data_consume_handle));
+      std::move(response), std::move(data_pipe));
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
@@ -426,11 +434,15 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   FetchEvent* fetch_event = pending_preload_fetch_events_.Take(fetch_event_id);
   DCHECK(fetch_event);
-  // Display an unsanitized console message.
-  if (!error->unsanitized_message.IsEmpty()) {
+  // Display an error message to the console, preferring the unsanitized one if
+  // available.
+  const WebString& error_message = error->unsanitized_message.IsEmpty()
+                                       ? error->message
+                                       : error->unsanitized_message;
+  if (!error_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
         kWorkerMessageSource, blink::MessageLevel::kErrorMessageLevel,
-        error->unsanitized_message));
+        error_message));
   }
   // Reject the preloadResponse promise.
   fetch_event->OnNavigationPreloadError(
@@ -650,8 +662,11 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t script_size,
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
+  // TODO(asamidoi): Remove CountWorkerScript which is called for recording
+  // metrics if the metrics are no longer referenced, and then merge
+  // WillEvaluateClassicScript and WillEvaluateModuleScript for cleanup.
   worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
-  Client().WillEvaluateClassicScript();
+  Client().WillEvaluateScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
@@ -661,10 +676,21 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(
   worker_global_scope_->CountImportedScript(script_size, cached_metadata_size);
 }
 
+void ServiceWorkerGlobalScopeProxy::WillEvaluateModuleScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  Client().WillEvaluateScript();
+}
+
 void ServiceWorkerGlobalScopeProxy::DidEvaluateClassicScript(bool success) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->DidEvaluateClassicScript();
-  Client().DidEvaluateClassicScript(success);
+  WorkerGlobalScope()->DidEvaluateScript();
+  Client().DidEvaluateScript(success);
+}
+
+void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  WorkerGlobalScope()->DidEvaluateScript();
+  Client().DidEvaluateScript(success);
 }
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {

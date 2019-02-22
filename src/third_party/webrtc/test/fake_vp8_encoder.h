@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "modules/video_coding/codecs/vp8/temporal_layers.h"
+#include "modules/video_coding/codecs/vp8/include/vp8_temporal_layers.h"
 #include "test/fake_encoder.h"
 
 #include "rtc_base/criticalsection.h"
@@ -44,11 +44,9 @@ class FakeVP8Encoder : public FakeEncoder, public EncodedImageCallback {
                         const RTPFragmentationHeader* fragments) override;
 
  private:
-  void SetupTemporalLayers(int num_streams,
-                           int num_temporal_layers,
-                           const VideoCodec& codec);
+  void SetupTemporalLayers(const VideoCodec& codec);
   void PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
-                             const TemporalLayers::FrameConfig& tl_config,
+                             size_t size_bytes,
                              FrameType frame_type,
                              int stream_idx,
                              uint32_t timestamp);

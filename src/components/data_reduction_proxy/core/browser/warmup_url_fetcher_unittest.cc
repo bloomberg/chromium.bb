@@ -16,6 +16,7 @@
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -23,9 +24,9 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
 #include "net/socket/socket_test_util.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,16 +36,15 @@ namespace {
 
 class WarmupURLFetcherTest : public WarmupURLFetcher {
  public:
-  WarmupURLFetcherTest(const scoped_refptr<net::URLRequestContextGetter>&
-                           url_request_context_getter)
+  WarmupURLFetcherTest(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : WarmupURLFetcher(
-            url_request_context_getter,
+            std::move(url_loader_factory),
             base::BindRepeating(
                 &WarmupURLFetcherTest::HandleWarmupFetcherResponse,
                 base::Unretained(this)),
             base::BindRepeating(&WarmupURLFetcherTest::GetHttpRttEstimate,
                                 base::Unretained(this))) {}
-
   ~WarmupURLFetcherTest() override {}
 
   size_t callback_received_count() const { return callback_received_count_; }
@@ -104,7 +104,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   using WarmupURLFetcher::FetchWarmupURL;
   using WarmupURLFetcher::GetWarmupURLWithQueryParam;
   using WarmupURLFetcher::OnFetchTimeout;
-  using WarmupURLFetcher::OnURLFetchComplete;
+  using WarmupURLFetcher::OnURLLoadComplete;
 
   base::TimeDelta GetFetchTimeout() const override {
     if (!fetch_timeout_)
@@ -113,13 +113,11 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
   }
 
   void VerifyStateCleanedUp() const {
-    DCHECK(!fetcher_);
+    DCHECK(!url_loader_);
     DCHECK(!fetch_delay_timer_.IsRunning());
     DCHECK(!fetch_timeout_timer_.IsRunning());
     DCHECK(!is_fetch_in_flight_);
   }
-
-  net::URLFetcher* fetcher() const { return fetcher_.get(); }
 
   void SetHttpRttOverride(base::TimeDelta http_rtt) {
     http_rtt_override_ = http_rtt;
@@ -149,11 +147,13 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
 
 // Test that query param for the warmup URL is randomly set.
 TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
-  base::MessageLoopForIO message_loop;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner());
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
 
   GURL gurl_original;
   warmup_url_fetcher.GetWarmupURLWithQueryParam(&gurl_original);
@@ -185,35 +185,28 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   base::test::ScopedFeatureList scoped_feature_list;
   WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[3];
-  success_reads[0] = net::MockRead("HTTP/1.1 200 OK\r\n\r\n");
-  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
-  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment.RunUntilIdle();
+
+  auto resource_response_head =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+  resource_response_head.proxy_server =
+      net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
+  test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
+      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
+      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   histogram_tester.ExpectUniqueSample(
@@ -245,36 +238,31 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   base::test::ScopedFeatureList scoped_feature_list;
   WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[3];
-  success_reads[0] = net::MockRead(
-      "HTTP/1.1 404 NOT FOUND\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
-  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
-  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment.RunUntilIdle();
+
+  auto resource_response_head =
+      network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
+  resource_response_head.proxy_server =
+      net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
+  static const char kDataReductionProxyViaValue[] =
+      "Via: 1.1 Chrome-Compression-Proxy";
+  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
+      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
+      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   histogram_tester.ExpectUniqueSample(
@@ -306,34 +294,28 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
 
 TEST(WarmupURLFetcherTest,
      TestSuccessfulFetchWarmupURLWithViaHeaderExperimentNotEnabled) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[3];
-  success_reads[0] = net::MockRead(
-      "HTTP/1.1 204 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
-  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
-  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   warmup_url_fetcher.FetchWarmupURL(0);
   base::RunLoop().RunUntilIdle();
+
+  auto resource_response_head =
+      network::CreateResourceResponseHead(net::HTTP_NO_CONTENT);
+  resource_response_head.proxy_server =
+      net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
+  static const char kDataReductionProxyViaValue[] =
+      "Via: 1.1 Chrome-Compression-Proxy";
+  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
+      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
+      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
 
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
@@ -359,35 +341,28 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   base::test::ScopedFeatureList scoped_feature_list;
   WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[1];
-  success_reads[0] = net::MockRead(net::SYNCHRONOUS, net::ERR_CONNECTION_RESET);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
+
+  test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
+      test_url_loader_factory.GetPendingRequest(0),
+      network::ResourceResponseHead(), "foobarbaz",
+      network::URLLoaderCompletionStatus(net::ERR_CONNECTION_RESET));
+
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
+  const int kInvalidHttpResponseCode = -1;
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
   histogram_tester.ExpectUniqueSample(
@@ -396,7 +371,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
                                       std::abs(net::ERR_CONNECTION_RESET), 1);
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.HttpResponseCode",
-      std::abs(net::URLFetcher::RESPONSE_CODE_INVALID), 1);
+      std::abs(kInvalidHttpResponseCode), 1);
   histogram_tester.ExpectTotalCount("DataReductionProxy.WarmupURL.HasViaHeader",
                                     0);
   histogram_tester.ExpectTotalCount(
@@ -413,32 +388,15 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
   base::test::ScopedFeatureList scoped_feature_list;
   WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[3];
-  success_reads[0] = net::MockRead(
-      "HTTP/1.1 204 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
-  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
-  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   // Set the timeout to a very low value. This should cause warmup URL fetcher
   // to run the callback with appropriate error code.
   warmup_url_fetcher.SetFetchTimeout(base::TimeDelta::FromSeconds(0));
@@ -463,43 +421,39 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
 
   // If the URL fetch completes, it should cause DCHECK to trigger.
   EXPECT_DCHECK_DEATH(
-      warmup_url_fetcher.OnURLFetchComplete(warmup_url_fetcher.fetcher()));
+      warmup_url_fetcher.OnURLLoadComplete(std::make_unique<std::string>()));
 }
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   base::test::ScopedFeatureList scoped_feature_list;
   WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
 
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
+
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
-  const std::string config = "foobarbaz";
-  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
-  net::MockClientSocketFactory mock_socket_factory;
-  net::MockRead success_reads[3];
-  success_reads[0] = net::MockRead(
-      "HTTP/1.1 404\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
-  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
-  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
 
-  socket_data_providers.push_back(
-      std::make_unique<net::StaticSocketDataProvider>(
-          success_reads, base::span<net::MockWrite>()));
-  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
-
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
-
-  test_request_context->set_client_socket_factory(&mock_socket_factory);
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   warmup_url_fetcher.SetFetchWaitTime(base::TimeDelta::FromMilliseconds(1));
   warmup_url_fetcher.FetchWarmupURL(1);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(2));
+  scoped_task_environment.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+
+  auto resource_response_head =
+      network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
+  resource_response_head.proxy_server =
+      net::ProxyServer(net::ProxyServer::SCHEME_DIRECT, net::HostPortPair());
+  static const char kDataReductionProxyViaValue[] =
+      "Via: 1.1 Chrome-Compression-Proxy";
+  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
+      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
+      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -535,17 +489,14 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
   constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
 
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
 
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   EXPECT_EQ(kMinTimeout, warmup_url_fetcher.GetFetchTimeout());
@@ -570,17 +521,14 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
 TEST(WarmupURLFetcherTest, TestFetchWaitTime) {
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
 
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   warmup_url_fetcher.FetchWarmupURL(1);
@@ -604,17 +552,14 @@ TEST(WarmupURLFetcherTest, TestFetchWaitTimeWithFieldTrial) {
       &scoped_feature_list, first_retry, second_retry);
 
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
 
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   warmup_url_fetcher.FetchWarmupURL(1);
@@ -636,17 +581,14 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasingWithFieldTrial) {
   constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
 
   base::HistogramTester histogram_tester;
-  base::MessageLoopForIO message_loop;
 
-  std::unique_ptr<net::TestURLRequestContext> test_request_context(
-      new net::TestURLRequestContext(true));
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  network::TestURLLoaderFactory test_url_loader_factory;
+  auto test_shared_url_loader_factory =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory);
 
-  test_request_context->Init();
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop.task_runner(),
-                                           std::move(test_request_context));
-
-  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  WarmupURLFetcherTest warmup_url_fetcher(test_shared_url_loader_factory);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
   EXPECT_EQ(kMinTimeout, warmup_url_fetcher.GetFetchTimeout());

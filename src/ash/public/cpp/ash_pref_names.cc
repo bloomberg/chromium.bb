@@ -214,8 +214,14 @@ const char kPowerLidClosedAction[] = "power.lid_closed_action";
 const char kPowerUseAudioActivity[] = "power.use_audio_activity";
 const char kPowerUseVideoActivity[] = "power.use_video_activity";
 
-// Should extensions be able to use the chrome.power API to override
-// screen-related power management (including locking)?
+// Should extensions, ARC apps, and other code within Chrome be able to override
+// system power management (preventing automatic actions like sleeping, locking,
+// or screen dimming)?
+const char kPowerAllowWakeLocks[] = "power.allow_wake_locks";
+
+// Should extensions, ARC apps, and other code within Chrome be able to override
+// display-related power management? (Disallowing wake locks in general takes
+// precedence over this.)
 const char kPowerAllowScreenWakeLocks[] = "power.allow_screen_wake_locks";
 
 // Amount by which the screen-dim delay should be scaled while the system

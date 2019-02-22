@@ -25,7 +25,8 @@ CWV_EXPORT
 - (instancetype)init NS_UNAVAILABLE;
 
 // Clears the fields that belong to the same autofill section as the field
-// identified by |fieldIdentifier| in the form named |formName|.
+// identified by |fieldIdentifier| in the form named |formName| in frame
+// |frameID|.
 // No-op if no such form can be found in the current page. If the field
 // identified by |fieldIdentifier| cannot be found the entire form gets cleared.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
@@ -33,6 +34,7 @@ CWV_EXPORT
 // |completionHandler| will only be called on success.
 - (void)clearFormWithName:(NSString*)formName
           fieldIdentifier:(NSString*)fieldIdentifier
+                  frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler;
 
 // For the field named |fieldName|, identified by |fieldIdentifier| in the form
@@ -40,10 +42,14 @@ CWV_EXPORT
 // No-op if no such form and field can be found in the current page.
 // |fieldIdentifier| identifies the field that had focus. It is passed to
 // CWVAutofillControllerDelegate and forwarded to this method.
+// |fieldType| is the 'type' attribute of the html field.
 // |completionHandler| will only be called on success.
+// |frameID| is the ID of the web frame containing the form.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
                         fieldIdentifier:(NSString*)fieldIdentifier
+                              fieldType:(NSString*)fieldType
+                                frameID:(NSString*)frameID
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
                               completionHandler;

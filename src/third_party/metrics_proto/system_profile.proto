@@ -129,8 +129,8 @@ message SystemProfileProto {
     // to that, device hardware class was incorrectly recorded in
     // cpu_architecture field.
     //
-    // For Chrome OS, prior to M68, this field had the value that is
-    // currently in |full_hardware_class| field. In M68+, this contains the
+    // For Chrome OS, prior to M69, this field had the value that is
+    // currently in |full_hardware_class| field. In M69+, this contains the
     // board name only. E.G. "CELES", "VEYRON_MINNIE".
 
     optional string hardware_class = 4;
@@ -381,7 +381,7 @@ message SystemProfileProto {
         // for example "Dummynet".
         optional string device_name = 3;
 
-        // The list of vendor-specific OUIs (Organziationally Unqiue
+        // The list of vendor-specific OUIs (Organizationally Unique
         // Identifiers). These are provided by the vendor through WPS
         // (Wireless Provisioning Service) information elements, which
         // identifies the content of the element.
@@ -500,7 +500,7 @@ message SystemProfileProto {
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
-  // Next tag: 29
+  // Next tag: 32
   message Stability {
     // Total amount of time that the program was running, in seconds,
     // since the last time a log was recorded, as measured using a client-side
@@ -534,6 +534,9 @@ message SystemProfileProto {
 
     // Number of non-renderer child process crashes.
     optional int32 child_process_crash_count = 6;
+    // Number of gpu crashes that generate a crash dump. Currently only used by
+    // Android Chrome starting with M71.
+    optional int32 gpu_crash_count = 31;
 
     // Number of times the browser has crashed while logged in as the "other
     // user" (guest) account.
@@ -560,13 +563,16 @@ message SystemProfileProto {
     // than 1.
     optional int32 launch_count = 15;
     // The number of times that it didn't exit cleanly (which we assume to be
-    // mostly crashes).
+    // mostly crashes). On Android M71+ this does not include times when the Gms
+    // Core version has changed, which is recorded separately below.
     optional int32 crash_count = 16;
     // Android only. The number of times Chrome didn't exit cleanly and the GMS
-    // Core version had not changed from the last session. This is a subset of
-    // |crash_count| where we exclude unclean exits that are likely caused by
+    // Core version has changed from the last session. This is in addition to
+    // |crash_count| in which we exclude unclean exits that are likely caused by
     // GMS Core updates.
-    optional int32 crash_count_without_gms_core_update = 28;
+    optional int32 crash_count_due_to_gms_core_update = 30;
+    // Historical, no longer recorded since 2018-09.
+    optional int32 crash_count_without_gms_core_update = 28 [deprecated = true];
 
     // The number of times the program began, but did not complete, the shutdown
     // process.  (For example, this may occur when Windows is shutting down, and
@@ -591,6 +597,10 @@ message SystemProfileProto {
     // This should be most common scenario and should be very close to
     // |launch_count|.
     optional int32 debugger_not_present_count = 21;
+
+    // Whether the metrics being reported are from a previous run picked up via
+    // the left-over memory mapped files.
+    optional bool from_previous_run = 29;
 
     // Stability information for all installed plugins.
     message PluginStability {

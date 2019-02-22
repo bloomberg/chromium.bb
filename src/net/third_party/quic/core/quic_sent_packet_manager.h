@@ -68,6 +68,11 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
     virtual void OnPacketLoss(QuicPacketNumber lost_packet_number,
                               TransmissionType transmission_type,
                               QuicTime detection_time) {}
+
+    virtual void OnApplicationLimited() {}
+
+    virtual void OnAdjustNetworkParameters(QuicBandwidth bandwidth,
+                                           QuicTime::Delta rtt) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -147,13 +152,14 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // there are pending retransmissions prior to calling this function.
   QuicPendingRetransmission NextPendingRetransmission();
 
-  bool HasUnackedPackets() const {
-    return unacked_packets_.HasUnackedPackets();
-  }
-
   // Returns true if there's outstanding crypto data.
   bool HasUnackedCryptoPackets() const {
     return unacked_packets_.HasPendingCryptoPackets();
+  }
+
+  // Returns true if there are packets in flight expecting to be acknowledged.
+  bool HasInFlightPackets() const {
+    return unacked_packets_.HasInFlightPackets();
   }
 
   // Returns the smallest packet number of a serialized packet which has not
@@ -252,6 +258,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when ack range [start, end) is received. Populates packets_acked_
   // with newly acked packets.
   void OnAckRange(QuicPacketNumber start, QuicPacketNumber end);
+
+  // Called when a timestamp is processed.  If it's present in packets_acked_,
+  // the timestamp field is set.  Otherwise, the timestamp is ignored.
+  void OnAckTimestamp(QuicPacketNumber packet_number, QuicTime timestamp);
 
   // Called when an ack frame is parsed completely. Returns true if a previously
   // -unacked packet is acked.
@@ -424,6 +434,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkForRetransmission(QuicPacketNumber packet_number,
                              TransmissionType transmission_type);
 
+  // Performs whatever work is need to retransmit the data correctly, either
+  // by retransmitting the frames directly or by notifying that the frames
+  // are lost.
+  void HandleRetransmission(TransmissionType transmission_type,
+                            QuicTransmissionInfo* transmission_info);
+
   // Called after packets have been marked handled with last received ack frame.
   void PostProcessAfterMarkingPacketHandled(
       const QuicAckFrame& ack_frame,
@@ -554,8 +570,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
-  // Latched value of quic_reloadable_flag_quic_aggregate_acked_stream_frames.
+  // Latched value of quic_reloadable_flag_quic_aggregate_acked_stream_frames_2.
   const bool aggregate_acked_stream_frames_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_fix_mark_for_loss_retransmission.
+  const bool fix_mark_for_loss_retransmission_;
 };
 
 }  // namespace quic

@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/common/frame_messages.h"
-#include "content/common/view_message_enums.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"

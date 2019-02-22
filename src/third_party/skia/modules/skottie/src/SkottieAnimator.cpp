@@ -11,26 +11,18 @@
 #include "SkottieValue.h"
 #include "SkSGScene.h"
 #include "SkString.h"
-#include "SkTArray.h"
 
 #include <memory>
+#include <vector>
 
 namespace skottie {
 namespace internal {
 
 namespace {
 
-#define LOG SkDebugf
-
-bool LogFail(const skjson::Value& json, const char* msg) {
-    const auto dump = json.toString();
-    LOG("!! %s: %s\n", msg, dump.c_str());
-    return false;
-}
-
 class KeyframeAnimatorBase : public sksg::Animator {
 public:
-    int count() const { return fRecs.count(); }
+    size_t count() const { return fRecs.size(); }
 
 protected:
     KeyframeAnimatorBase() = default;
@@ -80,7 +72,9 @@ protected:
 
             if (!fRecs.empty()) {
                 if (fRecs.back().t1 >= t0) {
-                    LOG("!! Ignoring out-of-order key frame (t:%f < t:%f)\n", t0, fRecs.back().t1);
+                    abuilder->log(Logger::Level::kWarning, nullptr,
+                                  "Ignoring out-of-order key frame (t:%f < t:%f).",
+                                  t0, fRecs.back().t1);
                     continue;
                 }
                 // Back-fill t1 in prev interval.  Note: we do this even if we end up discarding
@@ -110,7 +104,7 @@ protected:
             int cm_idx = -1;
             if (c0 != kDefaultC0 || c1 != kDefaultC1) {
                 // TODO: is it worth de-duping these?
-                cm_idx = fCubicMaps.count();
+                cm_idx = SkToInt(fCubicMaps.size());
                 fCubicMaps.emplace_back();
                 // TODO: why do we have to plug these inverted?
                 fCubicMaps.back().setPts(c1, c0);
@@ -124,7 +118,15 @@ protected:
             fRecs.pop_back();
         }
 
+        fRecs.shrink_to_fit();
+        fCubicMaps.shrink_to_fit();
+
         SkASSERT(fRecs.empty() || fRecs.back().isValid());
+    }
+
+    void reserve(size_t frame_count) {
+        fRecs.reserve(frame_count);
+        fCubicMaps.reserve(frame_count);
     }
 
 private:
@@ -165,9 +167,9 @@ private:
         return f0;
     }
 
-    SkTArray<KeyframeRec> fRecs;
-    SkTArray<SkCubicMap>  fCubicMaps;
-    const KeyframeRec*    fCachedRec = nullptr;
+    std::vector<KeyframeRec> fRecs;
+    std::vector<SkCubicMap>  fCubicMaps;
+    const KeyframeRec*       fCachedRec = nullptr;
 
     using INHERITED = sksg::Animator;
 };
@@ -198,7 +200,16 @@ private:
                      const AnimationBuilder* abuilder,
                      std::function<void(const T&)>&& apply)
         : fApplyFunc(std::move(apply)) {
+        // Generally, each keyframe holds two values (start, end) and a cubic mapper. Except
+        // the last frame, which only holds a marker timestamp.  Then, the values series is
+        // contiguous (keyframe[i].end == keyframe[i + 1].start), and we dedupe them.
+        //   => we'll store (keyframes.size) values and (keyframe.size - 1) recs and cubic maps.
+        fVs.reserve(jframes.size());
+        this->reserve(SkTMax<size_t>(jframes.size(), 1) - 1);
+
         this->parseKeyFrames(jframes, abuilder);
+
+        fVs.shrink_to_fit();
     }
 
     int parseValue(const skjson::Value& jv, const AnimationBuilder* abuilder) override {
@@ -212,7 +223,7 @@ private:
         if (fVs.empty() || val != fVs.back()) {
             fVs.push_back(std::move(val));
         }
-        return fVs.count() - 1;
+        return SkToInt(fVs.size()) - 1;
     }
 
     const T* eval(const KeyframeRec& rec, float t, T* v) const {
@@ -232,7 +243,7 @@ private:
     }
 
     const std::function<void(const T&)> fApplyFunc;
-    SkTArray<T>                         fVs;
+    std::vector<T>                      fVs;
 
     // LERP storage: we use this to temporarily store interpolation results.
     // Alternatively, the temp result could live on the stack -- but for vector values that would
@@ -255,7 +266,7 @@ static inline bool BindPropertyImpl(const skjson::ObjectValue* jprop,
     const auto& jpropK = (*jprop)["k"];
 
     if (!(*jprop)["x"].is<skjson::NullValue>()) {
-        LOG("?? Unsupported expression.\n");
+        abuilder->log(Logger::Level::kWarning, nullptr, "Unsupported expression.");
     }
 
     // Older Json versions don't have an "a" animation marker.
@@ -272,7 +283,9 @@ static inline bool BindPropertyImpl(const skjson::ObjectValue* jprop,
         }
 
         if (!jpropA.is<skjson::NullValue>()) {
-            return LogFail(*jprop, "Could not parse (explicit) static property");
+            abuilder->log(Logger::Level::kError, jprop,
+                          "Could not parse (explicit) static property.");
+            return false;
         }
     }
 
@@ -280,7 +293,8 @@ static inline bool BindPropertyImpl(const skjson::ObjectValue* jprop,
     auto animator = KeyframeAnimator<T>::Make(jpropK, abuilder, std::move(apply));
 
     if (!animator) {
-        return LogFail(*jprop, "Could not parse keyframed property");
+        abuilder->log(Logger::Level::kError, jprop, "Could not parse keyframed property.");
+        return false;
     }
 
     ascope->push_back(std::move(animator));
@@ -307,7 +321,7 @@ public:
                 [split_animator_ptr](const ScalarValue& x) { split_animator_ptr->setX(x); }) ||
             !BindPropertyImpl<ScalarValue>((*jprop)["y"], abuilder, &split_animator->fAnimators,
                 [split_animator_ptr](const ScalarValue& y) { split_animator_ptr->setY(y); })) {
-            LogFail(*jprop, "Could not parse split property");
+            abuilder->log(Logger::Level::kError, jprop, "Could not parse split property.");
             return nullptr;
         }
 

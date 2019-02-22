@@ -370,7 +370,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
 
   [lruCache_ setObject:image forKey:sessionID];
 
-  [self.observers snapshotCache:self didUpdateSnapshotForTab:sessionID];
+  [self.observers snapshotCache:self didUpdateSnapshotForIdentifier:sessionID];
 
   // Copy ivars used by the block so that it does not reference |self|.
   const base::FilePath cacheDirectory = cacheDirectory_;
@@ -391,6 +391,8 @@ void ConvertAndSaveGreyImage(NSString* session_id,
     return;
 
   [lruCache_ removeObjectForKey:sessionID];
+
+  [self.observers snapshotCache:self didUpdateSnapshotForIdentifier:sessionID];
 
   if (!taskRunner_)
     return;

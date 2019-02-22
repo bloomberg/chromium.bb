@@ -9,22 +9,21 @@
 
 namespace crazy {
 
-namespace {
-
-// Compute the ELF hash of a given symbol.
-unsigned ElfHash(const char* name) {
-  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(name);
-  unsigned h = 0;
-  while (*ptr) {
-    h = (h << 4) + *ptr++;
-    unsigned g = h & 0xf0000000;
-    h ^= g;
-    h ^= g >> 24;
-  }
-  return h;
+ElfSymbols::ElfSymbols(const ELF::Sym* symbol_table,
+                       const char* string_table,
+                       uintptr_t dt_elf_hash,
+                       uintptr_t dt_gnu_hash)
+    : symbol_table_(symbol_table), string_table_(string_table) {
+  if (dt_elf_hash)
+    elf_hash_.Init(dt_elf_hash);
+  if (dt_gnu_hash)
+    gnu_hash_.Init(dt_gnu_hash);
 }
 
-}  // namespace
+bool ElfSymbols::IsValid() const {
+  return (symbol_table_ && string_table_ &&
+          (gnu_hash_.IsValid() || elf_hash_.IsValid()));
+}
 
 bool ElfSymbols::Init(const ElfView* view) {
   LOG("Parsing dynamic table");
@@ -34,13 +33,11 @@ bool ElfSymbols::Init(const ElfView* view) {
     switch (dyn.GetTag()) {
       case DT_HASH:
         LOG("  DT_HASH addr=%p", dyn_addr);
-        {
-          ELF::Word* data = reinterpret_cast<ELF::Word*>(dyn_addr);
-          hash_bucket_size_ = data[0];
-          hash_chain_size_ = data[1];
-          hash_bucket_ = data + 2;
-          hash_chain_ = data + 2 + hash_bucket_size_;
-        }
+        elf_hash_.Init(dyn_addr);
+        break;
+      case DT_GNU_HASH:
+        LOG("  DT_GNU_HASH addr=%p", dyn_addr);
+        gnu_hash_.Init(dyn_addr);
         break;
       case DT_STRTAB:
         LOG("  DT_STRTAB addr=%p", dyn_addr);
@@ -54,10 +51,7 @@ bool ElfSymbols::Init(const ElfView* view) {
         ;
     }
   }
-  if (symbol_table_ == NULL || string_table_ == NULL || hash_bucket_ == NULL)
-    return false;
-
-  return true;
+  return IsValid();
 }
 
 const ELF::Sym* ElfSymbols::LookupByAddress(void* address,
@@ -65,14 +59,13 @@ const ELF::Sym* ElfSymbols::LookupByAddress(void* address,
   ELF::Addr elf_addr =
       reinterpret_cast<ELF::Addr>(address) - static_cast<ELF::Addr>(load_bias);
 
-  for (size_t n = 0; n < hash_chain_size_; ++n) {
-    const ELF::Sym* sym = &symbol_table_[n];
-    if (sym->st_shndx != SHN_UNDEF && elf_addr >= sym->st_value &&
-        elf_addr < sym->st_value + sym->st_size) {
-      return sym;
+  for (const ELF::Sym& sym : GetDynSymbols()) {
+    if (sym.st_shndx != SHN_UNDEF && elf_addr >= sym.st_value &&
+        elf_addr < sym.st_value + sym.st_size) {
+      return &sym;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 bool ElfSymbols::LookupNearestByAddress(void* address,
@@ -83,29 +76,28 @@ bool ElfSymbols::LookupNearestByAddress(void* address,
   ELF::Addr elf_addr =
       reinterpret_cast<ELF::Addr>(address) - static_cast<ELF::Addr>(load_bias);
 
-  const ELF::Sym* nearest_sym = NULL;
+  const ELF::Sym* nearest_sym = nullptr;
   size_t nearest_diff = ~size_t(0);
 
-  for (size_t n = 0; n < hash_chain_size_; ++n) {
-    const ELF::Sym* sym = &symbol_table_[n];
-    if (sym->st_shndx == SHN_UNDEF)
+  for (const ELF::Sym& sym : GetDynSymbols()) {
+    if (sym.st_shndx == SHN_UNDEF)
       continue;
 
-    if (elf_addr >= sym->st_value && elf_addr < sym->st_value + sym->st_size) {
+    if (elf_addr >= sym.st_value && elf_addr < sym.st_value + sym.st_size) {
       // This is a perfect match.
-      nearest_sym = sym;
+      nearest_sym = &sym;
       break;
     }
 
     // Otherwise, compute distance.
     size_t diff;
-    if (elf_addr < sym->st_value)
-      diff = sym->st_value - elf_addr;
+    if (elf_addr < sym.st_value)
+      diff = sym.st_value - elf_addr;
     else
-      diff = elf_addr - sym->st_value - sym->st_size;
+      diff = elf_addr - sym.st_value - sym.st_size;
 
     if (diff < nearest_diff) {
-      nearest_sym = sym;
+      nearest_sym = &sym;
       nearest_diff = diff;
     }
   }
@@ -120,27 +112,30 @@ bool ElfSymbols::LookupNearestByAddress(void* address,
 }
 
 const ELF::Sym* ElfSymbols::LookupByName(const char* symbol_name) const {
-  unsigned hash = ElfHash(symbol_name);
+  const ELF::Sym* sym =
+      gnu_hash_.IsValid()
+          ? gnu_hash_.LookupByName(symbol_name, symbol_table_, string_table_)
+          : elf_hash_.LookupByName(symbol_name, symbol_table_, string_table_);
 
-  for (unsigned n = hash_bucket_[hash % hash_bucket_size_]; n != 0;
-       n = hash_chain_[n]) {
-    const ELF::Sym* symbol = &symbol_table_[n];
-    // Check that the symbol has the appropriate name.
-    if (strcmp(string_table_ + symbol->st_name, symbol_name))
-      continue;
-    // Ignore undefined symbols.
-    if (symbol->st_shndx == SHN_UNDEF)
-      continue;
-    // Ignore anything that isn't a global or weak definition.
-    switch (ELF_ST_BIND(symbol->st_info)) {
-      case STB_GLOBAL:
-      case STB_WEAK:
-        return symbol;
-      default:
-        ;
-    }
+  // Ignore undefined symbols or those that are not global or weak definitions.
+  if (!sym || sym->st_shndx == SHN_UNDEF)
+    return nullptr;
+
+  uint8_t info = ELF_ST_BIND(sym->st_info);
+  if (info != STB_GLOBAL && info != STB_WEAK)
+    return nullptr;
+
+  return sym;
+}
+
+ElfSymbols::DynSymbols ElfSymbols::GetDynSymbols() const {
+  if (gnu_hash_.IsValid()) {
+    return {symbol_table_, gnu_hash_.dyn_symbols_offset(),
+            gnu_hash_.dyn_symbols_count()};
+  } else {
+    return {symbol_table_, elf_hash_.dyn_symbols_offset(),
+            elf_hash_.dyn_symbols_count()};
   }
-  return NULL;
 }
 
 }  // namespace crazy

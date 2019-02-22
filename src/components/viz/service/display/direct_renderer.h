@@ -185,6 +185,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)
   // return that quad, otherwise return null.
+  static const TileDrawQuad* CanPassBeDrawnDirectly(
+      const RenderPass* pass,
+      bool is_using_vulkan,
+      DisplayResourceProvider* const resource_provider);
   virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
   virtual void FinishDrawingQuadList() {}
   virtual bool FlippedFramebuffer() const = 0;

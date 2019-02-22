@@ -17,7 +17,8 @@ class SignedExchangeCertFetcherFactory;
 
 class MockSignedExchangeHandler final : public SignedExchangeHandler {
  public:
-  MockSignedExchangeHandler(net::Error error,
+  MockSignedExchangeHandler(SignedExchangeLoadResult result,
+                            net::Error error,
                             const GURL& request_url,
                             const std::string& mime_type,
                             const std::vector<std::string>& response_headers,
@@ -36,11 +37,12 @@ class MockSignedExchangeHandlerFactory final
       SignedExchangeHandler::ExchangeHeadersCallback;
 
   // Creates a factory that creates SignedExchangeHandler which always fires
-  // a headers callback with the given |error|, |request_url|, |mime_type|
-  // and |response_headers|.
+  // a headers callback with the given |result|, |error|, |request_url|,
+  // |mime_type| and |response_headers|.
   // |mime_type| and |response_headers| are ignored if |error| is not
   // net::OK.
-  MockSignedExchangeHandlerFactory(net::Error error,
+  MockSignedExchangeHandlerFactory(SignedExchangeLoadResult result,
+                                   net::Error error,
                                    const GURL& request_url,
                                    const std::string& mime_type,
                                    std::vector<std::string> response_headers);
@@ -53,6 +55,7 @@ class MockSignedExchangeHandlerFactory final
       override;
 
  private:
+  const SignedExchangeLoadResult result_;
   const net::Error error_;
   const GURL request_url_;
   const std::string mime_type_;

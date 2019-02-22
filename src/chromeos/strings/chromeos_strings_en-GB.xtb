@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1510238584712386396">Launcher</translation>
+<translation id="1734367976349034509">This device is enterprise managed</translation>
+<translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Nothing found on screen</translation>
+<translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
+<translation id="2805756323405976993">Apps</translation>
+<translation id="2872961005593481000">Shut down</translation>
+<translation id="3147142846278915599">Launcher (syncing apps...)</translation>
 <translation id="5212543919916444558">I can't find anything on your screen that I can help with.
 Try tapping the mic to ask me anything.</translation>
-<translation id="6674412557034343536">stop timer</translation>
-<translation id="8626219642120025691">Timer finished</translation>
+<translation id="5222676887888702881">Sign out</translation>
+<translation id="5457599981699367932">Browse as Guest</translation>
+<translation id="54609108002486618">Managed</translation>
+<translation id="5832805196449965646">Add Person</translation>
+<translation id="5895138241574237353">Restart</translation>
+<translation id="7222902781030499995">Stop timer</translation>
+<translation id="7658239707568436148">Cancel</translation>
+<translation id="7837740436429729974">Time's up</translation>
 <translation id="8898978413391960553">00:00s</translation>
+<translation id="9111102763498581341">Unlock</translation>
 </translationbundle>

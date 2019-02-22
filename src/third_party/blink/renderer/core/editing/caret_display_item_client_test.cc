@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -369,6 +370,28 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
   UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutRect(116, 105, 1, 1),
             GetCaretDisplayItemClient().VisualRect());
+}
+
+class ParameterizedComputeCaretRectTest
+    : public EditingTestBase,
+      private ScopedLayoutNGForTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ParameterizedComputeCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(All,
+                        ParameterizedComputeCaretRectTest,
+                        testing::Bool());
+
+TEST_P(ParameterizedComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
+  SetBodyInnerHTML(
+      "<style>pre{width:30px; overflow:hidden; text-overflow:ellipsis}</style>"
+      "<pre id=target>long long long long long long text</pre>");
+  const Node* text = GetElementById("target")->firstChild();
+  const Position position = Position::LastPositionInNode(*text);
+  // Shouldn't crash inside. The actual result doesn't matter and may change.
+  CaretDisplayItemClient::ComputeCaretRect(PositionWithAffinity(position));
 }
 
 }  // namespace blink

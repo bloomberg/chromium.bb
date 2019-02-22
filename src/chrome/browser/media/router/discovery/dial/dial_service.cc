@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_callback.h"
@@ -194,7 +195,7 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
     return false;
   }
 
-  recv_buffer_ = new IOBufferWithSize(kDialRecvBufferSize);
+  recv_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDialRecvBufferSize);
   return ReadSocket();
 }
 
@@ -396,7 +397,7 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
   bool success = address.AssignFromIPLiteral(kDialRequestAddress);
   DCHECK(success);
   send_address_ = net::IPEndPoint(address, kDialRequestPort);
-  send_buffer_ = new StringIOBuffer(BuildRequest());
+  send_buffer_ = base::MakeRefCounted<StringIOBuffer>(BuildRequest());
 }
 
 DialServiceImpl::~DialServiceImpl() {
@@ -442,7 +443,7 @@ void DialServiceImpl::StartDiscovery() {
 
 #if defined(OS_CHROMEOS)
   auto task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   task_tracker_.PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&GetBestBindAddressOnUIThread),

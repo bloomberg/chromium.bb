@@ -74,8 +74,7 @@ class TestTouchEvent : public ui::TouchEvent {
                                       /* radius_x */ 1.0f,
                                       /* radius_y */ 1.0f,
                                       /* force */ 0.0f),
-                   flags,
-                   0.0f) {}
+                   flags) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
@@ -670,7 +669,7 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   MSG native_event =
       { NULL, (is_press ? key_press : WM_KEYUP), key_code, 0 };
   native_event.time =
-      (ui::EventTimeForNow() - base::TimeTicks()).InMicroseconds();
+      (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() & UINT32_MAX;
   ui::KeyEvent keyev(native_event, flags);
 #elif defined(USE_X11)
   ui::ScopedXI2Event xevent;
@@ -746,7 +745,8 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
       ui::EventSourceTestApi event_source_test(event_source);
       ui::EventDispatchDetails details =
           event_source_test.SendEventToSink(event);
-      CHECK(!details.dispatcher_destroyed);
+      if (details.dispatcher_destroyed)
+        current_target_ = nullptr;
     }
   }
 }

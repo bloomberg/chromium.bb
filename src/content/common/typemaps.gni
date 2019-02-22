@@ -12,7 +12,6 @@ typemaps = [
   "//content/common/native_types.typemap",
   "//content/common/native_types_mac.typemap",
   "//content/common/navigation_params.typemap",
-  "//content/common/notifications/notification_types.typemap",
   "//content/common/push_messaging.typemap",
   "//content/common/render_frame_metadata.typemap",
   "//content/common/service_worker/service_worker_fetch_request.typemap",

@@ -69,11 +69,6 @@ namespace {
 // Default animation duration.
 const CGFloat kAnimationDuration = 0.5f;
 
-enum LayoutType {
-  LAYOUT_REGULAR,
-  LAYOUT_COMPACT,
-};
-
 // Minimum duration of the pending state in milliseconds.
 const int64_t kMinimunPendingStateDurationMs = 300;
 
@@ -379,6 +374,38 @@ enum AuthenticationState {
   [_embeddedView removeFromSuperview];
   [viewController removeFromParentViewController];
   _embeddedView = nil;
+}
+
+- (void)updateLayout {
+  AuthenticationViewConstants constants;
+  if ([self.traitCollection horizontalSizeClass] ==
+      UIUserInterfaceSizeClassRegular) {
+    constants = kRegularConstants;
+  } else {
+    constants = kCompactConstants;
+  }
+
+  [self layoutButtons:constants];
+
+  CGSize viewSize = self.view.bounds.size;
+  CGFloat collectionViewHeight =
+      _primaryButton.frame.origin.y - constants.ButtonTopPadding;
+  CGRect collectionViewFrame =
+      CGRectMake(0, 0, viewSize.width, collectionViewHeight);
+  [_embeddedView setFrame:collectionViewFrame];
+
+  // Layout the gradient view right above the buttons.
+  CGFloat gradientOriginY = _primaryButton.frame.origin.y -
+                            constants.ButtonTopPadding -
+                            constants.GradientHeight;
+  [_gradientView setFrame:CGRectMake(0, gradientOriginY, viewSize.width,
+                                     constants.GradientHeight)];
+  [_gradientLayer setFrame:[_gradientView bounds]];
+
+  // Layout the activity indicator in the center of the view.
+  CGRect bounds = self.view.bounds;
+  [_activityIndicator
+      setCenter:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
 }
 
 #pragma mark - Accessibility
@@ -883,6 +910,11 @@ enum AuthenticationState {
   }
 }
 
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  [self updateLayout];
+}
+
 #pragma mark - Events
 
 - (void)onPrimaryButtonPressed:(id)sender {
@@ -990,38 +1022,7 @@ enum AuthenticationState {
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
-
-  AuthenticationViewConstants constants;
-  if ([self.traitCollection horizontalSizeClass] ==
-      UIUserInterfaceSizeClassRegular) {
-    constants = kRegularConstants;
-  } else {
-    constants = kCompactConstants;
-  }
-
-  [self layoutButtons:constants];
-
-  CGSize viewSize = self.view.bounds.size;
-  CGFloat collectionViewHeight =
-      viewSize.height - _primaryButton.frame.size.height -
-      constants.ButtonBottomPadding - constants.ButtonTopPadding;
-  CGRect collectionViewFrame =
-      CGRectMake(0, 0, viewSize.width, collectionViewHeight);
-  [_embeddedView setFrame:collectionViewFrame];
-
-  // Layout the gradient view right above the buttons.
-  CGFloat gradientOriginY = CGRectGetHeight(self.view.bounds) -
-                            constants.ButtonBottomPadding -
-                            constants.ButtonTopPadding -
-                            constants.ButtonHeight - constants.GradientHeight;
-  [_gradientView setFrame:CGRectMake(0, gradientOriginY, viewSize.width,
-                                     constants.GradientHeight)];
-  [_gradientLayer setFrame:[_gradientView bounds]];
-
-  // Layout the activity indicator in the center of the view.
-  CGRect bounds = self.view.bounds;
-  [_activityIndicator
-      setCenter:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
+  [self updateLayout];
 }
 
 - (void)layoutButtons:(const AuthenticationViewConstants&)constants {
@@ -1040,6 +1041,9 @@ enum AuthenticationState {
   primaryButtonLayout.position.originY = CGRectGetHeight(self.view.bounds) -
                                          constants.ButtonBottomPadding -
                                          constants.ButtonHeight;
+  if (@available(iOS 11.0, *)) {
+    primaryButtonLayout.position.originY -= self.view.safeAreaInsets.bottom;
+  }
   primaryButtonLayout.size.height = constants.ButtonHeight;
   [_primaryButton setFrame:LayoutRectGetRect(primaryButtonLayout)];
 

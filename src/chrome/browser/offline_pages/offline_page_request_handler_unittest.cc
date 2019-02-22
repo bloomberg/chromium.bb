@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -17,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -36,7 +38,8 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/previews/content/previews_user_data.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -124,7 +127,7 @@ class TestURLRequestDelegate : public net::URLRequest::Delegate {
 
   explicit TestURLRequestDelegate(const ReadCompletedCallback& callback)
       : read_completed_callback_(callback),
-        buffer_(new net::IOBuffer(kBufSize)),
+        buffer_(base::MakeRefCounted<net::IOBuffer>(kBufSize)),
         request_status_(net::ERR_IO_PENDING) {}
 
   void OnResponseStarted(net::URLRequest* request, int net_error) override {
@@ -600,7 +603,9 @@ void OfflinePageRequestHandlerTestBase::SetUp() {
   public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
       kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel);
+      profile(),
+      base::BindRepeating(
+          &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel));
 
   // Initialize OfflinePageModel.
   OfflinePageModelTaskified* model = static_cast<OfflinePageModelTaskified*>(
@@ -681,8 +686,8 @@ base::FilePath OfflinePageRequestHandlerTestBase::CreateFileWithContent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::RunLoop run_loop;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &OfflinePageRequestHandlerTestBase::CreateFileWithContentOnIO,
           base::Unretained(this), content, run_loop.QuitClosure()));
@@ -1177,8 +1182,8 @@ void OfflinePageRequestJobBuilder::InterceptRequest(
     bool is_main_frame) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&OfflinePageRequestJobBuilder::InterceptRequestOnIO,
                      base::Unretained(this), url, method, extra_headers,
                      is_main_frame));
@@ -1203,8 +1208,8 @@ void OfflinePageRequestJobBuilder::ReadCompletedOnIO(
 
   // Since the caller is still holding a request object which we want to dispose
   // as part of tearing down on IO thread, we need to do it in a separate task.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&OfflinePageRequestJobBuilder::TearDownOnReadCompletedOnIO,
                      base::Unretained(this), response,
                      is_offline_page_set_in_navigation_data));
@@ -1217,8 +1222,8 @@ void OfflinePageRequestJobBuilder::TearDownOnReadCompletedOnIO(
 
   TearDownNetworkObjectsOnIO();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&OfflinePageRequestHandlerTestBase::ReadCompleted,
                      base::Unretained(test_base()), response,
                      is_offline_page_set_in_navigation_data));
@@ -1330,8 +1335,8 @@ void OfflinePageURLLoaderBuilder::InterceptRequest(
     bool is_main_frame) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&OfflinePageURLLoaderBuilder::InterceptRequestOnIO,
                      base::Unretained(this), url, method, extra_headers,
                      is_main_frame));
@@ -1415,8 +1420,8 @@ void OfflinePageURLLoaderBuilder::ReadCompletedOnIO(
   if (offline_page_data && offline_page_data->is_offline_page())
     is_offline_page_set_in_navigation_data = true;
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&OfflinePageRequestHandlerTestBase::ReadCompleted,
                      base::Unretained(test_base()), response,
                      is_offline_page_set_in_navigation_data));

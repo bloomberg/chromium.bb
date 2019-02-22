@@ -697,7 +697,6 @@ _NAMED_TYPE_INFO = {
   },
   'ProgramParameter': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_DELETE_STATUS',
       'GL_LINK_STATUS',
@@ -726,6 +725,7 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_QUERY_RESULT_EXT',
       'GL_QUERY_RESULT_AVAILABLE_EXT',
+      'GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT',
     ],
   },
   'QueryParameter': {
@@ -794,7 +794,6 @@ _NAMED_TYPE_INFO = {
   },
   'ShaderParameter': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_SHADER_TYPE',
       'GL_DELETE_STATUS',
@@ -3405,11 +3404,6 @@ _FUNCTION_INFO = {
     'extension': "CHROMIUM_copy_texture",
     'trace_level': 2,
   },
-  'CompressedCopyTextureCHROMIUM': {
-    'decoder_func': 'DoCompressedCopyTextureCHROMIUM',
-    'unit_test': False,
-    'extension': 'CHROMIUM_copy_compressed_texture',
-  },
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': 'EXT_texture_storage',
@@ -4106,6 +4100,13 @@ _FUNCTION_INFO = {
     'trace_level': 1,
     'es3': True
   },
+  'MaxShaderCompilerThreadsKHR': {
+    'cmd_args': 'GLuint count',
+    'unit_test': False,
+    'client_test': False,
+    'extension': 'KHRParallelShaderCompile',
+    'extension_flag': 'khr_parallel_shader_compile',
+  }
 }
 
 

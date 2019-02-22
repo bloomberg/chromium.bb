@@ -100,17 +100,22 @@ void SoftwareOutputDeviceX11::EndPaint() {
     XRenderFreePicture(display_, picture);
     XRenderFreePicture(display_, dest_picture);
     XFreePixmap(display_, pixmap);
-    return;
+  } else {
+    // TODO(jbauman): Switch to XShmPutImage since it's async.
+    SkPixmap pixmap;
+    surface_->peekPixels(&pixmap);
+    gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
+                      gc_, static_cast<const uint8_t*>(pixmap.addr()),
+                      viewport_pixel_size_.width(),
+                      viewport_pixel_size_.height(), rect.x(), rect.y(),
+                      rect.x(), rect.y(), rect.width(), rect.height());
   }
 
-  // TODO(jbauman): Switch to XShmPutImage since it's async.
-  SkPixmap pixmap;
-  surface_->peekPixels(&pixmap);
-  gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
-                    gc_, static_cast<const uint8_t*>(pixmap.addr()),
-                    viewport_pixel_size_.width(), viewport_pixel_size_.height(),
-                    rect.x(), rect.y(), rect.x(), rect.y(), rect.width(),
-                    rect.height());
+  // Ensure the new window content appears immediately. On a TYPE_UI thread we
+  // can rely on the message loop to flush for us so XFlush() isn't necessary.
+  // However, this code can run on a different thread and would have to wait for
+  // the TYPE_UI thread to no longer be idle before a flush happens.
+  XFlush(display_);
 }
 
 }  // namespace viz

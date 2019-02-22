@@ -340,16 +340,7 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
     DCHECK(!resource_requests.empty());
 
     const network::ResourceRequest& resource_request = resource_requests[0];
-    if (!resource_request.request_body ||
-        resource_request.request_body->elements()->empty())
-      return std::string();
-
-    const network::DataElement& data_element =
-        resource_request.request_body->elements()->at(0);
-    if (data_element.type() != network::DataElement::TYPE_BYTES)
-      return std::string();
-
-    return std::string(data_element.bytes(), data_element.length());
+    return network::GetUploadData(resource_request);
   }
 
   const GURL kInfoURL;

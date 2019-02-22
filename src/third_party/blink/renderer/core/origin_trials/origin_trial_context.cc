@@ -194,9 +194,10 @@ void OriginTrialContext::AddTokens(const Vector<String>& tokens) {
 void OriginTrialContext::InitializePendingFeatures() {
   if (!enabled_trials_.size())
     return;
-  if (!GetSupplementable()->IsDocument())
+  auto* document = DynamicTo<Document>(GetSupplementable());
+  if (!document)
     return;
-  LocalFrame* frame = ToDocument(GetSupplementable())->GetFrame();
+  LocalFrame* frame = document->GetFrame();
   if (!frame)
     return;
   ScriptState* script_state = ToScriptStateForMainWorld(frame);

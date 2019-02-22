@@ -497,6 +497,7 @@ class RTCStatsReportVerifier {
     verifier.TestMemberIsNonNegative<int32_t>(candidate.priority);
     verifier.TestMemberIsUndefined(candidate.url);
     verifier.TestMemberIsDefined(candidate.deleted);
+    verifier.TestMemberIsUndefined(candidate.relay_protocol);
     return verifier.ExpectAllMembersSuccessfullyTested();
   }
 
@@ -628,6 +629,7 @@ class RTCStatsReportVerifier {
     verifier->TestMemberIsUndefined(stream.associate_stats_id);
     verifier->TestMemberIsDefined(stream.is_remote);
     verifier->TestMemberIsDefined(stream.media_type);
+    verifier->TestMemberIsDefined(stream.kind);
     verifier->TestMemberIsIDReference(stream.track_id,
                                       RTCMediaStreamTrackStats::kType);
     verifier->TestMemberIsIDReference(stream.transport_id,

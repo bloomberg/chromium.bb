@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -15,6 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/utils/SkParse.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
 
 namespace extensions {
@@ -185,6 +188,25 @@ bool IsIconSufficientlyVisible(const SkBitmap& bitmap) {
   // color.
   return static_cast<double>(visible_pixels) / total_pixels >=
          kMinPercentVisiblePixels;
+}
+
+bool IsIconAtPathSufficientlyVisible(const base::FilePath& path) {
+  SkBitmap icon;
+  if (!LoadPngFromFile(path, &icon)) {
+    return false;
+  } else {
+    return image_util::IsIconSufficientlyVisible(icon);
+  }
+}
+
+bool LoadPngFromFile(const base::FilePath& path, SkBitmap* dst) {
+  std::string png_bytes;
+  if (!base::ReadFileToString(path, &png_bytes)) {
+    return false;
+  }
+  return gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(png_bytes.data()),
+      png_bytes.length(), dst);
 }
 
 }  // namespace image_util

@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
+#include "base/json/json_reader.h"
+#include "base/json/string_escape.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
@@ -11,13 +15,20 @@
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
+#include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/upstart_client.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -29,19 +40,26 @@ namespace chromeos {
 
 namespace {
 
-constexpr char kAdMachineNameInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#machineNameInput')";
-constexpr char kAdMachineOrgUnitInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#orgUnitInput')";
-constexpr char kAdEncryptionTypesSelect[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ "
-    "#encryptionList')";
-constexpr char kAdUsernameInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #userInput')";
-constexpr char kAdPasswordInput[] =
-    "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #passwordInput')";
+#define AD_JS_ELEMENT "document.querySelector('#oauth-enroll-ad-join-ui')."
+constexpr char kAdMachineNameInput[] = AD_JS_ELEMENT "$.machineNameInput";
+constexpr char kAdMachineOrgUnitInput[] = AD_JS_ELEMENT "$.orgUnitInput";
+constexpr char kAdEncryptionTypesSelect[] = AD_JS_ELEMENT "$.encryptionList";
+constexpr char kAdMoreOptionsSave[] = AD_JS_ELEMENT "$.moreOptionsSave.click()";
+constexpr char kAdUsernameInput[] = AD_JS_ELEMENT "$.userInput";
+constexpr char kAdPasswordInput[] = AD_JS_ELEMENT "$.passwordInput";
+constexpr char kAdSubmitCreds[] = AD_JS_ELEMENT "$$('#nextButton').click()";
+constexpr char kAdConfigurationSelect[] = AD_JS_ELEMENT "$.joinConfigSelect";
+constexpr char kAdCredentialsStep[] = AD_JS_ELEMENT "$.credsStep";
+constexpr char kAdJoinConfigurationForm[] = AD_JS_ELEMENT "$.joinConfig";
+constexpr char kAdUnlockConfigurationStep[] = AD_JS_ELEMENT "$.unlockStep";
+constexpr char kAdUnlockConfigurationSkipButtonTap[] =
+    AD_JS_ELEMENT "$$('#skipButton').click()";
+constexpr char kAdUnlockConfigurationSubmitButtonTap[] =
+    AD_JS_ELEMENT "$$('#unlockButton').click()";
+constexpr char kAdUnlockPasswordInput[] = AD_JS_ELEMENT "$.unlockPasswordInput";
+constexpr char kAdBackToUnlockConfigurationButtonTap[] =
+    AD_JS_ELEMENT "$$('#backToUnlockButton').click()";
+#undef AD_JS_ELEMENT
 constexpr char kAdUserDomain[] = "user.domain.com";
 constexpr char kAdMachineDomain[] = "machine.domain.com";
 constexpr char kAdMachineDomainDN[] =
@@ -49,6 +67,44 @@ constexpr char kAdMachineDomainDN[] =
 constexpr const char* kAdOrganizationlUnit[] = {"leaf", "root"};
 constexpr char kAdTestUser[] = "test_user@user.domain.com";
 constexpr char kDMToken[] = "dm_token";
+constexpr char kAdDomainJoinEncryptedConfig[] =
+    "W/x3ToZtYrHTzD21dlx2MrMhs2bDFTNmvew/toQhO+RdBV8XmQfJqVMaRtIO+Uji6zBueUyxcl"
+    "MtiFJnimvYh0DUFQ5PJ3PY49BPACPnrGws51or1pEZJkXiKOEapRwNfqHz5tOnvFS1VqSvcv6Z"
+    "JQqFQHKfvodGiEZv52+iViQTCSup8VJWCtfJxy/LxqHly/4xaUDNn8Sbbv8V/j8HUxc7/rwmnm"
+    "R5B6qxIYDfYOpZWQXnVunlB2bBkcCEgXdS9YN+opsftlkNPsVrcdHUWwCmqxxAsuVZaTfxu+7C"
+    "ZhSG72VH3BtQUsyGoh9evSIhAcid1CGbSx16sJVZyhZVXMF9D80AEl6aWDyxh43iJy0AgLpfkP"
+    "mfkpZ3+iv0EJocFUhFINrq0fble+wE8KsOtlUBne4jFA/fifOrRBoIdXdLLz3+FbL4A7zY9qbd"
+    "PbDw5J5W3nnaJWhTd5R765LbPp7wNAzdPh4a++E0dUUSVXO2K5HkAopV9RkeDea2kaxOLi1ioj"
+    "H8fxubSHp4e8ZYSAX4N9JkJWiDurp8yEpUno2aw2Y7HafkMs0GMnO0sdkJfLZrnDq9wkZh7bMD"
+    "6sp5tiOqVbTG6QH1BdlJBryTAjlrMFL6y7zFvfMZSJhbI6VwQyskGX/TOYEnsXuWEpRBxtDVV/"
+    "QLUWM0orFELZPoPdeuH3dACsEv4mMBo8hWlKu/S3SHXt2hrvI1PXDO10AOHy8CPNPs7p/LeuJq"
+    "XHRYOKsuNZnYbFJR1r+rZhkvYFpn6dHOLbe7RScqkq9cUYVvxK84COIdbEay9w1Son4sFJZszi"
+    "Ve+uc/oFWcVp6GZPzvWSfjrTXYqIFDw/WsC8mYMgqOvTZCKj6M3pUyvc7bT3hIPqGXZyp5Pmzb"
+    "jpCn95i8tlnjfmiZaDjl3HxrY15zvw==";
+constexpr char kAdDomainJoinUnlockedConfig[] = R"!!!(
+[
+  {
+    "name": "Sales",
+    "ad_username": "domain_join_account@example.com",
+    "ad_password": "test123",
+    "computer_ou": "OU=sales,DC=example,DC=com",
+    "encryption_types": "all"
+  },
+  {
+    "name": "Marketing",
+    "ad_username": "domain_join_account@example.com",
+    "ad_password": "test123",
+    "computer_ou": "OU=marketing,DC=example,DC=com"
+  },
+  {
+    "name": "Engineering",
+    "ad_username": "other_domain_join_account@example.com",
+    "ad_password": "test345",
+    "computer_ou": "OU=engineering,DC=example,DC=com",
+    "computer_name_validation_regex": "^DEVICE_\\d+$"
+  }
+]
+)!!!";
 
 class MockAuthPolicyClient : public FakeAuthPolicyClient {
  public:
@@ -77,10 +133,11 @@ class MockAuthPolicyClient : public FakeAuthPolicyClient {
 
 }  // namespace
 
-class EnterpriseEnrollmentTest : public LoginManagerTest {
+class EnterpriseEnrollmentTestBase : public LoginManagerTest {
  public:
-  EnterpriseEnrollmentTest()
-      : LoginManagerTest(true /*should_launch_browser*/) {
+  explicit EnterpriseEnrollmentTestBase(bool should_initialize_webui)
+      : LoginManagerTest(true /*should_launch_browser*/,
+                         should_initialize_webui) {
     enrollment_setup_functions_.clear();
 
     EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
@@ -214,11 +271,20 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
  private:
   static std::vector<OnSetupEnrollmentHelper> enrollment_setup_functions_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTestBase);
 };
 
-std::vector<EnterpriseEnrollmentTest::OnSetupEnrollmentHelper>
-    EnterpriseEnrollmentTest::enrollment_setup_functions_;
+std::vector<EnterpriseEnrollmentTestBase::OnSetupEnrollmentHelper>
+    EnterpriseEnrollmentTestBase::enrollment_setup_functions_;
+
+class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
+ public:
+  EnterpriseEnrollmentTest()
+      : EnterpriseEnrollmentTestBase(true /* should_initialize_webui */) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentTest);
+};
 
 class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
  public:
@@ -228,7 +294,131 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
     DBusThreadManager::GetSetterForTesting()->SetAuthPolicyClient(
         std::make_unique<MockAuthPolicyClient>());
     mock_auth_policy_client()->DisableOperationDelayForTesting();
-    EnterpriseEnrollmentTest::SetUp();
+    EnterpriseEnrollmentTestBase::SetUp();
+  }
+
+  void CheckActiveDirectoryCredentialsShown() {
+    EXPECT_TRUE(IsStepDisplayed("ad-join"));
+    js_checker().ExpectFalse(std::string(kAdCredentialsStep) + ".hidden");
+    js_checker().ExpectTrue(std::string(kAdUnlockConfigurationStep) +
+                            ".hidden");
+  }
+
+  void CheckConfigurationSelectionVisible(bool visible) {
+    js_checker().ExpectNE(std::string(kAdJoinConfigurationForm) + ".hidden",
+                          visible);
+  }
+
+  void CheckActiveDirectoryUnlockConfigurationShown() {
+    EXPECT_TRUE(IsStepDisplayed("ad-join"));
+    js_checker().ExpectFalse(std::string(kAdUnlockConfigurationStep) +
+                             ".hidden");
+    js_checker().ExpectTrue(std::string(kAdCredentialsStep) + ".hidden");
+  }
+
+  void SkipUnlockStep() {
+    js_checker().ExecuteAsync(kAdUnlockConfigurationSkipButtonTap);
+    ExecutePendingJavaScript();
+  }
+
+  void GetBackToUnlockStep() {
+    js_checker().ExecuteAsync(kAdBackToUnlockConfigurationButtonTap);
+    ExecutePendingJavaScript();
+  }
+
+  void SendUnlockPassword(const std::string& password) {
+    const std::string set_unlock_password =
+        std::string(kAdUnlockPasswordInput) + ".value = '" + password + "'";
+    js_checker().ExecuteAsync(set_unlock_password);
+    js_checker().ExecuteAsync(kAdUnlockConfigurationSubmitButtonTap);
+    ExecutePendingJavaScript();
+  }
+
+  void CheckUnlockPasswordValid(bool is_expected_valid) {
+    js_checker().ExpectNE(std::string(kAdUnlockPasswordInput) + ".invalid",
+                          is_expected_valid);
+  }
+
+  void SetConfigValue(size_t config_idx) {
+    js_checker().ExecuteAsync(kAdConfigurationSelect +
+                              (".value = " + std::to_string(config_idx)));
+    // Trigger selection handler.
+    js_checker().ExecuteAsync(kAdConfigurationSelect + std::string(".click()"));
+  }
+
+  void CheckAttributeValue(const base::Value* config_value,
+                           const std::string& default_value,
+                           const std::string& js_element) {
+    std::string expected_value(default_value);
+    if (config_value)
+      expected_value = config_value->GetString();
+    js_checker().ExpectTrue(js_element + " === '" + expected_value + "'");
+  }
+
+  void CheckAttributeValueAndDisabled(const base::Value* config_value,
+                                      const std::string& default_value,
+                                      const std::string& js_element) {
+    CheckAttributeValue(config_value, default_value, js_element + ".value");
+    const bool is_disabled = bool(config_value);
+    js_checker().ExpectEQ(js_element + ".disabled", is_disabled);
+  }
+
+  // Checks pattern attribute on the machine name input field. If |config_value|
+  // is nullptr the attribute should be undefined.
+  void CheckPatternAttribute(const base::Value* config_value) {
+    if (config_value) {
+      std::string escaped_pattern;
+      // Escape regex pattern.
+      EXPECT_TRUE(base::EscapeJSONString(config_value->GetString(),
+                                         false /* put_in_quotes */,
+                                         &escaped_pattern));
+      js_checker().ExpectTrue(std::string(kAdMachineNameInput) +
+                              ".pattern  === '" + escaped_pattern + "'");
+    } else {
+      js_checker().ExpectTrue("typeof " + std::string(kAdMachineNameInput) +
+                              ".pattern === 'undefined'");
+    }
+  }
+
+  // Goes through |configuration| which is JSON (see
+  // kAdDomainJoinUnlockedConfig). Selects each of them and checks that all the
+  // input fields are set correctly. Also checks if there is a "Custom" option
+  // which does not set any fields.
+  void CheckPossibleConfiguration(const std::string& configuration) {
+    std::unique_ptr<base::ListValue> options =
+        base::ListValue::From(base::JSONReader::Read(
+            configuration,
+            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
+    base::DictionaryValue custom_option;
+    custom_option.SetKey("name", base::Value("Custom"));
+    options->GetList().emplace_back(std::move(custom_option));
+    for (size_t i = 0; i < options->GetList().size(); ++i) {
+      const base::Value& option = options->GetList()[i];
+      SetConfigValue(i);
+
+      CheckAttributeValue(
+          option.FindKeyOfType("name", base::Value::Type::STRING), "",
+          std::string(kAdConfigurationSelect) + ".selectedOptions[0].label");
+
+      CheckAttributeValueAndDisabled(
+          option.FindKeyOfType("ad_username", base::Value::Type::STRING), "",
+          std::string(kAdUsernameInput));
+
+      CheckAttributeValueAndDisabled(
+          option.FindKeyOfType("ad_password", base::Value::Type::STRING), "",
+          std::string(kAdPasswordInput));
+
+      CheckAttributeValueAndDisabled(
+          option.FindKeyOfType("computer_ou", base::Value::Type::STRING), "",
+          std::string(kAdMachineOrgUnitInput));
+
+      CheckAttributeValueAndDisabled(
+          option.FindKeyOfType("encryption_types", base::Value::Type::STRING),
+          "strong", std::string(kAdEncryptionTypesSelect));
+
+      CheckPatternAttribute(option.FindKeyOfType(
+          "computer_name_validation_regex", base::Value::Type::STRING));
+    }
   }
 
   // Submits Active Directory domain join credentials.
@@ -238,6 +428,9 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
                                         const std::string& username,
                                         const std::string& password) {
     EXPECT_TRUE(IsStepDisplayed("ad-join"));
+    js_checker().ExpectFalse(std::string(kAdCredentialsStep) + ".hidden");
+    js_checker().ExpectTrue(std::string(kAdUnlockConfigurationStep) +
+                            ".hidden");
     js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".hidden");
     js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".hidden");
     js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".hidden");
@@ -259,17 +452,16 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
           encryption_types + "'";
       js_checker().ExecuteAsync(set_encryption_types);
     }
-    js_checker().ExecuteAsync(
-        "document.querySelector('#oauth-enroll-ad-join-ui /deep/ #adCreds"
-        "    /deep/ #button').fire('tap')");
+    js_checker().ExecuteAsync(kAdMoreOptionsSave);
+    js_checker().ExecuteAsync(kAdSubmitCreds);
     ExecutePendingJavaScript();
   }
 
   void ClickRetryOnErrorScreen() {
     js_checker().ExecuteAsync(
         "document.querySelector('"
-        "#oauth-enroll-active-directory-join-error-card /deep/ #submitButton'"
-        ").fire('tap')");
+        "#oauth-enroll-active-directory-join-error-card').$.submitButton"
+        ".click()");
     ExecutePendingJavaScript();
   }
 
@@ -296,23 +488,25 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
   }
 
   // Forces the Active Directory domain join flow during enterprise enrollment.
-  void SetupActiveDirectoryJoin(const std::string& expected_domain) {
+  void SetupActiveDirectoryJoin(const std::string& expected_domain,
+                                const std::string& domain_join_config) {
     AddEnrollmentSetupFunction(
-        [this,
-         expected_domain](EnterpriseEnrollmentHelperMock* enrollment_helper) {
+        [this, expected_domain, domain_join_config](
+            EnterpriseEnrollmentHelperMock* enrollment_helper) {
           // Causes the attribute-prompt flow to activate.
           EXPECT_CALL(*enrollment_helper,
                       EnrollUsingAuthCode("test_auth_code", _))
-              .WillOnce(InvokeWithoutArgs([this, expected_domain]() {
-                this->enrollment_screen()->JoinDomain(
-                    kDMToken, std::string() /* domain_join_config */,
-                    base::BindOnce(
-                        [](const std::string& expected_domain,
-                           const std::string& domain) {
-                          ASSERT_EQ(expected_domain, domain);
-                        },
-                        expected_domain));
-              }));
+              .WillOnce(InvokeWithoutArgs(
+                  [this, expected_domain, domain_join_config]() {
+                    this->enrollment_screen()->JoinDomain(
+                        kDMToken, domain_join_config,
+                        base::BindOnce(
+                            [](const std::string& expected_domain,
+                               const std::string& domain) {
+                              ASSERT_EQ(expected_domain, domain);
+                            },
+                            expected_domain));
+                  }));
         });
   }
 
@@ -344,6 +538,14 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
         "      machineName, user, errorState, showUnlockConfig);"
         "  window.domAutomationController.send('ShowJoinDomainError');"
         "}");
+    js_checker().ExecuteAsync(
+        "var originalSetAdJoinConfiguration ="
+        "    login.OAuthEnrollmentScreen.setAdJoinConfiguration;"
+        "login.OAuthEnrollmentScreen.setAdJoinConfiguration = function("
+        "    options) {"
+        "  originalSetAdJoinConfiguration(options);"
+        "  window.domAutomationController.send('SetAdJoinConfiguration');"
+        "}");
   }
 
   void WaitForMessage(content::DOMMessageQueue* message_queue,
@@ -356,6 +558,110 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryJoinTest);
+};
+
+class EnterpriseEnrollmentConfigurationTest
+    : public EnterpriseEnrollmentTestBase {
+ public:
+  EnterpriseEnrollmentConfigurationTest()
+      : EnterpriseEnrollmentTestBase(false) {}
+
+  void StartWizard() {
+    LoginDisplayHost* host = LoginDisplayHost::default_host();
+    ASSERT_TRUE(host != nullptr);
+    OobeScreenWaiter waiter(OobeScreen::SCREEN_OOBE_WELCOME);
+    host->StartWizard(OobeScreen::SCREEN_OOBE_WELCOME);
+
+    // Make sure that OOBE is run as an "official" build.
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
+
+    waiter.Wait();
+
+    ASSERT_TRUE(WizardController::default_controller() != nullptr);
+    ASSERT_FALSE(StartupUtils::IsOobeCompleted());
+  }
+
+  void LoadConfiguration() {
+    OobeConfiguration::set_skip_check_for_testing(false);
+    // Make sure configuration is loaded
+    base::RunLoop run_loop;
+    OOBEConfigurationWaiter waiter;
+
+    OobeConfiguration::Get()->CheckConfiguration();
+
+    const bool ready = waiter.IsConfigurationLoaded(run_loop.QuitClosure());
+    if (!ready)
+      run_loop.Run();
+
+    // Let screens to settle.
+    base::RunLoop().RunUntilIdle();
+
+    // WebUI exists now, finish the setup.
+    InitializeWebContents();
+  }
+
+  void ResetHelper() { enrollment_screen()->enrollment_helper_.reset(); }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    OobeConfiguration::set_skip_check_for_testing(true);
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+
+    fake_update_engine_client_ = new chromeos::FakeUpdateEngineClient();
+
+    dbus_setter->SetUpdateEngineClient(
+        std::unique_ptr<chromeos::UpdateEngineClient>(
+            fake_update_engine_client_));
+
+    EnterpriseEnrollmentTestBase::SetUpInProcessBrowserTestFixture();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    const ::testing::TestInfo* const test_info =
+        ::testing::UnitTest::GetInstance()->current_test_info();
+    const std::string filename = std::string(test_info->name()) + ".json";
+
+    // File name is based on the test name.
+    base::FilePath file;
+    ASSERT_TRUE(chromeos::test_utils::GetTestDataPath("oobe_configuration",
+                                                      filename, &file));
+
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
+                                   file);
+
+    EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
+  }
+
+  // Overridden from InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    // Set up fake networks.
+    // TODO(pmarko): Find a way for FakeShillManagerClient to be initialized
+    // automatically (https://crbug.com/847422).
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->SetupDefaultEnvironment();
+
+    EnterpriseEnrollmentTestBase::SetUpOnMainThread();
+    LoadConfiguration();
+
+    // Make sure that OOBE is run as an "official" build.
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
+
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
+  }
+
+ protected:
+  // Owned by DBusThreadManagerSetter
+  chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
 };
 
 // Shows the enrollment screen and simulates an enrollment complete event. We
@@ -458,13 +764,15 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                        TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
-  SetupActiveDirectoryJoin(kAdUserDomain);
+  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
       ->GetUpstartClient()
       ->StartAuthPolicyService();
 
+  CheckActiveDirectoryCredentialsShown();
+  CheckConfigurationSelectionVisible(false);
   content::DOMMessageQueue message_queue;
   SetupActiveDirectoryJSNotifications();
   SetExpectedJoinRequest("machine_name", "" /* machine_domain */,
@@ -490,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                        TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
-  SetupActiveDirectoryJoin(kAdMachineDomain);
+  SetupActiveDirectoryJoin(kAdMachineDomain, std::string());
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -528,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                        TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
-  SetupActiveDirectoryJoin(kAdUserDomain);
+  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -544,9 +852,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "" /* encryption_types */, kAdTestUser,
                                    "" /* password */);
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
-  js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".isInvalid");
-  js_checker().ExpectTrue(std::string(kAdPasswordInput) + ".isInvalid");
+  js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".invalid");
+  js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".invalid");
+  js_checker().ExpectTrue(std::string(kAdPasswordInput) + ".invalid");
 
   // Checking error in case of too long machine name.
   SubmitActiveDirectoryCredentials("too_long_machine_name", "" /* machine_dn */,
@@ -554,9 +862,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  js_checker().ExpectTrue(std::string(kAdMachineNameInput) + ".isInvalid");
-  js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".isInvalid");
-  js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".isInvalid");
+  js_checker().ExpectTrue(std::string(kAdMachineNameInput) + ".invalid");
+  js_checker().ExpectFalse(std::string(kAdUsernameInput) + ".invalid");
+  js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".invalid");
 
   // Checking error in case of bad username (without realm).
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
@@ -564,9 +872,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                                    "password");
   WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
-  js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".isInvalid");
-  js_checker().ExpectTrue(std::string(kAdUsernameInput) + ".isInvalid");
-  js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".isInvalid");
+  js_checker().ExpectFalse(std::string(kAdMachineNameInput) + ".invalid");
+  js_checker().ExpectTrue(std::string(kAdUsernameInput) + ".invalid");
+  js_checker().ExpectFalse(std::string(kAdPasswordInput) + ".invalid");
 
   // We have to remove the enrollment_helper before the dtor gets called.
   enrollment_screen()->enrollment_helper_.reset();
@@ -577,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
                        TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
-  SetupActiveDirectoryJoin(kAdUserDomain);
+  SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
 
   chromeos::DBusThreadManager::Get()
@@ -588,13 +896,113 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   SetupActiveDirectoryJSNotifications();
   // Legacy type triggers error card.
   SubmitActiveDirectoryCredentials("machine_name", "" /* machine_dn */,
-                                   "legacy", "test_user", "password");
+                                   "legacy", kAdTestUser, "password");
   WaitForMessage(&message_queue, "\"ShowADJoinError\"");
   EXPECT_TRUE(IsStepDisplayed("active-directory-join-error"));
   ClickRetryOnErrorScreen();
   EXPECT_TRUE(IsStepDisplayed("ad-join"));
 
   // We have to remove the enrollment_helper before the dtor gets called.
+  enrollment_screen()->enrollment_helper_.reset();
+}
+
+// Check that configuration lets correctly pass Welcome screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestLeaveWelcomeScreen) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that configuration lets correctly select a network by GUID.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectNetwork) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
+  UpdateEngineClient::Status status;
+  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
+  status.download_progress = 0.1;
+  fake_update_engine_client_->set_default_status(status);
+
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  EXPECT_TRUE(IsStepDisplayed("signin"));
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that when configuration has requisition, it gets applied at the
+// beginning.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDeviceRequisition) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  auto* policy_manager = g_browser_process->platform_part()
+                             ->browser_policy_connector_chromeos()
+                             ->GetDeviceCloudPolicyManager();
+  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
+  // We have to remove the enrollment_helper before the dtor gets called.
+  ResetHelper();
+}
+
+// Check that configuration for the streamline Active Directory domain join
+// propagates correctly to the Domain Join UI.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
+                       TestActiveDirectoryEnrollment_Streamline) {
+  ShowEnrollmentScreen();
+  std::string binary_config;
+  EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));
+  SetupActiveDirectoryJoin(kAdUserDomain, binary_config);
+  SubmitEnrollmentCredentials();
+
+  chromeos::DBusThreadManager::Get()
+      ->GetUpstartClient()
+      ->StartAuthPolicyService();
+
+  ExecutePendingJavaScript();
+  content::DOMMessageQueue message_queue;
+  SetupActiveDirectoryJSNotifications();
+
+  // Unlock password step should we shown.
+  CheckActiveDirectoryUnlockConfigurationShown();
+  CheckUnlockPasswordValid(true);
+
+  // Test skipping the password step and getting back.
+  SkipUnlockStep();
+  CheckActiveDirectoryCredentialsShown();
+  CheckConfigurationSelectionVisible(false);
+  GetBackToUnlockStep();
+  CheckActiveDirectoryUnlockConfigurationShown();
+
+  // Enter wrong unlock password.
+  SendUnlockPassword("wrong_password");
+  WaitForMessage(&message_queue, "\"ShowJoinDomainError\"");
+  CheckUnlockPasswordValid(false);
+
+  // Enter right unlock password.
+  SendUnlockPassword("test765!");
+  WaitForMessage(&message_queue, "\"SetAdJoinConfiguration\"");
+  CheckActiveDirectoryCredentialsShown();
+  // Configuration selector should be visible.
+  CheckConfigurationSelectionVisible(true);
+
+  // Go through configuration.
+  CheckPossibleConfiguration(kAdDomainJoinUnlockedConfig);
   enrollment_screen()->enrollment_helper_.reset();
 }
 

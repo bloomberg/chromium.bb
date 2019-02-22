@@ -7,7 +7,12 @@ module content.mojom;
 import "services/content/public/mojom/navigable_contents.mojom";
 
 // Parameters used to configure a newly created NavigableContents.
-struct NavigableContentsParams {};
+struct NavigableContentsParams {
+  // Enables auto-resizing of any view created for this NavigableContents. If
+  // |true|, the corresponding NavigableContentsClient will receive
+  // |DidAutoResizeView()| notifications whenever such resizing happens.
+  bool enable_view_auto_resize = false;
+};
 
 // NavigableContentsFactory is the primary interface through which a new
 // NavigableContents interface is bound to a new concrete navigable contents

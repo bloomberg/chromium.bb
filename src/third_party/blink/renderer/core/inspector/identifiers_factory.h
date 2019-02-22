@@ -36,6 +36,7 @@ namespace blink {
 class DocumentLoader;
 class Frame;
 class LocalFrame;
+class Node;
 class InspectedFrames;
 
 class CORE_EXPORT IdentifiersFactory {
@@ -58,9 +59,10 @@ class CORE_EXPORT IdentifiersFactory {
 
   static String IdFromToken(const base::UnguessableToken&);
 
+  static int IntIdForNode(Node* node);
+
  private:
-  static String AddProcessIdPrefixTo(int id);
-  static int RemoveProcessIdPrefixFrom(const String&, bool* ok);
+  static String AddProcessIdPrefixTo(uint64_t id);
 };
 
 }  // namespace blink

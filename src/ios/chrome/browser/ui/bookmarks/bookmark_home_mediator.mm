@@ -6,7 +6,10 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
@@ -17,6 +20,7 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_promo_item.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,6 +28,11 @@
 #endif
 
 using bookmarks::BookmarkNode;
+
+namespace {
+// Maximum number of entries to fetch when searching.
+const int kMaxBookmarksSearchResults = 50;
+}  // namespace
 
 @interface BookmarkHomeMediator ()<BookmarkHomePromoItemDelegate,
                                    BookmarkModelBridgeObserver,
@@ -96,16 +105,12 @@ using bookmarks::BookmarkNode;
 
 // Computes the bookmarks table view based on the current root node.
 - (void)computeBookmarkTableViewData {
-  // Regenerate the list of all bookmarks.
-  if ([self.sharedState.tableViewModel
-          hasSectionForSectionIdentifier:
-              BookmarkHomeSectionIdentifierBookmarks]) {
-    [self.sharedState.tableViewModel
-        removeSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
-  }
-  [self.sharedState.tableViewModel
-      addSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+  [self deleteAllItemsOrAddSectionWithIdentifier:
+            BookmarkHomeSectionIdentifierBookmarks];
+  [self deleteAllItemsOrAddSectionWithIdentifier:
+            BookmarkHomeSectionIdentifierMessages];
 
+  // Regenerate the list of all bookmarks.
   if (!self.sharedState.bookmarkModel->loaded() ||
       !self.sharedState.tableViewDisplayedRootNode) {
     [self updateTableViewBackground];
@@ -178,6 +183,46 @@ using bookmarks::BookmarkNode;
   }
 }
 
+- (void)computeBookmarkTableViewDataMatching:(NSString*)searchText
+                  orShowMessageWhenNoResults:(NSString*)noResults {
+  [self deleteAllItemsOrAddSectionWithIdentifier:
+            BookmarkHomeSectionIdentifierBookmarks];
+  [self deleteAllItemsOrAddSectionWithIdentifier:
+            BookmarkHomeSectionIdentifierMessages];
+
+  std::vector<const BookmarkNode*> nodes;
+  bookmarks::QueryFields query;
+  query.word_phrase_query.reset(new base::string16);
+  *query.word_phrase_query = base::SysNSStringToUTF16(searchText);
+  GetBookmarksMatchingProperties(self.sharedState.bookmarkModel, query,
+                                 kMaxBookmarksSearchResults, &nodes);
+
+  int count = 0;
+  for (const BookmarkNode* node : nodes) {
+    BookmarkHomeNodeItem* nodeItem =
+        [[BookmarkHomeNodeItem alloc] initWithType:BookmarkHomeItemTypeBookmark
+                                      bookmarkNode:node];
+    [self.sharedState.tableViewModel
+                        addItem:nodeItem
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierBookmarks];
+    count++;
+  }
+
+  if (count == 0) {
+    TableViewTextItem* item =
+        [[TableViewTextItem alloc] initWithType:BookmarkHomeItemTypeMessage];
+    item.textAlignment = NSTextAlignmentLeft;
+    item.textColor = [UIColor darkGrayColor];
+    item.text = noResults;
+    [self.sharedState.tableViewModel
+                        addItem:item
+        toSectionWithIdentifier:BookmarkHomeSectionIdentifierMessages];
+    return;
+  }
+
+  [self updateTableViewBackground];
+}
+
 - (void)updateTableViewBackground {
   // If the current root node is the outermost root, check if we need to show
   // the spinner backgound.  Otherwise, check if we need to show the empty
@@ -195,7 +240,8 @@ using bookmarks::BookmarkNode;
     return;
   }
 
-  if (![self hasBookmarksOrFolders]) {
+  if (![self hasBookmarksOrFolders] &&
+      !self.sharedState.currentlyShowingSearchResults) {
     [self.consumer
         updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleEmpty];
   } else {
@@ -211,7 +257,8 @@ using bookmarks::BookmarkNode;
   // the permanent nodes.
   BOOL promoVisible = ((self.sharedState.tableViewDisplayedRootNode ==
                         self.sharedState.bookmarkModel->root_node()) &&
-                       self.bookmarkPromoController.shouldShowSigninPromo);
+                       self.bookmarkPromoController.shouldShowSigninPromo &&
+                       !self.sharedState.currentlyShowingSearchResults);
 
   if (promoVisible == self.sharedState.promoVisible) {
     return;
@@ -271,6 +318,10 @@ using bookmarks::BookmarkNode;
 
 // The node has not changed, but its children have.
 - (void)bookmarkNodeChildrenChanged:(const BookmarkNode*)bookmarkNode {
+  // In search mode, we want to refresh any changes (like undo).
+  if (self.sharedState.currentlyShowingSearchResults) {
+    [self.consumer refreshContents];
+  }
   // The current root folder's children changed. Reload everything.
   // (When adding new folder, table is already been updated. So no need to
   // reload here.)
@@ -295,7 +346,9 @@ using bookmarks::BookmarkNode;
 // |node| was deleted from |folder|.
 - (void)bookmarkNodeDeleted:(const BookmarkNode*)node
                  fromFolder:(const BookmarkNode*)folder {
-  if (self.sharedState.tableViewDisplayedRootNode == node) {
+  if (self.sharedState.currentlyShowingSearchResults) {
+    [self.consumer refreshContents];
+  } else if (self.sharedState.tableViewDisplayedRootNode == node) {
     self.sharedState.tableViewDisplayedRootNode = NULL;
     [self.consumer refreshContents];
   }
@@ -402,6 +455,19 @@ using bookmarks::BookmarkNode;
 - (BOOL)hasBookmarksOrFolders {
   return self.sharedState.tableViewDisplayedRootNode &&
          !self.sharedState.tableViewDisplayedRootNode->empty();
+}
+
+// Delete all items for the given |sectionIdentifier| section, or create it
+// if it doesn't exist, hence ensuring the section exists and is empty.
+- (void)deleteAllItemsOrAddSectionWithIdentifier:(NSInteger)sectionIdentifier {
+  if ([self.sharedState.tableViewModel
+          hasSectionForSectionIdentifier:sectionIdentifier]) {
+    [self.sharedState.tableViewModel
+        deleteAllItemsFromSectionWithIdentifier:sectionIdentifier];
+  } else {
+    [self.sharedState.tableViewModel
+        addSectionWithIdentifier:sectionIdentifier];
+  }
 }
 
 @end

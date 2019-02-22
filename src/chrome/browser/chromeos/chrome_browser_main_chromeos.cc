@@ -47,8 +47,10 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
+#include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
+#include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
@@ -104,6 +106,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -115,8 +118,6 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/cert_loader.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -132,6 +133,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login_event_recorder.h"
+#include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
@@ -149,6 +151,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/notification_service.h"
@@ -229,8 +232,8 @@ void GotSystemSlotOnUIThread(
 void GotSystemSlotOnIOThread(
     base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
     crypto::ScopedPK11Slot system_slot) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
                      std::move(system_slot)));
 }
@@ -263,60 +266,15 @@ bool ShallAttemptTpmOwnership() {
 #endif
 }
 
-void RegisterStubPathOverridesIfNecessary() {
-  // These overrides need to occur before BrowserPolicyConnectorChromeOS
-  // (for one) is created. The DCHECK ensures that is the case.
-  DCHECK(!g_browser_process);
-
-  base::FilePath user_data_dir;
-  if (base::SysInfo::IsRunningOnChromeOS() ||
-      !base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    return;
-  }
-
-  // Override some paths with stub locations so that cloud policy and enterprise
-  // enrollment work on desktop builds, for ease of development.
-  chromeos::RegisterStubPathOverrides(user_data_dir);
-}
-
 }  // namespace
 
 namespace internal {
-
-// Contains state created in PreEarlyInitialization(). This is just the state
-// needed for field trials.
-class DBusPreEarlyInit {
- public:
-  DBusPreEarlyInit() {
-    SystemSaltGetter::Initialize();
-
-    // Initialize DBusThreadManager for the browser.
-    DBusThreadManager::Initialize(DBusThreadManager::kAll);
-
-    // Initialize the device settings service so that we'll take actions per
-    // signals sent from the session manager. This needs to happen before
-    // g_browser_process initializes BrowserPolicyConnector.
-    DeviceSettingsService::Initialize();
-    InstallAttributes::Initialize();
-  }
-
-  ~DBusPreEarlyInit() {
-    // NOTE: This must only be called if Initialize() was called.
-    DBusThreadManager::Shutdown();
-    SystemSaltGetter::Shutdown();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DBusPreEarlyInit);
-};
 
 // Wrapper class for initializing D-Bus services and shutting them down.
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    bluez::BluezDBusManager::Initialize(
-        DBusThreadManager::Get()->GetSystemBus(),
-        chromeos::DBusThreadManager::Get()->IsUsingFakes());
+    bluez::BluezDBusManager::Initialize();
 
     if (!features::IsMultiProcessMash()) {
       // In Mash, power policy is sent to powerd by ash.
@@ -333,6 +291,11 @@ class DBusServices {
         kKioskAppServiceName, dbus::ObjectPath(kKioskAppServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<KioskInfoService>()));
+
+    metrics_event_service_ = CrosDBusService::Create(
+        kMetricsEventServiceName, dbus::ObjectPath(kMetricsEventServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<MetricsEventServiceProvider>()));
 
     screen_lock_service_ = CrosDBusService::Create(
         kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
@@ -376,7 +339,7 @@ class DBusServices {
 
     LoginState::Initialize();
     TPMTokenLoader::Initialize();
-    CertLoader::Initialize();
+    NetworkCertLoader::Initialize();
 
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
@@ -403,10 +366,11 @@ class DBusServices {
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     LoginState::Shutdown();
-    CertLoader::Shutdown();
+    NetworkCertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
+    metrics_event_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -423,6 +387,7 @@ class DBusServices {
  private:
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
+  std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
@@ -434,10 +399,10 @@ class DBusServices {
 };
 
 // Initializes a global NSSCertDatabase for the system token and starts
-// CertLoader with that database. Note that this is triggered from
+// NetworkCertLoader with that database. Note that this is triggered from
 // PreMainMessageLoopRun, which is executed after PostMainMessageLoopStart,
-// where CertLoader is initialized. We can thus assume that CertLoader is
-// initialized.
+// where NetworkCertLoader is initialized. We can thus assume that
+// NetworkCertLoader is initialized.
 class SystemTokenCertDBInitializer {
  public:
   SystemTokenCertDBInitializer() : weak_ptr_factory_(this) {}
@@ -494,13 +459,13 @@ class SystemTokenCertDBInitializer {
     base::Callback<void(crypto::ScopedPK11Slot)> callback =
         base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
                             weak_ptr_factory_.GetWeakPtr());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&GetSystemSlotOnIOThread, callback));
   }
 
   // Initializes the global system token NSSCertDatabase with |system_slot|.
-  // Also starts CertLoader with the system token database.
+  // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot) {
     // Currently, NSSCertDatabase requires a public slot to be set, so we use
     // the system slot there. We also want GetSystemSlot() to return the system
@@ -521,8 +486,8 @@ class SystemTokenCertDBInitializer {
     system_token_cert_database_ = std::move(database);
 
     VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
-               "database to CertLoader.";
-    CertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
+               "database to NetworkCertLoader.";
+    NetworkCertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
   }
 
   // Global NSSCertDatabase which sees the system token.
@@ -537,11 +502,10 @@ class SystemTokenCertDBInitializer {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack,
     ChromeFeatureListCreator* chrome_feature_list_creator)
     : ChromeBrowserMainPartsLinux(parameters,
-                                  std::move(data_pack),
-                                  chrome_feature_list_creator) {}
+                                  chrome_feature_list_creator),
+      is_dbus_initialized_(chrome_feature_list_creator != nullptr) {}
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -583,16 +547,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                         .value();
   }
 
-  RegisterStubPathOverridesIfNecessary();
-
-#if defined(GOOGLE_CHROME_BUILD)
-  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-  std::string channel;
-  if (base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &channel))
-    chrome::SetChannel(channel);
-#endif
-
-  dbus_pre_early_init_ = std::make_unique<internal::DBusPreEarlyInit>();
+  if (!is_dbus_initialized_)
+    PreEarlyInitDBus();
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       parsed_command_line().HasSwitch(
@@ -610,6 +566,10 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
+  // Initialize session manager in early stage in case others want to listen
+  // to session state change right after browser is started.
+  g_browser_process->platform_part()->InitializeSessionManager();
+
   // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
   // implementation. This must be done before BrowserMainLoop calls
   // net::NetworkChangeNotifier::Create() in MainMessageLoopStart().
@@ -639,8 +599,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {content::BrowserThread::IO}));
 
   // Initialize NSS database for system token.
   system_token_certdb_initializer_ =
@@ -670,7 +630,10 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   CHECK(base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                                &downloads_directory));
 
-  DeviceOAuth2TokenServiceFactory::Initialize();
+  DeviceOAuth2TokenServiceFactory::Initialize(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      g_browser_process->local_state());
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
   network_throttling_observer_.reset(
@@ -707,7 +670,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- just before CreateProfile().
 
   g_browser_process->platform_part()->InitializeChromeUserManager();
-  g_browser_process->platform_part()->InitializeSessionManager();
 
   ScreenLocker::InitClass();
 
@@ -790,6 +752,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
   keyboard::InitializeKeyboardResources();
+  chrome_keyboard_controller_client_ =
+      std::make_unique<ChromeKeyboardControllerClient>();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
@@ -1119,6 +1083,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   chromeos::DemoSession::ShutDownIfInitialized();
 
+  // Inform |NetworkCertLoader| that it should not notify observers anymore.
+  // TODO(https://crbug.com/894867): Remove this when the root cause of the
+  // crash is found.
+  if (NetworkCertLoader::IsInitialized())
+    NetworkCertLoader::Get()->set_is_shutting_down();
+
   // Let the UserManager unregister itself as an observer of the CrosSettings
   // singleton before it is destroyed. This also ensures that the UserManager
   // has no URLRequest pending (see http://crbug.com/276659).
@@ -1148,9 +1118,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
-  // Destroy ArcKioskAppManager after its observers are removed when Ash is
-  // closed above.
+  // Destroy classes that may have ash observers or dependencies.
   arc_kiosk_app_manager_.reset();
+  chrome_keyboard_controller_client_.reset();
 
   // All ARC related modules should have been shut down by this point, so
   // destroy ARC.
@@ -1197,10 +1167,10 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // (ComponentUpdaterServiceProvider).
   g_browser_process->platform_part()->ShutdownCrosComponentManager();
 
-  dbus_pre_early_init_.reset();
+  ShutdownDBus();
 
   // Reset SystemTokenCertDBInitializer after DBus services because it should
-  // outlive CertLoader.
+  // outlive NetworkCertLoader.
   system_token_certdb_initializer_.reset();
 
   ChromeBrowserMainPartsLinux::PostDestroyThreads();

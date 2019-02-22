@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
@@ -286,7 +287,7 @@ bool TextCodecUTF8::HandlePartialSequence<UChar>(UChar*& destination,
 }
 
 String TextCodecUTF8::Decode(const char* bytes,
-                             size_t length,
+                             wtf_size_t length,
                              FlushBehavior flush,
                              bool stop_on_error,
                              bool& saw_error) {
@@ -294,7 +295,8 @@ String TextCodecUTF8::Decode(const char* bytes,
   // Each input byte might turn into a character.
   // That includes all bytes in the partial-sequence buffer because
   // each byte in an invalid sequence will turn into a replacement character.
-  StringBuffer<LChar> buffer(partial_sequence_size_ + length);
+  StringBuffer<LChar> buffer(
+      base::CheckAdd(partial_sequence_size_, length).ValueOrDie());
 
   const uint8_t* source = reinterpret_cast<const uint8_t*>(bytes);
   const uint8_t* end = source + length;
@@ -350,7 +352,7 @@ String TextCodecUTF8::Decode(const char* bytes,
           SECURITY_DCHECK(end - source <
                           static_cast<ptrdiff_t>(sizeof(partial_sequence_)));
           DCHECK(!partial_sequence_size_);
-          partial_sequence_size_ = end - source;
+          partial_sequence_size_ = static_cast<wtf_size_t>(end - source);
           memcpy(partial_sequence_, source, partial_sequence_size_);
           source = end;
           break;
@@ -372,12 +374,13 @@ String TextCodecUTF8::Decode(const char* bytes,
     }
   } while (do_flush && partial_sequence_size_);
 
-  buffer.Shrink(destination - buffer.Characters());
+  buffer.Shrink(static_cast<wtf_size_t>(destination - buffer.Characters()));
 
   return String::Adopt(buffer);
 
 upConvertTo16Bit:
-  StringBuffer<UChar> buffer16(partial_sequence_size_ + length);
+  StringBuffer<UChar> buffer16(
+      base::CheckAdd(partial_sequence_size_, length).ValueOrDie());
 
   UChar* destination16 = buffer16.Characters();
 
@@ -431,7 +434,7 @@ upConvertTo16Bit:
           SECURITY_DCHECK(end - source <
                           static_cast<ptrdiff_t>(sizeof(partial_sequence_)));
           DCHECK(!partial_sequence_size_);
-          partial_sequence_size_ = end - source;
+          partial_sequence_size_ = static_cast<wtf_size_t>(end - source);
           memcpy(partial_sequence_, source, partial_sequence_size_);
           source = end;
           break;
@@ -457,23 +460,25 @@ upConvertTo16Bit:
     }
   } while (do_flush && partial_sequence_size_);
 
-  buffer16.Shrink(destination16 - buffer16.Characters());
+  buffer16.Shrink(
+      static_cast<wtf_size_t>(destination16 - buffer16.Characters()));
 
   return String::Adopt(buffer16);
 }
 
 template <typename CharType>
-CString TextCodecUTF8::EncodeCommon(const CharType* characters, size_t length) {
+CString TextCodecUTF8::EncodeCommon(const CharType* characters,
+                                    wtf_size_t length) {
   // The maximum number of UTF-8 bytes needed per UTF-16 code unit is 3.
   // BMP characters take only one UTF-16 code unit and can take up to 3 bytes
   // (3x).
   // Non-BMP characters take two UTF-16 code units and can take up to 4 bytes
   // (2x).
-  CHECK_LE(length, std::numeric_limits<size_t>::max() / 3);
+  CHECK_LE(length, std::numeric_limits<wtf_size_t>::max() / 3);
   Vector<uint8_t> bytes(length * 3);
 
-  size_t i = 0;
-  size_t bytes_written = 0;
+  wtf_size_t i = 0;
+  wtf_size_t bytes_written = 0;
   while (i < length) {
     UChar32 character;
     U16_NEXT(characters, i, length, character);
@@ -489,13 +494,13 @@ CString TextCodecUTF8::EncodeCommon(const CharType* characters, size_t length) {
 }
 
 CString TextCodecUTF8::Encode(const UChar* characters,
-                              size_t length,
+                              wtf_size_t length,
                               UnencodableHandling) {
   return EncodeCommon(characters, length);
 }
 
 CString TextCodecUTF8::Encode(const LChar* characters,
-                              size_t length,
+                              wtf_size_t length,
                               UnencodableHandling) {
   return EncodeCommon(characters, length);
 }

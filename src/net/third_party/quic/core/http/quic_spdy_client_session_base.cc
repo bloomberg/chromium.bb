@@ -6,6 +6,7 @@
 
 #include "net/third_party/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
@@ -60,6 +61,16 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
     QuicStreamId promised_stream_id,
     size_t frame_len,
     const QuicHeaderList& header_list) {
+  if (GetQuicReloadableFlag(quic_check_stream_nonstatic_on_promised_headers)) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_check_stream_nonstatic_on_promised_headers);
+    if (QuicContainsKey(static_streams(), stream_id)) {
+      connection()->CloseConnection(
+          QUIC_INVALID_HEADERS_STREAM_DATA, "stream is static",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      return;
+    }
+  }
   if (promised_stream_id != kInvalidStreamId &&
       promised_stream_id <= largest_promised_stream_id_) {
     connection()->CloseConnection(
@@ -139,8 +150,7 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
     const QuicString& url) {
-  QuicPromisedByUrlMap::iterator it =
-      push_promise_index_->promised_by_url()->find(url);
+  auto it = push_promise_index_->promised_by_url()->find(url);
   if (it != push_promise_index_->promised_by_url()->end()) {
     return it->second;
   }
@@ -149,7 +159,7 @@ QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedById(
     const QuicStreamId id) {
-  QuicPromisedByIdMap::iterator it = promised_by_id_.find(id);
+  auto it = promised_by_id_.find(id);
   if (it != promised_by_id_.end()) {
     return it->second.get();
   }

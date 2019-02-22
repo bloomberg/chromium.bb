@@ -54,6 +54,7 @@ class BuildRow(collections.MutableMapping):
     # The readonly data is accessible from this object as dict entries.
     self['id'] = self.build_entry.id
     self['build_number'] = self.build_entry.build_number
+    self['buildbucket_id'] = self.build_entry.buildbucket_id
     self['status'] = self.build_entry.status
     self['summary'] = self.build_entry.summary
     self['start_time'] = self.build_entry.start_time

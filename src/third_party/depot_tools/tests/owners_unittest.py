@@ -306,11 +306,20 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.test_file_include_absolute_path()
 
   def test_file_include_different_filename(self):
-    self.files['/owners/garply'] = owners_file(peter)
+    self.files['/owners/GARPLY_OWNERS'] = owners_file(peter)
     self.files['/content/garply/OWNERS'] = owners_file(john,
-        lines=['per-file foo.*=file://owners/garply'])
+        lines=['per-file foo.*=file://owners/GARPLY_OWNERS'])
 
     self.assert_files_not_covered_by(['content/garply/foo.cc'], [peter], [])
+
+  def test_file_include_invalid_filename(self):
+    self.files['/base/SECURITY_REVIEWERS'] = owners_file(peter)
+    self.files['/ipc/OWNERS'] = owners_file(file='//base/SECURITY_REVIEWERS')
+    try:
+      self.db().reviewers_for(['ipc/ipc_message_utils.h'], None)
+      self.fail()  # pragma: no cover
+    except owners.SyntaxErrorInOwnersFile, e:
+      self.assertTrue(str(e).startswith('/ipc/OWNERS:1'))
 
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()
@@ -332,10 +341,10 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assert_syntax_error('ben\n')
 
   def test_syntax_error__invalid_absolute_file(self):
-    self.assert_syntax_error('file://foo/bar/baz\n')
+    self.assert_syntax_error('file://foo/bar/OWNERS\n')
 
   def test_syntax_error__invalid_relative_file(self):
-    self.assert_syntax_error('file:foo/bar/baz\n')
+    self.assert_syntax_error('file:foo/bar/OWNERS\n')
 
   def test_non_existant_status_file(self):
     db = self.db()

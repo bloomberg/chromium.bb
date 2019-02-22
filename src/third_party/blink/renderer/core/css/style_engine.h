@@ -40,9 +40,12 @@
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
+#include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/core/css/style_invalidation_root.h"
+#include "third_party/blink/renderer/core/css/style_recalc_root.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -83,17 +86,25 @@ class CORE_EXPORT StyleEngine final
 
  public:
   class IgnoringPendingStylesheet {
-    DISALLOW_NEW();
+    STACK_ALLOCATED();
 
    public:
     IgnoringPendingStylesheet(StyleEngine& engine)
         : scope_(&engine.ignore_pending_stylesheets_, true) {}
-
    private:
     base::AutoReset<bool> scope_;
   };
 
-  friend class IgnoringPendingStylesheet;
+  class DOMRemovalScope {
+    STACK_ALLOCATED();
+
+   public:
+    DOMRemovalScope(StyleEngine& engine)
+        : in_removal_(&engine.in_dom_removal_, true) {}
+
+   private:
+    base::AutoReset<bool> in_removal_;
+  };
 
   static StyleEngine* Create(Document& document) {
     return new StyleEngine(document);
@@ -119,6 +130,11 @@ class CORE_EXPORT StyleEngine final
   void AddStyleSheetCandidateNode(Node&);
   void RemoveStyleSheetCandidateNode(Node&, ContainerNode& insertion_point);
   void ModifiedStyleSheetCandidateNode(Node&);
+  void AdoptedStyleSheetsWillChange(TreeScope&,
+                                    StyleSheetList* old_sheets,
+                                    StyleSheetList* new_sheets);
+  void AddedCustomElementDefaultStyles(
+      const HeapVector<Member<CSSStyleSheet>>& default_styles);
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
   void InitialStyleChanged();
@@ -230,6 +246,10 @@ class CORE_EXPORT StyleEngine final
                 .IsEmpty();
   }
 
+  void UpdateStyleInvalidationRoot(ContainerNode* ancestor, Node* dirty_node);
+  void UpdateStyleRecalcRoot(ContainerNode* ancestor, Node* dirty_node);
+  void UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor, Node* dirty_node);
+
   CSSFontSelector* GetFontSelector() { return font_selector_; }
   void SetFontSelector(CSSFontSelector*);
 
@@ -244,9 +264,13 @@ class CORE_EXPORT StyleEngine final
                              TextPosition start_position,
                              StyleEngineContext&);
 
-  void CollectFeaturesTo(RuleFeatureSet& features) const {
+  void CollectFeaturesTo(RuleFeatureSet& features) {
     CollectUserStyleFeaturesTo(features);
     CollectScopedStyleFeaturesTo(features);
+    for (CSSStyleSheet* sheet : custom_element_default_style_sheets_) {
+      if (sheet)
+        features.Add(RuleSetForSheet(*sheet)->Features());
+    }
   }
 
   void EnsureUAStyleForFullscreen();
@@ -282,8 +306,10 @@ class CORE_EXPORT StyleEngine final
                                         const HeapHashSet<Member<RuleSet>>&,
                                         InvalidationScope =
                                             kInvalidateCurrentScope);
+  void ScheduleCustomElementInvalidations(HashSet<AtomicString> tag_names);
 
   void NodeWillBeRemoved(Node&);
+  void ChildrenRemoved(ContainerNode& parent);
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
@@ -293,8 +319,9 @@ class CORE_EXPORT StyleEngine final
 
   void ApplyRuleSetChanges(TreeScope&,
                            const ActiveStyleSheetVector& old_style_sheets,
-                           const ActiveStyleSheetVector& new_style_sheets,
-                           InvalidationScope = kInvalidateCurrentScope);
+                           const ActiveStyleSheetVector& new_style_sheets);
+  void ApplyUserRuleSetChanges(const ActiveStyleSheetVector& old_style_sheets,
+                               const ActiveStyleSheetVector& new_style_sheets);
 
   void CollectMatchingUserRules(ElementRuleCollector&) const;
 
@@ -315,6 +342,10 @@ class CORE_EXPORT StyleEngine final
       const AtomicString& animation_name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
+
+  void RecalcStyle(StyleRecalcChange change);
+  void RebuildLayoutTree();
+  bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -384,6 +415,11 @@ class CORE_EXPORT StyleEngine final
   void ScheduleTypeRuleSetInvalidations(ContainerNode&,
                                         const HeapHashSet<Member<RuleSet>>&);
   void InvalidateSlottedElements(HTMLSlotElement&);
+  void InvalidateForRuleSetChanges(
+      TreeScope& tree_scope,
+      const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
+      unsigned changed_rule_flags,
+      InvalidationScope invalidation_scope);
 
   void UpdateViewport();
   void UpdateActiveUserStyleSheets();
@@ -396,11 +432,7 @@ class CORE_EXPORT StyleEngine final
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
   void UpdateStyleSheetList(TreeScope&);
 
-  void ClearFontCache();
-  void RefreshFontCache();
-  void MarkFontCacheDirty() { font_cache_dirty_ = true; }
-  bool IsFontCacheDirty() const { return font_cache_dirty_; }
-
+  void ClearFontCacheAndAddUserFonts();
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
 
   void AddFontFaceRules(const RuleSet&);
@@ -442,12 +474,19 @@ class CORE_EXPORT StyleEngine final
 
   bool uses_rem_units_ = false;
   bool ignore_pending_stylesheets_ = false;
+  bool in_layout_tree_rebuild_ = false;
+  bool in_dom_removal_ = false;
 
   Member<StyleResolver> resolver_;
   Member<ViewportStyleResolver> viewport_resolver_;
   Member<MediaQueryEvaluator> media_query_evaluator_;
   Member<CSSGlobalRuleSet> global_rule_set_;
+
   PendingInvalidations pending_invalidations_;
+
+  StyleInvalidationRoot style_invalidation_root_;
+  StyleRecalcRoot style_recalc_root_;
+  LayoutTreeRebuildRoot layout_tree_rebuild_root_;
 
   // This is a set of rendered elements which had one or more of its rendered
   // children removed since the last lifecycle update. For such elements we need
@@ -456,7 +495,6 @@ class CORE_EXPORT StyleEngine final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   Member<CSSFontSelector> font_selector_;
-  bool font_cache_dirty_ = false;
 
   HeapHashMap<AtomicString, WeakMember<StyleSheetContents>>
       text_to_sheet_cache_;
@@ -473,6 +511,7 @@ class CORE_EXPORT StyleEngine final
 
   ActiveStyleSheetVector active_user_style_sheets_;
 
+  HeapHashSet<WeakMember<CSSStyleSheet>> custom_element_default_style_sheets_;
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;

@@ -4,9 +4,12 @@
 
 #include <cmath>
 
+#include "base/auto_reset.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -33,13 +36,28 @@ DeviceMotionEventPump::~DeviceMotionEventPump() {
   StopIfObserving();
 }
 
+void DeviceMotionEventPump::SetController(PlatformEventController* controller) {
+  DCHECK(controller);
+  DCHECK(!controller_);
+
+  controller_ = controller;
+  StartListening(controller_->GetDocument()
+                     ? controller_->GetDocument()->GetFrame()
+                     : nullptr);
+}
+
+void DeviceMotionEventPump::RemoveController() {
+  controller_ = nullptr;
+  StopListening();
+}
+
 DeviceMotionData* DeviceMotionEventPump::LatestDeviceMotionData() {
   return data_.Get();
 }
 
 void DeviceMotionEventPump::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_);
-  PlatformEventDispatcher::Trace(visitor);
+  visitor->Trace(controller_);
 }
 
 void DeviceMotionEventPump::StartListening(LocalFrame* frame) {
@@ -81,13 +99,18 @@ void DeviceMotionEventPump::SendStopMessage() {
   gyroscope_.Stop();
 }
 
+void DeviceMotionEventPump::NotifyController() {
+  DCHECK(controller_);
+  controller_->DidUpdateData();
+}
+
 void DeviceMotionEventPump::FireEvent(TimerBase*) {
   DeviceMotionData* data = GetDataFromSharedMemory();
 
   // data is null if not all sensors are active
   if (data) {
     data_ = data;
-    NotifyControllers();
+    NotifyController();
   }
 }
 

@@ -51,10 +51,13 @@ class EnvTestHelper {
     env_->env_controller_->touch_ids_down_ = 0;
   }
 
-  void SetMode(Env::Mode mode) {
+  // Changes Env's Mode to |mode|, returning the old value.
+  Env::Mode SetMode(Env::Mode mode) {
+    const Env::Mode old_mode = env_->mode_;
     env_->mode_ = mode;
     if (mode == Env::Mode::MUS)
       env_->EnableMusOSExchangeDataProvider();
+    return old_mode;
   }
 
   // Use to force Env::last_mouse_location() to return the value last set.

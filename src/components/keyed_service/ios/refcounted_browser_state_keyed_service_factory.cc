@@ -4,6 +4,7 @@
 
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -11,27 +12,33 @@
 
 void RefcountedBrowserStateKeyedServiceFactory::SetTestingFactory(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
-  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
+    TestingFactory testing_factory) {
+  RefcountedKeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<web::BrowserState*>(context));
-    };
+    wrapped_factory = base::BindRepeating(
+        [](const TestingFactory& testing_factory,
+           base::SupportsUserData* context) {
+          return testing_factory.Run(static_cast<web::BrowserState*>(context));
+        },
+        std::move(testing_factory));
   }
-  RefcountedKeyedServiceFactory::SetTestingFactory(context, func);
+  RefcountedKeyedServiceFactory::SetTestingFactory(context,
+                                                   std::move(wrapped_factory));
 }
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     web::BrowserState* context,
-    TestingFactoryFunction testing_factory) {
-  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
-  if (testing_factory) {
-    func = [=](base::SupportsUserData* context) {
-      return testing_factory(static_cast<web::BrowserState*>(context));
-    };
-  }
-  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(context, func);
+    TestingFactory testing_factory) {
+  DCHECK(testing_factory);
+  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
+      context, base::BindRepeating(
+                   [](const TestingFactory& testing_factory,
+                      base::SupportsUserData* context) {
+                     return testing_factory.Run(
+                         static_cast<web::BrowserState*>(context));
+                   },
+                   std::move(testing_factory)));
 }
 
 RefcountedBrowserStateKeyedServiceFactory::

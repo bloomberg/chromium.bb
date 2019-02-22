@@ -94,21 +94,21 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
     return base::WrapUnique(new InterpolableList(other));
   }
 
-  static std::unique_ptr<InterpolableList> Create(size_t size) {
+  static std::unique_ptr<InterpolableList> Create(wtf_size_t size) {
     return base::WrapUnique(new InterpolableList(size));
   }
 
   bool IsList() const final { return true; }
-  void Set(size_t position, std::unique_ptr<InterpolableValue> value) {
+  void Set(wtf_size_t position, std::unique_ptr<InterpolableValue> value) {
     values_[position] = std::move(value);
   }
-  const InterpolableValue* Get(size_t position) const {
+  const InterpolableValue* Get(wtf_size_t position) const {
     return values_[position].get();
   }
-  std::unique_ptr<InterpolableValue>& GetMutable(size_t position) {
+  std::unique_ptr<InterpolableValue>& GetMutable(wtf_size_t position) {
     return values_[position];
   }
-  size_t length() const { return values_.size(); }
+  wtf_size_t length() const { return values_.size(); }
   bool Equals(const InterpolableValue& other) const final;
   std::unique_ptr<InterpolableValue> Clone() const final {
     return Create(*this);
@@ -121,10 +121,10 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
-  explicit InterpolableList(size_t size) : values_(size) {}
+  explicit InterpolableList(wtf_size_t size) : values_(size) {}
 
   InterpolableList(const InterpolableList& other) : values_(other.length()) {
-    for (size_t i = 0; i < length(); i++)
+    for (wtf_size_t i = 0; i < length(); i++)
       Set(i, other.values_[i]->Clone());
   }
 

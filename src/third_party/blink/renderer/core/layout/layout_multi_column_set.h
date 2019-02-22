@@ -255,7 +255,8 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   void PaintObject(const PaintInfo&,
                    const LayoutPoint& paint_offset) const override;
 
-  void AddOverflowFromChildren() override;
+  void AddVisualOverflowFromChildren() override;
+  void AddLayoutOverflowFromChildren() override;
 
   MultiColumnFragmentainerGroupList fragmentainer_groups_;
   LayoutFlowThread* flow_thread_;

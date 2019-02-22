@@ -318,6 +318,9 @@ def parse_args(args):
                       "'unexpected' == Ignore any tests that had unexpected results on the bot.")),
             optparse.make_option(
                 '--iterations',
+                '--isolated-script-test-repeat',
+                # TODO(crbug.com/893235): Remove the gtest alias when FindIt no longer uses it.
+                '--gtest_repeat',
                 type='int',
                 default=1,
                 help='Number of times to run the set of tests (e.g. ABCABCABC)'),
@@ -354,13 +357,13 @@ def parse_args(args):
                 help='Output per-test profile information, using the specified profiler.'),
             optparse.make_option(
                 '--repeat-each',
-                '--gtest_repeat',
                 type='int',
                 default=1,
                 help='Number of times to run each test (e.g. AAABBBCCC)'),
             optparse.make_option(
                 '--num-retries',
                 '--test-launcher-retry-limit',
+                '--isolated-script-test-launcher-retry-limit',
                 type='int',
                 default=None,
                 help=('Number of times to retry failures. Default (when this '
@@ -401,11 +404,13 @@ def parse_args(args):
                       '"only" == only run the SKIP tests, '
                       '"always" == always skip, even if listed on the command line.')),
             optparse.make_option(
+                '--isolated-script-test-also-run-disabled-tests',
+                # TODO(crbug.com/893235): Remove the gtest alias when FindIt no longer uses it.
                 '--gtest_also_run_disabled_tests',
-                action='store_true',
-                default=False,  # Consistent with the default value of --skipped
-                help=('Equivalent to --skipped=ignore. This option overrides '
-                      '--skipped if both are given.')),
+                action='store_const',
+                const='ignore',
+                dest='skipped',
+                help=('Equivalent to --skipped=ignore.')),
             optparse.make_option(
                 '--skip-failing-tests',
                 action='store_true',
@@ -428,6 +433,12 @@ def parse_args(args):
                 action='append',
                 metavar='FILE',
                 help='read list of tests to run from file'),
+            optparse.make_option(
+                '--isolated-script-test-filter',
+                type='string',
+                help='A list of tests to run separated by TWO colons, e.g. fast::css/test.html, '
+                     'same as listing them as positional arguments'),
+            # TODO(crbug.com/893235): Remove gtest_filter when FindIt no longer uses it.
             optparse.make_option(
                 '--gtest_filter',
                 type='string',
@@ -553,10 +564,11 @@ def _set_up_derived_options(port, options, args):
         if not options.skipped:
             options.skipped = 'always'
 
-    if options.gtest_also_run_disabled_tests:
-        options.skipped = 'ignore'
-    elif not options.skipped:
+    if not options.skipped:
         options.skipped = 'default'
+
+    if options.isolated_script_test_filter:
+        args.extend(options.isolated_script_test_filter.split('::'))
 
     if options.gtest_filter:
         args.extend(options.gtest_filter.split(':'))

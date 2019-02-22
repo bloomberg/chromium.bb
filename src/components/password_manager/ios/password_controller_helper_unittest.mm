@@ -14,19 +14,91 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
 #import "components/password_manager/ios/password_controller_helper.h"
+#include "components/password_manager/ios/test_helpers.h"
 #include "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+NS_ASSUME_NONNULL_BEGIN
+
 using autofill::PasswordForm;
+using autofill::PasswordFormFillData;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+using password_manager::FillData;
+using test_helpers::SetPasswordFormFillData;
+using test_helpers::SetFillData;
+
+@interface PasswordControllerHelper (Testing)
+
+// Provides access to the method below for testing with mocks.
+- (void)extractSubmittedPasswordForm:(const std::string&)formName
+                   completionHandler:
+                       (void (^)(BOOL found,
+                                 const PasswordForm& form))completionHandler;
+
+// Provides access to replace |jsPasswordManager| with Mock one for test.
+- (void)setJsPasswordManager:(JsPasswordManager*)jsPasswordManager;
+
+@end
+
+// Mocks JsPasswordManager to simluate javascript execution failure.
+@interface MockJsPasswordManager : JsPasswordManager
+
+// Designated initializer.
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+// For the first |targetFailureCount| calls to
+// |fillPasswordForm:withUserName:password:completionHandler:|, skips the
+// invocation of the real JavaScript manager, giving the effect that password
+// form fill failed. As soon as |_fillPasswordFormFailureCountRemaining| reaches
+// zero, stop mocking and let the original JavaScript manager execute.
+- (void)setFillPasswordFormTargetFailureCount:(NSUInteger)targetFailureCount;
+
+@end
+
+@implementation MockJsPasswordManager {
+  NSUInteger _fillPasswordFormFailureCountRemaining;
+}
+
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
+  return [super initWithReceiver:receiver];
+}
+
+- (void)setFillPasswordFormTargetFailureCount:(NSUInteger)targetFailureCount {
+  _fillPasswordFormFailureCountRemaining = targetFailureCount;
+}
+
+- (void)fillPasswordForm:(NSString*)JSONString
+            withUsername:(NSString*)username
+                password:(NSString*)password
+       completionHandler:(void (^)(BOOL))completionHandler {
+  if (_fillPasswordFormFailureCountRemaining > 0) {
+    --_fillPasswordFormFailureCountRemaining;
+    if (completionHandler) {
+      completionHandler(NO);
+    }
+    return;
+  }
+  [super fillPasswordForm:JSONString
+             withUsername:username
+                 password:password
+        completionHandler:completionHandler];
+}
+
+@end
 
 namespace {
 // Returns a string containing the JavaScript loaded from a
@@ -53,20 +125,6 @@ class TestWebClientWithScript : public web::TestWebClient {
     return GetPageScript(@"test_bundle");
   }
 };
-}
-
-@interface PasswordControllerHelper (Testing)
-
-// Provides access to JavaScript Manager for testing with mocks.
-@property(readonly) JsPasswordManager* jsPasswordManager;
-
-// Provides access to the method below for testing with mocks.
-- (void)extractSubmittedPasswordForm:(const std::string&)formName
-                   completionHandler:
-                       (void (^)(BOOL found,
-                                 const PasswordForm& form))completionHandler;
-
-@end
 
 class PasswordControllerHelperTest : public web::WebTestWithWebState {
  public:
@@ -312,3 +370,369 @@ TEST_F(PasswordControllerHelperTest, FindPasswordFormsInView) {
     }
   }
 }
+
+// A script that resets all text fields, including those in iframes.
+static NSString* kClearInputFieldsScript =
+    @"function clearInputFields(win) {"
+     "  var inputs = win.document.getElementsByTagName('input');"
+     "  for (var i = 0; i < inputs.length; i++) {"
+     "    inputs[i].value = '';"
+     "  }"
+     "  var frames = win.frames;"
+     "  for (var i = 0; i < frames.length; i++) {"
+     "    clearInputFields(frames[i]);"
+     "  }"
+     "}"
+     "clearInputFields(window);";
+
+// A script that runs after autofilling forms.  It returns ids and values of all
+// non-empty fields, including those in iframes.
+static NSString* kInputFieldValueVerificationScript =
+    @"function findAllInputsInFrame(win, prefix) {"
+     "  var result = '';"
+     "  var inputs = win.document.getElementsByTagName('input');"
+     "  for (var i = 0; i < inputs.length; i++) {"
+     "    var input = inputs[i];"
+     "    if (input.value) {"
+     "      result += prefix + input.id + '=' + input.value + ';';"
+     "    }"
+     "  }"
+     "  var frames = win.frames;"
+     "  for (var i = 0; i < frames.length; i++) {"
+     "    result += findAllInputsInFrame("
+     "        frames[i], prefix + frames[i].name +'.');"
+     "  }"
+     "  return result;"
+     "};"
+     "function findAllInputs(win) {"
+     "  return findAllInputsInFrame(win, '');"
+     "};"
+     "findAllInputs(window);";
+
+// Test HTML page.  It contains several password forms.  Tests autofill
+// them and verify that the right ones are autofilled.
+static NSString* kHtmlWithMultiplePasswordForms =
+    @""
+     // Basic form.
+     "<form>"
+     "<input id='un0' type='text' name='u0'>"
+     "<input id='pw0' type='password' name='p0'>"
+     "</form>"
+     // Form with action in the same origin.
+     "<form action='?query=yes#reference'>"
+     "<input id='un1' type='text' name='u1'>"
+     "<input id='pw1' type='password' name='p1'>"
+     "</form>"
+     // Form with action in other origin.
+     "<form action='http://some_other_action'>"
+     "<input id='un2' type='text' name='u2'>"
+     "<input id='pw2' type='password' name='p2'>"
+     "</form>"
+     // Form with two exactly same password fields.
+     "<form>"
+     "<input id='un3' type='text' name='u3'>"
+     "<input id='pw3' type='password' name='p3'>"
+     "<input id='pw3' type='password' name='p3'>"
+     "</form>"
+     // Forms with same names but different ids (1 of 2).
+     "<form>"
+     "<input id='un4' type='text' name='u4'>"
+     "<input id='pw4' type='password' name='p4'>"
+     "</form>"
+     // Forms with same names but different ids (2 of 2).
+     "<form>"
+     "<input id='un5' type='text' name='u4'>"
+     "<input id='pw5' type='password' name='p4'>"
+     "</form>"
+     // Basic form, but with quotes in the names and IDs.
+     "<form name=\"f6'\">"
+     "<input id=\"un6'\" type='text' name=\"u6'\">"
+     "<input id=\"pw6'\" type='password' name=\"p6'\">"
+     "</form>"
+     // Test forms inside iframes.
+     "<iframe id='pf' name='pf'></iframe>"
+     "<iframe id='npf' name='npf'></iframe>"
+     "<script>"
+     "  var doc = frames['pf'].document.open();"
+     // Add a form inside iframe. It should also be matched and autofilled.
+     // Note: The id and name fields are deliberately set as same as those of
+     // some other fields outside of the frames. The algorithm should be
+     // able to handle this conflict.
+     "  doc.write('<form><input id=\\'un4\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw4\\' type=\\'password\\' name=\\'p4\\'>');"
+     "  doc.write('</form>');"
+     // Add a non-password form inside iframe. It should not be matched.
+     // Note: Same as above, the type mismatch of id and name as well as
+     // the conflict with existing fields are deliberately arranged.
+     "  var doc = frames['npf'].document.open();"
+     "  doc.write('<form><input id=\\'un4\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw4\\' type=\\'text\\' name=\\'p4\\'>');"
+     "  doc.write('</form>');"
+     "  doc.close();"
+     "</script>"
+     // Fields inside this form don't have name.
+     "<form>"
+     "<input id='un9' type='text'>"
+     "<input id='pw9' type='password'>"
+     "</form>"
+     // Fields in this form is attached by form's id.
+     "<form id='form10'></form>"
+     "<input id='un10' type='text' form='form10'>"
+     "<input id='pw10' type='password' form='form10'>";
+
+struct FillPasswordFormTestData {
+  // Origin of the form data.
+  const std::string origin;
+  // Action of the form data.
+  const std::string action;
+  // Name/id of the user name field in the form data.
+  const char* username_field;
+  // Value of the user name field in the form data.
+  const char* username_value;
+  // Name/id of the password field in the form data.
+  const char* password_field;
+  // Value of the password field in the form data.
+  const char* password_value;
+  // True if the match should be found.
+  const BOOL should_succeed;
+  // Expected result generated by |kInputFieldValueVerificationScript|.
+  NSString* expected_result;
+};
+
+// Tests that filling password forms works correctly.
+TEST_F(PasswordControllerHelperTest, FillPasswordForm) {
+  LoadHtml(kHtmlWithMultiplePasswordForms);
+
+  const std::string base_url = BaseUrl();
+  // clang-format off
+  const FillPasswordFormTestData test_data[] = {
+    // Basic test: one-to-one match on the first password form.
+    {
+      base_url,
+      base_url,
+      "un0",
+      "test_user",
+      "pw0",
+      "test_password",
+      YES,
+      @"un0=test_user;pw0=test_password;"
+    },
+    // Multiple forms match (including one in iframe): they should all be
+    // autofilled.
+    {
+      base_url,
+      base_url,
+      "un4",
+      "test_user",
+      "pw4",
+      "test_password",
+      YES,
+      @"un4=test_user;pw4=test_password;pf.un4=test_user;pf.pw4=test_password;"
+    },
+    // The form matches despite a different action: the only difference
+    // is a query and reference.
+    {
+      base_url,
+      base_url,
+      "un1",
+      "test_user",
+      "pw1",
+      "test_password",
+      YES,
+      @"un1=test_user;pw1=test_password;"
+    },
+    // No match because of a different origin.
+    {
+      "http://someotherfakedomain.com",
+      base_url,
+      "un0",
+      "test_user",
+      "pw0",
+      "test_password",
+      NO,
+      @""
+    },
+    // No match because of a different action.
+    {
+      base_url,
+      "http://someotherfakedomain.com",
+      "un0",
+      "test_user",
+      "pw0",
+      "test_password",
+      NO,
+      @""
+    },
+    // No match because some inputs are not in the form.
+    {
+      base_url,
+      base_url,
+      "un0",
+      "test_user",
+      "pw1",
+      "test_password",
+      NO,
+      @""
+    },
+    // There are inputs with duplicate names in the form, the first of them is
+    // filled.
+    {
+      base_url,
+      base_url,
+      "un3",
+      "test_user",
+      "pw3",
+      "test_password",
+      YES,
+      @"un3=test_user;pw3=test_password;"
+    },
+    // Basic test, but with quotes in the names and IDs.
+    {
+      base_url,
+      base_url,
+      "un6'",
+      "test_user",
+      "pw6'",
+      "test_password",
+      YES,
+      @"un6'=test_user;pw6'=test_password;"
+    },
+    // Fields don't have name attributes so id attribute is used for fields
+    // identification.
+    {
+      base_url,
+      base_url,
+      "un9",
+      "test_user",
+      "pw9",
+      "test_password",
+      YES,
+      @"un9=test_user;pw9=test_password;"
+    },
+    // Fields in this form is attached by form's id.
+    {
+      base_url,
+      base_url,
+      "un10",
+      "test_user",
+      "pw10",
+      "test_password",
+      YES,
+      @"un10=test_user;pw10=test_password;"
+    },
+  };
+  // clang-format on
+
+  for (const FillPasswordFormTestData& data : test_data) {
+    ExecuteJavaScript(kClearInputFieldsScript);
+
+    PasswordFormFillData form_data;
+    SetPasswordFormFillData(data.origin, data.action, data.username_field,
+                            data.username_value, data.password_field,
+                            data.password_value, nullptr, nullptr, false,
+                            &form_data);
+
+    __block BOOL block_was_called = NO;
+    [helper_ fillPasswordForm:form_data
+            completionHandler:^(BOOL success) {
+              block_was_called = YES;
+              EXPECT_EQ(data.should_succeed, success);
+            }];
+    EXPECT_TRUE(
+        WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+          return block_was_called;
+        }));
+
+    id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+    EXPECT_NSEQ(data.expected_result, result);
+  }
+}
+
+// Tests that filling password forms with fill data works correctly.
+TEST_F(PasswordControllerHelperTest, FillPasswordFormWithFillData) {
+  LoadHtml(
+      @"<form><input id='u1' type='text' name='un1'>"
+       "<input id='p1' type='password' name='pw1'></form>");
+  const std::string base_url = BaseUrl();
+  FillData fill_data;
+  SetFillData(base_url, base_url, "u1", "john.doe@gmail.com", "p1",
+              "super!secret", &fill_data);
+
+  __block int call_counter = 0;
+  [helper_ fillPasswordFormWithFillData:fill_data
+                      completionHandler:^(BOOL complete) {
+                        ++call_counter;
+                        EXPECT_TRUE(complete);
+                      }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 1;
+  }));
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
+}
+
+// Tests that a form is found and the found form is filled in with the given
+// username and password.
+TEST_F(PasswordControllerHelperTest, FindAndFillOnePasswordForm) {
+  LoadHtml(
+      @"<form><input id='u1' type='text' name='un1'>"
+       "<input id='p1' type='password' name='pw1'></form>");
+  __block int call_counter = 0;
+  __block int success_counter = 0;
+  [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"
+                                       password:@"super!secret"
+                              completionHandler:^(BOOL complete) {
+                                ++call_counter;
+                                if (complete) {
+                                  ++success_counter;
+                                }
+                              }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 1;
+  }));
+  EXPECT_EQ(1, success_counter);
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
+}
+
+// Tests that multiple forms on the same page are found and filled.
+// This test includes an mock injected failure on form filling to verify
+// that completion handler is called with the proper values.
+TEST_F(PasswordControllerHelperTest, FindAndFillMultiplePasswordForms) {
+  // Fails the first call to fill password form.
+  MockJsPasswordManager* mockJsPasswordManager = [[MockJsPasswordManager alloc]
+      initWithReceiver:web_state()->GetJSInjectionReceiver()];
+  [mockJsPasswordManager setFillPasswordFormTargetFailureCount:1];
+  [helper_ setJsPasswordManager:mockJsPasswordManager];
+  LoadHtml(
+      @"<form><input id='u1' type='text' name='un1'>"
+       "<input id='p1' type='password' name='pw1'></form>"
+       "<form><input id='u2' type='text' name='un2'>"
+       "<input id='p2' type='password' name='pw2'></form>"
+       "<form><input id='u3' type='text' name='un3'>"
+       "<input id='p3' type='password' name='pw3'></form>");
+  __block int call_counter = 0;
+  __block int success_counter = 0;
+  [helper_ findAndFillPasswordFormsWithUserName:@"john.doe@gmail.com"
+                                       password:@"super!secret"
+                              completionHandler:^(BOOL complete) {
+                                ++call_counter;
+                                if (complete) {
+                                  ++success_counter;
+                                }
+                              }];
+  // There should be 3 password forms and only 2 successfully filled forms.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 3;
+  }));
+  EXPECT_EQ(2, success_counter);
+  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
+  EXPECT_NSEQ(
+      @"u2=john.doe@gmail.com;p2=super!secret;"
+       "u3=john.doe@gmail.com;p3=super!secret;",
+      result);
+}
+
+}  // namespace
+
+NS_ASSUME_NONNULL_END

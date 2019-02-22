@@ -57,7 +57,6 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.page_scale_factor;
   }
 
-#if defined(OS_ANDROID)
   static float top_controls_height(const cc::RenderFrameMetadata& metadata) {
     return metadata.top_controls_height;
   }
@@ -67,6 +66,7 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.top_controls_shown_ratio;
   }
 
+#if defined(OS_ANDROID)
   static float bottom_controls_height(const cc::RenderFrameMetadata& metadata) {
     return metadata.bottom_controls_height;
   }

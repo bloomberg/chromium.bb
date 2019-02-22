@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,7 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -27,6 +29,9 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+
+// Enables usage of Gaia Auth Multilogin endpoint for identity consistency.
+extern const base::Feature kUseMultiloginEndpoint;
 
 namespace signin {
 class AccountReconcilorDelegate;
@@ -129,10 +134,13 @@ class AccountReconcilor : public KeyedService,
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTestBase;
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ProfileAlreadyConnected);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDice, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           SigninManagerRegistration);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Reauth);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           ProfileAlreadyConnected);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceTokenServiceRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileWhithoutSignin);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceReconcileNoop);
@@ -150,42 +158,56 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            MigrationClearSecondaryTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, TokensNotLoaded);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceDeleteCookie);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           TokensNotLoaded);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileCookiesDisabled);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettings);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsGaiaUrl);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsNonGaiaUrl);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileContentSettingsInvalidPattern);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieSuccess);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieFailure);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopWithDots);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           GetAccountsFromCookieSuccess);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           GetAccountsFromCookieFailure);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoopWithDots);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileNoopMultiple);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileAddToCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, AuthErrorTriggersListAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            SignoutAfterErrorDoesNotRecordUma);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           TokenErrorOnPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileRemoveFromCookie);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            StartReconcileAddToCookieTwice);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileBadPrimary);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Lock);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileBadPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           StartReconcileOnlyOnce);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Lock);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMethodParamTest,
                            StartReconcileWithSessionInfoExpiredDefault);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            AddAccountToCookieCompletedWithBogusAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, NoLoopWithBadPrimary);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, WontMergeAccountsWithError);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           NoLoopWithBadPrimary);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           WontMergeAccountsWithError);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsCalled);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DelegateTimeoutIsNotCalled);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
+                           DelegateTimeoutIsNotCalled);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
 
@@ -221,10 +243,6 @@ class AccountReconcilor : public KeyedService,
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
-  // Revokes tokens for all accounts in chrome_accounts but the primary account.
-  void RevokeAllSecondaryTokens(
-      const std::string& primary_account,
-      const std::vector<std::string>& chrome_accounts);
 
   // Returns the list of valid accounts from the TokenService.
   std::vector<std::string> LoadValidAccountsFromTokenService() const;
@@ -245,6 +263,8 @@ class AccountReconcilor : public KeyedService,
   void OnAddAccountToCookieCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
+  void OnSetAccountsInCookieCompleted(
+      const GoogleServiceAuthError& error) override;
   void OnGaiaAccountsInCookieUpdated(
         const std::vector<gaia::ListedAccount>& accounts,
         const std::vector<gaia::ListedAccount>& signed_out_accounts,
@@ -256,6 +276,11 @@ class AccountReconcilor : public KeyedService,
   void OnRefreshTokensLoaded() override;
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& error) override;
+
+  void FinishReconcileWithMultiloginEndpoint(
+      const std::string& primary_account,
+      const std::vector<std::string>& chrome_accounts,
+      std::vector<gaia::ListedAccount>&& gaia_accounts);
 
   // Lock related methods.
   void IncrementLockCount();

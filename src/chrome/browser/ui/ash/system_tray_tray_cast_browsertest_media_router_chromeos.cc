@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
@@ -110,6 +111,18 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
  private:
   // InProcessBrowserTest:
+  void PreRunTestOnMainThread() override {
+    media_router_ = std::make_unique<media_router::MockMediaRouter>();
+    ON_CALL(*media_router_, RegisterMediaSinksObserver(_))
+        .WillByDefault(Invoke(
+            this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureSink));
+    ON_CALL(*media_router_, RegisterMediaRoutesObserver(_))
+        .WillByDefault(Invoke(
+            this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureRoutes));
+    CastConfigClientMediaRouter::SetMediaRouterForTest(media_router_.get());
+    InProcessBrowserTest::PreRunTestOnMainThread();
+  }
+
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     // Connect to the ash test interface.
@@ -123,6 +136,11 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
                         &ash_message_center_controller_);
   }
 
+  void PostRunTestOnMainThread() override {
+    InProcessBrowserTest::PostRunTestOnMainThread();
+    CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
+  }
+
   bool CaptureSink(media_router::MediaSinksObserver* media_sinks_observer) {
     media_sinks_observer_ = media_sinks_observer;
     return true;
@@ -132,21 +150,7 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
     media_routes_observer_ = media_routes_observer;
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ON_CALL(media_router_, RegisterMediaSinksObserver(_))
-        .WillByDefault(Invoke(
-            this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureSink));
-    ON_CALL(media_router_, RegisterMediaRoutesObserver(_))
-        .WillByDefault(Invoke(
-            this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureRoutes));
-    CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
-  }
-
-  media_router::MockMediaRouter media_router_;
+  std::unique_ptr<media_router::MockMediaRouter> media_router_;
   media_router::MediaSinksObserver* media_sinks_observer_ = nullptr;
   media_router::MediaRoutesObserver* media_routes_observer_ = nullptr;
   ash::mojom::SystemTrayTestApiPtr tray_test_api_;

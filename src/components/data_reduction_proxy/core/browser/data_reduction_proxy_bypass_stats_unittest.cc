@@ -52,6 +52,7 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,7 +113,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
   std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
     return std::make_unique<DataReductionProxyBypassStats>(
         test_context_->config(), test_context_->unreachable_callback(),
-        test_context_->test_network_connection_tracker());
+        network::TestNetworkConnectionTracker::GetInstance());
   }
 
   MockDataReductionProxyConfig* config() const {
@@ -150,7 +151,6 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
     drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
     proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
-    context_.set_proxy_delegate(proxy_delegate_.get());
 
     // Only use the primary data reduction proxy in order to make it easier to
     // test bypassed bytes due to proxy fallbacks. This way, a test just needs
@@ -307,6 +307,8 @@ class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
 
   void InitializeContext() {
     context_.Init();
+    context_.proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
     drp_test_context_->DisableWarmupURLFetch();
     drp_test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }

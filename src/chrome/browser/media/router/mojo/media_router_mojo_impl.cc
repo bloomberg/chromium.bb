@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media/cast_mirroring_service_host.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/media_source_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -275,7 +277,8 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
   // supports route management.
   // TODO(https://crbug.com/808720): Remove check for DIAL when in-browser DIAL
   // MRP is fully implemented.
-  if (provider_id == MediaRouteProviderId::CAST ||
+  if ((provider_id == MediaRouteProviderId::CAST &&
+       !CastMediaRouteProviderEnabled()) ||
       (provider_id == MediaRouteProviderId::DIAL &&
        !DialMediaRouteProviderEnabled())) {
     provider_id = MediaRouteProviderId::EXTENSION;
@@ -384,36 +387,30 @@ void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterMojoImpl::SendRouteMessage(const MediaRoute::Id& route_id,
-                                           const std::string& message,
-                                           SendRouteMessageCallback callback) {
+                                           const std::string& message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    std::move(callback).Run(false);
     return;
   }
 
-  media_route_providers_[*provider_id]->SendRouteMessage(route_id, message,
-                                                         std::move(callback));
+  media_route_providers_[*provider_id]->SendRouteMessage(route_id, message);
 }
 
 void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
-    std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    std::unique_ptr<std::vector<uint8_t>> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
     DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    std::move(callback).Run(false);
     return;
   }
 
-  media_route_providers_[*provider_id]->SendRouteBinaryMessage(
-      route_id, *data, std::move(callback));
+  media_route_providers_[*provider_id]->SendRouteBinaryMessage(route_id, *data);
 }
 
 void MediaRouterMojoImpl::OnUserGesture() {}
@@ -741,8 +738,8 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
     // Return to the event loop before notifying of a cached route list because
     // MediaRoutesObserver is calling this method from its constructor, and that
     // must complete before invoking its virtual OnRoutesUpdated() method.
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered,
                        weak_factory_.GetWeakPtr(), source_id, observer));
   }
@@ -1012,6 +1009,16 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
         GetWebContentsFromId(initiator_tab_id, context_,
                              true /* include_incognito */),
         desktop_stream_id, std::move(request));
+  }
+}
+
+void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
+    const GURL& presentation_url,
+    const std::string& presentation_id,
+    mirroring::mojom::MirroringServiceHostRequest request) {
+  if (ShouldUseMirroringService() && IsValidPresentationUrl(presentation_url)) {
+    mirroring::CastMirroringServiceHost::GetForOffscreenTab(
+        context_, presentation_url, presentation_id, std::move(request));
   }
 }
 

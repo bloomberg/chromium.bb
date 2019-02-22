@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
@@ -38,8 +37,9 @@ InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
        path = path.DirName()) {
     // Bluetooth LE devices are virtual "uhid" devices.
     if (path ==
-        base::FilePath(FILE_PATH_LITERAL("/sys/devices/virtual/misc/uhid")))
-      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
+        base::FilePath(FILE_PATH_LITERAL("/sys/devices/virtual/misc/uhid"))) {
+      return InputDeviceType::INPUT_DEVICE_BLUETOOTH;
+    }
 
     std::string subsystem_path =
         base::MakeAbsoluteFilePath(path.Append(FILE_PATH_LITERAL("subsystem")))
@@ -61,12 +61,12 @@ InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
 
     // External bus attachments.
     if (subsystem_path == "/sys/bus/usb")
-      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
+      return InputDeviceType::INPUT_DEVICE_USB;
     if (subsystem_path == "/sys/class/bluetooth")
-      return InputDeviceType::INPUT_DEVICE_EXTERNAL;
+      return InputDeviceType::INPUT_DEVICE_BLUETOOTH;
   }
 
   return InputDeviceType::INPUT_DEVICE_UNKNOWN;
 }
 
-}  // namespace
+}  // namespace ui

@@ -12,8 +12,7 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   quic::QuicStringPiece crypto_input(reinterpret_cast<const char*>(data), size);
   std::unique_ptr<quic::CryptoHandshakeMessage> handshake_message(
-      quic::CryptoFramer::ParseMessage(crypto_input,
-                                       quic::Perspective::IS_CLIENT));
+      quic::CryptoFramer::ParseMessage(crypto_input));
 
   return 0;
 }

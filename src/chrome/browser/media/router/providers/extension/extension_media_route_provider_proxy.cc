@@ -92,24 +92,20 @@ void ExtensionMediaRouteProviderProxy::TerminateRoute(
 
 void ExtensionMediaRouteProviderProxy::SendRouteMessage(
     const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+    const std::string& message) {
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoSendRouteMessage,
-                     weak_factory_.GetWeakPtr(), media_route_id, message,
-                     std::move(callback)),
+                     weak_factory_.GetWeakPtr(), media_route_id, message),
       MediaRouteProviderWakeReason::SEND_SESSION_MESSAGE);
 }
 
 void ExtensionMediaRouteProviderProxy::SendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   request_manager_->RunOrDefer(
       base::BindOnce(
           &ExtensionMediaRouteProviderProxy::DoSendRouteBinaryMessage,
-          weak_factory_.GetWeakPtr(), media_route_id, data,
-          std::move(callback)),
+          weak_factory_.GetWeakPtr(), media_route_id, data),
       MediaRouteProviderWakeReason::SEND_SESSION_BINARY_MESSAGE);
 }
 
@@ -302,20 +298,16 @@ void ExtensionMediaRouteProviderProxy::DoTerminateRoute(
 
 void ExtensionMediaRouteProviderProxy::DoSendRouteMessage(
     const std::string& media_route_id,
-    const std::string& message,
-    SendRouteMessageCallback callback) {
+    const std::string& message) {
   DVLOG(1) << "DoSendRouteMessage " << media_route_id;
-  media_route_provider_->SendRouteMessage(media_route_id, message,
-                                          std::move(callback));
+  media_route_provider_->SendRouteMessage(media_route_id, message);
 }
 
 void ExtensionMediaRouteProviderProxy::DoSendRouteBinaryMessage(
     const std::string& media_route_id,
-    const std::vector<uint8_t>& data,
-    SendRouteBinaryMessageCallback callback) {
+    const std::vector<uint8_t>& data) {
   DVLOG(1) << "DoSendRouteBinaryMessage " << media_route_id;
-  media_route_provider_->SendRouteBinaryMessage(media_route_id, data,
-                                                std::move(callback));
+  media_route_provider_->SendRouteBinaryMessage(media_route_id, data);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStartObservingMediaSinks(

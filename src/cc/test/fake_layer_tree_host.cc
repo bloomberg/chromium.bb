@@ -15,13 +15,11 @@
 namespace cc {
 
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
-                                     LayerTreeHost::InitParams* params,
+                                     LayerTreeHost::InitParams params,
                                      CompositorMode mode)
-    : LayerTreeHost(params, mode),
+    : LayerTreeHost(std::move(params), mode),
       client_(client),
-      host_impl_(*params->settings,
-                 &task_runner_provider_,
-                 params->task_graph_runner),
+      host_impl_(GetSettings(), &task_runner_provider_, task_graph_runner()),
       needs_commit_(false) {
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner =
       mode == CompositorMode::THREADED ? base::ThreadTaskRunnerHandle::Get()
@@ -59,7 +57,8 @@ std::unique_ptr<FakeLayerTreeHost> FakeLayerTreeHost::Create(
   params.settings = &settings;
   params.task_graph_runner = task_graph_runner;
   params.mutator_host = mutator_host;
-  return base::WrapUnique(new FakeLayerTreeHost(client, &params, mode));
+  return base::WrapUnique(
+      new FakeLayerTreeHost(client, std::move(params), mode));
 }
 
 FakeLayerTreeHost::~FakeLayerTreeHost() {

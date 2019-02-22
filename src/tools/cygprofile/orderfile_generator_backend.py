@@ -228,7 +228,7 @@ class ClankCompiler(object):
   """Handles compilation of clank."""
 
   def __init__(self, out_dir, step_recorder, arch, jobs, max_load, use_goma,
-               goma_dir, system_health_profiling):
+               goma_dir, system_health_profiling, monochrome):
     self._out_dir = out_dir
     self._step_recorder = step_recorder
     self._arch = arch
@@ -237,12 +237,22 @@ class ClankCompiler(object):
     self._use_goma = use_goma
     self._goma_dir = goma_dir
     self._system_health_profiling = system_health_profiling
+    if monochrome:
+      self._apk = 'Monochrome.apk'
+      self._apk_target = 'monochrome_apk'
+      self._libname = 'libmonochrome'
+      self._libchrome_target = 'monochrome'
+    else:
+      self._apk = 'Chrome.apk'
+      self._apk_target = 'chrome_apk'
+      self._libname = 'libchrome'
+      self._libchrome_target = 'libchrome'
 
     self.obj_dir = os.path.join(self._out_dir, 'Release', 'obj')
     self.lib_chrome_so = os.path.join(
-        self._out_dir, 'Release', 'lib.unstripped', 'libchrome.so')
-    self.chrome_apk = os.path.join(
-        self._out_dir, 'Release', 'apks', 'Chrome.apk')
+        self._out_dir, 'Release', 'lib.unstripped',
+        '{}.so'.format(self._libname))
+    self.chrome_apk = os.path.join(self._out_dir, 'Release', 'apks', self._apk)
 
   def Build(self, instrumented, target):
     """Builds the provided ninja target with or without order_profiling on.
@@ -291,7 +301,7 @@ class ClankCompiler(object):
     """
     if force_relink:
       self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
-    self.Build(instrumented, 'chrome_apk')
+    self.Build(instrumented, self._apk_target)
 
   def CompileLibchrome(self, instrumented, force_relink=False):
     """Builds a libchrome.so either with or without order_profiling on.
@@ -302,7 +312,7 @@ class ClankCompiler(object):
     """
     if force_relink:
       self._step_recorder.RunCommand(['rm', '-rf', self.lib_chrome_so])
-    self.Build(instrumented, 'libchrome')
+    self.Build(instrumented, self._libchrome_target)
 
 
 class OrderfileUpdater(object):
@@ -544,6 +554,7 @@ class OrderfileGenerator(object):
       orderfile.write('\n'.join(ordered_symbols))
 
   def _CollectLegacyProfile(self):
+    files = []
     try:
       files = self._profiler.CollectProfile(
           self._compiler.chrome_apk,
@@ -694,7 +705,8 @@ class OrderfileGenerator(object):
             self._instrumented_out_dir,
             self._step_recorder, self._options.arch, self._options.jobs,
             self._options.max_load, self._options.use_goma,
-            self._options.goma_dir, self._options.system_health_orderfile)
+            self._options.goma_dir, self._options.system_health_orderfile,
+            self._options.monochrome)
         self._compiler.CompileChromeApk(True)
         self._GenerateAndProcessProfile()
         self._MaybeArchiveOrderfile(self._GetUnpatchedOrderfileFilename())
@@ -727,7 +739,7 @@ class OrderfileGenerator(object):
             self._uninstrumented_out_dir, self._step_recorder,
             self._options.arch, self._options.jobs, self._options.max_load,
             self._options.use_goma, self._options.goma_dir,
-            self._options.system_health_orderfile)
+            self._options.system_health_orderfile, self._options.monochrome)
         self._compiler.CompileLibchrome(False)
         self._PatchOrderfile()
         # Because identical code folding is a bit different with and without
@@ -803,10 +815,14 @@ def CreateArgumentParser():
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
 
-  parser.add_argument('--system-health-orderfile', action='store_true',
-                      help=('Create an orderfile based on system health '
-                            'benchmarks.'),
-                      default=False)
+  parser.add_argument('--no-system-health-orderfile', action='store_false',
+                      dest='system_health_orderfile', default=True,
+                      help=('Create an orderfile based on an about:blank '
+                            'startup benchmark instead of system health '
+                            'benchmarks.'))
+  parser.add_argument('--monochrome', action='store_true',
+                      help=('Compile and instrument monochrome (for post-N '
+                            'devices).'))
   parser.add_argument('--offsets-for-memory', action='store_true',
                       help=('Favor memory savings in the orderfile. Used '
                             'with --system-health-orderfile.'),

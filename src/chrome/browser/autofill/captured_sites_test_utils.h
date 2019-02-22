@@ -9,10 +9,13 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/network/public/cpp/network_switches.h"
+
+namespace content {
+class RenderFrameHost;
+class WebContents;
+}  // namespace content
 
 namespace captured_sites_test_utils {
 
@@ -27,6 +30,10 @@ namespace captured_sites_test_utils {
 //    has expired for the page to load or for the page to respond to the last
 //    user action.
 const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
+// The amount of time to wait for a page to trigger a paint in response to a
+// an ation. The Captured Site Automation Framework uses this timeout to
+// break out of a wait loop after a hover action.
+const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -68,6 +75,9 @@ class PageActivityObserver : public content::WebContentsObserver {
   // finished loading the page.
   void WaitTillPageIsIdle(
       base::TimeDelta continuous_paint_timeout = default_action_timeout);
+  // Wait until Chrome makes at least 1 visual update, or until timeout
+  // expires.
+  bool WaitForVisualUpdate(base::TimeDelta timeout = visual_update_timeout);
 
  private:
   // PageActivityObserver determines if Chrome stopped painting by checking if
@@ -111,6 +121,10 @@ class IFrameWaiter : public content::WebContentsObserver {
 
   // content::WebContentsObserver
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
+  void FrameNameChanged(content::RenderFrameHost* render_frame_host,
+                        const std::string& name) override;
 
   QueryType query_type_;
   base::RunLoop run_loop_;
@@ -141,6 +155,19 @@ class TestRecipeReplayChromeFeatureActionExecutor {
   virtual bool AutofillForm(content::RenderFrameHost* frame,
                             const std::string& focus_element_css_selector,
                             const int attempts = 1);
+  virtual bool AddAutofillProfileInfo(const std::string& field_type,
+                                      const std::string& field_value);
+  virtual bool SetupAutofillProfile();
+  // Chrome Password Manager feature methods.
+  virtual bool AddCredential(const std::string& origin,
+                             const std::string& username,
+                             const std::string& password);
+  virtual bool SavePassword();
+  virtual bool UpdatePassword();
+  virtual bool HasChromeShownSavePasswordPrompt();
+  virtual bool HasChromeStoredCredential(const std::string& origin,
+                                         const std::string& username,
+                                         const std::string& password);
 
  protected:
   TestRecipeReplayChromeFeatureActionExecutor();
@@ -185,11 +212,19 @@ class TestRecipeReplayer {
   static void SetUpCommandLine(base::CommandLine* command_line);
   static bool PlaceFocusOnElement(content::RenderFrameHost* frame,
                                   const std::string& element_xpath);
+  static bool GetCenterCoordinateOfTargetElement(
+      content::RenderFrameHost* frame,
+      const std::string& target_element_xpath,
+      int& x,
+      int& y);
   static bool SimulateLeftMouseClickAt(
       content::RenderFrameHost* render_frame_host,
       const gfx::Point& point);
+  static bool SimulateMouseHoverAt(content::RenderFrameHost* render_frame_host,
+                                   const gfx::Point& point);
 
  private:
+  Browser* browser();
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
   content::WebContents* GetWebContents();
   void CleanupSiteData();
@@ -209,9 +244,17 @@ class TestRecipeReplayer {
       std::unique_ptr<base::DictionaryValue>& recipe);
   bool ExecuteAutofillAction(const base::DictionaryValue& action);
   bool ExecuteClickAction(const base::DictionaryValue& action);
+  bool ExecuteHoverAction(const base::DictionaryValue& action);
+  bool ExecutePressEnterAction(const base::DictionaryValue& action);
+  bool ExecuteRunCommandAction(const base::DictionaryValue& action);
+  bool ExecuteSavePasswordAction(const base::DictionaryValue& action);
   bool ExecuteSelectDropdownAction(const base::DictionaryValue& action);
   bool ExecuteTypeAction(const base::DictionaryValue& action);
+  bool ExecuteTypePasswordAction(const base::DictionaryValue& action);
+  bool ExecuteUpdatePasswordAction(const base::DictionaryValue& action);
   bool ExecuteValidateFieldValueAction(const base::DictionaryValue& action);
+  bool ExecuteValidateNoSavePasswordPromptAction(
+      const base::DictionaryValue& action);
   bool ExecuteWaitForStateAction(const base::DictionaryValue& action);
   bool GetTargetHTMLElementXpathFromAction(const base::DictionaryValue& action,
                                            std::string* xpath);
@@ -236,6 +279,12 @@ class TestRecipeReplayer {
       const std::string& get_property_function_body,
       const std::string& expected_value,
       const bool ignoreCase = false);
+  void NavigateAwayAndDismissBeforeUnloadDialog();
+  bool HasChromeStoredCredential(const base::DictionaryValue& action,
+                                 bool* stored_cred);
+  bool SetupSavedAutofillProfile(
+      const base::Value& saved_autofill_profile_container);
+  bool SetupSavedPasswords(const base::Value& saved_password_list_container);
 
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;

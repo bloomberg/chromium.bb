@@ -19,8 +19,6 @@ namespace blink {
 
 class ClassicPendingScript;
 class ScriptResource;
-class ScriptState;
-class Settings;
 class SourceStream;
 
 // ScriptStreamer streams incomplete script data to V8 so that it can be parsed
@@ -33,6 +31,7 @@ class SourceStream;
 class CORE_EXPORT ScriptStreamer final
     : public GarbageCollectedFinalized<ScriptStreamer> {
   WTF_MAKE_NONCOPYABLE(ScriptStreamer);
+  USING_PRE_FINALIZER(ScriptStreamer, Prefinalize);
 
  public:
   // For tracking why some scripts are not streamed. Not streaming is part of
@@ -42,7 +41,7 @@ class CORE_EXPORT ScriptStreamer final
     kAlreadyLoaded,  // DEPRECATED
     kNotHTTP,
     kReload,
-    kContextNotValid,
+    kContextNotValid,  // DEPRECATED
     kEncodingNotSupported,
     kThreadBusy,
     kV8CannotStream,
@@ -65,8 +64,6 @@ class CORE_EXPORT ScriptStreamer final
   // Launches a task (on a background thread) which will stream the given
   // ClassicPendingScript into V8 as it loads.
   static void StartStreaming(ClassicPendingScript*,
-                             Settings*,
-                             ScriptState*,
                              scoped_refptr<base::SingleThreadTaskRunner>,
                              NotStreamingReason* not_streaming_reason);
 
@@ -126,9 +123,10 @@ class CORE_EXPORT ScriptStreamer final
   static constexpr size_t kMaximumLengthOfBOM = 4;
 
   ScriptStreamer(ClassicPendingScript*,
-                 ScriptState*,
                  v8::ScriptCompiler::CompileOptions,
                  scoped_refptr<base::SingleThreadTaskRunner>);
+
+  void Prefinalize();
 
   void StreamingComplete();
   void NotifyFinishedToClient();
@@ -160,8 +158,6 @@ class CORE_EXPORT ScriptStreamer final
   // What kind of cached data V8 produces during streaming.
   v8::ScriptCompiler::CompileOptions compile_options_;
 
-  Member<ScriptState> script_state_;
-
   // Keep the script URL string for event tracing.
   const String script_url_string_;
 
@@ -172,6 +168,12 @@ class CORE_EXPORT ScriptStreamer final
   v8::ScriptCompiler::StreamedSource::Encoding encoding_;
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
+
+  // This is a temporary flag to confirm that ScriptStreamer is not
+  // touched after its refinalizer call and thus https://crbug.com/715309
+  // doesn't break assumptions.
+  // TODO(hiroshige): Check the state in more general way.
+  bool prefinalizer_called_ = false;
 };
 
 }  // namespace blink

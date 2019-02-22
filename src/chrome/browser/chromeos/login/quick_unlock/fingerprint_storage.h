@@ -28,6 +28,10 @@ class FingerprintStorage {
   explicit FingerprintStorage(PrefService* pref_service);
   ~FingerprintStorage();
 
+  // Returns true if fingerprint unlock is currently available.
+  // This does not check if strong auth is available.
+  bool IsFingerprintAvailable() const;
+
   // Returns true if the user has fingerprint record registered.
   bool HasRecord() const;
 
@@ -45,9 +49,6 @@ class FingerprintStorage {
  private:
   friend class chromeos::FingerprintStorageTestApi;
   friend class QuickUnlockStorage;
-
-  // Returns true if fingerprint unlock is currently available.
-  bool IsFingerprintAuthenticationAvailable() const;
 
   PrefService* pref_service_;
   // Number of fingerprint unlock attempt.

@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "content/public/browser/web_contents.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #import "ui/base/cocoa/base_view.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 

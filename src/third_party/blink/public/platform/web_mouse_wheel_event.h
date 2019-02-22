@@ -37,6 +37,19 @@ class WebMouseWheelEvent : public WebMouseEvent {
     kPhaseMayBegin = 1 << 5,
   };
 
+  // A hint at the outcome of a wheel event should it not get canceled.
+  enum class EventAction : int {
+    // When the wheel event would result in page zoom,
+    kPageZoom = 0,
+    // When the wheel event would scroll but the direction is not (known to be)
+    // fixed to a certain axis,
+    kScroll,
+    // When the wheel event would scroll along X axis,
+    kScrollHorizontal,
+    // When the wheel event would scroll along Y axis,
+    kScrollVertical
+  };
+
   float delta_x;
   float delta_y;
   float wheel_ticks_x;
@@ -67,6 +80,9 @@ class WebMouseWheelEvent : public WebMouseEvent {
   // Whether the event is blocking, non-blocking, all event
   // listeners were passive or was forced to be non-blocking.
   DispatchType dispatch_type;
+
+  // The expected result of this wheel event (if not canceled).
+  EventAction event_action;
 
   WebMouseWheelEvent(Type type, int modifiers, base::TimeTicks time_stamp)
       : WebMouseEvent(sizeof(WebMouseWheelEvent),

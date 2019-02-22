@@ -203,11 +203,8 @@ void RemovePerformer::UnparentResourceAfterGetFileResource(
 
   ResourceEntry entry;
   std::string parent_resource_id;
-  if (!ConvertFileResourceToResourceEntry(*file_resource, &entry,
-                                          &parent_resource_id)) {
-    callback.Run(FILE_ERROR_NOT_A_FILE);
-    return;
-  }
+  ConvertFileResourceToResourceEntry(*file_resource, &entry,
+                                     &parent_resource_id);
 
   if (!entry.shared_with_me()) {
     // shared_with_me() has changed on the server.

@@ -15,7 +15,7 @@ namespace blink {
 class AXObject;
 class AXObjectCacheImpl;
 class InspectorDOMAgent;
-class Page;
+class InspectedFrames;
 
 using protocol::Accessibility::AXNode;
 using protocol::Accessibility::AXNodeId;
@@ -23,7 +23,7 @@ using protocol::Accessibility::AXNodeId;
 class MODULES_EXPORT InspectorAccessibilityAgent
     : public InspectorBaseAgent<protocol::Accessibility::Metainfo> {
  public:
-  InspectorAccessibilityAgent(Page*, InspectorDOMAgent*);
+  InspectorAccessibilityAgent(InspectedFrames*, InspectorDOMAgent*);
 
   // Base agent methods.
   void Trace(blink::Visitor*) override;
@@ -34,6 +34,9 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       protocol::Maybe<int> backend_node_id,
       protocol::Maybe<String> object_id,
       protocol::Maybe<bool> fetch_relatives,
+      std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
+      override;
+  protocol::Response getFullAXTree(
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
 
@@ -86,7 +89,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
                    std::unique_ptr<protocol::Array<AXNode>>& nodes,
                    AXObjectCacheImpl&) const;
 
-  Member<Page> page_;
+  Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMAgent> dom_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorAccessibilityAgent);

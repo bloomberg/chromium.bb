@@ -478,7 +478,7 @@ static void create_config(const SkCommandLineConfig* config, SkTArray<Config>* c
     CPU_CONFIG(565,  kRaster_Backend, kRGB_565_SkColorType, kOpaque_SkAlphaType, nullptr)
 
     // 'narrow' has a gamut narrower than sRGB, and different transfer function.
-    SkMatrix44 narrow_gamut(SkMatrix44::kUninitialized_Constructor);
+    SkMatrix44 narrow_gamut;
     narrow_gamut.set3x3RowMajorf(gNarrow_toXYZD50);
 
     auto narrow = SkColorSpace::MakeRGB(k2Dot2Curve_SkGammaNamed, narrow_gamut),
@@ -599,7 +599,6 @@ public:
     BenchmarkStream() : fBenches(BenchRegistry::Head())
                       , fGMs(skiagm::GMRegistry::Head())
                       , fCurrentRecording(0)
-                      , fCurrentPiping(0)
                       , fCurrentDeserialPicture(0)
                       , fCurrentScale(0)
                       , fCurrentSKP(0)
@@ -670,13 +669,14 @@ public:
     }
 
     static sk_sp<SkPicture> ReadSVGPicture(const char* path) {
-        SkFILEStream stream(path);
-        if (!stream.isValid()) {
+        sk_sp<SkData> data(SkData::MakeFromFileName(path));
+        if (!data) {
             SkDebugf("Could not read %s.\n", path);
             return nullptr;
         }
 
 #ifdef SK_XML
+        SkMemoryStream stream(std::move(data));
         sk_sp<SkSVGDOM> svgDom = SkSVGDOM::MakeFromStream(stream);
         if (!svgDom) {
             SkDebugf("Could not parse %s.\n", path);
@@ -742,21 +742,6 @@ public:
             fSKPBytes = static_cast<double>(pic->approximateBytesUsed());
             fSKPOps   = pic->approximateOpCount();
             return new RecordingBench(name.c_str(), pic.get(), FLAGS_bbh, FLAGS_lite);
-        }
-
-        // Add all .skps as PipeBenches.
-        while (fCurrentPiping < fSKPs.count()) {
-            const SkString& path = fSKPs[fCurrentPiping++];
-            sk_sp<SkPicture> pic = ReadPicture(path.c_str());
-            if (!pic) {
-                continue;
-            }
-            SkString name = SkOSPath::Basename(path.c_str());
-            fSourceType = "skp";
-            fBenchType  = "piping";
-            fSKPBytes = static_cast<double>(pic->approximateBytesUsed());
-            fSKPOps   = pic->approximateOpCount();
-            return new PipingBench(name.c_str(), pic.get());
         }
 
         // Add all .skps as DeserializePictureBenchs.
@@ -1084,7 +1069,6 @@ private:
     const char* fSourceType;  // What we're benching: bench, GM, SKP, ...
     const char* fBenchType;   // How we bench it: micro, recording, playback, ...
     int fCurrentRecording;
-    int fCurrentPiping;
     int fCurrentDeserialPicture;
     int fCurrentScale;
     int fCurrentSKP;
@@ -1299,7 +1283,11 @@ int main(int argc, char** argv) {
                 write_canvas_png(target, pngFilename);
             }
 
-            Stats stats(samples);
+            // Building stats.plot often shows up in profiles,
+            // so skip building it when we're not going to print it anyway.
+            const bool want_plot = !FLAGS_quiet;
+
+            Stats stats(samples, want_plot);
             log->config(config);
             log->configOption("name", bench->getName());
             benchStream.fillCurrentOptions(log.get());

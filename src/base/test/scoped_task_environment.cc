@@ -282,6 +282,11 @@ std::unique_ptr<TickClock> ScopedTaskEnvironment::DeprecatedGetMockTickClock() {
   return mock_time_task_runner_->DeprecatedGetMockTickClock();
 }
 
+base::TimeTicks ScopedTaskEnvironment::NowTicks() const {
+  DCHECK(mock_time_task_runner_);
+  return mock_time_task_runner_->NowTicks();
+}
+
 size_t ScopedTaskEnvironment::GetPendingMainThreadTaskCount() const {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->GetPendingTaskCount();

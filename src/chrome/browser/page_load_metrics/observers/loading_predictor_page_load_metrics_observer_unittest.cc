@@ -39,7 +39,6 @@ class LoadingPredictorPageLoadMetricsObserverTest
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
     predictors::LoadingPredictorConfig config;
-    config.mode = predictors::LoadingPredictorConfig::LEARNING;
     predictor_ =
         std::make_unique<testing::StrictMock<MockResourcePrefetchPredictor>>(
             config, profile());

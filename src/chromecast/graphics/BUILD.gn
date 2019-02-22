@@ -8,6 +8,7 @@ import("//testing/test.gni")
 
 cast_source_set("graphics") {
   sources = [
+    "cast_touch_activity_observer.h",
     "cast_window_manager.h",
     "gestures/cast_gesture_handler.cc",
     "gestures/cast_gesture_handler.h",
@@ -44,6 +45,8 @@ cast_source_set("graphics") {
       "accessibility/partial_magnification_controller.h",
       "cast_focus_client_aura.cc",
       "cast_focus_client_aura.h",
+      "cast_touch_event_gate.cc",
+      "cast_touch_event_gate.h",
       "cast_window_manager_aura.cc",
       "cast_window_manager_aura.h",
       "gestures/cast_system_gesture_dispatcher.cc",
@@ -114,6 +117,7 @@ if (use_aura && !is_cast_audio_only) {
       "accessibility/accessibility_focus_ring_controller_unittest.cc",
       "accessibility/partial_magnification_controller_unittest.cc",
       "cast_focus_client_aura_test.cc",
+      "cast_touch_event_gate_test.cc",
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",
       "gestures/cast_system_gesture_dispatcher_test.cc",

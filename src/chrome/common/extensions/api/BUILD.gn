@@ -12,7 +12,31 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 
 assert(enable_extensions)
 
-# TODO(devlin): Enforce visibility restrictions on more of these targets?
+################################################################################
+# Public Targets
+
+group("api") {
+  public_deps = [
+    ":generated_api_json_strings",
+    ":generated_api_types",
+  ]
+}
+
+group("extensions_features") {
+  public_deps = [
+    ":api_features",
+    ":manifest_features",
+    ":permission_features",
+
+    # TODO(devlin): It would be nicer to have this dependency hoisted up to
+    # //extensions/common (since that's where it's consumed), but there's some
+    # cycles to be resolved first.
+    "//extensions/common/api:extensions_features",
+  ]
+}
+
+################################################################################
+# Private Targets
 
 generated_json_strings("generated_api_json_strings") {
   sources = chrome_extensions_api_schema_sources +
@@ -71,6 +95,7 @@ json_features("api_features") {
   sources = [
     "_api_features.json",
   ]
+  visibility = [ ":extensions_features" ]
 }
 
 json_features("permission_features") {
@@ -79,6 +104,7 @@ json_features("permission_features") {
   sources = [
     "_permission_features.json",
   ]
+  visibility = [ ":extensions_features" ]
 }
 
 json_features("manifest_features") {
@@ -87,26 +113,5 @@ json_features("manifest_features") {
   sources = [
     "_manifest_features.json",
   ]
-}
-
-# Public Targets
-
-group("api") {
-  public_deps = [
-    ":generated_api_json_strings",
-    ":generated_api_types",
-  ]
-}
-
-group("extensions_features") {
-  public_deps = [
-    ":api_features",
-    ":manifest_features",
-    ":permission_features",
-
-    # TODO(devlin): It would be nicer to have this dependency hoisted up to
-    # //extensions/common (since that's where it's consumed), but there's some
-    # cycles to be resolved first.
-    "//extensions/common/api:extensions_features",
-  ]
+  visibility = [ ":extensions_features" ]
 }

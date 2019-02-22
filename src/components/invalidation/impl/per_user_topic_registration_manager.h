@@ -78,6 +78,9 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void OnAccessTokenRequestSucceeded(std::string access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
+  void DropAllSavedRegistrationsOnTokenChange(
+      const std::string& instance_id_token);
+
   std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
 
   // For registered ids it maps the id value to the topic value.

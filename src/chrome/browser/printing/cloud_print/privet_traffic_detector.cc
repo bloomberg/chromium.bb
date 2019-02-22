@@ -12,6 +12,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -54,8 +55,8 @@ void GetNetworkListInBackground(
                             localhost_prefix,
                             8,
                             net::IP_ADDRESS_ATTRIBUTE_NONE));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(std::move(callback), std::move(ip4_networks)));
 }
 
@@ -80,8 +81,8 @@ PrivetTrafficDetector::PrivetTrafficDetector(
     : helper_(new Helper(profile, on_traffic_detected)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrivetTrafficDetector::Helper::ScheduleRestart,
                      base::Unretained(helper_)));
 }
@@ -96,8 +97,8 @@ PrivetTrafficDetector::~PrivetTrafficDetector() {
 void PrivetTrafficDetector::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrivetTrafficDetector::Helper::HandleConnectionChanged,
                      base::Unretained(helper_), type));
 }
@@ -157,8 +158,8 @@ void PrivetTrafficDetector::Helper::Bind() {
   network::mojom::UDPSocketReceiverRequest receiver_request =
       mojo::MakeRequest(&receiver_ptr);
   receiver_binding_.Bind(std::move(receiver_request));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
                      mojo::MakeRequest(&socket_), std::move(receiver_ptr)));
 
@@ -262,8 +263,8 @@ void PrivetTrafficDetector::Helper::OnReceived(
   recv_addr_ = src_addr.value();
   if (IsPrivetPacket(data.value())) {
     ResetConnection();
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     on_traffic_detected_);
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                             on_traffic_detected_);
     base::TimeDelta time_delta = base::Time::Now() - start_time_;
     UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorTriggerTime", time_delta);
   } else {

@@ -8,7 +8,7 @@ import android.content.Context;
 
 /** Dummy implementation of a background task used for testing. */
 class TestBackgroundTask implements BackgroundTask {
-    private static int sRescheduleCalls = 0;
+    private static int sRescheduleCalls;
 
     public TestBackgroundTask() {}
 

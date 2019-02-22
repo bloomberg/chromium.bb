@@ -72,6 +72,7 @@ class WebGestureEvent : public WebInputEvent {
       float height;
     } show_press;
 
+    // This is used for both GestureLongPress and GestureLongTap.
     struct {
       float width;
       float height;

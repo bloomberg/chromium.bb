@@ -48,7 +48,7 @@ class NetErrorDiagnosticsDialog : public ui::BaseShellDialogImpl {
       return;
 
     RunState run_state = BeginRun(parent);
-    run_state.dialog_thread->task_runner()->PostTaskAndReply(
+    run_state.dialog_task_runner->PostTaskAndReply(
         FROM_HERE,
         base::Bind(&NetErrorDiagnosticsDialog::ShowDialogOnPrivateThread,
                    base::Unretained(this), parent, failed_url),

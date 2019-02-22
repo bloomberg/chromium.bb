@@ -51,7 +51,6 @@ class ResourceClientWalker {
       ResourceClient* next = client_vector_[index_++];
       DCHECK(next);
       if (client_set_.Contains(next)) {
-        DCHECK(T::IsExpectedType(next));
         return static_cast<T*>(next);
       }
     }

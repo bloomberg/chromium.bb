@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
+#include "components/feed/core/feed_journal_operation.h"
 
 namespace feed {
-
-class JournalOperation;
 
 // Native counterpart of JournalMutation.java.
 // To commit a set of JournalOperation into FeedJournalDatabase, first,
@@ -33,14 +33,23 @@ class JournalMutation {
   // Check if mutation has JournalOperation left.
   bool Empty();
 
+  // Return the number of operations in the mutation.
+  size_t Size() const;
+
+  base::TimeTicks GetStartTime() const;
+
   // This will remove the first JournalOperation in |operations_list_| and
   // return it to caller.
   JournalOperation TakeFristOperation();
+
+  JournalOperation::Type FirstOperationType();
 
  private:
   const std::string journal_name_;
 
   std::list<JournalOperation> operations_list_;
+
+  const base::TimeTicks start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(JournalMutation);
 };

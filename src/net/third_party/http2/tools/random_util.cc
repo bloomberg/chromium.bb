@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/rand_util.h"
+#include "net/third_party/http2/platform/api/random_util_helper.h"
 #include "net/third_party/http2/tools/http2_random.h"
 
 namespace http2 {
@@ -32,14 +33,6 @@ void GenerateRandomSizeSkewedLowHelper(size_t max, size_t* x, size_t* y) {
 }
 
 }  // anonymous namespace
-
-Http2String RandomString(RandomBase* rng, int len, Http2StringPiece alphabet) {
-  Http2String random_string;
-  random_string.reserve(len);
-  for (int i = 0; i < len; ++i)
-    random_string.push_back(alphabet[rng->Uniform(alphabet.size())]);
-  return random_string;
-}
 
 size_t GenerateUniformInRange(size_t lo, size_t hi, RandomBase* rng) {
   if (lo + 1 >= hi) {

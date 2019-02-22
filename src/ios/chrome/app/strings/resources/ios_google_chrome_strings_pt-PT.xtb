@@ -22,7 +22,6 @@
 <translation id="3196546062792660320">O Chrome poupa o seu tempo ao trazer as suas contas para a Web. Pode adicionar ou remover contas nas Definições.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
 <translation id="3345341804167540816">Utilizar o Chrome em todas as plataformas</translation>
-<translation id="3678774398092457402">Pretende que o Chrome guarde a sua palavra-passe para este site?</translation>
 <translation id="384394811301901750">O Google Chrome não pode utilizar a câmara neste momento</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3980220367029651214">Está a mudar as contas de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os seus dados do Chrome existentes são geridos por <ph name="DOMAIN" />. Esta ação elimina os seus dados deste dispositivo, embora permaneçam em <ph name="USER_EMAIL1" />.</translation>
@@ -47,6 +46,7 @@
 <translation id="690638524486313356">Termos de Utilização do Google Chrome</translation>
 <translation id="7165736900384873061">Começar a utilizar o leitor de QR do Google Chrome</translation>
 <translation id="7172660552945675509">Sugestão: <ph name="BEGIN_LINK" />mova o Chrome para a Dock<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">O Chrome utiliza o Face ID para assegurar o acesso autorizado às suas palavras-passe.</translation>
 <translation id="7265369419224458312">Aceda aqui aos separadores abertos no computador. Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão no Chrome..."</translation>
 <translation id="728488472449859922">Ativar o leitor de QR do Google Chrome</translation>
 <translation id="7400722733683201933">Acerca do Google Chrome</translation>

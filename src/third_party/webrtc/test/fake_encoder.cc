@@ -16,7 +16,7 @@
 #include <memory>
 
 #include "common_types.h"  // NOLINT(build/include)
-#include "modules/video_coding/codecs/vp8/temporal_layers.h"
+#include "modules/video_coding/codecs/vp8/include/vp8_temporal_layers.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "rtc_base/checks.h"
 #include "system_wrappers/include/sleep.h"
@@ -94,7 +94,8 @@ int32_t FakeEncoder::Encode(const VideoFrame& input_image,
       NextFrame(frame_types, keyframe, num_simulcast_streams, target_bitrate,
                 simulcast_streams, framerate);
   for (uint8_t i = 0; i < frame_info.layers.size(); ++i) {
-    if (frame_info.layers[i].size == 0) {
+    constexpr int kMinPayLoadLength = 10;
+    if (frame_info.layers[i].size < kMinPayLoadLength) {
       // Drop this temporal layer.
       continue;
     }
@@ -102,13 +103,12 @@ int32_t FakeEncoder::Encode(const VideoFrame& input_image,
     CodecSpecificInfo specifics;
     memset(&specifics, 0, sizeof(specifics));
     specifics.codecType = kVideoCodecGeneric;
-    specifics.codecSpecific.generic.simulcast_idx = i;
     std::unique_ptr<uint8_t[]> encoded_buffer(
         new uint8_t[frame_info.layers[i].size]);
     memcpy(encoded_buffer.get(), encoded_buffer_, frame_info.layers[i].size);
     EncodedImage encoded(encoded_buffer.get(), frame_info.layers[i].size,
                          sizeof(encoded_buffer_));
-    encoded._timeStamp = input_image.timestamp();
+    encoded.SetTimestamp(input_image.timestamp());
     encoded.capture_time_ms_ = input_image.render_time_ms();
     encoded._frameType =
         frame_info.keyframe ? kVideoFrameKey : kVideoFrameDelta;
@@ -118,6 +118,7 @@ int32_t FakeEncoder::Encode(const VideoFrame& input_image,
     encoded.content_type_ = (mode == VideoCodecMode::kScreensharing)
                                 ? VideoContentType::SCREENSHARE
                                 : VideoContentType::UNSPECIFIED;
+    encoded.SetSpatialIndex(i);
     specifics.codec_name = ImplementationName();
     if (callback->OnEncodedImage(encoded, &specifics, nullptr).error !=
         EncodedImageCallback::Result::OK) {
@@ -146,6 +147,7 @@ FakeEncoder::FrameInfo FakeEncoder::NextFrame(
     }
   }
 
+  rtc::CritScope cs(&crit_sect_);
   for (uint8_t i = 0; i < num_simulcast_streams; ++i) {
     if (target_bitrate.GetBitrate(i, 0) > 0) {
       int temporal_id = last_frame_info_.layers.size() > i

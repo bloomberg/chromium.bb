@@ -40,7 +40,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   CompositorFrame Aggregate(const SurfaceId& surface_id,
                             base::TimeTicks expected_display_time,
-                            int32_t display_trace_id = -1);
+                            int64_t display_trace_id = -1);
   void ReleaseResources(const SurfaceId& surface_id);
   const SurfaceIndexMap& previous_contained_surfaces() const {
     return previous_contained_surfaces_;
@@ -281,7 +281,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // the display if they're damaged.
   base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;
 
-  int32_t display_trace_id_ = -1;
+  int64_t display_trace_id_ = -1;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
 

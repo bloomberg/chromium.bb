@@ -76,7 +76,8 @@ class CoreTabHelper : public content::WebContentsObserver,
   void DidStartLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
-  void BeforeUnloadFired(const base::TimeTicks& proceed_time) override;
+  void BeforeUnloadFired(bool proceed,
+                         const base::TimeTicks& proceed_time) override;
   void BeforeUnloadDialogCancelled() override;
   void NavigationEntriesDeleted() override;
 

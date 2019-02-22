@@ -626,6 +626,10 @@ AudioVideoPipelineDeviceTest::AudioVideoPipelineDeviceTest()
 AudioVideoPipelineDeviceTest::~AudioVideoPipelineDeviceTest() {}
 
 void AudioVideoPipelineDeviceTest::Initialize() {
+#if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
+  VideoDecoderForMixer::InitializeGraphicsForTesting();
+#endif
+
   // Create the media device.
   task_runner_.reset(new TaskRunnerImpl());
   MediaPipelineDeviceParams params(

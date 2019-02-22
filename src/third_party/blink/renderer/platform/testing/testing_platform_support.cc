@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -92,20 +91,12 @@ TestingPlatformSupport::ScopedOverrideMojoInterface::
 TestingPlatformSupport::ScopedOverrideMojoInterface::
     ~ScopedOverrideMojoInterface() = default;
 
-namespace {
-
-class DummyThread final : public blink::WebThread {
- public:
-  bool IsCurrentThread() const override { return true; }
-  blink::ThreadScheduler* Scheduler() const override { return nullptr; }
-};
-
-}  // namespace
-
 TestingPlatformSupport::TestingPlatformSupport()
     : old_platform_(Platform::Current()),
       interface_provider_(new TestingInterfaceProvider) {
   DCHECK(old_platform_);
+  DCHECK(WTF::IsMainThread());
+  main_thread_ = old_platform_->CurrentThread();
 }
 
 TestingPlatformSupport::~TestingPlatformSupport() {
@@ -114,10 +105,6 @@ TestingPlatformSupport::~TestingPlatformSupport() {
 
 WebString TestingPlatformSupport::DefaultLocale() {
   return WebString::FromUTF8("en-US");
-}
-
-WebThread* TestingPlatformSupport::CurrentThread() {
-  return old_platform_ ? old_platform_->CurrentThread() : nullptr;
 }
 
 WebBlobRegistry* TestingPlatformSupport::GetBlobRegistry() {
@@ -158,17 +145,6 @@ void TestingPlatformSupport::SetThreadedAnimationEnabled(bool enabled) {
   is_threaded_animation_enabled_ = enabled;
 }
 
-class ScopedUnittestsEnvironmentSetup::DummyPlatform final
-    : public blink::Platform {
- public:
-  DummyPlatform() = default;
-
-  blink::WebThread* CurrentThread() override {
-    static DummyThread dummy_thread;
-    return &dummy_thread;
-  };
-};
-
 class ScopedUnittestsEnvironmentSetup::DummyRendererResourceCoordinator final
     : public blink::RendererResourceCoordinator {};
 
@@ -183,7 +159,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
 
-  dummy_platform_ = std::make_unique<DummyPlatform>();
+  dummy_platform_ = std::make_unique<Platform>();
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
   WTF::Partitions::Initialize(nullptr);
@@ -192,13 +168,10 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   testing_platform_support_ = std::make_unique<TestingPlatformSupport>();
   Platform::SetCurrentPlatformForTesting(testing_platform_support_.get());
 
-  if (BlinkResourceCoordinatorBase::IsEnabled()) {
-    dummy_renderer_resource_coordinator_ =
-        std::make_unique<DummyRendererResourceCoordinator>();
-    RendererResourceCoordinator::
-        SetCurrentRendererResourceCoordinatorForTesting(
-            dummy_renderer_resource_coordinator_.get());
-  }
+  dummy_renderer_resource_coordinator_ =
+      std::make_unique<DummyRendererResourceCoordinator>();
+  RendererResourceCoordinator::SetCurrentRendererResourceCoordinatorForTesting(
+      dummy_renderer_resource_coordinator_.get());
 
   ProcessHeap::Init();
   ThreadState::AttachMainThread();

@@ -12,9 +12,13 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/cbor/cbor_binary.h"
+#include "components/cbor/cbor_constants.h"
 
 namespace cbor {
+
+namespace constants {
+const char kUnsupportedMajorType[] = "Unsupported major type.";
+}
 
 namespace {
 
@@ -28,9 +32,10 @@ uint8_t GetAdditionalInfo(uint8_t initial_data_byte) {
   return initial_data_byte & constants::kAdditionalInformationMask;
 }
 
-// Error messages that correspond to each of the error codes.
+// Error messages that correspond to each of the error codes. There is 1
+// exception: we declare |kUnsupportedMajorType| in cbor_constants.h in the
+// `constants` namespace, because we use it in several files.
 const char kNoError[] = "Successfully deserialized to a CBOR value.";
-const char kUnsupportedMajorType[] = "Unsupported major type.";
 const char kUnknownAdditionalInfo[] =
     "Unknown additional info format in the first byte.";
 const char kIncompleteCBORData[] =
@@ -124,6 +129,7 @@ base::Optional<CBORValue> CBORReader::DecodeCompleteDataItem(
       return ReadMapContent(*header, max_nesting_level);
     case CBORValue::Type::SIMPLE_VALUE:
       return DecodeToSimpleValue(*header);
+    case CBORValue::Type::TAG:  // We explicitly don't support TAG.
     case CBORValue::Type::NONE:
       break;
   }
@@ -141,19 +147,17 @@ base::Optional<CBORReader::DataItemHeader> CBORReader::DecodeDataItemHeader() {
   const auto major_type = GetMajorType(initial_byte.value());
   const uint8_t additional_info = GetAdditionalInfo(initial_byte.value());
 
-  uint64_t value;
-  if (!ReadVariadicLengthInteger(additional_info, &value))
-    return base::nullopt;
-
-  return DataItemHeader{major_type, additional_info, value};
+  base::Optional<uint64_t> value = ReadVariadicLengthInteger(additional_info);
+  return value ? base::make_optional(
+                     DataItemHeader{major_type, additional_info, value.value()})
+               : base::nullopt;
 }
 
-bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
-                                           uint64_t* value) {
+base::Optional<uint64_t> CBORReader::ReadVariadicLengthInteger(
+    uint8_t additional_info) {
   uint8_t additional_bytes = 0;
   if (additional_info < 24) {
-    *value = additional_info;
-    return true;
+    return base::make_optional(additional_info);
   } else if (additional_info == 24) {
     additional_bytes = 1;
   } else if (additional_info == 25) {
@@ -164,13 +168,13 @@ bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
     additional_bytes = 8;
   } else {
     error_code_ = DecoderError::UNKNOWN_ADDITIONAL_INFO;
-    return false;
+    return base::nullopt;
   }
 
   const base::Optional<base::span<const uint8_t>> bytes =
       ReadBytes(additional_bytes);
   if (!bytes) {
-    return false;
+    return base::nullopt;
   }
 
   uint64_t int_data = 0;
@@ -179,8 +183,9 @@ bool CBORReader::ReadVariadicLengthInteger(uint8_t additional_info,
     int_data |= b;
   }
 
-  *value = int_data;
-  return CheckMinimalEncoding(additional_bytes, int_data);
+  return CheckMinimalEncoding(additional_bytes, int_data)
+             ? base::make_optional(int_data)
+             : base::nullopt;
 }
 
 base::Optional<CBORValue> CBORReader::DecodeValueToNegative(uint64_t value) {
@@ -365,7 +370,7 @@ const char* CBORReader::ErrorCodeToString(DecoderError error) {
     case DecoderError::CBOR_NO_ERROR:
       return kNoError;
     case DecoderError::UNSUPPORTED_MAJOR_TYPE:
-      return kUnsupportedMajorType;
+      return constants::kUnsupportedMajorType;
     case DecoderError::UNKNOWN_ADDITIONAL_INFO:
       return kUnknownAdditionalInfo;
     case DecoderError::INCOMPLETE_CBOR_DATA:

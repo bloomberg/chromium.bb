@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -16,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -37,15 +39,19 @@ const int kExtensionIdLength = 32;
 class ParseTasksRemainingCounter
     : public base::RefCountedThreadSafe<ParseTasksRemainingCounter> {
  public:
-  ParseTasksRemainingCounter(int count, WaitableEvent* done)
-      : count_(count), done_(done) {}
+  ParseTasksRemainingCounter(size_t count, WaitableEvent* done)
+      : count_(count), done_(done) {
+    DCHECK(count_ > 0) << "Must be constructed with a positive count.";
+  }
 
   void Increment() {
-    DCHECK(count_ > 0);
+    DCHECK(count_ > 0)
+        << "Once decremented to zero, Increment should never be called.";
     count_++;
   }
 
   void Decrement() {
+    DCHECK(count_);
     count_--;
     if (count_ == 0) {
       done_->Signal();
@@ -56,7 +62,7 @@ class ParseTasksRemainingCounter
   friend class base::RefCountedThreadSafe<ParseTasksRemainingCounter>;
   ~ParseTasksRemainingCounter() = default;
 
-  int count_;
+  size_t count_;
   WaitableEvent* done_;
 };
 
@@ -204,11 +210,8 @@ void GetDefaultExtensionsFromParsedJson(
 
   for (const auto& entry : *default_extensions) {
     base::string16 extension_id = base::UTF8ToUTF16(entry.first);
-    if (std::find(default_extension_whitelist.begin(),
-                  default_extension_whitelist.end(),
-                  extension_id) == default_extension_whitelist.end()) {
+    if (!base::ContainsValue(default_extension_whitelist, extension_id))
       policies->emplace_back(extension_id, extensions_file);
-    }
   }
 }
 

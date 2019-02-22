@@ -29,6 +29,9 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
     return nullptr;
   }
+  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override {
+    return nullptr;
+  }
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
     return nullptr;
   }
@@ -36,11 +39,11 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
   bool ShouldYieldForHighPriorityWork() override { return should_yield_; }
   bool CanExceedIdleDeadlineIfRequired() const override { return false; }
   void PostIdleTask(const base::Location&,
-                    WebThread::IdleTask idle_task) override {
+                    Thread::IdleTask idle_task) override {
     idle_task_ = std::move(idle_task);
   }
   void PostNonNestableIdleTask(const base::Location&,
-                               WebThread::IdleTask) override {}
+                               Thread::IdleTask) override {}
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override {
     return nullptr;
@@ -70,7 +73,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
 
  private:
   bool should_yield_;
-  WebThread::IdleTask idle_task_;
+  Thread::IdleTask idle_task_;
 
   DISALLOW_COPY_AND_ASSIGN(MockScriptedIdleTaskControllerScheduler);
 };

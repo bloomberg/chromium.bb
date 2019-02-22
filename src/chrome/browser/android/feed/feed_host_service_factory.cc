@@ -8,9 +8,12 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/android/feed/history/feed_history_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +25,7 @@
 #include "components/feed/core/feed_content_database.h"
 #include "components/feed/core/feed_image_manager.h"
 #include "components/feed/core/feed_journal_database.h"
+#include "components/feed/core/feed_logging_metrics.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -31,6 +35,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace history {
+class HistoryService;
+}
 
 namespace feed {
 
@@ -57,6 +65,7 @@ FeedHostServiceFactory::FeedHostServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 FeedHostServiceFactory::~FeedHostServiceFactory() = default;
@@ -103,13 +112,29 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
   offline_pages::PrefetchService* prefetch_service =
       offline_pages::PrefetchServiceFactory::GetForBrowserContext(profile);
+  // Using base::Unretained is safe because the FeedSchedulerHost ensures the
+  // |scheduler_host| will outlive the |offline_host|, and calls to
+  // |the scheduler_host| are never posted to a message loop.
   auto offline_host = std::make_unique<FeedOfflineHost>(
-      offline_page_model, prefetch_service, scheduler_host.get());
+      offline_page_model, prefetch_service,
+      base::BindRepeating(&FeedSchedulerHost::OnSuggestionConsumed,
+                          base::Unretained(scheduler_host.get())),
+      base::BindRepeating(&FeedSchedulerHost::OnSuggestionsShown,
+                          base::Unretained(scheduler_host.get())));
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  auto history_helper = std::make_unique<FeedHistoryHelper>(history_service);
+  auto logging_metrics =
+      std::make_unique<FeedLoggingMetrics>(base::BindRepeating(
+          &FeedHistoryHelper::CheckURL, std::move(history_helper)));
 
   return new FeedHostService(
-      std::move(image_manager), std::move(networking_host),
-      std::move(scheduler_host), std::move(content_database),
-      std::move(journal_database), std::move(offline_host));
+      std::move(logging_metrics), std::move(image_manager),
+      std::move(networking_host), std::move(scheduler_host),
+      std::move(content_database), std::move(journal_database),
+      std::move(offline_host));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(

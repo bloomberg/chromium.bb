@@ -21,23 +21,25 @@ class ChromiumDepGraph {
     final def dependencies = new HashMap<String, DependencyDescription>()
 
     // Some libraries don't properly fill their POM with the appropriate licensing information.
-    // It is provided here from manual lookups.
+    // It is provided here from manual lookups. Note that licenseUrl must provide textual content
+    // rather than be an html page.
     final def FALLBACK_PROPERTIES = [
         'com_google_googlejavaformat_google_java_format': new DependencyDescription(
-          url: "https://github.com/google/google-java-format",
-          licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
-          licenseName: "Apache 2.0"),
+            url: "https://github.com/google/google-java-format",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
         'com_google_guava_guava': new DependencyDescription(
-          url: "https://github.com/google/guava",
-          licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
-          licenseName: "Apache 2.0"),
+            url: "https://github.com/google/guava",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
         'org_codehaus_mojo_animal_sniffer_annotations': new DependencyDescription(
-          url: "http://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/",
-          licenseUrl: "https://opensource.org/licenses/mit-license.php",
-          licenseName: "MIT"),
+            url: "http://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/",
+            licenseUrl: "https://raw.githubusercontent.com/mojohaus/animal-sniffer/master/animal-sniffer-annotations/pom.xml",
+            licensePath: "licenses/Codehaus_License-2009.txt",
+            licenseName: "MIT"),
         'org_checkerframework_checker_compat_qual' :new DependencyDescription(
-          licenseUrl: "https://github.com/typetools/checker-framework/blob/master/LICENSE.txt",
-          licenseName: "GPL v2 (with the classpath exception)"),
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
     ]
 
     Project project
@@ -151,17 +153,12 @@ class ChromiumDepGraph {
     }
 
     private customizeDep(DependencyDescription dep) {
-        if (dep.id?.startsWith("com_google_android_gms_play_services_")) {
+        if (dep.id?.startsWith("com_google_android_")) {
             dep.licenseUrl = ""
             // This should match fetch_all._ANDROID_SDK_LICENSE_PATH
-            dep.licensePath = "Android_SDK_License-December_9_2016.txt"
+            dep.licensePath = "licenses/Android_SDK_License-December_9_2016.txt"
             if (dep.url?.isEmpty()) {
                 dep.url = "https://developers.google.com/android/guides/setup"
-            }
-            // Filter out targets like:
-            //     com_google_android_gms_play_services_auth_api_phone_license
-            if (dep.id?.endsWith("_license")) {
-                dep.exclude = true
             }
         } else if (dep.licenseName?.isEmpty()) {
             def fallbackProperties = FALLBACK_PROPERTIES.get(dep.id)
@@ -169,6 +166,12 @@ class ChromiumDepGraph {
                 project.logger.debug("Using fallback properties for ${dep.id}")
                 dep.licenseName = fallbackProperties.licenseName
                 dep.licenseUrl = fallbackProperties.licenseUrl
+                if (fallbackProperties.licensePath != null) {
+                    dep.licensePath = fallbackProperties.licensePath
+                }
+                if (dep.url?.isEmpty()) {
+                    dep.url = fallbackProperties.url
+                }
             }
         }
 

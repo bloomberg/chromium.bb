@@ -226,7 +226,7 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
     return false;
 
   v8::Local<v8::Array> v8_array = v8::Local<v8::Array>::Cast(v8_value);
-  for (size_t i = 0; i < v8_array->Length(); ++i) {
+  for (uint32_t i = 0; i < v8_array->Length(); ++i) {
     v8::Local<v8::Value> indexed_value;
     if (!v8_array
              ->Get(dictionary.V8Context(),

@@ -54,7 +54,8 @@ LocalFileSystemClient::~LocalFileSystemClient() = default;
 bool LocalFileSystemClient::RequestFileSystemAccessSync(
     ExecutionContext* context) {
   DCHECK(context);
-  if (context->IsDocument()) {
+  if (IsA<Document>(context)) {
+    // TODO(dcheng): Why is this NOTREACHED and handled?
     NOTREACHED();
     return false;
   }
@@ -68,12 +69,13 @@ void LocalFileSystemClient::RequestFileSystemAccessAsync(
     ExecutionContext* context,
     std::unique_ptr<ContentSettingCallbacks> callbacks) {
   DCHECK(context);
-  if (!context->IsDocument()) {
+  auto* document = DynamicTo<Document>(context);
+  if (!document) {
+    // TODO(dcheng): Why is this NOTREACHED and handled?
     NOTREACHED();
     return;
   }
 
-  Document* document = ToDocument(context);
   DCHECK(document->GetFrame());
   document->GetFrame()
       ->GetContentSettingsClient()

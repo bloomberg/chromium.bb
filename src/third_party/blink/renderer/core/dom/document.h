@@ -34,6 +34,8 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -65,6 +67,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
@@ -78,7 +81,6 @@ class UkmRecorder;
 namespace blink {
 
 namespace mojom {
-enum class EngagementLevel : int32_t;
 enum class PageVisibilityState : int32_t;
 }  // namespace mojom
 
@@ -258,7 +260,8 @@ class CORE_EXPORT Document : public ContainerNode,
                              public ExecutionContext,
                              public DocumentShutdownNotifier,
                              public SynchronousMutationNotifier,
-                             public Supplementable<Document> {
+                             public Supplementable<Document>,
+                             public mojom::blink::NavigationInitiator {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
 
@@ -301,18 +304,13 @@ class CORE_EXPORT Document : public ContainerNode,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforepaste);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(copy);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(cut);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(freeze);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(paste);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockchange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pointerlockerror);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(securitypolicyviolation);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectionchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange);
 
   ViewportData& GetViewportData() const { return *viewport_data_; }
@@ -379,6 +377,15 @@ class CORE_EXPORT Document : public ContainerNode,
                                     const CSSStyleSheetInit&,
                                     ExceptionState&);
 
+  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
+                                         const String&,
+                                         const CSSStyleSheetInit&,
+                                         ExceptionState&);
+
+  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
+                                         const String&,
+                                         ExceptionState&);
+
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
   Range* caretRangeFromPoint(int x, int y);
@@ -419,8 +426,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetHasXMLDeclaration(bool has_xml_declaration) {
     has_xml_declaration_ = has_xml_declaration ? 1 : 0;
   }
-
-  String origin() const;
 
   String visibilityState() const;
   mojom::PageVisibilityState GetPageVisibilityState() const;
@@ -640,8 +645,30 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void CheckCompleted();
 
-  bool DispatchBeforeUnloadEvent(ChromeClient&,
+  // Dispatches beforeunload into this document. Returns true if the
+  // beforeunload handler indicates that it is safe to proceed with an unload,
+  // false otherwise.
+  //
+  // |chrome_client| is used to synchronously get user consent (via a modal
+  // javascript dialog) to allow the unload to proceed if the beforeunload
+  // handler returns a non-null value, indicating unsaved state.
+  //
+  // |is_reload| indicates if the beforeunload is being triggered because of a
+  // reload operation, otherwise it is assumed to be a page close or navigation.
+  //
+  // If |auto_cancel| is true and the beforeunload returns a non-null value then
+  // the |chrome_client| will not be invoked, and this function will
+  // automatically return false, indicating that the unload should not proceed.
+  // This is set to true by the freezing logic, which uses this to determine if
+  // a non-empty beforeunload handler is present before allowing discarding to
+  // proceed.
+  //
+  // |did_allow_navigation| is set to reflect the choice made by the user via
+  // the modal dialog. The value is meaningless if |auto_cancel|
+  // is true, in which case it will always be set to false.
+  bool DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
                                  bool is_reload,
+                                 bool auto_cancel,
                                  bool& did_allow_navigation);
   void DispatchUnloadEvents();
 
@@ -988,7 +1015,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentMarkerController& Markers() const { return *markers_; }
 
   // Support for Javascript execCommand, and related methods
-  // See "core/editing/commands/DocumentExecCommand.cpp" for implementations.
+  // See "core/editing/commands/document_exec_command.cc" for implementations.
   bool execCommand(const String& command,
                    bool show_ui,
                    const String& value,
@@ -1103,7 +1130,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // will attempt to copy over the policy
   void InitContentSecurityPolicy(
       ContentSecurityPolicy* = nullptr,
-      const ContentSecurityPolicy* policy_to_inherit = nullptr);
+      const ContentSecurityPolicy* policy_to_inherit = nullptr,
+      const ContentSecurityPolicy* previous_document_csp = nullptr);
 
   bool IsSecureTransitionTo(const KURL&) const;
 
@@ -1204,12 +1232,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TextAutosizer* GetTextAutosizer();
 
-  ScriptValue registerElement(
-      ScriptState*,
-      const AtomicString& name,
-      const ElementRegistrationOptions&,
-      ExceptionState&,
-      V0CustomElement::NameSet valid_names = V0CustomElement::kStandardNames);
+  ScriptValue registerElement(ScriptState*,
+                              const AtomicString& name,
+                              const ElementRegistrationOptions&,
+                              ExceptionState&);
   V0CustomElementRegistrationContext* RegistrationContext() const {
     return registration_context_.Get();
   }
@@ -1264,18 +1290,11 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   HTMLDialogElement* ActiveModalDialog() const;
 
-  // A non-null m_templateDocumentHost implies that |this| was created by
-  // ensureTemplateDocument().
+  // A non-null template_document_host_ implies that |this| was created by
+  // EnsureTemplateDocument().
   bool IsTemplateDocument() const { return !!template_document_host_; }
   Document& EnsureTemplateDocument();
   Document* TemplateDocumentHost() { return template_document_host_; }
-
-  mojom::EngagementLevel GetEngagementLevel() const {
-    return engagement_level_;
-  }
-  void SetEngagementLevel(mojom::EngagementLevel level) {
-    engagement_level_ = level;
-  }
 
   // TODO(thestig): Rename these and related functions, since we can call them
   // for controls outside of forms as well.
@@ -1462,6 +1481,14 @@ class CORE_EXPORT Document : public ContainerNode,
 #endif
 
   bool IsVerticalScrollEnforced() const { return is_vertical_scroll_enforced_; }
+  bool IsLazyLoadPolicyEnforced() const;
+
+  void SendViolationReport(
+      mojom::blink::CSPViolationParamsPtr violation_params) override;
+  void BindNavigationInitiatorRequest(
+      mojom::blink::NavigationInitiatorRequest request) {
+    navigation_initiator_bindings_.AddBinding(this, std::move(request));
+  }
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
 
@@ -1476,6 +1503,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const base::UnguessableToken& GetAgentClusterID() const final {
     return agent_cluster_id_;
   }
+
+  void ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature) const override;
 
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
@@ -1651,9 +1680,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document URLs.
   KURL url_;  // Document.URL: The URL from which this document was retrieved.
   KURL base_url_;  // Node.baseURI: The URL to use when resolving relative URLs.
-  KURL
-      base_url_override_;  // An alternative base URL that takes precedence over
-                           // m_baseURL (but not m_baseElementURL).
+  // An alternative base URL that takes precedence over base_url_ (but
+  // not base_element_url_).
+  KURL base_url_override_;
   KURL base_element_url_;  // The URL set by the <base> element.
   KURL cookie_url_;        // The URL to use for cookie access.
   std::unique_ptr<OriginAccessEntry> access_entry_from_url_;
@@ -1801,7 +1830,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // For early return in Fullscreen::fromIfExists()
   bool has_fullscreen_supplement_;
 
-  // The last element in |m_topLayerElements| is topmost in the top layer
+  // The last element in |top_layer_elements_| is topmost in the top layer
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
@@ -1877,8 +1906,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TaskHandle sensitive_input_edited_task_;
 
-  mojom::EngagementLevel engagement_level_;
-
   SecureContextState secure_context_state_;
 
   Member<NetworkStateObserver> network_state_observer_;
@@ -1912,6 +1939,12 @@ class CORE_EXPORT Document : public ContainerNode,
   // This is set through feature policy 'vertical-scroll'.
   bool is_vertical_scroll_enforced_ = false;
 
+  // A list of all the navigation_initiator bindings owned by this document.
+  // Used to report CSP violations that result from CSP blocking
+  // navigation requests that were initiated by this document.
+  mojo::BindingSet<mojom::blink::NavigationInitiator>
+      navigation_initiator_bindings_;
+
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 
   // https://tc39.github.io/ecma262/#sec-agent-clusters
@@ -1927,13 +1960,6 @@ inline void Document::ScheduleLayoutTreeUpdateIfNeeded() {
   if (ShouldScheduleLayoutTreeUpdate() && NeedsLayoutTreeUpdate())
     ScheduleLayoutTreeUpdate();
 }
-
-DEFINE_TYPE_CASTS(Document,
-                  ExecutionContext,
-                  context,
-                  context->IsDocument(),
-                  context.IsDocument());
-DEFINE_NODE_TYPE_CASTS(Document, IsDocumentNode());
 
 #define DEFINE_DOCUMENT_TYPE_CASTS(thisType)                                \
   DEFINE_TYPE_CASTS(thisType, Document, document, document->Is##thisType(), \
@@ -1952,7 +1978,13 @@ inline bool Node::IsDocumentNode() const {
 
 Node* EventTargetNodeForDocument(Document*);
 
-DEFINE_TYPE_CASTS(TreeScope, Document, document, true, true);
+template <>
+struct DowncastTraits<Document> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsDocument();
+  }
+  static bool AllowFrom(const Node& node) { return node.IsDocumentNode(); }
+};
 
 }  // namespace blink
 

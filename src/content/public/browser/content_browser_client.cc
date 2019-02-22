@@ -126,6 +126,14 @@ void ContentBrowserClient::LogInitiatorSchemeBypassingDocumentBlocking(
     int render_process_id,
     ResourceType resource_type) {}
 
+network::mojom::URLLoaderFactoryPtrInfo
+ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+    RenderProcessHost* process,
+    network::mojom::NetworkContext* network_context,
+    const url::Origin& request_initiator) {
+  return network::mojom::URLLoaderFactoryPtrInfo();
+}
+
 void ContentBrowserClient::GetAdditionalViewSourceSchemes(
     std::vector<std::string>* additional_schemes) {
   GetAdditionalWebUISchemes(additional_schemes);
@@ -160,13 +168,6 @@ bool ContentBrowserClient::IsURLAcceptableForWebUI(
   return false;
 }
 
-bool ContentBrowserClient::
-    ShouldFrameShareParentSiteInstanceDespiteTopDocumentIsolation(
-        const GURL& url,
-        SiteInstance* parent_site_instance) {
-  return false;
-}
-
 bool ContentBrowserClient::ShouldStayInParentProcessForNTP(
     const GURL& url,
     SiteInstance* parent_site_instance) {
@@ -185,6 +186,11 @@ bool ContentBrowserClient::MayReuseHost(RenderProcessHost* process_host) {
 bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
       BrowserContext* browser_context, const GURL& url) {
   return false;
+}
+
+bool ContentBrowserClient::ShouldSubframesTryToReuseExistingProcess(
+    RenderFrameHost* main_frame) {
+  return true;
 }
 
 bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
@@ -382,8 +388,9 @@ void ContentBrowserClient::SelectClientCertificate(
     net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {}
 
-net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(
-    const GURL& url, ResourceContext* context) {
+net::CookieStore* ContentBrowserClient::OverrideCookieStoreForURL(
+    const GURL& url,
+    ResourceContext* context) {
   return nullptr;
 }
 
@@ -671,8 +678,9 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     BrowserContext* browser_context,
     RenderFrameHost* frame,
     bool is_navigation,
-    const GURL& url,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    const url::Origin& request_initiator,
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    bool* bypass_redirect_checks) {
   return false;
 }
 
@@ -804,5 +812,16 @@ bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,
 void ContentBrowserClient::RegisterRendererPreferenceWatcherForWorkers(
     BrowserContext* browser_context,
     mojom::RendererPreferenceWatcherPtr watcher) {}
+
+base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
+    OriginPolicyErrorReason error_reason,
+    const url::Origin& origin,
+    const GURL& url) {
+  return base::nullopt;
+}
+
+bool ContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+  return false;
+}
 
 }  // namespace content

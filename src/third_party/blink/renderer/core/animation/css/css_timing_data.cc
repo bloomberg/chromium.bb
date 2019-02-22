@@ -19,7 +19,11 @@ CSSTimingData::CSSTimingData(const CSSTimingData& other) = default;
 Timing CSSTimingData::ConvertToTiming(size_t index) const {
   Timing timing;
   timing.start_delay = GetRepeated(delay_list_, index);
-  timing.iteration_duration = GetRepeated(duration_list_, index);
+  double duration = GetRepeated(duration_list_, index);
+  timing.iteration_duration =
+      std::isnan(duration)
+          ? base::nullopt
+          : base::make_optional(AnimationTimeDelta::FromSecondsD(duration));
   timing.timing_function = GetRepeated(timing_function_list_, index);
   timing.AssertValid();
   return timing;
@@ -34,7 +38,7 @@ bool CSSTimingData::TimingMatchForStyleRecalc(
   if (timing_function_list_.size() != other.timing_function_list_.size())
     return false;
 
-  for (size_t i = 0; i < timing_function_list_.size(); i++) {
+  for (wtf_size_t i = 0; i < timing_function_list_.size(); i++) {
     if (!DataEquivalent(timing_function_list_.at(i),
                         other.timing_function_list_.at(i))) {
       return false;

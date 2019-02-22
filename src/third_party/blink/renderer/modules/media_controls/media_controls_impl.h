@@ -42,6 +42,7 @@ class MediaControlsDisplayCutoutDelegate;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsRotateToFullscreenDelegate;
 class MediaControlsWindowEventListener;
+class MediaControlAnimatedArrowContainerElement;
 class MediaControlButtonPanelElement;
 class MediaControlCastButtonElement;
 class MediaControlCurrentTimeDisplayElement;
@@ -136,6 +137,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ToggleOverflowMenu();
   bool OverflowMenuVisible();
 
+  void OpenVolumeSliderIfNecessary();
+  void CloseVolumeSliderIfNecessary();
+
   void ShowOverlayCastButtonIfNeeded();
 
   // Methods call by the scrubber.
@@ -189,6 +193,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // accessibility tool. This is meant to be replaced by AOM when the event will
   // be exposed to the platform.
   void OnAccessibleFocus();
+  void OnAccessibleBlur();
+
+  // Returns true/false based on which set of controls to display.
+  bool ShouldShowAudioControls() const;
 
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
@@ -262,6 +270,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void HideCursor();
   void ShowCursor();
 
+  bool ShouldOpenVolumeSlider() const;
+  bool ShouldCloseVolumeSlider() const;
+
   void ElementSizeChangedTimerFired(TimerBase*);
 
   // Hide elements that don't fit, and show those things that we want which
@@ -272,7 +283,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateOverflowMenuWanted() const;
   void UpdateScrubbingMessageFits() const;
   void UpdateSizingCSSClass();
-  void UpdateOverlayPlayButtonWidthCSSVar();
   void MaybeRecordElementsDisplayed() const;
 
   // Takes a popup menu (caption, overflow) and position on the screen. This is
@@ -288,7 +298,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void UpdateActingAsAudioControls();
 
   // Returns true/false based on which set of controls to display.
-  bool ShouldShowAudioControls() const;
   bool ShouldShowVideoControls() const;
 
   // Node
@@ -298,7 +307,13 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool ContainsRelatedTarget(Event*);
 
   void HandlePointerEvent(Event*);
+  void HandleClickEvent(Event*);
   void HandleTouchEvent(Event*);
+
+  void EnsureAnimatedArrowContainer();
+  void MaybeJump(int);
+  bool IsOnLeftSide(Event*);
+  void TapTimerFired(TimerBase*);
 
   // Internal cast related methods.
   void RemotePlaybackStateChanged();
@@ -347,6 +362,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlButtonPanelElement> media_button_panel_;
   Member<MediaControlLoadingPanelElement> loading_panel_;
   Member<MediaControlPictureInPictureButtonElement> picture_in_picture_button_;
+  Member<MediaControlAnimatedArrowContainerElement>
+      animated_arrow_container_element_;
 
   Member<MediaControlCastButtonElement> cast_button_;
   Member<MediaControlFullscreenButtonElement> fullscreen_button_;
@@ -389,9 +406,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // touch events, we want to ignore pointerover/pointerout/pointermove events.
   bool is_touch_interaction_ = false;
 
-  // Holds the currently set --overlay-play-button-width value. Used to check if
-  // we need to update.
-  base::Optional<double> overlay_play_button_width_;
+  // Timer for distinguishing double-taps.
+  TaskRunnerTimer<MediaControlsImpl> tap_timer_;
 
   bool is_test_mode_ = false;
 };

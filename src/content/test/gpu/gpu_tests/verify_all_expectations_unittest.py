@@ -146,6 +146,7 @@ class VerifyTestExpectations(unittest.TestCase):
       'info_collection_test.InfoCollectionExpectations',
       'maps_expectations.MapsExpectations',
       'pixel_expectations.PixelExpectations',
+      'power_measurement_integration_test.PowerMeasurementExpectations',
       'screenshot_sync_expectations.ScreenshotSyncExpectations',
       'trace_test_expectations.TraceTestExpectations',
       'webgl_conformance_expectations.WebGLConformanceExpectations',

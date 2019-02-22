@@ -186,12 +186,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   blink::WebMediaPlayer::NetworkState GetNetworkState() const override;
   blink::WebMediaPlayer::ReadyState GetReadyState() const override;
 
+  blink::WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode()
+      const override;
+
   blink::WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override;
-
-  bool DidGetOpaqueResponseFromServiceWorker() const override;
-  bool HasSingleSecurityOrigin() const override;
-  bool DidPassCORSAccessCheck() const override;
+  bool WouldTaintOrigin() const override;
 
   double MediaTimeForTimeValue(double timeValue) const override;
 
@@ -286,6 +286,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ForceStaleStateForTesting(ReadyState target_state) override;
   bool IsSuspendedForTesting() override;
 
+  bool DidLazyLoad() const override;
+  void OnBecameVisible() override;
+
   // Called from WebMediaPlayerCast.
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
@@ -305,6 +308,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
     bool is_memory_reporting_enabled;
     bool is_suspended;
   };
+
+  // Allow background video tracks with ~5 second keyframes (rounding down) to
+  // be disabled to save resources.
+  enum { kMaxKeyframeDistanceToDisableBackgroundVideoMs = 5500 };
 
  private:
   friend class WebMediaPlayerImplTest;
@@ -593,6 +600,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Switch to SurfaceLayer, either initially or from VideoLayer.
   void ActivateSurfaceLayerForVideo();
+
+  // Returns whether the Picture-in-Picture window should contain a play/pause
+  // button. It will return false if video is "live", in other words if duration
+  // is equals to Infinity.
+  bool ShouldShowPlayPauseButtonInPictureInPictureWindow() const;
 
   blink::WebLocalFrame* const frame_;
 
@@ -883,8 +895,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool embedded_media_experience_enabled_ = false;
 
   // When should we use SurfaceLayer for video?
-  WebMediaPlayerParams::SurfaceLayerMode surface_layer_mode_ =
-      WebMediaPlayerParams::SurfaceLayerMode::kNever;
+  blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode_ =
+      blink::WebMediaPlayer::SurfaceLayerMode::kNever;
 
   // Whether surface layer is currently in use to display frames.
   bool surface_layer_for_video_enabled_ = false;
@@ -933,6 +945,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // True if a frame has ever been rendered.
   bool has_first_frame_ = false;
+
+  // True if we have not yet rendered a first frame, but one is needed. Set back
+  // to false as soon as |has_first_frame_| is set to true.
+  bool needs_first_frame_ = false;
+
+  // True if StartPipeline() completed a lazy load startup.
+  bool did_lazy_load_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

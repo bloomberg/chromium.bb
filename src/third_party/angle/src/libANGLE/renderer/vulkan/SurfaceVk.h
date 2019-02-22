@@ -20,7 +20,7 @@ namespace rx
 {
 class RendererVk;
 
-class OffscreenSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
+class OffscreenSurfaceVk : public SurfaceImpl
 {
   public:
     OffscreenSurfaceVk(const egl::SurfaceState &surfaceState, EGLint width, EGLint height);
@@ -52,25 +52,25 @@ class OffscreenSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
     EGLint isPostSubBufferSupported() const override;
     EGLint getSwapBehavior() const override;
 
-    gl::Error getAttachmentRenderTarget(const gl::Context *context,
-                                        GLenum binding,
-                                        const gl::ImageIndex &imageIndex,
-                                        FramebufferAttachmentRenderTarget **rtOut) override;
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
   private:
     struct AttachmentImage final : angle::NonCopyable
     {
-        AttachmentImage(vk::CommandGraphResource *commandGraphResource);
+        AttachmentImage();
         ~AttachmentImage();
 
         angle::Result initialize(DisplayVk *displayVk,
                                  EGLint width,
                                  EGLint height,
                                  const vk::Format &vkFormat);
-        void destroy(const egl::Display *display, Serial storedQueueSerial);
+        void destroy(const egl::Display *display);
 
         vk::ImageHelper image;
         vk::ImageView imageView;
@@ -86,7 +86,7 @@ class OffscreenSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
     AttachmentImage mDepthStencilAttachment;
 };
 
-class WindowSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
+class WindowSurfaceVk : public SurfaceImpl
 {
   public:
     WindowSurfaceVk(const egl::SurfaceState &surfaceState,
@@ -101,6 +101,7 @@ class WindowSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
     FramebufferImpl *createDefaultFramebuffer(const gl::Context *context,
                                               const gl::FramebufferState &state) override;
     egl::Error swap(const gl::Context *context) override;
+    egl::Error swapWithDamage(const gl::Context *context, EGLint *rects, EGLint n_rects) override;
     egl::Error postSubBuffer(const gl::Context *context,
                              EGLint x,
                              EGLint y,
@@ -121,13 +122,13 @@ class WindowSurfaceVk : public SurfaceImpl, public vk::CommandGraphResource
     EGLint isPostSubBufferSupported() const override;
     EGLint getSwapBehavior() const override;
 
-    gl::Error getAttachmentRenderTarget(const gl::Context *context,
-                                        GLenum binding,
-                                        const gl::ImageIndex &imageIndex,
-                                        FramebufferAttachmentRenderTarget **rtOut) override;
+    angle::Result getAttachmentRenderTarget(const gl::Context *context,
+                                            GLenum binding,
+                                            const gl::ImageIndex &imageIndex,
+                                            FramebufferAttachmentRenderTarget **rtOut) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
     angle::Result getCurrentFramebuffer(vk::Context *context,
                                         const vk::RenderPass &compatibleRenderPass,

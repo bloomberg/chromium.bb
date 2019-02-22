@@ -138,6 +138,9 @@ cc_library(
     name = "thread_pool",
     testonly = 1,
     hdrs = ["internal/thread_pool.h"],
+    visibility = [
+        "//absl:__subpackages__",
+    ],
     deps = [
         ":synchronization",
         "//absl/base:core_headers",
@@ -149,6 +152,7 @@ cc_test(
     size = "large",
     srcs = ["mutex_test.cc"],
     copts = ABSL_TEST_COPTS,
+    shard_count = 25,
     deps = [
         ":synchronization",
         ":thread_pool",

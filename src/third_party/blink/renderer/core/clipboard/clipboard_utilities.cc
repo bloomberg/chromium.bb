@@ -51,7 +51,7 @@ String ConvertURIListToURL(const String& uri_list) {
   uri_list.Split('\n', items);
   // Process the input and return the first valid URL. In case no URLs can
   // be found, return an empty string. This is in line with the HTML5 spec.
-  for (size_t i = 0; i < items.size(); ++i) {
+  for (wtf_size_t i = 0; i < items.size(); ++i) {
     String& line = items[i];
     line = line.StripWhiteSpace();
     if (line.IsEmpty())

@@ -42,7 +42,7 @@ LayoutTestURLRequestContextGetter::~LayoutTestURLRequestContextGetter() {
 
 std::unique_ptr<net::NetworkDelegate>
 LayoutTestURLRequestContextGetter::CreateNetworkDelegate() {
-  ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
+  ShellNetworkDelegate::SetBlockThirdPartyCookies(false);
   return base::WrapUnique(new ShellNetworkDelegate);
 }
 

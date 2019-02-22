@@ -51,9 +51,10 @@ class HTMLResourcePreloaderTest : public PageTestBase {
     PreloaderNetworkHintsMock network_hints;
     auto preload_request = PreloadRequest::CreateIfNeeded(
         String(), TextPosition(), test_case.url, KURL(test_case.base_url),
-        Resource::kImage, ReferrerPolicy(), PreloadRequest::kDocumentIsReferrer,
-        ResourceFetcher::kImageNotImageSet, FetchParameters::ResourceWidth(),
-        ClientHintsPreferences(), PreloadRequest::kRequestTypePreconnect);
+        ResourceType::kImage, ReferrerPolicy(),
+        PreloadRequest::kDocumentIsReferrer, ResourceFetcher::kImageNotImageSet,
+        FetchParameters::ResourceWidth(), ClientHintsPreferences(),
+        PreloadRequest::kRequestTypePreconnect);
     DCHECK(preload_request);
     if (test_case.is_cors)
       preload_request->SetCrossOrigin(kCrossOriginAttributeAnonymous);

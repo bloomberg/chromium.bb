@@ -92,8 +92,7 @@ void AddCustomChunk(const base::StringPiece& custom_chunk,
       bitmap_data->begin(),
       bitmap_data->begin() + arraysize(kPngMagic),
       kPngMagic));
-  std::vector<unsigned char>::iterator ihdr_start =
-      bitmap_data->begin() + arraysize(kPngMagic);
+  auto ihdr_start = bitmap_data->begin() + arraysize(kPngMagic);
   char ihdr_length_data[sizeof(uint32_t)];
   for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
@@ -135,8 +134,7 @@ void CreateDataPackWithSingleBitmap(const base::FilePath& path,
 
 class ResourceBundleTest : public testing::Test {
  public:
-  ResourceBundleTest() : resource_bundle_(NULL) {
-  }
+  ResourceBundleTest() : resource_bundle_(nullptr) {}
 
   ~ResourceBundleTest() override {}
 
@@ -184,27 +182,31 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
 #define MAYBE_DelegateGetPathForLocalePack DelegateGetPathForLocalePack
 #endif
 TEST_F(ResourceBundleTest, MAYBE_DelegateGetPathForLocalePack) {
+  ResourceBundle::CleanupSharedInstance();
+
   MockResourceBundleDelegate delegate;
-  ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
+  ResourceBundle::InitSharedInstance(&delegate);
 
   std::string locale = "en-US";
 
   // Cancel the load.
-  EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
-      .Times(2)
+  EXPECT_CALL(delegate, GetPathForLocalePack(_, _))
       .WillRepeatedly(Return(base::FilePath()))
       .RetiresOnSaturation();
 
-  EXPECT_FALSE(resource_bundle->LocaleDataPakExists(locale));
-  EXPECT_EQ("", resource_bundle->LoadLocaleResources(locale));
+  EXPECT_FALSE(ResourceBundle::LocaleDataPakExists(locale));
+  EXPECT_EQ("",
+            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
 
   // Allow the load to proceed.
-  EXPECT_CALL(delegate, GetPathForLocalePack(_, locale))
-      .Times(2)
+  EXPECT_CALL(delegate, GetPathForLocalePack(_, _))
       .WillRepeatedly(ReturnArg<0>());
 
-  EXPECT_TRUE(resource_bundle->LocaleDataPakExists(locale));
-  EXPECT_EQ(locale, resource_bundle->LoadLocaleResources(locale));
+  EXPECT_TRUE(ResourceBundle::LocaleDataPakExists(locale));
+  EXPECT_EQ(locale,
+            ResourceBundle::GetSharedInstance().LoadLocaleResources(locale));
+
+  ResourceBundle::CleanupSharedInstance();
 }
 
 TEST_F(ResourceBundleTest, DelegateGetImageNamed) {
@@ -298,7 +300,7 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
 }
 
 TEST_F(ResourceBundleTest, OverrideStringResource) {
-  ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
+  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
 
   base::string16 data = base::ASCIIToUTF16("My test data");
   int resource_id = 5;
@@ -311,6 +313,21 @@ TEST_F(ResourceBundleTest, OverrideStringResource) {
   result = resource_bundle->GetLocalizedString(resource_id);
   EXPECT_EQ(data, result);
 }
+
+#if DCHECK_IS_ON()
+TEST_F(ResourceBundleTest, CanOverrideStringResources) {
+  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
+
+  base::string16 data = base::ASCIIToUTF16("My test data");
+  int resource_id = 5;
+
+  EXPECT_TRUE(
+      resource_bundle->get_can_override_locale_string_resources_for_test());
+  resource_bundle->GetLocalizedString(resource_id);
+  EXPECT_FALSE(
+      resource_bundle->get_can_override_locale_string_resources_for_test());
+}
+#endif
 
 TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
   MockResourceBundleDelegate delegate;
@@ -329,11 +346,9 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
 }
 
 TEST_F(ResourceBundleTest, LocaleDataPakExists) {
-  ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
-
   // Check that ResourceBundle::LocaleDataPakExists returns the correct results.
-  EXPECT_TRUE(resource_bundle->LocaleDataPakExists("en-US"));
-  EXPECT_FALSE(resource_bundle->LocaleDataPakExists("not_a_real_locale"));
+  EXPECT_TRUE(ResourceBundle::LocaleDataPakExists("en-US"));
+  EXPECT_FALSE(ResourceBundle::LocaleDataPakExists("not_a_real_locale"));
 }
 
 class ResourceBundleImageTest : public ResourceBundleTest {
@@ -355,7 +370,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
     EXPECT_EQ(base::WriteFile(locale_path, kEmptyPakContents, kEmptyPakSize),
               static_cast<int>(kEmptyPakSize));
 
-    ui::ResourceBundle* resource_bundle = CreateResourceBundle(NULL);
+    ui::ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
 
     // Load the empty locale data pak.
     resource_bundle->LoadTestResources(base::FilePath(), locale_path);
@@ -392,15 +407,15 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
 
   const int kUnfoundResourceId = 10000;
-  EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
-      kUnfoundResourceId));
+  EXPECT_EQ(nullptr,
+            resource_bundle->LoadDataResourceBytes(kUnfoundResourceId));
 
   // Give a .pak file that doesn't exist so we will fail to load it.
   resource_bundle->AddDataPackFromPath(
       base::FilePath(FILE_PATH_LITERAL("non-existant-file.pak")),
       ui::SCALE_FACTOR_NONE);
-  EXPECT_EQ(NULL, resource_bundle->LoadDataResourceBytes(
-      kUnfoundResourceId));
+  EXPECT_EQ(nullptr,
+            resource_bundle->LoadDataResourceBytes(kUnfoundResourceId));
 }
 
 TEST_F(ResourceBundleImageTest, GetRawDataResource) {

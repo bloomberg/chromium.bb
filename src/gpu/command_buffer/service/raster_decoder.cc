@@ -61,6 +61,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
+#include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -279,17 +280,23 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
 // matches GrContext state tracking.
 bool PermitsInconsistentContextState(CommandId command) {
   switch (command) {
+    case kBeginQueryEXT:
     case kBeginRasterCHROMIUMImmediate:
     case kCreateAndConsumeTextureINTERNALImmediate:
     case kCreateTransferCacheEntryINTERNAL:
+    case kDeleteQueriesEXTImmediate:
     case kDeleteTexturesImmediate:
     case kDeleteTransferCacheEntryINTERNAL:
+    case kEndQueryEXT:
     case kEndRasterCHROMIUM:
     case kFinish:
     case kFlush:
+    case kGenQueriesEXTImmediate:
     case kGetError:
     case kInsertFenceSyncCHROMIUM:
     case kRasterCHROMIUM:
+    case kResetActiveURLCHROMIUM:
+    case kSetActiveURLCHROMIUM:
     case kUnlockTransferCacheEntryINTERNAL:
     case kWaitSyncTokenCHROMIUM:
       return true;
@@ -646,9 +653,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,
                                     GLenum textarget,
                                     GLuint texture_unit);
-  void DoCompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
-    NOTIMPLEMENTED();
-  }
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
@@ -746,6 +750,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   int commands_to_process_ = 0;
 
   bool supports_oop_raster_ = false;
+  bool use_ddl_ = false;
 
   bool has_robustness_extension_ = false;
   bool context_was_lost_ = false;
@@ -802,6 +807,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   // Raster helpers.
   scoped_refptr<ServiceFontManager> font_manager_;
   sk_sp<SkSurface> sk_surface_;
+
+  std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
   std::unique_ptr<SkCanvas> raster_canvas_;
   uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
@@ -1017,6 +1024,7 @@ ContextResult RasterDecoderImpl::Initialize(
     }
 
     supports_oop_raster_ = !!raster_decoder_context_state_->gr_context;
+    use_ddl_ = group_->gpu_preferences().enable_oop_rasterization_ddl;
   }
 
   return ContextResult::kSuccess;
@@ -1463,10 +1471,12 @@ void RasterDecoderImpl::BeginDecoding() {
   gpu_tracer_->BeginDecoding();
   gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
   gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
+  query_manager_->BeginProcessingCommands();
 }
 
 void RasterDecoderImpl::EndDecoding() {
   gpu_tracer_->EndDecoding();
+  query_manager_->EndProcessingCommands();
 }
 
 const char* RasterDecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -3110,9 +3120,21 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     sk_surface_.reset();
     return;
   }
+
+  SkCanvas* canvas = nullptr;
+  if (use_ddl_) {
+    SkSurfaceCharacterization characterization;
+    bool result = sk_surface_->characterize(&characterization);
+    DCHECK(result) << "Failed to characterize raster SkSurface.";
+    recorder_ =
+        std::make_unique<SkDeferredDisplayListRecorder>(characterization);
+    canvas = recorder_->getCanvas();
+  } else {
+    canvas = sk_surface_->getCanvas();
+  }
+
   raster_canvas_ = SkCreateColorSpaceXformCanvas(
-      sk_surface_->getCanvas(),
-      color_space_entry->color_space().ToSkColorSpace());
+      canvas, color_space_entry->color_space().ToSkColorSpace());
   raster_color_space_id_ = color_space_transfer_cache_id;
 
   // All or nothing clearing, as no way to validate the client's input on what
@@ -3210,6 +3232,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 }
 
 void RasterDecoderImpl::DoEndRasterCHROMIUM() {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM");
   if (!sk_surface_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "EndRasterCHROMIUM without BeginRasterCHROMIUM");
@@ -3219,6 +3242,12 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   raster_decoder_context_state_->need_context_state_reset = true;
 
   raster_canvas_.reset();
+
+  if (use_ddl_) {
+    auto ddl = recorder_->detach();
+    recorder_ = nullptr;
+    sk_surface_->draw(ddl.get());
+  }
   sk_surface_->prepareForExternalIO();
   sk_surface_.reset();
 
@@ -3284,10 +3313,18 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
   ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
                                   handle_shm_id);
 
+  // If the entry is going to use skia during deserialization, make sure we mark
+  // the context state dirty.
+  GrContext* context_for_entry =
+      cc::ServiceTransferCacheEntry::UsesGrContext(entry_type) ? gr_context()
+                                                               : nullptr;
+  if (context_for_entry)
+    raster_decoder_context_state_->need_context_state_reset = true;
+
   if (!transfer_cache()->CreateLockedEntry(
           ServiceTransferCache::EntryKey(raster_decoder_id_, entry_type,
                                          entry_id),
-          handle, gr_context(), base::make_span(data_memory, data_size))) {
+          handle, context_for_entry, base::make_span(data_memory, data_size))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
                        "Failure to deserialize transfer cache entry.");
     return;

@@ -13,6 +13,14 @@
 #include "chrome/browser/memory/swap_thrashing_monitor_delegate_win.h"
 #endif
 
+namespace features {
+
+// Feature flag controlling whether or not this monitor should be enabled.
+const base::Feature kSwapThrashingMonitor{"SwapThrashingMonitor",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
+
 namespace memory {
 namespace {
 
@@ -76,6 +84,7 @@ SwapThrashingMonitor* SwapThrashingMonitor::GetInstance() {
 SwapThrashingMonitor::SwapThrashingMonitor()
     : current_swap_thrashing_level_(
           SwapThrashingLevel::SWAP_THRASHING_LEVEL_NONE) {
+  DCHECK(base::FeatureList::IsEnabled(features::kSwapThrashingMonitor));
 #if defined(OS_WIN)
   delegate_ = std::make_unique<SwapThrashingMonitorDelegateWin>();
 #else
@@ -143,6 +152,7 @@ void SwapThrashingMonitor::CheckSwapThrashingPressureAndRecordStatistics() {
 
 void SwapThrashingMonitor::StartObserving() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(sebmarchand): Determine if the system is using on-disk swap, abort if
   // it isn't as there won't be any swap-paging to observe (on-disk swap could
   // later become available if the user turn it on but this case is rare that

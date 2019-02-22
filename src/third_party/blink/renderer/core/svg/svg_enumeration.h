@@ -80,6 +80,11 @@ class SVGEnumerationBase : public SVGPropertyBase {
   // relevant interface.
   unsigned short MaxExposedEnumValue() const { return max_exposed_; }
 
+  void SetInitial(unsigned value) {
+    SetValue(static_cast<unsigned short>(value));
+  }
+  static constexpr int kInitialValueBits = 3;
+
  protected:
   SVGEnumerationBase(unsigned short value,
                      const StringEntries& entries,

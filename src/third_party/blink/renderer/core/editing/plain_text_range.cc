@@ -41,14 +41,11 @@ PlainTextRange::PlainTextRange() : start_(kNotFound), end_(kNotFound) {}
 
 PlainTextRange::PlainTextRange(const PlainTextRange&) = default;
 
-PlainTextRange::PlainTextRange(int location)
-    : start_(location), end_(location) {
-  DCHECK_GE(location, 0);
-}
+PlainTextRange::PlainTextRange(wtf_size_t location)
+    : start_(location), end_(location) {}
 
-PlainTextRange::PlainTextRange(int start, int end) : start_(start), end_(end) {
-  DCHECK_GE(start, 0);
-  DCHECK_GE(end, 0);
+PlainTextRange::PlainTextRange(wtf_size_t start, wtf_size_t end)
+    : start_(start), end_(end) {
   DCHECK_LE(start, end);
 }
 
@@ -81,7 +78,7 @@ EphemeralRange PlainTextRange::CreateRangeForSelectionIndexing(
   return CreateRangeFor(scope, behavior);
 }
 
-static Position CreatePositionInTextRun(size_t offset_in_run,
+static Position CreatePositionInTextRun(wtf_size_t offset_in_run,
                                         const Position& text_run_start_position,
                                         const Position& text_run_end_position) {
   if (text_run_start_position.ComputeContainerNode()->IsTextNode()) {
@@ -101,7 +98,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(
     const TextIteratorBehavior& behavior) const {
   DCHECK(IsNotNull());
 
-  size_t doc_text_position = 0;
+  wtf_size_t doc_text_position = 0;
   bool start_range_found = false;
 
   Position text_run_start_position;
@@ -198,9 +195,9 @@ PlainTextRange PlainTextRange::Create(const ContainerNode& scope,
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       scope.GetDocument().Lifecycle());
 
-  size_t start =
+  wtf_size_t start =
       TextIterator::RangeLength(Position(scope, 0), range.StartPosition());
-  size_t end =
+  wtf_size_t end =
       TextIterator::RangeLength(Position(scope, 0), range.EndPosition());
 
   return PlainTextRange(start, end);

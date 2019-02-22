@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
@@ -25,6 +26,7 @@
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_delegate.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -300,8 +302,8 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
 
   void SetUpOnMainThread() override {
     interceptor_ = std::make_unique<policy::TestRequestInterceptor>(
-        "localhost", content::BrowserThread::GetTaskRunnerForThread(
-                         content::BrowserThread::IO));
+        "localhost", base::CreateSingleThreadTaskRunnerWithTraits(
+                         {content::BrowserThread::IO}));
 
     support_host_ = std::make_unique<ArcSupportHost>(browser()->profile());
     support_host_->SetErrorDelegate(this);

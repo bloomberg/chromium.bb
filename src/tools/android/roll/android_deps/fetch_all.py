@@ -51,9 +51,8 @@ _ANDROID_DEPS_SUBDIR = 'third_party/android_deps'
 # Path to BUILD.gn file under android_deps/
 _ANDROID_DEPS_BUILD_GN = _ANDROID_DEPS_SUBDIR + '/BUILD.gn'
 
-# Path to updated Android SDK License under android_deps/
-_ANDROID_SDK_LICENSE_PATH = (
-    _ANDROID_DEPS_SUBDIR + '/Android_SDK_License-December_9_2016.txt')
+# Path to custom licenses under android_deps/
+_ANDROID_DEPS_LICENSE_SUBDIR = _ANDROID_DEPS_SUBDIR + '/licenses'
 
 # Path to additional_readme_paths.json
 _ANDROID_DEPS_ADDITIONAL_README_PATHS = (
@@ -75,10 +74,10 @@ _UPDATED_GIT_FILES = [
   _ANDROID_DEPS_ADDITIONAL_README_PATHS,
 ]
 
-# The list of files that are copied to the build directory by this script.
-# Should not include _UPDATED_GIT_FILES.
+# The list of files and dirs that are copied to the build directory by this
+# script. Should not include _UPDATED_GIT_FILES.
 _COPIED_PATHS = [
-  _ANDROID_SDK_LICENSE_PATH,
+  _ANDROID_DEPS_LICENSE_SUBDIR,
   _BUILD_GRADLE_PATH,
   _GRADLE_BUILDSRC_PATH,
 ]
@@ -382,9 +381,9 @@ def main():
     return
 
   missing_files = []
-  for src_file in _UPDATED_GIT_FILES + _COPIED_PATHS:
-    if not os.path.exists(os.path.join(chromium_src, src_file)):
-      missing_files.append(src_file)
+  for src_path in _UPDATED_GIT_FILES + _COPIED_PATHS:
+    if not os.path.exists(os.path.join(chromium_src, src_path)):
+      missing_files.append(src_path)
 
   if missing_files:
     raise Exception('Missing files from %s: %s' % (chromium_src, missing_files))

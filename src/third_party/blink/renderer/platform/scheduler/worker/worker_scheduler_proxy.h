@@ -11,8 +11,8 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
@@ -62,13 +62,13 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   }
 
   // Accessed only during init.
-  std::unique_ptr<ukm::UkmRecorder> TakeUkmRecorder() {
+  std::unique_ptr<service_manager::Connector> TakeConnector() {
     DCHECK(!initialized_);
 #if DCHECK_IS_ON()
-    DCHECK(!ukm_recorder_taken_);
-    ukm_recorder_taken_ = true;
+    DCHECK(!connector_taken_);
+    connector_taken_ = true;
 #endif
-    return std::move(ukm_recorder_);
+    return std::move(connector_);
   }
 
   // Accessed only during init.
@@ -94,10 +94,10 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   base::Optional<FrameOriginType> parent_frame_type_;
   FrameStatus initial_frame_status_ = FrameStatus::kNone;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
-  std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
 #if DCHECK_IS_ON()
-  bool ukm_recorder_taken_ = false;
+  bool connector_taken_ = false;
 #endif
 
   THREAD_CHECKER(parent_thread_checker_);

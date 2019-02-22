@@ -55,6 +55,9 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Returns true if the given |document| should autoplay muted videos.
   static bool DocumentShouldAutoplayMutedVideos(const Document&);
 
+  // Returns true if the given |document| is capturing user media.
+  static bool DocumentIsCapturingUserMedia(const Document&);
+
   explicit AutoplayPolicy(HTMLMediaElement*);
 
   void VideoWillBeDrawnToCanvas() const;

@@ -8,80 +8,81 @@
 
 namespace mojo {
 
-using chrome_cleaner::mojom::SpecialWindowsHandle;
+using chrome_cleaner::mojom::PredefinedHandle;
 using chrome_cleaner::mojom::WindowsHandleDataView;
 
 namespace {
 
-bool ToSpecialHandle(HANDLE handle, SpecialWindowsHandle* out_special_handle) {
-  DCHECK(out_special_handle);
+bool ToPredefinedHandle(HANDLE handle,
+                        PredefinedHandle* out_predefined_handle) {
+  DCHECK(out_predefined_handle);
 
   if (handle == nullptr) {
-    *out_special_handle = SpecialWindowsHandle::NULL_HANDLE;
+    *out_predefined_handle = PredefinedHandle::NULL_HANDLE;
     return true;
   }
   if (handle == INVALID_HANDLE_VALUE) {
-    *out_special_handle = SpecialWindowsHandle::INVALID_HANDLE;
+    *out_predefined_handle = PredefinedHandle::INVALID_HANDLE;
     return true;
   }
   if (handle == HKEY_CLASSES_ROOT) {
-    *out_special_handle = SpecialWindowsHandle::CLASSES_ROOT;
+    *out_predefined_handle = PredefinedHandle::CLASSES_ROOT;
     return true;
   }
   if (handle == HKEY_CURRENT_CONFIG) {
-    *out_special_handle = SpecialWindowsHandle::CURRENT_CONFIG;
+    *out_predefined_handle = PredefinedHandle::CURRENT_CONFIG;
     return true;
   }
   if (handle == HKEY_CURRENT_USER) {
-    *out_special_handle = SpecialWindowsHandle::CURRENT_USER;
+    *out_predefined_handle = PredefinedHandle::CURRENT_USER;
     return true;
   }
   if (handle == HKEY_LOCAL_MACHINE) {
-    *out_special_handle = SpecialWindowsHandle::LOCAL_MACHINE;
+    *out_predefined_handle = PredefinedHandle::LOCAL_MACHINE;
     return true;
   }
   if (handle == HKEY_USERS) {
-    *out_special_handle = SpecialWindowsHandle::USERS;
+    *out_predefined_handle = PredefinedHandle::USERS;
     return true;
   }
   return false;
 }
 
-bool IsSpecialHandle(HANDLE handle) {
-  SpecialWindowsHandle unused;
-  return ToSpecialHandle(handle, &unused);
+bool IsPredefinedHandle(HANDLE handle) {
+  PredefinedHandle unused;
+  return ToPredefinedHandle(handle, &unused);
 }
 
-bool FromSpecialHandle(SpecialWindowsHandle special_handle,
-                       HANDLE* out_handle) {
+bool FromPredefinedHandle(PredefinedHandle predefined_handle,
+                          HANDLE* out_handle) {
   DCHECK(out_handle);
 
-  switch (special_handle) {
-    case SpecialWindowsHandle::NULL_HANDLE:
+  switch (predefined_handle) {
+    case PredefinedHandle::NULL_HANDLE:
       *out_handle = nullptr;
       return true;
 
-    case SpecialWindowsHandle::INVALID_HANDLE:
+    case PredefinedHandle::INVALID_HANDLE:
       *out_handle = INVALID_HANDLE_VALUE;
       return true;
 
-    case SpecialWindowsHandle::CLASSES_ROOT:
+    case PredefinedHandle::CLASSES_ROOT:
       *out_handle = HKEY_CLASSES_ROOT;
       return true;
 
-    case SpecialWindowsHandle::CURRENT_CONFIG:
+    case PredefinedHandle::CURRENT_CONFIG:
       *out_handle = HKEY_CURRENT_CONFIG;
       return true;
 
-    case SpecialWindowsHandle::CURRENT_USER:
+    case PredefinedHandle::CURRENT_USER:
       *out_handle = HKEY_CURRENT_USER;
       return true;
 
-    case SpecialWindowsHandle::LOCAL_MACHINE:
+    case PredefinedHandle::LOCAL_MACHINE:
       *out_handle = HKEY_LOCAL_MACHINE;
       return true;
 
-    case SpecialWindowsHandle::USERS:
+    case PredefinedHandle::USERS:
       *out_handle = HKEY_USERS;
       return true;
 
@@ -106,11 +107,24 @@ HANDLE DuplicateWindowsHandle(HANDLE source_handle) {
 }  // namespace
 
 // static
+PredefinedHandle EnumTraits<PredefinedHandle, HANDLE>::ToMojom(HANDLE handle) {
+  PredefinedHandle result;
+  CHECK(ToPredefinedHandle(handle, &result));
+  return result;
+}
+
+// static
+bool EnumTraits<PredefinedHandle, HANDLE>::FromMojom(PredefinedHandle input,
+                                                     HANDLE* output) {
+  return FromPredefinedHandle(input, output);
+}
+
+// static
 mojo::ScopedHandle UnionTraits<WindowsHandleDataView, HANDLE>::raw_handle(
     HANDLE handle) {
   DCHECK_EQ(WindowsHandleDataView::Tag::RAW_HANDLE, GetTag(handle));
 
-  if (IsSpecialHandle(handle)) {
+  if (IsPredefinedHandle(handle)) {
     CHECK(false) << "Accessor raw_handle() should only be called when the "
                     "union's tag is RAW_HANDLE.";
     return mojo::ScopedHandle();
@@ -121,24 +135,24 @@ mojo::ScopedHandle UnionTraits<WindowsHandleDataView, HANDLE>::raw_handle(
 }
 
 // static
-SpecialWindowsHandle UnionTraits<WindowsHandleDataView, HANDLE>::special_handle(
+PredefinedHandle UnionTraits<WindowsHandleDataView, HANDLE>::special_handle(
     HANDLE handle) {
   DCHECK_EQ(WindowsHandleDataView::Tag::SPECIAL_HANDLE, GetTag(handle));
 
-  SpecialWindowsHandle special_handle;
-  if (ToSpecialHandle(handle, &special_handle))
-    return special_handle;
+  PredefinedHandle predefined_handle;
+  if (ToPredefinedHandle(handle, &predefined_handle))
+    return predefined_handle;
 
   CHECK(false) << "Accessor special_handle() should only be called when the "
                   "union's tag is SPECIAL_HANDLE.";
-  return SpecialWindowsHandle::INVALID_HANDLE;
+  return PredefinedHandle::INVALID_HANDLE;
 }
 
 // static
 WindowsHandleDataView::Tag UnionTraits<WindowsHandleDataView, HANDLE>::GetTag(
     HANDLE handle) {
-  return IsSpecialHandle(handle) ? WindowsHandleDataView::Tag::SPECIAL_HANDLE
-                                 : WindowsHandleDataView::Tag::RAW_HANDLE;
+  return IsPredefinedHandle(handle) ? WindowsHandleDataView::Tag::SPECIAL_HANDLE
+                                    : WindowsHandleDataView::Tag::RAW_HANDLE;
 }
 
 // static
@@ -157,14 +171,7 @@ bool UnionTraits<WindowsHandleDataView, HANDLE>::Read(
     return true;
   }
 
-  HANDLE special_handle;
-  if (FromSpecialHandle(windows_handle_view.special_handle(),
-                        &special_handle)) {
-    *out = special_handle;
-    return true;
-  }
-
-  return false;
+  return windows_handle_view.ReadSpecialHandle(out);
 }
 
 }  // namespace mojo

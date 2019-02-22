@@ -18,49 +18,75 @@
 #define SRC_TRACE_PROCESSOR_PROTO_TRACE_PARSER_H_
 
 #include <stdint.h>
-
 #include <memory>
-#include <vector>
 
-#include "perfetto/base/logging.h"
-#include "src/trace_processor/trace_parser.h"
+#include "perfetto/base/string_view.h"
+#include "src/trace_processor/trace_blob_view.h"
+#include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
 namespace trace_processor {
 
 class TraceProcessorContext;
 
-// Reads a protobuf trace in chunks and parses it into a form which is
-// efficient to query.
-class ProtoTraceParser : public TraceParser {
- public:
-  // |reader| is the abstract method of getting chunks of size |chunk_size_b|
-  // from a trace file with these chunks parsed into |trace|.
-  explicit ProtoTraceParser(TraceProcessorContext*);
-  ~ProtoTraceParser() override;
+struct SystraceTracePoint {
+  char phase;
+  uint32_t tid;
 
-  // TraceParser implementation.
-  bool Parse(std::unique_ptr<uint8_t[]>, size_t size) override;
+  // For phase = 'B' and phase = 'C' only.
+  base::StringView name;
+
+  // For phase = 'C' only.
+  double value;
+};
+
+inline bool operator==(const SystraceTracePoint& x,
+                       const SystraceTracePoint& y) {
+  return std::tie(x.phase, x.tid, x.name, x.value) ==
+         std::tie(y.phase, y.tid, y.name, y.value);
+}
+
+bool ParseSystraceTracePoint(base::StringView, SystraceTracePoint* out);
+
+class ProtoTraceParser {
+ public:
+  explicit ProtoTraceParser(TraceProcessorContext*);
+  virtual ~ProtoTraceParser();
+
+  // virtual for testing.
+  virtual void ParseTracePacket(uint64_t timestamp, TraceBlobView);
+  virtual void ParseFtracePacket(uint32_t cpu,
+                                 uint64_t timestamp,
+                                 TraceBlobView);
+  void ParseProcessTree(TraceBlobView);
+  void ParseSchedSwitch(uint32_t cpu, uint64_t timestamp, TraceBlobView);
+  void ParseCpuFreq(uint64_t timestamp, TraceBlobView);
+  void ParsePrint(uint32_t cpu, uint64_t timestamp, TraceBlobView);
+  void ParseThread(TraceBlobView);
+  void ParseProcess(TraceBlobView);
+  void ParseSysStats(uint64_t ts, TraceBlobView);
+  void ParseMemInfo(uint64_t ts, TraceBlobView);
+  void ParseVmStat(uint64_t ts, TraceBlobView);
+  void ParseCpuTimes(uint64_t ts, TraceBlobView);
+  void ParseIrqCount(uint64_t ts, TraceBlobView, bool is_soft);
 
  private:
-  void ParseInternal(std::unique_ptr<uint8_t[]>, uint8_t* data, size_t size);
-
-  void ParsePacket(const uint8_t* data, size_t length);
-  void ParseFtraceEventBundle(const uint8_t* data, size_t length);
-  void ParseFtraceEvent(uint32_t cpu, const uint8_t* data, size_t length);
-  void ParseSchedSwitch(uint32_t cpu,
-                        uint64_t timestamp,
-                        const uint8_t* data,
-                        size_t length);
-  void ParseProcessTree(const uint8_t* data, size_t length);
-  void ParseProcess(const uint8_t* data, size_t length);
-  void ParseThread(const uint8_t* data, size_t length);
-
   TraceProcessorContext* context_;
-
-  // Used to glue together trace packets that span across two (or more)
-  // Parse() boundaries.
-  std::vector<uint8_t> partial_buf_;
+  const StringId cpu_freq_name_id_;
+  const StringId num_forks_name_id_;
+  const StringId num_irq_total_name_id_;
+  const StringId num_softirq_total_name_id_;
+  const StringId num_irq_name_id_;
+  const StringId num_softirq_name_id_;
+  const StringId cpu_times_user_ns_id_;
+  const StringId cpu_times_user_ice_ns_id_;
+  const StringId cpu_times_system_mode_ns_id_;
+  const StringId cpu_times_idle_ns_id_;
+  const StringId cpu_times_io_wait_ns_id_;
+  const StringId cpu_times_irq_ns_id_;
+  const StringId cpu_times_softirq_ns_id_;
+  std::vector<StringId> meminfo_strs_id_;
+  std::vector<StringId> vmstat_strs_id_;
 };
 
 }  // namespace trace_processor

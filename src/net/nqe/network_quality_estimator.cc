@@ -402,13 +402,15 @@ bool NetworkQualityEstimator::IsHangingRequest(
     return false;
   }
 
+  DCHECK_LT(
+      0,
+      params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier());
+
   if (transport_rtt_observation_count_last_ect_computation_ >=
           params_->http_rtt_transport_rtt_min_count() &&
-      (params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() <=
-           0 ||
-       observed_http_rtt <
-           params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() *
-               GetTransportRTT().value_or(base::TimeDelta::FromSeconds(10)))) {
+      (observed_http_rtt <
+       params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() *
+           GetTransportRTT().value_or(base::TimeDelta::FromSeconds(10)))) {
     // If there are sufficient number of transport RTT samples available, use
     // the transport RTT estimate to determine if the request is hanging.
     UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.TransportRTT",
@@ -416,11 +418,12 @@ bool NetworkQualityEstimator::IsHangingRequest(
     return false;
   }
 
-  if (params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() <=
-          0 ||
-      observed_http_rtt <
-          params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() *
-              GetHttpRTT().value_or(base::TimeDelta::FromSeconds(10))) {
+  DCHECK_LT(
+      0, params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier());
+
+  if (observed_http_rtt <
+      params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() *
+          GetHttpRTT().value_or(base::TimeDelta::FromSeconds(10))) {
     // Use the HTTP RTT estimate to determine if the request is hanging.
     UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.HttpRTT",
                         observed_http_rtt);
@@ -1623,7 +1626,7 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
   AddAndNotifyObserversOfThroughput(throughput_observation);
 }
 
-void NetworkQualityEstimator::MaybeComputeEffectiveConnectionType() {
+bool NetworkQualityEstimator::ShouldComputeEffectiveConnectionType() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const base::TimeTicks now = tick_clock_->NowTicks();
@@ -1633,27 +1636,49 @@ void NetworkQualityEstimator::MaybeComputeEffectiveConnectionType() {
   // computation. Strict inequalities are used to ensure that effective
   // connection type is recomputed on connection change events even if the clock
   // has not updated.
-  if (now - last_effective_connection_type_computation_ <
-          effective_connection_type_recomputation_interval_ &&
-      last_connection_change_ < last_effective_connection_type_computation_ &&
-      // Recompute the effective connection type if the previously computed
-      // effective connection type was unknown.
-      effective_connection_type_ != EFFECTIVE_CONNECTION_TYPE_UNKNOWN &&
-      // Recompute the effective connection type if the number of samples
-      // available now are 50% more than the number of samples that were
-      // available when the effective connection type was last computed.
-      rtt_observations_size_at_last_ect_computation_ * 1.5 >=
-          (rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP]
-               .Size() +
-           rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
-               .Size()) &&
-      throughput_observations_size_at_last_ect_computation_ * 1.5 >=
-          http_downstream_throughput_kbps_observations_.Size() &&
-      (new_rtt_observations_since_last_ect_computation_ +
-       new_throughput_observations_since_last_ect_computation_) <
-          params_->count_new_observations_received_compute_ect()) {
-    return;
+  if (now - last_effective_connection_type_computation_ >=
+      effective_connection_type_recomputation_interval_) {
+    return true;
   }
+
+  if (last_connection_change_ >= last_effective_connection_type_computation_) {
+    return true;
+  }
+
+  // Recompute the effective connection type if the previously computed
+  // effective connection type was unknown.
+  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+    return true;
+  }
+
+  // Recompute the effective connection type if the number of samples
+  // available now are 50% more than the number of samples that were
+  // available when the effective connection type was last computed.
+  if (rtt_observations_size_at_last_ect_computation_ * 1.5 <
+      (rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_HTTP].Size() +
+       rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]
+           .Size())) {
+    return true;
+  }
+
+  if (throughput_observations_size_at_last_ect_computation_ * 1.5 <
+      http_downstream_throughput_kbps_observations_.Size()) {
+    return true;
+  }
+
+  if ((new_rtt_observations_since_last_ect_computation_ +
+       new_throughput_observations_since_last_ect_computation_) >=
+      params_->count_new_observations_received_compute_ect()) {
+    return true;
+  }
+  return false;
+}
+
+void NetworkQualityEstimator::MaybeComputeEffectiveConnectionType() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!ShouldComputeEffectiveConnectionType())
+    return;
   ComputeEffectiveConnectionType();
 }
 

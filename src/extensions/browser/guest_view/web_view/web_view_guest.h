@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "extensions/browser/guest_view/web_view/javascript_dialog_helper.h"
@@ -22,10 +21,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
 #include "extensions/browser/script_executor.h"
-
-namespace blink {
-struct WebFindOptions;
-}  // namespace blink
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace extensions {
 
@@ -120,7 +116,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Begin or continue a find request.
   void StartFind(const base::string16& search_text,
-                 const blink::WebFindOptions& options,
+                 blink::mojom::FindOptionsPtr options,
                  scoped_refptr<WebViewInternalFindFunction> find_function);
 
   // Conclude a find request to clear highlighting.
@@ -152,6 +148,12 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                  const base::Closure& callback);
 
   ScriptExecutor* script_executor() { return script_executor_.get(); }
+
+  // Enables or disables spatial navigation.
+  void SetSpatialNavigationEnabled(bool enabled);
+
+  // Returns spatial navigation status.
+  bool IsSpatialNavigationEnabled() const;
 
  private:
   friend class WebViewPermissionHelper;
@@ -318,8 +320,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Handles find requests and replies for the webview find API.
   WebViewFindHelper find_helper_;
-
-  base::ObserverList<ScriptExecutionObserver>::Unchecked script_observers_;
   std::unique_ptr<ScriptExecutor> script_executor_;
 
   // True if the user agent is overridden.
@@ -369,6 +369,9 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
 
   // Whether the GuestView set an explicit zoom level.
   bool did_set_explicit_zoom_;
+
+  // Store spatial navigation status.
+  bool is_spatial_navigation_enabled_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

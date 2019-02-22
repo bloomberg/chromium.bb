@@ -90,6 +90,19 @@ bool ClientFontManager::lockHandle(SkDiscardableHandleId handle_id) {
   return false;
 }
 
+bool ClientFontManager::isHandleDeleted(SkDiscardableHandleId handle_id) {
+  auto it = discardable_handle_map_.find(handle_id);
+  if (it == discardable_handle_map_.end())
+    return true;
+
+  if (client_discardable_manager_.HandleIsDeleted(it->second)) {
+    discardable_handle_map_.erase(it);
+    return true;
+  }
+
+  return false;
+}
+
 void ClientFontManager::Serialize() {
   // TODO(khushalsagar): May be skia can track the size required so we avoid
   // this copy.

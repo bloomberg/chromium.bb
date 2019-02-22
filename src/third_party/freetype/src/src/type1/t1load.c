@@ -73,7 +73,7 @@
 
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-#define IS_INCREMENTAL  (FT_Bool)( face->root.internal->incremental_interface != 0 )
+#define IS_INCREMENTAL  FT_BOOL( face->root.internal->incremental_interface )
 #else
 #define IS_INCREMENTAL  0
 #endif
@@ -86,7 +86,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1load
+#define FT_COMPONENT  t1load
 
 
 #ifndef T1_CONFIG_OPTION_NO_MM_SUPPORT

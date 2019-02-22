@@ -264,6 +264,46 @@ GLenum ToGLenum(CullFaceMode from)
 }
 
 template <>
+FilterMode FromGLenum<FilterMode>(GLenum from)
+{
+    switch (from)
+    {
+        case GL_NEAREST:
+            return FilterMode::Nearest;
+        case GL_LINEAR:
+            return FilterMode::Linear;
+        case GL_NEAREST_MIPMAP_NEAREST:
+            return FilterMode::NearestMipmapNearest;
+        case GL_NEAREST_MIPMAP_LINEAR:
+            return FilterMode::NearestMipmapLinear;
+        case GL_LINEAR_MIPMAP_LINEAR:
+            return FilterMode::LinearMipmapLinear;
+        default:
+            return FilterMode::InvalidEnum;
+    }
+}
+
+GLenum ToGLenum(FilterMode from)
+{
+    switch (from)
+    {
+        case FilterMode::Nearest:
+            return GL_NEAREST;
+        case FilterMode::Linear:
+            return GL_LINEAR;
+        case FilterMode::NearestMipmapNearest:
+            return GL_NEAREST_MIPMAP_NEAREST;
+        case FilterMode::NearestMipmapLinear:
+            return GL_NEAREST_MIPMAP_LINEAR;
+        case FilterMode::LinearMipmapLinear:
+            return GL_LINEAR_MIPMAP_LINEAR;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+template <>
 FogMode FromGLenum<FogMode>(GLenum from)
 {
     switch (from)
@@ -1066,7 +1106,7 @@ TextureTarget FromGLenum<TextureTarget>(GLenum from)
             return TextureTarget::_2DArray;
         case GL_TEXTURE_2D_MULTISAMPLE:
             return TextureTarget::_2DMultisample;
-        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE:
+        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES:
             return TextureTarget::_2DMultisampleArray;
         case GL_TEXTURE_3D:
             return TextureTarget::_3D;
@@ -1102,7 +1142,7 @@ GLenum ToGLenum(TextureTarget from)
         case TextureTarget::_2DMultisample:
             return GL_TEXTURE_2D_MULTISAMPLE;
         case TextureTarget::_2DMultisampleArray:
-            return GL_TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE;
+            return GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES;
         case TextureTarget::_3D:
             return GL_TEXTURE_3D;
         case TextureTarget::External:
@@ -1138,7 +1178,7 @@ TextureType FromGLenum<TextureType>(GLenum from)
             return TextureType::_2DArray;
         case GL_TEXTURE_2D_MULTISAMPLE:
             return TextureType::_2DMultisample;
-        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE:
+        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES:
             return TextureType::_2DMultisampleArray;
         case GL_TEXTURE_3D:
             return TextureType::_3D;
@@ -1164,7 +1204,7 @@ GLenum ToGLenum(TextureType from)
         case TextureType::_2DMultisample:
             return GL_TEXTURE_2D_MULTISAMPLE;
         case TextureType::_2DMultisampleArray:
-            return GL_TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE;
+            return GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES;
         case TextureType::_3D:
             return GL_TEXTURE_3D;
         case TextureType::External:
@@ -1213,6 +1253,38 @@ GLenum ToGLenum(VertexArrayType from)
             return GL_TEXTURE_COORD_ARRAY;
         case VertexArrayType::Vertex:
             return GL_VERTEX_ARRAY;
+        default:
+            UNREACHABLE();
+            return 0;
+    }
+}
+
+template <>
+WrapMode FromGLenum<WrapMode>(GLenum from)
+{
+    switch (from)
+    {
+        case GL_CLAMP_TO_EDGE:
+            return WrapMode::ClampToEdge;
+        case GL_MIRRORED_REPEAT:
+            return WrapMode::MirroredRepeat;
+        case GL_REPEAT:
+            return WrapMode::Repeat;
+        default:
+            return WrapMode::InvalidEnum;
+    }
+}
+
+GLenum ToGLenum(WrapMode from)
+{
+    switch (from)
+    {
+        case WrapMode::ClampToEdge:
+            return GL_CLAMP_TO_EDGE;
+        case WrapMode::MirroredRepeat:
+            return GL_MIRRORED_REPEAT;
+        case WrapMode::Repeat:
+            return GL_REPEAT;
         default:
             UNREACHABLE();
             return 0;

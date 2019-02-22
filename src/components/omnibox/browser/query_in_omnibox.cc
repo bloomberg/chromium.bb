@@ -28,6 +28,9 @@ QueryInOmnibox::QueryInOmnibox(AutocompleteClassifier* autocomplete_classifier,
   DCHECK(template_url_service_);
 }
 
+QueryInOmnibox::QueryInOmnibox()
+    : autocomplete_classifier_(nullptr), template_url_service_(nullptr) {}
+
 bool QueryInOmnibox::GetDisplaySearchTerms(
     security_state::SecurityLevel security_level,
     const GURL& url,

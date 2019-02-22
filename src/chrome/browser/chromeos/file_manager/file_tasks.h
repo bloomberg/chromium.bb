@@ -25,27 +25,12 @@
 // See also:
 // ui/file_manager/file_manager/manifest.json
 //
-// 3) Drive app, which is a hosted app (i.e. just web site), that can work
-// with Drive (ex. Pixlr Editor). This information comes from
-// drive::DriveAppRegistry.
-//
-// See also:
-// https://chrome.google.com/webstore/category/collection/drive_apps
-//
 // For example, if the user is now selecting a JPEG file, the Files app will
 // receive file tasks represented as a JSON object via
 // chrome.fileManagerPrivate.getFileTasks() API, which look like:
 //
 // [
 //   {
-//     "driveApp": true,
-//     "iconUrl": "<app_icon_url>",
-//     "isDefault": false,
-//     "taskId": "<drive_app_id>|drive|open-with",
-//     "title": "Drive App Name (ex. Pixlr Editor)"
-//   },
-//   {
-//     "driveApp": false,
 //     "iconUrl":
 //       "chrome://extension-icon/hhaomjibdihmijegdhdafkllkbggdgoj/16/1",
 //     "isDefault": true,
@@ -54,8 +39,7 @@
 //   }
 // ]
 //
-// The first file task is a Drive app. The second file task is a built-in
-// handler from the Files app.
+// The file task is a built-in handler from the Files app.
 //
 // WHAT ARE TASK IDS?
 //
@@ -75,24 +59,20 @@
 //
 //     <app-id>|<task-type>|<task-action-id>
 //
-// <app-id> is either of Chrome Extension/App ID or Drive App ID. For some
-// reason, Chrome Extension/App IDs and Drive App IDs look differently. As of
-// writing, the former looks like "hhaomjibdihmijegdhdafkllkbggdgoj"
-// (the Files app) and the latter looks like "419782477519" (Pixlr Editor).
+// <app-id> is a Chrome Extension/App ID.
 //
 // <task-type> is either of
 // - "file" - File browser handler - app/extension declaring
 //            "file_browser_handlers" in manifest.
 // - "app" - File handler - app declaring "file_handlers" in manifest.json.
-// - "drive" - Drive App
 // - "arc" - ARC App
 // - "crostini" - Crostini App
 //
 // <task-action-id> is an ID string used for identifying actions provided
 // from a single Chrome Extension/App. In other words, a single
 // Chrome/Extension can provide multiple file handlers hence each of them
-// needs to have a unique action ID. For Drive and Crostini apps,
-// <task-action-id> is always "open-with".
+// needs to have a unique action ID. For Crostini apps, <task-action-id> is
+// always "open-with".
 //
 // HOW TASKS ARE EXECUTED?
 //
@@ -100,7 +80,7 @@
 // without any handler. Browser will take care of handling the file (ex. PDF).
 //
 // chrome.fileManagerPrivate.executeTasks() is used to open a file with a
-// handler (Chrome Extension/App or Drive App).
+// handler (Chrome Extension/App).
 //
 // Some built-in handlers such as "play" are handled internally in the Files
 // app. "mount-archive" is handled very differently. The task execution
@@ -126,10 +106,6 @@
 class PrefService;
 class Profile;
 
-namespace drive {
-class DriveAppRegistry;
-}
-
 namespace extensions {
 struct EntryInfo;
 }
@@ -146,7 +122,7 @@ enum TaskType {
   TASK_TYPE_UNKNOWN = 0,  // Used only for handling errors.
   TASK_TYPE_FILE_BROWSER_HANDLER,
   TASK_TYPE_FILE_HANDLER,
-  TASK_TYPE_DRIVE_APP,
+  DEPRECATED_TASK_TYPE_DRIVE_APP,
   TASK_TYPE_ARC_APP,
   TASK_TYPE_CROSTINI_APP,
   // The enum values must be kept in sync with FileManagerTaskType in
@@ -238,7 +214,7 @@ std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
 // Generates task id for the task specified by |app_id|, |task_type| and
 // |action_id|.
 //
-// |app_id| is either of Chrome Extension/App ID or Drive App ID.
+// |app_id| is the Chrome Extension/App ID.
 // |action_id| is a free-form string ID for the action.
 std::string MakeTaskID(const std::string& app_id,
                        TaskType task_type,
@@ -257,8 +233,9 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task);
 
 // The callback is used for ExecuteFileTask(). Will be called with true if
 // the file task execution is successful, or false if unsuccessful.
-typedef base::Callback<void(extensions::api::file_manager_private::TaskResult
-                                result)> FileTaskFinishedCallback;
+typedef base::OnceCallback<void(
+    extensions::api::file_manager_private::TaskResult result)>
+    FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.
 // Returns |false| if the execution cannot be initiated. Otherwise returns
@@ -277,14 +254,7 @@ bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const TaskDescriptor& task,
                      const std::vector<storage::FileSystemURL>& file_urls,
-                     const FileTaskFinishedCallback& done);
-
-// Finds the Drive app tasks that can be used with the given |entries|
-// from |drive_app_registry|, and append them to the |result_list|.
-// Drive app tasks will be found only if all of the files are on Drive.
-void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
-                       const std::vector<extensions::EntryInfo>& entries,
-                       std::vector<FullTaskDescriptor>* result_list);
+                     FileTaskFinishedCallback done);
 
 // Returns true if a file handler matches with entries as good match.
 bool IsGoodMatchFileHandler(
@@ -307,26 +277,21 @@ void FindFileBrowserHandlerTasks(
     std::vector<FullTaskDescriptor>* result_list);
 
 // Callback function type for FindAllTypesOfTasks.
-typedef base::Callback<void(
+typedef base::OnceCallback<void(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result)>
     FindTasksCallback;
 
-// Finds all types (drive, file handlers, file browser handlers) of
-// tasks. See the comment at FindDriveAppTasks() about |result_list|.
-// Drive app tasks will be found only if all of the files are on Drive.
-// |drive_app_registry| can be NULL if the drive app registry is not
-// present.
+// Finds all types (file handlers, file browser handlers) of
+// tasks.
 //
 // If |entries| contains a Google document, only the internal tasks of the
 // Files app (i.e., tasks having the app ID of the Files app) are listed.
-// This is to avoid dups between Drive app tasks and an internal handler that
-// the Files app provides, and to avoid listing normal file handler and file
-// browser handler tasks, which can handle only normal files.
+// This is to avoid listing normal file handler and file browser handler tasks,
+// which can handle only normal files.
 void FindAllTypesOfTasks(Profile* profile,
-                         const drive::DriveAppRegistry* drive_app_registry,
                          const std::vector<extensions::EntryInfo>& entries,
                          const std::vector<GURL>& file_urls,
-                         const FindTasksCallback& callback);
+                         FindTasksCallback callback);
 
 // Chooses the default task in |tasks| and sets it as default, if the default
 // task is found (i.e. the default task may not exist in |tasks|). No tasks

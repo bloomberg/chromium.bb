@@ -68,13 +68,15 @@ void MockVideoCaptureClient::OnIncomingCapturedGfxBuffer(
 }
 
 // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-VideoCaptureDevice::Client::Buffer MockVideoCaptureClient::ReserveOutputBuffer(
+VideoCaptureDevice::Client::ReserveResult
+MockVideoCaptureClient::ReserveOutputBuffer(
     const gfx::Size& dimensions,
     VideoPixelFormat format,
-    int frame_feedback_id) {
+    int frame_feedback_id,
+    VideoCaptureDevice::Client::Buffer* buffer) {
   DoReserveOutputBuffer();
   NOTREACHED() << "This should never be called";
-  return Buffer();
+  return ReserveResult::kSucceeded;
 }
 
 void MockVideoCaptureClient::OnIncomingCapturedBuffer(
@@ -93,15 +95,6 @@ void MockVideoCaptureClient::OnIncomingCapturedBufferExt(
     gfx::Rect visible_rect,
     const VideoFrameMetadata& additional_metadata) {
   DoOnIncomingCapturedVideoFrame();
-}
-
-VideoCaptureDevice::Client::Buffer
-MockVideoCaptureClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
-                                                  VideoPixelFormat format,
-                                                  int frame_feedback_id) {
-  DoResurrectLastOutputBuffer();
-  NOTREACHED() << "This should never be called";
-  return Buffer();
 }
 
 }  // namespace unittest_internal

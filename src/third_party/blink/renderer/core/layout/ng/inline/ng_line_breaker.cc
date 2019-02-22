@@ -81,7 +81,7 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     break_iterator_.SetStartOffset(offset_);
-    previous_line_had_forced_break_ = break_token->IsForcedBreak();
+    is_after_forced_break_ = break_token->IsForcedBreak();
     items_data_.AssertOffset(item_index_, offset_);
     ignore_floats_ = break_token->IgnoreFloats();
   }
@@ -147,6 +147,14 @@ void NGLineBreaker::PrepareNextLine() {
   // avoid rare code path.
   DCHECK(item_results_->IsEmpty());
 
+  if (item_index_) {
+    // We're past the first line
+    previous_line_had_forced_break_ = is_after_forced_break_;
+    is_after_forced_break_ = false;
+    is_first_formatted_line_ = false;
+    use_first_line_style_ = false;
+  }
+
   line_info_->SetStartOffset(offset_);
   line_info_->SetLineStyle(node_, items_data_, constraint_space_,
                            is_first_formatted_line_, use_first_line_style_,
@@ -193,6 +201,7 @@ void NGLineBreaker::NextLine(NGLineInfo* line_info) {
 
   if (!should_create_line_box)
     line_info_->SetIsEmptyLine();
+  line_info_->SetEndItemIndex(item_index_);
 
   ComputeLineLocation();
 
@@ -880,6 +889,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
     NGPositionedFloat positioned_float = PositionFloat(
         constraint_space_.AvailableSize(),
         constraint_space_.PercentageResolutionSize(),
+        constraint_space_.ReplacedPercentageResolutionSize(),
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
         constraint_space_.BfcOffset().block_offset, &unpositioned_float,
         constraint_space_, exclusion_space_);
@@ -1151,13 +1161,9 @@ void NGLineBreaker::Rewind(unsigned new_end) {
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
-  current_style_ = &style;
-
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
-    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
-
     if (UNLIKELY(override_break_anywhere_)) {
       break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
     } else {
@@ -1186,6 +1192,15 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     hyphenation_ = style.GetHyphenation();
   }
 
+  // The above calls are cheap & necessary. But the following are expensive
+  // and do not need to be reset every time if the style doesn't change,
+  // so avoid them if possible.
+  if (&style == current_style_.get())
+    return;
+
+  current_style_ = &style;
+  if (auto_wrap_)
+    break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
   spacing_.SetSpacing(style.GetFontDescription());
 }
 
@@ -1203,8 +1218,7 @@ void NGLineBreaker::MoveToNextOf(const NGInlineItemResult& item_result) {
 }
 
 scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
-    const NGLineInfo& line_info,
-    std::unique_ptr<const NGInlineLayoutStateStack> state_stack) const {
+    const NGLineInfo& line_info) const {
   const Vector<NGInlineItem>& items = Items();
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
@@ -1212,8 +1226,7 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
       node_, current_style_.get(), item_index_, offset_,
       ((is_after_forced_break_ ? NGInlineBreakToken::kIsForcedBreak : 0) |
        (line_info.UseFirstLineStyle() ? NGInlineBreakToken::kUseFirstLineStyle
-                                      : 0)),
-      std::move(state_stack));
+                                      : 0)));
 }
 
 }  // namespace blink

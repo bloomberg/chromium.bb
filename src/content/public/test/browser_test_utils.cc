@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -56,9 +57,10 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -80,6 +82,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
@@ -458,14 +461,14 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
  private:
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            on_will_start_request_closure_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             on_will_start_request_closure_);
     return NavigationThrottle::DEFER;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            on_will_process_response_closure_);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             on_will_process_response_closure_);
     return NavigationThrottle::DEFER;
   }
 
@@ -497,7 +500,7 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
   std::unique_ptr<net::GzipSourceStream> filter = net::GzipSourceStream::Create(
       std::move(source_stream), net::SourceStream::TYPE_GZIP);
   scoped_refptr<net::IOBufferWithSize> dest_buffer =
-      new net::IOBufferWithSize(4096);
+      base::MakeRefCounted<net::IOBufferWithSize>(4096);
   net::CompletionCallback callback;
   while (true) {
     int rv = filter->Read(dest_buffer.get(), dest_buffer->size(), callback);
@@ -571,6 +574,33 @@ class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
 
 }  // namespace
 
+bool NavigateToURL(WebContents* web_contents, const GURL& url) {
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, url, 1);
+  if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL)) {
+    // TODO(crbug.com/882545) remove the following debug information:
+    {
+      NavigationEntry* last_entry =
+          web_contents->GetController().GetLastCommittedEntry();
+      if (!last_entry) {
+        DLOG(WARNING) << "No last committed entry";
+      } else {
+        DLOG(WARNING) << "Last committed entry is of type "
+                      << last_entry->GetPageType();
+      }
+    }
+    return false;
+  }
+
+  // TODO(crbug.com/882545) revert this to the return statement below.
+  bool same_url = web_contents->GetLastCommittedURL() == url;
+  if (!same_url) {
+    DLOG(WARNING) << "Expected URL " << url << " but observed "
+                  << web_contents->GetLastCommittedURL();
+  }
+  return same_url;
+  // return web_contents->GetLastCommittedURL() == url;
+}
+
 bool NavigateIframeToURL(WebContents* web_contents,
                          std::string iframe_id,
                          const GURL& url) {
@@ -583,6 +613,30 @@ bool NavigateIframeToURL(WebContents* web_contents,
   bool result = ExecuteScript(web_contents, script);
   load_observer.Wait();
   return result;
+}
+
+void NavigateToURLBlockUntilNavigationsComplete(WebContents* web_contents,
+                                                const GURL& url,
+                                                int number_of_navigations) {
+  // Prepare for the navigation.
+  WaitForLoadStop(web_contents);
+  TestNavigationObserver same_tab_observer(web_contents, number_of_navigations);
+
+  // This mimics behavior of Shell::LoadURL...
+  NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents->GetController().LoadURLWithParams(params);
+  web_contents->Focus();
+
+  // Wait until the expected number of navigations finish.
+  same_tab_observer.Wait();
+  // TODO(crbug.com/882545) Delete this if statement once the problem has been
+  // identified.
+  if (!same_tab_observer.last_navigation_succeeded()) {
+    DLOG(WARNING) << "Last navigation to " << url << " failed with net error "
+                  << same_tab_observer.last_net_error_code();
+  }
 }
 
 GURL GetFileUrlWithQuery(const base::FilePath& path,
@@ -781,6 +835,21 @@ void SimulateRoutedMouseClickAt(WebContents* web_contents,
   mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   web_contents_impl->GetInputEventRouter()->RouteMouseEvent(rwhvb, &mouse_event,
                                                             ui::LatencyInfo());
+}
+
+void SendMouseDownToWidget(RenderWidgetHost* target,
+                           int modifiers,
+                           blink::WebMouseEvent::Button button) {
+  auto* view = static_cast<content::RenderWidgetHostImpl*>(target)->GetView();
+
+  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown, modifiers,
+                                   ui::EventTimeForNow());
+  mouse_event.button = button;
+  int x = view->GetViewBounds().width() / 2;
+  int y = view->GetViewBounds().height() / 2;
+  mouse_event.SetPositionInWidget(x, y);
+  mouse_event.click_count = 1;
+  target->ForwardMouseEvent(mouse_event);
 }
 
 void SimulateMouseEvent(WebContents* web_contents,
@@ -1323,7 +1392,7 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
       // position.
       std::vector<base::StringPiece> error_line_parts = base::SplitStringPiece(
           error_line, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-      CHECK(error_line_parts.size() >= 2);
+      CHECK_GE(error_line_parts.size(), 2u);
 
       int column_number = 0;
       base::StringToInt(error_line_parts.back(), &column_number);
@@ -1607,6 +1676,24 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   ExecuteScriptAsync(web_contents, script);
 
   DOMMessageQueue message_queue;
+
+  bool should_wait_flag =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kWaitForDebuggerWebUI);
+
+  const std::string debugger_port =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          ::switches::kRemoteDebuggingPort);
+
+  // Only wait if there is a debugger port, so user can issue go() command.
+  if (should_wait_flag && !debugger_port.empty()) {
+    ExecuteScriptAsync(
+        web_contents,
+        "window.waitUser = true; "
+        "window.go = function() { window.waitUser = false }; "
+        "console.log('Waiting for debugger...'); "
+        "console.log('Run: go() in the JS console when you are ready.');");
+  }
+
   ExecuteScriptAsync(web_contents, "runTests()");
 
   std::string message;
@@ -1853,6 +1940,12 @@ RenderWidgetHost* GetMouseLockWidget(WebContents* web_contents) {
 
 RenderWidgetHost* GetKeyboardLockWidget(WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)->GetKeyboardLockWidget();
+}
+
+RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->GetInputEventRouter()
+      ->GetMouseCaptureWidgetForTests();
 }
 
 bool RequestKeyboardLock(WebContents* web_contents,
@@ -2308,7 +2401,7 @@ MainThreadFrameObserver::~MainThreadFrameObserver() {
 
 void MainThreadFrameObserver::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  render_widget_host_->Send(new ViewMsg_WaitForNextFrameForTests(
+  render_widget_host_->Send(new WidgetMsg_WaitForNextFrameForTests(
       render_widget_host_->GetRoutingID(), routing_id_));
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -2321,10 +2414,10 @@ void MainThreadFrameObserver::Quit() {
 }
 
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.type() == ViewHostMsg_WaitForNextFrameForTests_ACK::ID &&
+  if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
       msg.routing_id() == routing_id_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
   return true;
@@ -2698,8 +2791,8 @@ blink::mojom::FileSystemManagerPtr GetFileSystemManager(
   FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
                                            ->GetFileSystemManagerForTesting();
   blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileSystemManagerImpl::BindRequest,
                      base::Unretained(file_system),
                      mojo::MakeRequest(&file_system_manager_ptr)));
@@ -2750,7 +2843,7 @@ void PwnMessageHelper::LockMouse(RenderProcessHost* process,
                                  bool privileged) {
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       process->GetChannel(),
-      ViewHostMsg_LockMouse(routing_id, user_gesture, privileged));
+      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged));
 }
 
 #if defined(USE_AURA)
@@ -2821,8 +2914,8 @@ bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
     FrameHostMsg_ContextMenu::Param params;
     FrameHostMsg_ContextMenu::Read(&message, &params);
     content::ContextMenuParams menu_params = std::get<0>(params);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ContextMenuFilter::OnContextMenu, this, menu_params));
   }
   return false;
@@ -3030,15 +3123,15 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
                       1.f / resize_params.screen_info.device_scale_factor));
   }
   // Track each rect updates.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI,
           this, screen_space_rect_in_dip));
 
   // Track each surface id update.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
           this, local_surface_id));
@@ -3055,7 +3148,7 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
 
   // We can't nest on the IO thread. So tests will wait on the UI thread, so
   // post there to exit the nesting.
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SynchronizeVisualPropertiesMessageFilter::
                                     OnUpdatedFrameSinkIdOnUI,

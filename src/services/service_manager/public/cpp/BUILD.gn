@@ -17,6 +17,8 @@ component("cpp") {
     "local_interface_provider.h",
     "service.cc",
     "service.h",
+    "service_binding.cc",
+    "service_binding.h",
     "service_context.cc",
     "service_context.h",
     "service_context_ref.cc",
@@ -26,6 +28,8 @@ component("cpp") {
     "service_runner.cc",
     "service_runner.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     ":cpp_types",
@@ -37,7 +41,12 @@ component("cpp") {
     "//url",
   ]
 
-  defines = [ "SERVICE_MANAGER_PUBLIC_CPP_IMPL" ]
+  defines = [
+    "IS_SERVICE_MANAGER_CPP_IMPL",
+
+    # TODO: Use COMPONENT_EXPORT everywhere here and remove this.
+    "SERVICE_MANAGER_PUBLIC_CPP_IMPL",
+  ]
 }
 
 # A component for types which the public interfaces depend on for typemapping.
@@ -55,6 +64,8 @@ component("cpp_types") {
     "interface_provider_spec.h",
     "types_export.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     "//services/service_manager/public/mojom:constants",

@@ -50,6 +50,20 @@ TEST_F(ClusterParserTest, DefaultParse) {
   ParseAndVerify();
 }
 
+TEST_F(ClusterParserTest, DefaultActionIsRead) {
+  {
+    InSequence dummy;
+
+    // This intentionally does not set the action and relies on the parser using
+    // a default action value of kRead.
+    EXPECT_CALL(callback_, OnClusterBegin(metadata_, Cluster{}, NotNull()))
+        .WillOnce(Return(Status(Status::kOkCompleted)));
+    EXPECT_CALL(callback_, OnClusterEnd(metadata_, Cluster{})).Times(1);
+  }
+
+  ParseAndVerify();
+}
+
 TEST_F(ClusterParserTest, DefaultValues) {
   SetReaderData({
       0xE7,  // ID = 0xE7 (Timecode).

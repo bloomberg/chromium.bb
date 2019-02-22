@@ -60,9 +60,16 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetNetworkFactoryInfo();
 
-  // Called on the IO thread. Will clone the internal factory to the network
-  // service which doesn't support auto-reconnect after crash. Useful for
-  // one-off requests (e.g. A single navigation) to avoid additional mojo hop.
+  // Called on the IO thread. The factory obtained from here can only be used
+  // from the browser process. It must NOT be sent to a renderer process.
+  //
+  // When NetworkService is enabled, this clones the internal factory to the
+  // network service, which doesn't support auto-reconnect after crash. Useful
+  // for one-off requests (e.g. a single navigation) to avoid an additional Mojo
+  // hop.
+  //
+  // When NetworkService is disabled, this clones the non-NetworkService direct
+  // network factory.
   CONTENT_EXPORT void CloneNetworkFactory(
       network::mojom::URLLoaderFactoryRequest network_factory_request);
 

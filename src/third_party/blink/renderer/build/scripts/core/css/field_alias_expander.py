@@ -7,10 +7,10 @@ import json5_generator
 
 class FieldAliasExpander(object):
     """
-    A helper for expanding the "field_template" parameter in CSSProperties.json5
+    A helper for expanding the "field_template" parameter in css_properties.json5
 
     It takes the list of aliases and expansions from the given file_path, (it
-    should point to core/css/ComputedStyleFieldAliases.json5) and uses that to
+    should point to core/css/computed_style_field_aliases.json5) and uses that to
     inform which fields in a given property should be set.
     """
     def __init__(self, file_path):

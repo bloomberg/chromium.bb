@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/variations_associated_data.h"
@@ -75,7 +76,7 @@ TEST(ExperimentLabelsTest, ExtractNonVariationLabels) {
        "experiment3=123|Tue, 21 Jan 2014 15:30:21 GMT"},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::string non_variation_labels = base::UTF16ToUTF8(
         ExtractNonVariationLabels(
             base::ASCIIToUTF16(test_cases[i].input_label)));

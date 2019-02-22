@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 
@@ -37,7 +37,7 @@ class ReconcileTask : public Task {
                  std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Step 3. Processes update result.
-  void UpdateCompleted(std::unique_ptr<UpdateRequestsResult> update_result);
+  void UpdateCompleted(UpdateRequestsResult update_result);
 
   // Member variables, all pointers are not owned here.
   RequestQueueStore* store_;

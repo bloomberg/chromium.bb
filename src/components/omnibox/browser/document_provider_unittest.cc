@@ -7,7 +7,9 @@
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -335,3 +337,35 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
   provider_->ParseDocumentSearchResults(*backoff_response, &matches);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }
+
+// This test is affected by an iOS 10 simulator bug: https://crbug.com/782033
+// and may get wrong timezone on Win7: https://crbug.com/856119
+#if !defined(OS_IOS) && !defined(OS_WIN)
+TEST_F(DocumentProviderTest, GenerateLastModifiedString) {
+  base::Time::Exploded local_exploded = {0};
+  local_exploded.year = 2018;
+  local_exploded.month = 8;
+  local_exploded.day_of_month = 27;
+  local_exploded.hour = 3;
+  local_exploded.minute = 18;
+  local_exploded.second = 54;
+  base::Time local_now;
+  EXPECT_TRUE(base::Time::FromLocalExploded(local_exploded, &local_now));
+
+  base::Time modified_today = local_now + base::TimeDelta::FromHours(-1);
+  base::Time modified_this_year = local_now + base::TimeDelta::FromDays(-8);
+  base::Time modified_last_year = local_now + base::TimeDelta::FromDays(-365);
+
+  // GenerateLastModifiedString should accept any parseable timestamp, but use
+  // ISO8601 UTC timestamp strings since the service returns them in practice.
+  EXPECT_EQ(DocumentProvider::GenerateLastModifiedString(
+                base::TimeToISO8601(modified_today), local_now),
+            base::ASCIIToUTF16("2:18 AM"));
+  EXPECT_EQ(DocumentProvider::GenerateLastModifiedString(
+                base::TimeToISO8601(modified_this_year), local_now),
+            base::ASCIIToUTF16("Aug 19"));
+  EXPECT_EQ(DocumentProvider::GenerateLastModifiedString(
+                base::TimeToISO8601(modified_last_year), local_now),
+            base::ASCIIToUTF16("8/27/17"));
+}
+#endif  // !defined(OS_IOS)

@@ -10,6 +10,7 @@ mojom_component("mojom") {
 
   sources = [
     "audio_focus.mojom",
+    "constants.mojom",
     "media_session.mojom",
   ]
 

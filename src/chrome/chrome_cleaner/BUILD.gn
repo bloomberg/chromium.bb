@@ -7,6 +7,7 @@ import("//testing/test.gni")
 test("chrome_cleaner_unittests") {
   sources = [
     "//chrome/chrome_cleaner/engines/dummy_engine_resources.cc",
+    "//chrome/chrome_cleaner/test/unit_test_override_command_line.cc",
     "test/test_main.cc",
   ]
 
@@ -22,6 +23,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/os:cleaner_os",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/pup_data:dummy_signatures",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/settings:settings_types",
     "//chrome/chrome_cleaner/test:test_pup_data",
@@ -31,6 +33,7 @@ test("chrome_cleaner_unittests") {
 
     # Tests from sub-directories.
     "//chrome/chrome_cleaner/chrome_utils:unittest_sources",
+    "//chrome/chrome_cleaner/components:unittest_sources",
     "//chrome/chrome_cleaner/http:unittest_sources",
     "//chrome/chrome_cleaner/interfaces/typemaps:unittest_sources",
     "//chrome/chrome_cleaner/ipc:unittest_sources",
@@ -43,6 +46,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/strings:unittest_sources",
     "//chrome/chrome_cleaner/test:unittest_sources",
     "//chrome/chrome_cleaner/ui:unittest_sources",
+    "//chrome/chrome_cleaner/zip_archiver:unittest_sources",
   ]
 }
 

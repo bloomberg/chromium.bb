@@ -79,9 +79,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
     options.scope = scope_;
     registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
         options, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
-                                        context()->storage()->NewVersionId(),
-                                        context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        context()->storage()->NewVersionId(), context()->AsWeakPtr());
     SetUpProvider();
 
     std::unique_ptr<MockHttpProtocolHandler> handler(
@@ -131,7 +131,8 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */,
-        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        RESOURCE_TYPE_SERVICE_WORKER,
+        blink::mojom::RequestContextType::SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone, nullptr);
   }
 
@@ -308,7 +309,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
       network::mojom::FetchCredentialsMode::kOmit,
       network::mojom::FetchRedirectMode::kFollow, std::string() /* integrity */,
       false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
-      REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+      blink::mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::RequestContextFrameType::kNone, nullptr);
   // Verify a ServiceWorkerRequestHandler was created.
   ServiceWorkerRequestHandler* handler =
@@ -398,8 +399,8 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, InstalledWorker) {
 TEST_F(ServiceWorkerContextRequestHandlerTest, Incumbent) {
   // Make an incumbent version.
   scoped_refptr<ServiceWorkerVersion> incumbent = new ServiceWorkerVersion(
-      registration_.get(), script_url_, context()->storage()->NewVersionId(),
-      context()->AsWeakPtr());
+      registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+      context()->storage()->NewVersionId(), context()->AsWeakPtr());
   incumbent->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources = {

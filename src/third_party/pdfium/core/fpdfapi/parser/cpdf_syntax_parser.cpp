@@ -22,7 +22,6 @@
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
-#include "core/fpdfapi/parser/fpdf_parser_decode.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/cfx_binarybuf.h"
@@ -402,6 +401,10 @@ ByteString CPDF_SyntaxParser::PeekNextWord(bool* bIsNumber) {
 
 ByteString CPDF_SyntaxParser::GetKeyword() {
   return GetNextWord(nullptr);
+}
+
+void CPDF_SyntaxParser::SetPos(FX_FILESIZE pos) {
+  m_Pos = std::min(pos, m_FileLen);
 }
 
 std::unique_ptr<CPDF_Object> CPDF_SyntaxParser::GetObjectBody(

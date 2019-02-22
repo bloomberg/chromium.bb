@@ -147,15 +147,6 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                         uint32_t framebuffer,
                         scoped_refptr<PageFlipRequest> page_flip_request);
 
-  // Schedule an overlay to be show during the page flip for CRTC |crtc_id|.
-  // |source| location from |framebuffer| will be shown on overlay
-  // |overlay_plane|, in the bounds specified by |location| on the screen.
-  virtual bool PageFlipOverlay(uint32_t crtc_id,
-                               uint32_t framebuffer,
-                               const gfx::Rect& location,
-                               const gfx::Rect& source,
-                               int overlay_plane);
-
   // Returns the list of all planes available on this DRM device.
   virtual ScopedDrmPlaneResPtr GetPlaneResources();
 
@@ -266,20 +257,20 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   const base::FilePath device_path_;
 
   // DRM device.
-  base::File file_;
+  const base::File file_;
 
   std::unique_ptr<PageFlipManager> page_flip_manager_;
 
   // Watcher for |fd_| listening for page flip events.
   std::unique_ptr<IOWatcher> watcher_;
 
-  bool is_primary_device_;
+  const bool is_primary_device_;
 
   bool is_atomic_ = false;
 
   bool allow_addfb2_modifiers_ = false;
 
-  std::unique_ptr<GbmDevice> gbm_;
+  const std::unique_ptr<GbmDevice> gbm_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };

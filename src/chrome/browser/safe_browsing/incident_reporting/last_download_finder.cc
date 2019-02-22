@@ -68,7 +68,7 @@ bool IsBinaryDownloadForCurrentOS(
 // Platform-specific types are relevant only for their own platforms.
 #if defined(OS_MACOSX)
   if (download_type == ClientDownloadRequest::MAC_EXECUTABLE ||
-      download_type == ClientDownloadRequest::INVALID_MAC_ARCHIVE)
+      download_type == ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING)
     return true;
 #elif defined(OS_ANDROID)
   if (download_type == ClientDownloadRequest::ANDROID_APK)

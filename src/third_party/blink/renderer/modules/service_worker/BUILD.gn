@@ -54,13 +54,17 @@ blink_modules_sources("service_worker") {
     "service_worker_thread.h",
     "service_worker_window_client.cc",
     "service_worker_window_client.h",
-    "service_worker_window_client_callback.cc",
-    "service_worker_window_client_callback.h",
+    "thread_safe_script_container.cc",
+    "thread_safe_script_container.h",
     "wait_until_observer.cc",
     "wait_until_observer.h",
   ]
 
   public_deps = [
     "//third_party/blink/renderer/platform",
+  ]
+
+  deps = [
+    "//base",
   ]
 }

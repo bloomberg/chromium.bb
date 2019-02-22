@@ -17,17 +17,17 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/loader/modulescript/worklet_module_script_fetcher.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
@@ -157,7 +157,7 @@ class ModuleScriptLoaderTest : public PageTestBase {
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
-  Persistent<MainThreadWorkletGlobalScope> global_scope_;
+  Persistent<WorkletGlobalScope> global_scope_;
 };
 
 void ModuleScriptLoaderTest::SetUp() {
@@ -191,8 +191,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       OriginTrialContext::GetTokens(&GetDocument()).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
-  global_scope_ = new MainThreadWorkletGlobalScope(
-      &GetFrame(), std::move(creation_params), *reporting_proxy_);
+  global_scope_ = new WorkletGlobalScope(std::move(creation_params),
+                                         *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
   modulator_ = new ModuleScriptLoaderTestModulator(
@@ -206,7 +206,7 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -260,7 +260,7 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   GetModulator()->SetModuleRequests({"invalid"});
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
@@ -302,7 +302,7 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   KURL url;
   EXPECT_FALSE(url.IsValid());
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   ModuleScriptLoader::Fetch(
       ModuleScriptFetchRequest::CreateForTest(url),
       fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -339,7 +339,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
   URLTestHelpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
   auto* fetch_client_settings_object =
-      new FetchClientSettingsObjectSnapshot(GetDocument());
+      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   ModuleScriptLoader::Fetch(

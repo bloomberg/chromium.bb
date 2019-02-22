@@ -4,7 +4,7 @@ Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window':
 Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin 'asdf' in a call to 'postMessage'." while posting message to 'asdf'.
 Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '/tmp/foo' in a call to 'postMessage'." while posting message to '/tmp/foo'.
 Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '//localhost' in a call to 'postMessage'." while posting message to '//localhost'.
-Posted message to 'asdf:' without any exceptions.
+Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin 'asdf:' in a call to 'postMessage'." while posting message to 'asdf:'.
 Encountered exception "SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin 'http:' in a call to 'postMessage'." while posting message to 'http:'.
 Received message: data="Received message: data="done" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
 

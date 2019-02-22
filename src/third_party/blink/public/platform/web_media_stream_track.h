@@ -43,6 +43,13 @@ class WebString;
 class WebMediaStreamTrack {
  public:
   enum class FacingMode { kNone, kUser, kEnvironment, kLeft, kRight };
+  enum class DisplayCaptureSurfaceType {
+    kMonitor,
+    kWindow,
+    kApplication,
+    kBrowser
+  };
+  enum class CursorCaptureType { kNever, kAlways, kMotion };
 
   struct Settings {
     bool HasFrameRate() const { return frame_rate >= 0.0; }
@@ -85,6 +92,11 @@ class WebMediaStreamTrack {
     double focal_length_y = -1.0;
     double depth_near = -1.0;
     double depth_far = -1.0;
+
+    // Screen Capture extensions
+    base::Optional<DisplayCaptureSurfaceType> display_surface;
+    base::Optional<bool> logical_surface;
+    base::Optional<CursorCaptureType> cursor;
   };
 
   class TrackData {

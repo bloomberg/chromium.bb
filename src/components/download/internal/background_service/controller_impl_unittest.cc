@@ -797,7 +797,7 @@ TEST_F(DownloadServiceControllerImplTest, Cancel) {
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry.guid, Client::FailureReason::CANCELLED))
+              OnDownloadFailed(entry.guid, _, Client::FailureReason::CANCELLED))
       .Times(1);
 
   device_status_listener_->SetDeviceStatus(
@@ -824,7 +824,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailed) {
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
 
   device_status_listener_->SetDeviceStatus(
@@ -855,10 +855,10 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailedFromDriverCancel) {
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry1.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry1.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry2.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry2.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
 
   InitializeController();
@@ -900,7 +900,7 @@ TEST_F(DownloadServiceControllerImplTest, NoopResumeDoesNotHitAttemptCounts) {
   driver_->AddTestData(std::vector<DriverEntry>{dentry1, dentry2});
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
-  EXPECT_CALL(*client_, OnDownloadFailed(_, _)).Times(0);
+  EXPECT_CALL(*client_, OnDownloadFailed(_, _, _)).Times(0);
 
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
@@ -969,7 +969,7 @@ TEST_F(DownloadServiceControllerImplTest, RetryOnFailure) {
   driver_->NotifyDownloadSucceeded(dentry1);
 
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry2.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry2.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
   driver_->NotifyDownloadFailed(dentry2, FailureType::RECOVERABLE);
   driver_->NotifyDownloadFailed(dentry2, FailureType::RECOVERABLE);
@@ -983,7 +983,7 @@ TEST_F(DownloadServiceControllerImplTest, RetryOnFailure) {
   EXPECT_EQ(nullptr, model_->Get(entry2.guid));
 
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry3.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry3.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
   driver_->NotifyDownloadFailed(dentry3, FailureType::RECOVERABLE);
   driver_->NotifyDownloadFailed(dentry3, FailureType::RECOVERABLE);
@@ -1007,7 +1007,9 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   DriverEntry dentry = BuildDriverEntry(entry, DriverEntry::State::IN_PROGRESS);
   driver_->AddTestData(std::vector<DriverEntry>{dentry});
 
-  CompletionInfo completion_info(base::FilePath::FromUTF8Unsafe("123"), 1024u);
+  CompletionInfo completion_info(dentry.current_file_path,
+                                 dentry.bytes_downloaded, entry.url_chain,
+                                 entry.response_headers);
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
   EXPECT_CALL(*client_, OnDownloadSucceeded(entry.guid, completion_info))
       .Times(1);
@@ -1042,6 +1044,68 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
             now + base::TimeDelta::FromSeconds(start_time));
 
   task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, CompletionInfoPropagated) {
+  // Create initial Entry and DriverEntry objects.
+  Entry succeeded_entry = test::BuildBasicEntry(Entry::State::ACTIVE);
+  ASSERT_TRUE(succeeded_entry.response_headers);
+  Entry failed_entry = test::BuildBasicEntry(Entry::State::ACTIVE);
+  ASSERT_TRUE(failed_entry.response_headers);
+  std::vector<Entry> entries = {succeeded_entry, failed_entry};
+
+  DriverEntry succeeded_dentry =
+      BuildDriverEntry(succeeded_entry, DriverEntry::State::IN_PROGRESS);
+  DriverEntry failed_dentry =
+      BuildDriverEntry(failed_entry, DriverEntry::State::IN_PROGRESS);
+  driver_->AddTestData(
+      std::vector<DriverEntry>{succeeded_dentry, failed_dentry});
+
+  // Mock expectations.
+  EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
+
+  CompletionInfo succeeded_completion_info;
+  EXPECT_CALL(*client_, OnDownloadSucceeded(succeeded_entry.guid, _))
+      .WillOnce(SaveArg<1>(&succeeded_completion_info));
+
+  CompletionInfo failed_completion_info;
+  EXPECT_CALL(*client_, OnDownloadFailed(failed_entry.guid, _, _))
+      .WillOnce(SaveArg<1>(&failed_completion_info));
+
+  // Initialize and complete the downloads.
+  InitializeController();
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+  driver_->MakeReady();
+
+  DriverEntry succeeded_done_dentry =
+      BuildDriverEntry(succeeded_entry, DriverEntry::State::COMPLETE);
+  succeeded_done_dentry.done = true;
+  succeeded_done_dentry.current_file_path =
+      base::FilePath::FromUTF8Unsafe("abc");
+
+  DriverEntry failed_done_dentry =
+      BuildDriverEntry(failed_entry, DriverEntry::State::COMPLETE);
+  succeeded_done_dentry.current_file_path =
+      base::FilePath::FromUTF8Unsafe("xyz");
+  failed_done_dentry.done = true;
+
+  driver_->NotifyDownloadSucceeded(succeeded_done_dentry);
+  driver_->NotifyDownloadFailed(failed_done_dentry,
+                                FailureType::NOT_RECOVERABLE);
+  task_runner_->RunUntilIdle();
+
+  // Check the CompletionInfo provided when the download completes.
+  ASSERT_TRUE(succeeded_completion_info.response_headers);
+  EXPECT_EQ(succeeded_completion_info.response_headers->raw_headers(),
+            succeeded_entry.response_headers->raw_headers());
+  EXPECT_EQ(succeeded_completion_info.path,
+            succeeded_done_dentry.current_file_path);
+
+  ASSERT_TRUE(failed_completion_info.response_headers);
+  EXPECT_EQ(failed_completion_info.response_headers->raw_headers(),
+            failed_entry.response_headers->raw_headers());
+  EXPECT_EQ(failed_completion_info.path, base::FilePath());
 }
 
 TEST_F(DownloadServiceControllerImplTest, CleanupTaskScheduledAtEarliestTime) {
@@ -1144,7 +1208,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
 
   // Test FailureReason::TIMEDOUT.
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry4.guid, Client::FailureReason::TIMEDOUT))
+              OnDownloadFailed(entry4.guid, _, Client::FailureReason::TIMEDOUT))
       .Times(1);
 
   // Set up the Controller.
@@ -1156,8 +1220,8 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
   task_runner_->RunUntilIdle();
 
   // Test FailureReason::CANCELLED.
-  EXPECT_CALL(*client_,
-              OnDownloadFailed(entry1.guid, Client::FailureReason::CANCELLED))
+  EXPECT_CALL(*client_, OnDownloadFailed(entry1.guid, _,
+                                         Client::FailureReason::CANCELLED))
       .Times(1);
   controller_->CancelDownload(entry1.guid);
 
@@ -1166,14 +1230,14 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
       .Times(1)
       .WillOnce(Return(Client::ShouldDownload::ABORT));
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry2.guid, Client::FailureReason::ABORTED))
+              OnDownloadFailed(entry2.guid, _, Client::FailureReason::ABORTED))
       .Times(1);
   driver_->Start(RequestParams(), entry2.guid, entry2.target_file_path, nullptr,
                  TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Test FailureReason::NETWORK.
   EXPECT_CALL(*client_,
-              OnDownloadFailed(entry3.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry3.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
   driver_->NotifyDownloadFailed(dentry3, FailureType::NOT_RECOVERABLE);
 
@@ -1263,8 +1327,8 @@ TEST_F(DownloadServiceControllerImplTest,
   verify_entry(entry5.guid, Entry::State::PAUSED, base::nullopt, false);
 
   // Test CancelDownload before client response for entry2.
-  EXPECT_CALL(*client3_,
-              OnDownloadFailed(entry2.guid, Client::FailureReason::CANCELLED))
+  EXPECT_CALL(*client3_, OnDownloadFailed(entry2.guid, _,
+                                          Client::FailureReason::CANCELLED))
       .Times(1);
   controller_->CancelDownload(entry2.guid);
   task_runner_->RunUntilIdle();
@@ -1280,7 +1344,7 @@ TEST_F(DownloadServiceControllerImplTest,
   // Entry3 timeouts before client response.
   EXPECT_CALL(
       *client3_,
-      OnDownloadFailed(entry3.guid, Client::FailureReason::UPLOAD_TIMEDOUT))
+      OnDownloadFailed(entry3.guid, _, Client::FailureReason::UPLOAD_TIMEDOUT))
       .Times(1);
 
   // At 40 seconds.
@@ -1291,7 +1355,7 @@ TEST_F(DownloadServiceControllerImplTest,
   verify_entry(entry4.guid, Entry::State::ACTIVE,
                DriverEntry::State::IN_PROGRESS, true);
   EXPECT_CALL(*client3_,
-              OnDownloadFailed(entry4.guid, Client::FailureReason::NETWORK))
+              OnDownloadFailed(entry4.guid, _, Client::FailureReason::NETWORK))
       .Times(1);
   DriverEntry dentry4 =
       BuildDriverEntry(entry4, DriverEntry::State::INTERRUPTED);
@@ -1558,6 +1622,44 @@ TEST_F(DownloadServiceControllerImplTest, StartupRecoveryForUploadEntries) {
   verify_entry(entries[12].guid, Entry::State::COMPLETE, base::nullopt);
   verify_entry(entries[13].guid, Entry::State::COMPLETE, base::nullopt);
   verify_entry(entries[14].guid, Entry::State::COMPLETE, base::nullopt);
+}
+
+// Download driver will remove the download if failed to persist the response
+// headers.
+TEST_F(DownloadServiceControllerImplTest, StartupRecoveryNoResponseHeaders) {
+  std::vector<Entry> entries;
+  std::vector<DriverEntry> driver_entries;
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  entries.back().response_headers = nullptr;
+  entries.back().did_received_response = false;
+
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+
+  InitializeController();
+  driver_->AddTestData(driver_entries);
+  driver_->MakeReady();
+  store_->AutomaticallyTriggerAllFutureCallbacks(true);
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+
+  // Verify that the driver entry will be removed without response headers.
+  EXPECT_FALSE(driver_->Find(entries[0].guid).has_value());
+
+  task_runner_->RunUntilIdle();
+
+  // The download is retried.
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[0].guid)->state);
+  EXPECT_TRUE(model_->Get(entries[0].guid)->did_received_response);
+  auto expected_driver_entry = driver_->Find(entries[0].guid);
+  EXPECT_TRUE(expected_driver_entry.has_value());
+  EXPECT_EQ(model_->Get(entries[0].guid)->url_chain,
+            expected_driver_entry->url_chain);
+  EXPECT_EQ(model_->Get(entries[0].guid)->response_headers->raw_headers(),
+            expected_driver_entry->response_headers->raw_headers());
 }
 
 TEST_F(DownloadServiceControllerImplTest, ExistingExternalDownload) {

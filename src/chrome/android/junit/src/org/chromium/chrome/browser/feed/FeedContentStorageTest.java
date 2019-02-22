@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.feed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -80,27 +79,39 @@ public class FeedContentStorageTest {
     @Captor
     private ArgumentCaptor<Callback<Boolean>> mBooleanCallbackArgument;
     @Captor
-    private ArgumentCaptor<Callback<String[]>> mArrayOfStringCallbackArgument;
+    private ArgumentCaptor<Callback<String[]>> mArrayOfStringSuccessCallbackArgument;
     @Captor
-            private ArgumentCaptor < Callback < Map<String, byte[]>>> mMapCallbackArgument;
+            private ArgumentCaptor < Callback < Map<String, byte[]>>> mMapSuccessCallbackArgument;
+    @Captor
+    private ArgumentCaptor<Callback<Void>> mFailureCallbackArgument;
 
     private FeedContentStorage mContentStorage;
 
-    private Answer<Void> createMapAnswer(Map<String, byte[]> map) {
+    private Answer<Void> createMapSuccessAnswer(Map<String, byte[]> map) {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mMapCallbackArgument.getValue().onResult(map);
+                mMapSuccessCallbackArgument.getValue().onResult(map);
                 return null;
             }
         };
     }
 
-    private Answer<Void> createArrayOfStringAnswer(String[] arrayOfString) {
+    private Answer<Void> createFailureAnswer() {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) {
-                mArrayOfStringCallbackArgument.getValue().onResult(arrayOfString);
+                mFailureCallbackArgument.getValue().onResult(null);
+                return null;
+            }
+        };
+    }
+
+    private Answer<Void> createArrayOfStringSuccessAnswer(String[] arrayOfString) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mArrayOfStringSuccessCallbackArgument.getValue().onResult(arrayOfString);
                 return null;
             }
         };
@@ -145,8 +156,6 @@ public class FeedContentStorageTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        doNothing().when(mBridge).init(eq(mProfile));
-        mBridge.init(mProfile);
         mContentStorage = new FeedContentStorage(mBridge);
     }
 
@@ -155,15 +164,34 @@ public class FeedContentStorageTest {
     public void getTest() {
         Map<String, byte[]> answerMap = new HashMap<>();
         answerMap.put(CONTENT_KEY1, CONTENT_DATA1);
-        Answer<Void> answer = createMapAnswer(answerMap);
-        doAnswer(answer).when(mBridge).loadContent(
-                mStringListArgument.capture(), mMapCallbackArgument.capture());
+        Answer<Void> answer = createMapSuccessAnswer(answerMap);
+        doAnswer(answer).when(mBridge).loadContent(mStringListArgument.capture(),
+                mMapSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
         List<String> keys = Arrays.asList(CONTENT_KEY1, CONTENT_KEY2);
 
         mContentStorage.get(keys, mMapConsumer);
-        verify(mBridge, times(1)).loadContent(eq(keys), mMapCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .loadContent(eq(keys), mMapSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mMapConsumer, times(1)).accept(mMapCaptor.capture());
         verifyMapResult(answerMap, true, mMapCaptor.getValue());
+    }
+
+    @Test
+    @SmallTest
+    public void getFailureTest() {
+        Map<String, byte[]> answerMap = new HashMap<>();
+        Answer<Void> answer = createFailureAnswer();
+        doAnswer(answer).when(mBridge).loadContent(mStringListArgument.capture(),
+                mMapSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
+        List<String> keys = Arrays.asList(CONTENT_KEY1, CONTENT_KEY2);
+
+        mContentStorage.get(keys, mMapConsumer);
+        verify(mBridge, times(1))
+                .loadContent(eq(keys), mMapSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
+        verify(mMapConsumer, times(1)).accept(mMapCaptor.capture());
+        verifyMapResult(answerMap, false, mMapCaptor.getValue());
     }
 
     @Test
@@ -173,13 +201,14 @@ public class FeedContentStorageTest {
         answerMap.put(CONTENT_KEY1, CONTENT_DATA1);
         answerMap.put(CONTENT_KEY2, CONTENT_DATA2);
         answerMap.put(CONTENT_KEY3, CONTENT_DATA3);
-        Answer<Void> answer = createMapAnswer(answerMap);
-        doAnswer(answer).when(mBridge).loadContentByPrefix(
-                mStringArgument.capture(), mMapCallbackArgument.capture());
+        Answer<Void> answer = createMapSuccessAnswer(answerMap);
+        doAnswer(answer).when(mBridge).loadContentByPrefix(mStringArgument.capture(),
+                mMapSuccessCallbackArgument.capture(), mFailureCallbackArgument.capture());
 
         mContentStorage.getAll(CONTENT_KEY1, mMapConsumer);
         verify(mBridge, times(1))
-                .loadContentByPrefix(eq(CONTENT_KEY1), mMapCallbackArgument.capture());
+                .loadContentByPrefix(eq(CONTENT_KEY1), mMapSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mMapConsumer, times(1)).accept(mMapCaptor.capture());
         verifyMapResult(answerMap, true, mMapCaptor.getValue());
     }
@@ -188,13 +217,34 @@ public class FeedContentStorageTest {
     @SmallTest
     public void getAllKeysTest() {
         String[] answerStrings = {CONTENT_KEY1, CONTENT_KEY2, CONTENT_KEY3};
-        Answer<Void> answer = createArrayOfStringAnswer(answerStrings);
-        doAnswer(answer).when(mBridge).loadAllContentKeys(mArrayOfStringCallbackArgument.capture());
+        Answer<Void> answer = createArrayOfStringSuccessAnswer(answerStrings);
+        doAnswer(answer).when(mBridge).loadAllContentKeys(
+                mArrayOfStringSuccessCallbackArgument.capture(),
+                mFailureCallbackArgument.capture());
 
         mContentStorage.getAllKeys(mListConsumer);
-        verify(mBridge, times(1)).loadAllContentKeys(mArrayOfStringCallbackArgument.capture());
+        verify(mBridge, times(1))
+                .loadAllContentKeys(mArrayOfStringSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
         verify(mListConsumer, times(1)).accept(mStringListCaptor.capture());
         verifyArrayOfStringResult(answerStrings, true, mStringListCaptor.getValue());
+    }
+
+    @Test
+    @SmallTest
+    public void getAllKeysFailureTest() {
+        String[] answerStrings = {CONTENT_KEY1, CONTENT_KEY2, CONTENT_KEY3};
+        Answer<Void> answer = createFailureAnswer();
+        doAnswer(answer).when(mBridge).loadAllContentKeys(
+                mArrayOfStringSuccessCallbackArgument.capture(),
+                mFailureCallbackArgument.capture());
+
+        mContentStorage.getAllKeys(mListConsumer);
+        verify(mBridge, times(1))
+                .loadAllContentKeys(mArrayOfStringSuccessCallbackArgument.capture(),
+                        mFailureCallbackArgument.capture());
+        verify(mListConsumer, times(1)).accept(mStringListCaptor.capture());
+        verifyArrayOfStringResult(answerStrings, false, mStringListCaptor.getValue());
     }
 
     @Test

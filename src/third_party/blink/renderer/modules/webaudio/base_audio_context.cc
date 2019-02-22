@@ -33,10 +33,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
@@ -56,9 +56,6 @@
 #include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
 #include "third_party/blink/renderer/modules/webaudio/gain_node.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
-#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
@@ -96,13 +93,15 @@ BaseAudioContext::BaseAudioContext(Document* document,
       is_cleared_(false),
       is_resolving_resume_promises_(false),
       has_posted_cleanup_task_(false),
-      deferred_task_handler_(DeferredTaskHandler::Create()),
+      deferred_task_handler_(DeferredTaskHandler::Create(
+          document->GetTaskRunner(TaskType::kInternalMedia))),
       context_state_(kSuspended),
       periodic_wave_sine_(nullptr),
       periodic_wave_square_(nullptr),
       periodic_wave_sawtooth_(nullptr),
       periodic_wave_triangle_(nullptr),
-      output_position_() {}
+      output_position_(),
+      task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)) {}
 
 BaseAudioContext::~BaseAudioContext() {
   {
@@ -113,9 +112,6 @@ BaseAudioContext::~BaseAudioContext() {
   }
 
   GetDeferredTaskHandler().ContextWillBeDestroyed();
-  DCHECK(!active_source_nodes_.size());
-  DCHECK(!is_resolving_resume_promises_);
-  DCHECK(!resume_resolvers_.size());
 }
 
 void BaseAudioContext::Initialize() {
@@ -173,6 +169,10 @@ void BaseAudioContext::Uninitialize() {
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
 
   Clear();
+
+  DCHECK(!is_resolving_resume_promises_);
+  DCHECK_EQ(resume_resolvers_.size(), 0u);
+  DCHECK_EQ(active_source_nodes_.size(), 0u);
 }
 
 void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
@@ -359,32 +359,6 @@ ConstantSourceNode* BaseAudioContext::createConstantSource(
   DCHECK(IsMainThread());
 
   return ConstantSourceNode::Create(*this, exception_state);
-}
-
-MediaElementAudioSourceNode* BaseAudioContext::createMediaElementSource(
-    HTMLMediaElement* media_element,
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  return MediaElementAudioSourceNode::Create(*this, *media_element,
-                                             exception_state);
-}
-
-MediaStreamAudioSourceNode* BaseAudioContext::createMediaStreamSource(
-    MediaStream* media_stream,
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  return MediaStreamAudioSourceNode::Create(*this, *media_stream,
-                                            exception_state);
-}
-
-MediaStreamAudioDestinationNode* BaseAudioContext::createMediaStreamDestination(
-    ExceptionState& exception_state) {
-  DCHECK(IsMainThread());
-
-  // Set number of output channels to stereo by default.
-  return MediaStreamAudioDestinationNode::Create(*this, 2, exception_state);
 }
 
 ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
@@ -632,7 +606,7 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
   if (was_audible_ && context_state_ != kRunning) {
     was_audible_ = false;
     PostCrossThreadTask(
-        *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+        *task_runner_, FROM_HERE,
         CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
                         WrapCrossThreadPersistent(this)));
   }
@@ -660,7 +634,7 @@ void BaseAudioContext::NotifySourceNodeFinishedProcessing(
 }
 
 Document* BaseAudioContext::GetDocument() const {
-  return ToDocument(GetExecutionContext());
+  return To<Document>(GetExecutionContext());
 }
 
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
@@ -762,12 +736,12 @@ void BaseAudioContext::HandlePostRenderTasks(const AudioBus* destination_bus) {
       was_audible_ = is_audible;
       if (is_audible) {
         PostCrossThreadTask(
-            *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+            *task_runner_, FROM_HERE,
             CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
                             WrapCrossThreadPersistent(this)));
       } else {
         PostCrossThreadTask(
-            *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+            *task_runner_, FROM_HERE,
             CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
                             WrapCrossThreadPersistent(this)));
       }
@@ -849,7 +823,7 @@ void BaseAudioContext::ScheduleMainThreadCleanup() {
   if (has_posted_cleanup_task_)
     return;
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+      *task_runner_, FROM_HERE,
       CrossThreadBind(&BaseAudioContext::PerformCleanupOnMainThread,
                       WrapCrossThreadPersistent(this)));
   has_posted_cleanup_task_ = true;
@@ -983,23 +957,6 @@ void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
 
     unlock();
   }
-}
-
-bool BaseAudioContext::WouldTaintOrigin(const KURL& url) const {
-  // Data URLs don't taint the origin.
-  if (url.ProtocolIsData()) {
-    return false;
-  }
-
-  Document* document = GetDocument();
-  if (document && document->GetSecurityOrigin()) {
-    // The origin is tainted if and only if we cannot read content from the URL.
-    return !document->GetSecurityOrigin()->CanRequest(url);
-  }
-
-  // Be conservative and assume it's tainted if it's not a data url and if we
-  // can't get the security origin of the document.
-  return true;
 }
 
 }  // namespace blink

@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos",
+  "+components/location",
   "+dbus",
   "+jni",
   "+net/base",

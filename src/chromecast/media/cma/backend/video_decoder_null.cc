@@ -20,6 +20,10 @@ std::unique_ptr<VideoDecoderForMixer> VideoDecoderForMixer::Create(
   return std::make_unique<VideoDecoderNull>();
 }
 
+void VideoDecoderForMixer::InitializeGraphicsForTesting() {
+  // No initialization required
+}
+
 VideoDecoderNull::VideoDecoderNull()
     : delegate_(nullptr), weak_factory_(this) {}
 

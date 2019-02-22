@@ -69,4 +69,11 @@ void UserMediaClient::StopTrack(MediaStreamComponent* track) {
   }
 }
 
+bool UserMediaClient::IsCapturing() {
+  if (!client_)
+    return false;
+
+  return client_->IsCapturing();
+}
+
 }  // namespace blink

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/autofill/save_card_offer_bubble_views.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -56,12 +58,11 @@ views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
     return nullptr;
 
-  footnote_view_ =
+  legal_message_view_ =
       new LegalMessageView(controller()->GetLegalMessageLines(), this);
-  footnote_view_->set_id(DialogViewId::FOOTNOTE_VIEW);
 
-  SetFootnoteViewForTesting(footnote_view_);
-  return footnote_view_;
+  InitFootnoteView(legal_message_view_);
+  return legal_message_view_;
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
@@ -101,7 +102,7 @@ void SaveCardOfferBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
   if (!controller())
     return;
 
-  footnote_view_->OnLinkClicked(label, range, web_contents_);
+  legal_message_view_->OnLinkClicked(label, range, web_contents_);
 }
 
 void SaveCardOfferBubbleViews::ContentsChanged(

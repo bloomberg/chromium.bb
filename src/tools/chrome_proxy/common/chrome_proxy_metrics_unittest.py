@@ -41,4 +41,3 @@ class ChromeProxyMetricTest(unittest.TestCase):
     self.assertTrue(resp.ShouldHaveChromeProxyViaHeader())
     self.assertTrue(resp.HasChromeProxyViaHeader())
     self.assertTrue(resp.IsValidByViaHeader())
-

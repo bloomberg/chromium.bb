@@ -83,24 +83,43 @@ class BASE_EXPORT StackTrace {
   // Prints the stack trace to stderr.
   void Print() const;
 
+  // Prints the stack trace to stderr, prepending the given string before
+  // each output line.
+  void PrintWithPrefix(const char* prefix_string) const;
+
 #if !defined(__UCLIBC__) & !defined(_AIX)
   // Resolves backtrace to symbols and write to stream.
   void OutputToStream(std::ostream* os) const;
+  // Resolves backtrace to symbols and write to stream, with the provided
+  // prefix string prepended to each line.
+  void OutputToStreamWithPrefix(std::ostream* os,
+                                const char* prefix_string) const;
 #endif
 
   // Resolves backtrace to symbols and returns as string.
   std::string ToString() const;
+
+  // Resolves backtrace to symbols and returns as string, prepending the
+  // provided prefix string to each line.
+  std::string ToStringWithPrefix(const char* prefix_string) const;
 
  private:
 #if defined(OS_WIN)
   void InitTrace(const _CONTEXT* context_record);
 #endif
 
+#if defined(OS_WIN) || defined(OS_ANDROID)
   // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
   // the sum of FramesToSkip and FramesToCapture must be less than 63,
-  // so set it to 62. Even if on POSIX it could be a larger value, it usually
-  // doesn't give much more information.
-  static const int kMaxTraces = 62;
+  // so set it to 62.
+  // Testing indicates that Android has issues with a larger value
+  // here, so leave Android at 62 also.
+  static constexpr int kMaxTraces = 62;
+#else
+  // For other architectures, use 250. This seems reasonable without
+  // being huge.
+  static constexpr int kMaxTraces = 250;
+#endif
 
   void* trace_[kMaxTraces];
 

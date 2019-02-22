@@ -1351,12 +1351,13 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   if (!mute_count_) {
     // If any feature was recorded prior to navigation commits, flush to the
     // browser side.
-    for (size_t feature_id = 0; feature_id < features_recorded_.size();
+    for (wtf_size_t feature_id = 0; feature_id < features_recorded_.size();
          ++feature_id) {
       if (features_recorded_.QuickGet(feature_id))
         ReportAndTraceMeasurementByFeatureId(feature_id, *frame);
     }
-    for (size_t sample_id = 0; sample_id < css_recorded_.size(); ++sample_id) {
+    for (wtf_size_t sample_id = 0; sample_id < css_recorded_.size();
+         ++sample_id) {
       if (css_recorded_.QuickGet(sample_id))
         ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, false);
       if (animated_css_recorded_.QuickGet(sample_id))
@@ -1394,13 +1395,12 @@ void UseCounter::Count(const Document& document, WebFeature feature) {
 void UseCounter::Count(ExecutionContext* context, WebFeature feature) {
   if (!context)
     return;
-  if (context->IsDocument()) {
-    Count(*ToDocument(context), feature);
+  if (auto* document = DynamicTo<Document>(context)) {
+    Count(*document, feature);
     return;
   }
-  if (context->IsWorkerOrWorkletGlobalScope()) {
-    ToWorkerOrWorkletGlobalScope(context)->CountFeature(feature);
-  }
+  if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context))
+    scope->CountFeature(feature);
 }
 
 bool UseCounter::IsCounted(Document& document, WebFeature feature) {

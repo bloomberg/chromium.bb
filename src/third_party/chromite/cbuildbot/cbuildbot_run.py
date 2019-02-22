@@ -915,8 +915,8 @@ class _BuilderRunBase(object):
     Returns:
       The new value of attrs.chrome_version (e.g. "35.0.1863.0").
     """
-    cpv = portage_util.BestVisible(constants.CHROME_CP,
-                                   buildroot=self.buildroot)
+    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
+                                           cwd=self.buildroot)
     return cpv.version_no_rev.partition('_')[0]
 
 

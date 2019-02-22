@@ -39,6 +39,11 @@ inline HTMLBaseElement::HTMLBaseElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLBaseElement)
 
+const HashSet<AtomicString>& HTMLBaseElement::GetCheckedAttributeNames() const {
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"href"}));
+  return attribute_set;
+}
+
 void HTMLBaseElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == hrefAttr || params.name == targetAttr)

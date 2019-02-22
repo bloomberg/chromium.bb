@@ -8,14 +8,53 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_device_description.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
+media::mojom::DisplayMediaInformationPtr
+DesktopMediaIDToDisplayMediaInformation(
+    const content::DesktopMediaID& media_id) {
+  media::mojom::DisplayCaptureSurfaceType display_surface =
+      media::mojom::DisplayCaptureSurfaceType::MONITOR;
+  bool logical_surface = true;
+  media::mojom::CursorCaptureType cursor =
+      media::mojom::CursorCaptureType::NEVER;
+#if defined(USE_AURA)
+  const bool uses_aura =
+      media_id.aura_id != content::DesktopMediaID::kNullId ? true : false;
+#else
+  const bool uses_aura = false;
+#endif  // defined(USE_AURA)
+  switch (media_id.type) {
+    case content::DesktopMediaID::TYPE_SCREEN:
+      display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
+      cursor = uses_aura ? media::mojom::CursorCaptureType::MOTION
+                         : media::mojom::CursorCaptureType::ALWAYS;
+      break;
+    case content::DesktopMediaID::TYPE_WINDOW:
+      display_surface = media::mojom::DisplayCaptureSurfaceType::WINDOW;
+      cursor = uses_aura ? media::mojom::CursorCaptureType::MOTION
+                         : media::mojom::CursorCaptureType::ALWAYS;
+      break;
+    case content::DesktopMediaID::TYPE_WEB_CONTENTS:
+      display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
+      cursor = media::mojom::CursorCaptureType::MOTION;
+      break;
+    case content::DesktopMediaID::TYPE_NONE:
+      break;
+  }
+
+  return media::mojom::DisplayMediaInformation::New(display_surface,
+                                                    logical_surface, cursor);
+}
 
 base::string16 GetStopSharingUIString(
     const base::string16& application_title,
@@ -94,7 +133,7 @@ base::string16 GetStopSharingUIString(
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
     content::MediaStreamDevices* devices,
-    content::DesktopMediaID media_id,
+    const content::DesktopMediaID& media_id,
     content::MediaStreamType devices_video_type,
     content::MediaStreamType devices_audio_type,
     bool capture_audio,
@@ -112,8 +151,10 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
            << registered_extension_name;
 
   // Add selected desktop source to the list.
-  devices->push_back(content::MediaStreamDevice(
-      devices_video_type, media_id.ToString(), media_id.ToString()));
+  auto device = content::MediaStreamDevice(
+      devices_video_type, media_id.ToString(), media_id.ToString());
+  device.display_media_info = DesktopMediaIDToDisplayMediaInformation(media_id);
+  devices->push_back(device);
   if (capture_audio) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
       content::WebContentsMediaCaptureId web_id = media_id.web_contents_id;

@@ -11,7 +11,6 @@
 #include "ash/wm/wm_event.h"
 #include "ui/events/event.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
 

@@ -135,10 +135,10 @@ TEST_P(ClearTest, RGBA8Framebuffer)
 // have a correct behavior after.
 TEST_P(ClearTest, ChangeFramebufferAttachmentFromRGBAtoRGB)
 {
-    // TODO(lucferron): Diagnose and fix this on D3D9 and 11.
     // http://anglebug.com/2689
     ANGLE_SKIP_TEST_IF(IsD3D9() || IsD3D11() || (IsOzone() && IsOpenGLES()));
     ANGLE_SKIP_TEST_IF(IsOSX() && (IsNVIDIA() || IsIntel()) && IsDesktopOpenGL());
+    ANGLE_SKIP_TEST_IF(IsAndroid() && IsAdreno() && IsOpenGLES());
 
     ANGLE_GL_PROGRAM(program, angle::essl1_shaders::vs::Simple(),
                      angle::essl1_shaders::fs::UniformColor());
@@ -190,12 +190,6 @@ TEST_P(ClearTest, ChangeFramebufferAttachmentFromRGBAtoRGB)
 // Test clearing a RGB8 Framebuffer with a color mask.
 TEST_P(ClearTest, RGB8WithMaskFramebuffer)
 {
-    // TODO(fjhenigman): Diagnose and fix http://anglebug.com/2681
-    ANGLE_SKIP_TEST_IF(IsOzone() && IsOpenGLES());
-
-    // TODO(lucferron): Figure out why this test fails on OSX / OpenGL.
-    // http://anglebug.com/2674
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsDesktopOpenGL());
     glBindFramebuffer(GL_FRAMEBUFFER, mFBOs[0]);
 
     GLTexture texture;
@@ -205,14 +199,21 @@ TEST_P(ClearTest, RGB8WithMaskFramebuffer)
                  GL_UNSIGNED_BYTE, nullptr);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
-    glColorMask(GL_TRUE, GL_TRUE, GL_FALSE, GL_TRUE);
-
-    // alpha shouldn't really be taken into account and we should find 255 as a result since we
-    // are writing to a RGB8 texture. Also, the
-    glClearColor(0.5f, 0.5f, 0.5f, 0.2f);
+    glClearColor(0.2f, 0.4f, 0.6f, 0.8f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    EXPECT_PIXEL_NEAR(0, 0, 128, 128, 0, 255, 1.0);
+    // Since there's no alpha, we expect to get 255 back instead of the clear value (204).
+    EXPECT_PIXEL_NEAR(0, 0, 51, 102, 153, 255, 1.0);
+
+    glColorMask(GL_TRUE, GL_TRUE, GL_FALSE, GL_TRUE);
+    glClearColor(0.1f, 0.3f, 0.5f, 0.7f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // The blue channel was masked so its value should be unchanged.
+    EXPECT_PIXEL_NEAR(0, 0, 26, 77, 153, 255, 1.0);
+
+    // Restore default.
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 
 TEST_P(ClearTest, ClearIssue)
@@ -626,6 +627,19 @@ TEST_P(ClearTest, MaskedColorAndDepthClear)
     drawQuad(depthTestProgram, essl1_shaders::PositionAttrib(), 0.0f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::blue);
     ASSERT_GL_NO_ERROR();
+}
+
+// Test that just clearing a nonexistent drawbuffer of the default framebuffer doesn't cause an
+// assert.
+TEST_P(ClearTestES3, ClearBuffer1OnDefaultFramebufferNoAssert)
+{
+    std::vector<GLuint> testUint(4);
+    glClearBufferuiv(GL_COLOR, 1, testUint.data());
+    std::vector<GLint> testInt(4);
+    glClearBufferiv(GL_COLOR, 1, testInt.data());
+    std::vector<GLfloat> testFloat(4);
+    glClearBufferfv(GL_COLOR, 1, testFloat.data());
+    EXPECT_GL_NO_ERROR();
 }
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these

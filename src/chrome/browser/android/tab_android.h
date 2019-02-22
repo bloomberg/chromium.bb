@@ -126,13 +126,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
-  // Overridden from CoreTabHelperDelegate:
-  std::unique_ptr<content::WebContents> SwapTabContents(
-      content::WebContents* old_contents,
-      std::unique_ptr<content::WebContents> new_contents,
-      bool did_start_load,
-      bool did_finish_load) override;
-
   // Overridden from NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
@@ -191,7 +184,8 @@ class TabAndroid : public CoreTabHelperDelegate,
       jboolean is_renderer_initiated,
       jboolean should_replace_current_entry,
       jboolean has_user_gesture,
-      jboolean should_clear_history_list);
+      jboolean should_clear_history_list,
+      jlong omnibox_input_received_timestamp);
   void SetActiveNavigationEntryTitleForUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

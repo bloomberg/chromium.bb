@@ -116,6 +116,7 @@ const char kMP3[] = "audio/mpeg";
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 const char kMP4AV1[] = "video/mp4; codecs=\"av01.0.04M.08\"";
 const char kWebMAV1[] = "video/webm; codecs=\"av01.0.04M.08\"";
+const int kAV1640WebMFileDurationMs = 2736;
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kADTS[] = "audio/aac";
@@ -420,7 +421,7 @@ class FailingVideoDecoder : public VideoDecoder {
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
   }
   void Reset(const base::Closure& closure) override { closure.Run(); }
   bool NeedsBitstreamConversion() const override { return true; }
@@ -590,6 +591,12 @@ TEST_P(BasicMSEPlaybackTest, NewByPts_PlayToEnd) {
   scoped_feature_list.InitAndEnableFeature(media::kMseBufferByPts);
   PlayToEnd();
 }
+
+const PlaybackTestData kOpenCodecsTests[] = {{"bear-vp9-i422.webm", 0, 2736}};
+
+INSTANTIATE_TEST_CASE_P(OpenCodecs,
+                        BasicPlaybackTest,
+                        testing::ValuesIn(kOpenCodecsTests));
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
@@ -1579,6 +1586,36 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
   source.Shutdown();
   Stop();
 }
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+TEST_P(MSEPipelineIntegrationTest, ConfigChange_AV1_WebM) {
+  MockMediaSource source("bear-av1-480x360.webm", kWebMAV1,
+                         kAppendWholeFile);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+
+  const gfx::Size kNewSize(640, 480);
+  EXPECT_CALL(*this, OnVideoConfigChange(::testing::Property(
+                         &VideoDecoderConfig::natural_size, kNewSize)))
+      .Times(1);
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(kNewSize)).Times(1);
+  scoped_refptr<DecoderBuffer> second_file =
+      ReadTestDataFile("bear-av1-640x480.webm");
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                      second_file->data(), second_file->data_size());
+  source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAppendTimeMs + kAV1640WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  source.Shutdown();
+  Stop();
+}
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 TEST_P(MSEPipelineIntegrationTest, ConfigChange_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 
+#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -15,6 +18,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -78,6 +82,11 @@ void DiscoverWindowManager::ShowChromeDiscoverPageForProfile(Profile* profile) {
   discover_session_map_.emplace(profile, SessionID::InvalidValue())
       .first->second = params.browser->session_id();
   DCHECK(params.browser->is_trusted_source());
+
+  auto* window = params.browser->window()->GetNativeWindow();
+  window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_DISCOVER_APP_192);
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::CHROME_APP));
 
   for (DiscoverWindowManagerObserver& observer : observers_)
     observer.OnNewDiscoverWindow(params.browser);

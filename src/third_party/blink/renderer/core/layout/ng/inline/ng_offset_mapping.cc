@@ -271,6 +271,32 @@ NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForDOMRange(
   return {result_begin, result_end};
 }
 
+NGMappingUnitRange NGOffsetMapping::GetMappingUnitsForTextContentOffsetRange(
+    unsigned start,
+    unsigned end) const {
+  DCHECK_LE(start, end);
+  if (units_.front().TextContentStart() >= end ||
+      units_.back().TextContentEnd() <= start)
+    return {};
+
+  // Find the first unit where unit.text_content_end > start
+  const NGOffsetMappingUnit* result_begin =
+      std::lower_bound(units_.begin(), units_.end(), start,
+                       [](const NGOffsetMappingUnit& unit, unsigned offset) {
+                         return unit.TextContentEnd() <= offset;
+                       });
+  if (result_begin == units_.end() || result_begin->TextContentStart() >= end)
+    return {};
+
+  // Find the next of the last unit where unit.text_content_start < end
+  const NGOffsetMappingUnit* result_end =
+      std::upper_bound(units_.begin(), units_.end(), end,
+                       [](unsigned offset, const NGOffsetMappingUnit& unit) {
+                         return offset <= unit.TextContentStart();
+                       });
+  return {result_begin, result_end};
+}
+
 base::Optional<unsigned> NGOffsetMapping::GetTextContentOffset(
     const Position& position) const {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;

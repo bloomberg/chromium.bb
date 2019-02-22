@@ -141,13 +141,12 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
                          const gfx::Point& location_in_screen,
                          bool should_drop_window_into_overview);
 
-  // Returns true if |window| is the placeholder window from the new selector
-  // item.
-  bool IsNewSelectorItemWindow(aura::Window* window) const;
+  // Returns true if |window| is the placeholder window from the drop target.
+  bool IsDropTargetWindow(aura::Window* window) const;
 
-  // Returns the selector item that accociates with |new_selector_item_widget_|.
-  // Returns nullptr if overview does not have the new selector item.
-  WindowSelectorItem* GetNewSelectorItem();
+  // Returns the selector item that accociates with |drop_target_widget_|.
+  // Returns nullptr if overview does not have the drop target.
+  WindowSelectorItem* GetDropTarget();
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -199,6 +198,20 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // locations.
   void SlideWindowsIn();
 
+  // Update the y position and opacity of the entire grid. Does this by
+  // transforming the grids |shield_widget_| and the windows in |window_list_|.
+  // If |callback| is true transformation and opacity change should be animated.
+  // The animation settings will be set by the caller via |callback|.
+  void UpdateYPositionAndOpacity(
+      int new_y,
+      float opacity,
+      const gfx::Rect& work_area,
+      WindowSelector::UpdateAnimationSettingsCallback callback);
+
+  // Returns the window of the window selector item that contains
+  // |location_in_screen|.
+  aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -219,8 +232,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   const gfx::Rect bounds() const { return bounds_; }
 
-  views::Widget* new_selector_item_widget_for_testing() {
-    return new_selector_item_widget_.get();
+  views::Widget* drop_target_widget_for_testing() {
+    return drop_target_widget_.get();
   }
 
   bool should_animate_when_exiting() const {
@@ -324,12 +337,11 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Shadow around the selector.
   std::unique_ptr<ui::Shadow> selector_shadow_;
 
-  // The new selector item widget. It has a plus sign in the middle. It's
-  // created when a window (not from overview) is being dragged, and is
-  // destroyed when the drag ends or overview mode is ended. When the dragged
-  // window is dropped onto the new item widget, the dragged window is added
-  // to the overview.
-  std::unique_ptr<views::Widget> new_selector_item_widget_;
+  // The drop target widget. It has a plus sign in the middle. It's created when
+  // a window (not from overview) is being dragged, and is destroyed when the
+  // drag ends or overview mode is ended. When the dragged window is dropped
+  // onto the drop target, the dragged window is added to the overview.
+  std::unique_ptr<views::Widget> drop_target_widget_;
 
   // Current selected window position.
   size_t selected_index_ = 0;

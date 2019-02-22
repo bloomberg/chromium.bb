@@ -227,6 +227,7 @@ const char kTestMessageWithContext1[] = "hello laziness";
 const char kTestMessageWithContext2[] = "my old friend";
 const char kTestMessageWithContext3[] = "something something";
 const char kTestMessageWithContext4[] = "do moar ipc";
+const char kTestQuitMessage[] = "quit";
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageNoHandles, MessageTest, h) {
   MojoTestBase::WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE);
@@ -272,6 +273,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageOneHandle, MessageTest, h) {
   auto m = MojoTestBase::ReadMessageWithHandles(h, &h1, 1);
   EXPECT_EQ(kTestMessageWithContext1, m);
   MojoTestBase::WriteMessage(h1, kTestMessageWithContext2);
+  EXPECT_EQ(kTestQuitMessage, MojoTestBase::ReadMessage(h));
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
@@ -283,6 +285,7 @@ TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
                      nullptr);
     EXPECT_EQ(kTestMessageWithContext2,
               MojoTestBase::ReadMessage(pipe.handle1.get().value()));
+    MojoTestBase::WriteMessage(h, kTestQuitMessage);
   });
 }
 
@@ -295,6 +298,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
   MojoTestBase::WriteMessage(handles[1], kTestMessageWithContext2);
   MojoTestBase::WriteMessage(handles[2], kTestMessageWithContext3);
   MojoTestBase::WriteMessage(handles[3], kTestMessageWithContext4);
+
+  EXPECT_EQ(kTestQuitMessage, MojoTestBase::ReadMessage(h));
 }
 
 TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
@@ -315,6 +320,8 @@ TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
               MojoTestBase::ReadMessage(pipes[2].handle1.get().value()));
     EXPECT_EQ(kTestMessageWithContext4,
               MojoTestBase::ReadMessage(pipes[3].handle1.get().value()));
+
+    MojoTestBase::WriteMessage(h, kTestQuitMessage);
   });
 }
 

@@ -129,7 +129,7 @@ void LostNavigationsRecorder::ReconcileLostNavs() {
     // present in latest.
     IdSet lost_navs = base::STLSetDifference<IdSet>(recorded, latest);
     int quantity_lost = lost_navs.size();
-    UMA_HISTOGRAM_COUNTS("Sync.LostNavigationCount", quantity_lost);
+    UMA_HISTOGRAM_COUNTS_1M("Sync.LostNavigationCount", quantity_lost);
     recorded.clear();
   }
 }

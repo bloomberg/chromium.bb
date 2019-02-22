@@ -32,6 +32,14 @@ class RenderProcessImpl : public RenderProcess {
   void AddBindings(int bindings) override;
   int GetEnabledBindings() const override;
 
+  // Do not use these functions.
+  // The browser process is the only one responsible for knowing when to
+  // shutdown its renderer processes. Reference counting to keep this process
+  // alive is not used. To keep this process alive longer, see
+  // mojo::KeepAliveHandle and content::RenderProcessHostImpl.
+  void AddRefProcess() override;
+  void ReleaseProcess() override;
+
  private:
   RenderProcessImpl(std::unique_ptr<base::TaskScheduler::InitParams>
                         task_scheduler_init_params);

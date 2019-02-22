@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -37,6 +38,12 @@ const char kAccountPictureURLPath[] = "picture_url";
 const char kAccountChildAccountStatusPath[] = "is_child_account";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
+
+// Account folders used for storing account related data at disk.
+const base::FilePath::CharType kAccountsFolder[] =
+    FILE_PATH_LITERAL("Accounts");
+const base::FilePath::CharType kAvatarImagesFolder[] =
+    FILE_PATH_LITERAL("Avatar Images");
 
 // TODO(M48): Remove deprecated preference migration.
 const char kAccountServiceFlagsPath[] = "service_flags";
@@ -100,9 +107,6 @@ const char AccountTrackerService::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 // This must be a string which can never be a valid picture URL.
 const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 
-const char AccountTrackerService::kAccountsFolder[] = "Accounts";
-const char AccountTrackerService::kAvatarImagesFolder[] = "Avatar Images";
-
 AccountTrackerService::AccountTrackerService() : weak_factory_(this) {}
 
 AccountTrackerService::~AccountTrackerService() {
@@ -148,23 +152,17 @@ void AccountTrackerService::RemoveObserver(Observer* observer) {
 
 std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
   std::vector<AccountInfo> accounts;
-
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end();
-       ++it) {
-    const AccountState& state = it->second;
-    accounts.push_back(state.info);
+  for (const auto& pair : accounts_) {
+    accounts.push_back(pair.second.info);
   }
   return accounts;
 }
 
 AccountInfo AccountTrackerService::GetAccountInfo(
     const std::string& account_id) const {
-  std::map<std::string, AccountState>::const_iterator it =
-      accounts_.find(account_id);
-  if (it != accounts_.end())
-    return it->second.info;
+  const auto iterator = accounts_.find(account_id);
+  if (iterator != accounts_.end())
+    return iterator->second.info;
 
   return AccountInfo();
 }
@@ -172,14 +170,12 @@ AccountInfo AccountTrackerService::GetAccountInfo(
 AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
     const std::string& gaia_id) const {
   if (!gaia_id.empty()) {
-    for (std::map<std::string, AccountState>::const_iterator it =
-             accounts_.begin();
-         it != accounts_.end();
-         ++it) {
-      const AccountState& state = it->second;
-      if (state.info.gaia == gaia_id)
-        return state.info;
-    }
+    const auto iterator = std::find_if(
+        accounts_.begin(), accounts_.end(), [&gaia_id](const auto& pair) {
+          return pair.second.info.gaia == gaia_id;
+        });
+    if (iterator != accounts_.end())
+      return iterator->second.info;
   }
 
   return AccountInfo();
@@ -188,14 +184,12 @@ AccountInfo AccountTrackerService::FindAccountInfoByGaiaId(
 AccountInfo AccountTrackerService::FindAccountInfoByEmail(
     const std::string& email) const {
   if (!email.empty()) {
-    for (std::map<std::string, AccountState>::const_iterator it =
-             accounts_.begin();
-         it != accounts_.end();
-         ++it) {
-      const AccountState& state = it->second;
-      if (gaia::AreEmailsSame(state.info.email, email))
-        return state.info;
-    }
+    const auto iterator = std::find_if(
+        accounts_.begin(), accounts_.end(), [&email](const auto& pair) {
+          return gaia::AreEmailsSame(pair.second.info.email, email);
+        });
+    if (iterator != accounts_.end())
+      return iterator->second.info;
   }
 
   return AccountInfo();
@@ -203,8 +197,11 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
 
 gfx::Image AccountTrackerService::GetAccountImage(
     const std::string& account_id) {
-  return base::ContainsKey(accounts_, account_id) ? accounts_[account_id].image
-                                                  : gfx::Image();
+  const auto iterator = accounts_.find(account_id);
+  if (iterator != accounts_.end())
+    return iterator->second.image;
+
+  return gfx::Image();
 }
 
 // static
@@ -221,19 +218,8 @@ AccountTrackerService::GetMigrationState() const {
   return GetMigrationState(pref_service_);
 }
 
-void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
-  pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
-}
-
 void AccountTrackerService::SetMigrationDone() {
   SetMigrationState(MIGRATION_DONE);
-}
-
-// static
-AccountTrackerService::AccountIdMigrationState
-AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
-  return static_cast<AccountTrackerService::AccountIdMigrationState>(
-      pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
 
 void AccountTrackerService::NotifyAccountUpdated(const AccountState& state) {
@@ -310,7 +296,7 @@ void AccountTrackerService::SetAccountStateFromUserInfo(
     user_info->GetString("locale", &state.info.locale);
 
     std::string picture_url;
-    if(user_info->GetString("picture", &picture_url)) {
+    if (user_info->GetString("picture", &picture_url)) {
       state.info.picture_url = picture_url;
     } else {
       state.info.picture_url = kNoPictureURLFound;
@@ -355,61 +341,98 @@ void AccountTrackerService::SetIsAdvancedProtectionAccount(
   SaveToPrefs(state);
 }
 
-bool AccountTrackerService::IsMigratable() const {
-  if (!IsMigrationSupported())
-    return false;
-
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end(); ++it) {
-    const AccountState& state = it->second;
-    if ((it->first).empty() || state.info.gaia.empty())
-      return false;
-  }
-  return true;
-}
-
 void AccountTrackerService::MigrateToGaiaId() {
-  std::set<std::string> to_remove;
-  std::map<std::string, AccountState> migrated_accounts;
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end(); ++it) {
-    const AccountState& state = it->second;
-    std::string account_id = it->first;
-    if (account_id != state.info.gaia) {
-      std::string new_account_id = state.info.gaia;
-      if (!base::ContainsKey(accounts_, new_account_id)) {
-        AccountState new_state = state;
-        new_state.info.account_id = new_account_id;
-        migrated_accounts.insert(make_pair(new_account_id, new_state));
-        SaveToPrefs(new_state);
-      }
-      to_remove.insert(account_id);
-    }
+  DCHECK_EQ(GetMigrationState(), MIGRATION_IN_PROGRESS);
+
+  std::vector<std::string> to_remove;
+  std::vector<AccountState> migrated_accounts;
+  for (const auto& pair : accounts_) {
+    const std::string& new_account_id = pair.second.info.gaia;
+    if (pair.first == new_account_id)
+      continue;
+
+    to_remove.push_back(pair.first);
+
+    // If there is already an account keyed to the current account's gaia id,
+    // assume this is the result of a partial migration and skip the account
+    // that is currently inspected.
+    if (base::ContainsKey(accounts_, new_account_id))
+      continue;
+
+    AccountState new_state = pair.second;
+    new_state.info.account_id = new_account_id;
+    SaveToPrefs(new_state);
+    migrated_accounts.emplace_back(std::move(new_state));
+  }
+
+  // Insert the new migrated accounts.
+  for (AccountState& new_state : migrated_accounts) {
+    // Copy the AccountState |gaia| member field so that it is not left in
+    // an undeterminate state in the structure after std::map::emplace call.
+    std::string account_id = new_state.info.gaia;
+    SaveToPrefs(new_state);
+
+    accounts_.emplace(std::move(account_id), std::move(new_state));
   }
 
   // Remove any obsolete account.
-  for (auto account_id : to_remove) {
-    if (base::ContainsKey(accounts_, account_id)) {
-      AccountState& state = accounts_[account_id];
-      RemoveFromPrefs(state);
-      RemoveAccountImageFromDisk(account_id);
-      accounts_.erase(account_id);
-    }
+  for (const auto& account_id : to_remove) {
+    DCHECK(base::ContainsKey(accounts_, account_id));
+    AccountState& state = accounts_[account_id];
+    RemoveAccountImageFromDisk(account_id);
+    RemoveFromPrefs(state);
+    accounts_.erase(account_id);
+  }
+}
+
+bool AccountTrackerService::IsMigrationDone() const {
+  if (!IsMigrationSupported())
+    return false;
+
+  for (const auto& pair : accounts_) {
+    if (pair.first != pair.second.info.gaia)
+      return false;
   }
 
-  for (std::map<std::string, AccountState>::const_iterator it =
-           migrated_accounts.begin();
-       it != migrated_accounts.end(); ++it) {
-    accounts_.insert(*it);
+  return true;
+}
+
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::ComputeNewMigrationState() const {
+  // If migration is not supported, skip migration.
+  if (!IsMigrationSupported())
+    return MIGRATION_NOT_STARTED;
+
+  bool migration_required = false;
+  for (const auto& pair : accounts_) {
+    // If there is any non-migratable account, skip migration.
+    if (pair.first.empty() || pair.second.info.gaia.empty())
+      return MIGRATION_NOT_STARTED;
+
+    // Migration is required if at least one account is not keyed to its
+    // gaia id.
+    migration_required |= (pair.first != pair.second.info.gaia);
   }
+
+  return migration_required ? MIGRATION_IN_PROGRESS : MIGRATION_DONE;
+}
+
+void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
+  DCHECK(state != MIGRATION_DONE || IsMigrationDone());
+  pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
+}
+
+// static
+AccountTrackerService::AccountIdMigrationState
+AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
+  return static_cast<AccountTrackerService::AccountIdMigrationState>(
+      pref_service->GetInteger(prefs::kAccountIdMigrationState));
 }
 
 base::FilePath AccountTrackerService::GetImagePathFor(
     const std::string& account_id) {
-  return user_data_dir_.AppendASCII(kAccountsFolder)
-      .AppendASCII(kAvatarImagesFolder)
+  return user_data_dir_.Append(kAccountsFolder)
+      .Append(kAvatarImagesFolder)
       .AppendASCII(account_id);
 }
 
@@ -425,8 +448,8 @@ void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
 void AccountTrackerService::LoadAccountImagesFromDisk() {
   if (!image_storage_task_runner_)
     return;
-  for (const std::pair<std::string, AccountState>& account : accounts_) {
-    const std::string& account_id = account.second.info.account_id;
+  for (const auto& pair : accounts_) {
+    const std::string& account_id = pair.second.info.account_id;
     PostTaskAndReplyWithResult(
         image_storage_task_runner_.get(), FROM_HERE,
         base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
@@ -520,6 +543,9 @@ void AccountTrackerService::LoadFromPrefs() {
     }
   }
 
+  UMA_HISTOGRAM_BOOLEAN("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
+                        contains_deprecated_service_flags);
+
   if (contains_deprecated_service_flags)
     RemoveDeprecatedServiceFlags(pref_service_);
 
@@ -531,16 +557,29 @@ void AccountTrackerService::LoadFromPrefs() {
     RemoveAccountImageFromDisk(account_id);
   }
 
-  if (GetMigrationState() != MIGRATION_DONE) {
-    if (IsMigratable()) {
-      if (accounts_.empty()) {
-        SetMigrationDone();
-      } else {
-        SetMigrationState(MIGRATION_IN_PROGRESS);
+  if (IsMigrationSupported()) {
+    if (GetMigrationState() != MIGRATION_DONE) {
+      const AccountIdMigrationState new_state = ComputeNewMigrationState();
+      SetMigrationState(new_state);
+
+      if (new_state == MIGRATION_IN_PROGRESS) {
         MigrateToGaiaId();
       }
     }
+  } else {
+    // ChromeOS running on Linux and Linux share the preferences, so the
+    // migration may have been performed on Linux. Reset the migration
+    // state to ensure that the same code path is used whether ChromeOS
+    // is running on Linux on a dev build or on real ChromeOS device.
+    SetMigrationState(MIGRATION_NOT_STARTED);
   }
+
+  DCHECK(GetMigrationState() != MIGRATION_DONE || IsMigrationDone());
+  UMA_HISTOGRAM_ENUMERATION("Signin.AccountTracker.GaiaIdMigrationState",
+                            GetMigrationState(), NUM_MIGRATION_STATES);
+
+  UMA_HISTOGRAM_COUNTS_100("Signin.AccountTracker.CountOfLoadedAccounts",
+                           accounts_.size());
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {
@@ -584,7 +623,7 @@ void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
 
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
   ListPrefUpdate update(pref_service_, kAccountInfoPref);
-  for(size_t i = 0; i < update->GetSize(); ++i) {
+  for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
@@ -608,14 +647,15 @@ std::string AccountTrackerService::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) {
   DCHECK(!gaia.empty() ||
-      GetMigrationState(pref_service) == MIGRATION_NOT_STARTED);
+         GetMigrationState(pref_service) == MIGRATION_NOT_STARTED);
   DCHECK(!email.empty());
-  switch(GetMigrationState(pref_service)) {
+  switch (GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
       // Some tests don't use a real email address.  To support these cases,
       // don't try to canonicalize these strings.
-      return (email.find('@') == std::string::npos) ? email :
-          gaia::CanonicalizeEmail(email);
+      return (email.find('@') == std::string::npos)
+                 ? email
+                 : gaia::CanonicalizeEmail(email);
     case MIGRATION_IN_PROGRESS:
     case MIGRATION_DONE:
       return gaia;
@@ -637,8 +677,7 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   SaveToPrefs(state);
 
   DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
-           << " account_id=" << account_id
-           << " gaia_id=" << gaia
+           << " account_id=" << account_id << " gaia_id=" << gaia
            << " email=" << email;
 
   return account_id;

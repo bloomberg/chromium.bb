@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "effcee/effcee.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "source/opt/build_module.h"
@@ -27,17 +28,12 @@
 #include "spirv-tools/libspirv.hpp"
 #include "test/opt/pass_utils.h"
 
-#ifdef SPIRV_EFFCEE
-#include "effcee/effcee.h"
-#endif
-
 namespace spvtools {
 namespace opt {
 namespace {
 
 using ::testing::Contains;
 
-#ifdef SPIRV_EFFCEE
 std::string Disassemble(const std::string& original, IRContext* context,
                         uint32_t disassemble_options = 0) {
   std::vector<uint32_t> optimized_bin;
@@ -60,7 +56,6 @@ void Match(const std::string& original, IRContext* context,
       << match_result.message() << "\nChecking result:\n"
       << disassembly;
 }
-#endif
 
 template <class ResultType>
 struct InstructionFoldingCase {
@@ -437,6 +432,46 @@ INSTANTIATE_TEST_CASE_P(TestCase, IntegerInstructionFoldingTest,
           "%n = OpVariable %_ptr_uint Function\n" +
           "%load = OpLoad %uint %n\n" +
           "%2 = OpBitwiseAnd %uint %load %uint_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 17: fold 1/0 (signed)
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpSDiv %int %int_1 %int_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 18: fold 1/0 (unsigned)
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpUDiv %uint %uint_1 %uint_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 19: fold OpSRem 1 0 (signed)
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpSRem %int %int_1 %int_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 20: fold 1%0 (signed)
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpSMod %int %int_1 %int_0\n" +
+          "OpReturn\n" +
+          "OpFunctionEnd",
+      2, 0),
+  // Test case 21: fold 1%0 (unsigned)
+  InstructionFoldingCase<uint32_t>(
+      Header() + "%main = OpFunction %void None %void_func\n" +
+          "%main_lab = OpLabel\n" +
+          "%2 = OpUMod %uint %uint_1 %uint_0\n" +
           "OpReturn\n" +
           "OpFunctionEnd",
       2, 0)
@@ -3851,7 +3886,6 @@ INSTANTIATE_TEST_CASE_P(DoubleRedundantSubFoldingTest, ToNegateFoldingTest,
         2, 3)
 ));
 
-#ifdef SPIRV_EFFCEE
 using MatchingInstructionFoldingTest =
     ::testing::TestWithParam<InstructionFoldingCase<bool>>;
 
@@ -6075,7 +6109,6 @@ INSTANTIATE_TEST_CASE_P(VectorShuffleMatchingTest, MatchingInstructionWithNoResu
             "OpFunctionEnd",
         9, true)
 ));
-#endif
 
 }  // namespace
 }  // namespace opt

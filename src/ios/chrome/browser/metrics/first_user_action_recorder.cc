@@ -109,6 +109,10 @@ FirstUserActionRecorder::~FirstUserActionRecorder() {
 
 void FirstUserActionRecorder::Expire() {
   std::string log_message = "Recording 'Expiration' for first user action type";
+  // If there is a pending rethrowable action, it could technically be logged.
+  // But as FirstUserActionRecorder will be destroyed in this runloop, it is too
+  // late.
+  rethrow_callback_.Cancel();
   RecordAction(EXPIRATION, log_message);
 }
 
@@ -183,9 +187,11 @@ bool FirstUserActionRecorder::ShouldProcessAction(
   if (!action_pending_ &&
       ArrayContainsString(kRethrownActions, arraysize(kRethrownActions),
                           action_name.c_str())) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FirstUserActionRecorder::OnUserAction,
-                              base::Unretained(this), action_name));
+    rethrow_callback_.Reset(
+        base::BindOnce(&FirstUserActionRecorder::OnUserAction,
+                       base::Unretained(this), action_name));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  rethrow_callback_.callback());
     action_pending_ = true;
     return false;
   }

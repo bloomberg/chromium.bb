@@ -135,9 +135,9 @@ print(json.dumps(pkg_info))
   def _GetCP(cpv):
     """Returns the CP value for a given CPV string."""
     attrs = portage_util.SplitCPV(cpv, strict=False)
-    if not (attrs.category and attrs.package):
+    if not attrs.cp:
       raise ValueError('Cannot get CP value for %s' % cpv)
-    return os.path.join(attrs.category, attrs.package)
+    return attrs.cp
 
   @staticmethod
   def _InDB(cp, slot, db):
@@ -799,7 +799,7 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
     try:
       cros_build_lib.RunCommand(
           ['strip_package', '--sysroot', sysroot] +
-          [os.path.join(cpv.category, str(cpv.pv)) for cpv in cpvs])
+          [cpv.cpf for cpv in cpvs])
       packages_dir = _STRIPPED_PACKAGES_DIR
     except cros_build_lib.RunCommandError:
       logging.error('Cannot strip packages %s',

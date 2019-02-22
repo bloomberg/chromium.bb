@@ -676,4 +676,35 @@ TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSavingLatestOnly) {
       1 + 2 + 4);
 }
 
+TEST(PasswordFormMetricsRecorder, FormChangeBitmapNoMetricRecorded) {
+  base::HistogramTester histogram_tester;
+  auto recorder =
+      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  recorder.reset();
+  histogram_tester.ExpectTotalCount("PasswordManager.DynamicFormChanges", 0);
+}
+
+TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedOnce) {
+  base::HistogramTester histogram_tester;
+  auto recorder =
+      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  recorder->RecordFormChangeBitmask(PasswordFormMetricsRecorder::kFieldsNumber);
+  recorder.reset();
+  histogram_tester.ExpectUniqueSample("PasswordManager.DynamicFormChanges",
+                                      1 /* kFieldsNumber */, 1);
+}
+
+TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedMultipleTimes) {
+  base::HistogramTester histogram_tester;
+  auto recorder =
+      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  recorder->RecordFormChangeBitmask(PasswordFormMetricsRecorder::kFieldsNumber);
+  recorder->RecordFormChangeBitmask(
+      PasswordFormMetricsRecorder::kFormControlTypes);
+  recorder.reset();
+  uint32_t expected = 1 /* fields number */ | (1 << 3) /* control types */;
+  histogram_tester.ExpectUniqueSample("PasswordManager.DynamicFormChanges",
+                                      expected, 1);
+}
+
 }  // namespace password_manager

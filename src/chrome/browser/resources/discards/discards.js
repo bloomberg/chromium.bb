@@ -8,44 +8,23 @@ cr.define('discards', function() {
   // The following variables are initialized by 'initialize'.
   // Points to the Mojo WebUI handler.
   let uiHandler;
-  // After initialization this points to the discard info table body.
-  let tabDiscardsInfoTableBody;
-  // This holds the sorted tab discard infos as retrieved from the uiHandler.
-  let infos;
-  // Holds information about the current sorting of the table.
-  let sortKey;
-  let sortReverse;
-  // Points to the timer that refreshes the table content.
-  let updateTimer;
-
-  // Specifies the update interval of the page, in ms.
-  const UPDATE_INTERVAL_MS = 1000;
 
   /**
-   * Ensures the discards info table has the appropriate length. Decorates
-   * newly created rows with a 'row-index' attribute to enable event listeners
-   * to quickly determine the index of the row.
+   * @return {!mojom.DiscardsDetailsProviderPtr} The UI handler.
    */
-  function ensureTabDiscardsInfoTableLength() {
-    let rows = tabDiscardsInfoTableBody.querySelectorAll('tr');
-    if (rows.length < infos.length) {
-      for (let i = rows.length; i < infos.length; ++i) {
-        let row = createEmptyTabDiscardsInfoTableRow();
-        row.setAttribute('data-row-index', i.toString());
-        tabDiscardsInfoTableBody.appendChild(row);
-      }
-    } else if (rows.length > infos.length) {
-      for (let i = infos.length; i < rows.length; ++i) {
-        tabDiscardsInfoTableBody.removeChild(rows[i]);
-      }
+  function getOrCreateUiHandler() {
+    if (!uiHandler) {
+      uiHandler = new mojom.DiscardsDetailsProviderPtr;
+      Mojo.bindInterface(
+          mojom.DiscardsDetailsProvider.name,
+          mojo.makeRequest(uiHandler).handle);
     }
+    return uiHandler;
   }
 
   /**
-   * Determines if the provided state is related to discarding.
-   * @param {state} The discard state.
-   * @return {boolean} True if the state is related to discarding, false
-   *     otherwise.
+   * @param {mojom.LifecycleUnitState} state The discard state.
+   * @return {boolean} Whether the state is related to discarding.
    */
   function isDiscardRelatedState(state) {
     return state == mojom.LifecycleUnitState.PENDING_DISCARD ||
@@ -112,16 +91,6 @@ cr.define('discards', function() {
   }
 
   /**
-   * Sorts the tab discards info data in |infos| according to the current
-   * |sortKey|.
-   */
-  function sortTabDiscardsInfoTable() {
-    infos = infos.sort((a, b) => {
-      return (sortReverse ? -1 : 1) * compareTabDiscardsInfos(sortKey, a, b);
-    });
-  }
-
-  /**
    * Pluralizes a string according to the given count. Assumes that appending an
    * 's' is sufficient to make a string plural.
    * @param {string} s The string to be made plural if necessary.
@@ -133,11 +102,11 @@ cr.define('discards', function() {
   }
 
   /**
-   * Converts a |secondsAgo| last-active time to a user friendly string.
-   * @param {number} secondsAgo The amount of time since the tab was active.
-   * @return {string} An English string representing the last active time.
+   * Converts a |seconds| interval to a user friendly string.
+   * @param {number} seconds The interval to render.
+   * @return {string} An English string representing the interval.
    */
-  function lastActiveToString(secondsAgo) {
+  function secondsToString(seconds) {
     // These constants aren't perfect, but close enough.
     const SECONDS_PER_MINUTE = 60;
     const MINUTES_PER_HOUR = 60;
@@ -149,55 +118,63 @@ cr.define('discards', function() {
     const SECONDS_PER_MONTH = SECONDS_PER_DAY * 30.5;
     const SECONDS_PER_YEAR = SECONDS_PER_DAY * 365;
 
-    // Seconds ago.
-    if (secondsAgo < SECONDS_PER_MINUTE)
-      return 'just now';
+    // Seconds.
+    if (seconds < SECONDS_PER_MINUTE)
+      return seconds.toString() + maybeMakePlural(' second', seconds);
 
-    // Minutes ago.
-    let minutesAgo = Math.floor(secondsAgo / SECONDS_PER_MINUTE);
-    if (minutesAgo < MINUTES_PER_HOUR) {
-      return minutesAgo.toString() + maybeMakePlural(' minute', minutesAgo) +
-          ' ago';
+    // Minutes.
+    let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+    if (minutes < MINUTES_PER_HOUR) {
+      return minutes.toString() + maybeMakePlural(' minute', minutes);
     }
 
-    // Hours and minutes and ago.
-    let hoursAgo = Math.floor(secondsAgo / SECONDS_PER_HOUR);
-    minutesAgo = minutesAgo % MINUTES_PER_HOUR;
-    if (hoursAgo < HOURS_PER_DAY) {
-      let s = hoursAgo.toString() + maybeMakePlural(' hour', hoursAgo);
-      if (minutesAgo > 0) {
-        s += ' and ' + minutesAgo.toString() +
-            maybeMakePlural(' minute', minutesAgo);
+    // Hours and minutes.
+    let hours = Math.floor(seconds / SECONDS_PER_HOUR);
+    minutes = minutes % MINUTES_PER_HOUR;
+    if (hours < HOURS_PER_DAY) {
+      let s = hours.toString() + maybeMakePlural(' hour', hours);
+      if (minutes > 0) {
+        s += ' and ' + minutes.toString() + maybeMakePlural(' minute', minutes);
       }
-      s += ' ago';
       return s;
     }
 
-    // Days ago.
-    let daysAgo = Math.floor(secondsAgo / SECONDS_PER_DAY);
-    if (daysAgo < DAYS_PER_WEEK) {
-      return daysAgo.toString() + maybeMakePlural(' day', daysAgo) + ' ago';
+    // Days.
+    let days = Math.floor(seconds / SECONDS_PER_DAY);
+    if (days < DAYS_PER_WEEK) {
+      return days.toString() + maybeMakePlural(' day', days);
     }
 
-    // Weeks ago. There's an awkward gap to bridge where 4 weeks can have
+    // Weeks. There's an awkward gap to bridge where 4 weeks can have
     // elapsed but not quite 1 month. Be sure to use weeks to report that.
-    let weeksAgo = Math.floor(secondsAgo / SECONDS_PER_WEEK);
-    let monthsAgo = Math.floor(secondsAgo / SECONDS_PER_MONTH);
-    if (monthsAgo < 1) {
-      return 'over ' + weeksAgo.toString() +
-          maybeMakePlural(' week', weeksAgo) + ' ago';
+    let weeks = Math.floor(seconds / SECONDS_PER_WEEK);
+    let months = Math.floor(seconds / SECONDS_PER_MONTH);
+    if (months < 1) {
+      return 'over ' + weeks.toString() + maybeMakePlural(' week', weeks);
     }
 
-    // Months ago.
-    let yearsAgo = Math.floor(secondsAgo / SECONDS_PER_YEAR);
-    if (yearsAgo < 1) {
-      return 'over ' + monthsAgo.toString() +
-          maybeMakePlural(' month', monthsAgo) + ' ago';
+    // Months.
+    let years = Math.floor(seconds / SECONDS_PER_YEAR);
+    if (years < 1) {
+      return 'over ' + months.toString() + maybeMakePlural(' month', months);
     }
 
-    // Years ago.
-    return 'over ' + yearsAgo.toString() + maybeMakePlural(' year', yearsAgo) +
-        ' ago';
+    // Years.
+    return 'over ' + years.toString() + maybeMakePlural(' year', years);
+  }
+
+  /**
+   * Converts a |secondsAgo| duration to a user friendly string.
+   * @param {number} secondsAgo The duration to render.
+   * @return {string} An English string representing the duration.
+   */
+  function durationToString(secondsAgo) {
+    let ret = secondsToString(secondsAgo);
+
+    if (ret.endsWith(' seconds') || ret.endsWith(' second'))
+      return 'just now';
+
+    return ret + ' ago';
   }
 
   /**
@@ -209,433 +186,14 @@ cr.define('discards', function() {
     return bool ? '✔' : '✘️';
   }
 
-  /**
-   * Returns a string representation of a visibility enum value for display in
-   * a table.
-   * @param {int} visibility A value in LifecycleUnitVisibility.
-   * @return {string} A string representation of the visibility.
-   */
-  function visibilityToString(visibility) {
-    switch (visibility) {
-      case mojom.LifecycleUnitVisibility.HIDDEN:
-        return 'hidden';
-      case mojom.LifecycleUnitVisibility.OCCLUDED:
-        return 'occluded';
-      case mojom.LifecycleUnitVisibility.VISIBLE:
-        return 'visible';
-    }
-    assertNotReached('Unknown visibility: ' + visibility);
-  }
-
-  /**
-   * Returns a string representation of a loading state enum value for display
-   * in a table.
-   * @param {int} loadingState A value in LifecycleUnitLoadingState enum.
-   * @return {string} A string representation of the loading state.
-   */
-  function loadingStateToString(loadingState) {
-    switch (loadingState) {
-      case mojom.LifecycleUnitLoadingState.UNLOADED:
-        return 'unloaded';
-      case mojom.LifecycleUnitLoadingState.LOADING:
-        return 'loading';
-      case mojom.LifecycleUnitLoadingState.LOADED:
-        return 'loaded';
-    }
-    assertNotReached('Unknown loadingState: ' + loadingState);
-  }
-
-  /**
-   * Returns a string representation of a discard reason.
-   * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason.
-   * @return {string} A string representation of the discarding reason.
-   */
-  function discardReasonToString(reason) {
-    switch (reason) {
-      case mojom.LifecycleUnitDiscardReason.EXTERNAL:
-        return 'external';
-      case mojom.LifecycleUnitDiscardReason.PROACTIVE:
-        return 'proactive';
-      case mojom.LifecycleUnitDiscardReason.URGENT:
-        return 'urgent';
-    }
-    assertNotReached('Unknown discard reason: ' + reason);
-  }
-
-  /**
-   * Returns a string representation of a lifecycle state.
-   * @param {mojom.LifecycleUnitState} state The lifecycle state.
-   * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason. This
-   *     is only used if the state is discard related.
-   * @param {int} visibility A value in LifecycleUnitVisibility.
-   * @param {boolean} hasFocus Whether or not the tab has input focus.
-   * @return {string} A string representation of the lifecycle state, augmented
-   *     with the discard reason if appropriate.
-   */
-  function lifecycleStateToString(state, reason, visibility, hasFocus) {
-    let pageLifecycleStateFromVisibilityAndFocus = function() {
-      switch (visibility) {
-        case mojom.LifecycleUnitVisibility.HIDDEN:
-        case mojom.LifecycleUnitVisibility.OCCLUDED:
-          // An occluded page is also considered hidden.
-          return 'hidden';
-        case mojom.LifecycleUnitVisibility.VISIBLE:
-          return hasFocus ? 'active' : 'passive';
-      }
-      assertNotReached('Unknown visibility: ' + visibility);
-    };
-
-    switch (state) {
-      case mojom.LifecycleUnitState.ACTIVE:
-        return pageLifecycleStateFromVisibilityAndFocus();
-      case mojom.LifecycleUnitState.THROTTLED:
-        return pageLifecycleStateFromVisibilityAndFocus() + ' (throttled)';
-      case mojom.LifecycleUnitState.PENDING_FREEZE:
-        return pageLifecycleStateFromVisibilityAndFocus() + ' (pending frozen)';
-      case mojom.LifecycleUnitState.FROZEN:
-        return 'frozen';
-      case mojom.LifecycleUnitState.PENDING_DISCARD:
-        return pageLifecycleStateFromVisibilityAndFocus() +
-            ' (pending discard (' + discardReasonToString(reason) + '))';
-      case mojom.LifecycleUnitState.DISCARDED:
-        return 'discarded (' + discardReasonToString(reason) + ')';
-      case mojom.LifecycleUnitState.PENDING_UNFREEZE:
-        return 'frozen (pending unfreeze)';
-    }
-    assertNotReached('Unknown lifecycle state: ' + state);
-  }
-
-  /**
-   * Returns the index of the row in the table that houses the given |element|.
-   * @param {HTMLElement} element Any element in the DOM.
-   */
-  function getRowIndex(element) {
-    let row = element.closest('tr');
-    return parseInt(row.getAttribute('data-row-index'), 10);
-  }
-
-  /**
-   * Creates an empty tab discards table row with action-link listeners, etc.
-   * By default the links are inactive.
-   */
-  function createEmptyTabDiscardsInfoTableRow() {
-    let template = $('tab-discard-info-row');
-    let content = document.importNode(template.content, true);
-    let row = content.querySelector('tr');
-
-    // Set up the listener for the auto-discardable toggle action.
-    let isAutoDiscardable = row.querySelector('.is-auto-discardable-link');
-    isAutoDiscardable.setAttribute('disabled', '');
-    isAutoDiscardable.addEventListener('click', (e) => {
-      // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
-      // Disable the action. The update function is responsible for
-      // re-enabling actions if necessary.
-      e.target.setAttribute('disabled', '');
-      // Perform the action.
-      uiHandler.setAutoDiscardable(info.id, !info.isAutoDiscardable)
-          .then(stableUpdateTabDiscardsInfoTable());
-    });
-
-    let loadListener = function(e) {
-      // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
-      // Perform the action.
-      uiHandler.loadById(info.id);
-    };
-    let loadLink = row.querySelector('.load-link');
-    loadLink.addEventListener('click', loadListener);
-
-    // Set up the listeners for freeze links.
-    let freezeListener = function(e) {
-      // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
-      // Perform the action.
-      uiHandler.freezeById(info.id);
-    };
-    let freezeLink = row.querySelector('.freeze-link');
-    freezeLink.addEventListener('click', freezeListener);
-
-    // Set up the listeners for discard links.
-    let discardListener = function(e) {
-      // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
-      // Determine whether this is urgent or not.
-      let urgent = e.target.classList.contains('discard-urgent-link');
-      // Disable the action. The update function is responsible for
-      // re-enabling actions if necessary.
-      e.target.setAttribute('disabled', '');
-      // Perform the action.
-      uiHandler.discardById(info.id, urgent).then((response) => {
-        stableUpdateTabDiscardsInfoTable();
-      });
-    };
-    let discardLink = row.querySelector('.discard-link');
-    let discardUrgentLink = row.querySelector('.discard-urgent-link');
-    discardLink.addEventListener('click', discardListener);
-    discardUrgentLink.addEventListener('click', discardListener);
-
-    return row;
-  }
-
-  /**
-   * Given an "action-link" element, enables or disables it.
-   */
-  function setActionLinkEnabled(element, enabled) {
-    if (enabled)
-      element.removeAttribute('disabled');
-    else
-      element.setAttribute('disabled', '');
-  }
-
-  /**
-   * Updates a tab discards info table row in place. Sets/unsets 'disabled'
-   * attributes on action-links as necessary, and populates all contents.
-   */
-  function updateTabDiscardsInfoTableRow(row, info) {
-    // Update the content.
-    row.querySelector('.utility-rank-cell').textContent =
-        info.utilityRank.toString();
-    row.querySelector('.reactivation-score-cell').textContent =
-        info.hasReactivationScore ? info.reactivationScore.toFixed(4) : 'N/A';
-    row.querySelector('.site-engagement-score-cell').textContent =
-        info.siteEngagementScore.toFixed(1);
-    row.querySelector('.favicon-div').style.backgroundImage =
-        cr.icon.getFavicon(info.tabUrl);
-    row.querySelector('.title-div').textContent = info.title;
-    row.querySelector('.tab-url-cell').textContent = info.tabUrl;
-    row.querySelector('.visibility-cell').textContent =
-        visibilityToString(info.visibility);
-    row.querySelector('.loading-state-cell').textContent =
-        loadingStateToString(info.loadingState);
-    row.querySelector('.can-freeze-div').textContent =
-        boolToString(info.canFreeze);
-    row.querySelector('.can-discard-div').textContent =
-        boolToString(info.canDiscard);
-    // The lifecycle state is meaningless for tabs that have never been loaded.
-    row.querySelector('.state-cell').textContent =
-        (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
-         info.discardCount > 0) ?
-        lifecycleStateToString(
-            info.state, info.discardReason, info.visibility, info.hasFocus) :
-        '';
-    row.querySelector('.discard-count-cell').textContent =
-        info.discardCount.toString();
-    row.querySelector('.is-auto-discardable-div').textContent =
-        boolToString(info.isAutoDiscardable);
-    row.querySelector('.last-active-cell').textContent =
-        lastActiveToString(info.lastActiveSeconds);
-
-    // Update the tooltips with 'Can Freeze/Discard?' reasons.
-    row.querySelector('.can-freeze-tooltip').innerHTML =
-        info.cannotFreezeReasons.join('<br />');
-    row.querySelector('.can-discard-tooltip').innerHTML =
-        info.cannotDiscardReasons.join('<br />');
-
-    row.querySelector('.is-auto-discardable-link').removeAttribute('disabled');
-    setActionLinkEnabled(
-        row.querySelector('.can-freeze-link'),
-        (!info.canFreeze && info.cannotFreezeReasons.length > 0));
-    setActionLinkEnabled(
-        row.querySelector('.can-discard-link'),
-        (!info.canDiscard && info.cannotDiscardReasons.length > 0));
-    let loadLink = row.querySelector('.load-link');
-    let freezeLink = row.querySelector('.freeze-link');
-    let discardLink = row.querySelector('.discard-link');
-    let discardUrgentLink = row.querySelector('.discard-urgent-link');
-
-    // Determine which action links should be enabled/disabled. By default
-    // everything is disabled and links are selectively enabled depending on the
-    // tab state.
-    let loadEnabled = false;
-    let freezeEnabled = false;
-    let discardEnabled = false;
-    let discardUrgentEnabled = false;
-    if (info.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED) {
-      loadEnabled = true;
-    } else if (
-        info.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
-        info.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
-      // Only tabs that aren't visible can be frozen or discarded for now.
-      freezeEnabled = true;
-      discardEnabled = true;
-      discardUrgentEnabled = true;
-      switch (info.state) {
-        case mojom.LifecycleUnitState.DISCARDED:
-        case mojom.LifecycleUnitState.PENDING_DISCARD:
-          discardUrgentEnabled = false;
-          discardEnabled = false;
-        // Deliberately fall through.
-
-        case mojom.LifecycleUnitState.FROZEN:
-        case mojom.LifecycleUnitState.PENDING_FREEZE:
-          freezeEnabled = false;
-        // Deliberately fall through.
-
-        case mojom.LifecycleUnitState.THROTTLED:
-        case mojom.LifecycleUnitState.ACTIVE:
-          // Everything stays enabled,
-      }
-    }
-
-    setActionLinkEnabled(loadLink, loadEnabled);
-    setActionLinkEnabled(freezeLink, freezeEnabled);
-    setActionLinkEnabled(discardLink, discardEnabled);
-    setActionLinkEnabled(discardUrgentLink, discardUrgentEnabled);
-  }
-
-  /**
-   * Causes the discards info table to be rendered. Reuses existing table rows
-   * in place to minimize disruption to the page.
-   */
-  function renderTabDiscardsInfoTable() {
-    ensureTabDiscardsInfoTableLength();
-    let rows = tabDiscardsInfoTableBody.querySelectorAll('tr');
-    for (let i = 0; i < infos.length; ++i)
-      updateTabDiscardsInfoTableRow(rows[i], infos[i]);
-  }
-
-  /**
-   * Causes the discard info table to be updated in as stable a manner as
-   * possible. That is, rows will stay in their relative positions, even if the
-   * current sort order is violated. Only the addition or removal of rows (tabs)
-   * can cause the layout to change.
-   */
-  function stableUpdateTabDiscardsInfoTableImpl() {
-    uiHandler.getTabDiscardsInfo().then((response) => {
-      let newInfos = response.infos;
-      let stableInfos = [];
-
-      // Update existing infos in place, remove old ones, and append new ones.
-      // This tries to keep the existing ordering stable so that clicking links
-      // is minimally disruptive.
-      for (let i = 0; i < infos.length; ++i) {
-        let oldInfo = infos[i];
-        let newInfo = null;
-        for (let j = 0; j < newInfos.length; ++j) {
-          if (newInfos[j].id == oldInfo.id) {
-            newInfo = newInfos[j];
-            break;
-          }
-        }
-
-        // Old infos that have corresponding new infos are pushed first, in the
-        // current order of the old infos.
-        if (newInfo != null)
-          stableInfos.push(newInfo);
-      }
-
-      // Make sure info about new tabs is appended to the end, in the order they
-      // were originally returned.
-      for (let i = 0; i < newInfos.length; ++i) {
-        let newInfo = newInfos[i];
-        let oldInfo = null;
-        for (let j = 0; j < infos.length; ++j) {
-          if (infos[j].id == newInfo.id) {
-            oldInfo = infos[j];
-            break;
-          }
-        }
-
-        // Entirely new information (has no corresponding old info) is appended
-        // to the end.
-        if (oldInfo == null)
-          stableInfos.push(newInfo);
-      }
-
-      // Swap out the current info with the new stably sorted information.
-      infos = stableInfos;
-
-      // Render the content in place.
-      renderTabDiscardsInfoTable();
-    });
-  }
-
-  /**
-   * A wrapper to stableUpdateTabDiscardsInfoTableImpl that is called due to
-   * user action and not due to the automatic timer. Cancels the existing timer
-   * and reschedules it after rendering instantaneously.
-   */
-  function stableUpdateTabDiscardsInfoTable() {
-    if (updateTimer)
-      clearInterval(updateTimer);
-    stableUpdateTabDiscardsInfoTableImpl();
-    updateTimer =
-        setInterval(stableUpdateTabDiscardsInfoTableImpl, UPDATE_INTERVAL_MS);
-  }
-
-  /**
-   * Initializes this page. Invoked by the DOMContentLoaded event.
-   */
-  function initialize() {
-    uiHandler = new mojom.DiscardsDetailsProviderPtr;
-    Mojo.bindInterface(
-        mojom.DiscardsDetailsProvider.name, mojo.makeRequest(uiHandler).handle);
-
-    tabDiscardsInfoTableBody = $('tab-discards-info-table-body');
-    infos = [];
-    sortKey = 'utilityRank';
-    sortReverse = false;
-    updateTimer = null;
-
-    // Set the column sort handlers.
-    let tabDiscardsInfoTableHeader = $('tab-discards-info-table-header');
-    let headers = tabDiscardsInfoTableHeader.children;
-    for (let header of headers) {
-      header.addEventListener('click', (e) => {
-        let newSortKey = e.target.dataset.sortKey;
-
-        // Skip columns that aren't explicitly labeled with a sort-key
-        // attribute.
-        if (newSortKey == null)
-          return;
-
-        // Reverse the sort key if the key itself hasn't changed.
-        if (sortKey == newSortKey) {
-          sortReverse = !sortReverse;
-        } else {
-          sortKey = newSortKey;
-          sortReverse = false;
-        }
-
-        // Undecorate the old sort column, and decorate the new one.
-        let oldSortColumn = document.querySelector('.sort-column');
-        oldSortColumn.classList.remove('sort-column');
-        e.target.classList.add('sort-column');
-        if (sortReverse)
-          e.target.setAttribute('data-sort-reverse', '');
-        else
-          e.target.removeAttribute('data-sort-reverse');
-
-        sortTabDiscardsInfoTable();
-        renderTabDiscardsInfoTable();
-      });
-    }
-
-    // Setup the "Discard a tab now" links.
-    let discardNow = $('discard-now-link');
-    let discardNowUrgent = $('discard-now-urgent-link');
-    let discardListener = function(e) {
-      e.target.setAttribute('disabled', '');
-      let urgent = e.target.id.includes('urgent');
-      uiHandler.discard(urgent).then(() => {
-        stableUpdateTabDiscardsInfoTable();
-        e.target.removeAttribute('disabled');
-      });
-    };
-    discardNow.addEventListener('click', discardListener);
-    discardNowUrgent.addEventListener('click', discardListener);
-
-    stableUpdateTabDiscardsInfoTable();
-  }
-
-  document.addEventListener('DOMContentLoaded', initialize);
-
   // These functions are exposed on the 'discards' object created by
   // cr.define. This allows unittesting of these functions.
   return {
+    boolToString: boolToString,
     compareTabDiscardsInfos: compareTabDiscardsInfos,
-    lastActiveToString: lastActiveToString,
-    maybeMakePlural: maybeMakePlural
+    durationToString: durationToString,
+    getOrCreateUiHandler: getOrCreateUiHandler,
+    maybeMakePlural: maybeMakePlural,
+    secondsToString: secondsToString
   };
 });

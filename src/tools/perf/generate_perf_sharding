@@ -3,114 +3,63 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generates perf benchmark sharding maps.
-
-We shard our benchmarks across multiple machines, when we run these benchmarks
-on the buildbot waterfall. This allows us to cut the runtime by the number of
-devices we shard to.
-
-The files are JSON dictionaries which map shard index to a list of benchmarks
-and benchmarks indexed by story. E.g.
-
-{
-  "0": {
-    "benchmarks": [
-      "power.desktop": {},
-      "rendering.mobile": {
-        "begin": 0,
-        "end": 104
-      },
-      ...
-    ],
-  }
-}
-
-This will be used to manually shard tests to certain bots, to more efficiently
-execute all our tests.
-
-Example usage:
-
-Generating sharding maps:
-tools/perf/core/retrieve_story_timing.py --output-file all_desktop_perf.json
-    -c 'linux-perf' -c 'Win 10 High-DPI Perf' -c 'Win 10 Perf' -c 'Win 7 Perf'
-    -c 'Win 7 Intel GPU Perf' -c 'Win 7 Nvidia GPU Perf' -c 'Mac 10.12 Perf'
-    -c 'Mac Pro 10.11 Perf' -c 'Mac Air 10.11 Perf'
-    -c 'mac-10_12_laptop_low_end-perf'
-tools/perf/generate_perf_sharding
-    --output-file tools/perf/core/desktop_sharding_map.json
-    --num-shards 26 --timing-data all_desktop_perf.json
-rm all_desktop_perf.json
-
-tools/perf/core/retrieve_story_timing.py --output-file all_mobile_perf.json
-    -c 'Android Nexus 5X Perf' -c 'Android Nexus5 Perf' -c 'Android One Perf'
-    -c 'Android Nexus5X WebView Perf' -c 'Android Nexus6 WebView Perf'
-tools/perf/generate_perf_sharding
-    --output-file tools/perf/core/mobile_sharding_map.json
-    --num-shards 39 --timing-data all_mobile_perf.json
-rm all_mobile_perf.json
-
-Generating and testing sharding maps:
-tools/perf/core/retrieve_story_timing.py --output-file all_desktop_perf.json
-    -c 'linux-perf' -c 'Win 10 High-DPI Perf' -c 'Win 10 Perf' -c 'Win 7 Perf'
-    -c 'Win 7 Intel GPU Perf' -c 'Win 7 Nvidia GPU Perf' -c 'Mac 10.12 Perf'
-    -c 'Mac Pro 10.11 Perf' -c 'Mac Air 10.11 Perf'
-    -c 'mac-10_12_laptop_low_end-perf'
-tools/perf/core/retrieve_story_timing.py --output-file win_10_test_data.json
-    -c 'Win 10 High-DPI Perf' --build-number 1924
-tools/perf/generate_perf_sharding
-    --output-file tools/perf/core/desktop_sharding_map.json
-    --num-shards 26 --timing-data all_desktop_perf.json
-    --test-data win_10_test_data.json
-rm all_desktop_perf.json
-rm win_10_test_data.json
-
-"""
-
 import argparse
 import json
+import multiprocessing
 import sys
 
-from core import benchmark_finders
 from core import benchmark_utils
+from core import bot_platforms
+from core import retrieve_story_timing
 from core import sharding_map_generator
 
 
-def get_parser():
+def GetParser():
   parser = argparse.ArgumentParser(
       description='Generate perf test sharding map.')
-  parser.add_argument(
-      '--output-file', action='store', required=True,
-      help='The filename to write the sharding map to.')
-  parser.add_argument(
-      '--num-shards', action='store', required=True, type=int,
-      help='The number of shards to write to.')
-  parser.add_argument(
-      '--timing-data', action='store', required=True,
-      help='The file to read timing data from.')
-  # This json file should contain a list of dicts containing
-  #    the name and duration of the stories. For example:
-  #   [ { "duration": "98.039", "name": "webrtc/multiple_connections"},
-  #     { "duration": "85.118", "name": "webrtc/pause_connections"} ]
+  subparsers = parser.add_subparsers()
 
+  parser_update = subparsers.add_parser('update')
+  parser_update.add_argument(
+      '--regenerate-timing-data', '-r', action='store_true',
+      help=('Whether to regenerate timing data for all builders in '
+            'chromium.perf'), default=False)
+  parser_update.add_argument(
+      '--builders', '-b', action='store', nargs='*',
+      help=('The builder names to reshard. If not specified, use all '
+            'perf builders'),
+      choices=bot_platforms.ALL_PLATFORM_NAMES,
+      default=bot_platforms.ALL_PLATFORM_NAMES)
   parser.add_argument(
-      '--test-data', action='store',
-      help='If specified, test the generated sharding map with this data.')
-  parser.add_argument(
-      '--test-data-output', action='store',
-      help='If specified with --test-data, file \
-          to output the tested timing data to.')
-  parser.add_argument(
-      '--debug', action='store',
-      help='If specified, the filename to write extra timing data to.')
-  parser.add_argument(
-      '--benchmarks',
-      help='Comma separated list of benchmark names to generate a map for',
-      required=False)
+      '--debug', action='store_true',
+      help=('Whether to include detailed debug info of the sharding map in the'
+            'shard maps.'), default=False)
+
+  parser_update.set_defaults(func=_UpdateShardsForBuilders)
+
+  parser_create = subparsers.add_parser('create')
+  parser_create.add_argument(
+      '--benchmark', help='The benchmark that you want to create shard for',
+      required=True)
+  parser_create.add_argument(
+      '--timing-data-source', '-t', choices=bot_platforms.ALL_PLATFORM_NAMES,
+      help='The timing data that you want to use. If not set, it will assume '
+           'all stories use the same amount of time to run')
+  parser_create.add_argument(
+      # pinpoint typically has 16 machines for each hardware types, so we set
+      # the default to use half of them to avoid starving the pool.
+      '--shards-num', type=int, default=8,
+      help="The number of shards you'd like to use, default is %(default)s")
+  parser_create.add_argument(
+      '--output-path', default='new_shard_map.json',
+      help='Output file path for the shard map, default is `%(default)s`')
+  parser_create.set_defaults(func=_CreateShardMapForBenchmark)
   return parser
 
 
-def main(options, benchmarks_to_shard):
-  """
+def _GenerateBenchmarksToShardsList(benchmarks):
+  """Return |benchmarks_to_shard| from given list of |benchmarks|.
+
     benchmarks_to_shard is a list all benchmarks to be sharded. Its
     structure is as follows:
     [{
@@ -130,52 +79,81 @@ def main(options, benchmarks_to_shard):
     this should match the actual order of how the benchmark stories are
     executed for the sharding algorithm to be effective.
   """
-  with open(options.timing_data) as f:
-    timing_data = json.load(f)
-  sharding_map = sharding_map_generator.generate_sharding_map(
-      benchmarks_to_shard,
-      timing_data, options.num_shards, options.debug)
-
-  with open(options.output_file, 'w') as output_file:
-    json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
-
-  if options.test_data:
-    with open(options.test_data) as f:
-      timing_data = json.load(f)
-    test_results = sharding_map_generator.test_sharding_map(
-        sharding_map, benchmarks_to_shard, timing_data)
-    if options.test_data_output:
-      with open(options.test_data_output, 'w') as output_file:
-        json.dump(test_results, output_file, indent = 4, separators=(',', ': '))
-
-    else:
-      print json.dumps(test_results, indent=2)
-
-
-def _include_benchmark(name, shorlist):
-  if not shortlist:
-    return True
-  return name in shortlist
-
-
-if __name__ == '__main__':
-  parser = get_parser()
-  options = parser.parse_args()
-
-  benchmarks = benchmark_finders.GetAllPerfBenchmarks()
-
-  shortlist = []
-  if options.benchmarks:
-    shortlist = options.benchmarks.split(',')
-
   benchmarks_to_shard = []
   for b in benchmarks:
-    if not _include_benchmark(b.Name(), shortlist):
-      continue
     benchmarks_to_shard.append({
         'name': b.Name(),
-        'repeat':  b().options.get('pageset_repeat', 1),
+        'repeat': b().options.get('pageset_repeat', 1),
         'stories': benchmark_utils.GetBenchmarkStoryNames(b())
     })
+  return benchmarks_to_shard
 
-  sys.exit(main(options, benchmarks_to_shard))
+
+def _LoadTimingData(args):
+  builder_name, timing_file_path = args
+  data = retrieve_story_timing.FetchAverageStortyTimingData(
+      configurations=[builder_name], num_last_days=5)
+  with open(timing_file_path, 'w') as output_file:
+    json.dump(data, output_file, indent=4, separators=(',', ': '))
+  print 'Finish retrieve story timing data for %s' % repr(builder_name)
+
+
+def _GenerateShardMap(
+    builder, num_of_shards, output_path, debug, benchmark):
+  timing_data = []
+  if builder:
+    with open(builder.timing_file_path) as f:
+      timing_data = json.load(f)
+  benchmarks_to_shard = _GenerateBenchmarksToShardsList(
+      [b for b in builder.benchmarks_to_run if not benchmark or (
+          b.Name() == benchmark)])
+  sharding_map = sharding_map_generator.generate_sharding_map(
+      benchmarks_to_shard, timing_data, num_shards=num_of_shards,
+      debug=debug)
+  with open(output_path, 'w') as output_file:
+    json.dump(sharding_map, output_file, indent=4, separators=(',', ': '))
+
+
+def _UpdateShardsForBuilders(args):
+  builders = {b for b in bot_platforms.ALL_PLATFORMS if b.name in args.builders}
+  if args.regenerate_timing_data:
+    print 'Update shards timing data. May take a while...'
+    load_timing_args = []
+    for b in builders:
+      load_timing_args.append((b.name, b.timing_file_path))
+    p = multiprocessing.Pool(len(load_timing_args))
+    p.map(_LoadTimingData, load_timing_args)
+
+  for b in builders:
+    _GenerateShardMap(
+        b, b.num_shards, b.shards_map_file_path, args.debug, benchmark=None)
+    print 'Updated sharding map for %s' % repr(b.name)
+
+
+def _CreateShardMapForBenchmark(args):
+  """Create the shard map for the given benchmark.
+
+  Args:
+    args(Namespace object): the namespace object for the subparser `create`. It
+      will contain the attributes:
+        `benchmark`: the name of the benchmark that we want the shard for
+        `num_shards`: the total number of shards that we want to use
+        `output_path`: the output file path for the shard map
+        `builder`: the builder name, unlike the above, this is a string instead
+          of a list of string like above
+  """
+  builder = None
+  if args.timing_data_source:
+    [builder] = [b for b in bot_platforms.ALL_PLATFORMS
+                 if b.name == args.timing_data_source]
+  _GenerateShardMap(
+      builder, args.shards_num, args.output_path, args.debug, args.benchmark)
+
+
+def main():
+  parser = GetParser()
+  options = parser.parse_args()
+  options.func(options)
+
+if __name__ == '__main__':
+  sys.exit(main())

@@ -21,7 +21,7 @@
 
 ExtensionFunction::ResponseAction
 FirstRunPrivateGetLocalizedStringsFunction::Run() {
-  UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
+  UMA_HISTOGRAM_COUNTS_1M("CrosFirstRun.DialogShown", 1);
   std::unique_ptr<base::DictionaryValue> localized_strings(
       new base::DictionaryValue());
   const user_manager::User* user =

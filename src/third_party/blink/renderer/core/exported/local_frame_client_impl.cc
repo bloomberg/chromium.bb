@@ -36,6 +36,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -90,7 +92,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -432,7 +433,6 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     web_frame_->Client()->DidFinishSameDocumentNavigation(
         WebHistoryItem(item), commit_type, content_initiated);
   }
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
@@ -442,15 +442,14 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader,
-    ResourceRequest& request) {
+    ResourceRequest& request,
+    mojo::ScopedMessagePipeHandle navigation_initiator_handle) {
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request,
+        std::move(navigation_initiator_handle));
   }
-  if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
-    dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
-  virtual_time_pauser_.PauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
@@ -487,15 +486,12 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
-
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
     WebHistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
-  virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(
@@ -519,6 +515,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     DocumentLoader* document_loader,
     WebNavigationType type,
     NavigationPolicy policy,
+    bool has_transient_activation,
     bool replaces_current_history_item,
     bool is_client_redirect,
     WebTriggeringEventInfo triggering_event_info,
@@ -540,6 +537,7 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
   // TODO(dgozman): remove this after some Canary coverage.
   CHECK(!web_document_loader || !web_document_loader->GetExtraData());
+  navigation_info.has_user_gesture = has_transient_activation;
   navigation_info.replaces_current_history_item = replaces_current_history_item;
   navigation_info.is_client_redirect = is_client_redirect;
   navigation_info.triggering_event_info = triggering_event_info;
@@ -607,15 +605,9 @@ void LocalFrameClientImpl::DispatchWillSendSubmitEvent(HTMLFormElement* form) {
     web_frame_->Client()->WillSendSubmitEvent(WebFormElement(form));
 }
 
-void LocalFrameClientImpl::DispatchWillSubmitForm(HTMLFormElement* form) {
-  if (web_frame_->Client())
-    web_frame_->Client()->WillSubmitForm(WebFormElement(form));
-}
-
-void LocalFrameClientImpl::DidStartLoading(LoadStartType load_start_type) {
+void LocalFrameClientImpl::DidStartLoading() {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidStartLoading(load_start_type ==
-                                          kNavigationToDifferentDocument);
+    web_frame_->Client()->DidStartLoading();
   }
 }
 
@@ -667,7 +659,10 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
   if (offset < -webview->Client()->HistoryBackListCount())
     return false;
-  webview->Client()->NavigateBackForwardSoon(offset);
+
+  bool has_user_gesture =
+      LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
+  webview->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
   return true;
 }
 
@@ -692,12 +687,6 @@ void LocalFrameClientImpl::DidRunInsecureContent(const SecurityOrigin* origin,
     web_frame_->Client()->DidRunInsecureContent(WebSecurityOrigin(origin),
                                                 insecure_url);
   }
-}
-
-void LocalFrameClientImpl::DidDetectXSS(const KURL& insecure_url,
-                                        bool did_block_entire_page) {
-  if (web_frame_->Client())
-    web_frame_->Client()->DidDetectXSS(insecure_url, did_block_entire_page);
 }
 
 void LocalFrameClientImpl::DidDispatchPingLoader(const KURL& url) {
@@ -778,6 +767,13 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateDocumentLoader(document_loader);
   return document_loader;
+}
+
+void LocalFrameClientImpl::UpdateDocumentLoader(
+    DocumentLoader* document_loader,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+  static_cast<WebDocumentLoaderImpl*>(document_loader)
+      ->SetExtraData(std::move(extra_data));
 }
 
 String LocalFrameClientImpl::UserAgent() {
@@ -1098,11 +1094,6 @@ void LocalFrameClientImpl::BubbleLogicalScrollInParentFrame(
     ScrollGranularity granularity) {
   web_frame_->Client()->BubbleLogicalScrollInParentFrame(direction,
                                                          granularity);
-}
-
-void LocalFrameClientImpl::SetVirtualTimePauser(
-    WebScopedVirtualTimePauser virtual_time_pauser) {
-  virtual_time_pauser_ = std::move(virtual_time_pauser);
 }
 
 String LocalFrameClientImpl::evaluateInInspectorOverlayForTesting(

@@ -130,10 +130,10 @@
             [[i18nDynamic(locale, 'spokenFeedbackOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'spokenFeedbackOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'spokenFeedbackOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.largeCursorEnabled]]"
@@ -156,10 +156,10 @@
             [[i18nDynamic(locale, 'highContrastOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'highContrastOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'highContrastOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.screenMagnifierEnabled]]"
@@ -170,26 +170,25 @@
             [[i18nDynamic(locale, 'screenMagnifierOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'screenMagnifierOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'screenMagnifierOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.selectToSpeakEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableSelectToSpeak"
             label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
-            id="selectToSpeakOobeOption"
-            hidden="[[!a11yStatus.enableExperimentalA11yFeatures]]">
+            id="selectToSpeakOobeOption">
           <span slot="title">
             [[i18nDynamic(locale, 'selectToSpeakOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'selectToSpeakOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'selectToSpeakOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.dockedMagnifierEnabled]]"
@@ -202,10 +201,10 @@
             [[i18nDynamic(locale, 'dockedMagnifierOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'screenMagnifierOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'screenMagnifierOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
@@ -216,10 +215,10 @@
             [[i18nDynamic(locale, 'virtualKeyboardOption')]]
           </span>
           <span slot="checked-value">
-            [[i18nDynamic(locale, 'virtualKeyboardOptionOn')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOn')]]
           </span>
           <span slot="unchecked-value">
-            [[i18nDynamic(locale, 'virtualKeyboardOptionOff')]]
+            [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
       </div>

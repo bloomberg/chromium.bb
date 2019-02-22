@@ -38,12 +38,14 @@ function test(message) {
             break;
         case 1:
             if (message != "done") {
-                 testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
-                document.clickMessage = "PASS: Case " + tests + " was blocked by a CSP.";
-                testRunner.evaluateScriptInIsolatedWorld(1, String(injectButtonWithInlineClickHandler) + "\ninjectButtonWithInlineClickHandler('document.clickMessage =\"FAIL: Case " + tests + " was not blocked by a CSP.\"');");
+                testRunner.setIsolatedWorldContentSecurityPolicy(1, permissiveCSP);
+                document.clickMessage = "PASS: Case " + tests + " was not evaluated in main world.";
+                // The listener defined inline by injectButtonWithInlineClickHandler should be evaluated in isolated world.
+                testRunner.evaluateScriptInIsolatedWorld(1, String(injectButtonWithInlineClickHandler) + "\ninjectButtonWithInlineClickHandler('document.clickMessage =\"PASS: Case " + tests + " was evaluated in isolated world.\"');");
             } else {
                 document.getElementById("button").click();
                 alert(document.clickMessage);
+                alert(testRunner.evaluateScriptInIsolatedWorldAndReturnValue(1, "document.clickMessage"));
                 window.postMessage("next", "*");
             }
             break;

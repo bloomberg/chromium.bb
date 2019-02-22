@@ -43,6 +43,8 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
 
   bool LinkStatus(WebGLRenderingContextBase*);
 
+  bool CompletionStatus(WebGLRenderingContextBase*);
+
   unsigned LinkCount() const { return link_count_; }
 
   // This is to be called everytime after the program is successfully linked.

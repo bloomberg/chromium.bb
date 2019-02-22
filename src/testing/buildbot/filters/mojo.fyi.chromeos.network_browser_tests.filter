@@ -1,0 +1,124 @@
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.
+
+# This filter contains Chrome OS only test failures (in addition to
+# cross-platform failures in mojo.fyi.network_browser_tests.filter).
+# See https://crbug.com/881976
+
+# Uncategorized timeouts or test failures.
+-ForceMaximizeOnFirstRunTest.TwoRuns
+-ForceMaximizePolicyFalseTest.GeneralFirstRun
+
+# Stuck at the 'Local Auth Server' screen with email / password filed. Some
+# tests will pass after clicking 'Next' manually, while others may fail later
+# due to other issues such as empty |device_id_in_profile|.
+# https://crbug.com/891490
+-ChromeSessionManagerTest.OobeNewUser
+-DeviceIDTest.LegacyUsers
+-DeviceIDTest.Migration
+-DeviceIDTest.NewUsers
+-LoginPolicyTestBase.AllowedInputMethods
+-LoginPolicyTestBase.AllowedUILocales
+-MergeSessionTest.PageThrottle
+-MergeSessionTest.XHRThrottle
+-OAuth2Test.SetInvalidTokenStatus
+-OAuth2Test.TerminateOnBadMergeSessionAfterOnlineAuth
+-OAuth2Test.VerifyInAdvancedProtectionAfterOnlineAuth
+-OAuth2Test.VerifyNotInAdvancedProtectionAfterOnlineAuth
+-PolicyProvidedTrustAnchorsOnUserSessionInitTest.TrustAnchorsAvailableImmediatelyAfterSessionStart
+-UserCloudExternalDataManagerTest.FetchExternalData
+-UserCloudPolicyManagerChildTest.PolicyForChildUser
+-UserCloudPolicyManagerNonEnterpriseTest.NoPolicyForConsumer
+-UserCloudPolicyManagerTest.ErrorLoadingPolicy
+-UserCloudPolicyManagerTest.ErrorLoadingPolicyForUnmanagedUser
+-UserCloudPolicyManagerTest.MigrateForExistingUser
+-UserCloudPolicyManagerTest.StartSession
+-WebviewLoginTest.Basic
+
+# The test went into the 'Local Auth Server' screen instead of the Kiosk screen.
+# https://crbug.com/892357
+-KioskUpdateTest.LaunchCachedOfflineEnabledAppNoNetwork
+
+# SAML doesn't work with Network Service.
+# https://crbug.com/887061
+-SAMLPolicyTest.NoSAML
+-SAMLPolicyTest.SAMLNoLimit
+-SAMLPolicyTest.SAMLZeroLimit
+-SAMLPolicyTest.TransferCookiesAffiliated
+-SAMLPolicyTest.TransferCookiesUnaffiliated
+-SamlTest.FailToRetrieveAutenticatedUserEmailAddress
+-SamlTest.PasswordConfirmFlow
+-SamlTest.ScrapedDynamic
+-SamlTest.ScrapedNone
+-SamlTest.ScrapedSingle
+-SamlTest.UseAutenticatedUserEmailAddress
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsError
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowFailsUserCancelled
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithAuthRetry
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSucceedsWithDmRetry
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.SamlFlowSuccess
+
+# |NetworkChangeNotifier()| Not implemented.
+# https://crbug.com/882610
+-ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
+-NetworkConnectionTrackerBrowserTest.SimulateNetworkServiceCrash
+-BackgroundFetchBrowserTest.FetchCanBePausedAndResumed
+-BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Failed
+-BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Fetched
+-BackgroundFetchBrowserTest.FetchFromChildFrameWithPermissions
+-BackgroundFetchBrowserTest.FetchFromServiceWorker
+-BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize
+-BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize
+
+# Stuck at 'Network not available' page, should be related to the
+# |NetworkChangeNotifier()| issue.
+# https://crbug.com/882610
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/0
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/1
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/10
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/11
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/2
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/3
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/4
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/5
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/6
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/7
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/8
+-SiteIsolationFlagHandlingTest.FlagHandlingTest/9
+-WizardControllerDeviceStateExplicitRequirement/WizardControllerDeviceStateExplicitRequirementTest.ControlFlowForcedReEnrollment/0
+-WizardControllerDeviceStateExplicitRequirement/WizardControllerDeviceStateExplicitRequirementTest.ControlFlowForcedReEnrollment/1
+-WizardControllerDeviceStateTest.ControlFlowDeviceDisabled
+-WizardControllerDeviceStateWithInitialEnrollmentTest.ControlFlowInitialEnrollment
+
+# Convert from policy::TestRequestInterceptor to network::TestURLLoaderFactory.
+# See https://chromium-review.googlesource.com/c/chromium/src/+/1113029 for
+# examples.
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.ArcDisabled
+-ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest.RequestAccountInfoSuccess
+-ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoError
+-ArcRobotAuthCodeFetcherBrowserTest.RequestAccountInfoSuccess
+-ArcRobotAccountAuthServiceTest.GetDemoAccount
+-ArcRobotAccountAuthServiceTest.GetDemoAccountViaDeprecatedApi
+-ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailure
+-ArcRobotAccountAuthServiceTest.GetDemoAccountOnAuthTokenFetchFailureViaDeprecatedApi
+
+# Relies on net::URLRequestInterceptor.
+# https://crbug.com/884782
+# Convert the production code using example of how we add/remove
+# variations::kClientDataHeader in GoogleURLLoaderThrottle.
+-ChromeResourceDispatcherHostDelegateMirrorBrowserTest.MirrorRequestHeader
+
+# Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
+-DevToolsSanityTest.DisposeEmptyBrowserContext
+
+# Flaky with error: `picture_in_picture_window_controller_impl.cc(167)] Check failed: media_player_id_.has_value()`.
+-PictureInPictureWindowControllerBrowserTest.TabIconUpdated
+
+# Relies on net::CertVerifier.
+# https://crbug.com/862043
+-PolicyProvidedTrustAnchorsRegularUserTest.AllowedForRegularUser
+
+# NOTE: if adding an exclusion for an existing failure (e.g. additional test for
+# feature X that is already not working), please add it beside the existing
+# failures. Otherwise please reach out to network-service-dev@.

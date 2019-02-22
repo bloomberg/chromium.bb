@@ -11,6 +11,8 @@ class CompositorFrameConsumer;
 
 class CompositorFrameProducer {
  public:
+  virtual void ReturnedResourceAvailable(
+      CompositorFrameConsumer* compositor_frame_consumer) = 0;
   virtual void OnParentDrawConstraintsUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) = 0;
   virtual void RemoveCompositorFrameConsumer(

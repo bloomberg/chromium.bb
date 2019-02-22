@@ -25,13 +25,11 @@
 #include "GrSurfaceProxyPriv.h"
 #include "GrTexture.h"
 #include "GrTextureContext.h"
-#include "GrTextureStripAtlas.h"
 #include "GrTracing.h"
 #include "SkAutoPixmapStorage.h"
 #include "SkDeferredDisplayList.h"
 #include "SkGr.h"
 #include "SkImageInfoPriv.h"
-#include "SkJSONWriter.h"
 #include "SkMakeUnique.h"
 #include "SkSurface_Gpu.h"
 #include "SkTaskGroup.h"
@@ -97,8 +95,6 @@ bool GrContext::initCommon(const GrContextOptions& options) {
         fResourceCache->setProxyProvider(fProxyProvider);
     }
 
-    fTextureStripAtlasManager.reset(new GrTextureStripAtlasManager);
-
     fDisableGpuYUVConversion = options.fDisableGpuYUVConversion;
     fSharpenMipmappedTextures = options.fSharpenMipmappedTextures;
     fDidTestPMConversions = false;
@@ -138,7 +134,8 @@ bool GrContext::initCommon(const GrContextOptions& options) {
                                             : false;
     fDrawingManager.reset(new GrDrawingManager(this, prcOptions, textContextOptions,
                                                &fSingleOwner, explicitlyAllocatingResources,
-                                               options.fSortRenderTargets));
+                                               options.fSortRenderTargets,
+                                               options.fReduceOpListSplitting));
 
     fGlyphCache = new GrGlyphCache(fCaps.get(), options.fGlyphCacheTextureMaximumBytes);
 
@@ -162,7 +159,6 @@ GrContext::~GrContext() {
     if (fDrawingManager) {
         fDrawingManager->cleanup();
     }
-    fTextureStripAtlasManager = nullptr;
     delete fResourceProvider;
     delete fResourceCache;
     delete fProxyProvider;
@@ -243,7 +239,6 @@ SkSurfaceCharacterization GrContextThreadSafeProxy::createCharacterization(
 void GrContext::abandonContext() {
     ASSERT_SINGLE_OWNER
 
-    fTextureStripAtlasManager->abandon();
     fProxyProvider->abandon();
     fResourceProvider->abandon();
 
@@ -269,7 +264,6 @@ bool GrContext::abandoned() const {
 void GrContext::releaseResourcesAndAbandonContext() {
     ASSERT_SINGLE_OWNER
 
-    fTextureStripAtlasManager->abandon();
     fProxyProvider->abandon();
     fResourceProvider->abandon();
 
@@ -483,6 +477,7 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
     // For canvas2D putImageData performance we have a special code path for unpremul RGBA_8888 srcs
     // that are premultiplied on the GPU. This is kept as narrow as possible for now.
     bool canvas2DFastPath =
+            !fContext->contextPriv().caps()->avoidWritePixelsFastPath() &&
             premul &&
             !dst->colorSpaceInfo().colorSpace() &&
             (srcColorType == GrColorType::kRGBA_8888 || srcColorType == GrColorType::kBGRA_8888) &&
@@ -530,7 +525,7 @@ bool GrContextPriv::writeSurfacePixels(GrSurfaceContext* dst, int left, int top,
             GrPaint paint;
             paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
             auto fp = fContext->createUPMToPMEffect(
-                    GrSimpleTextureEffect::Make(std::move(tempProxy), SkMatrix::I()), true);
+                    GrSimpleTextureEffect::Make(std::move(tempProxy), SkMatrix::I()));
             if (srcColorType == GrColorType::kBGRA_8888) {
                 fp = GrFragmentProcessor::SwizzleOutput(std::move(fp), GrSwizzle::BGRA());
             }
@@ -701,8 +696,7 @@ bool GrContextPriv::readSurfacePixels(GrSurfaceContext* src, int left, int top, 
             paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
             auto fp = fContext->createPMToUPMEffect(
                     GrSimpleTextureEffect::Make(sk_ref_sp(srcProxy->asTextureProxy()),
-                                                SkMatrix::I()),
-                    true);
+                                                SkMatrix::I()));
             if (dstColorType == GrColorType::kBGRA_8888) {
                 fp = GrFragmentProcessor::SwizzleOutput(std::move(fp), GrSwizzle::BGRA());
                 dstColorType = GrColorType::kRGBA_8888;
@@ -1058,39 +1052,25 @@ sk_sp<GrRenderTargetContext> GrContextPriv::makeDeferredRenderTargetContext(
 }
 
 std::unique_ptr<GrFragmentProcessor> GrContext::createPMToUPMEffect(
-        std::unique_ptr<GrFragmentProcessor> fp, bool useConfigConversionEffect) {
+        std::unique_ptr<GrFragmentProcessor> fp) {
     ASSERT_SINGLE_OWNER
-    // We have specialized effects that guarantee round-trip conversion for some formats
-    if (useConfigConversionEffect) {
-        // We should have already called this->validPMUPMConversionExists() in this case
-        SkASSERT(fDidTestPMConversions);
-        // ...and it should have succeeded
-        SkASSERT(this->validPMUPMConversionExists());
+    // We should have already called this->validPMUPMConversionExists() in this case
+    SkASSERT(fDidTestPMConversions);
+    // ...and it should have succeeded
+    SkASSERT(this->validPMUPMConversionExists());
 
-        return GrConfigConversionEffect::Make(std::move(fp), PMConversion::kToUnpremul);
-    } else {
-        // For everything else (sRGB, half-float, etc...), it doesn't make sense to try and
-        // explicitly round the results. Just do the obvious, naive thing in the shader.
-        return GrFragmentProcessor::UnpremulOutput(std::move(fp));
-    }
+    return GrConfigConversionEffect::Make(std::move(fp), PMConversion::kToUnpremul);
 }
 
 std::unique_ptr<GrFragmentProcessor> GrContext::createUPMToPMEffect(
-        std::unique_ptr<GrFragmentProcessor> fp, bool useConfigConversionEffect) {
+        std::unique_ptr<GrFragmentProcessor> fp) {
     ASSERT_SINGLE_OWNER
-    // We have specialized effects that guarantee round-trip conversion for these formats
-    if (useConfigConversionEffect) {
-        // We should have already called this->validPMUPMConversionExists() in this case
-        SkASSERT(fDidTestPMConversions);
-        // ...and it should have succeeded
-        SkASSERT(this->validPMUPMConversionExists());
+    // We should have already called this->validPMUPMConversionExists() in this case
+    SkASSERT(fDidTestPMConversions);
+    // ...and it should have succeeded
+    SkASSERT(this->validPMUPMConversionExists());
 
-        return GrConfigConversionEffect::Make(std::move(fp), PMConversion::kToPremul);
-    } else {
-        // For everything else (sRGB, half-float, etc...), it doesn't make sense to try and
-        // explicitly round the results. Just do the obvious, naive thing in the shader.
-        return GrFragmentProcessor::PremulOutput(std::move(fp));
-    }
+    return GrConfigConversionEffect::Make(std::move(fp), PMConversion::kToPremul);
 }
 
 bool GrContext::validPMUPMConversionExists() {
@@ -1133,7 +1113,8 @@ void GrContext::dumpMemoryStatistics(SkTraceMemoryDump* traceMemoryDump) const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-
+#ifdef SK_ENABLE_DUMP_GPU
+#include "SkJSONWriter.h"
 SkString GrContextPriv::dump() const {
     SkDynamicMemoryWStream stream;
     SkJSONWriter writer(&stream, SkJSONWriter::Mode::kPretty);
@@ -1169,3 +1150,4 @@ SkString GrContextPriv::dump() const {
     stream.copyToAndReset(result.writable_str());
     return result;
 }
+#endif

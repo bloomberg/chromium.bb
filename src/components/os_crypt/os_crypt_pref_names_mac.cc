@@ -8,6 +8,8 @@ namespace os_crypt {
 namespace prefs {
 
 const char kKeyCreated[] = "os_crypt.key_created";
+const char kKeyOverwritingPreventions[] =
+    "os_crypt.key_overwriting_preventions";
 
 }  // namespace prefs
 }  // namespace os_crypt

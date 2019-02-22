@@ -82,7 +82,7 @@ void OneClickSigninSyncObserver::OnStateChanged(syncer::SyncService* sync) {
       return;
     }
 
-    if (sync_service->IsSyncActive() &&
+    if (sync_service->IsSyncFeatureActive() &&
         signin::GetAccessPointForPromoURL(continue_url_) !=
             signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS) {
       // TODO(isherman): Having multiple settings pages open can cause issues

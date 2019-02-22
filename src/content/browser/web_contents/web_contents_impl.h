@@ -60,7 +60,7 @@
 #include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -333,6 +333,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   uint64_t GetUploadSize() const override;
   uint64_t GetUploadPosition() const override;
   const std::string& GetEncoding() const override;
+  bool WasDiscarded() override;
   void SetWasDiscarded(bool was_discarded) override;
   void IncrementCapturerCount(const gfx::Size& capture_size) override;
   void DecrementCapturerCount() override;
@@ -355,7 +356,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void WasOccluded() override;
   Visibility GetVisibility() const override;
   bool NeedToFireBeforeUnload() override;
-  void DispatchBeforeUnload() override;
+  void DispatchBeforeUnload(bool auto_cancel) override;
   void AttachToOuterWebContentsFrame(
       WebContents* outer_web_contents,
       RenderFrameHost* outer_contents_frame) override;
@@ -441,7 +442,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                     ImageDownloadCallback callback) override;
   void Find(int request_id,
             const base::string16& search_text,
-            const blink::WebFindOptions& options) override;
+            blink::mojom::FindOptionsPtr options) override;
   void StopFinding(StopFindAction action) override;
   bool WasEverAudible() override;
   void GetManifest(GetManifestCallback callback) override;
@@ -463,9 +464,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ActivateNearestFindResult(float x, float y) override;
   void RequestFindMatchRects(int current_version) override;
   service_manager::InterfaceProvider* GetJavaInterfaces() override;
-#elif defined(OS_MACOSX)
-  void SetAllowOtherViews(bool allow) override;
-  bool GetAllowOtherViews() override;
 #endif
 
   bool HasRecentInteractiveInputEvent() const override;
@@ -500,7 +498,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               bool is_reload,
                               IPC::Message* reply_msg) override;
   void RunFileChooser(RenderFrameHost* render_frame_host,
-                      const FileChooserParams& params) override;
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override;
   void DidCancelLoading() override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
@@ -537,6 +536,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ExitFullscreenMode(bool will_cause_resize) override;
   void FullscreenStateChanged(RenderFrameHost* rfh,
                               bool is_fullscreen) override;
+#if defined(OS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override;
+#endif
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;
@@ -625,15 +627,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojom::WidgetPtr widget,
-                       blink::WebPopupType popup_type) override;
+                       mojom::WidgetPtr widget) override;
   void CreateNewFullscreenWidget(int32_t render_process_id,
-                                 int32_t route_id,
+                                 int32_t widget_route_id,
                                  mojom::WidgetPtr widget) override;
   void ShowCreatedWidget(int process_id,
-                         int route_id,
+                         int widget_route_id,
                          const gfx::Rect& initial_rect) override;
-  void ShowCreatedFullscreenWidget(int process_id, int route_id) override;
+  void ShowCreatedFullscreenWidget(int process_id,
+                                   int widget_route_id) override;
   void RequestMediaAccessPermission(const MediaStreamRequest& request,
                                     MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
@@ -689,6 +691,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // RenderWidgetHostDelegate --------------------------------------------------
 
   ukm::SourceId GetUkmSourceIdForLastCommittedSource() const override;
+  void SetTopControlsShownRatio(RenderWidgetHostImpl* render_widget_host,
+                                float ratio) override;
+  bool DoBrowserControlsShrinkRendererSize() const override;
+  int GetTopControlsHeight() const override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   void RenderWidgetCreated(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetDeleted(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
@@ -1031,6 +1038,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            JavaScriptDialogsInMainAndSubframes);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           JavaScriptDialogsNormalizeText);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            DialogsFromJavaScriptEndFullscreen);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            DialogsFromJavaScriptEndFullscreenEvenInInnerWC);
@@ -1046,6 +1055,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            BeforeUnloadDialogRequiresGesture);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            CancelBeforeUnloadResetsURL);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           BeforeUnloadDialogSuppressedForDiscard);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           PendingDialogMakesDiscardUnloadReturnFalse);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogNotifications);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogInterop);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, BeforeUnloadDialog);
@@ -1054,6 +1067,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            PageDisableWithNoDialogManager);
   FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest,
                            PointerLockInnerContentsCrashes);
+  FRIEND_TEST_ALL_PREFIXES(PointerLockBrowserTest, PointerLockOopifCrashes);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;
@@ -1180,7 +1194,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
-  void OnGoToEntryAtOffset(RenderViewHostImpl* source, int offset);
+  void OnGoToEntryAtOffset(RenderViewHostImpl* source,
+                           int offset,
+                           bool has_user_gesture);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);
@@ -1288,8 +1304,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
                        bool is_fullscreen,
-                       mojom::WidgetPtr widget,
-                       blink::WebPopupType popup_type);
+                       mojom::WidgetPtr widget);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
   void ShowCreatedWidget(int process_id,
@@ -1304,8 +1319,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Finds the new WebContentsImpl by |main_frame_widget_route_id|, initializes
   // it for renderer-initiated creation, and returns it. Note that this can only
   // be called once as this call also removes it from the internal map.
-  std::unique_ptr<WebContents> GetCreatedWindow(int process_id,
-                                                int main_frame_widget_route_id);
+  std::unique_ptr<WebContentsImpl> GetCreatedWindow(
+      int process_id,
+      int main_frame_widget_route_id);
 
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);
@@ -1407,6 +1423,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                              AXTreeSnapshotCombiner* combiner,
                                              ui::AXMode ax_mode);
 
+  // Called each time |fullscreen_frames_| is updated. Find the new
+  // |current_fullscreen_frame_| and notify observers whenever it changes.
+  void FullscreenFrameSetUpdated();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1425,7 +1445,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Tracks created WebContentsImpl objects that have not been shown yet. They
   // are identified by the process ID and routing ID passed to CreateNewWindow.
-  std::map<GlobalRoutingID, std::unique_ptr<WebContents>> pending_contents_;
+  std::map<GlobalRoutingID, std::unique_ptr<WebContentsImpl>> pending_contents_;
 
   // This map holds widgets that were created on behalf of the renderer but
   // haven't been shown yet.
@@ -1773,14 +1793,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Gets notified about changes in viewport fit events.
   std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;
 
-  // Stores a set of FrameTreeNode ids that are fullscreen.
-  using FullscreenFrameNodes = std::set<int>;
-  FullscreenFrameNodes fullscreen_frame_tree_nodes_;
+  // Stores a set of frames that are fullscreen.
+  // See https://fullscreen.spec.whatwg.org.
+  std::set<RenderFrameHostImpl*> fullscreen_frames_;
 
-  // Stores the ID of the current fullscreen |FrameTreeNode| or
-  // |kNoFrameTreeNodeId| if the tab is not currently fullscreen.
-  int current_fullscreen_frame_tree_node_id_ =
-      RenderFrameHost::kNoFrameTreeNodeId;
+  // Store the frame that is currently fullscreen, nullptr if there is none.
+  RenderFrameHostImpl* current_fullscreen_frame_ = nullptr;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

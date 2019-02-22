@@ -45,9 +45,12 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
-LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
+LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
+                     int id,
+                     bool will_always_push_properties)
     : layer_id_(id),
       layer_tree_impl_(tree_impl),
+      will_always_push_properties_(will_always_push_properties),
       test_properties_(nullptr),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
@@ -75,15 +78,17 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
+      is_scrollbar_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
       raster_even_if_not_drawn_(false),
-      has_transform_node_(false) {
+      has_transform_node_(false),
+      is_rounded_corner_mask_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
   layer_tree_impl_->RegisterLayer(this);
-  layer_tree_impl_->AddToElementLayerList(element_id_);
+  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 
   SetNeedsPushProperties();
 }
@@ -107,7 +112,6 @@ void LayerImpl::SetDebugInfo(
     std::unique_ptr<base::trace_event::TracedValue> debug_info) {
   owned_debug_info_ = std::move(debug_info);
   debug_info_ = owned_debug_info_.get();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetTransformTreeIndex(int index) {
@@ -267,11 +271,16 @@ gfx::Vector2dF LayerImpl::ScrollBy(const gfx::Vector2dF& scroll) {
 void LayerImpl::SetScrollable(const gfx::Size& bounds) {
   if (scrollable_ && scroll_container_bounds_ == bounds)
     return;
+
+  bool was_scrollable = scrollable_;
   scrollable_ = true;
   scroll_container_bounds_ = bounds;
 
   // Scrollbar positions depend on the bounds.
   layer_tree_impl()->SetScrollbarGeometriesNeedUpdate();
+
+  if (!was_scrollable)
+    layer_tree_impl()->AddScrollableLayer(this);
 
   if (layer_tree_impl()->settings().scrollbar_animator ==
       LayerTreeSettings::AURA_OVERLAY) {
@@ -299,6 +308,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetElementId(element_id_);
 
   layer->has_transform_node_ = has_transform_node_;
+  layer->is_rounded_corner_mask_ = is_rounded_corner_mask_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
   layer->should_flatten_screen_space_transform_from_property_tree_ =
@@ -338,6 +348,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   if (scrollable_)
     layer->SetScrollable(scroll_container_bounds_);
 
+  layer->set_is_scrollbar(is_scrollbar_);
+
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
@@ -354,7 +366,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_property_changed_from_property_trees_ = false;
   needs_push_properties_ = false;
   update_rect_ = gfx::Rect();
-  layer_tree_impl()->RemoveLayerShouldPushProperties(this);
 }
 
 bool LayerImpl::IsAffectedByPageScale() const {
@@ -462,13 +473,11 @@ bool LayerImpl::LayerPropertyChangedNotFromPropertyTrees() const {
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_not_from_property_trees_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
   layer_property_changed_from_property_trees_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
@@ -642,9 +651,7 @@ void LayerImpl::SetElementId(ElementId element_id) {
 
   layer_tree_impl_->RemoveFromElementLayerList(element_id_);
   element_id_ = element_id;
-  layer_tree_impl_->AddToElementLayerList(element_id_);
-
-  SetNeedsPushProperties();
+  layer_tree_impl_->AddToElementLayerList(element_id_, this);
 }
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {
@@ -653,7 +660,6 @@ void LayerImpl::SetPosition(const gfx::PointF& position) {
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
   update_rect_ = update_rect;
-  SetNeedsPushProperties();
 }
 
 void LayerImpl::AddDamageRect(const gfx::Rect& damage_rect) {
@@ -709,8 +715,11 @@ gfx::Vector2dF LayerImpl::ClampScrollToMaxScrollOffset() {
 }
 
 void LayerImpl::SetNeedsPushProperties() {
-  // There's no need to push layer properties on the active tree.
-  if (!needs_push_properties_ && !layer_tree_impl()->IsActiveTree()) {
+  // There's no need to push layer properties on the active tree, or when
+  // |will_always_push_properties_| is true.
+  if (will_always_push_properties_ || layer_tree_impl()->IsActiveTree())
+    return;
+  if (!needs_push_properties_) {
     needs_push_properties_ = true;
     layer_tree_impl()->AddLayerShouldPushProperties(this);
   }
@@ -730,6 +739,11 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetDouble("opacity", Opacity());
 
   MathUtil::AddToTracedValue("position", position_, state);
+
+  state->SetInteger("transform_tree_index", transform_tree_index());
+  state->SetInteger("clip_tree_index", clip_tree_index());
+  state->SetInteger("effect_tree_index", effect_tree_index());
+  state->SetInteger("scroll_tree_index", scroll_tree_index());
 
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage",

@@ -47,8 +47,7 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
   // there is an error, the message is truncated, or the message has trailing
   // garbage then nullptr will be returned.
   static std::unique_ptr<CryptoHandshakeMessage> ParseMessage(
-      QuicStringPiece in,
-      Perspective perspective);
+      QuicStringPiece in);
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will crash.  It is acceptable for the visitor to do
@@ -62,8 +61,11 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
   const QuicString& error_detail() const override;
 
   // Processes input data, which must be delivered in order. Returns
-  // false if there was an error, and true otherwise.
-  bool ProcessInput(QuicStringPiece input, Perspective perspective) override;
+  // false if there was an error, and true otherwise. ProcessInput optionally
+  // takes an EncryptionLevel, but it is ignored. The variant with the
+  // EncryptionLevel is provided to match the CryptoMessageParser interface.
+  bool ProcessInput(QuicStringPiece input, EncryptionLevel level) override;
+  bool ProcessInput(QuicStringPiece input);
 
   // Returns the number of bytes of buffered input data remaining to be
   // parsed.
@@ -81,8 +83,7 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
   // Returns a new QuicData owned by the caller that contains a serialized
   // |message|, or nullptr if there was an error.
   static QuicData* ConstructHandshakeMessage(
-      const CryptoHandshakeMessage& message,
-      Perspective perspective);
+      const CryptoHandshakeMessage& message);
 
   // Debug only method which permits processing truncated messages.
   void set_process_truncated_messages(bool process_truncated_messages) {
@@ -95,7 +96,7 @@ class QUIC_EXPORT_PRIVATE CryptoFramer : public CryptoMessageParser {
 
   // Process does does the work of |ProcessInput|, but returns an error code,
   // doesn't set error_ and doesn't call |visitor_->OnError()|.
-  QuicErrorCode Process(QuicStringPiece input, Perspective perspective);
+  QuicErrorCode Process(QuicStringPiece input);
 
   static bool WritePadTag(QuicDataWriter* writer,
                           size_t pad_length,

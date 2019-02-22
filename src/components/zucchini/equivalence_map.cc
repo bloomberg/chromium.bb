@@ -215,8 +215,8 @@ EquivalenceCandidate VisitEquivalenceSeed(
 /******** OffsetMapper ********/
 
 OffsetMapper::OffsetMapper(std::vector<Equivalence>&& equivalences,
-                           size_t old_image_size,
-                           size_t new_image_size)
+                           offset_t old_image_size,
+                           offset_t new_image_size)
     : equivalences_(std::move(equivalences)),
       old_image_size_(old_image_size),
       new_image_size_(new_image_size) {
@@ -229,8 +229,8 @@ OffsetMapper::OffsetMapper(std::vector<Equivalence>&& equivalences,
 }
 
 OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source,
-                           size_t old_image_size,
-                           size_t new_image_size)
+                           offset_t old_image_size,
+                           offset_t new_image_size)
     : old_image_size_(old_image_size), new_image_size_(new_image_size) {
   DCHECK_GT(new_image_size_, 0U);
   for (auto e = equivalence_source.GetNext(); e.has_value();
@@ -241,8 +241,8 @@ OffsetMapper::OffsetMapper(EquivalenceSource&& equivalence_source,
 }
 
 OffsetMapper::OffsetMapper(const EquivalenceMap& equivalence_map,
-                           size_t old_image_size,
-                           size_t new_image_size)
+                           offset_t old_image_size,
+                           offset_t new_image_size)
     : equivalences_(equivalence_map.size()),
       old_image_size_(old_image_size),
       new_image_size_(new_image_size) {

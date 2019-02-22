@@ -139,6 +139,8 @@ MockFramerVisitor::MockFramerVisitor() {
 
   ON_CALL(*this, OnStreamFrame(_)).WillByDefault(testing::Return(true));
 
+  ON_CALL(*this, OnCryptoFrame(_)).WillByDefault(testing::Return(true));
+
   ON_CALL(*this, OnStopWaitingFrame(_)).WillByDefault(testing::Return(true));
 
   ON_CALL(*this, OnPaddingFrame(_)).WillByDefault(testing::Return(true));
@@ -189,14 +191,26 @@ bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
   return true;
 }
 
+bool NoOpFramerVisitor::OnCryptoFrame(const QuicCryptoFrame& frame) {
+  return true;
+}
+
 bool NoOpFramerVisitor::OnAckFrameStart(QuicPacketNumber largest_acked,
                                         QuicTime::Delta ack_delay_time) {
   return true;
 }
 
 bool NoOpFramerVisitor::OnAckRange(QuicPacketNumber start,
-                                   QuicPacketNumber end,
-                                   bool last_range) {
+                                   QuicPacketNumber end) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnAckTimestamp(QuicPacketNumber packet_number,
+                                       QuicTime timestamp) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnAckFrameEnd(QuicPacketNumber start) {
   return true;
 }
 
@@ -228,6 +242,10 @@ bool NoOpFramerVisitor::OnApplicationCloseFrame(
 
 bool NoOpFramerVisitor::OnNewConnectionIdFrame(
     const QuicNewConnectionIdFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnNewTokenFrame(const QuicNewTokenFrame& frame) {
   return true;
 }
 
@@ -264,6 +282,10 @@ bool NoOpFramerVisitor::OnWindowUpdateFrame(
 }
 
 bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnMessageFrame(const QuicMessageFrame& frame) {
   return true;
 }
 
@@ -624,7 +646,7 @@ MockPacketWriter::MockPacketWriter() {
   ON_CALL(*this, GetMaxPacketSize(_))
       .WillByDefault(testing::Return(kMaxPacketSize));
   ON_CALL(*this, IsBatchMode()).WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetNextWriteLocation())
+  ON_CALL(*this, GetNextWriteLocation(_, _))
       .WillByDefault(testing::Return(nullptr));
   ON_CALL(*this, Flush())
       .WillByDefault(testing::Return(WriteResult(WRITE_STATUS_OK, 0)));

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,10 +28,10 @@ void AXPlatformNodeBase::Init(AXPlatformNodeDelegate* delegate) {
 }
 
 const AXNodeData& AXPlatformNodeBase::GetData() const {
-  CR_DEFINE_STATIC_LOCAL(AXNodeData, empty_data, ());
+  static base::NoDestructor<AXNodeData> empty_data;
   if (delegate_)
     return delegate_->GetData();
-  return empty_data;
+  return *empty_data;
 }
 
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() {
@@ -189,9 +190,9 @@ bool AXPlatformNodeBase::HasStringAttribute(
 
 const std::string& AXPlatformNodeBase::GetStringAttribute(
     ax::mojom::StringAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::string, empty_data, ());
+  static base::NoDestructor<std::string> empty_data;
   if (!delegate_)
-    return empty_data;
+    return *empty_data;
   return GetData().GetStringAttribute(attribute);
 }
 
@@ -227,9 +228,9 @@ bool AXPlatformNodeBase::HasIntListAttribute(
 
 const std::vector<int32_t>& AXPlatformNodeBase::GetIntListAttribute(
     ax::mojom::IntListAttribute attribute) const {
-  CR_DEFINE_STATIC_LOCAL(std::vector<int32_t>, empty_data, ());
+  static base::NoDestructor<std::vector<int32_t>> empty_data;
   if (!delegate_)
-    return empty_data;
+    return *empty_data;
   return GetData().GetIntListAttribute(attribute);
 }
 

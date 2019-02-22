@@ -278,9 +278,7 @@ public:
     static int SizeOfPackedUInt(size_t value);
 
 private:
-    SkWStream(SkWStream&&) = delete;
     SkWStream(const SkWStream&) = delete;
-    SkWStream& operator=(SkWStream&&) = delete;
     SkWStream& operator=(const SkWStream&) = delete;
 };
 
@@ -459,7 +457,9 @@ private:
 
 class SK_API SkDynamicMemoryWStream : public SkWStream {
 public:
-    SkDynamicMemoryWStream();
+    SkDynamicMemoryWStream() = default;
+    SkDynamicMemoryWStream(SkDynamicMemoryWStream&&);
+    SkDynamicMemoryWStream& operator=(SkDynamicMemoryWStream&&);
     ~SkDynamicMemoryWStream() override;
 
     bool write(const void* buffer, size_t size) override;
@@ -477,6 +477,13 @@ public:
     /** Equivalent to writeToStream() followed by reset(), but may save memory use. */
     bool writeToAndReset(SkWStream* dst);
 
+    /** Equivalent to writeToStream() followed by reset(), but may save memory use.
+        When the dst is also a SkDynamicMemoryWStream, the implementation is constant time. */
+    bool writeToAndReset(SkDynamicMemoryWStream* dst);
+
+    /** Prepend this stream to dst, resetting this. */
+    void prependToAndReset(SkDynamicMemoryWStream* dst);
+
     /** Return the contents as SkData, and then reset the stream. */
     sk_sp<SkData> detachAsData();
 
@@ -488,9 +495,9 @@ public:
     void padToAlign4();
 private:
     struct Block;
-    Block*  fHead;
-    Block*  fTail;
-    size_t  fBytesWrittenBeforeTail;
+    Block*  fHead = nullptr;
+    Block*  fTail = nullptr;
+    size_t  fBytesWrittenBeforeTail = 0;
 
 #ifdef SK_DEBUG
     void validate() const;

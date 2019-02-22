@@ -331,7 +331,7 @@ CrSettingsPeoplePageLockScreenTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js', 'fake_quick_unlock_private.js',
     'fake_settings_private.js', 'fake_quick_unlock_uma.js',
-    'quick_unlock_authenticate_browsertest_chromeos.js'
+    'quick_unlock_authenticate_browsertest_chromeos.js', 'test_util.js'
   ]),
 };
 
@@ -555,6 +555,7 @@ CrSettingsPeoplePageSyncPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
     'test_sync_browser_proxy.js',
+    'test_util.js',
     'people_page_sync_page_test.js',
   ]),
 };
@@ -664,7 +665,7 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
+GEN('#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)');
 
 /**
  * @constructor
@@ -938,8 +939,14 @@ CrSettingsPrivacyPageTest.prototype = {
     'privacy_page_test.js',
   ]),
 };
-
-TEST_F('CrSettingsPrivacyPageTest', 'All', function() {
+// Disabling on Mac due to flakiness.
+// https://crbug.com/877109
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_All2 DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All2 All');
+GEN('#endif');
+TEST_F('CrSettingsPrivacyPageTest', 'MAYBE_All2', function() {
   mocha.run();
 });
 
@@ -1150,6 +1157,7 @@ CrSettingsSiteListTest.prototype = {
     '../test_browser_proxy.js',
     'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'site_list_tests.js',
   ]),
 };
@@ -1930,31 +1938,6 @@ TEST_F('CrSettingsMultideviceFeatureToggleTest', 'All', function() {
 });
 
 /**
- * Test fixture for the multidevice settings page container.
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsMultidevicePageContainerTest() {}
-
-CrSettingsMultidevicePageContainerTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload:
-      'chrome://settings/multidevice_page/multidevice_page_container.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    '../test_browser_proxy.js',
-    'multidevice_page_container_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsMultidevicePageContainerTest', 'All', function() {
-  mocha.run();
-});
-
-/**
  * Test fixture for the multidevice settings page.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -1970,6 +1953,7 @@ CrSettingsMultidevicePageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'multidevice_page_tests.js',
   ]),
 };
@@ -1994,6 +1978,7 @@ CrSettingsMultideviceSubpageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
     'multidevice_subpage_tests.js',
   ]),
 };
@@ -2180,30 +2165,6 @@ CrSettingsOnStartupPageTest.prototype = {
 TEST_F('CrSettingsOnStartupPageTest', 'All', function() {
   mocha.run();
 });
-GEN('#if defined(OS_CHROMEOS)');
-
-/**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsDisplaySizeSliderTest() {}
-
-CrSettingsDisplaySizeSliderTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/device_page/display_size_slider.html',
-
-  /** @override */
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'display_size_slider_test.js',
-  ]),
-};
-
-TEST_F('CrSettingsDisplaySizeSliderTest', 'All', function() {
-  mocha.run();
-});
-GEN('#endif  // defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for FindShortcutBehavior.

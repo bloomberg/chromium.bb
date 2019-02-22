@@ -23,7 +23,6 @@ DEFINE_double(frame, 1.0, "A double value in [0, 1] that specifies the point in 
 #include "GrBackendSurface.h"
 #include "GrContextPriv.h"
 #include "GrGpu.h"
-#include "GrTest.h"
 #include "gl/GLTestContext.h"
 
 // Globals externed in fiddle_main.h
@@ -302,7 +301,7 @@ int main(int argc, char** argv) {
     }
     if (options.pdf) {
         SkDynamicMemoryWStream pdfStream;
-        sk_sp<SkDocument> document(SkDocument::MakePDF(&pdfStream));
+        sk_sp<SkDocument> document(SkPDF::MakeDocument(&pdfStream));
         if (document) {
             srand(0);
             draw(prepare_canvas(document->beginPage(options.size.width(), options.size.height())));

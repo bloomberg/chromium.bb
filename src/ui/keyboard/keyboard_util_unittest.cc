@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace keyboard {
@@ -125,33 +126,38 @@ TEST_F(KeyboardUtilTest, HideKeyboardWhenTouchEnabled) {
 
 TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
   ResetAllFlags();
-  keyboard::KeyboardConfig config = keyboard::GetKeyboardConfig();
+  auto config = keyboard_controller_.keyboard_config();
   EXPECT_TRUE(config.spell_check);
-  EXPECT_FALSE(keyboard::UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_controller_.UpdateKeyboardConfig(config));
 
   config.spell_check = false;
-  EXPECT_TRUE(keyboard::UpdateKeyboardConfig(config));
-  EXPECT_FALSE(keyboard::GetKeyboardConfig().spell_check);
+  EXPECT_TRUE(keyboard_controller_.UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_controller_.keyboard_config().spell_check);
 
-  EXPECT_FALSE(keyboard::UpdateKeyboardConfig(config));
+  EXPECT_FALSE(keyboard_controller_.UpdateKeyboardConfig(config));
 }
 
 TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   ResetAllFlags();
 
   // Return false when keyboard is disabled.
-  EXPECT_FALSE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   // Enable the virtual keyboard.
   keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
-  // Override overscroll enabled state.
-  keyboard::SetKeyboardOverscrollOverride(
-      KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
-  EXPECT_FALSE(keyboard::IsKeyboardOverscrollEnabled());
-  keyboard::SetKeyboardOverscrollOverride(KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
-  EXPECT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+  // Set overscroll enabled state.
+  auto config = keyboard::KeyboardController::Get()->keyboard_config();
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
+
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+  EXPECT_TRUE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
   // Set keyboard_locked() to true.
   ui::DummyInputMethod input_method;
@@ -159,7 +165,7 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
       std::make_unique<TestKeyboardUI>(&input_method), nullptr);
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
-  EXPECT_FALSE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
   keyboard_controller_.DisableKeyboard();
 }
 

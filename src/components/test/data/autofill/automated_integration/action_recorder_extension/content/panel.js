@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 document.addEventListener('DOMContentLoaded', () => {
-
   const startingURLField = document.getElementById('startingURL');
   const saveBtn = document.getElementById('saveBtn');
   const stopBtn = document.getElementById('stopBtn');
@@ -12,9 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Sets up the 'Add Chrome Action' panel.
   const newActionTypeSelect = document.getElementById('newActionType');
-  const passwordActionParamsDiv =
-      document.getElementById('passwordActionParamsDiv');
-  const newActionParamDivs = [passwordActionParamsDiv];
   const passwordActionUserParam = document.getElementById('pmUser');
   const passwordActionPasswordParam = document.getElementById('pmPassword');
   createNewActionTypeOption('Save Password', 'savePassword');
@@ -23,9 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
   createNewActionTypeOption('Don\'t Update Password', 'rejectUpdatePassword');
   const addChromeAction = document.getElementById('addChromeAction');
   addChromeAction.addEventListener('click', (event) => {
-    let action = { type: newActionTypeSelect.value };
+    let action = {type: newActionTypeSelect.value};
 
-    switch(newActionTypeSelect.value) {
+    switch (newActionTypeSelect.value) {
       case ActionTypeEnum.SAVE_PASSWORD:
       case ActionTypeEnum.REJECT_SAVE_PASSWORD:
       case ActionTypeEnum.UPDATE_PASSWORD:
@@ -36,10 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
       default:
     }
 
-    return sendRuntimeMessageToBackgroundScript({
-      type: RecorderMsgEnum.ADD_ACTION,
-      action: action
-    });
+    return sendRuntimeMessageToBackgroundScript(
+        {type: RecorderMsgEnum.ADD_ACTION, action: action});
   });
 
   function createNewActionTypeOption(text, value) {
@@ -64,16 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
     iconBoxDiv.textContent = 'X';
     iconBoxDiv.addEventListener('click', (event) => {
       sendRuntimeMessageToBackgroundScript({
-          type: RecorderUiMsgEnum.REMOVE_ACTION,
-          action_index: action.action_index })
-      .then((response) => {
-        if (response) {
-          actionDiv.remove();
-        }
+        type: RecorderUiMsgEnum.REMOVE_ACTION,
+        action_index: action.action_index
       })
-      .catch((error) => {
-        console.error('Unable to remove the recorded action!', error);
-      });
+          .then((response) => {
+            if (response) {
+              actionDiv.remove();
+            }
+          })
+          .catch((error) => {
+            console.error('Unable to remove the recorded action!', error);
+          });
     });
     flexContainerDiv.appendChild(selectorLabel);
     flexContainerDiv.appendChild(actionLabel);
@@ -127,9 +122,14 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       case ActionTypeEnum.VALIDATE_FIELD:
         actionLabel.textContent = 'validate field';
-        actionDetailLabel.textContent = `check that field
-            (${action.expectedAutofillType}) has the value
-            '${action.expectedValue}'`;
+        if (action.expectedAutofillType) {
+          actionDetailLabel.textContent = `check that field
+              (${action.expectedAutofillType}) has the value
+              '${action.expectedValue}'`;
+        } else {
+          actionDetailLabel.textContent = `check that field
+              has the value '${action.expectedValue}'`;
+        }
         break;
       case ActionTypeEnum.SAVE_PASSWORD:
         actionLabel.textContent = 'save password';
@@ -177,13 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   saveBtn.addEventListener('click', (event) => {
-    sendRuntimeMessageToBackgroundScript({ type: RecorderMsgEnum.SAVE });
+    sendRuntimeMessageToBackgroundScript({type: RecorderMsgEnum.SAVE});
   });
   stopBtn.addEventListener('click', (event) => {
-    sendRuntimeMessageToBackgroundScript({ type: RecorderMsgEnum.STOP });
+    sendRuntimeMessageToBackgroundScript({type: RecorderMsgEnum.STOP});
   });
   cancelBtn.addEventListener('click', (event) => {
-    sendRuntimeMessageToBackgroundScript({ type: RecorderMsgEnum.CANCEL });
+    sendRuntimeMessageToBackgroundScript({type: RecorderMsgEnum.CANCEL});
   });
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -202,10 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Get the recipe from the background script and render it.
-  sendRuntimeMessageToBackgroundScript(
-      { type: RecorderUiMsgEnum.GET_RECIPE })
-  .then((recipe) => {
-    while(actionsListDiv.hasChildNodes()) {
+  sendRuntimeMessageToBackgroundScript({
+    type: RecorderUiMsgEnum.GET_RECIPE
+  }).then((recipe) => {
+    while (actionsListDiv.hasChildNodes()) {
       actionsListDiv.removeChild(actionsListDiv.lastChild);
     }
 
@@ -220,15 +220,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Get the saved event parameters from the background script and
   // set parameters on the UI.
   sendRuntimeMessageToBackgroundScript(
-      { type: RecorderUiMsgEnum.GET_SAVED_ACTION_PARAMS })
-  .then((params) => {
-    if (params.passwordManagerParams) {
-      passwordActionUserParam.value =
-          params.passwordManagerParams.userName;
-      passwordActionPasswordParam .value =
-          params.passwordManagerParams.password;
-    }
-  }).catch((error) => {
-    console.error('Unable to obtain saved action parameters!\r\n', error);
-  });
+      {type: RecorderUiMsgEnum.GET_SAVED_ACTION_PARAMS})
+      .then((params) => {
+        if (params.passwordManagerParams) {
+          passwordActionUserParam.value = params.passwordManagerParams.userName;
+          passwordActionPasswordParam.value =
+              params.passwordManagerParams.password;
+        }
+      })
+      .catch((error) => {
+        console.error('Unable to obtain saved action parameters!\r\n', error);
+      });
 });

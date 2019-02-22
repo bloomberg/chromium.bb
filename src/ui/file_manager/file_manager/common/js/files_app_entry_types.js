@@ -35,14 +35,14 @@
 class FilesAppEntry {
   constructor() {
     /**
-     * @public {!boolean} true if this entry represents a Directory-like entry,
+     * @public {boolean} true if this entry represents a Directory-like entry,
      * as in have sub-entries and implements {createReader} method.
      * This attribute is defined on Entry.
      */
     this.isDirectory = false;
 
     /**
-     * @public {!boolean} true if this entry represents a File-like entry.
+     * @public {boolean} true if this entry represents a File-like entry.
      * Implementations of FilesAppEntry are expected to have this as |true|.
      * Whereas implementations of FilesAppDirEntry are expected to have this as
      * |false|.
@@ -66,7 +66,7 @@ class FilesAppEntry {
     this.name = '';
 
     /**
-     * @public {!string} the class name for this class. It's workaround for the
+     * @public {string} the class name for this class. It's workaround for the
      * fact that an instance created on foreground page and sent to background
      * page can't be checked with "instanceof".
      */
@@ -84,7 +84,7 @@ class FilesAppEntry {
   getParent(success, error) {}
 
   /**
-   * @return {!string} used to compare entries. It should return an unique
+   * @return {string} used to compare entries. It should return an unique
    * identifier for such entry, usually prefixed with it's root type like:
    * "fake-entry://unique/path/to/entry".
    * This method is defined on Entry.
@@ -104,7 +104,7 @@ class FilesAppEntry {
   /**
    * Returns true if this entry object has a native representation such as Entry
    * or DirectoryEntry, this means it can interact with VolumeManager.
-   * @return {!boolean}
+   * @return {boolean}
    */
   get isNativeType() {}
 }
@@ -118,7 +118,7 @@ class FilesAppEntry {
  */
 class StaticReader {
   /**
-   * @param {Array<Entry|FakeEntry|FilesAppEntry>} children: Array of Entry-like
+   * @param {!Array<!Entry|!FilesAppEntry>} children: Array of Entry-like
    * instances that will be returned/read by this reader.
    */
   constructor(children) {
@@ -161,7 +161,7 @@ class FilesAppDirEntry extends FilesAppEntry {
   constructor() {
     super();
     /**
-     * @public {!boolean} true if this entry represents a Directory-like entry,
+     * @public {boolean} true if this entry represents a Directory-like entry,
      * as in have sub-entries and implements {createReader} method.
      * Implementations of FilesAppEntry are expected to have this as |true|.
      * This attribute is defined on Entry.
@@ -203,7 +203,7 @@ class EntryList {
     this.rootType_ = rootType;
 
     /**
-     * @private {!Array<!Entry|!FilesAppEntry|!FakeEntry>} children entries of
+     * @private {!Array<!Entry|!FilesAppEntry>} children entries of
      * this EntryList instance.
      */
     this.children_ = [];
@@ -241,7 +241,7 @@ class EntryList {
   }
 
   /**
-   * @return {!string} used to compare entries.
+   * @return {string} used to compare entries.
    * @override
    */
   toURL() {
@@ -262,7 +262,7 @@ class EntryList {
   }
 
   /**
-   * @param {!Entry|!FakeEntry|!FilesAppEntry} entry that should be added as
+   * @param {!Entry|!FilesAppEntry} entry that should be added as
    * child of this EntryList.
    * This method is specific to EntryList instance.
    */
@@ -288,7 +288,7 @@ class EntryList {
   }
 
   /**
-   * @param {!Entry|!FakeEntry|!FilesAppEntry} entry that should be removed as
+   * @param {!Entry|!FilesAppEntry} entry that should be removed as
    * child of this EntryList.
    * This method is specific to EntryList instance.
    * @return {boolean} if entry was removed.
@@ -402,7 +402,7 @@ class VolumeEntry {
   }
 
   /**
-   * @return {!string} Full path for this volume.
+   * @return {string} Full path for this volume.
    * This method is defined on Entry.
    * @override.
    */
@@ -417,7 +417,7 @@ class VolumeEntry {
   }
 
   /**
-   * @return {!string} Name for this volume.
+   * @return {string} Name for this volume.
    * @override.
    */
   get name() {
@@ -487,16 +487,17 @@ class VolumeEntry {
  * FakeEntry is used for entries that used only for UI, that weren't generated
  * by FileSystem API, like Drive, Downloads or Provided.
  *
- * @implements FilesAppDirEntry
+ * @implements FilesAppEntry
  */
 class FakeEntry {
   /**
    * @param {string} label Translated text to be displayed to user.
    * @param {!VolumeManagerCommon.RootType} rootType Root type of this entry.
+   * @param {boolean} isDirectory Is this entry a directory-like entry?
    * @param {chrome.fileManagerPrivate.SourceRestriction=} opt_sourceRestriction
    *    used on Recents to filter the source of recent files/directories.
    */
-  constructor(label, rootType, opt_sourceRestriction) {
+  constructor(label, rootType, isDirectory, opt_sourceRestriction) {
     /**
      * @public {string} label: Label to be used when displaying to user, it
      *      should be already translated. */
@@ -508,11 +509,13 @@ class FakeEntry {
     /** @public {!VolumeManagerCommon.RootType} */
     this.rootType = rootType;
 
-    /** @public {boolean} true FakeEntry are always directory-like. */
-    this.isDirectory = true;
+    /**
+     * @public {boolean} true if this entry represents a Directory-like entry.
+     */
+    this.isDirectory = isDirectory;
 
-    /** @public {boolean} false FakeEntry are always directory-like. */
-    this.isFile = false;
+    /** @public {boolean} true if this entry represents a File-like entry. */
+    this.isFile = !this.isDirectory;
 
     /**
      * @public {chrome.fileManagerPrivate.SourceRestriction|undefined} It's used
@@ -560,14 +563,5 @@ class FakeEntry {
   /** @override */
   get isNativeType() {
     return false;
-  }
-
-  /**
-   * @return {!StaticReader} Returns a reader compatible with
-   * DirectoryEntry.createReader (from Web Standards) that reads 0 entries.
-   * @override
-   */
-  createReader() {
-    return new StaticReader([]);
   }
 }

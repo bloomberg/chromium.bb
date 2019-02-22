@@ -18,7 +18,8 @@ namespace {
 
 const uint64_t kReadingBufferSize = sizeof(device::SensorReadingSharedBuffer);
 const uint64_t kSharedBufferSizeInBytes =
-    kReadingBufferSize * static_cast<uint64_t>(device::mojom::SensorType::LAST);
+    kReadingBufferSize *
+    (static_cast<uint64_t>(device::mojom::SensorType::kMaxValue) + 1);
 
 }  // namespace
 

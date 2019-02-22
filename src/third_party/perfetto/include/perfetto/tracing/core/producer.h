@@ -35,7 +35,7 @@ class SharedMemory;
 //    API TracingService::ProducerEndpoint::OnPageAcquired()/OnPageReleased()).
 // 3. At some point later on, the Service asks the Producer to turn on some of
 //    the previously registered data sources, together with some configuration
-//    parameters. This happens via the CreateDataSourceInstance() callback.
+//    parameters. This happens via the StartDataSource() callback.
 // 4. In response to that the Producer will spawn an instance of the given data
 //    source and inject its data into the shared memory buffer (obtained during
 //    OnConnect).
@@ -60,26 +60,39 @@ class PERFETTO_EXPORT Producer {
   // instance.
   virtual void OnDisconnect() = 0;
 
-  // TODO(primiano): rename the methods below to Start/StopDataSourceInstance
-  // in the next CLs.
-
-  // Called by the Service to turn on one of the data source previously
-  // registered through TracingService::ProducerEndpoint::RegisterDataSource().
-  // Args:
-  // - DataSourceInstanceID is an identifier chosen by the Service that should
-  //   be assigned to the newly created data source instance. It is used to
-  //   match the TearDownDataSourceInstance() request below.
-  // - DataSourceConfig is the configuration for the new data source (e.g.,
-  //   tells which trace categories to enable).
-  virtual void CreateDataSourceInstance(DataSourceInstanceID,
-                                        const DataSourceConfig&) = 0;
-
-  // Called by the Service to shut down an existing data source instance.
-  virtual void TearDownDataSourceInstance(DataSourceInstanceID) = 0;
-
   // Called by the Service after OnConnect but before the first DataSource is
   // created. Can be used for any setup required before tracing begins.
   virtual void OnTracingSetup() = 0;
+
+  // The lifecycle methods below are always called in the following sequence:
+  // SetupDataSource  -> StartDataSource -> StopDataSource.
+  // Or, in the edge case where a trace is aborted immediately:
+  // SetupDataSource  -> StopDataSource.
+  // The Setup+Start call sequence is always guaranateed, regardless of the
+  // TraceConfig.deferred_start flags.
+  // Called by the Service to configure one of the data sources previously
+  // registered through TracingService::ProducerEndpoint::RegisterDataSource().
+  // This method is always called before StartDataSource. There is always a
+  // SetupDataSource() call before each StartDataSource() call.
+  // Args:
+  // - DataSourceInstanceID is an identifier chosen by the Service that should
+  //   be assigned to the newly created data source instance. It is used to
+  //   match the StopDataSource() request below.
+  // - DataSourceConfig is the configuration for the new data source (e.g.,
+  //   tells which trace categories to enable).
+  virtual void SetupDataSource(DataSourceInstanceID,
+                               const DataSourceConfig&) = 0;
+
+  // Called by the Service to turn on one of the data sources previously
+  // registered through TracingService::ProducerEndpoint::RegisterDataSource()
+  // and initialized through SetupDataSource().
+  // Both arguments are guaranteed to be identical to the ones passed to the
+  // prior SetupDataSource() call.
+  virtual void StartDataSource(DataSourceInstanceID,
+                               const DataSourceConfig&) = 0;
+
+  // Called by the Service to shut down an existing data source instance.
+  virtual void StopDataSource(DataSourceInstanceID) = 0;
 
   // Called by the service to request the Producer to commit the data of the
   // given data sources and return their chunks into the shared memory buffer.

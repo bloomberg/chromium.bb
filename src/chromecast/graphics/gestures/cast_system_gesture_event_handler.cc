@@ -34,26 +34,15 @@ CastSystemGestureEventHandler::~CastSystemGestureEventHandler() {
   root_window_->RemovePreTargetHandler(this);
 }
 
-void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP ||
-      event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    ProcessPressedEvent(event);
+void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED) {
+    dispatcher_->HandleTapDownGesture(event->location());
   }
 }
 
-void CastSystemGestureEventHandler::ProcessPressedEvent(
-    ui::GestureEvent* event) {
-  gfx::Point touch_location(event->location());
-  // Let the subscriber know about the gesture begin.
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      dispatcher_->HandleTapDownGesture(touch_location);
-      break;
-    case ui::ET_GESTURE_TAP:
-      dispatcher_->HandleTapGesture(touch_location);
-      break;
-    default:
-      return;
+void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    dispatcher_->HandleTapGesture(event->location());
   }
 }
 

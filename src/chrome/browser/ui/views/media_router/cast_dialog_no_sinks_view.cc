@@ -8,15 +8,17 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -30,18 +32,6 @@
 
 namespace media_router {
 
-namespace {
-
-std::unique_ptr<views::ImageView> CreateTvIcon() {
-  auto icon = std::make_unique<views::ImageView>();
-  // Share the icon size with sink buttons for consistency.
-  icon->SetImage(gfx::CreateVectorIcon(
-      kTvIcon, CastDialogSinkButton::kPrimaryIconSize, gfx::kGoogleGrey500));
-  return icon;
-}
-
-}  // namespace
-
 CastDialogNoSinksView::CastDialogNoSinksView(Browser* browser)
     : browser_(browser), weak_factory_(this) {
   SetLayoutManager(
@@ -50,8 +40,8 @@ CastDialogNoSinksView::CastDialogNoSinksView(Browser* browser)
   AddChildView(looking_for_sinks_view_);
 
   constexpr int kThrobberDurationInSeconds = 3;
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastDialogNoSinksView::ShowHelpIconView,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kThrobberDurationInSeconds));
@@ -81,10 +71,8 @@ void CastDialogNoSinksView::ShowHelpCenterArticle() {
 views::View* CastDialogNoSinksView::CreateLookingForSinksView() {
   base::string16 title =
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STATUS_LOOKING_FOR_DEVICES);
-  auto throbber = std::make_unique<views::Throbber>();
-  throbber->Start();
-  HoverButton* view = new HoverButton(nullptr, CreateTvIcon(), title,
-                                      base::string16(), std::move(throbber));
+  HoverButton* view = new HoverButton(
+      /* button_listener */ nullptr, CreateThrobber(), title, base::string16());
   view->SetEnabled(false);
   return view;
 }
@@ -96,12 +84,16 @@ views::View* CastDialogNoSinksView::CreateHelpIconView() {
   views::ImageButton* help_icon_ptr = help_icon.get();
   help_icon->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon,
-                            CastDialogSinkButton::kPrimaryIconSize,
+      gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon, kPrimaryIconSize,
                             gfx::kChromeIconGrey));
   help_icon->SetFocusForPlatform();
-  HoverButton* view = new HoverButton(nullptr, CreateTvIcon(), title,
-                                      base::string16(), std::move(help_icon));
+  help_icon->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  help_icon->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON));
+  HoverButton* view =
+      new HoverButton(/* button_listener */ nullptr, std::move(help_icon),
+                      title, base::string16());
   view->SetEnabled(false);
   // HoverButton disables event handling by its icons, so enable it again.
   help_icon_ptr->set_can_process_events_within_subtree(true);

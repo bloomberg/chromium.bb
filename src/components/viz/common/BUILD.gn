@@ -64,6 +64,8 @@ viz_component("common") {
     "gl_helper.h",
     "gl_helper_scaling.cc",
     "gl_helper_scaling.h",
+    "gl_scaler.cc",
+    "gl_scaler.h",
     "gpu/context_cache_controller.cc",
     "gpu/context_cache_controller.h",
     "gpu/context_lost_observer.h",
@@ -88,6 +90,7 @@ viz_component("common") {
     "quads/debug_border_draw_quad.h",
     "quads/draw_quad.cc",
     "quads/draw_quad.h",
+    "quads/frame_deadline.cc",
     "quads/frame_deadline.h",
     "quads/largest_draw_quad.cc",
     "quads/largest_draw_quad.h",
@@ -184,7 +187,7 @@ viz_component("common") {
       "gpu/vulkan_in_process_context_provider.h",
     ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
-    deps += [ "//gpu/vulkan/init" ]
+    deps += [ "//gpu/vulkan" ]
   }
 
   if (is_win) {
@@ -206,6 +209,8 @@ viz_component("common") {
 }
 
 viz_source_set("unit_tests") {
+  # Not ready for jumbo compilation. Too much repeated test code.
+  never_build_jumbo = true
   testonly = true
   sources = [
     "frame_sinks/begin_frame_args_unittest.cc",
@@ -213,6 +218,10 @@ viz_source_set("unit_tests") {
     "frame_sinks/copy_output_util_unittest.cc",
     "frame_sinks/delay_based_time_source_unittest.cc",
     "gl_helper_unittest.cc",
+    "gl_scaler_shader_pixeltest.cc",
+    "gl_scaler_test_util.cc",
+    "gl_scaler_test_util.h",
+    "gl_scaler_unittest.cc",
     "gpu/context_cache_controller_unittest.cc",
     "quads/draw_quad_unittest.cc",
     "quads/render_pass_unittest.cc",
@@ -238,6 +247,9 @@ viz_source_set("unit_tests") {
     "//media",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/gfx",
+    "//ui/gfx:color_space",
+    "//ui/gfx/geometry",
   ]
 }
 

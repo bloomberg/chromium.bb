@@ -9,17 +9,17 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace offline_pages {
 
 // Asynchronously fetches the offline prefetch related data from the server.
-class PrefetchRequestFetcher : public net::URLFetcherDelegate {
+class PrefetchRequestFetcher {
  public:
   using FinishedCallback = base::OnceCallback<void(PrefetchRequestStatus status,
                                                    const std::string& data)>;
@@ -27,34 +27,35 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
   // Creates a fetcher that will sends a GET request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForGet(
       const GURL& url,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FinishedCallback callback);
 
   // Creates a fetcher that will sends a POST request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
       const GURL& url,
       const std::string& message,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       FinishedCallback callback);
 
-  ~PrefetchRequestFetcher() override;
+  ~PrefetchRequestFetcher();
 
-  // URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
  private:
   // If |message| is empty, the GET request is sent. Otherwise, the POST request
   // is sent with |message| as post data.
-  PrefetchRequestFetcher(const GURL& url,
-                         const std::string& message,
-                         net::URLRequestContextGetter* request_context_getter,
-                         FinishedCallback callback);
+  PrefetchRequestFetcher(
+      const GURL& url,
+      const std::string& message,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      FinishedCallback callback);
 
-  PrefetchRequestStatus ParseResponse(const net::URLFetcher* source,
-                                      std::string* data);
+  PrefetchRequestStatus ParseResponse(
+      std::unique_ptr<std::string> response_body,
+      std::string* data);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   FinishedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchRequestFetcher);

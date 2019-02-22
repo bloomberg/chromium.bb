@@ -12,7 +12,6 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -36,6 +35,7 @@ class TimeDomain;
 namespace internal {
 
 class SequenceManagerImpl;
+class TaskQueueProxy;
 class WorkQueue;
 class WorkQueueSets;
 
@@ -79,112 +79,30 @@ class BASE_EXPORT TaskQueueImpl {
 
   ~TaskQueueImpl();
 
-  // Represents a time at which a task wants to run. Tasks scheduled for the
-  // same point in time will be ordered by their sequence numbers.
-  struct DelayedWakeUp {
-    TimeTicks time;
-    int sequence_num;
-
-    bool operator!=(const DelayedWakeUp& other) const {
-      return time != other.time || other.sequence_num != sequence_num;
-    }
-
-    bool operator==(const DelayedWakeUp& other) const {
-      return !(*this != other);
-    }
-
-    bool operator<=(const DelayedWakeUp& other) const {
-      if (time == other.time) {
-        // Debug gcc builds can compare an element against itself.
-        DCHECK(sequence_num != other.sequence_num || this == &other);
-        // |PostedTask::sequence_num| is int and might wrap around to
-        // a negative number when casted from EnqueueOrder.
-        // This way of comparison handles that properly.
-        return (sequence_num - other.sequence_num) <= 0;
-      }
-      return time < other.time;
-    }
-  };
-
-  class BASE_EXPORT Task : public TaskQueue::Task {
-   public:
-    Task(TaskQueue::PostedTask task,
-         TimeTicks desired_run_time,
-         EnqueueOrder sequence_number);
-
-    Task(TaskQueue::PostedTask task,
-         TimeTicks desired_run_time,
-         EnqueueOrder sequence_number,
-         EnqueueOrder enqueue_order);
-
-    DelayedWakeUp delayed_wake_up() const {
-      // Since we use |sequence_num| in DelayedWakeUp for ordering purposes
-      // and integer overflow handling is type-sensitive it's worth to protect
-      // it from an unnoticed potential change in the PendingTask base class.
-      static_assert(std::is_same<decltype(sequence_num), int>::value, "");
-      return DelayedWakeUp{delayed_run_time, sequence_num};
-    }
-
-    EnqueueOrder enqueue_order() const {
-      DCHECK(enqueue_order_);
-      return enqueue_order_;
-    }
-
-    void set_enqueue_order(EnqueueOrder enqueue_order) {
-      DCHECK(!enqueue_order_);
-      enqueue_order_ = enqueue_order;
-    }
-
-    bool enqueue_order_set() const { return enqueue_order_; }
-
-   private:
-    // Similar to sequence number, but ultimately the |enqueue_order_| is what
-    // the scheduler uses for task ordering. For immediate tasks |enqueue_order|
-    // is set when posted, but for delayed tasks it's not defined until they are
-    // enqueued on the |delayed_work_queue_|. This is because otherwise delayed
-    // tasks could run before an immediate task posted after the delayed task.
-    EnqueueOrder enqueue_order_;
-  };
-
-  // A result retuned by PostDelayedTask. When scheduler failed to post a task
-  // due to being shutdown a task is returned to be destroyed outside the lock.
-  struct PostTaskResult {
-    PostTaskResult();
-    PostTaskResult(bool success, TaskQueue::PostedTask task);
-    PostTaskResult(PostTaskResult&& move_from);
-    PostTaskResult(const PostTaskResult& copy_from) = delete;
-    ~PostTaskResult();
-
-    static PostTaskResult Success();
-    static PostTaskResult Fail(TaskQueue::PostedTask task);
-
-    bool success;
-    TaskQueue::PostedTask task;
-  };
-
   // Types of queues TaskQueueImpl is maintaining internally.
   enum class WorkQueueType { kImmediate, kDelayed };
 
   // Non-nestable tasks may get deferred but such queue is being maintained on
   // SequenceManager side, so we need to keep information how to requeue it.
   struct DeferredNonNestableTask {
-    internal::TaskQueueImpl::Task task;
+    Task task;
     internal::TaskQueueImpl* task_queue;
     WorkQueueType work_queue_type;
   };
 
   using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
   using OnTaskStartedHandler =
-      RepeatingCallback<void(const TaskQueue::Task&,
-                             const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
-      RepeatingCallback<void(const TaskQueue::Task&,
-                             const TaskQueue::TaskTiming&)>;
+      RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
+
+  // May be called from any thread.
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type) const;
 
   // TaskQueue implementation.
   const char* GetName() const;
   bool RunsTasksInCurrentSequence() const;
-  PostTaskResult PostDelayedTask(TaskQueue::PostedTask task);
+  void PostTask(PostedTask task);
   // Require a reference to enclosing task queue for lifetime control.
   std::unique_ptr<TaskQueue::QueueEnabledVoter> CreateQueueEnabledVoter(
       scoped_refptr<TaskQueue> owning_task_queue);
@@ -268,7 +186,7 @@ class BASE_EXPORT TaskQueueImpl {
   // TODO(kraynov): Simplify non-nestable task logic https://crbug.com/845437.
   void RequeueDeferredNonNestableTask(DeferredNonNestableTask task);
 
-  void PushImmediateIncomingTaskForTest(TaskQueueImpl::Task&& task);
+  void PushImmediateIncomingTaskForTest(Task&& task);
 
   class QueueEnabledVoterImpl : public TaskQueue::QueueEnabledVoter {
    public:
@@ -295,10 +213,10 @@ class BASE_EXPORT TaskQueueImpl {
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
-  void OnTaskStarted(const TaskQueue::Task& task,
+  void OnTaskStarted(const Task& task,
                      const TaskQueue::TaskTiming& task_timing);
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
-  void OnTaskCompleted(const TaskQueue::Task& task,
+  void OnTaskCompleted(const Task& task,
                        const TaskQueue::TaskTiming& task_timing);
   bool RequiresTaskTiming() const;
 
@@ -316,6 +234,9 @@ class BASE_EXPORT TaskQueueImpl {
   // Disables queue for testing purposes, when a QueueEnabledVoter can't be
   // constructed due to not having TaskQueue.
   void SetQueueEnabledForTest(bool enabled);
+
+  // TODO(alexclarke): Remove when possible.
+  void ClearSequenceManagerForTesting();
 
  protected:
   void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
@@ -354,7 +275,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
-    std::priority_queue<TaskQueueImpl::Task> delayed_incoming_queue;
+    std::priority_queue<Task> delayed_incoming_queue;
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     size_t set_index;
     HeapHandle heap_handle;
@@ -372,13 +293,14 @@ class BASE_EXPORT TaskQueueImpl {
     bool is_enabled_for_test;
   };
 
-  PostTaskResult PostImmediateTaskImpl(TaskQueue::PostedTask task);
-  PostTaskResult PostDelayedTaskImpl(TaskQueue::PostedTask task);
+  void PostImmediateTaskImpl(PostedTask task);
+  void PostDelayedTaskImpl(PostedTask task);
 
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
   void PushOntoDelayedIncomingQueueFromMainThread(Task pending_task,
-                                                  TimeTicks now);
+                                                  TimeTicks now,
+                                                  bool notify_task_annotator);
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
@@ -393,7 +315,7 @@ class BASE_EXPORT TaskQueueImpl {
   // empty.
   void PushOntoImmediateIncomingQueueLocked(Task task);
 
-  using TaskDeque = circular_deque<Task>;
+  using TaskDeque = LazilyDeallocatedDeque<Task>;
 
   // Extracts all the tasks from the immediate incoming queue and swaps it with
   // |queue| which must be empty.
@@ -447,6 +369,10 @@ class BASE_EXPORT TaskQueueImpl {
     DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
+
+  // Proxy which allows TaskQueueTaskRunner to dispatch tasks and it can be
+  // detached from TaskQueueImpl to leave dangling task runners behind sefely.
+  const scoped_refptr<TaskQueueProxy> proxy_;
 
   mutable Lock immediate_incoming_queue_lock_;
   TaskDeque immediate_incoming_queue_;

@@ -18,7 +18,7 @@ PolicyCheck::~PolicyCheck() {}
 
 void PolicyCheck::Start(ResultCallback callback) {
   Errors errors;
-  if (!ExtensionSystem::Get(context_)->management_policy()->UserMayLoad(
+  if (!ExtensionSystem::Get(context_)->management_policy()->UserMayInstall(
           extension(), &error_)) {
     DCHECK(!error_.empty());
     errors.insert(DISALLOWED_BY_POLICY);

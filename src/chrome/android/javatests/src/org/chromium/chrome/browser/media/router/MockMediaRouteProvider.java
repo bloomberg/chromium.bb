@@ -30,12 +30,12 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     private final Map<String, MediaRoute> mPresentationIdToRoute =
             new HashMap<String, MediaRoute>();
 
-    private int mSinksObservedDelayMillis = 0;
-    private int mCreateRouteDelayMillis = 0;
+    private int mSinksObservedDelayMillis;
+    private int mCreateRouteDelayMillis;
     private boolean mIsSupportsSource = true;
-    private String mCreateRouteErrorMessage = null;
-    private String mJoinRouteErrorMessage = null;
-    private boolean mCloseRouteWithErrorOnSend = false;
+    private String mCreateRouteErrorMessage;
+    private String mJoinRouteErrorMessage;
+    private boolean mCloseRouteWithErrorOnSend;
 
     /**
      * Factory for {@link MockMediaRouteProvider}.
@@ -162,7 +162,7 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
         }
         mPresentationIdToRoute.clear();
         mPresentationIdToRoute.putAll(newPresentationIdToRoute);
-        mManager.onRouteClosed(routeId);
+        mManager.onRouteTerminated(routeId);
     }
 
     @Override
@@ -170,9 +170,9 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
     }
 
     @Override
-    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
+    public void sendStringMessage(String routeId, String message) {
         if (mCloseRouteWithErrorOnSend) {
-            mManager.onRouteClosedWithError(routeId, "Sending message failed. Closing the route.");
+            mManager.onRouteClosed(routeId, "Sending message failed. Closing the route.");
         } else {
             mManager.onMessage(routeId, "Pong: " + message);
         }

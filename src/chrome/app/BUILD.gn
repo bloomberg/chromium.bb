@@ -334,6 +334,7 @@ static_library("test_support") {
     "//chrome/utility",
     "//components/nacl/common:buildflags",
     "//components/startup_metric_utils/browser:lib",
+    "//components/tracing",
     "//content/public/app:both",
     "//content/public/common",
     "//content/public/common:service_names",

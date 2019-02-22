@@ -471,7 +471,8 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       ConsumeChar();
       *out = std::move(string);
       return true;
-    } else if (next_char != '\\') {
+    }
+    if (next_char != '\\') {
       // If this character is not an escape sequence...
       ConsumeChar();
       string.Append(next_char);
@@ -714,16 +715,14 @@ bool JSONParser::ReadInt(bool allow_leading_zeros) {
 }
 
 Optional<Value> JSONParser::ConsumeLiteral() {
-  if (ConsumeIfMatch("true")) {
+  if (ConsumeIfMatch("true"))
     return Value(true);
-  } else if (ConsumeIfMatch("false")) {
+  if (ConsumeIfMatch("false"))
     return Value(false);
-  } else if (ConsumeIfMatch("null")) {
+  if (ConsumeIfMatch("null"))
     return Value(Value::Type::NONE);
-  } else {
-    ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
-    return nullopt;
-  }
+  ReportError(JSONReader::JSON_SYNTAX_ERROR, 1);
+  return nullopt;
 }
 
 bool JSONParser::ConsumeIfMatch(StringPiece match) {

@@ -28,12 +28,16 @@ const base::Feature kEnableChildToRegularTransitionFeature{
 
 // Controls whether ARC input methods (usually installed via Play Store) are
 // available.
-const base::Feature kEnableInputMethodFeature{
-    "ArcInputMethod", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableInputMethodFeature{"ArcInputMethod",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether ARC handles regular->child account transition.
 const base::Feature kEnableRegularToChildTransitionFeature{
     "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether we should delegate audio focus requests from ARC to Chrome.
+const base::Feature kEnableUnifiedAudioFocusFeature{
+    "ArcEnableUnifiedAudioFocus", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls experimental native bridge feature for ARC.
 const base::Feature kNativeBridgeExperimentFeature {

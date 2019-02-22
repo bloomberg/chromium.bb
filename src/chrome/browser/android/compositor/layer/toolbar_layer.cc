@@ -26,18 +26,16 @@ scoped_refptr<cc::Layer> ToolbarLayer::layer() {
   return layer_;
 }
 
-void ToolbarLayer::PushResource(
-    int toolbar_resource_id,
-    int toolbar_background_color,
-    bool anonymize,
-    int toolbar_textbox_background_color,
-    int url_bar_background_resource_id,
-    float url_bar_alpha,
-    float window_height,
-    float y_offset,
-    bool show_debug,
-    bool clip_shadow,
-    bool modern_design_enabled) {
+void ToolbarLayer::PushResource(int toolbar_resource_id,
+                                int toolbar_background_color,
+                                bool anonymize,
+                                int toolbar_textbox_background_color,
+                                int url_bar_background_resource_id,
+                                float url_bar_alpha,
+                                float window_height,
+                                float y_offset,
+                                bool show_debug,
+                                bool clip_shadow) {
   ToolbarResource* resource =
       ToolbarResource::From(resource_manager_->GetResource(
           ui::ANDROID_RESOURCE_TYPE_DYNAMIC, toolbar_resource_id));
@@ -65,16 +63,9 @@ void ToolbarLayer::PushResource(
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
     ui::NinePatchResource* url_bar_background_resource;
-    if (!modern_design_enabled) {
-      url_bar_background_resource = ui::NinePatchResource::From(
-          resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                         url_bar_background_resource_id));
-    } else {
-      url_bar_background_resource = ui::NinePatchResource::From(
-          resource_manager_->GetStaticResourceWithTint(
-              url_bar_background_resource_id,
-              toolbar_textbox_background_color));
-    }
+    url_bar_background_resource = ui::NinePatchResource::From(
+        resource_manager_->GetStaticResourceWithTint(
+            url_bar_background_resource_id, toolbar_textbox_background_color));
 
     gfx::Size draw_size(url_bar_background_resource->DrawSize(
         resource->location_bar_content_rect().size()));
@@ -97,34 +88,21 @@ void ToolbarLayer::PushResource(
 
   layer_->SetMasksToBounds(clip_shadow);
 
-  // TODO(mdjones): Remove the anonymize layer once modern launches.
-  anonymize_layer_->SetHideLayerAndSubtree(!anonymize || modern_design_enabled);
-  if (!modern_design_enabled && anonymize) {
-    anonymize_layer_->SetPosition(
-        gfx::PointF(resource->location_bar_content_rect().origin()));
-    anonymize_layer_->SetBounds(resource->location_bar_content_rect().size());
-    anonymize_layer_->SetBackgroundColor(toolbar_textbox_background_color);
-  }
+  // The location bar background doubles as the anonymize layer -- it just
+  // needs to be drawn on top of the toolbar bitmap.
+  int background_layer_index = GetIndexOfLayer(toolbar_background_layer_);
 
-  // If modern is enabled, the location bar background doubles as the
-  // anonymize layer -- it just needs to be drawn on top of the toolbar
-  // bitmap.
-  if (modern_design_enabled) {
-    int background_layer_index = GetIndexOfLayer(toolbar_background_layer_);
+  bool needs_move_to_front =
+      anonymize && layer_->children().back() != url_bar_background_layer_;
+  bool needs_move_to_back =
+      !anonymize &&
+      layer_->children()[background_layer_index] != url_bar_background_layer_;
 
-    bool needs_move_to_front =
-        anonymize && layer_->children().back() != url_bar_background_layer_;
-    bool needs_move_to_back =
-        !anonymize &&
-        layer_->children()[background_layer_index] != url_bar_background_layer_;
-
-    // If the layer needs to move, remove and re-add it.
-    if (needs_move_to_front) {
-      layer_->AddChild(url_bar_background_layer_);
-    } else if (needs_move_to_back) {
-      layer_->InsertChild(url_bar_background_layer_,
-                          background_layer_index + 1);
-    }
+  // If the layer needs to move, remove and re-add it.
+  if (needs_move_to_front) {
+    layer_->AddChild(url_bar_background_layer_);
+  } else if (needs_move_to_back) {
+    layer_->InsertChild(url_bar_background_layer_, background_layer_index + 1);
   }
 
   debug_layer_->SetBounds(resource->size());
@@ -179,6 +157,14 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
   }
 }
 
+void ToolbarLayer::SetOpacity(float opacity) {
+  toolbar_background_layer_->SetOpacity(opacity);
+  url_bar_background_layer_->SetOpacity(opacity);
+  bitmap_layer_->SetOpacity(opacity);
+  progress_bar_layer_->SetOpacity(opacity);
+  progress_bar_background_layer_->SetOpacity(opacity);
+}
+
 ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
     : resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
@@ -187,7 +173,6 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
       bitmap_layer_(cc::UIResourceLayer::Create()),
       progress_bar_layer_(cc::SolidColorLayer::Create()),
       progress_bar_background_layer_(cc::SolidColorLayer::Create()),
-      anonymize_layer_(cc::SolidColorLayer::Create()),
       debug_layer_(cc::SolidColorLayer::Create()) {
   toolbar_background_layer_->SetIsDrawable(true);
   layer_->AddChild(toolbar_background_layer_);
@@ -206,10 +191,6 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
   progress_bar_layer_->SetIsDrawable(true);
   progress_bar_layer_->SetHideLayerAndSubtree(true);
   layer_->AddChild(progress_bar_layer_);
-
-  anonymize_layer_->SetIsDrawable(true);
-  anonymize_layer_->SetBackgroundColor(SK_ColorWHITE);
-  layer_->AddChild(anonymize_layer_);
 
   debug_layer_->SetIsDrawable(true);
   debug_layer_->SetBackgroundColor(SK_ColorGREEN);

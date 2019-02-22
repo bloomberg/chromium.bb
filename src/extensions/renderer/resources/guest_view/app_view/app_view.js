@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var DocumentNatives = requireNative('document_natives');
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
-var IdGenerator = requireNative('id_generator');
 
 function AppViewImpl(appviewElement) {
   $Function.call(GuestViewContainer, this, appviewElement, 'appview');
@@ -14,18 +12,6 @@ function AppViewImpl(appviewElement) {
 }
 
 AppViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
-
-AppViewImpl.VIEW_TYPE = 'AppView';
-
-// Add extra functionality to |this.element|.
-AppViewImpl.setupElement = function(proto) {
-  var apiMethods = [
-    'connect'
-  ];
-
-  // Forward proto.foo* method calls to AppViewImpl.foo*.
-  GuestViewContainer.forwardApiMethods(proto, apiMethods);
-}
 
 AppViewImpl.prototype.getErrorNode = function() {
   if (!this.errorNode) {
@@ -77,4 +63,5 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
   }, this));
 };
 
-GuestViewContainer.registerElement(AppViewImpl);
+// Exports.
+exports.$set('AppViewImpl', AppViewImpl);

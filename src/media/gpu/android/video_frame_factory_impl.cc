@@ -51,6 +51,7 @@ VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
 }
 
 void VideoFrameFactoryImpl::Initialize(bool wants_promotion_hint,
+                                       bool use_texture_owner_as_overlays,
                                        InitCb init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!gpu_video_frame_factory_);
@@ -59,7 +60,8 @@ void VideoFrameFactoryImpl::Initialize(bool wants_promotion_hint,
       gpu_task_runner_.get(), FROM_HERE,
       base::Bind(&GpuVideoFrameFactory::Initialize,
                  base::Unretained(gpu_video_frame_factory_.get()),
-                 wants_promotion_hint, get_stub_cb_),
+                 wants_promotion_hint, use_texture_owner_as_overlays,
+                 get_stub_cb_),
       std::move(init_cb));
 }
 
@@ -129,9 +131,11 @@ GpuVideoFrameFactory::~GpuVideoFrameFactory() {
 
 scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
     bool wants_promotion_hint,
+    bool use_texture_owner_as_overlays,
     VideoFrameFactoryImpl::GetStubCb get_stub_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   wants_promotion_hint_ = wants_promotion_hint;
+  use_texture_owner_as_overlays_ = use_texture_owner_as_overlays;
   stub_ = get_stub_cb.Run();
   if (!MakeContextCurrent(stub_))
     return nullptr;
@@ -273,10 +277,16 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   if (group->gpu_preferences().enable_threaded_texture_mailboxes)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
 
-  // We unconditionally mark the picture as overlayable, even if
-  // |!texture_owner_|, if we want to get hints.  It's required, else we won't
-  // get hints.
-  const bool allow_overlay = !texture_owner_ || wants_promotion_hint_;
+  bool allow_overlay = false;
+  if (use_texture_owner_as_overlays_) {
+    DCHECK(texture_owner_);
+    allow_overlay = true;
+  } else {
+    // We unconditionally mark the picture as overlayable, even if
+    // |!texture_owner_|, if we want to get hints.  It's required, else we won't
+    // get hints.
+    allow_overlay = !texture_owner_ || wants_promotion_hint_;
+  }
 
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
                                 allow_overlay);

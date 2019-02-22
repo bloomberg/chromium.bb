@@ -25,10 +25,6 @@
 #  include <linux/unistd.h>
 #endif
 
-#if defined(OS_WIN)
-typedef SSIZE_T ssize_t;
-#endif
-
 namespace leveldb {
 namespace port {
 
@@ -65,12 +61,12 @@ class CondVar {
 };
 
 class AtomicPointer {
- private:
-  typedef base::subtle::AtomicWord Rep;
-  Rep rep_;
  public:
-  AtomicPointer() { }
+  AtomicPointer() = default;
+  ~AtomicPointer() = default;
+
   explicit AtomicPointer(void* p) : rep_(reinterpret_cast<Rep>(p)) {}
+
   inline void* Acquire_Load() const {
     return reinterpret_cast<void*>(base::subtle::Acquire_Load(&rep_));
   }
@@ -83,27 +79,11 @@ class AtomicPointer {
   inline void NoBarrier_Store(void* v) {
     base::subtle::NoBarrier_Store(&rep_, reinterpret_cast<Rep>(v));
   }
+
+ private:
+  using Rep = base::subtle::AtomicWord;
+  Rep rep_;
 };
-
-// Implementation of OnceType and InitOnce() pair, this is equivalent to
-// pthread_once_t and pthread_once().
-typedef base::subtle::Atomic32 OnceType;
-
-enum {
-  ONCE_STATE_UNINITIALIZED = 0,
-  ONCE_STATE_EXECUTING_CLOSURE = 1,
-  ONCE_STATE_DONE = 2
-};
-
-#define LEVELDB_ONCE_INIT   leveldb::port::ONCE_STATE_UNINITIALIZED
-
-// slow code path
-void InitOnceImpl(OnceType* once, void (*initializer)());
-
-static inline void InitOnce(OnceType* once, void (*initializer)()) {
-  if (base::subtle::Acquire_Load(once) != ONCE_STATE_DONE)
-    InitOnceImpl(once, initializer);
-}
 
 bool Snappy_Compress(const char* input, size_t input_length,
                      std::string* output);

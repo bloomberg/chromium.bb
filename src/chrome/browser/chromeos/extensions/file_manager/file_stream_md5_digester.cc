@@ -20,7 +20,7 @@ const int kMd5DigestBufferSize = 512 * 1024;  // 512 kB.
 }  // namespace
 
 FileStreamMd5Digester::FileStreamMd5Digester()
-    : buffer_(new net::IOBuffer(kMd5DigestBufferSize)) {}
+    : buffer_(base::MakeRefCounted<net::IOBuffer>(kMd5DigestBufferSize)) {}
 
 FileStreamMd5Digester::~FileStreamMd5Digester() = default;
 

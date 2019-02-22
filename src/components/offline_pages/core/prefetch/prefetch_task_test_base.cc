@@ -5,8 +5,9 @@
 #include "components/offline_pages/core/prefetch/prefetch_task_test_base.h"
 
 #include "components/offline_pages/core/offline_store_utils.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/task_test_base.h"
+#include "components/offline_pages/task/task_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -16,12 +17,17 @@ constexpr std::array<PrefetchItemState, 11>
     PrefetchTaskTestBase::kOrderedPrefetchItemStates;
 
 PrefetchTaskTestBase::PrefetchTaskTestBase()
-    : store_test_util_(task_runner()) {}
+    : test_shared_url_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)),
+      prefetch_request_factory_(test_shared_url_loader_factory_),
+      store_test_util_(task_runner()) {}
 
 PrefetchTaskTestBase::~PrefetchTaskTestBase() = default;
 
 void PrefetchTaskTestBase::SetUp() {
   TaskTestBase::SetUp();
+  prefetch_prefs::RegisterPrefs(prefs_.registry());
   store_test_util_.BuildStoreInMemory();
 }
 
@@ -66,6 +72,11 @@ std::set<PrefetchItem> PrefetchTaskTestBase::FilterByState(
       result.insert(item);
   }
   return result;
+}
+
+network::TestURLLoaderFactory::PendingRequest*
+PrefetchTaskTestBase::GetPendingRequest(size_t index) {
+  return test_url_loader_factory_.GetPendingRequest(index);
 }
 
 }  // namespace offline_pages

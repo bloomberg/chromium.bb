@@ -16,6 +16,7 @@ enum IPCMessageStart {
   FrameMsgStart,
   PageMsgStart,
   ViewMsgStart,
+  WidgetMsgStart,
   InputMsgStart,
   TestMsgStart,
   WorkerMsgStart,
@@ -24,9 +25,7 @@ enum IPCMessageStart {
   MediaMsgStart,
   PpapiMsgStart,
   DOMStorageMsgStart,
-  P2PMsgStart,
   ResourceMsgStart,
-  FileSystemMsgStart,
   BlobMsgStart,
   MidiMsgStart,
   ChromeMsgStart,
@@ -44,7 +43,6 @@ enum IPCMessageStart {
   MediaPlayerMsgStart,
   TracingMsgStart,
   PeerConnectionTrackerMsgStart,
-  AppShimMsgStart,
   WebRtcLoggingMsgStart,
   TtsMsgStart,
   NaClHostMsgStart,
@@ -70,6 +68,7 @@ enum IPCMessageStart {
   SurfaceViewManagerMsgStart,
   ExtensionWorkerMsgStart,
   SubresourceFilterMsgStart,
+  ChromeAppsMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

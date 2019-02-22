@@ -91,9 +91,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
-      const base::TimeTicks& navigation_start,
+      base::TimeTicks navigation_start,
       NavigationControllerImpl* controller,
-      std::unique_ptr<NavigationUIData> navigation_ui_data);
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      base::TimeTicks input_start,
+      WasActivatedOption was_activated);
 
   // Creates a request for a renderer-intiated navigation.
   // Note: |body| is sent to the IO thread when calling BeginNavigation, and
@@ -109,7 +111,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       int current_history_list_length,
       bool override_user_agent,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      mojom::NavigationClientAssociatedPtrInfo navigation_client);
+      mojom::NavigationClientAssociatedPtrInfo navigation_client,
+      blink::mojom::NavigationInitiatorPtr navigation_initiator);
 
   ~NavigationRequest() override;
 
@@ -224,7 +227,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
-                    mojom::NavigationClientAssociatedPtrInfo navigation_client);
+                    mojom::NavigationClientAssociatedPtrInfo navigation_client,
+                    blink::mojom::NavigationInitiatorPtr navigation_initiator);
 
   // NavigationURLLoaderDelegate implementation.
   void OnRequestRedirected(
@@ -284,7 +288,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // and navigate-to checks.
   bool IsAllowedByCSPDirective(CSPContext* context,
                                CSPDirective::Name directive,
-                               bool is_redirect,
+                               bool has_followed_redirect,
                                bool url_upgraded_after_redirect,
                                bool is_response_check,
                                CSPContext::CheckCSPDisposition disposition);
@@ -294,7 +298,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Returns net::OK if the checks pass, and net::ERR_ABORTED or
   // net::ERR_BLOCKED_BY_CLIENT depending on which checks fail.
   net::Error CheckCSPDirectives(RenderFrameHostImpl* parent,
-                                bool is_redirect,
+                                bool has_followed_redirect,
                                 bool url_upgraded_after_redirect,
                                 bool is_response_check,
                                 CSPContext::CheckCSPDisposition disposition);
@@ -305,7 +309,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   //   a report will be sent.
   // - The navigation request may be upgraded from HTTP to HTTPS if a CSP is
   //   configured to upgrade insecure requests.
-  net::Error CheckContentSecurityPolicy(bool is_redirect,
+  net::Error CheckContentSecurityPolicy(bool has_followed_redirect,
                                         bool url_upgraded_after_redirect,
                                         bool is_response_check);
 

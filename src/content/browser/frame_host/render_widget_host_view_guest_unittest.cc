@@ -111,17 +111,9 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
 
   ~TestBrowserPluginGuest() override {}
 
-  void ResetTestData() { last_surface_info_ = viz::SurfaceInfo(); }
-
   void set_attached(bool attached) {
     BrowserPluginGuest::set_attached_for_test(attached);
   }
-
-  void FirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-    last_surface_info_ = surface_info;
-  }
-
-  viz::SurfaceInfo last_surface_info_;
 };
 
 // TODO(wjmaclean): we should restructure RenderWidgetHostViewChildFrameTest to
@@ -196,48 +188,5 @@ class RenderWidgetHostViewGuestSurfaceTest
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestSurfaceTest);
 };
-
-TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
-  // Early out because RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder
-  // is no-op on mash and the test expects it call into FirstSurfaceActivation
-  // of BrowserPluginGuest.
-  if (features::IsUsingWindowService())
-    return;
-
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-  float scale_factor = 1.f;
-  viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-  viz::SurfaceId surface_id(view_->GetFrameSinkId(), local_surface_id);
-  viz::SurfaceInfo surface_info(surface_id, scale_factor, view_size);
-
-  ASSERT_TRUE(browser_plugin_guest_);
-
-  view_->SetSize(view_size);
-  view_->Show();
-
-  browser_plugin_guest_->set_attached(true);
-
-  view_->OnFirstSurfaceActivation(surface_info);
-
-  EXPECT_EQ(surface_id, GetSurfaceId());
-
-  // Surface ID should have been passed to BrowserPluginGuest to
-  // be sent to the embedding renderer.
-  EXPECT_EQ(surface_info, browser_plugin_guest_->last_surface_info_);
-
-  browser_plugin_guest_->ResetTestData();
-
-  // The last received SurfaceInfo must be sent to BrowserPluginGuest on
-  // attachment.
-  view_->OnAttached();
-
-  // Surface ID should have been passed to BrowserPluginGuest to
-  // be sent to the embedding renderer.
-  EXPECT_EQ(surface_info, browser_plugin_guest_->last_surface_info_);
-
-  browser_plugin_guest_->set_attached(false);
-  browser_plugin_guest_->ResetTestData();
-}
 
 }  // namespace content

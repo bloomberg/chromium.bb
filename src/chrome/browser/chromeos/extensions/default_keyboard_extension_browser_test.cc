@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -76,9 +75,9 @@ void DefaultKeyboardExtensionBrowserTest::RunTest(
   InjectJavascript(base::FilePath(kWebuiTestDir),
                    base::FilePath(kMockController));
   InjectJavascript(base::FilePath(kWebuiTestDir), base::FilePath(kMockTimer));
-  InjectJavascript(base::FilePath(FILE_PATH_LITERAL(config.test_dir_)),
-                   base::FilePath(FILE_PATH_LITERAL(config.base_framework_)));
-  InjectJavascript(base::FilePath(FILE_PATH_LITERAL(config.test_dir_)), file);
+  InjectJavascript(base::FilePath(config.test_dir_),
+                   base::FilePath(config.base_framework_));
+  InjectJavascript(base::FilePath(config.test_dir_), file);
 
   ASSERT_TRUE(content::ExecuteScript(web_contents, utf8_content_));
 
@@ -87,17 +86,9 @@ void DefaultKeyboardExtensionBrowserTest::RunTest(
   EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, resource_ids));
 }
 
-void DefaultKeyboardExtensionBrowserTest::ShowVirtualKeyboard() {
-  aura::Window* window = ash::Shell::GetPrimaryRootWindow();
-  ui::InputMethod* input_method = window->GetHost()->GetInputMethod();
-  ASSERT_TRUE(input_method);
-  input_method->ShowVirtualKeyboardIfEnabled();
-}
-
 content::WebContents*
 DefaultKeyboardExtensionBrowserTest::GetKeyboardWebContents(
     const std::string& id) {
-  ShowVirtualKeyboard();
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
@@ -176,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, EndToEndTest) {
 
   // Press 'a' on keyboard.
   base::FilePath path = ui_test_utils::GetTestFilePath(
-      base::FilePath(FILE_PATH_LITERAL(kVirtualKeyboardExtensionTestDir)),
+      base::FilePath(kVirtualKeyboardExtensionTestDir),
       base::FilePath(FILE_PATH_LITERAL("end_to_end_test.js")));
   std::string script;
   ASSERT_TRUE(base::ReadFileToString(path, &script));

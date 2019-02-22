@@ -72,7 +72,8 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
   SVGAnimatedTextLength(SVGTextContentElement* context_element)
       : SVGAnimatedLength(context_element,
                           SVGNames::textLengthAttr,
-                          SVGLength::Create(SVGLengthMode::kWidth)) {}
+                          SVGLengthMode::kWidth,
+                          SVGLength::Initial::kUnitlessZero) {}
 };
 
 SVGTextContentElement::SVGTextContentElement(const QualifiedName& tag_name,

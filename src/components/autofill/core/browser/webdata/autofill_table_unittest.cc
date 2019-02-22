@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -102,8 +103,7 @@ void CompareAutofillEntrySets(const AutofillEntrySet& actual,
                               const AutofillEntrySet& expected) {
   ASSERT_EQ(expected.size(), actual.size());
   size_t count = 0;
-  for (AutofillEntrySet::const_iterator it = actual.begin();
-       it != actual.end(); ++it) {
+  for (auto it = actual.begin(); it != actual.end(); ++it) {
     count += expected.count(*it);
   }
   EXPECT_EQ(actual.size(), count);
@@ -793,7 +793,8 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   home_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
   home_profile.set_language_code("en");
-  home_profile.SetValidityFromBitfieldValue(6);
+  home_profile.SetClientValidityFromBitfieldValue(6);
+  home_profile.set_is_client_validity_states_updated(true);
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(table_->AddAutofillProfile(home_profile));
@@ -877,7 +878,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                              ASCIIToUTF16("18181230000"));
-  billing_profile.SetValidityFromBitfieldValue(54);
+  billing_profile.SetClientValidityFromBitfieldValue(54);
+  billing_profile.set_is_client_validity_states_updated(true);
+
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
@@ -1828,7 +1831,7 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   profile.set_origin(std::string());
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
-  profile.SetValidityFromBitfieldValue(kValidityBitfieldValue);
+  profile.SetClientValidityFromBitfieldValue(kValidityBitfieldValue);
 
   // Add the profile to the table.
   EXPECT_TRUE(table_->AddAutofillProfile(profile));
@@ -1837,11 +1840,12 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   std::unique_ptr<AutofillProfile> db_profile =
       table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
-  EXPECT_EQ(kValidityBitfieldValue, db_profile->GetValidityBitfieldValue());
+  EXPECT_EQ(kValidityBitfieldValue,
+            db_profile->GetClientValidityBitfieldValue());
 
   // Modify the validity of the profile.
   const int kOtherValidityBitfieldValue = 1999;
-  profile.SetValidityFromBitfieldValue(kOtherValidityBitfieldValue);
+  profile.SetClientValidityFromBitfieldValue(kOtherValidityBitfieldValue);
 
   // Update the profile in the table.
   EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
@@ -1850,7 +1854,41 @@ TEST_F(AutofillTableTest, AutofillProfileValidityBitfield) {
   db_profile = table_->GetAutofillProfile(profile.guid());
   ASSERT_TRUE(db_profile);
   EXPECT_EQ(kOtherValidityBitfieldValue,
-            db_profile->GetValidityBitfieldValue());
+            db_profile->GetClientValidityBitfieldValue());
+}
+
+TEST_F(AutofillTableTest, AutofillProfileIsClientValidityStatesUpdatedFlag) {
+  AutofillProfile profile;
+  profile.set_origin(std::string());
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("John"));
+  profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
+  profile.set_is_client_validity_states_updated(true);
+
+  // Add the profile to the table.
+  EXPECT_TRUE(table_->AddAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was set.
+  std::unique_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_TRUE(db_profile->is_client_validity_states_updated());
+
+  // Test if turning off the validity updated flag works.
+  profile.set_is_client_validity_states_updated(false);
+  // Update the profile in the table.
+  EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was updated.
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_FALSE(db_profile->is_client_validity_states_updated());
+
+  // Test if turning on the validity updated flag works.
+  profile.set_is_client_validity_states_updated(true);
+  // Update the profile in the table.
+  EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
+  // Get the profile from the table and make sure the validity was updated.
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
+  EXPECT_TRUE(db_profile->is_client_validity_states_updated());
 }
 
 TEST_F(AutofillTableTest, SetGetServerCards) {
@@ -1893,6 +1931,98 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
 
   EXPECT_EQ(CreditCard::OK, outputs[0]->GetServerStatus());
   EXPECT_EQ(CreditCard::EXPIRED, outputs[1]->GetServerStatus());
+}
+
+TEST_F(AutofillTableTest, SetGetRemoveServerCardMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  EXPECT_TRUE(table_->AddServerCardMetadata(input));
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Remove the metadata from the table.
+  EXPECT_TRUE(table_->RemoveServerCardMetadata(input.id));
+
+  // Make sure it was removed correctly.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  EXPECT_EQ(0U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, SetGetRemoveServerAddressMetadata) {
+  // Create and set the metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  table_->AddServerAddressMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Remove the metadata from the table.
+  EXPECT_TRUE(table_->RemoveServerAddressMetadata(input.id));
+
+  // Make sure it was removed correctly.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  EXPECT_EQ(0U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, RemoveWrongServerCardMetadata) {
+  // Crete and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.billing_address_id = "billing id";
+  table_->AddServerCardMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Try removing some non-existent metadata.
+  EXPECT_FALSE(table_->RemoveServerCardMetadata("a_wrong_id"));
+
+  // Make sure the metadata was not removed.
+  ASSERT_TRUE(table_->GetServerCardsMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+}
+
+TEST_F(AutofillTableTest, RemoveWrongServerAddressMetadata) {
+  // Crete and set some metadata.
+  AutofillMetadata input;
+  input.id = "server id";
+  input.use_count = 50;
+  input.use_date = Time::Now();
+  input.has_converted = true;
+  table_->AddServerAddressMetadata(input);
+
+  // Make sure it was added correctly.
+  std::map<std::string, AutofillMetadata> outputs;
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
+  EXPECT_EQ(input, outputs[input.id]);
+
+  // Try removing some non-existent metadata.
+  EXPECT_FALSE(table_->RemoveServerAddressMetadata("a_wrong_id"));
+
+  // Make sure the metadata was not removed.
+  ASSERT_TRUE(table_->GetServerAddressesMetadata(&outputs));
+  ASSERT_EQ(1U, outputs.size());
 }
 
 TEST_F(AutofillTableTest, MaskUnmaskServerCards) {

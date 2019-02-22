@@ -66,30 +66,7 @@ std::string BuildOSCpuInfo(bool include_android_build_number) {
   }
 #elif defined(OS_ANDROID)
   std::string android_version_str = base::SysInfo::OperatingSystemVersion();
-
-  std::string android_info_str;
-
-  // Send information about the device.
-  bool semicolon_inserted = false;
-  std::string android_build_codename = base::SysInfo::GetAndroidBuildCodename();
-  std::string android_device_name = base::SysInfo::HardwareModelName();
-  if ("REL" == android_build_codename && android_device_name.size() > 0) {
-    android_info_str += "; " + android_device_name;
-    semicolon_inserted = true;
-  }
-
-  // Append the build ID.
-  if (base::FeatureList::IsEnabled(kAndroidUserAgentStringContainsBuildId) ||
-      include_android_build_number) {
-    std::string android_build_id = base::SysInfo::GetAndroidBuildID();
-    if (android_build_id.size() > 0) {
-      if (!semicolon_inserted) {
-        android_info_str += ";";
-      }
-      android_info_str += " Build/" + android_build_id;
-    }
-  }
-
+  std::string android_info_str = GetAndroidOSInfo(include_android_build_number);
 #elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
   // Should work on any Posix system.
   struct utsname unixinfo;
@@ -164,14 +141,40 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
 std::string BuildUserAgentFromProductAndExtraOSInfo(
     const std::string& product,
     const std::string& extra_os_info,
-    const bool include_android_build_number) {
+    bool include_android_build_number) {
   std::string os_info;
   base::StringAppendF(&os_info, "%s%s%s", getUserAgentPlatform().c_str(),
                       BuildOSCpuInfo(include_android_build_number).c_str(),
                       extra_os_info.c_str());
   return BuildUserAgentFromOSAndProduct(os_info, product);
 }
-#endif
+
+std::string GetAndroidOSInfo(bool include_android_build_number) {
+  std::string android_info_str;
+
+  // Send information about the device.
+  bool semicolon_inserted = false;
+  std::string android_build_codename = base::SysInfo::GetAndroidBuildCodename();
+  std::string android_device_name = base::SysInfo::HardwareModelName();
+  if (!android_device_name.empty() && "REL" == android_build_codename) {
+    android_info_str += "; " + android_device_name;
+    semicolon_inserted = true;
+  }
+
+  // Append the build ID.
+  if (base::FeatureList::IsEnabled(kAndroidUserAgentStringContainsBuildId) ||
+      include_android_build_number) {
+    std::string android_build_id = base::SysInfo::GetAndroidBuildID();
+    if (!android_build_id.empty()) {
+      if (!semicolon_inserted)
+        android_info_str += ";";
+      android_info_str += " Build/" + android_build_id;
+    }
+  }
+
+  return android_info_str;
+}
+#endif  // defined(OS_ANDROID)
 
 std::string BuildUserAgentFromOSAndProduct(const std::string& os_info,
                                            const std::string& product) {

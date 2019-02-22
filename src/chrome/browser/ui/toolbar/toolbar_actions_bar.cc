@@ -136,11 +136,6 @@ void ToolbarActionsBar::RegisterProfilePrefs(
 
 // static
 gfx::Size ToolbarActionsBar::GetIconAreaSize() {
-#if defined(OS_MACOSX)
-  // On Cocoa, the spec is a 24x24 button in a 28x28 space.
-  if (!base::FeatureList::IsEnabled(features::kViewsBrowserWindows))
-    return gfx::Size(24, 24);
-#endif
   return gfx::Size(28, 28);
 }
 
@@ -568,6 +563,10 @@ void ToolbarActionsBar::ShowToolbarActionBubbleAsync(
                      weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
 }
 
+bool ToolbarActionsBar::CloseOverflowMenuIfOpen() {
+  return delegate_->CloseOverflowMenuIfOpen();
+}
+
 void ToolbarActionsBar::MaybeShowExtensionBubble() {
   std::unique_ptr<extensions::ExtensionMessageBubbleController> controller =
       model_->GetExtensionMessageBubbleController(browser_);
@@ -637,7 +636,7 @@ void ToolbarActionsBar::OnToolbarActionLoadFailed() {
 }
 
 void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
-  ToolbarActions::iterator iter = toolbar_actions_.begin();
+  auto iter = toolbar_actions_.begin();
   while (iter != toolbar_actions_.end() && (*iter)->GetId() != action_id)
     ++iter;
 

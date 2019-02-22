@@ -502,8 +502,9 @@ using translate::LanguageDetectionController;
   [self assertLanguageDetails:expectedLanguageDetails];
 }
 
+// TODO(crbug.com/893843): This test is flaky.
 // Tests that language in http content is detected when navigating to a link.
-- (void)testLanguageDetectionHttpContentLanguageBehindLink {
+- (void)FLAKY_testLanguageDetectionHttpContentLanguageBehindLink {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

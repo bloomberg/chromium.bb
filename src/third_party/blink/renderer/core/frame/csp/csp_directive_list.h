@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
+#include "third_party/blink/renderer/core/frame/csp/string_list_directive.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -24,6 +24,7 @@
 namespace blink {
 
 class ContentSecurityPolicy;
+enum class ResourceType : uint8_t;
 
 typedef HeapVector<Member<SourceListDirective>> SourceListDirectiveVector;
 
@@ -68,7 +69,8 @@ class CORE_EXPORT CSPDirectiveList
                         const String& nonce,
                         const WTF::OrdinalNumber& context_line,
                         SecurityViolationReportingPolicy,
-                        const String& style_content) const;
+                        const String& style_content,
+                        ContentSecurityPolicy::InlineType inline_type) const;
   bool AllowEval(ScriptState*,
                  SecurityViolationReportingPolicy,
                  ContentSecurityPolicy::ExceptionStatus,
@@ -123,6 +125,7 @@ class CORE_EXPORT CSPDirectiveList
   bool AllowBaseURI(const KURL&,
                     ResourceRequest::RedirectStatus,
                     SecurityViolationReportingPolicy) const;
+  bool AllowTrustedTypePolicy(const String& policy_name) const;
   bool AllowWorkerFromSource(const KURL&,
                              ResourceRequest::RedirectStatus,
                              SecurityViolationReportingPolicy) const;
@@ -139,10 +142,10 @@ class CORE_EXPORT CSPDirectiveList
                        ContentSecurityPolicy::InlineType) const;
   bool AllowStyleHash(const CSPHashValue&,
                       ContentSecurityPolicy::InlineType) const;
-  bool AllowDynamic() const;
+  bool AllowDynamic(ContentSecurityPolicy::DirectiveType) const;
   bool AllowDynamicWorker() const;
 
-  bool AllowRequestWithoutIntegrity(WebURLRequest::RequestContext,
+  bool AllowRequestWithoutIntegrity(mojom::RequestContextType,
                                     const KURL&,
                                     ResourceRequest::RedirectStatus,
                                     SecurityViolationReportingPolicy) const;
@@ -175,7 +178,7 @@ class CORE_EXPORT CSPDirectiveList
   bool HasPluginTypes() const { return !!plugin_types_; }
   const String& PluginTypesText() const;
 
-  bool ShouldSendCSPHeader(Resource::Type) const;
+  bool ShouldSendCSPHeader(ResourceType) const;
 
   // The algorithm is described here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
@@ -210,8 +213,8 @@ class CORE_EXPORT CSPDirectiveList
 
   bool ParseDirective(const UChar* begin,
                       const UChar* end,
-                      String& name,
-                      String& value);
+                      String* name,
+                      String* value);
   void ParseRequireSRIFor(const String& name, const String& value);
   void ParseReportURI(const String& name, const String& value);
   void ParseReportTo(const String& name, const String& value);
@@ -275,7 +278,7 @@ class CORE_EXPORT CSPDirectiveList
                       const String& type,
                       const String& type_attribute) const;
   bool CheckAncestors(SourceListDirective*, LocalFrame*) const;
-  bool CheckRequestWithoutIntegrity(WebURLRequest::RequestContext) const;
+  bool CheckRequestWithoutIntegrity(mojom::RequestContextType) const;
 
   void SetEvalDisabledErrorMessage(const String& error_message) {
     eval_disabled_error_message_ = error_message;
@@ -291,14 +294,16 @@ class CORE_EXPORT CSPDirectiveList
                                        ScriptState*,
                                        ContentSecurityPolicy::ExceptionStatus,
                                        const String& script_content) const;
-  bool CheckInlineAndReportViolation(SourceListDirective*,
-                                     const String& console_message,
-                                     Element*,
-                                     const String& source,
-                                     const String& context_url,
-                                     const WTF::OrdinalNumber& context_line,
-                                     bool is_script,
-                                     const String& hash_value) const;
+  bool CheckInlineAndReportViolation(
+      SourceListDirective*,
+      const String& console_message,
+      Element*,
+      const String& source,
+      const String& context_url,
+      const WTF::OrdinalNumber& context_line,
+      bool is_script,
+      const String& hash_value,
+      ContentSecurityPolicy::DirectiveType effective_type) const;
 
   bool CheckSourceAndReportViolation(SourceListDirective*,
                                      const KURL&,
@@ -312,7 +317,7 @@ class CORE_EXPORT CSPDirectiveList
                                         LocalFrame*,
                                         const KURL&) const;
   bool CheckRequestWithoutIntegrityAndReportViolation(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       const KURL&,
       ResourceRequest::RedirectStatus) const;
 
@@ -348,7 +353,6 @@ class CORE_EXPORT CSPDirectiveList
 
   bool upgrade_insecure_requests_;
   bool treat_as_public_address_;
-  bool require_safe_types_;
 
   Member<MediaListDirective> plugin_types_;
   Member<SourceListDirective> base_uri_;
@@ -365,9 +369,14 @@ class CORE_EXPORT CSPDirectiveList
   Member<SourceListDirective> object_src_;
   Member<SourceListDirective> prefetch_src_;
   Member<SourceListDirective> script_src_;
+  Member<SourceListDirective> script_src_attr_;
+  Member<SourceListDirective> script_src_elem_;
   Member<SourceListDirective> style_src_;
+  Member<SourceListDirective> style_src_attr_;
+  Member<SourceListDirective> style_src_elem_;
   Member<SourceListDirective> worker_src_;
   Member<SourceListDirective> navigate_to_;
+  Member<StringListDirective> trusted_types_;
 
   uint8_t require_sri_for_;
 
@@ -381,4 +390,4 @@ class CORE_EXPORT CSPDirectiveList
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CSP_DIRECTIVE_LIST_H_

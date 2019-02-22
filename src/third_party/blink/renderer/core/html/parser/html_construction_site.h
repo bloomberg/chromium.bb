@@ -39,7 +39,7 @@
 namespace blink {
 
 struct HTMLConstructionSiteTask {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   enum Operation {
@@ -264,7 +264,7 @@ class HTMLConstructionSite final {
 
   CustomElementDefinition* LookUpCustomElementDefinition(
       Document&,
-      AtomicHTMLToken*,
+      const QualifiedName&,
       const AtomicString& is);
 
   HTMLParserReentryPermit* reentry_permit_;

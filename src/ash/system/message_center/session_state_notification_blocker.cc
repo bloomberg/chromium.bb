@@ -4,9 +4,9 @@
 
 #include "ash/system/message_center/session_state_notification_blocker.h"
 
-#include "ash/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ui/message_center/message_center.h"
 
 using session_manager::SessionState;

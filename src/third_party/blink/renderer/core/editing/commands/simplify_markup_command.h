@@ -46,7 +46,7 @@ class SimplifyMarkupCommand final : public CompositeEditCommand {
   void DoApply(EditingState*) override;
   int PruneSubsequentAncestorsToRemove(
       HeapVector<Member<ContainerNode>>& nodes_to_remove,
-      size_t start_node_index,
+      wtf_size_t start_node_index,
       EditingState*);
 
   Member<Node> first_node_;

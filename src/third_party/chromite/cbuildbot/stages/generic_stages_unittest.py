@@ -44,7 +44,7 @@ DEFAULT_BUILD_STAGE_ID = 313377
 # pylint: disable=protected-access
 
 
-# The inheritence order ensures the patchers are stopped before
+# The inheritance order ensures the patchers are stopped before
 # cleaning up the temporary directories.
 class StageTestCase(cros_test_lib.MockOutputTestCase,
                     cros_test_lib.TempDirTestCase):
@@ -314,12 +314,12 @@ class BuilderStageTest(AbstractStageTestCase):
     board = self._current_board
 
     envvar = 'EXAMPLE'
-    rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
-    rc_mock.AddCmdResult(['portageq-%s' % board, 'envvar', envvar],
-                         output='RESULT\n')
+    envvar_val = 'RESULT'
+    self.PatchObject(portage_util, 'PortageqEnvvars',
+                     return_value={envvar: envvar_val})
 
     result = stage._GetPortageEnvVar(envvar, board)
-    self.assertEqual(result, 'RESULT')
+    self.assertEqual(result, envvar_val)
 
   def testStageNamePrefixSmoke(self):
     """Basic test for the StageNamePrefix() function."""

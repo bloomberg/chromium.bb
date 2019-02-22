@@ -52,7 +52,6 @@
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -121,6 +120,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -2303,13 +2303,13 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // Go back, then forward, then back again.
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
 
   // Click a different anchor
   main_frame_local->Loader().StartNavigation(FrameLoadRequest(
@@ -2322,17 +2322,17 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   // forward navigation.
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   main_frame_local->Loader().CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
-      ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, false, nullptr);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_GT(web_view_impl->MainFrameImpl()->GetScrollOffset().height, 2000);
 }
 
-// Tests that we restore scroll and scale *after* the fullscreen styles are
-// removed and the page is laid out. http://crbug.com/625683.
-TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
+// Tests that scroll offset modified during fullscreen is preserved when
+// exiting fullscreen.
+TEST_F(WebViewTest, FullscreenNoResetScroll) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
@@ -2345,128 +2345,44 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  Element* element = frame->GetDocument()->documentElement();
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
+  // Assert the scroll position on the document element doesn't change.
+  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
-  // Confirm that after exiting and doing a layout, the scroll and scale
-  // parameters are reset. The page sets display: none on overflowing elements
-  // while in fullscreen so if we try to restore before the style and layout
-  // is applied the offsets will be clamped.
+  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
+
   web_view_impl->DidExitFullscreen();
-  EXPECT_TRUE(web_view_impl->MainFrameImpl()->GetFrameView()->NeedsLayout());
   web_view_impl->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
 
-// Tests that exiting and immediately reentering fullscreen doesn't cause the
-// scroll and scale restoration to occur when we enter fullscreen again.
-TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
+// Tests that background color is read from the backdrop on fullscreen.
+TEST_F(WebViewTest, FullscreenBackgroundColor) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
   web_view_impl->UpdateAllLifecyclePhases();
-
-  // Scroll the page down.
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
+  EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Element* element = frame->GetDocument()->getElementById("fullscreenElement");
+  ASSERT_TRUE(element);
   std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
+      LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
 
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
-
-  // Exit and, without performing a layout, reenter fullscreen again. We
-  // shouldn't try to restore the scroll and scale values when we layout to
-  // enter fullscreen.
-  web_view_impl->DidExitFullscreen();
-  Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  ASSERT_EQ(0, web_view_impl->MainFrameImpl()
-                   ->GetFrameView()
-                   ->LayoutViewport()
-                   ->MaximumScrollOffset()
-                   .Height());
-
-  // When we exit now, we should restore the original scroll value.
-  web_view_impl->DidExitFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  EXPECT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-}
-
-TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
-  RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->UpdateAllLifecyclePhases();
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-
-  // Make the page scale and scroll with the given paremeters.
-  web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(94, 111));
-  web_view_impl->SetVisualViewportOffset(WebFloatPoint(12, 20));
-  EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
-  EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
-
-  LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
-  Element* element = frame->GetDocument()->body();
-  std::unique_ptr<UserGestureIndicator> gesture =
-      Frame::NotifyUserActivation(frame);
-  Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
-
-  // Page scale factor must be 1.0 during fullscreen for elements to be sized
-  // properly.
-  EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
-
-  // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-  Element* other_element = frame->GetDocument()->getElementById("content");
-  Fullscreen::RequestFullscreen(*other_element);
-
-  // Confirm that exiting fullscreen restores the parameters.
-  web_view_impl->DidExitFullscreen();
-  web_view_impl->UpdateAllLifecyclePhases();
-
-  EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
-  EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  EXPECT_EQ(12, web_view_impl->VisualViewportOffset().x);
-  EXPECT_EQ(20, web_view_impl->VisualViewportOffset().y);
+  EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
 }
 
 class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -2626,7 +2542,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(local_frame);
-  blink::WebFrameWidget::Create(&web_widget_client, local_frame);
+  blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, local_frame);
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
@@ -3800,13 +3716,9 @@ class TouchEventHandlerWebWidgetClient
 // correctly is the job of LayoutTests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
-  // We need to create a LayerTreeView for the client before loading the page,
-  // otherwise ChromeClient will default to assuming there are touch handlers.
-  WebLayerTreeView* layer_tree_view = client.InitializeLayerTreeView();
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
-  ASSERT_TRUE(layer_tree_view);
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
 
@@ -4157,6 +4069,24 @@ TEST_F(WebViewTest, PreferredSize) {
   size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(2, size.width);
   EXPECT_EQ(2, size.height);
+}
+
+TEST_F(WebViewTest, PreferredMinimumSizeQuirksMode) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->Resize(WebSize(800, 600));
+  FrameTestHelpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      R"HTML(<html>
+        <body style="margin: 0px;">
+          <div style="width: 99px; height: 100px; display: inline-block;"></div>
+        </body>
+      </html>)HTML",
+      URLTestHelpers::ToKURL("http://example.com/"));
+
+  WebSize size = web_view->ContentsPreferredMinimumSize();
+  EXPECT_EQ(99, size.width);
+  // When in quirks mode the preferred height stretches to fill the viewport.
+  EXPECT_EQ(600, size.height);
 }
 
 TEST_F(WebViewTest, PreferredSizeWithGrid) {

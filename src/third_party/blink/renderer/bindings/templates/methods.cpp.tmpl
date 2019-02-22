@@ -152,18 +152,32 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case. crbug.com/630986 #}
 {% if argument.idl_type == 'EventListener' %}
-if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
+if (info[{{argument.index}}]->IsNullOrUndefined()) {
+  // Just go through.
+} else if (info[{{argument.index}}]->IsObject()) {
+  // TODO(crbug.com/886588): Remove the following special casing.
+  if (info[{{argument.index}}].As<v8::Object>()->CreationContext().IsEmpty()) {
+    {{define_exception_state}}
+    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    return;
+  }
+} else {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not an object.")}}
   return;
 }
 {% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOnly);
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOnly);
 {% else %}{# method.name == 'AddEventListener' #}
-{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
+{{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], kListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
-  {{argument.name}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
+  {{argument.name}} = V8{{argument.idl_type}}::CreateOrNull(info[{{argument.index}}].As<v8::Object>());
+  if (!{{argument.name}}) {
+    {{define_exception_state}}
+    exceptionState.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
+    return;
+  }
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
@@ -281,7 +295,7 @@ ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, {{me
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *ToDocument(ToExecutionContext(
+Document& document = *To<Document>(ToExecutionContext(
     info.NewTarget().As<v8::Object>()->CreationContext()));
 {% endif %}
 {# Call #}
@@ -633,8 +647,8 @@ for (const auto& methodConfig : {{method.name}}MethodConfiguration)
 
 
 {######################################}
-{% macro install_conditional_methods() %}
-{% for method in conditional_methods %}
+{% macro install_conditional_methods(methods_to_install) %}
+{% for method in methods_to_install %}
 {% filter secure_context(method.overloads.secure_context_test_all
                          if method.overloads else
                          method.secure_context_test) %}
@@ -648,7 +662,7 @@ const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration
   {{method_configuration(method) | trim | indent(2)}}
 };
 for (const auto& methodConfig : {{method.name}}MethodConfiguration)
-  V8DOMConfiguration::InstallMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
+  V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfilter %}{# secure_context() #}

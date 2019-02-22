@@ -478,7 +478,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
     // the end while at the same time requiring fast checks for previous insert
     // of a given key. |seenKeys| is a key/position in |result| map that aids in
     // the latter part.
-    HashMap<String, size_t> seen_keys;
+    HashMap<String, uint32_t> seen_keys;
 
     for (uint32_t i = 0; i < keys->Length(); ++i) {
       // "4. Repeat, for each element key of keys in List order:"
@@ -539,13 +539,13 @@ struct NativeValueTraits<IDLRecord<K, V>>
         // "4.2.4. If typedKey is already a key in result, set its value to
         //         typedValue.
         //         Note: This can happen when O is a proxy object."
-        const size_t pos = seen_keys.at(typed_key);
+        const uint32_t pos = seen_keys.at(typed_key);
         result[pos] = std::make_pair(typed_key, typed_value);
       } else {
         // "4.2.5. Otherwise, append to result a mapping (typedKey,
         // typedValue)."
         // Note we can take this shortcut because we are always appending.
-        const size_t pos = result.size();
+        const uint32_t pos = result.size();
         seen_keys.Set(typed_key, pos);
         result.UncheckedAppend(std::make_pair(typed_key, typed_value));
       }

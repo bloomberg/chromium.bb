@@ -196,21 +196,14 @@ DEF_TEST(ImageFilterCache_ImageBackedRaster, reporter) {
 #include "GrProxyProvider.h"
 #include "GrResourceProvider.h"
 #include "GrSurfaceProxyPriv.h"
-#include "GrTest.h"
 #include "GrTexture.h"
 #include "GrTextureProxy.h"
 
 static sk_sp<GrTextureProxy> create_proxy(GrProxyProvider* proxyProvider) {
     SkBitmap srcBM = create_bm();
-
-    GrSurfaceDesc desc;
-    desc.fFlags  = kNone_GrSurfaceFlags;
-    desc.fWidth  = kFullSize;
-    desc.fHeight = kFullSize;
-    desc.fConfig = kRGBA_8888_GrPixelConfig;
-
-    return proxyProvider->createTextureProxy(desc, SkBudgeted::kYes, srcBM.getPixels(),
-                                             srcBM.rowBytes());
+    sk_sp<SkImage> srcImage(SkImage::MakeFromBitmap(srcBM));
+    return proxyProvider->createTextureProxy(srcImage, kNone_GrSurfaceFlags, 1,
+                                             SkBudgeted::kYes, SkBackingFit::kExact);
 }
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ImageFilterCache_ImageBackedGPU, reporter, ctxInfo) {

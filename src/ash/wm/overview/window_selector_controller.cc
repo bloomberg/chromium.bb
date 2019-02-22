@@ -42,6 +42,15 @@ bool g_disable_wallpaper_blur_for_tests = false;
 
 constexpr int kBlurSlideDurationMs = 250;
 
+// It can take up to two frames until the frame created in the UI thread that
+// triggered animation observer is drawn. Wait 50ms in attemp to
+// let its draw and swap finish.
+constexpr int kOcclusionPauseDurationForStartMs = 50;
+
+// Wait longer when exiting overview mode in case when a user
+// may re-enter overview mode immediately, contents are ready.
+constexpr int kOcclusionPauseDurationForEndMs = 500;
+
 // Returns true if |window| should be hidden when entering overview.
 bool ShouldHideWindowInOverview(const aura::Window* window) {
   return window->GetProperty(ash::kHideInOverviewKey);
@@ -110,28 +119,21 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
 // prior to entering overview mode (covered by a window), otherwise animates
 // the blur.
 class WindowSelectorController::OverviewBlurController
-    : public gfx::AnimationDelegate,
+    : public ui::CompositorAnimationObserver,
       public aura::WindowObserver {
  public:
-  OverviewBlurController() : animation_(this) {
-    animation_.SetSlideDuration(kBlurSlideDurationMs);
-  }
+  OverviewBlurController() = default;
 
   ~OverviewBlurController() override {
-    animation_.Stop();
+    if (compositor_)
+      compositor_->RemoveAnimationObserver(this);
     for (aura::Window* root : roots_to_animate_)
       root->RemoveObserver(this);
   }
 
-  void Blur() {
-    state_ = WallpaperAnimationState::kAddingBlur;
-    OnBlurChange();
-  }
+  void Blur() { OnBlurChange(WallpaperAnimationState::kAddingBlur); }
 
-  void Unblur() {
-    state_ = WallpaperAnimationState::kRemovingBlur;
-    OnBlurChange();
-  }
+  void Unblur() { OnBlurChange(WallpaperAnimationState::kRemovingBlur); }
 
  private:
   enum class WallpaperAnimationState {
@@ -140,30 +142,47 @@ class WindowSelectorController::OverviewBlurController
     kNormal,
   };
 
-  // gfx::AnimationDelegate:
-  void AnimationEnded(const gfx::Animation* animation) override {
-    if (state_ == WallpaperAnimationState::kNormal)
+  void OnAnimationStep(base::TimeTicks timestamp) override {
+    if (start_time_ == base::TimeTicks()) {
+      start_time_ = timestamp;
       return;
+    }
+    const float progress = (timestamp - start_time_).InMilliseconds() /
+                           static_cast<float>(kBlurSlideDurationMs);
+    const bool adding = state_ == WallpaperAnimationState::kAddingBlur;
+    if (progress > 1.0f) {
+      AnimationProgressed(adding ? 1.0f : 0.f);
+      Stop();
+    } else {
+      AnimationProgressed(adding ? progress : 1.f - progress);
+    }
+  }
 
-    float value = state_ == WallpaperAnimationState::kAddingBlur
-                      ? kWallpaperBlurSigma
-                      : kWallpaperClearBlurSigma;
-    for (aura::Window* root : roots_to_animate_)
-      ApplyBlur(root, value);
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {
+    if (compositor_ == compositor)
+      Stop();
+  }
+
+  void Stop() {
+    if (compositor_) {
+      compositor_->RemoveAnimationObserver(this);
+      compositor_ = nullptr;
+    }
     state_ = WallpaperAnimationState::kNormal;
   }
 
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    float value = animation_.CurrentValueBetween(kWallpaperClearBlurSigma,
-                                                 kWallpaperBlurSigma);
-    for (aura::Window* root : roots_to_animate_)
-      ApplyBlur(root, value);
+  void Start() {
+    DCHECK(!compositor_);
+    compositor_ = Shell::GetPrimaryRootWindow()->GetHost()->compositor();
+    compositor_->AddAnimationObserver(this);
+    start_time_ = base::TimeTicks();
   }
 
-  void AnimationCanceled(const gfx::Animation* animation) override {
+  void AnimationProgressed(float value) {
+    // Animate only to even numbers to reduce the load.
+    int ivalue = static_cast<int>(value * kWallpaperBlurSigma) / 2 * 2;
     for (aura::Window* root : roots_to_animate_)
-      ApplyBlur(root, kWallpaperClearBlurSigma);
-    state_ = WallpaperAnimationState::kNormal;
+      ApplyBlur(root, ivalue);
   }
 
   // aura::WindowObserver:
@@ -185,13 +204,16 @@ class WindowSelectorController::OverviewBlurController
   // windows should have their wallpaper blurs animated and fills
   // |roots_to_animate_| accordingly. Applys blur or unblur immediately if
   // the wallpaper does not need blur animation.
-  void OnBlurChange() {
-    const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
-    const float value =
-        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
+  void OnBlurChange(WallpaperAnimationState state) {
+    Stop();
     for (aura::Window* root : roots_to_animate_)
       root->RemoveObserver(this);
     roots_to_animate_.clear();
+
+    state_ = state;
+    const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
+    const float value =
+        should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
 
     WindowSelector* window_selector =
         Shell::Get()->window_selector_controller()->window_selector();
@@ -206,23 +228,20 @@ class WindowSelectorController::OverviewBlurController
           continue;
         }
       }
-
-      animation_.Reset(should_blur ? 1.0 : 0.0);
       ApplyBlur(root, value);
     }
 
     // Run the animation if one of the roots needs to be animated.
-    if (roots_to_animate_.empty()) {
+    if (roots_to_animate_.empty())
       state_ = WallpaperAnimationState::kNormal;
-    } else if (should_blur) {
-      animation_.Show();
-    } else {
-      animation_.Hide();
-    }
+    else
+      Start();
   }
 
+  ui::Compositor* compositor_ = nullptr;
+  base::TimeTicks start_time_;
+
   WallpaperAnimationState state_ = WallpaperAnimationState::kNormal;
-  gfx::SlideAnimation animation_;
   // Vector which contains the root windows, if any, whose wallpaper should have
   // blur animated after Blur or Unblur is called.
   std::vector<aura::Window*> roots_to_animate_;
@@ -231,7 +250,8 @@ class WindowSelectorController::OverviewBlurController
 };
 
 WindowSelectorController::WindowSelectorController()
-    : overview_blur_controller_(std::make_unique<OverviewBlurController>()) {}
+    : overview_blur_controller_(std::make_unique<OverviewBlurController>()),
+      weak_ptr_factory_(this) {}
 
 WindowSelectorController::~WindowSelectorController() {
   overview_blur_controller_.reset();
@@ -262,10 +282,12 @@ bool WindowSelectorController::CanSelect() {
          !session_controller->IsRunningInAppMode();
 }
 
-bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
-  // |toggled_from_home_launcher| should only be true if we are exiting
-  // overview.
-  DCHECK(!(toggled_from_home_launcher && !IsSelecting()));
+bool WindowSelectorController::ToggleOverview(
+    WindowSelector::EnterExitOverviewType type) {
+  // Hide the virtual keyboard as it obstructs the overview mode.
+  // Don't need to hide if it's the a11y keyboard, as overview mode
+  // can accept text input and it resizes correctly with the a11y keyboard.
+  keyboard::KeyboardController::Get()->HideKeyboardImplicitlyByUser();
 
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
@@ -280,27 +302,46 @@ bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
                        ShouldExcludeWindowFromOverview);
   windows.resize(end - windows.begin());
 
-  // We may want to slide the overview grid in or out in some cases.
-  bool should_slide_overview =
-      toggled_from_home_launcher || ShouldSlideInOutOverview(windows);
+  // We may want to slide the overview grid in or out in some cases, even if
+  // not explicitly stated.
+  WindowSelector::EnterExitOverviewType new_type = type;
+  if (type == WindowSelector::EnterExitOverviewType::kNormal &&
+      ShouldSlideInOutOverview(windows)) {
+    new_type = WindowSelector::EnterExitOverviewType::kWindowsMinimized;
+  }
 
   if (IsSelecting()) {
-    // Do not allow ending overview if we're in single split mode.
-    if (windows.empty() && Shell::Get()->IsSplitViewModeActive())
+    // Do not allow ending overview if we're in single split mode unless swiping
+    // up from the shelf.
+    if (windows.empty() && Shell::Get()->IsSplitViewModeActive() &&
+        type != WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
       return true;
+    }
 
-    if (toggled_from_home_launcher) {
-      // Minimize the windows without animations. Minimized widgets will get
-      // created in their place, and those widgets will be slid out of
-      // overview when the home launcher button is pressed.
+    // Suspend occlusion tracker until the enter animation is complete.
+    reset_pauser_task_.Cancel();
+    occlusion_tracker_pauser_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+            Shell::Get()->aura_env());
+
+    window_selector_->set_enter_exit_overview_type(new_type);
+    if (type == WindowSelector::EnterExitOverviewType::kWindowsMinimized ||
+        type == WindowSelector::EnterExitOverviewType::kSwipeFromShelf) {
+      // Minimize the windows without animations. When the home launcher button
+      // is pressed, minimized widgets will get created in their place, and
+      // those widgets will be slid out of overview. Otherwise,
+      // HomeLauncherGestureHandler will handle sliding the windows out and when
+      // this function is called, we do not need to create minimized widgets.
       for (aura::Window* window : windows) {
+        if (wm::GetWindowState(window)->IsMinimized())
+          continue;
+
         window->SetProperty(aura::client::kAnimationsDisabledKey, true);
         wm::GetWindowState(window)->Minimize();
         window->ClearProperty(aura::client::kAnimationsDisabledKey);
       }
     }
 
-    window_selector_->set_use_slide_animation(should_slide_overview);
     OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
@@ -310,21 +351,59 @@ bool WindowSelectorController::ToggleOverview(bool toggled_from_home_launcher) {
     // Clear any animations that may be running from last overview end.
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
+    if (!delayed_animations_.empty())
+      OnStartingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
 
+    // Suspend occlusion tracker until the exit animation is complete.
+    reset_pauser_task_.Cancel();
+    occlusion_tracker_pauser_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+            Shell::Get()->aura_env());
+
     window_selector_ = std::make_unique<WindowSelector>(this);
-    window_selector_->set_use_slide_animation(should_slide_overview);
+    window_selector_->set_enter_exit_overview_type(new_type);
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
     if (IsBlurAllowed())
       overview_blur_controller_->Blur();
+    if (start_animations_.empty())
+      OnStartingAnimationComplete(/*canceled=*/false);
     OnSelectionStarted();
   }
   return true;
 }
 
+void WindowSelectorController::OnStartingAnimationComplete(bool canceled) {
+  Shell::Get()->NotifyOverviewModeStartingAnimationComplete(canceled);
+  if (window_selector_)
+    window_selector_->OnStartingAnimationComplete(canceled);
+  reset_pauser_task_.Reset(base::BindOnce(
+      &WindowSelectorController::ResetPauser, weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, reset_pauser_task_.callback(),
+      base::TimeDelta::FromMilliseconds(kOcclusionPauseDurationForStartMs));
+}
+
+void WindowSelectorController::OnEndingAnimationComplete(bool canceled) {
+  Shell::Get()->NotifyOverviewModeEndingAnimationComplete(canceled);
+  reset_pauser_task_.Reset(base::BindOnce(
+      &WindowSelectorController::ResetPauser, weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, reset_pauser_task_.callback(),
+      base::TimeDelta::FromMilliseconds(kOcclusionPauseDurationForEndMs));
+}
+
+void WindowSelectorController::ResetPauser() {
+  occlusion_tracker_pauser_.reset();
+}
+
 bool WindowSelectorController::IsSelecting() const {
-  return window_selector_.get() != NULL;
+  return window_selector_ != nullptr;
+}
+
+bool WindowSelectorController::IsCompletingShutdownAnimations() {
+  return !delayed_animations_.empty();
 }
 
 void WindowSelectorController::IncrementSelection(int increment) {
@@ -456,6 +535,12 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
+
+  if (!start_animations_.empty())
+    OnEndingAnimationComplete(/*canceled=*/true);
+  start_animations_.clear();
+
+  window_selector_->UpdateMaskAndShadow(/*show=*/false);
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
@@ -489,8 +574,24 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
   if (!window_selector_ && !previous_empty && delayed_animations_.empty()) {
     if (IsBlurAllowed())
       overview_blur_controller_->Unblur();
-    Shell::Get()->NotifyOverviewModeEndingAnimationComplete();
+
+    OnEndingAnimationComplete(/*canceled=*/false);
   }
+}
+
+void WindowSelectorController::AddStartAnimationObserver(
+    std::unique_ptr<DelayedAnimationObserver> animation_observer) {
+  animation_observer->SetOwner(this);
+  start_animations_.push_back(std::move(animation_observer));
+}
+
+void WindowSelectorController::RemoveAndDestroyStartAnimationObserver(
+    DelayedAnimationObserver* animation_observer) {
+  const bool previous_empty = start_animations_.empty();
+  base::EraseIf(start_animations_, base::MatchesUniquePtr(animation_observer));
+
+  if (!previous_empty && start_animations_.empty())
+    OnStartingAnimationComplete(/*canceled=*/false);
 }
 
 // static

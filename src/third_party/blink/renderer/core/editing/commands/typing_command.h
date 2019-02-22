@@ -100,10 +100,11 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   void SetCompositionType(TextCompositionType type) {
     composition_type_ = type;
   }
-  void AdjustSelectionAfterIncrementalInsertion(LocalFrame*,
-                                                const size_t selection_start,
-                                                const size_t text_length,
-                                                EditingState*);
+  void AdjustSelectionAfterIncrementalInsertion(
+      LocalFrame*,
+      const wtf_size_t selection_start,
+      const wtf_size_t text_length,
+      EditingState*);
 
   ETypingCommand CommandTypeOfOpenCommand() const { return command_type_; }
   TextCompositionType CompositionType() const { return composition_type_; }
@@ -191,7 +192,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   bool opened_by_backward_delete_;
 
   bool is_incremental_insertion_;
-  size_t selection_start_;
+  wtf_size_t selection_start_;
   InputEvent::InputType input_type_;
 };
 

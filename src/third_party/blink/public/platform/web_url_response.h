@@ -176,6 +176,9 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT HTTPVersion HttpVersion() const;
   BLINK_PLATFORM_EXPORT void SetHTTPVersion(HTTPVersion);
 
+  BLINK_PLATFORM_EXPORT int RequestId() const;
+  BLINK_PLATFORM_EXPORT void SetRequestId(int);
+
   BLINK_PLATFORM_EXPORT int HttpStatusCode() const;
   BLINK_PLATFORM_EXPORT void SetHTTPStatusCode(int);
 
@@ -282,6 +285,8 @@ class WebURLResponse {
 
   // Original size of the response before decompression.
   BLINK_PLATFORM_EXPORT void SetEncodedDataLength(long long);
+
+  BLINK_PLATFORM_EXPORT void SetIsSignedExchangeInnerResponse(bool);
 
   // Extra data associated with the underlying resource response. Resource
   // responses can be copied. If non-null, each copy of a resource response

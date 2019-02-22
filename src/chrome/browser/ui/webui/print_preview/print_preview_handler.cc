@@ -186,29 +186,31 @@ void ReportPrintDocumentTypeAndSizeHistograms(PrintDocumentTypeBuckets doctype,
 bool ReportPageCountHistogram(UserActionBuckets user_action, int page_count) {
   switch (user_action) {
     case PRINT_TO_PRINTER:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPrinter", page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPrinter",
+                              page_count);
       return true;
     case PRINT_TO_PDF:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToPDF", page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToPDF", page_count);
       return true;
     case FALLBACK_TO_ADVANCED_SETTINGS_DIALOG:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.SystemDialog", page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.SystemDialog",
+                              page_count);
       return true;
     case PRINT_WITH_CLOUD_PRINT:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintToCloudPrint",
-                           page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintToCloudPrint",
+                              page_count);
       return true;
     case PRINT_WITH_PRIVET:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithPrivet",
-                           page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithPrivet",
+                              page_count);
       return true;
     case PRINT_WITH_EXTENSION:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.PrintWithExtension",
-                           page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.PrintWithExtension",
+                              page_count);
       return true;
     case OPEN_IN_MAC_PREVIEW:
-      UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.OpenInMacPreview",
-                           page_count);
+      UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.OpenInMacPreview",
+                              page_count);
       return true;
     default:
       return false;
@@ -553,8 +555,8 @@ PrintPreviewHandler::PrintPreviewHandler()
 }
 
 PrintPreviewHandler::~PrintPreviewHandler() {
-  UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
-                       manage_printers_dialog_request_count_);
+  UMA_HISTOGRAM_COUNTS_1M("PrintPreview.ManagePrinters",
+                          manage_printers_dialog_request_count_);
   UnregisterForGaiaCookieChanges();
 }
 
@@ -814,8 +816,8 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   // Record the number of times the user requests to regenerate preview data
   // before printing.
-  UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
-                       regenerate_preview_request_count_);
+  UMA_HISTOGRAM_COUNTS_1M("PrintPreview.RegeneratePreviewRequest.BeforePrint",
+                          regenerate_preview_request_count_);
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
   CHECK(!callback_id.empty());
@@ -1008,8 +1010,8 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 
   // Record the number of times the user requests to regenerate preview data
   // before cancelling.
-  UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
-                       regenerate_preview_request_count_);
+  UMA_HISTOGRAM_COUNTS_1M("PrintPreview.RegeneratePreviewRequest.BeforeCancel",
+                          regenerate_preview_request_count_);
 }
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
@@ -1141,32 +1143,29 @@ void PrintPreviewHandler::SendPrinterSetup(
     const std::string& callback_id,
     const std::string& printer_name,
     std::unique_ptr<base::DictionaryValue> destination_info) {
-  auto response = std::make_unique<base::DictionaryValue>();
-  bool success = true;
-  auto caps_value = std::make_unique<base::Value>();
-  auto caps = std::make_unique<base::DictionaryValue>();
-  if (destination_info &&
-      destination_info->Remove(printing::kSettingCapabilities, &caps_value) &&
-      caps_value->is_dict()) {
-    caps = base::DictionaryValue::From(std::move(caps_value));
+  base::DictionaryValue response;
+  base::Value* caps_value =
+      destination_info
+          ? destination_info->FindKeyOfType(printing::kSettingCapabilities,
+                                            base::Value::Type::DICTIONARY)
+          : nullptr;
+  response.SetString("printerId", printer_name);
+  response.SetBoolean("success", !!caps_value);
+  response.SetKey("capabilities", caps_value ? std::move(*caps_value)
+                                             : base::DictionaryValue());
+  if (caps_value) {
     base::Value* printer = destination_info->FindKeyOfType(
         printing::kPrinter, base::Value::Type::DICTIONARY);
     if (printer) {
       base::Value* policies_value = printer->FindKeyOfType(
           printing::kSettingPolicies, base::Value::Type::DICTIONARY);
       if (policies_value)
-        response->SetKey("policies", std::move(*policies_value));
+        response.SetKey("policies", std::move(*policies_value));
     }
   } else {
     LOG(WARNING) << "Printer setup failed";
-    success = false;
   }
-
-  response->SetString("printerId", printer_name);
-  response->SetBoolean("success", success);
-  response->Set("capabilities", std::move(caps));
-
-  ResolveJavascriptCallback(base::Value(callback_id), *response);
+  ResolveJavascriptCallback(base::Value(callback_id), response);
 }
 
 void PrintPreviewHandler::SendCloudPrintEnabled() {
@@ -1379,7 +1378,8 @@ void PrintPreviewHandler::OnAddedPrinters(printing::PrinterType printer_type,
 
   if (printer_type == PrinterType::kLocalPrinter &&
       !has_logged_printers_count_) {
-    UMA_HISTOGRAM_COUNTS("PrintPreview.NumberOfPrinters", printers.GetSize());
+    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.NumberOfPrinters",
+                            printers.GetSize());
     has_logged_printers_count_ = true;
   }
 }

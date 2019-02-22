@@ -31,6 +31,7 @@ class ImageLoaderClient;
 class LorgnetteManagerClient;
 class MediaAnalyticsClient;
 class OobeConfigurationClient;
+class SeneschalClient;
 class SmbProviderClient;
 class VirtualFileProviderClient;
 
@@ -64,6 +65,7 @@ class CHROMEOS_EXPORT DBusClientsBrowser {
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
   std::unique_ptr<MediaAnalyticsClient> media_analytics_client_;
   std::unique_ptr<OobeConfigurationClient> oobe_configuration_client_;
+  std::unique_ptr<SeneschalClient> seneschal_client_;
   std::unique_ptr<SmbProviderClient> smb_provider_client_;
   std::unique_ptr<VirtualFileProviderClient> virtual_file_provider_client_;
 

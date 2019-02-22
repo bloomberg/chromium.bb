@@ -14,33 +14,49 @@ from test_results import core
 
 def main():
   parser = argparse.ArgumentParser()
-  subparsers = parser.add_subparsers(dest='action')
-  subparsers.required = True
-  subparser = subparsers.add_parser('builders')
-  subparser.add_argument(
+  parser.add_argument(
       '--master', help='include results for this master only, can use'
       ' shell-style wildcards to match multiple masters.')
-  subparser.add_argument(
+  parser.add_argument(
       '--builder', help='include results for this builder only, can use'
       ' shell-style wildcards to match multiple builders.')
-  subparser.add_argument(
+  parser.add_argument(
       '--test-type', help='include results for this test type only, can use'
       ' shell-style wildcards to match multiple test types.')
-  subparser = subparsers.add_parser('results')
-  subparser.add_argument('master')
-  subparser.add_argument('builder')
-  subparser.add_argument('test_type')
+  parser.add_argument(
+      '--test-suite', help='include results for this test suite only, can use'
+      ' shell-style wildcards to match multiple test types.')
+  parser.add_argument(
+      '--half-life', default=7, type=int, help='test failures this many days'
+      ' ago are half as important as failures today.')
+  parser.add_argument(
+      '--threshold', default=5.0, type=float, help='only show test '
+      ' with flakiness above this level.')
   args = parser.parse_args()
 
-  if args.action == 'builders':
-    df = core.GetBuilders()
-    df = analysis.FilterBy(
-        df, master=args.master, builder=args.builder, test_type=args.test_type)
-    print df
-  elif args.action == 'results':
-    print core.GetTestResults(args.master, args.builder, args.test_type)
-  else:
-    raise NotImplementedError(args.action)
+  configs = core.GetBuilders()
+  configs = analysis.FilterBy(configs, master=args.master,
+                              builder=args.builder, test_type=args.test_type)
+  if configs.empty:
+    return 'Your query selected no test configurations'
+
+  dfs = []
+  for row in configs.itertuples():
+    df = core.GetTestResults(row.master, row.builder, row.test_type)
+    df = analysis.FilterBy(df, test_suite=args.test_suite)
+    if df.empty:
+      continue
+    df = analysis.AggregateBuilds(df, args.half_life)
+    df = df[df['flakiness'] > args.threshold]
+    if df.empty:
+      continue
+    dfs.append(df)
+  if not dfs:
+    return 'Your query selected no test configurations'
+
+  df = analysis.pandas.concat(dfs)
+  df = df.sort_values('flakiness', ascending=False)
+  print df
 
 
 if __name__ == '__main__':

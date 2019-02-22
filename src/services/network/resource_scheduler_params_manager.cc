@@ -87,8 +87,10 @@ ResourceSchedulerParamsManager::
               features::kDelayRequestsOnMultiplexedConnections,
               "MaxEffectiveConnectionType"));
 
-  if (!max_effective_connection_type)
-    return result;
+  if (!max_effective_connection_type) {
+    // Use a default value if one is not set using field trial params.
+    max_effective_connection_type = net::EFFECTIVE_CONNECTION_TYPE_3G;
+  }
 
   for (int ect = net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
        ect <= max_effective_connection_type.value(); ++ect) {

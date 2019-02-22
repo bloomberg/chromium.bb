@@ -60,7 +60,7 @@ struct Scale {
 
 std::unique_ptr<InterpolableValue> CreateScaleIdentity() {
   std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
-  for (size_t i = 0; i < 3; i++)
+  for (wtf_size_t i = 0; i < 3; i++)
     list->Set(i, InterpolableNumber::Create(1));
   return std::move(list);
 }
@@ -141,7 +141,7 @@ InterpolationValue Scale::CreateInterpolationValue() const {
   }
 
   std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
-  for (size_t i = 0; i < 3; i++)
+  for (wtf_size_t i = 0; i < 3; i++)
     list->Set(i, InterpolableNumber::Create(array[i]));
   return InterpolationValue(std::move(list),
                             CSSScaleNonInterpolableValue::Create(*this));
@@ -178,7 +178,7 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   DCHECK(list.length() >= 1 && list.length() <= 3);
 
   Scale scale(1, 1, 1);
-  for (size_t i = 0; i < list.length(); i++) {
+  for (wtf_size_t i = 0; i < list.length(); i++) {
     const CSSValue& item = list.Item(i);
     scale.array[i] = ToCSSPrimitiveValue(item).GetDoubleValue();
   }
@@ -194,9 +194,10 @@ void CSSScaleInterpolationType::AdditiveKeyframeHook(
 PairwiseInterpolationValue CSSScaleInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  size_t start_list_length =
+  wtf_size_t start_list_length =
       ToInterpolableList(*start.interpolable_value).length();
-  size_t end_list_length = ToInterpolableList(*end.interpolable_value).length();
+  wtf_size_t end_list_length =
+      ToInterpolableList(*end.interpolable_value).length();
   if (start_list_length < end_list_length)
     start.interpolable_value = CreateScaleIdentity();
   else if (end_list_length < start_list_length)
@@ -233,7 +234,7 @@ void CSSScaleInterpolationType::Composite(
 
   InterpolableList& underlying_list = ToInterpolableList(
       *underlying_value_owner.MutableValue().interpolable_value);
-  for (size_t i = 0; i < 3; i++) {
+  for (wtf_size_t i = 0; i < 3; i++) {
     InterpolableNumber& underlying =
         ToInterpolableNumber(*underlying_list.GetMutable(i));
 

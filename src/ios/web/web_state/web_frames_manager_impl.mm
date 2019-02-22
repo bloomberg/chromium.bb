@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ios/web/public/web_state/web_frame.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,7 +45,9 @@ WebFramesManagerImpl* WebFramesManagerImpl::FromWebState(WebState* web_state) {
       WebFramesManager::FromWebState(web_state));
 }
 
-WebFramesManagerImpl::~WebFramesManagerImpl() = default;
+WebFramesManagerImpl::~WebFramesManagerImpl() {
+  RemoveAllWebFrames();
+}
 
 WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
     : web_state_(web_state) {}
@@ -58,7 +60,8 @@ void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
     main_web_frame_ = frame.get();
   }
   DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
-  web_frames_[frame->GetFrameId()] = std::move(frame);
+  std::string frame_id = frame->GetFrameId();
+  web_frames_[frame_id] = std::move(frame);
 }
 
 void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
@@ -99,7 +102,7 @@ WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
 
 void WebFramesManagerImpl::RegisterExistingFrames() {
   web_state_->ExecuteJavaScript(
-      base::UTF8ToUTF16("__gCrWeb.frameMessaging.getExistingFrames();"));
+      base::UTF8ToUTF16("__gCrWeb.message.getExistingFrames();"));
 }
 
 }  // namespace

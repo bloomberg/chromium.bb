@@ -16,6 +16,12 @@ namespace network {
 class NetworkQualityTracker;
 }
 
+namespace ukm {
+namespace builders {
+class PageLoad;
+}
+}  // namespace ukm
+
 // If URL-Keyed-Metrics (UKM) is enabled in the system, this is used to
 // populate it with top-level page-load metrics.
 class UkmPageLoadMetricsObserver
@@ -69,6 +75,9 @@ class UkmPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info,
       base::TimeTicks app_background_time);
 
+  // Adds main resource timing metrics to |builder|.
+  void ReportMainResourceTimingMetrics(ukm::builders::PageLoad* builder);
+
   // Guaranteed to be non-null during the lifetime of |this|.
   network::NetworkQualityTracker* network_quality_tracker_;
 
@@ -84,6 +93,9 @@ class UkmPageLoadMetricsObserver
   base::Optional<base::TimeDelta> http_rtt_estimate_;
   base::Optional<base::TimeDelta> transport_rtt_estimate_;
   base::Optional<int32_t> downstream_kbps_estimate_;
+
+  // Load timing metrics of the main frame resource request.
+  base::Optional<net::LoadTimingInfo> main_frame_timing_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;

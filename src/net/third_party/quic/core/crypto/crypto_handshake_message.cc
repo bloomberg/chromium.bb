@@ -56,11 +56,9 @@ void CryptoHandshakeMessage::Clear() {
   serialized_.reset();
 }
 
-const QuicData& CryptoHandshakeMessage::GetSerialized(
-    Perspective perspective) const {
+const QuicData& CryptoHandshakeMessage::GetSerialized() const {
   if (!serialized_.get()) {
-    serialized_.reset(
-        CryptoFramer::ConstructHandshakeMessage(*this, perspective));
+    serialized_.reset(CryptoFramer::ConstructHandshakeMessage(*this));
   }
   return *serialized_;
 }
@@ -97,7 +95,7 @@ void CryptoHandshakeMessage::Erase(QuicTag tag) {
 QuicErrorCode CryptoHandshakeMessage::GetTaglist(
     QuicTag tag,
     QuicTagVector* out_tags) const {
-  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
+  auto it = tag_value_map_.find(tag);
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
@@ -150,7 +148,7 @@ QuicErrorCode CryptoHandshakeMessage::GetVersionLabel(
 
 bool CryptoHandshakeMessage::GetStringPiece(QuicTag tag,
                                             QuicStringPiece* out) const {
-  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
+  auto it = tag_value_map_.find(tag);
   if (it == tag_value_map_.end()) {
     return false;
   }
@@ -219,8 +217,7 @@ size_t CryptoHandshakeMessage::size() const {
                sizeof(uint16_t) /* padding */;
   ret += (sizeof(QuicTag) + sizeof(uint32_t) /* end offset */) *
          tag_value_map_.size();
-  for (QuicTagValueMap::const_iterator i = tag_value_map_.begin();
-       i != tag_value_map_.end(); ++i) {
+  for (auto i = tag_value_map_.begin(); i != tag_value_map_.end(); ++i) {
     ret += i->second.size();
   }
 
@@ -239,14 +236,14 @@ size_t CryptoHandshakeMessage::minimum_size() const {
   return minimum_size_;
 }
 
-QuicString CryptoHandshakeMessage::DebugString(Perspective perspective) const {
-  return DebugStringInternal(0, perspective);
+QuicString CryptoHandshakeMessage::DebugString() const {
+  return DebugStringInternal(0);
 }
 
 QuicErrorCode CryptoHandshakeMessage::GetPOD(QuicTag tag,
                                              void* out,
                                              size_t len) const {
-  QuicTagValueMap::const_iterator it = tag_value_map_.find(tag);
+  auto it = tag_value_map_.find(tag);
   QuicErrorCode ret = QUIC_NO_ERROR;
 
   if (it == tag_value_map_.end()) {
@@ -264,13 +261,10 @@ QuicErrorCode CryptoHandshakeMessage::GetPOD(QuicTag tag,
   return ret;
 }
 
-QuicString CryptoHandshakeMessage::DebugStringInternal(
-    size_t indent,
-    Perspective perspective) const {
+QuicString CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
   QuicString ret = QuicString(2 * indent, ' ') + QuicTagToString(tag_) + "<\n";
   ++indent;
-  for (QuicTagValueMap::const_iterator it = tag_value_map_.begin();
-       it != tag_value_map_.end(); ++it) {
+  for (auto it = tag_value_map_.begin(); it != tag_value_map_.end(); ++it) {
     ret += QuicString(2 * indent, ' ') + QuicTagToString(it->first) + ": ";
 
     bool done = false;
@@ -348,10 +342,10 @@ QuicString CryptoHandshakeMessage::DebugStringInternal(
         // nested messages.
         if (!it->second.empty()) {
           std::unique_ptr<CryptoHandshakeMessage> msg(
-              CryptoFramer::ParseMessage(it->second, perspective));
+              CryptoFramer::ParseMessage(it->second));
           if (msg) {
             ret += "\n";
-            ret += msg->DebugStringInternal(indent + 1, perspective);
+            ret += msg->DebugStringInternal(indent + 1);
 
             done = true;
           }

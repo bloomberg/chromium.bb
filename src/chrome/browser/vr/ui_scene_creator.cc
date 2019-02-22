@@ -5,6 +5,10 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 
 #include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -76,6 +80,7 @@
 #include "components/toolbar/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/transform_util.h"
 
 namespace vr {
@@ -1106,7 +1111,6 @@ void UiSceneCreator::CreateScene() {
   CreateToasts();
   CreateVoiceSearchUiGroup();
   CreateContentRepositioningAffordance();
-  CreateExitWarning();
   CreateWebVrSubtree();
   CreateKeyboard();
   CreateController();
@@ -1208,44 +1212,6 @@ void UiSceneCreator::CreateWebVrRoot() {
       float, Model, model_, model->floor_height, UiElement, element.get(),
       view->SetTranslate(0, value ? value - kFloorHeight : 0.0, 0.0)));
   scene_->AddUiElement(kRoot, std::move(element));
-}
-
-void UiSceneCreator::CreateExitWarning() {
-  auto scrim = std::make_unique<FullScreenRect>();
-  scrim->SetName(kScreenDimmer);
-  scrim->SetDrawPhase(kPhaseForeground);
-  scrim->SetVisible(false);
-  scrim->SetOpacity(kScreenDimmerOpacity);
-  scrim->SetCenterColor(model_->color_scheme().dimmer_inner);
-  scrim->SetEdgeColor(model_->color_scheme().dimmer_outer);
-  VR_BIND_VISIBILITY(scrim, model->exiting_vr);
-  scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(scrim));
-
-  // Create transient exit warning.
-  auto scaler = std::make_unique<ScaledDepthAdjuster>(kExitWarningDistance);
-  auto exit_warning_text = std::make_unique<Text>(kExitWarningFontHeightDMM);
-  exit_warning_text->SetName(kExitWarningText);
-  exit_warning_text->SetDrawPhase(kPhaseForeground);
-  exit_warning_text->SetText(
-      l10n_util::GetStringUTF16(IDS_VR_BROWSER_UNSUPPORTED_PAGE));
-  exit_warning_text->SetFieldWidth(kExitWarningTextWidthDMM);
-  exit_warning_text->SetVisible(true);
-  VR_BIND_COLOR(model_, exit_warning_text.get(),
-                &ColorScheme::exit_warning_foreground, &Text::SetColor);
-
-  auto exit_warning_bg = std::make_unique<Rect>();
-  exit_warning_bg->SetName(kExitWarningBackground);
-  exit_warning_bg->SetDrawPhase(kPhaseForeground);
-  exit_warning_bg->set_bounds_contain_children(true);
-  exit_warning_bg->set_padding(kExitWarningXPaddingDMM,
-                               kExitWarningYPaddingDMM);
-  exit_warning_bg->set_corner_radius(kExitWarningCornerRadiusDMM);
-  exit_warning_bg->AddChild(std::move(exit_warning_text));
-  VR_BIND_VISIBILITY(exit_warning_bg, model->exiting_vr);
-  VR_BIND_COLOR(model_, exit_warning_bg.get(),
-                &ColorScheme::exit_warning_background, &Rect::SetColor);
-  scaler->AddChild(std::move(exit_warning_bg));
-  scene_->AddUiElement(k2dBrowsingViewportAwareRoot, std::move(scaler));
 }
 
 void UiSceneCreator::CreateSystemIndicators() {
@@ -2153,7 +2119,7 @@ void UiSceneCreator::CreateUrlBar() {
       kUrlBarSecurityButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::ShowPageInfo,
                           base::Unretained(browser_)),
-      toolbar::kHttpsInvalidIcon, audio_delegate_);
+      gfx::kNoneIcon, audio_delegate_);
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
@@ -2898,7 +2864,6 @@ void UiSceneCreator::CreatePrompts() {
             event_handlers.button_up =
                 CreatePromptCallback(reason, CHOICE_NONE, model, browser);
             backplane->set_event_handlers(event_handlers);
-
           },
           base::Unretained(prompt.get()), base::Unretained(model_),
           base::Unretained(browser_))));

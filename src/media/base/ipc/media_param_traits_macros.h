@@ -64,6 +64,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Function,
                           media::CdmProxy::Function::kMaxValue)
 
+IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::KeyType,
+                          media::CdmProxy::KeyType::kMaxValue)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Protocol,
                           media::CdmProxy::Protocol::kMaxValue)
 

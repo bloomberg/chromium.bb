@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/dump_without_crashing.h"
@@ -18,6 +19,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -70,9 +72,10 @@
 #include "services/network/host_resolver.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
-#include "services/network/mojo_net_log.h"
+#include "services/network/net_log_exporter.h"
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
+#include "services/network/network_service_proxy_delegate.h"
 #include "services/network/p2p/socket_manager.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
@@ -112,9 +115,38 @@
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 namespace network {
 
 namespace {
+
+// A Base-64 encoded DER certificate for use in test Expect-CT reports. The
+// contents of the certificate don't matter.
+const char kTestReportCert[] =
+    "MIIDvzCCAqegAwIBAgIBAzANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzET"
+    "MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEQMA4G"
+    "A1UECgwHVGVzdCBDQTEVMBMGA1UEAwwMVGVzdCBSb290IENBMB4XDTE3MDYwNTE3"
+    "MTA0NloXDTI3MDYwMzE3MTA0NlowYDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh"
+    "bGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoMB1Rlc3Qg"
+    "Q0ExEjAQBgNVBAMMCTEyNy4wLjAuMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC"
+    "AQoCggEBALS/0pcz5RNbd2W9cxp1KJtHWea3MOhGM21YW9ofCv/k5C3yHfiJ6GQu"
+    "9sPN16OO1/fN59gOEMPnVtL85ebTTuL/gk0YY4ewo97a7wo3e6y1t0PO8gc53xTp"
+    "w6RBPn5oRzSbe2HEGOYTzrO0puC6A+7k6+eq9G2+l1uqBpdQAdB4uNaSsOTiuUOI"
+    "ta4UZH1ScNQFHAkl1eJPyaiC20Exw75EbwvU/b/B7tlivzuPtQDI0d9dShOtceRL"
+    "X9HZckyD2JNAv2zNL2YOBNa5QygkySX9WXD+PfKpCk7Cm8TenldeXRYl5ni2REkp"
+    "nfa/dPuF1g3xZVjyK9aPEEnIAC2I4i0CAwEAAaOBgDB+MAwGA1UdEwEB/wQCMAAw"
+    "HQYDVR0OBBYEFODc4C8HiHQ6n9Mwo3GK+dal5aZTMB8GA1UdIwQYMBaAFJsmC4qY"
+    "qbsduR8c4xpAM+2OF4irMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAP"
+    "BgNVHREECDAGhwR/AAABMA0GCSqGSIb3DQEBCwUAA4IBAQB6FEQuUDRcC5jkX3aZ"
+    "uuTeZEqMVL7JXgvgFqzXsPb8zIdmxr/tEDfwXx2qDf2Dpxts7Fq4vqUwimK4qV3K"
+    "7heLnWV2+FBvV1eeSfZ7AQj+SURkdlyo42r41+t13QUf+Z0ftR9266LSWLKrukeI"
+    "Mxk73hOkm/u8enhTd00dy/FN9dOFBFHseVMspWNxIkdRILgOmiyfQNRgxNYdOf0e"
+    "EfELR8Hn6WjZ8wAbvO4p7RTrzu1c/RZ0M+NLkID56Brbl70GC2h5681LPwAOaZ7/"
+    "mWQ5kekSyJjmLfF12b+h9RVAt5MrXZgk2vNujssgGf4nbWh4KZyQ6qrs778ZdDLm"
+    "yfUn";
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
@@ -224,6 +256,37 @@ void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
   std::move(callback).Run();
 }
 
+#if defined(OS_ANDROID)
+class NetworkContextApplicationStatusListener
+    : public base::android::ApplicationStatusListener {
+ public:
+  // base::android::ApplicationStatusListener implementation:
+  void SetCallback(const ApplicationStateChangeCallback& callback) override {
+    DCHECK(!callback_);
+    DCHECK(callback);
+    callback_ = callback;
+  }
+
+  void Notify(base::android::ApplicationState state) override {
+    if (callback_)
+      callback_.Run(state);
+  }
+
+ private:
+  ApplicationStateChangeCallback callback_;
+};
+#endif
+
+std::string HashesToBase64String(const net::HashValueVector& hashes) {
+  std::string str;
+  for (size_t i = 0; i != hashes.size(); ++i) {
+    if (i != 0)
+      str += ",";
+    str += hashes[i].ToString();
+  }
+  return str;
+}
+
 }  // namespace
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
@@ -242,12 +305,16 @@ class NetworkContext::ContextNetworkDelegate
       std::unique_ptr<net::NetworkDelegate> nested_network_delegate,
       bool enable_referrers,
       bool validate_referrer_policy_on_initial_request,
+      mojom::ProxyErrorClientPtrInfo proxy_error_client_info,
       NetworkContext* network_context)
       : LayeredNetworkDelegate(std::move(nested_network_delegate)),
         enable_referrers_(enable_referrers),
         validate_referrer_policy_on_initial_request_(
             validate_referrer_policy_on_initial_request),
-        network_context_(network_context) {}
+        network_context_(network_context) {
+    if (proxy_error_client_info)
+      proxy_error_client_.Bind(std::move(proxy_error_client_info));
+  }
 
   ~ContextNetworkDelegate() override {}
 
@@ -284,6 +351,8 @@ class NetworkContext::ContextNetworkDelegate
             "Net.HttpRequestCompletionErrorCodes.MainFrame", -net_error);
       }
     }
+
+    ForwardProxyErrors(net_error);
   }
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeaderInternal(
@@ -309,13 +378,72 @@ class NetworkContext::ContextNetworkDelegate
     return true;
   }
 
+  bool OnCanGetCookiesInternal(const net::URLRequest& request,
+                               const net::CookieList& cookie_list,
+                               bool allowed_from_caller) override {
+    return allowed_from_caller &&
+           network_context_->cookie_manager()
+               ->cookie_settings()
+               .IsCookieAccessAllowed(request.url(),
+                                      request.site_for_cookies());
+  }
+
+  bool OnCanSetCookieInternal(const net::URLRequest& request,
+                              const net::CanonicalCookie& cookie,
+                              net::CookieOptions* options,
+                              bool allowed_from_caller) override {
+    return allowed_from_caller &&
+           network_context_->cookie_manager()
+               ->cookie_settings()
+               .IsCookieAccessAllowed(request.url(),
+                                      request.site_for_cookies());
+  }
+
+  bool OnCanEnablePrivacyModeInternal(
+      const GURL& url,
+      const GURL& site_for_cookies) const override {
+    return !network_context_->cookie_manager()
+                ->cookie_settings()
+                .IsCookieAccessAllowed(url, site_for_cookies);
+  }
+
+  void OnResponseStartedInternal(net::URLRequest* request,
+                                 int net_error) override {
+    ForwardProxyErrors(net_error);
+  }
+
+  void OnPACScriptErrorInternal(int line_number,
+                                const base::string16& error) override {
+    if (!proxy_error_client_)
+      return;
+
+    proxy_error_client_->OnPACScriptError(line_number,
+                                          base::UTF16ToUTF8(error));
+  }
+
   void set_enable_referrers(bool enable_referrers) {
     enable_referrers_ = enable_referrers;
   }
 
  private:
+  void ForwardProxyErrors(int net_error) {
+    if (!proxy_error_client_)
+      return;
+
+    // TODO(https://crbug.com/876848): Provide justification for the currently
+    // enumerated errors.
+    switch (net_error) {
+      case net::ERR_PROXY_AUTH_UNSUPPORTED:
+      case net::ERR_PROXY_CONNECTION_FAILED:
+      case net::ERR_TUNNEL_CONNECTION_FAILED:
+        proxy_error_client_->OnRequestMaybeFailedDueToProxySettings(net_error);
+        break;
+    }
+  }
+
   bool enable_referrers_;
   bool validate_referrer_policy_on_initial_request_;
+  mojom::ProxyErrorClientPtr proxy_error_client_;
   NetworkContext* network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextNetworkDelegate);
@@ -327,8 +455,13 @@ NetworkContext::NetworkContext(
     mojom::NetworkContextParamsPtr params,
     OnConnectionCloseCallback on_connection_close_callback)
     : network_service_(network_service),
+      url_request_context_(nullptr),
       params_(std::move(params)),
       on_connection_close_callback_(std::move(on_connection_close_callback)),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext();
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -357,7 +490,12 @@ NetworkContext::NetworkContext(
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
+      url_request_context_(nullptr),
       params_(std::move(params)),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(builder.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
@@ -374,6 +512,10 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                net::URLRequestContext* url_request_context)
     : network_service_(network_service),
       url_request_context_(url_request_context),
+#if defined(OS_ANDROID)
+      app_status_listener_(
+          std::make_unique<NetworkContextApplicationStatusListener>()),
+#endif
       binding_(this, std::move(request)),
       cookie_manager_(
           std::make_unique<CookieManager>(url_request_context->cookie_store(),
@@ -455,7 +597,7 @@ void NetworkContext::CreateURLLoaderFactory(
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<cors::CORSURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
-      std::move(request)));
+      std::move(request), &cors_origin_access_list_));
 }
 
 void NetworkContext::SetClient(mojom::NetworkContextClientPtr client) {
@@ -686,6 +828,17 @@ void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
   std::move(callback).Run();
 }
 
+void NetworkContext::CloseIdleConnections(
+    CloseIdleConnectionsCallback callback) {
+  net::HttpNetworkSession* http_session =
+      url_request_context_->http_transaction_factory()->GetSession();
+  DCHECK(http_session);
+
+  http_session->CloseIdleConnections();
+
+  std::move(callback).Run();
+}
+
 void NetworkContext::SetNetworkConditions(
     const base::UnguessableToken& throttling_profile_id,
     mojom::NetworkConditionsPtr conditions) {
@@ -725,6 +878,111 @@ void NetworkContext::SetCTPolicy(
                                          excluded_spkis, excluded_legacy_spkis);
 }
 
+void NetworkContext::AddExpectCT(const std::string& domain,
+                                 base::Time expiry,
+                                 bool enforce,
+                                 const GURL& report_uri,
+                                 AddExpectCTCallback callback) {
+  net::TransportSecurityState* transport_security_state =
+      url_request_context()->transport_security_state();
+  if (!transport_security_state) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  transport_security_state->AddExpectCT(domain, expiry, enforce, report_uri);
+  std::move(callback).Run(true);
+}
+
+void NetworkContext::SetExpectCTTestReport(
+    const GURL& report_uri,
+    SetExpectCTTestReportCallback callback) {
+  std::string decoded_dummy_cert;
+  DCHECK(base::Base64Decode(kTestReportCert, &decoded_dummy_cert));
+  scoped_refptr<net::X509Certificate> dummy_cert =
+      net::X509Certificate::CreateFromBytes(decoded_dummy_cert.data(),
+                                            decoded_dummy_cert.size());
+
+  LazyCreateExpectCTReporter(url_request_context());
+
+  // We need to save |callback| into a queue because this implementation is
+  // relying on the success/failed observer methods of network::ExpectCTReporter
+  // which can be called at any time, and for other reasons. It's unlikely
+  // but it is possible that |callback| could be called for some other event
+  // other than the one initiated below when calling OnExpectCTFailed.
+  outstanding_set_expect_ct_callbacks_.push(std::move(callback));
+
+  // Send a test report with dummy data.
+  net::SignedCertificateTimestampAndStatusList dummy_sct_list;
+  expect_ct_reporter_->OnExpectCTFailed(
+      net::HostPortPair("expect-ct-report.test", 443), report_uri,
+      base::Time::Now(), dummy_cert.get(), dummy_cert.get(), dummy_sct_list);
+}
+
+void NetworkContext::LazyCreateExpectCTReporter(
+    net::URLRequestContext* url_request_context) {
+  if (expect_ct_reporter_)
+    return;
+
+  // This instance owns owns and outlives expect_ct_reporter_, so safe to
+  // pass |this|.
+  expect_ct_reporter_ = std::make_unique<network::ExpectCTReporter>(
+      url_request_context,
+      base::BindRepeating(&NetworkContext::OnSetExpectCTTestReportSuccess,
+                          base::Unretained(this)),
+      base::BindRepeating(&NetworkContext::OnSetExpectCTTestReportFailure,
+                          base::Unretained(this)));
+}
+
+void NetworkContext::OnSetExpectCTTestReportSuccess() {
+  if (outstanding_set_expect_ct_callbacks_.empty())
+    return;
+  std::move(outstanding_set_expect_ct_callbacks_.front()).Run(true);
+  outstanding_set_expect_ct_callbacks_.pop();
+}
+
+void NetworkContext::OnSetExpectCTTestReportFailure() {
+  if (outstanding_set_expect_ct_callbacks_.empty())
+    return;
+  std::move(outstanding_set_expect_ct_callbacks_.front()).Run(false);
+  outstanding_set_expect_ct_callbacks_.pop();
+}
+
+void NetworkContext::GetExpectCTState(const std::string& domain,
+                                      GetExpectCTStateCallback callback) {
+  base::DictionaryValue result;
+  if (base::IsStringASCII(domain)) {
+    net::TransportSecurityState* transport_security_state =
+        url_request_context()->transport_security_state();
+    if (transport_security_state) {
+      net::TransportSecurityState::ExpectCTState dynamic_expect_ct_state;
+      bool found = transport_security_state->GetDynamicExpectCTState(
+          domain, &dynamic_expect_ct_state);
+
+      // TODO(estark): query static Expect-CT state as well.
+      if (found) {
+        result.SetString("dynamic_expect_ct_domain", domain);
+        result.SetDouble("dynamic_expect_ct_observed",
+                         dynamic_expect_ct_state.last_observed.ToDoubleT());
+        result.SetDouble("dynamic_expect_ct_expiry",
+                         dynamic_expect_ct_state.expiry.ToDoubleT());
+        result.SetBoolean("dynamic_expect_ct_enforce",
+                          dynamic_expect_ct_state.enforce);
+        result.SetString("dynamic_expect_ct_report_uri",
+                         dynamic_expect_ct_state.report_uri.spec());
+      }
+
+      result.SetBoolean("result", found);
+    } else {
+      result.SetString("error", "no Expect-CT state active");
+    }
+  } else {
+    result.SetString("error", "non-ASCII domain name");
+  }
+
+  std::move(callback).Run(std::move(result));
+}
+
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
                                      mojom::UDPSocketReceiverPtr receiver) {
   socket_factory_->CreateUDPSocket(std::move(request), std::move(receiver));
@@ -745,14 +1003,26 @@ void NetworkContext::CreateTCPServerSocket(
 void NetworkContext::CreateTCPConnectedSocket(
     const base::Optional<net::IPEndPoint>& local_addr,
     const net::AddressList& remote_addr_list,
+    mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocketRequest request,
     mojom::SocketObserverPtr observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
-      local_addr, remote_addr_list,
+      local_addr, remote_addr_list, std::move(tcp_connected_socket_options),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(observer), std::move(callback));
+}
+
+void NetworkContext::CreateTCPBoundSocket(
+    const net::IPEndPoint& local_addr,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    mojom::TCPBoundSocketRequest request,
+    CreateTCPBoundSocketCallback callback) {
+  socket_factory_->CreateTCPBoundSocket(
+      local_addr,
+      static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
+      std::move(request), std::move(callback));
 }
 
 void NetworkContext::CreateProxyResolvingSocketFactory(
@@ -876,14 +1146,114 @@ void NetworkContext::IsHSTSActiveForHost(const std::string& host,
   std::move(callback).Run(security_state->ShouldUpgradeToSSL(host));
 }
 
-void NetworkContext::AddHSTSForTesting(const std::string& host,
-                                       base::Time expiry,
-                                       bool include_subdomains,
-                                       AddHSTSForTestingCallback callback) {
+void NetworkContext::SetCorsOriginAccessListsForOrigin(
+    const url::Origin& source_origin,
+    std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<mojom::CorsOriginPatternPtr> block_patterns,
+    SetCorsOriginAccessListsForOriginCallback callback) {
+  cors_origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
+  cors_origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
+  std::move(callback).Run();
+}
+
+void NetworkContext::AddHSTS(const std::string& host,
+                             base::Time expiry,
+                             bool include_subdomains,
+                             AddHSTSCallback callback) {
   net::TransportSecurityState* state =
       url_request_context_->transport_security_state();
   state->AddHSTS(host, expiry, include_subdomains);
   std::move(callback).Run();
+}
+
+void NetworkContext::GetHSTSState(const std::string& domain,
+                                  GetHSTSStateCallback callback) {
+  base::DictionaryValue result;
+
+  if (base::IsStringASCII(domain)) {
+    net::TransportSecurityState* transport_security_state =
+        url_request_context()->transport_security_state();
+    if (transport_security_state) {
+      net::TransportSecurityState::STSState static_sts_state;
+      net::TransportSecurityState::PKPState static_pkp_state;
+      bool found_static = transport_security_state->GetStaticDomainState(
+          domain, &static_sts_state, &static_pkp_state);
+      if (found_static) {
+        result.SetInteger("static_upgrade_mode",
+                          static_cast<int>(static_sts_state.upgrade_mode));
+        result.SetBoolean("static_sts_include_subdomains",
+                          static_sts_state.include_subdomains);
+        result.SetDouble("static_sts_observed",
+                         static_sts_state.last_observed.ToDoubleT());
+        result.SetDouble("static_sts_expiry",
+                         static_sts_state.expiry.ToDoubleT());
+        result.SetBoolean("static_pkp_include_subdomains",
+                          static_pkp_state.include_subdomains);
+        result.SetDouble("static_pkp_observed",
+                         static_pkp_state.last_observed.ToDoubleT());
+        result.SetDouble("static_pkp_expiry",
+                         static_pkp_state.expiry.ToDoubleT());
+        result.SetString("static_spki_hashes",
+                         HashesToBase64String(static_pkp_state.spki_hashes));
+        result.SetString("static_sts_domain", static_sts_state.domain);
+        result.SetString("static_pkp_domain", static_pkp_state.domain);
+      }
+
+      net::TransportSecurityState::STSState dynamic_sts_state;
+      net::TransportSecurityState::PKPState dynamic_pkp_state;
+      bool found_sts_dynamic = transport_security_state->GetDynamicSTSState(
+          domain, &dynamic_sts_state);
+
+      bool found_pkp_dynamic = transport_security_state->GetDynamicPKPState(
+          domain, &dynamic_pkp_state);
+      if (found_sts_dynamic) {
+        result.SetInteger("dynamic_upgrade_mode",
+                          static_cast<int>(dynamic_sts_state.upgrade_mode));
+        result.SetBoolean("dynamic_sts_include_subdomains",
+                          dynamic_sts_state.include_subdomains);
+        result.SetDouble("dynamic_sts_observed",
+                         dynamic_sts_state.last_observed.ToDoubleT());
+        result.SetDouble("dynamic_sts_expiry",
+                         dynamic_sts_state.expiry.ToDoubleT());
+        result.SetString("dynamic_sts_domain", dynamic_sts_state.domain);
+      }
+
+      if (found_pkp_dynamic) {
+        result.SetBoolean("dynamic_pkp_include_subdomains",
+                          dynamic_pkp_state.include_subdomains);
+        result.SetDouble("dynamic_pkp_observed",
+                         dynamic_pkp_state.last_observed.ToDoubleT());
+        result.SetDouble("dynamic_pkp_expiry",
+                         dynamic_pkp_state.expiry.ToDoubleT());
+        result.SetString("dynamic_spki_hashes",
+                         HashesToBase64String(dynamic_pkp_state.spki_hashes));
+        result.SetString("dynamic_pkp_domain", dynamic_pkp_state.domain);
+      }
+
+      result.SetBoolean("result",
+                        found_static || found_sts_dynamic || found_pkp_dynamic);
+    } else {
+      result.SetString("error", "no TransportSecurityState active");
+    }
+  } else {
+    result.SetString("error", "non-ASCII domain name");
+  }
+
+  std::move(callback).Run(std::move(result));
+}
+
+void NetworkContext::DeleteDynamicDataForHost(
+    const std::string& host,
+    DeleteDynamicDataForHostCallback callback) {
+  net::TransportSecurityState* transport_security_state =
+      url_request_context()->transport_security_state();
+  if (!transport_security_state) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(
+      transport_security_state->DeleteDynamicDataForHost(host));
 }
 
 void NetworkContext::SetFailingHttpTransactionForTesting(
@@ -975,15 +1345,14 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         network_service_->network_quality_estimator());
   }
 
-  scoped_refptr<network::SessionCleanupCookieStore>
-      session_cleanup_cookie_store;
+  scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store;
   scoped_refptr<SessionCleanupChannelIDStore> session_cleanup_channel_id_store;
   if (params_->cookie_path) {
     scoped_refptr<base::SequencedTaskRunner> client_task_runner =
         base::MessageLoopCurrent::Get()->task_runner();
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
     std::unique_ptr<net::ChannelIDService> channel_id_service;
@@ -1012,7 +1381,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
             crypto_delegate));
 
     session_cleanup_cookie_store =
-        base::MakeRefCounted<network::SessionCleanupCookieStore>(sqlite_store);
+        base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store);
 
     std::unique_ptr<net::CookieMonster> cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
@@ -1061,6 +1430,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
           *base::CommandLine::ForCurrentProcess());
     }
 
+#if defined(OS_ANDROID)
+    cache_params.app_status_listener = app_status_listener();
+#endif
     builder->EnableHttpCache(cache_params);
   }
 
@@ -1177,6 +1549,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
                 network_context_params->enable_referrers,
                 network_context_params
                     ->validate_referrer_policy_on_initial_request,
+                std::move(network_context_params->proxy_error_client),
                 network_context);
         if (out_context_network_delegate)
           *out_context_network_delegate = context_network_delegate.get();
@@ -1250,8 +1623,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 
   if (params_->enable_expect_ct_reporting) {
-    expect_ct_reporter_ = std::make_unique<ExpectCTReporter>(
-        result.url_request_context.get(), base::Closure(), base::Closure());
+    LazyCreateExpectCTReporter(result.url_request_context.get());
     result.url_request_context->transport_security_state()->SetExpectCTReporter(
         expect_ct_reporter_.get());
   }
@@ -1350,6 +1722,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   std::unique_ptr<net::NetworkDelegate> network_delegate =
       std::make_unique<NetworkServiceNetworkDelegate>(this);
   builder.set_network_delegate(std::move(network_delegate));
+
+  if (params_->custom_proxy_config_client_request) {
+    proxy_delegate_ = std::make_unique<NetworkServiceProxyDelegate>(
+        std::move(params_->custom_proxy_config_client_request));
+    builder.set_shared_proxy_delegate(proxy_delegate_.get());
+  }
 
   // |network_service_| may be nullptr in tests.
   auto result = ApplyContextParamsToBuilder(&builder);
@@ -1465,6 +1843,18 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
 
   std::move(pending_cert_verify->callback)
       .Run(result, *pending_cert_verify->result.get(), ct_verify_result);
+}
+
+void NetworkContext::ForceReloadProxyConfig(
+    ForceReloadProxyConfigCallback callback) {
+  url_request_context()->proxy_resolution_service()->ForceReloadProxyConfig();
+  std::move(callback).Run();
+}
+
+void NetworkContext::ClearBadProxiesCache(
+    ClearBadProxiesCacheCallback callback) {
+  url_request_context()->proxy_resolution_service()->ClearBadProxiesCache();
+  std::move(callback).Run();
 }
 
 }  // namespace network

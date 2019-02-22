@@ -58,20 +58,50 @@ void PagedViewStructure::LoadFromMetadata() {
 void PagedViewStructure::SaveToMetadata() {
   auto* item_list = apps_grid_view_->item_list_;
   size_t item_index = 0;
+  AppListModel* model = apps_grid_view_->model_;
 
   for (const auto& page : pages_) {
-    // Skip all "page break" items before current page and after previous page.
+    // Skip all "page break" items before current page.
     while (item_index < item_list->item_count() &&
            item_list->item_at(item_index)->is_page_break()) {
       ++item_index;
     }
-    item_index += page.size();
+
+    // A "page break" item may exist between two app items in a full page after
+    // moving an item to the page from another page or folder. The last item in
+    // the page was pushed to the next page by ClearOverflow() while the "page
+    // break" item behind still exist. In this case, we need to remove the "page
+    // break" item.
+    for (size_t i = 0;
+         i < page.size() && item_index < item_list->item_count();) {
+      const auto* item = item_list->item_at(item_index);
+      if (item->is_page_break()) {
+        // Remove AppListItemListObserver temporarily to avoid |pages_| being
+        // reloaded.
+        item_list->RemoveObserver(apps_grid_view_);
+
+        // Do not increase |item_index| after this call because it modifies
+        // |item_list|.
+        model->DeleteItem(item->id());
+        item_list->AddObserver(apps_grid_view_);
+        continue;
+      }
+
+      DCHECK_EQ(item, page[i]->item());
+      ++i;
+      ++item_index;
+    }
+
     if (item_index < item_list->item_count() &&
         !item_list->item_at(item_index)->is_page_break()) {
+      // Remove AppListItemListObserver temporarily to avoid |pages_| being
+      // reloaded.
+      item_list->RemoveObserver(apps_grid_view_);
+
       // There's no "page break" item at the end of current page, so add one to
       // push overflowing items to next page.
-      apps_grid_view_->model_->AddPageBreakItemAfter(
-          item_list->item_at(item_index - 1));
+      model->AddPageBreakItemAfter(item_list->item_at(item_index - 1));
+      item_list->AddObserver(apps_grid_view_);
     }
   }
 
@@ -81,61 +111,17 @@ void PagedViewStructure::SaveToMetadata() {
   // operation to AppListSyncableService which has complete item list.
 }
 
-bool PagedViewStructure::Sanitize() {
-  bool changed = false;
-  std::vector<AppListItemView*> overflow_views;
-  auto iter = pages_.begin();
-  while (iter != pages_.end() || !overflow_views.empty()) {
-    if (iter == pages_.end()) {
-      // Add additional page if overflowing item views remain.
-      pages_.emplace_back();
-      iter = pages_.end() - 1;
-      changed = true;
-    }
-
-    const size_t max_item_views =
-        apps_grid_view_->TilesPerPage(static_cast<int>(iter - pages_.begin()));
-    auto& page = *iter;
-
-    if (!overflow_views.empty()) {
-      // Put overflowing item views in current page.
-      page.insert(page.begin(), overflow_views.begin(), overflow_views.end());
-      overflow_views.clear();
-      changed = true;
-    }
-
-    if (page.empty()) {
-      // Remove empty page.
-      iter = pages_.erase(iter);
-      changed = true;
-      continue;
-    }
-
-    if (page.size() > max_item_views) {
-      // Remove overflowing item views from current page.
-      overflow_views.insert(overflow_views.begin(),
-                            page.begin() + max_item_views, page.end());
-      page.erase(page.begin() + max_item_views, page.end());
-      changed = true;
-    }
-
-    ++iter;
-  }
-  return changed;
-}
-
 void PagedViewStructure::Move(AppListItemView* view,
-                              const GridIndex& target_index) {
-  RemoveWithoutSanitize(view);
-  Add(view, target_index);
+                              const GridIndex& target_index,
+                              bool clear_overflow,
+                              bool clear_empty_pages) {
+  Remove(view, false /* clear_overflow */, false /* clear_empty_pages */);
+  Add(view, target_index, clear_overflow, clear_empty_pages);
 }
 
-void PagedViewStructure::Remove(AppListItemView* view) {
-  RemoveWithoutSanitize(view);
-  Sanitize();
-}
-
-void PagedViewStructure::RemoveWithoutSanitize(AppListItemView* view) {
+void PagedViewStructure::Remove(AppListItemView* view,
+                                bool clear_overflow,
+                                bool clear_empty_pages) {
   for (auto& page : pages_) {
     auto iter = std::find(page.begin(), page.end(), view);
     if (iter != page.end()) {
@@ -143,26 +129,34 @@ void PagedViewStructure::RemoveWithoutSanitize(AppListItemView* view) {
       break;
     }
   }
+
+  if (clear_overflow)
+    ClearOverflow();
+
+  if (clear_empty_pages)
+    ClearEmptyPages();
 }
 
 void PagedViewStructure::Add(AppListItemView* view,
-                             const GridIndex& target_index) {
-  AddWithoutSanitize(view, target_index);
-  Sanitize();
-}
-
-void PagedViewStructure::AddWithoutSanitize(AppListItemView* view,
-                                            const GridIndex& target_index) {
+                             const GridIndex& target_index,
+                             bool clear_overflow,
+                             bool clear_empty_pages) {
   const int view_structure_size = total_pages();
-  DCHECK((target_index.page < view_structure_size &&
-          target_index.slot <= items_on_page(target_index.page)) ||
-         (target_index.page == view_structure_size && target_index.slot == 0));
+  CHECK((target_index.page < view_structure_size &&
+         target_index.slot <= items_on_page(target_index.page)) ||
+        (target_index.page == view_structure_size && target_index.slot == 0));
 
   if (target_index.page == view_structure_size)
     pages_.emplace_back();
 
   auto& page = pages_[target_index.page];
   page.insert(page.begin() + target_index.slot, view);
+
+  if (clear_overflow)
+    ClearOverflow();
+
+  if (clear_empty_pages)
+    ClearEmptyPages();
 }
 
 GridIndex PagedViewStructure::GetIndexFromModelIndex(int model_index) const {
@@ -318,6 +312,57 @@ bool PagedViewStructure::IsFullPage(int page_index) const {
     return false;
   return static_cast<int>(pages_[page_index].size()) ==
          apps_grid_view_->TilesPerPage(page_index);
+}
+
+bool PagedViewStructure::ClearOverflow() {
+  bool changed = false;
+  std::vector<AppListItemView*> overflow_views;
+  auto iter = pages_.begin();
+  while (iter != pages_.end() || !overflow_views.empty()) {
+    if (iter == pages_.end()) {
+      // Add additional page if overflowing item views remain.
+      pages_.emplace_back();
+      iter = pages_.end() - 1;
+      changed = true;
+    }
+
+    const size_t max_item_views =
+        apps_grid_view_->TilesPerPage(static_cast<int>(iter - pages_.begin()));
+    auto& page = *iter;
+
+    if (!overflow_views.empty()) {
+      // Put overflowing item views in current page.
+      page.insert(page.begin(), overflow_views.begin(), overflow_views.end());
+      overflow_views.clear();
+      changed = true;
+    }
+
+    if (page.size() > max_item_views) {
+      // Remove overflowing item views from current page.
+      overflow_views.insert(overflow_views.begin(),
+                            page.begin() + max_item_views, page.end());
+      page.erase(page.begin() + max_item_views, page.end());
+      changed = true;
+    }
+
+    ++iter;
+  }
+  return changed;
+}
+
+bool PagedViewStructure::ClearEmptyPages() {
+  bool changed = false;
+  auto iter = pages_.begin();
+  while (iter != pages_.end()) {
+    if (iter->empty()) {
+      // Remove empty page.
+      iter = pages_.erase(iter);
+      changed = true;
+    } else {
+      ++iter;
+    }
+  }
+  return changed;
 }
 
 }  // namespace app_list

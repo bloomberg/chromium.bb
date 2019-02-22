@@ -127,8 +127,8 @@ uint8_t GetOptionsMask(const dnr_api::Rule& parsed_rule) {
   if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW)
     mask |= flat_rule::OptionFlag_IS_WHITELIST;
   if (parsed_rule.condition.is_url_filter_case_sensitive &&
-      *parsed_rule.condition.is_url_filter_case_sensitive) {
-    mask |= flat_rule::OptionFlag_IS_MATCH_CASE;
+      !*parsed_rule.condition.is_url_filter_case_sensitive) {
+    mask |= flat_rule::OptionFlag_IS_CASE_INSENSITIVE;
   }
 
   switch (parsed_rule.condition.domain_type) {
@@ -332,6 +332,10 @@ ParseResult IndexedRule::CreateIndexedRule(
   // |url_pattern| fields.
   UrlFilterParser::Parse(std::move(parsed_rule->condition.url_filter),
                          indexed_rule);
+
+  // Lower-case case-insensitive patterns as required by url pattern index.
+  if (indexed_rule->options & flat_rule::OptionFlag_IS_CASE_INSENSITIVE)
+    indexed_rule->url_pattern = base::ToLowerASCII(indexed_rule->url_pattern);
 
   // Some sanity checks to ensure we return a valid IndexedRule.
   DCHECK_GE(indexed_rule->id, static_cast<uint32_t>(kMinValidID));

@@ -62,15 +62,28 @@ class SyncedBookmarkTracker {
     // Used in local deletions to mark and entity as a tommstone.
     void clear_bookmark_node() { bookmark_node_ = nullptr; }
 
-    const sync_pb::EntityMetadata* metadata() const { return metadata_.get(); }
-    sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
+    const sync_pb::EntityMetadata* metadata() const {
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(metadata_);
+      return metadata_.get();
+    }
+    sync_pb::EntityMetadata* metadata() {
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK(metadata_);
+      return metadata_.get();
+    }
+
+    // Returns the estimate of dynamically allocated memory in bytes.
+    size_t EstimateMemoryUsage() const;
 
    private:
     // Null for tombstones.
     const bookmarks::BookmarkNode* bookmark_node_;
 
     // Serializable Sync metadata.
-    std::unique_ptr<sync_pb::EntityMetadata> metadata_;
+    const std::unique_ptr<sync_pb::EntityMetadata> metadata_;
 
     DISALLOW_COPY_AND_ASSIGN(Entity);
   };
@@ -157,8 +170,18 @@ class SyncedBookmarkTracker {
   // Whether the tracker is empty or not.
   bool IsEmpty() const;
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
   // Returns number of tracked entities. Used only in test.
-  std::size_t TrackedEntitiesCountForTest() const;
+  size_t TrackedEntitiesCountForTest() const;
+
+  // Returns number of tracked bookmarks that aren't deleted.
+  size_t TrackedBookmarksCountForDebugging() const;
+
+  // Returns number of bookmarks that have been deleted but the server hasn't
+  // confirmed the deletion yet.
+  size_t TrackedUncommittedTombstonesCountForDebugging() const;
 
  private:
   // Reorders |entities| that represents local non-deletions such that parent

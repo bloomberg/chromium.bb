@@ -11,13 +11,14 @@
 #include "SkSurfaceCharacterization.h"
 
 #if SK_SUPPORT_GPU
-#include <map>
 #include "GrCCPerOpListPaths.h"
 #include "GrOpList.h"
+
+#include <map>
 #endif
 
+class SkDeferredDisplayListPriv;
 class SkSurface;
-
 /*
  * This class contains pre-processed gpu operations that can be replayed into
  * an SkSurface via draw(SkDeferredDisplayList*).
@@ -50,9 +51,14 @@ public:
         return fCharacterization;
     }
 
+    // Provides access to functions that aren't part of the public API.
+    SkDeferredDisplayListPriv priv();
+    const SkDeferredDisplayListPriv priv() const;
+
 private:
     friend class GrDrawingManager; // for access to 'fOpLists' and 'fLazyProxyData'
     friend class SkDeferredDisplayListRecorder; // for access to 'fLazyProxyData'
+    friend class SkDeferredDisplayListPriv;
 
     const SkSurfaceCharacterization fCharacterization;
 

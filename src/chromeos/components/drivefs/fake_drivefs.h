@@ -33,12 +33,15 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void SetMetadata(const base::FilePath& path,
                    const std::string& mime_type,
                    const std::string& original_name,
-                   bool pinned);
+                   bool pinned,
+                   bool shared,
+                   const mojom::Capabilities& capabilities);
 
   const base::FilePath& mount_path() { return mount_path_; }
 
  private:
   struct FileMetadata;
+  class SearchQuery;
 
   // drivefs::mojom::DriveFsBootstrap:
   void Init(drivefs::mojom::DriveFsConfigurationPtr config,
@@ -47,7 +50,6 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   // drivefs::mojom::DriveFs:
   void GetMetadata(const base::FilePath& path,
-                   bool want_thumbnail,
                    GetMetadataCallback callback) override;
 
   void SetPinned(const base::FilePath& path,
@@ -57,6 +59,18 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void UpdateNetworkState(bool pause_syncing, bool is_offline) override;
 
   void ResetCache(ResetCacheCallback callback) override;
+
+  void GetThumbnail(const base::FilePath& path,
+                    bool crop_to_square,
+                    GetThumbnailCallback callback) override;
+
+  void CopyFile(const base::FilePath& source,
+                const base::FilePath& target,
+                CopyFileCallback callback) override;
+
+  void StartSearchQuery(
+      drivefs::mojom::SearchQueryRequest query,
+      drivefs::mojom::QueryParametersPtr query_params) override;
 
   const base::FilePath mount_path_;
 

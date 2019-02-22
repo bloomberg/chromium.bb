@@ -20,9 +20,9 @@ class Variable final : public Longhand {
   bool IsInherited() const override { return true; }
   bool IsAffectedByAll() const override { return false; }
   CSSPropertyID PropertyID() const override { return CSSPropertyVariable; }
-  const char* GetPropertyName() const override { return "variable\0"; }
+  const char* GetPropertyName() const override { return "variable"; }
   const WTF::AtomicString& GetPropertyNameAtomicString() const override {
-    static const WTF::AtomicString& name = WTF::AtomicString("variable\0");
+    DEFINE_STATIC_LOCAL(const AtomicString, name, ("variable"));
     return name;
   }
   const CSSValue* CSSValueFromComputedStyleInternal(

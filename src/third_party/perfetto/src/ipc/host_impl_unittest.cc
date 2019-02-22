@@ -20,15 +20,16 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "perfetto/base/file_utils.h"
 #include "perfetto/base/scoped_file.h"
 #include "perfetto/base/temp_file.h"
+#include "perfetto/base/unix_socket.h"
 #include "perfetto/base/utils.h"
 #include "perfetto/ipc/service.h"
 #include "perfetto/ipc/service_descriptor.h"
 #include "src/base/test/test_task_runner.h"
 #include "src/ipc/buffered_frame_deserializer.h"
 #include "src/ipc/test/test_socket.h"
-#include "src/ipc/unix_socket.h"
 
 #include "src/ipc/test/client_unittest_messages.pb.h"
 #include "src/ipc/wire_protocol.pb.h"
@@ -78,7 +79,7 @@ class FakeService : public Service {
   ServiceDescriptor descriptor_;
 };
 
-class FakeClient : public UnixSocket::EventListener {
+class FakeClient : public base::UnixSocket::EventListener {
  public:
   MOCK_METHOD0(OnConnect, void());
   MOCK_METHOD0(OnDisconnect, void());
@@ -88,7 +89,7 @@ class FakeClient : public UnixSocket::EventListener {
   MOCK_METHOD0(OnRequestError, void());
 
   explicit FakeClient(base::TaskRunner* task_runner) {
-    sock_ = UnixSocket::Connect(kSockName, this, task_runner);
+    sock_ = base::UnixSocket::Connect(kSockName, this, task_runner);
   }
 
   ~FakeClient() override = default;
@@ -118,15 +119,15 @@ class FakeClient : public UnixSocket::EventListener {
     SendFrame(frame, fd);
   }
 
-  // UnixSocket::EventListener implementation.
-  void OnConnect(UnixSocket*, bool success) override {
+  // base::UnixSocket::EventListener implementation.
+  void OnConnect(base::UnixSocket*, bool success) override {
     ASSERT_TRUE(success);
     OnConnect();
   }
 
-  void OnDisconnect(UnixSocket*) override { OnDisconnect(); }
+  void OnDisconnect(base::UnixSocket*) override { OnDisconnect(); }
 
-  void OnDataAvailable(UnixSocket* sock) override {
+  void OnDataAvailable(base::UnixSocket* sock) override {
     ASSERT_EQ(sock_.get(), sock);
     auto buf = frame_deserializer_.BeginReceive();
     base::ScopedFile fd;
@@ -152,11 +153,12 @@ class FakeClient : public UnixSocket::EventListener {
 
   void SendFrame(const Frame& frame, int fd = -1) {
     std::string buf = BufferedFrameDeserializer::Serialize(frame);
-    ASSERT_TRUE(sock_->Send(buf.data(), buf.size(), fd));
+    ASSERT_TRUE(sock_->Send(buf.data(), buf.size(), fd,
+                            base::UnixSocket::BlockingMode::kBlocking));
   }
 
   BufferedFrameDeserializer frame_deserializer_;
-  std::unique_ptr<UnixSocket> sock_;
+  std::unique_ptr<base::UnixSocket> sock_;
   std::map<uint64_t /* request_id */, int /* num_replies_received */> requests_;
   ServiceID last_bound_service_id_;
 };
@@ -329,7 +331,8 @@ TEST_F(HostImplTest, SendFileDescriptor) {
   cli_->InvokeMethod(cli_->last_bound_service_id_, 1, req_args);
   auto on_reply_sent = task_runner_->CreateCheckpoint("on_reply_sent");
   base::TempFile tx_file = base::TempFile::CreateUnlinked();
-  base::ignore_result(write(tx_file.fd(), kFileContent, sizeof(kFileContent)));
+  ASSERT_EQ(base::WriteAll(tx_file.fd(), kFileContent, sizeof(kFileContent)),
+            sizeof(kFileContent));
   EXPECT_CALL(*fake_service, OnFakeMethod1(_, _))
       .WillOnce(Invoke([on_reply_sent, &tx_file](const RequestProto&,
                                                  DeferredBase* reply) {
@@ -369,7 +372,8 @@ TEST_F(HostImplTest, ReceiveFileDescriptor) {
   static constexpr char kFileContent[] = "shared file";
   RequestProto req_args;
   base::TempFile tx_file = base::TempFile::CreateUnlinked();
-  base::ignore_result(write(tx_file.fd(), kFileContent, sizeof(kFileContent)));
+  ASSERT_EQ(base::WriteAll(tx_file.fd(), kFileContent, sizeof(kFileContent)),
+            sizeof(kFileContent));
   cli_->InvokeMethod(cli_->last_bound_service_id_, 1, req_args, false,
                      tx_file.fd());
   EXPECT_CALL(*cli_, OnInvokeMethodReply(_));

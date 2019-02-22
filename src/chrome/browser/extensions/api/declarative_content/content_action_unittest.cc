@@ -61,10 +61,10 @@ class RequestContentScriptTest : public ExtensionServiceTestBase {
   }
 
   Profile* profile() { return profile_.get(); }
-  Extension* extension() { return extension_.get(); }
+  const Extension* extension() { return extension_.get(); }
 
  private:
-  scoped_refptr<Extension> extension_;
+  scoped_refptr<const Extension> extension_;
 };
 
 TEST(DeclarativeContentActionTest, InvalidCreation) {

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_METRICS_CALL_STACK_PROFILE_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_METRICS_PROVIDER_H_
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -21,11 +23,18 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   CallStackProfileMetricsProvider();
   ~CallStackProfileMetricsProvider() override;
 
-  // Will be invoked on either the main thread or the profiler's thread.
-  // Provides the profile to PendingProfiles to append, if the collecting state
-  // allows. |profile| is not const& because it must be passed with std::move.
-  static void ReceiveCompletedProfile(base::TimeTicks profile_start_time,
-                                      SampledProfile profile);
+  // Receives SampledProfile protobuf instances. May be called on any thread.
+  static void ReceiveProfile(base::TimeTicks profile_start_time,
+                             SampledProfile profile);
+
+  // Receives serialized SampledProfile protobuf instances. May be called on any
+  // thread.  Note that receiving serialized profiles is supported separately so
+  // that profiles received in serialized form can be kept in that form until
+  // upload. This significantly reduces memory costs. Serialized profile strings
+  // may be large, so the caller should use std::move() to provide them to this
+  // API rather than copying by value.
+  static void ReceiveSerializedProfile(base::TimeTicks profile_start_time,
+                                       std::string serialized_sampled_profile);
 
   // MetricsProvider:
   void OnRecordingEnabled() override;

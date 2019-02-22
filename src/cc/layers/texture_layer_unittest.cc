@@ -83,7 +83,7 @@ class MockLayerTreeHost : public LayerTreeHost {
     params.mutator_host = mutator_host;
     LayerTreeSettings settings;
     params.settings = &settings;
-    return base::WrapUnique(new MockLayerTreeHost(&params));
+    return base::WrapUnique(new MockLayerTreeHost(std::move(params)));
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
@@ -91,8 +91,8 @@ class MockLayerTreeHost : public LayerTreeHost {
   MOCK_METHOD0(StopRateLimiter, void());
 
  private:
-  explicit MockLayerTreeHost(LayerTreeHost::InitParams* params)
-      : LayerTreeHost(params, CompositorMode::SINGLE_THREADED) {
+  explicit MockLayerTreeHost(LayerTreeHost::InitParams params)
+      : LayerTreeHost(std::move(params), CompositorMode::SINGLE_THREADED) {
     InitializeSingleThreaded(&single_thread_client_,
                              base::ThreadTaskRunnerHandle::Get());
   }
@@ -248,8 +248,8 @@ TEST_F(TextureLayerTest, ShutdownWithResource) {
     LayerTreeSettings settings;
     params.settings = &settings;
     params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-    auto host =
-        LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+    auto host = LayerTreeHost::CreateSingleThreaded(&single_thread_client,
+                                                    std::move(params));
 
     client.SetLayerTreeHost(host.get());
     client.SetUseSoftwareCompositing(!gpu);
@@ -1664,7 +1664,8 @@ class SoftwareTextureLayerPurgeMemoryTest : public SoftwareTextureLayerTest {
     // Call OnPurgeMemory() to ensure that the same SharedBitmapId doesn't get
     // registered again on the next draw.
     if (step_ == 1)
-      static_cast<base::MemoryCoordinatorClient*>(host_impl)->OnPurgeMemory();
+      base::MemoryPressureListener::SimulatePressureNotification(
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   }
 
   void DisplayReceivedCompositorFrameOnThread(

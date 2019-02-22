@@ -15,7 +15,7 @@
 #include "components/offline_pages/core/model/store_thumbnail_task.h"
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/test_task_runner.h"
+#include "components/offline_pages/task/test_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

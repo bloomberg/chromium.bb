@@ -23,9 +23,6 @@ namespace {
 void UpdateBookmarkSpecificsMetaInfo(
     const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
     sync_pb::BookmarkSpecifics* bm_specifics) {
-  // TODO(crbug.com/516866): update the implementation to be similar to the
-  // directory implementation
-  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
   for (const std::pair<std::string, std::string>& pair : *metainfo_map) {
     sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
     meta_info->set_key(pair.first);
@@ -61,14 +58,21 @@ void SetBookmarkFaviconFromSpecifics(
       new base::RefCountedString());
   icon_bytes->data().assign(icon_bytes_str);
 
-  const GURL icon_url(specifics.icon_url());
+  GURL icon_url(specifics.icon_url());
 
-  if (icon_bytes->size() == 0) {
-    DCHECK(icon_url.is_empty());
+  if (icon_bytes->size() == 0 && icon_url.is_empty()) {
     // Empty icon URL and no bitmap data means no icon mapping.
     favicon_service->DeleteFaviconMappings({bookmark_node->url()},
                                            favicon_base::IconType::kFavicon);
     return;
+  }
+
+  if (icon_url.is_empty()) {
+    // WebUI pages such as "chrome://bookmarks/" are missing a favicon URL but
+    // they have a favicon. In addition, ancient clients (prior to M25) may not
+    // be syncing the favicon URL. If the icon URL is not synced, use the page
+    // URL as a fake icon URL as it is guaranteed to be unique.
+    icon_url = GURL(bookmark_node->url());
   }
 
   // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
@@ -85,13 +89,24 @@ void SetBookmarkFaviconFromSpecifics(
 
 sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
     const bookmarks::BookmarkNode* node,
-    bookmarks::BookmarkModel* model) {
+    bookmarks::BookmarkModel* model,
+    bool force_favicon_load) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
-  bm_specifics->set_url(node->url().spec());
+  if (!node->is_folder()) {
+    bm_specifics->set_url(node->url().spec());
+  }
   bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  if (node->GetMetaInfoMap()) {
+    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
+  }
+
+  if (!force_favicon_load && !node->is_favicon_loaded()) {
+    return specifics;
+  }
 
   // Encodes a bookmark's favicon into raw PNG data.
   scoped_refptr<base::RefCountedMemory> favicon_bytes(nullptr);
@@ -108,17 +123,14 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   }
 
   if (favicon_bytes.get() && favicon_bytes->size() != 0) {
-    DCHECK(!node->icon_url()->is_empty());
     bm_specifics->set_favicon(favicon_bytes->front(), favicon_bytes->size());
-    bm_specifics->set_icon_url(node->icon_url()->spec());
+    bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
+                                                : std::string());
   } else {
     bm_specifics->clear_favicon();
     bm_specifics->clear_icon_url();
   }
 
-  if (node->GetMetaInfoMap()) {
-    UpdateBookmarkSpecificsMetaInfo(node->GetMetaInfoMap(), bm_specifics);
-  }
   return specifics;
 }
 
@@ -184,9 +196,9 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
       DLOG(ERROR) << "Invalid bookmark: invalid url in the specifics.";
       return false;
     }
-    if (specifics.favicon().empty() != specifics.icon_url().empty()) {
-      DLOG(ERROR) << "Invalid bookmark: specifics can have neither or both of "
-                     "favicon and icon_url.";
+    if (specifics.favicon().empty() && !specifics.icon_url().empty()) {
+      DLOG(ERROR) << "Invalid bookmark: specifics cannot have an icon_url "
+                     "without having a favicon.";
       return false;
     }
     if (!specifics.icon_url().empty() &&

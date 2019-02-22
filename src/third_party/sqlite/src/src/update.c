@@ -523,7 +523,7 @@ void sqlite3Update(
       if( !isView && aiCurOnePass[0]!=iDataCur && aiCurOnePass[1]!=iDataCur ){
         assert( pPk );
         sqlite3VdbeAddOp4Int(v, OP_NotFound, iDataCur, labelBreak, regKey,nKey);
-        VdbeCoverageNeverTaken(v);
+        VdbeCoverage(v);
       }
       if( eOnePass!=ONEPASS_SINGLE ){
         labelContinue = sqlite3VdbeMakeLabel(v);
@@ -610,13 +610,7 @@ void sqlite3Update(
         */
         testcase( i==31 );
         testcase( i==32 );
-        sqlite3ExprCodeGetColumnToReg(pParse, pTab, i, iDataCur, regNew+i);
-        if( tmask & TRIGGER_BEFORE ){
-          /* This value will be recomputed in After-BEFORE-trigger-reload-loop
-          ** below, so make sure that it is not cached and reused.
-          ** Ticket d85fffd6ffe856092ed8daefa811b1e399706b28. */
-          sqlite3ExprCacheRemove(pParse, regNew+i, 1);
-        }
+        sqlite3ExprCodeGetColumnOfTable(v, pTab, iDataCur, i, regNew+i);
       }else{
         sqlite3VdbeAddOp2(v, OP_Null, 0, regNew+i);
       }
@@ -869,7 +863,7 @@ static void updateVirtualTable(
       sqlite3ExprCode(pParse, pChanges->a[aXRef[i]].pExpr, regArg+2+i);
     }else{
       sqlite3VdbeAddOp3(v, OP_VColumn, iCsr, i, regArg+2+i);
-      sqlite3VdbeChangeP5(v, 1); /* Enable sqlite3_vtab_nochange() */
+      sqlite3VdbeChangeP5(v, OPFLAG_NOCHNG);/* Enable sqlite3_vtab_nochange() */
     }
   }
   if( HasRowid(pTab) ){

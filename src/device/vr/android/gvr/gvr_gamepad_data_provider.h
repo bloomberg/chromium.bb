@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
-#define DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
+#ifndef DEVICE_VR_ANDROID_GVR_GVR_GAMEPAD_DATA_PROVIDER_H_
+#define DEVICE_VR_ANDROID_GVR_GVR_GAMEPAD_DATA_PROVIDER_H_
 
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -34,7 +34,7 @@ struct GvrGamepadData {
 };
 
 // This class exposes GVR controller data to the gamepad API. Data is
-// polled by VrShellGl, then pushed from VrShell which implements the
+// polled by GvrSchedulerDelegate, then pushed from VrShell which implements the
 // GvrGamepadDataProvider interface.
 //
 // More specifically, here's the lifecycle, assuming VrShell
@@ -73,4 +73,4 @@ class GvrGamepadDataProvider {
 };
 
 }  // namespace device
-#endif  // DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
+#endif  // DEVICE_VR_ANDROID_GVR_GVR_GAMEPAD_DATA_PROVIDER_H_

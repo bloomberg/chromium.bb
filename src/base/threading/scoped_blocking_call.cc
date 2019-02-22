@@ -5,6 +5,7 @@
 #include "base/threading/scoped_blocking_call.h"
 
 #include "base/lazy_instance.h"
+#include "base/scoped_clear_last_error.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 
@@ -43,6 +44,9 @@ UncheckedScopedBlockingCall::UncheckedScopedBlockingCall(
 }
 
 UncheckedScopedBlockingCall::~UncheckedScopedBlockingCall() {
+  // TLS affects result of GetLastError() on Windows. ScopedClearLastError
+  // prevents side effect.
+  base::internal::ScopedClearLastError save_last_error;
   DCHECK_EQ(this, tls_last_scoped_blocking_call.Get().Get());
   tls_last_scoped_blocking_call.Get().Set(previous_scoped_blocking_call_);
   if (blocking_observer_ && !previous_scoped_blocking_call_)

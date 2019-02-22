@@ -17,7 +17,6 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/user_metrics_action.h"
@@ -29,7 +28,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
@@ -71,9 +69,6 @@
 class SkBitmap;
 
 namespace blink {
-namespace scheduler {
-class WebThreadBase;
-}
 class WebMediaStreamCenter;
 }
 
@@ -164,7 +159,6 @@ class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
       public blink::scheduler::WebRAILModeObserver,
-      public base::MemoryCoordinatorClient,
       public mojom::Renderer,
       public viz::mojom::CompositingModeWatcher,
       public CompositorDependencies {
@@ -182,7 +176,8 @@ class CONTENT_EXPORT RenderThreadImpl
   static scoped_refptr<base::SingleThreadTaskRunner>
   DeprecatedGetMainTaskRunner();
 
-  explicit RenderThreadImpl(
+  RenderThreadImpl(
+      base::RepeatingClosure quit_closure,
       std::unique_ptr<blink::scheduler::WebThreadScheduler> scheduler);
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
@@ -212,15 +207,11 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   void RegisterExtension(v8::Extension* extension) override;
-  void ScheduleIdleHandler(int64_t initial_delay_ms) override;
-  void IdleHandler() override;
-  int64_t GetIdleNotificationDelayInMs() const override;
-  void SetIdleNotificationDelayInMs(
-      int64_t idle_notification_delay_in_ms) override;
   int PostTaskToAllWebWorkers(const base::Closure& closure) override;
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
   int32_t GetClientId() override;
+  bool IsOnline() override;
   void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) override;
   blink::WebString GetUserAgent() const override;
@@ -284,7 +275,8 @@ class CONTENT_EXPORT RenderThreadImpl
       LayerTreeFrameSinkCallback callback,
       mojom::RenderFrameMetadataObserverClientRequest
           render_frame_metadata_observer_client_request,
-      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr);
+      mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
+      const char* client_name);
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
@@ -319,6 +311,8 @@ class CONTENT_EXPORT RenderThreadImpl
     return blink_platform_impl_.get();
   }
 
+  // Returns the task runner on the compositor thread.
+  //
   // Will be null if threaded compositing has not been enabled.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner() const {
     return compositor_task_runner_;
@@ -403,11 +397,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // thread.
   scoped_refptr<viz::RasterContextProvider>
   SharedCompositorWorkerContextProvider();
-
-  // Causes the idle handler to skip sending idle notifications
-  // on the two next scheduled calls, so idle notifications are
-  // not sent for at least one notification delay.
-  void PostponeIdleNotification();
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
@@ -495,9 +484,6 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
-  // ChildMemoryCoordinatorDelegate implementation.
-  void OnTrimMemoryImmediately() override;
-
   struct RendererMemoryMetrics {
     size_t partition_alloc_kb;
     size_t blink_gc_kb;
@@ -529,10 +515,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void RecordComputedAction(const std::string& action) override;
 
   bool IsMainThread();
-
-  // base::MemoryCoordinatorClient implementation:
-  void OnMemoryStateChange(base::MemoryState state) override;
-  void OnPurgeMemory() override;
 
   void RecordPurgeMemory(RendererMemoryMetrics before);
 
@@ -649,29 +631,15 @@ class CONTENT_EXPORT RenderThreadImpl
   // The count of hidden RenderWidgets running through this thread.
   int hidden_widget_count_;
 
-  // The current value of the idle notification timer delay.
-  int64_t idle_notification_delay_in_ms_;
-
-  // The number of idle handler calls that skip sending idle notifications.
-  int idle_notifications_to_skip_;
-
-  bool webkit_shared_timer_suspended_;
-
   blink::WebString user_agent_;
 
   // Used to control layout test specific behavior.
   std::unique_ptr<LayoutTestDependencies> layout_test_deps_;
 
-  // Timer that periodically calls IdleHandler.
-  base::RepeatingTimer idle_timer_;
-
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be
   // software-based.
   bool is_gpu_compositing_disabled_ = false;
-
-  // May be null if overridden by ContentRendererClient.
-  std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
 
   // Utility class to provide GPU functionalities to media.
   // TODO(dcastagna): This should be just one scoped_ptr once
@@ -777,6 +745,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool needs_to_record_first_active_paint_;
   base::TimeTicks was_backgrounded_time_;
   int process_foregrounded_count_;
+  bool online_status_ = true;
 
   int32_t client_id_;
 

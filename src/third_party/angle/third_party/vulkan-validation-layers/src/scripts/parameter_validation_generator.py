@@ -559,7 +559,8 @@ class ParameterValidationOutputGenerator(OutputGenerator):
         elif 'FlagBits' in groupName:
             bits = []
             for elem in groupElem.findall('enum'):
-                bits.append(elem.get('name'))
+                if elem.get('supported') != 'disabled':
+                    bits.append(elem.get('name'))
             if bits:
                 self.flagBits[groupName] = bits
         else:
@@ -710,11 +711,13 @@ class ParameterValidationOutputGenerator(OutputGenerator):
         # Add underscore between lowercase then uppercase
         value = re.sub('([a-z0-9])([A-Z])', r'\1_\2', typename)
         value = value.replace('D3_D12', 'D3D12')
+        value = value.replace('ASTCDecode', 'ASTC_Decode')
         value = value.replace('Device_IDProp', 'Device_ID_Prop')
         value = value.replace('LODGather', 'LOD_Gather')
         value = value.replace('Features2', 'FEATURES_2')
         value = value.replace('e16_Bit', 'E_16BIT')
         value = value.replace('e8_Bit', 'E_8BIT')
+        value = value.replace('ASTCDecode', 'ASTC_Decode')
         # Change to uppercase
         value = value.upper()
         # Add STRUCTURE_TYPE_
@@ -1131,10 +1134,12 @@ class ParameterValidationOutputGenerator(OutputGenerator):
                         if lenParam.isoptional:
                             cvReq = 'false'
                 #
-                # The parameter will not be processes when tagged as 'noautovalidity'
+                # The parameter will not be processed when tagged as 'noautovalidity'
                 # For the pointer to struct case, the struct pointer will not be validated, but any
-                # members not tagged as 'noatuvalidity' will be validated
-                if value.noautovalidity:
+                # members not tagged as 'noautovalidity' will be validated
+                # We special-case the custom allocator checks, as they are explicit but can be auto-generated.
+                AllocatorFunctions = ['PFN_vkAllocationFunction', 'PFN_vkReallocationFunction', 'PFN_vkFreeFunction']
+                if value.noautovalidity and value.type not in AllocatorFunctions:
                     # Log a diagnostic message when validation cannot be automatically generated and must be implemented manually
                     self.logMsg('diag', 'ParameterValidation: No validation for {} {}'.format(structTypeName if structTypeName else funcName, value.name))
                 else:

@@ -16,9 +16,11 @@
 #include "GrMtlCaps.h"
 #include "GrMtlCopyManager.h"
 #include "GrMtlResourceProvider.h"
+#include "GrMtlStencilAttachment.h"
 
 #import <Metal/Metal.h>
 
+class GrMtlGpuRTCommandBuffer;
 class GrMtlTexture;
 class GrSemaphore;
 struct GrMtlBackendContext;
@@ -54,8 +56,8 @@ public:
 
 #ifdef GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
-                                                     GrPixelConfig config, bool isRT,
-                                                     GrMipMapped) override;
+                                                     GrColorType colorType, bool isRT,
+                                                     GrMipMapped, size_t rowBytes = 0) override;
 
     bool isTestingOnlyBackendTexture(const GrBackendTexture&) const override;
 
@@ -170,16 +172,13 @@ private:
 
     GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                 int width,
-                                                                int height) override {
-        return nullptr;
-    }
-
-    void clearStencil(GrRenderTarget* target, int clearValue) override  {}
+                                                                int height) override;
 
 #if GR_TEST_UTILS
-    bool createTestingOnlyMtlTextureInfo(GrPixelConfig config, int w, int h, bool texturable,
+    bool createTestingOnlyMtlTextureInfo(GrColorType colorType, int w, int h, bool texturable,
                                          bool renderable, GrMipMapped mipMapped,
-                                         const void* srcData, GrMtlTextureInfo* info);
+                                         const void* srcData, size_t rowBytes,
+                                         GrMtlTextureInfo* info);
 #endif
 
     sk_sp<GrMtlCaps> fMtlCaps;

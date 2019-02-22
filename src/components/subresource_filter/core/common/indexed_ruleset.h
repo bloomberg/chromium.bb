@@ -34,12 +34,13 @@ class FirstPartyOrigin;
 // Note: Logged to UMA, keep in sync with SubresourceFilterVerifyStatus in
 // enums.xml.  Add new entries to the end and do not renumber.
 enum class VerifyStatus {
-  kPass = 0,
+  kPassValidChecksum = 0,
   kChecksumFailVerifierPass = 1,
   kChecksumFailVerifierFail = 2,
   kVerifierFailChecksumPass = 3,
   kVerifierFailChecksumZero = 4,
-  kMaxValue = kVerifierFailChecksumZero,
+  kPassChecksumZero = 5,
+  kMaxValue = kPassChecksumZero
 };
 
 // The class used to construct flat data structures representing the set of URL

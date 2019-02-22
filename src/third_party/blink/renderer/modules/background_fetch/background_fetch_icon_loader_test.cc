@@ -64,7 +64,9 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
 
   // Callback for BackgroundFetchIconLoader. This will set up the state of the
   // load as either success or failed based on whether the bitmap is empty.
-  void IconLoaded(base::OnceClosure quit_closure, const SkBitmap& bitmap) {
+  void IconLoaded(base::OnceClosure quit_closure,
+                  const SkBitmap& bitmap,
+                  int64_t ideal_to_chosen_icon_size) {
     bitmap_ = bitmap;
 
     if (!bitmap_.isNull())
@@ -95,12 +97,14 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
 
   void LoadIcon(const KURL& url,
                 const WebSize& maximum_size,
-                base::OnceClosure quit_closure) {
+                base::OnceClosure quit_closure,
+                const String& sizes = "500x500",
+                const String& purpose = "ANY") {
     ManifestImageResource icon;
     icon.setSrc(url.GetString());
     icon.setType("image/png");
-    icon.setSizes("500x500");
-    icon.setPurpose("ANY");
+    icon.setSizes(sizes);
+    icon.setPurpose(purpose);
     HeapVector<ManifestImageResource> icons(1, icon);
     loader_->icons_ = std::move(icons);
     loader_->DidGetIconDisplaySizeIfSoLoadIcon(
@@ -179,6 +183,36 @@ TEST_F(BackgroundFetchIconLoaderTest, PickRightIcon) {
   // We expect the smallest Icon larger than the ideal display size.
   EXPECT_EQ(best_icon, KURL(KURL(kBackgroundFetchImageLoaderBaseUrl),
                             kBackgroundFetchImageLoaderIcon48x48));
+}
+
+TEST_F(BackgroundFetchIconLoaderTest, EmptySizes) {
+  base::RunLoop run_loop;
+
+  WebSize maximum_size{192, 168};
+  LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
+           run_loop.QuitClosure(), "", "ANY");
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+
+  run_loop.Run();
+
+  ASSERT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
+  ASSERT_FALSE(bitmap_.drawsNothing());
+}
+
+TEST_F(BackgroundFetchIconLoaderTest, EmptyPurpose) {
+  base::RunLoop run_loop;
+
+  WebSize maximum_size{192, 168};
+  LoadIcon(KURL(kBackgroundFetchImageLoaderIcon500x500FullPath), maximum_size,
+           run_loop.QuitClosure(), "500X500", "");
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+
+  run_loop.Run();
+
+  ASSERT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
+  ASSERT_FALSE(bitmap_.drawsNothing());
 }
 
 }  // namespace blink

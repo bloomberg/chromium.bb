@@ -36,6 +36,7 @@ static_library("test_support") {
   ]
 
   deps = [
+    ":ios",
     "//base",
     "//components/autofill/core/common",
     "//url",

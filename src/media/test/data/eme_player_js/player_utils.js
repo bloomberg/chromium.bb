@@ -104,7 +104,7 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         return Promise.all([
           getStatusForHdcpPolicy(mediaKeys, '', 'usable'),
           getStatusForHdcpPolicy(mediaKeys, 'hdcp-1.0', 'usable'),
-          getStatusForHdcpPolicy(mediaKeys, 'hdcp-2.2', 'output-restricted'),
+          getStatusForHdcpPolicy(mediaKeys, 'hdcp-2.3', 'output-restricted'),
         ]);
       }
 

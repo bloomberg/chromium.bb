@@ -41,8 +41,8 @@ WebWorkerFetchContextImpl::RewriteURLFunction g_rewrite_url = nullptr;
 
 namespace {
 
-// Runs on IO thread.
-void CreateSubresourceLoaderFactoryForWorker(
+// Runs on a background thread created in ResetServiceWorkerURLLoaderFactory().
+void CreateServiceWorkerSubresourceLoaderFactory(
     mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
@@ -201,7 +201,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorker() {
 
   mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    service_worker_container_host_->CloneForWorker(
+    service_worker_container_host_->CloneContainerHost(
         mojo::MakeRequest(&host_ptr_info));
   }
 
@@ -449,7 +449,7 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
 
   network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
   mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
-  service_worker_container_host_->CloneForWorker(
+  service_worker_container_host_->CloneContainerHost(
       mojo::MakeRequest(&host_ptr_info));
   // To avoid potential dead-lock while synchronous loading, create the
   // SubresourceLoaderFactory on a background thread.
@@ -458,8 +458,8 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &CreateSubresourceLoaderFactoryForWorker, std::move(host_ptr_info),
-          client_id_, fallback_factory_->Clone(),
+          &CreateServiceWorkerSubresourceLoaderFactory,
+          std::move(host_ptr_info), client_id_, fallback_factory_->Clone(),
           mojo::MakeRequest(&service_worker_url_loader_factory), task_runner));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));

@@ -10,8 +10,8 @@ import("//ppapi/buildflags/buildflags.gni")
 config("content_implementation") {
   defines = [ "CONTENT_IMPLEMENTATION" ]
   configs = [
-    "//build/config/compiler:wexit_time_destructors",
     "//build/config/compiler:noshadowing",
+    "//build/config/compiler:wexit_time_destructors",
   ]
 }
 

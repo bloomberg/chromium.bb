@@ -98,10 +98,10 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GpuPreferences default_prefs;
     mojom::GpuPreferences prefs_mojom;
 
-    // Make sure all feilds are included in mojo struct.
+    // Make sure all fields are included in mojo struct.
     // TODO(zmo): This test isn't perfect. If a field isn't included in
-    // mojom::GpuPreferences, but because of alignment, the two struct sizes
-    // could still be the same.
+    // mojom::GpuPreferences, the two struct sizes might still be equal due to
+    // alignment.
     EXPECT_EQ(sizeof(default_prefs), sizeof(prefs_mojom));
 
 #define GPU_PREFERENCES_FIELD(name, value)         \

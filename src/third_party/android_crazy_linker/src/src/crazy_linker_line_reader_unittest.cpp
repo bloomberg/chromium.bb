@@ -39,11 +39,6 @@ static ::testing::AssertionResult AssertMemEqual(const char* expr1,
   EXPECT_PRED_FORMAT4(AssertMemEqual, expected_str, expected_len, arg_str, \
                       arg_len)
 
-TEST(LineReader, EmptyConstructor) {
-  LineReader reader;
-  EXPECT_FALSE(reader.GetNextLine());
-}
-
 TEST(LineReader, EmptyFile) {
   SystemMock sys;
   sys.AddRegularFile(kFilePath, "", 0);

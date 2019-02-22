@@ -191,11 +191,6 @@ void ShaderProgramManager::deleteProgram(const gl::Context *context, GLuint prog
     deleteObject(context, &mPrograms, program);
 }
 
-Program *ShaderProgramManager::getProgram(GLuint handle) const
-{
-    return mPrograms.query(handle);
-}
-
 template <typename ObjectType>
 void ShaderProgramManager::deleteObject(const Context *context,
                                         ResourceMap<ObjectType> *objectMap,
@@ -240,12 +235,6 @@ void TextureManager::DeleteObject(const Context *context, Texture *texture)
 GLuint TextureManager::createTexture()
 {
     return AllocateEmptyObject(&mHandleAllocator, &mObjectMap);
-}
-
-Texture *TextureManager::getTexture(GLuint handle) const
-{
-    ASSERT(mObjectMap.query(0) == nullptr);
-    return mObjectMap.query(handle);
 }
 
 void TextureManager::signalAllTexturesDirty(const Context *context) const
@@ -351,8 +340,10 @@ PathManager::PathManager()
 {
 }
 
-ErrorOrResult<GLuint> PathManager::createPaths(rx::GLImplFactory *factory, GLsizei range)
+Error PathManager::createPaths(rx::GLImplFactory *factory, GLsizei range, GLuint *createdOut)
 {
+    *createdOut = 0;
+
     // Allocate client side handles.
     const GLuint client = mHandleAllocator.allocateRange(static_cast<GLuint>(range));
     if (client == HandleRangeAllocator::kInvalidHandle)
@@ -371,7 +362,8 @@ ErrorOrResult<GLuint> PathManager::createPaths(rx::GLImplFactory *factory, GLsiz
         const auto id   = client + i;
         mPaths.assign(id, new Path(impl));
     }
-    return client;
+    *createdOut = client;
+    return NoError();
 }
 
 void PathManager::deletePaths(GLuint first, GLsizei range)

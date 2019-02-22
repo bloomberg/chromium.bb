@@ -40,28 +40,22 @@ void ServiceWorkerRegistration::DispatchUpdateFoundEvent() {
   DispatchEvent(*Event::Create(EventTypeNames::updatefound));
 }
 
-void ServiceWorkerRegistration::SetInstalling(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetInstalling(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  installing_ = ServiceWorker::From(GetExecutionContext(),
-                                    base::WrapUnique(handle.release()));
+  installing_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
-void ServiceWorkerRegistration::SetWaiting(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetWaiting(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  waiting_ = ServiceWorker::From(GetExecutionContext(),
-                                 base::WrapUnique(handle.release()));
+  waiting_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
-void ServiceWorkerRegistration::SetActive(
-    std::unique_ptr<WebServiceWorker::Handle> handle) {
+void ServiceWorkerRegistration::SetActive(WebServiceWorkerObjectInfo info) {
   if (!GetExecutionContext())
     return;
-  active_ = ServiceWorker::From(GetExecutionContext(),
-                                base::WrapUnique(handle.release()));
+  active_ = ServiceWorker::From(GetExecutionContext(), std::move(info));
 }
 
 ServiceWorkerRegistration* ServiceWorkerRegistration::GetOrCreate(
@@ -103,16 +97,13 @@ String ServiceWorkerRegistration::updateViaCache() const {
 }
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider()) {
+  if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
                              "Failed to update a ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Update(
@@ -123,9 +114,7 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
 }
 
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(GetExecutionContext());
-  if (!client || !client->Provider()) {
+  if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(DOMExceptionCode::kInvalidStateError,
@@ -133,7 +122,6 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* script_state) {
                              "ServiceWorkerRegistration: No "
                              "associated provider is available."));
   }
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Unregister(

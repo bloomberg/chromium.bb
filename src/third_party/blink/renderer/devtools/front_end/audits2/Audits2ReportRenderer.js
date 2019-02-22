@@ -16,10 +16,11 @@ Audits2.ReportRenderer = class extends ReportRenderer {
 
     const defaultPassTrace = artifacts.traces.defaultPass;
     const timelineButton = UI.createTextButton(Common.UIString('View Trace'), onViewTraceClick, 'view-trace');
-    el.querySelector('.lh-metric-column').appendChild(timelineButton);
+    el.querySelector('.lh-column').appendChild(timelineButton);
     return el;
 
     async function onViewTraceClick() {
+      Host.userMetrics.actionTaken(Host.UserMetrics.Action.Audits2ViewTrace);
       await UI.inspectorView.showPanel('timeline');
       Timeline.TimelinePanel.instance().loadFromEvents(defaultPassTrace.traceEvents);
     }

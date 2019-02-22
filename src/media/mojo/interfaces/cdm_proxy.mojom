@@ -10,17 +10,18 @@ module media.mojom;
 // protocol dependent.
 // CdmProxy implementation is hosted in the GPU process.
 interface CdmProxy {
-  // See media/cdm/cdm_proxy.h.
+  // See media/cdm/cdm_proxy.h for the following native enums.
   [Native]
   enum Status;
 
-  // See media/cdm/cdm_proxy.h.
   [Native]
   enum Protocol;
 
-  // See media/cdm/cdm_proxy.h.
   [Native]
   enum Function;
+
+  [Native]
+  enum KeyType;
 
   // Initializes the proxy.
   // If the proxy created a crypto session, then the ID for the crypto session
@@ -58,12 +59,13 @@ interface CdmProxy {
   // |crypto_session_id| is the crypto session for decryption.
   // |key_id| is the ID of the key.
   // |key_blob| is the opaque key blob for decrypting or decoding.
-  SetKey(uint32 crypto_session_id, array<uint8> key_id, array<uint8> key_blob);
+  SetKey(uint32 crypto_session_id, array<uint8> key_id, KeyType key_type,
+         array<uint8> key_blob) => (Status status);
 
   // Removes a key from the proxy.
   // |crypto_session_id| is the crypto session for decryption.
   // |key_id| is the ID of the key.
-  RemoveKey(uint32 crypto_session_id, array<uint8> key_id);
+  RemoveKey(uint32 crypto_session_id, array<uint8> key_id) => (Status status);
 };
 
 // Client of CdmProxy.

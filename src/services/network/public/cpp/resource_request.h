@@ -70,6 +70,13 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // Additional HTTP request headers.
   net::HttpRequestHeaders headers;
 
+  // 'X-Requested-With' header value. Some consumers want to set this header,
+  // but such internal headers must be ignored by CORS checks (which run inside
+  // Network Service), so the value is stored here (rather than in |headers|)
+  // and later populated in the headers after CORS check.
+  // TODO(toyoshim): Remove it once PPAPI is deprecated.
+  std::string requested_with;
+
   // net::URLRequest load flags (0 by default).
   int load_flags = 0;
 
@@ -217,8 +224,38 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // HTTPS due to an Upgrade-Insecure-Requests requirement.
   bool upgrade_if_insecure = false;
 
+  // True when the request is revalidating.
+  // Some users, notably blink, has its own cache. This flag is set to exempt
+  // some CORS logic for a revalidating request.
+  bool is_revalidating = false;
+
   // The profile ID of network conditions to throttle the network request.
   base::Optional<base::UnguessableToken> throttling_profile_id;
+
+  // Headers that will be added pre and post cache if the network context uses
+  // the custom proxy for this request. The custom proxy is used for requests
+  // that match the custom proxy config, and would otherwise be made direct.
+  net::HttpRequestHeaders custom_proxy_pre_cache_headers;
+  net::HttpRequestHeaders custom_proxy_post_cache_headers;
+
+  // See https://fetch.spec.whatwg.org/#concept-request-window
+  //
+  // This is an opaque id of the original requestor of the resource, which might
+  // be different to the current requestor which is |render_frame_id|. For
+  // example, if a navigation for window "abc" is intercepted by a service
+  // worker, which re-issues the request via fetch, the re-issued request has
+  // |render_frame_id| of MSG_ROUTING_NONE (the service worker) and |window_id|
+  // of "abc". This is used for, e.g., client certificate selection. It's
+  // important that this id be unguessable so renderers cannot impersonate
+  // other renderers.
+  //
+  // This may be empty when the original requestor is the current requestor or
+  // is not a window. When it's empty, use |render_frame_id| instead. In
+  // practical terms, it's empty for requests that didn't go through a service
+  // worker, or if the original requestor is not a window. When the request
+  // goes through a service worker, the id is
+  // ServiceWorkerProviderHost::fetch_request_window_id.
+  base::Optional<base::UnguessableToken> fetch_window_id;
 };
 
 }  // namespace network

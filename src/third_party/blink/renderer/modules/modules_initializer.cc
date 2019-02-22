@@ -75,7 +75,7 @@
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
-#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
@@ -225,7 +225,7 @@ void ModulesInitializer::InitInspectorAgentSession(
   session->Append(new InspectorDOMStorageAgent(inspected_frames));
   if (allow_view_agents) {
     session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(new InspectorAccessibilityAgent(page, dom_agent));
+    session->Append(new InspectorAccessibilityAgent(inspected_frames, dom_agent));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
 }
@@ -274,7 +274,7 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   MediaKeysController::ProvideMediaKeysTo(page);
   ::blink::ProvideContextFeaturesTo(page, ContextFeaturesClientImpl::Create());
   ::blink::ProvideDatabaseClientTo(page, new DatabaseClient);
-  StorageNamespaceController::ProvideStorageNamespaceTo(page, client);
+  StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {

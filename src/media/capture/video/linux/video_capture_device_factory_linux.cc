@@ -9,12 +9,17 @@
 #include <stdint.h>
 #include <sys/ioctl.h>
 
+#include <algorithm>
+#include <utility>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "media/capture/video/linux/scoped_v4l2_device_fd.h"
+#include "media/capture/video/linux/video_capture_device_linux.h"
 
 #if defined(OS_OPENBSD)
 #include <sys/videoio.h>
@@ -26,9 +31,6 @@
 #include "media/capture/video/linux/camera_config_chromeos.h"
 #include "media/capture/video/linux/video_capture_device_chromeos.h"
 #endif
-
-#include "media/capture/video/linux/scoped_v4l2_device_fd.h"
-#include "media/capture/video/linux/video_capture_device_linux.h"
 
 namespace media {
 
@@ -140,8 +142,8 @@ class DevVideoFilePathsDeviceProvider
 
 VideoCaptureDeviceFactoryLinux::VideoCaptureDeviceFactoryLinux(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : v4l2_(new V4L2CaptureDeviceImpl()),
-      device_provider_(new DevVideoFilePathsDeviceProvider()),
+    : v4l2_(base::MakeRefCounted<V4L2CaptureDeviceImpl>()),
+      device_provider_(std::make_unique<DevVideoFilePathsDeviceProvider>()),
       ui_task_runner_(ui_task_runner) {}
 
 VideoCaptureDeviceFactoryLinux::~VideoCaptureDeviceFactoryLinux() = default;
@@ -164,14 +166,13 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
                                         device_descriptor.model_id),
       device_provider_->GetOrientation(device_descriptor.device_id,
                                        device_descriptor.model_id));
-  VideoCaptureDeviceChromeOS* self = new VideoCaptureDeviceChromeOS(
+  auto self = std::make_unique<VideoCaptureDeviceChromeOS>(
       camera_config, ui_task_runner_, v4l2_.get(), device_descriptor);
 #else
-  VideoCaptureDeviceLinux* self =
-      new VideoCaptureDeviceLinux(v4l2_.get(), device_descriptor);
+  auto self =
+      std::make_unique<VideoCaptureDeviceLinux>(v4l2_.get(), device_descriptor);
 #endif
-  if (!self)
-    return std::unique_ptr<VideoCaptureDevice>();
+
   // Test opening the device driver. This is to make sure it is available.
   // We will reopen it again in our worker thread when someone
   // allocates the camera.
@@ -180,11 +181,10 @@ VideoCaptureDeviceFactoryLinux::CreateDevice(
       HANDLE_EINTR(v4l2_->open(device_descriptor.device_id.c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
     DLOG(ERROR) << "Cannot open device";
-    delete self;
-    return std::unique_ptr<VideoCaptureDevice>();
+    return nullptr;
   }
 
-  return std::unique_ptr<VideoCaptureDevice>(self);
+  return self;
 }
 
 void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
@@ -205,7 +205,7 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
     // capabilities at the same time are memory-to-memory and are skipped, see
     // http://crbug.com/139356.
     v4l2_capability cap;
-    if ((HANDLE_EINTR(v4l2_->ioctl(fd.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
+    if ((DoIoctl(fd.get(), VIDIOC_QUERYCAP, &cap) == 0) &&
         (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) &&
         HasUsableFormats(fd.get(), cap.capabilities)) {
@@ -250,40 +250,40 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
   GetSupportedFormatsForV4L2BufferType(fd.get(), supported_formats);
 }
 
+int VideoCaptureDeviceFactoryLinux::DoIoctl(int fd, int request, void* argp) {
+  return HANDLE_EINTR(v4l2_->ioctl(fd, request, argp));
+}
+
 bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,
                                                       uint32_t capabilities) {
   if (!(capabilities & V4L2_CAP_VIDEO_CAPTURE))
     return false;
 
-  const std::list<uint32_t>& usable_fourccs =
+  const std::vector<uint32_t>& usable_fourccs =
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
   v4l2_fmtdesc fmtdesc = {};
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0;
-       ++fmtdesc.index) {
-    if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
-                  fmtdesc.pixelformat) != usable_fourccs.end()) {
+  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &fmtdesc) == 0; ++fmtdesc.index) {
+    if (base::ContainsValue(usable_fourccs, fmtdesc.pixelformat))
       return true;
-    }
   }
 
   DVLOG(1) << "No usable formats found";
   return false;
 }
 
-std::list<float> VideoCaptureDeviceFactoryLinux::GetFrameRateList(
+std::vector<float> VideoCaptureDeviceFactoryLinux::GetFrameRateList(
     int fd,
     uint32_t fourcc,
     uint32_t width,
     uint32_t height) {
-  std::list<float> frame_rates;
+  std::vector<float> frame_rates;
 
   v4l2_frmivalenum frame_interval = {};
   frame_interval.pixel_format = fourcc;
   frame_interval.width = width;
   frame_interval.height = height;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS,
-                                   &frame_interval)) == 0;
+  for (; DoIoctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0;
        ++frame_interval.index) {
     if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
       if (frame_interval.discrete.numerator != 0) {
@@ -310,8 +310,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
     VideoCaptureFormats* supported_formats) {
   v4l2_fmtdesc v4l2_format = {};
   v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; HANDLE_EINTR(v4l2_->ioctl(fd, VIDIOC_ENUM_FMT, &v4l2_format)) == 0;
-       ++v4l2_format.index) {
+  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &v4l2_format) == 0; ++v4l2_format.index) {
     VideoCaptureFormat supported_format;
     supported_format.pixel_format =
         VideoCaptureDeviceLinux::V4l2FourCcToChromiumPixelFormat(
@@ -322,8 +321,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
 
     v4l2_frmsizeenum frame_size = {};
     frame_size.pixel_format = v4l2_format.pixelformat;
-    for (; HANDLE_EINTR(
-               v4l2_->ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size)) == 0;
+    for (; DoIoctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0;
          ++frame_size.index) {
       if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
         supported_format.frame_size.SetSize(frame_size.discrete.width,
@@ -334,7 +332,7 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormatsForV4L2BufferType(
         NOTIMPLEMENTED_LOG_ONCE();
       }
 
-      const std::list<float> frame_rates = GetFrameRateList(
+      const std::vector<float> frame_rates = GetFrameRateList(
           fd, v4l2_format.pixelformat, frame_size.discrete.width,
           frame_size.discrete.height);
       for (const auto& frame_rate : frame_rates) {

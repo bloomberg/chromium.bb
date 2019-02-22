@@ -10,6 +10,22 @@
 namespace toolbar {
 namespace features {
 
+// Feature used to hide the scheme from steady state URLs displayed in the
+// toolbar. It is restored during editing.
+extern const base::Feature kHideSteadyStateUrlScheme;
+
+// Feature used to hide trivial subdomains from steady state URLs displayed in
+// the toolbar. It is restored during editing.
+extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
+
+// Returns true if either the steady-state elision flag for scheme or the
+// #upcoming-ui-features flag is enabled.
+bool IsHideSteadyStateUrlSchemeEnabled();
+
+// Returns true if either the steady-state elision flag for trivial
+// subdomains or the #upcoming-ui-features flag is enabled.
+bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
+
 // This feature simplifies the security indiciator UI for https:// pages. The
 // exact UI treatment is dependent on the parameter 'treatment' which can have
 // the following value:

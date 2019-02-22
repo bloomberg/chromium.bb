@@ -29,7 +29,17 @@ class TargetHandler : public DevToolsDomainHandler,
                       public Target::Backend,
                       public DevToolsAgentHostObserver {
  public:
-  TargetHandler(bool browser_only,
+  enum class AccessMode {
+    // Only setAutoAttach is supported. Any non-related target are not
+    // accessible.
+    kAutoAttachOnly,
+    // Standard mode of operation: both auto-attach and discovery.
+    kRegular,
+    // This mode also allows advanced method like Target.exposeDevToolsProtocol,
+    // which should not be exposed on a non-browser-wide connection.
+    kBrowser
+  };
+  TargetHandler(AccessMode access_mode,
                 const std::string& owner_target_id,
                 TargetRegistry* target_registry);
   ~TargetHandler() override;
@@ -115,7 +125,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::map<std::string, std::unique_ptr<Session>> attached_sessions_;
   std::map<DevToolsAgentHost*, Session*> auto_attached_sessions_;
   std::set<DevToolsAgentHost*> reported_hosts_;
-  bool browser_only_;
+  AccessMode access_mode_;
   std::string owner_target_id_;
   TargetRegistry* target_registry_;
   base::flat_set<Throttle*> throttles_;

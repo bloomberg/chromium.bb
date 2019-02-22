@@ -67,11 +67,11 @@ struct AllEnums
 
 // PackedEnumMap<E, T> is like an std::array<T, E::EnumCount> but is indexed with enum values. It
 // implements all of the std::array interface except with enum values instead of indices.
-template <typename E, typename T>
+template <typename E, typename T, size_t MaxSize = EnumSize<E>()>
 class PackedEnumMap
 {
     using UnderlyingType = typename std::underlying_type<E>::type;
-    using Storage        = std::array<T, EnumSize<E>()>;
+    using Storage        = std::array<T, MaxSize>;
 
   public:
     // types:
@@ -110,8 +110,18 @@ class PackedEnumMap
     constexpr bool empty() const noexcept { return mPrivateData.empty(); }
 
     // element access:
-    reference operator[](E n) { return mPrivateData[static_cast<UnderlyingType>(n)]; }
-    const_reference operator[](E n) const { return mPrivateData[static_cast<UnderlyingType>(n)]; }
+    reference operator[](E n)
+    {
+        ASSERT(static_cast<size_t>(n) < mPrivateData.size());
+        return mPrivateData[static_cast<UnderlyingType>(n)];
+    }
+
+    const_reference operator[](E n) const
+    {
+        ASSERT(static_cast<size_t>(n) < mPrivateData.size());
+        return mPrivateData[static_cast<UnderlyingType>(n)];
+    }
+
     const_reference at(E n) const { return mPrivateData.at(static_cast<UnderlyingType>(n)); }
     reference at(E n) { return mPrivateData.at(static_cast<UnderlyingType>(n)); }
 
@@ -186,6 +196,8 @@ template <typename T>
 using ShaderMap = angle::PackedEnumMap<ShaderType, T>;
 
 TextureType SamplerTypeToTextureType(GLenum samplerType);
+
+bool IsMultisampled(gl::TextureType type);
 
 }  // namespace gl
 

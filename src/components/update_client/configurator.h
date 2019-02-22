@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -82,9 +83,9 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   virtual std::string GetOSLongName() const = 0;
 
   // Parameters added to each url request. It can be empty if none are needed.
-  // The return string must be safe for insertion as an attribute in an
-  // XML element.
-  virtual std::string ExtraRequestParams() const = 0;
+  // Returns a map of name-value pairs that match ^[-_a-zA-Z0-9]$ regex.
+  virtual base::flat_map<std::string, std::string> ExtraRequestParams()
+      const = 0;
 
   // Provides a hint for the server to control the order in which multiple
   // download urls are returned. The hint may or may not be honored in the

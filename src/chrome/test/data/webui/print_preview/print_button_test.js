@@ -56,7 +56,7 @@ cr.define('print_button_test', function() {
         // preview is ready.
         if (printBeforePreviewReady) {
           const header = page.$$('print-preview-header');
-          const printButton = header.$$('.print');
+          const printButton = header.$$('.action-button');
           assertFalse(printButton.disabled);
           printButton.click();
         }

@@ -81,19 +81,13 @@ namespace sk_tool_utils {
     void write_pixels(SkSurface*, const SkBitmap&, int x, int y, SkColorType, SkAlphaType);
 
     /**
-     *  Returns true iff all of the pixels between the two images differ by <= the maxDiff value
-     *  per component.
+     *  Returns true iff all of the pixels between the two images are identical.
      *
      *  If the configs differ, return false.
-     *
-     *  If the colorType is half-float, then maxDiff is interpreted as 0..255 --> 0..1
      */
-    bool equal_pixels(const SkPixmap&, const SkPixmap&, unsigned maxDiff = 0,
-                      bool respectColorSpaces = false);
-    bool equal_pixels(const SkBitmap&, const SkBitmap&, unsigned maxDiff = 0,
-                      bool respectColorSpaces = false);
-    bool equal_pixels(const SkImage* a, const SkImage* b, unsigned maxDiff = 0,
-                      bool respectColorSpaces = false);
+    bool equal_pixels(const SkPixmap&, const SkPixmap&);
+    bool equal_pixels(const SkBitmap&, const SkBitmap&);
+    bool equal_pixels(const SkImage* a, const SkImage* b);
 
     /** Returns a newly created CheckerboardShader. */
     sk_sp<SkShader> create_checkerboard_shader(SkColor c1, SkColor c2, int size);
@@ -147,14 +141,6 @@ namespace sk_tool_utils {
     void create_tetra_normal_map(SkBitmap* bm, const SkIRect& dst);
 
     void make_big_path(SkPath& path);
-
-    // Return a blurred version of 'src'. This doesn't use a separable filter
-    // so it is slow!
-    SkBitmap slow_blur(const SkBitmap& src, float sigma);
-
-    SkRect compute_central_occluder(const SkRRect& rr);
-    SkRect compute_widest_occluder(const SkRRect& rr);
-    SkRect compute_tallest_occluder(const SkRRect& rr);
 
     // A helper object to test the topological sorting code (TopoSortBench.cpp & TopoSortTest.cpp)
     class TopoTestNode : public SkRefCnt {
@@ -242,12 +228,6 @@ namespace sk_tool_utils {
     inline bool EncodeImageToFile(const char* path, const T& src, SkEncodedImageFormat f, int q) {
         SkFILEWStream file(path);
         return file.isValid() && SkEncodeImage(&file, src, f, q);
-    }
-
-    template <typename T>
-    inline sk_sp<SkData> EncodeImageToData(const T& src, SkEncodedImageFormat f, int q) {
-        SkDynamicMemoryWStream buf;
-        return SkEncodeImage(&buf, src , f, q) ? buf.detachAsData() : nullptr;
     }
 
     bool copy_to(SkBitmap* dst, SkColorType dstCT, const SkBitmap& src);

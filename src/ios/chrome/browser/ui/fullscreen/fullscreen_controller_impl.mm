@@ -6,10 +6,7 @@
 
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcaster.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_mediator.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_system_notification_observer.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 
@@ -20,13 +17,12 @@
 FullscreenControllerImpl::FullscreenControllerImpl()
     : FullscreenController(),
       broadcaster_([[ChromeBroadcaster alloc] init]),
-      model_(std::make_unique<FullscreenModel>()),
-      mediator_(std::make_unique<FullscreenMediator>(this, model_.get())),
-      bridge_(
-          [[ChromeBroadcastOberverBridge alloc] initWithObserver:model_.get()]),
+      mediator_(this, &model_),
+      web_state_list_observer_(this, &model_, &mediator_),
+      bridge_([[ChromeBroadcastOberverBridge alloc] initWithObserver:&model_]),
       notification_observer_([[FullscreenSystemNotificationObserver alloc]
           initWithController:this
-                    mediator:mediator_.get()]) {
+                    mediator:&mediator_]) {
   DCHECK(broadcaster_);
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastScrollViewSize:)];
@@ -60,53 +56,55 @@ ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
 }
 
 void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
-  if (web_state_list_ == web_state_list)
-    return;
-  if (web_state_list_observer_)
-    web_state_list_observer_->Disconnect();
-  web_state_list_ = web_state_list;
-  web_state_list_observer_ =
-      web_state_list_
-          ? std::make_unique<FullscreenWebStateListObserver>(
-                this, model_.get(), web_state_list_, mediator_.get())
-          : nullptr;
+  web_state_list_observer_.SetWebStateList(web_state_list);
+}
+
+const WebStateList* FullscreenControllerImpl::GetWebStateList() const {
+  return web_state_list_observer_.GetWebStateList();
+}
+
+WebStateList* FullscreenControllerImpl::GetWebStateList() {
+  return web_state_list_observer_.GetWebStateList();
 }
 
 void FullscreenControllerImpl::AddObserver(
     FullscreenControllerObserver* observer) {
-  mediator_->AddObserver(observer);
+  mediator_.AddObserver(observer);
 }
 
 void FullscreenControllerImpl::RemoveObserver(
     FullscreenControllerObserver* observer) {
-  mediator_->RemoveObserver(observer);
+  mediator_.RemoveObserver(observer);
 }
 
 bool FullscreenControllerImpl::IsEnabled() const {
-  return model_->enabled();
+  return model_.enabled();
 }
 
 void FullscreenControllerImpl::IncrementDisabledCounter() {
-  model_->IncrementDisabledCounter();
+  model_.IncrementDisabledCounter();
 }
 
 void FullscreenControllerImpl::DecrementDisabledCounter() {
-  model_->DecrementDisabledCounter();
+  model_.DecrementDisabledCounter();
 }
 
 CGFloat FullscreenControllerImpl::GetProgress() const {
-  return model_->progress();
+  return model_.progress();
 }
 
-void FullscreenControllerImpl::ResetModel() {
-  mediator_->AnimateModelReset();
+void FullscreenControllerImpl::EnterFullscreen() {
+  mediator_.EnterFullscreen();
+}
+
+void FullscreenControllerImpl::ExitFullscreen() {
+  mediator_.ExitFullscreen();
 }
 
 void FullscreenControllerImpl::Shutdown() {
-  mediator_->Disconnect();
+  mediator_.Disconnect();
+  web_state_list_observer_.Disconnect();
   [notification_observer_ disconnect];
-  if (web_state_list_observer_)
-    web_state_list_observer_->Disconnect();
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastScrollViewSize:)];
   [broadcaster_ removeObserver:bridge_

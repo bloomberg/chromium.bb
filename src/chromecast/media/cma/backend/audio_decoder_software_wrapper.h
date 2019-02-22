@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 
@@ -44,7 +43,8 @@ class AudioDecoderSoftwareWrapper
   bool CreateSoftwareDecoder(const AudioConfig& config);
   void OnDecoderInitialized(bool success);
   void OnDecodedBuffer(CastAudioDecoder::Status status,
-                       const scoped_refptr<DecoderBufferBase>& decoded);
+                       const media::AudioConfig& config,
+                       scoped_refptr<DecoderBufferBase> decoded);
 
   // MediaPipelineBackend::Decoder::Delegate implementation:
   void OnPushBufferComplete(MediaPipelineBackend::BufferStatus status) override;
@@ -61,8 +61,6 @@ class AudioDecoderSoftwareWrapper
   AudioConfig output_config_;
   scoped_refptr<DecoderBufferBase> pending_pushed_buffer_;
   bool decoder_error_;
-
-  base::WeakPtrFactory<AudioDecoderSoftwareWrapper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderSoftwareWrapper);
 };

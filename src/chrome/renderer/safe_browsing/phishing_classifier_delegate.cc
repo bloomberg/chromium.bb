@@ -17,7 +17,6 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -27,7 +26,6 @@
 #include "third_party/blink/public/web/web_view.h"
 
 using content::DocumentState;
-using content::NavigationState;
 using content::RenderThread;
 
 namespace safe_browsing {
@@ -147,8 +145,8 @@ void PhishingClassifierDelegate::StartPhishingDetection(const GURL& url) {
 }
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // A new page is starting to load, so cancel classificaiton.
   //
@@ -158,16 +156,12 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   // be called again for the same-document navigation.  We need to be sure not
   // to swap out the page text while the term feature extractor is still
   // running.
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
-  NavigationState* navigation_state = document_state->navigation_state();
-  CancelPendingClassification(navigation_state->WasWithinSameDocument()
-                                  ? NAVIGATE_WITHIN_PAGE
-                                  : NAVIGATE_AWAY);
+  CancelPendingClassification(is_same_document_navigation ? NAVIGATE_WITHIN_PAGE
+                                                          : NAVIGATE_AWAY);
   if (frame->Parent())
     return;
 
-  last_main_frame_transition_ = navigation_state->GetTransitionType();
+  last_main_frame_transition_ = transition;
 }
 
 void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,

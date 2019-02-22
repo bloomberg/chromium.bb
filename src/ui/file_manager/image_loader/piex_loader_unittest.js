@@ -8,32 +8,37 @@ chrome.fileManagerPrivate = {
   }
 };
 
-var MockModule = cr.ui.define('div');
-MockModule.prototype = Object.create(HTMLDivElement.prototype);
-MockModule.prototype.constructor = MockModule;
+class MockModule extends HTMLDivElement {
+  constructor() {
+    super();
+    /** @type{?function()} */
+    this.onBeforeMessageCallback_ = null;
+    setTimeout(() => {
+      this.dispatchEvent(new Event('load', {bubbles: true}));
+    });
+  }
 
-MockModule.prototype.setBeforeMessageCallback = function(callback) {
-  this.onBeforeMessageCallback_ = callback;
-};
+  setBeforeMessageCallback(callback) {
+    this.onBeforeMessageCallback_ = callback;
+  }
 
-MockModule.prototype.decorate = function() {
-  this.onBeforeMessageCallback_ = null;
-  setTimeout(function() {
-    this.dispatchEvent(new Event('load', {bubbles: true}));
-  }.bind(this));
-};
+  postMessage(message) {
+    setTimeout(() => {
+      this.dispatchEvent(new Event('load', {bubbles: true}));
+      if (this.onBeforeMessageCallback_)
+        this.onBeforeMessageCallback_();
 
-MockModule.prototype.postMessage = function(message) {
-  setTimeout(function() {
-    this.dispatchEvent(new Event('load', {bubbles: true}));
-    if (this.onBeforeMessageCallback_)
-      this.onBeforeMessageCallback_();
+      let e = new Event('message', {bubbles: true});
+      // Cast to a MessageEvent to write to |data|. We can't use
+      // `new MessageEvent` since its |data| property is read-only.
+      /** @type{MessageEvent} */ (e)
+          .data = {id: message.id, thumbnail: 'thumbnail-data', orientation: 1};
+      this.dispatchEvent(e);
+    });
+  }
+}
 
-    var e = new CustomEvent('message', {bubbles: true});
-    e.data = {id: message.id, thumbnail: 'thumbnail-data', orientation: 1};
-    this.dispatchEvent(e);
-  }.bind(this));
-};
+customElements.define('mock-module', MockModule, {extends: 'div'});
 
 function testUnloadingAfterTimeout(callback) {
   var loadCount = 0;
@@ -70,7 +75,7 @@ function testUnloadingAfterTimeout(callback) {
               assertEquals('thumbnail-data', data.thumbnail);
               assertEquals(0, unloadCount);
               assertEquals(1, loadCount);
-              return loader.load('http://foobar/another.raw')
+              return loader.load('http://foobar/another.raw');
             })
             .then(function(data) {
               // The NaCl module is not unloaded, as the next request came
@@ -85,7 +90,7 @@ function testUnloadingAfterTimeout(callback) {
               // unload the NaCl module.
               loader.simulateIdleTimeoutPassedForTests();
               assertEquals(1, unloadCount);
-              return loader.load('http://foobar/chocolate.raw')
+              return loader.load('http://foobar/chocolate.raw');
             })
             .then(function(data) {
               // Following requests should reload the NaCl module.
@@ -97,4 +102,4 @@ function testUnloadingAfterTimeout(callback) {
         unloadPromise
       ]),
       callback);
-};
+}

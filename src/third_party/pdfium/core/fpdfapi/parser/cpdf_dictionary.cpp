@@ -20,6 +20,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/fx_stream.h"
 #include "third_party/base/logging.h"
+#include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
 CPDF_Dictionary::CPDF_Dictionary()
@@ -192,10 +193,6 @@ CFX_Matrix CPDF_Dictionary::GetMatrixFor(const ByteString& key) const {
 
 bool CPDF_Dictionary::KeyExist(const ByteString& key) const {
   return pdfium::ContainsKey(m_Map, key);
-}
-
-bool CPDF_Dictionary::IsSignatureDict() const {
-  return CPDF_CryptoHandler::IsSignatureDictionary(this);
 }
 
 CPDF_Object* CPDF_Dictionary::SetFor(const ByteString& key,

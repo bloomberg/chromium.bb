@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 
-component("network_service") {
+jumbo_component("network_service") {
   sources = [
     "cert_verifier_config_type_converter.cc",
     "cert_verifier_config_type_converter.h",
@@ -50,8 +51,10 @@ component("network_service") {
     "keepalive_statistics_recorder.h",
     "loader_util.cc",
     "loader_util.h",
-    "mojo_net_log.cc",
-    "mojo_net_log.h",
+    "net_log_capture_mode_type_converter.cc",
+    "net_log_capture_mode_type_converter.h",
+    "net_log_exporter.cc",
+    "net_log_exporter.h",
     "network_change_manager.cc",
     "network_change_manager.h",
     "network_context.cc",
@@ -66,6 +69,8 @@ component("network_service") {
     "network_service.h",
     "network_service_network_delegate.cc",
     "network_service_network_delegate.h",
+    "network_service_proxy_delegate.cc",
+    "network_service_proxy_delegate.h",
     "network_usage_accumulator.cc",
     "network_usage_accumulator.h",
     "p2p/socket.cc",
@@ -114,6 +119,8 @@ component("network_service") {
     "ssl_config_service_mojo.h",
     "ssl_config_type_converter.cc",
     "ssl_config_type_converter.h",
+    "tcp_bound_socket.cc",
+    "tcp_bound_socket.h",
     "tcp_connected_socket.cc",
     "tcp_connected_socket.h",
     "tcp_server_socket.cc",
@@ -134,6 +141,8 @@ component("network_service") {
     "throttling/throttling_upload_data_stream.h",
     "tls_client_socket.cc",
     "tls_client_socket.h",
+    "tls_socket_factory.cc",
+    "tls_socket_factory.h",
     "transitional_url_loader_factory_owner.cc",
     "transitional_url_loader_factory_owner.h",
     "udp_socket.cc",
@@ -161,6 +170,8 @@ component("network_service") {
     ]
   }
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
     "//components/certificate_transparency",
@@ -182,6 +193,7 @@ component("network_service") {
     "//services/service_manager/sandbox:sandbox",
     "//third_party/webrtc/media:rtc_media_base",
     "//third_party/webrtc/rtc_base",
+    "//third_party/webrtc/rtc_base:timeutils",
     "//third_party/webrtc_overrides",
     "//third_party/webrtc_overrides:init_webrtc",
     "//url",
@@ -205,17 +217,13 @@ component("network_service") {
     deps += [ "//sandbox/win:sandbox" ]
   }
 
-  # TODO(sdefresne): This depends on net's enable_net_mojo getting turned on for
-  # iOS, which depends on net_with_v8 as well. http://crbug.com/803149
-  if (!is_ios) {
-    sources += [
-      "proxy_resolver_factory_mojo.cc",
-      "proxy_resolver_factory_mojo.h",
-      "proxy_service_mojo.cc",
-      "proxy_service_mojo.h",
-    ]
-    deps += [ "//net/dns:mojo_service" ]
-  }
+  sources += [
+    "proxy_resolver_factory_mojo.cc",
+    "proxy_resolver_factory_mojo.h",
+    "proxy_service_mojo.cc",
+    "proxy_service_mojo.h",
+  ]
+  deps += [ "//net/dns:mojo_service" ]
 
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
@@ -244,7 +252,7 @@ source_set("tests") {
     "network_change_manager_unittest.cc",
     "network_context_unittest.cc",
     "network_quality_estimator_manager_unittest.cc",
-    "network_service_network_delegate_unittest.cc",
+    "network_service_proxy_delegate_unittest.cc",
     "network_service_unittest.cc",
     "network_usage_accumulator_unittest.cc",
     "p2p/socket_tcp_server_unittest.cc",
@@ -262,6 +270,7 @@ source_set("tests") {
     "session_cleanup_cookie_store_unittest.cc",
     "socket_data_pump_unittest.cc",
     "ssl_config_service_mojo_unittest.cc",
+    "tcp_bound_socket_unittest.cc",
     "tcp_socket_unittest.cc",
     "test/test_url_loader_factory_unittest.cc",
     "test_chunked_data_pipe_getter.cc",
@@ -311,7 +320,7 @@ source_set("tests") {
   ]
 }
 
-source_set("test_support") {
+jumbo_source_set("test_support") {
   testonly = true
 
   sources = [

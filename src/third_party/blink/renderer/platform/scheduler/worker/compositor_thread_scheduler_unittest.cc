@@ -76,7 +76,7 @@ void RunTestTask(std::string name, std::vector<std::string>* log) {
 TEST_F(CompositorThreadInputPriorityTest, HighestPriorityInput) {
   std::vector<std::string> run_order;
 
-  scheduler_->DefaultTaskQueue()->PostTask(
+  scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RunTestTask, "default", base::Unretained(&run_order)));
   scheduler_->InputTaskRunner()->PostTask(
@@ -102,7 +102,7 @@ class CompositorThreadNoInputPriorityTest
 TEST_F(CompositorThreadNoInputPriorityTest, InputNotPrioritized) {
   std::vector<std::string> run_order;
 
-  scheduler_->DefaultTaskQueue()->PostTask(
+  scheduler_->DefaultTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RunTestTask, "default", base::Unretained(&run_order)));
   scheduler_->InputTaskRunner()->PostTask(

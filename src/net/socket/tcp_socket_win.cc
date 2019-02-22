@@ -762,6 +762,10 @@ SocketDescriptor TCPSocketWin::ReleaseSocketDescriptorForTesting() {
   return socket_descriptor;
 }
 
+SocketDescriptor TCPSocketWin::SocketDescriptorForTesting() const {
+  return socket_;
+}
+
 int TCPSocketWin::AcceptInternal(std::unique_ptr<TCPSocketWin>* socket,
                                  IPEndPoint* address) {
   SockaddrStorage storage;

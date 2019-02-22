@@ -12,6 +12,8 @@ from __future__ import print_function
 
 import cStringIO
 import collections
+import errno
+import fnmatch
 import itertools
 import lddtree
 import magic
@@ -30,6 +32,7 @@ from chromite.lib import filetype
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import parseelf
+from chromite.lib import portage_util
 
 from chromite.cros.test import usergroup_baseline
 
@@ -71,6 +74,21 @@ def _GuessMimeType(magic_obj, file_name):
 
 class BlacklistTest(image_test_lib.ImageTestCase):
   """Verify that rootfs does not contain blacklisted items."""
+
+  BLACKLISTED_PACKAGES = (
+      'app-text/iso-codes',
+      'dev-java/icedtea',
+      'dev-java/icedtea6-bin',
+      'dev-lang/perl',
+      'dev-lang/python',
+      'media-sound/pulseaudio',
+      'x11-libs/libxklavier',
+  )
+
+  BLACKLISTED_FILES = (
+      '/usr/bin/perl',
+      '/usr/bin/python',
+  )
 
   def TestBlacklistedDirectories(self):
     dirs = [os.path.join(image_test_lib.ROOT_A, 'usr', 'share', 'locale')]
@@ -123,6 +141,22 @@ class BlacklistTest(image_test_lib.ImageTestCase):
 
     self.assertFalse(failures, '\n'.join(failures))
 
+  def TestBlacklistedPackages(self):
+    """Fail if any blacklisted packages are installed."""
+    for package in self.BLACKLISTED_PACKAGES:
+      self.assertFalse(
+          portage_util.PortageqHasVersion(package, root=image_test_lib.ROOT_A))
+
+  def TestBlacklistedFiles(self):
+    """Fail if any blacklisted files exist."""
+    for path in self.BLACKLISTED_FILES:
+      full_path = os.path.join(image_test_lib.ROOT_A, path.lstrip(os.sep))
+      # TODO(saklein) Convert ImageTestCase to extend cros_build_lib.unittest
+      # and change to an assertNotExists. Currently produces an error importing
+      # mox on at least some builders.
+      self.assertFalse(os.path.exists(full_path),
+                       'Path exists but should not: %s' % full_path)
+
   def TestValidInterpreter(self):
     """Fail if a script's interpreter is not found, or not executable.
 
@@ -154,7 +188,7 @@ class BlacklistTest(image_test_lib.ImageTestCase):
         # Absolute path to the interpreter.
         interp = os.path.join(image_test_lib.ROOT_A, interp.lstrip('/'))
         # Interpreter could be a symlink. Resolve it.
-        interp = osutils.ResolveSymlink(interp, image_test_lib.ROOT_A)
+        interp = osutils.ResolveSymlinkInRoot(interp, image_test_lib.ROOT_A)
         if not os.path.isfile(interp):
           failures.append('File %s uses non-existing interpreter %s.' %
                           (full_name, interp))
@@ -181,20 +215,13 @@ class LinkageTest(image_test_lib.ImageTestCase):
     )
 
   def _IsPackageMerged(self, package_name):
-    cmd = [
-        'portageq',
-        'has_version',
-        image_test_lib.ROOT_A,
-        package_name
-    ]
-    ret = cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                    combine_stdout_stderr=True,
-                                    extra_env={'ROOT': image_test_lib.ROOT_A})
-    if ret.returncode == 0:
+    has_version = portage_util.PortageqHasVersion(package_name,
+                                                  root=image_test_lib.ROOT_A)
+    if has_version:
       logging.info('Package is available: %s', package_name)
     else:
       logging.info('Package is not available: %s', package_name)
-    return ret.returncode == 0
+    return has_version
 
   def TestLinkage(self):
     """Find main executable binaries and check their linkage."""
@@ -606,7 +633,7 @@ class CroshTest(image_test_lib.ImageTestCase):
     # compromise of CrOS system security in verified mode.  It has happened.
     WHITELIST = {
         'dev.d': {'50-crosh.sh'},
-        'extra.d': {'30-cups.sh'},
+        'extra.d': set(),
         'removable.d': {'50-crosh.sh'},
     }
 
@@ -619,3 +646,86 @@ class CroshTest(image_test_lib.ImageTestCase):
       found_modules = set(os.listdir(mod_path))
       unknown_modules = found_modules - good_modules
       self.assertEqual(set(), unknown_modules)
+
+
+class SymlinkTest(image_test_lib.ImageTestCase):
+  """Verify symlinks in the rootfs."""
+
+  # These are an allow list only.  We don't require any of these to actually
+  # be symlinks.  But if they are, they have to point to these targets.
+  #
+  # The key is the symlink and the value is the symlink target.
+  # Both accept fnmatch style expressions (i.e. globs).
+  _ACCEPTABLE_LINKS = {
+      '/etc/localtime': '/var/lib/timezone/localtime',
+      '/etc/machine-id': '/var/lib/dbus/machine-id',
+      '/etc/mtab': '/proc/mounts',
+
+      # The kip board has a broken/dangling symlink.  Allow it until we can
+      # rewrite the code.  Or kip goes EOL.
+      '/lib/firmware/elan_i2c.bin': '/opt/google/touch/firmware/*',
+
+      # Some boards don't set this up properly.  It's not a big deal.
+      '/usr/libexec/editor': '/usr/bin/*',
+
+      # These are hacks to make dev images and `dev_install` work.  Normally
+      # /usr/local isn't mounted or populated, so it's not too big a deal to
+      # let these things always point there.
+      '/etc/env.d/*': '/usr/local/etc/env.d/*',
+      '/usr/bin/python*': '/usr/local/bin/python*',
+      '/usr/lib/portage': '/usr/local/lib/portage',
+      '/usr/lib/python-exec': '/usr/local/lib/python-exec',
+      '/usr/lib/debug': '/usr/local/usr/lib/debug',
+  }
+
+  @classmethod
+  def _SymlinkTargetAllowed(cls, source, target):
+    """See whether |source| points to an acceptable |target|."""
+    # Allow any /etc path to point to any /run path.
+    if source.startswith('/etc') and target.startswith('/run'):
+      return True
+
+    # Scan the allow list.
+    for allow_source, allow_target in cls._ACCEPTABLE_LINKS.items():
+      if (fnmatch.fnmatch(source, allow_source) and
+          fnmatch.fnmatch(target, allow_target)):
+        return True
+
+    # Reject everything else.
+    return False
+
+  def TestCheckSymlinkTargets(self):
+    """Make sure the targets of all symlinks are 'valid'."""
+    failures = []
+    for root, _, files in os.walk(image_test_lib.ROOT_A):
+      for name in files:
+        full_path = os.path.join(root, name)
+        try:
+          target = os.readlink(full_path)
+        except OSError as e:
+          # If it's not a symlink, ignore it.
+          if e.errno == errno.EINVAL:
+            continue
+          raise
+
+        # Ignore symlinks to just basenames.
+        if '/' not in target:
+          continue
+
+        # Resolve the link target relative to the rootfs.
+        resolved_target = osutils.ResolveSymlinkInRoot(full_path,
+                                                       image_test_lib.ROOT_A)
+        normed_target = os.path.normpath(resolved_target)
+
+        # If the target exists, it's fine.
+        if os.path.exists(normed_target):
+          continue
+
+        # Now check the allow list.
+        source = '/' + os.path.relpath(full_path, image_test_lib.ROOT_A)
+        if not self._SymlinkTargetAllowed(source, target):
+          failures.append((source, target))
+
+    for (source, target) in failures:
+      logging.error('Insecure symlink: %s -> %s', source, target)
+    self.assertEqual(0, len(failures))

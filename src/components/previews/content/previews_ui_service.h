@@ -20,6 +20,8 @@
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
+#include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 
 class GURL;
 
@@ -32,7 +34,8 @@ class PreviewsDeciderImpl;
 
 // A class to manage the UI portion of inter-thread communication between
 // previews/ objects. Created and used on the UI thread.
-class PreviewsUIService {
+class PreviewsUIService
+    : public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   PreviewsUIService(
       PreviewsDeciderImpl* previews_decider_impl,
@@ -41,8 +44,13 @@ class PreviewsUIService {
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
-  virtual ~PreviewsUIService();
+      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews,
+      network::NetworkQualityTracker* network_quality_tracker);
+  ~PreviewsUIService() override;
+
+  // network::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType type) override;
 
   // Sets |previews_decider_impl_| to |previews_decider_impl| to allow calls
   // from the UI thread to the IO thread. Virtualized in testing.
@@ -128,8 +136,12 @@ class PreviewsUIService {
   // return null.
   PreviewsLogger* previews_logger() const;
 
+  // When triggering previews, prevent long term black list rules.
+  void SetIgnoreLongTermBlackListForServerPreviews(
+      bool ignore_long_term_black_list_rules_allowed);
+
  private:
-  // The IO thread portion of the inter-thread communication for previews/.
+  // The IO thread portion of the inter-thread communication for previews.
   base::WeakPtr<previews::PreviewsDeciderImpl> previews_decider_impl_;
 
   base::ThreadChecker thread_checker_;
@@ -148,6 +160,14 @@ class PreviewsUIService {
   // A log object to keep track of events such as previews navigations,
   // blacklist actions, etc.
   std::unique_ptr<PreviewsLogger> logger_;
+
+  // Used to remove |this| from observing.
+  network::NetworkQualityTracker* network_quality_tracker_;
+
+  // The current EffectiveConnectionType estimate.
+  net::EffectiveConnectionType current_effective_connection_type_ =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
   base::WeakPtrFactory<PreviewsUIService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsUIService);

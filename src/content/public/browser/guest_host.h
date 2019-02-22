@@ -9,6 +9,8 @@
 
 namespace content {
 
+class WebContents;
+
 // A GuestHost is the content API for a guest WebContents.
 // Guests are top-level frames that can be embedded within other pages.
 // The content module manages routing of input events and compositing, but all

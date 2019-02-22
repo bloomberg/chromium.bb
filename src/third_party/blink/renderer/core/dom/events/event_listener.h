@@ -29,14 +29,19 @@
 
 namespace blink {
 
-class DOMWrapperWorld;
 class Event;
 class ExecutionContext;
 
 class CORE_EXPORT EventListener : public CustomWrappableAdapter {
  public:
   enum ListenerType {
+    // |kJSEventListenerType| corresponds to EventListener defined in standard:
+    // https://dom.spec.whatwg.org/#callbackdef-eventlistener
     kJSEventListenerType,
+    // |kJSEventHandlerType| corresponds to EventHandler defined in standard:
+    // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-attributes
+    kJSEventHandlerType,
+    // These are for C++ native callbacks.
     kImageEventListenerType,
     kCPPEventListenerType,
     kConditionEventListenerType,
@@ -46,23 +51,21 @@ class CORE_EXPORT EventListener : public CustomWrappableAdapter {
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
   virtual const String& Code() const { return g_empty_string; }
-  virtual bool WasCreatedFromMarkup() const { return false; }
+  virtual bool IsEventHandlerForContentAttribute() const { return false; }
   virtual bool BelongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }
-  virtual bool IsAttribute() const { return false; }
-
-  // Only DevTools is allowed to use this method.
-  // This method may return an empty handle.
-  virtual v8::Local<v8::Object> GetListenerObjectForInspector(
-      ExecutionContext* execution_context) {
-    return v8::Local<v8::Object>();
-  }
-
-  // Only DevTools is allowed to use this method.
-  virtual DOMWrapperWorld* GetWorldForInspector() const { return nullptr; }
+  virtual bool IsEventHandler() const { return false; }
 
   ListenerType GetType() const { return type_; }
+
+  // Returns true if this EventListener is implemented based on JS object.
+  bool IsJSBased() const {
+    return type_ == kJSEventListenerType || type_ == kJSEventHandlerType;
+  }
+
+  // Returns true if this EventListener is C++ native callback.
+  bool IsNativeBased() const { return !IsJSBased(); }
 
   const char* NameInHeapSnapshot() const override { return "EventListener"; }
 

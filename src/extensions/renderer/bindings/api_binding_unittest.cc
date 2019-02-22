@@ -26,7 +26,6 @@
 #include "gin/public/context_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -126,9 +125,10 @@ class APIBindingUnittest : public APIBindingTest {
   void SetUp() override {
     APIBindingTest::SetUp();
     request_handler_ = std::make_unique<APIRequestHandler>(
-        base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+        base::BindRepeating(&APIBindingUnittest::OnFunctionCall,
+                            base::Unretained(this)),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-        nullptr);
+        nullptr, base::BindRepeating(&GetTestUserActivationState));
   }
 
   void TearDown() override {
@@ -1211,12 +1211,13 @@ TEST_F(APIBindingUnittest, TestUserGestures) {
   ASSERT_FALSE(function.IsEmpty());
 
   v8::Local<v8::Value> argv[] = {binding_object};
+
   RunFunction(function, context, arraysize(argv), argv);
   ASSERT_TRUE(last_request());
   EXPECT_FALSE(last_request()->has_user_gesture);
   reset_last_request();
 
-  blink::WebScopedUserGesture user_gesture(nullptr);
+  ScopedTestUserActivation test_user_activation;
   RunFunction(function, context, arraysize(argv), argv);
   ASSERT_TRUE(last_request());
   EXPECT_TRUE(last_request()->has_user_gesture);

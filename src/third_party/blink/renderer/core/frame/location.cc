@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/url/dom_url_utils_read_only.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
@@ -121,8 +121,8 @@ void Location::setHref(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
                        const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
-                                     exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
+                                       exception_state);
   if (!exception_state.HadException()) {
     SetLocation(url, current_window, entered_window, &exception_state);
   }
@@ -224,8 +224,8 @@ void Location::assign(LocalDOMWindow* current_window,
     return;
   }
 
-  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
-                                     exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
+                                       exception_state);
   if (!exception_state.HadException()) {
     SetLocation(url, current_window, entered_window, &exception_state);
   }
@@ -235,8 +235,8 @@ void Location::replace(LocalDOMWindow* current_window,
                        LocalDOMWindow* entered_window,
                        const USVStringOrTrustedURL& stringOrUrl,
                        ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, current_window->document(),
-                                     exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, current_window->document(),
+                                       exception_state);
   if (!exception_state.HadException()) {
     SetLocation(url, current_window, entered_window, &exception_state,
                 SetLocationPolicy::kReplaceThisFrame);
@@ -304,10 +304,12 @@ void Location::SetLocation(const String& url,
     argv.push_back(completed_url);
     activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
-  dom_window_->GetFrame()->ScheduleNavigation(
-      *current_window->document(), completed_url,
-      set_location_policy == SetLocationPolicy::kReplaceThisFrame,
-      UserGestureStatus::kNone);
+  WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+  if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)
+    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+  dom_window_->GetFrame()->ScheduleNavigation(*current_window->document(),
+                                              completed_url, frame_load_type,
+                                              UserGestureStatus::kNone);
 }
 
 Document* Location::GetDocument() const {

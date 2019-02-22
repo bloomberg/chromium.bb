@@ -160,8 +160,9 @@ net::URLRequestContextGetter* FakeProfile::GetRequestContext() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* FakeProfile::GetRequestContextForExtensions() {
-  return nullptr;
+base::OnceCallback<net::CookieStore*()>
+FakeProfile::GetExtensionsCookieStoreGetter() {
+  return base::BindOnce([]() -> net::CookieStore* { return nullptr; });
 }
 
 bool FakeProfile::IsSameProfile(Profile* profile) {
@@ -182,10 +183,6 @@ void FakeProfile::ChangeAppLocale(
     const std::string& locale, AppLocaleChangedVia via) {}
 void FakeProfile::OnLogin() {}
 void FakeProfile::InitChromeOSPreferences() {}
-
-chrome_browser_net::Predictor* FakeProfile::GetNetworkPredictor() {
-  return nullptr;
-}
 
 GURL FakeProfile::GetHomePage() {
   return GURL();

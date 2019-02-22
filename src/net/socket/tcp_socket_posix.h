@@ -155,8 +155,17 @@ class NET_EXPORT TCPSocketPosix {
   // write, or accept operations should be pending.
   SocketDescriptor ReleaseSocketDescriptorForTesting();
 
+  // Exposes the underlying socket descriptor for testing its state. Does not
+  // release ownership of the descriptor.
+  SocketDescriptor SocketDescriptorForTesting() const;
+
   // Apply |tag| to this socket.
   void ApplySocketTag(const SocketTag& tag);
+
+  // May return nullptr.
+  SocketPerformanceWatcher* socket_performance_watcher() const {
+    return socket_performance_watcher_.get();
+  }
 
  private:
   // States that using a socket with TCP FastOpen can lead to.

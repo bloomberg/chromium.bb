@@ -38,6 +38,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -185,41 +186,15 @@ class SigninManager : public SigninManagerBase,
   // a new account).
   static void DisableOneClickSignIn(PrefService* prefs);
 
-  // Tells the SigninManager whether to prohibit signout for this profile.
-  // If |prohibit_signout| is true, then signout will be prohibited.
-  void ProhibitSignout(bool prohibit_signout);
-
-  // If true, signout is prohibited for this profile (calls to SignOut() are
-  // ignored).
-  bool IsSignoutProhibited() const;
-
  protected:
-  // Flag saying whether signing out is allowed.
-  bool prohibit_signout_;
-
   // The sign out process which is started by SigninClient::PreSignOut()
-  virtual void DoSignOut(signin_metrics::ProfileSignout signout_source_metric,
-                         signin_metrics::SignoutDelete signout_delete_metric,
-                         RemoveAccountsOption remove_option);
+  virtual void OnSignoutDecisionReached(
+      signin_metrics::ProfileSignout signout_source_metric,
+      signin_metrics::SignoutDelete signout_delete_metric,
+      RemoveAccountsOption remove_option,
+      SigninClient::SignoutDecision signout_decision);
 
  private:
-  // Interface that gives information on internal SigninManager operations. Only
-  // for use by IdentityManager during the conversion of the codebase to use
-  // //services/identity/public/cpp.
-  class DiagnosticsClient {
-   public:
-    // Sent just before GoogleSigninSucceeded() is fired on observers.
-    virtual void WillFireGoogleSigninSucceeded(
-        const AccountInfo& account_info) = 0;
-    // Sent just before GoogleSignedOut() is fired on observers.
-    virtual void WillFireGoogleSignedOut(const AccountInfo& account_info) = 0;
-  };
-
-  void set_diagnostics_client(DiagnosticsClient* diagnostics_client) {
-    DCHECK(!diagnostics_client_ || !diagnostics_client);
-    diagnostics_client_ = diagnostics_client;
-  }
-
   enum SigninType {
     SIGNIN_TYPE_NONE,
     SIGNIN_TYPE_WITH_REFRESH_TOKEN,
@@ -232,9 +207,6 @@ class SigninManager : public SigninManagerBase,
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ClearTransientSigninData);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorSuccess);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, ProvideSecondFactorFailure);
-
-  // If user was signed in, load tokens from DB if available.
-  void InitTokenService();
 
   // Called to setup the transient signin data during one of the
   // StartSigninXXX methods.  |type| indicates which of the methods is being
@@ -304,9 +276,6 @@ class SigninManager : public SigninManagerBase,
   // The SigninClient object associated with this object. Must outlive this
   // object.
   SigninClient* client_;
-
-  // The DiagnosticsClient object associated with this object. May be null.
-  DiagnosticsClient* diagnostics_client_;
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
   // outlive this object.

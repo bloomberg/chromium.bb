@@ -94,6 +94,8 @@ class BlobDataHandleTest : public testing::Test {
   }
 
   void SetUp() override {
+    Platform::SetMainThreadTaskRunnerForTesting();
+
     small_test_data_.resize(1024);
     medium_test_data_.resize(1024 * 32);
     large_test_data_.resize(1024 * 512);
@@ -125,6 +127,11 @@ class BlobDataHandleTest : public testing::Test {
     empty_blob_uuid_ = mock_blob_registry_.registrations[0].uuid;
     test_blob_uuid_ = mock_blob_registry_.registrations[1].uuid;
     mock_blob_registry_.registrations.clear();
+  }
+
+  void TearDown() override {
+    scoped_task_environment_.RunUntilIdle();
+    Platform::UnsetMainThreadTaskRunnerForTesting();
   }
 
   void TestCreateBlob(std::unique_ptr<BlobData> data,

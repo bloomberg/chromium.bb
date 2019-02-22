@@ -63,12 +63,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // The color of the focus ring. Currently only used on Linux.
   SkColor focus_ring_color;
 
-  // The color of different parts of the scrollbar. Currently only used on
-  // Linux.
-  SkColor thumb_active_color;
-  SkColor thumb_inactive_color;
-  SkColor track_color;
-
   // The colors used in selection text. Currently only used on Linux and Ash.
   SkColor active_selection_bg_color;
   SkColor active_selection_fg_color;

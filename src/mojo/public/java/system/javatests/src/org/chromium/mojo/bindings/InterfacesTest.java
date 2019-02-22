@@ -105,7 +105,7 @@ public class InterfacesTest {
      * Basic implementation of {@link Factory}.
      */
     public class MockFactoryImpl extends CapturingErrorHandler implements Factory {
-        private boolean mClosed = false;
+        private boolean mClosed;
 
         public boolean isClosed() {
             return mClosed;
@@ -156,7 +156,7 @@ public class InterfacesTest {
      * Implementation of DoStuffResponse that keeps track of if the response is called.
      */
     public static class DoStuffResponseImpl implements Factory.DoStuffResponse {
-        private boolean mResponseCalled = false;
+        private boolean mResponseCalled;
 
         public boolean wasResponseCalled() {
             return mResponseCalled;

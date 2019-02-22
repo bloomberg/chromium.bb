@@ -450,6 +450,11 @@
         "glCompressedCopyTextureCHROMIUM"
     ],
 
+    "GL_ANGLE_copy_texture_3D":[
+        "glCopyTexture3DANGLE",
+        "glCopySubTexture3DANGLE"
+    ],
+
     "GL_ANGLE_request_extension": [
         "glRequestExtensionANGLE"
     ],
@@ -528,6 +533,10 @@
 
     "GL_KHR_parallel_shader_compile": [
         "glMaxShaderCompilerThreadsKHR"
+    ],
+
+    "GL_OES_texture_storage_multisample_2d_array": [
+        "glTexStorage3DMultisampleOES"
     ],
 
     "GLES3 core": [
@@ -834,6 +843,10 @@
 
     "EGL_ANDROID_presentation_time": [
         "eglPresentationTimeANDROID"
+    ],
+
+    "EGL_ANDROID_blob_cache": [
+        "eglSetBlobCacheFuncsANDROID"
     ],
 
     "EGL_ANGLE_program_cache_control": [

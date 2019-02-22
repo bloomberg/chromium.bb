@@ -3,22 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=line-too-long
 """Generate LUCI Scheduler config file.
 
 This generates the LUCI Scheduler configuration file for ChromeOS builds based
 on the chromeos_config contents.
 
-To update the production config:
-  cd $REPO/manifest-internal
-  git checkout infra/config
-  $REPO/chromite/scripts/gen_luci_scheduler > luci-scheduler.cfg
-  git commit -a
-  git cl upload        (yes, really) (Say Yes to removing commit-msg hook)
-  repo abandon infra/config
+Changes to chromite/config/luci-scheduler.cfg will be autodeployed:
+  http://cros-goldeneye/chromeos/legoland/builderHistory?buildConfig=luci-scheduler-updater
 
-Limitations:
-  This script can only handle builds on the "master" branch.
+Notes:
+  Normal builds are scheduled based on the builder values for
+  'schedule' and 'triggered_gitiles' in config/chromeos_config.py.
+
+  Branched builds are scheduled based on the function
+  chromeos_config.BranchScheduleConfig()
 """
+# pylint: enable=line-too-long
 
 from __future__ import print_function
 
@@ -35,6 +36,9 @@ _CONFIG_HEADER = """# Defines buckets on luci-scheduler.appspot.com.
 # https://github.com/luci/luci-go/blob/master/scheduler/appengine/messages/config.proto
 
 # Generated with chromite/scripts/gen_luci_scheduler
+
+# Autodeployed with:
+# http://cros-goldeneye/chromeos/legoland/builderHistory?buildConfig=luci-scheduler-updater
 
 acl_sets {
   name: "default"
@@ -59,6 +63,30 @@ def genSchedulerJob(build_config):
   Returns:
     Multiline string to include in the luci scheduler configuration.
   """
+  if 'schedule_branch' in build_config:
+    branch = build_config.schedule_branch
+    job_name = '%s-%s' % (branch, build_config.name)
+  else:
+    branch = 'master'
+    job_name = build_config.name
+
+  tags = {
+      'cbb_branch': branch,
+      'cbb_config': build_config.name,
+      'cbb_display_label': build_config.display_label,
+      'cbb_workspace_branch': build_config.workspace_branch,
+      'cbb_goma_client_type': build_config.goma_client_type,
+  }
+
+  # Filter out tags with no value set.
+  tags = {k: v for k, v in tags.iteritems() if v}
+
+
+  tag_lines = ['    tags: "%s:%s"' % (k, tags[k])
+               for k in sorted(tags.keys())]
+  prop_lines = ['    properties: "%s:%s"' % (k, tags[k])
+                for k in sorted(tags.keys())]
+
   # TODO: Move --buildbot arg into recipe, and remove from here.
   template = """
 job {
@@ -69,30 +97,19 @@ job {
     server: "cr-buildbucket.appspot.com"
     bucket: "luci.chromeos.general"
     builder: "%(builder)s"
-    tags: "cbb_branch:%(branch)s"
-    tags: "cbb_display_label:%(display_label)s"
-    tags: "cbb_config:%(name)s"
-    properties: "cbb_branch:%(branch)s"
-    properties: "cbb_display_label:%(display_label)s"
-    properties: "cbb_config:%(name)s"
+%(tag_lines)s
+%(prop_lines)s
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
 """
-  if 'schedule_branch' in build_config:
-    branch = build_config.schedule_branch
-    job_name = '%s-%s' % (branch, build_config.name)
-  else:
-    branch = 'master'
-    job_name = build_config.name
 
   return template % {
       'job_name': job_name,
-      'name': build_config.name,
       'builder': build_config.luci_builder,
-      'branch': branch,
-      'display_label': build_config.display_label,
       'schedule': build_config.schedule,
+      'tag_lines': '\n'.join(tag_lines),
+      'prop_lines': '\n'.join(prop_lines),
   }
 
 

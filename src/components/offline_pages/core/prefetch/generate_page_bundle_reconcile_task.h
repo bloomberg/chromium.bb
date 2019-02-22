@@ -6,7 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_GENERATE_PAGE_BUNDLE_RECONCILE_TASK_H_
 
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 class PrefetchNetworkRequestFactory;

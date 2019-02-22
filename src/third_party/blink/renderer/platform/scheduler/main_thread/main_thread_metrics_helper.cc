@@ -195,7 +195,7 @@ base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
 
 void MainThreadMetricsHelper::RecordTaskMetrics(
     MainThreadTaskQueue* queue,
-    const base::sequence_manager::TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   if (ShouldDiscardTask(queue, task, task_timing))
     return;
@@ -270,7 +270,7 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
 
   per_queue_type_reporters_.overall.RecordTask(queue_type, duration);
 
-  TaskType task_type = static_cast<TaskType>(task.task_type());
+  TaskType task_type = static_cast<TaskType>(task.task_type);
   per_task_type_duration_reporter_.RecordTask(task_type, duration);
 
   if (main_thread_scheduler_->main_thread_only().renderer_backgrounded) {
@@ -452,12 +452,19 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
     input_handling_per_task_type_duration_reporter_.RecordTask(task_type,
                                                                duration);
   }
-  if (task_type == TaskType::kNetworkingWithURLLoaderAnnotation && queue &&
-      queue->net_request_priority()) {
+
+  if (task_type == TaskType::kNetworkingWithURLLoaderAnnotation && queue) {
+    if (queue->net_request_priority()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "RendererScheduler.ResourceLoadingTaskCountPerNetPriority",
+          queue->net_request_priority().value(),
+          net::RequestPriority::MAXIMUM_PRIORITY + 1);
+    }
+
     UMA_HISTOGRAM_ENUMERATION(
-        "RendererScheduler.ResourceLoadingTaskCountPerNetPriority",
-        queue->net_request_priority().value(),
-        net::RequestPriority::MAXIMUM_PRIORITY + 1);
+        "RendererScheduler.ResourceLoadingTaskCountPerPriority",
+        queue->GetQueuePriority(),
+        base::sequence_manager::TaskQueue::QueuePriority::kQueuePriorityCount);
   }
 }
 

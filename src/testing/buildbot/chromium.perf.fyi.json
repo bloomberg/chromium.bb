@@ -1,311 +1,4 @@
 {
-  "Android Go": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "-v",
-          "--browser=android-chromium",
-          "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=android_go_shard_map.json"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "O",
-              "device_os_flavor": "google",
-              "device_type": "gobo",
-              "os": "Android",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 21600,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 19,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      }
-    ]
-  },
-  "Android Nexus 5X Perf FYI": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=android-chromium",
-          "--test-shard-map-filename=android_nexus5x_fyi_4_shard_map.json"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_flavor": "google",
-              "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 3600,
-          "hard_timeout": 1080,
-          "ignore_task_failure": false,
-          "io_timeout": 360,
-          "shards": 4
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      }
-    ]
-  },
-  "Mojo Linux Perf": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--benchmarks=blink_perf.layout_ng",
-          "-v",
-          "--upload-results",
-          "--output-format=histograms",
-          "--browser=release"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "blink_perf.layout_ng",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build186-b7",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 14400,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "--benchmarks=loading.desktop.network_service,rendering.oopd.desktop",
-          "-v",
-          "--upload-results",
-          "--output-format=chartjson",
-          "--browser=release"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build186-b7",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 14400,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      }
-    ]
-  },
-  "OBBS Mac 10.12 Perf": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--gtest-benchmark-name",
-          "net_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "net_perftests",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "net_perftests",
-        "override_compile_targets": [
-          "net_perftests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "--gtest-benchmark-name",
-          "views_perftests",
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "views_perftests",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "views_perftests",
-        "override_compile_targets": [
-          "views_perftests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "-v",
-          "--browser=release",
-          "--upload-results",
-          "--run-ref-build",
-          "--test-shard-map-filename=mac1012_5_shard_map.json"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf-fyi"
-            }
-          ],
-          "expiration": 7200,
-          "hard_timeout": 25200,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 5,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      }
-    ]
-  },
   "One Buildbot Step Test Builder": {
     "isolated_scripts": [
       {
@@ -317,10 +10,6 @@
         ],
         "isolate_name": "load_library_perf_tests",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "load_library_perf_tests",
@@ -362,10 +51,6 @@
         ],
         "isolate_name": "telemetry_perf_tests_without_chrome",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "telemetry_perf_tests_without_chrome",
@@ -410,10 +95,6 @@
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_webview_test_suite",
@@ -448,6 +129,51 @@
       }
     ]
   },
+  "android-nexus5x-perf-fyi": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--browser=android-chromium",
+          "--test-shard-map-filename=android_nexus5x_fyi_4_shard_map.json"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_flavor": "google",
+              "device_type": "bullhead",
+              "os": "Android",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360,
+          "shards": 4
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android-pixel2-perf": {
     "isolated_scripts": [
       {
@@ -460,10 +186,6 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -510,10 +232,6 @@
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_webview_test_suite",
@@ -544,6 +262,72 @@
             "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "linux-perf-fyi": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--benchmarks=blink_perf.layout_ng,blink_perf.paint_layout_ng,loading.desktop_layout_ng",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--browser=release"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "blink_perf.layout_ng",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "id": "build186-b7",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 14400,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "--benchmarks=loading.desktop.network_service,rendering.oopd.desktop",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "id": "build186-b7",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 14400,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
         }
       }
     ]

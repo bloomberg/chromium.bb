@@ -73,12 +73,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   void set_custom_user_agent(const blink::WebString& custom_user_agent) {
     custom_user_agent_ = custom_user_agent;
   }
-  const blink::WebString& requested_with() const {
-    return requested_with_;
-  }
-  void set_requested_with(const blink::WebString& requested_with) {
-    requested_with_ = requested_with;
-  }
 
   // PlzNavigate: |navigation_response_override| is used to override certain
   // parameters of navigation requests.
@@ -173,7 +167,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   int service_worker_provider_id_;
   bool originated_from_service_worker_;
   blink::WebString custom_user_agent_;
-  blink::WebString requested_with_;
   std::unique_ptr<NavigationResponseOverrideParameters>
       navigation_response_override_;
   // TODO(arthursonzogni): Move most of the |navigation_response_override_|

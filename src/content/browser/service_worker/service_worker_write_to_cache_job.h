@@ -132,6 +132,10 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   // do the byte-for-byte check.
   bool ShouldByteForByteCheck() const;
 
+  // Returns true if this writer is writing the main script for the service
+  // worker.
+  bool IsMainScript() const;
+
   const ResourceType resource_type_;  // Differentiate main script and imports
   scoped_refptr<net::IOBuffer> io_buffer_;
   int io_buffer_bytes_;

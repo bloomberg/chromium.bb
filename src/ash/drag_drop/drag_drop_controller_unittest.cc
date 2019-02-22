@@ -290,13 +290,14 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
 
 class DragDropControllerTest : public AshTestBase {
  public:
-  DragDropControllerTest() : AshTestBase() {}
+  DragDropControllerTest() = default;
   ~DragDropControllerTest() override = default;
 
   void SetUp() override {
     AshTestBase::SetUp();
     drag_drop_controller_.reset(new TestDragDropController);
     drag_drop_controller_->set_should_block_during_drag_drop(false);
+    drag_drop_controller_->set_enabled(true);
     aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(),
                                     drag_drop_controller_.get());
   }
@@ -1152,6 +1153,26 @@ TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
 
     EXPECT_EQ(TestObserver::State::kDragEndedInvoked, observer.state());
   }
+
+  drag_drop_controller_->RemoveObserver(&observer);
+}
+
+TEST_F(DragDropControllerTest, SetEnabled) {
+  TestObserver observer;
+  drag_drop_controller_->AddObserver(&observer);
+
+  // Data for the drag.
+  ui::OSExchangeData data;
+  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  aura::Window* window = widget->GetNativeWindow();
+
+  // Cannot start a drag when the controller is disabled.
+  drag_drop_controller_->set_enabled(false);
+  drag_drop_controller_->StartDragAndDrop(
+      data, window->GetRootWindow(), window, gfx::Point(5, 5),
+      ui::DragDropTypes::DRAG_MOVE, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  EXPECT_EQ(TestObserver::State::kNotInvoked, observer.state());
 
   drag_drop_controller_->RemoveObserver(&observer);
 }

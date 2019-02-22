@@ -10,9 +10,10 @@ import com.google.android.libraries.feed.host.storage.CommitResult;
 import com.google.android.libraries.feed.host.storage.JournalMutation;
 import com.google.android.libraries.feed.host.storage.JournalStorage;
 
-import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.profiles.Profile;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,60 +22,21 @@ import java.util.List;
 public class FeedJournalStorage implements JournalStorage {
     private FeedJournalBridge mFeedJournalBridge;
 
-    private static class StorageCallback<T> implements Callback<T> {
-        private final Consumer<Result<T>> mConsumer;
-
-        public StorageCallback(Consumer<Result<T>> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(T data) {
-            // TODO(gangwu): Need to handle failure case.
-            mConsumer.accept(Result.success(data));
-        }
-    }
-
-    private static class ReadCallback implements Callback<String[]> {
-        private final Consumer < Result < List<byte[]>>> mConsumer;
-
-        public ReadCallback(Consumer < Result < List<byte[]>>> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(String[] entries) {
-            // TODO(gangwu): Need to handle failure case.
-            List<byte[]> journal = new ArrayList<byte[]>();
-            for (String entry : entries) {
-                journal.add(entry.getBytes());
-            }
-            mConsumer.accept(Result.success(journal));
-        }
-    }
-
-    private static class CommitCallback implements Callback<Boolean> {
-        private final Consumer<CommitResult> mConsumer;
-
-        CommitCallback(Consumer<CommitResult> consumer) {
-            mConsumer = consumer;
-        }
-
-        @Override
-        public void onResult(Boolean result) {
-            if (result) {
-                mConsumer.accept(CommitResult.SUCCESS);
-            } else {
-                mConsumer.accept(CommitResult.FAILURE);
-            }
-        }
-    }
-
     /**
      * Creates a {@link FeedJournalStorage} for storing journals for the current user.
      *
+     * @param profile {@link Profile} of the user we are rendering the Feed for.
+     */
+    public FeedJournalStorage(Profile profile) {
+        mFeedJournalBridge = new FeedJournalBridge(profile);
+    }
+
+    /**
+     * Creates a {@link FeedJournalStorage} for testing.
+     *
      * @param bridge {@link FeedJournalBridge} implementation can handle journal storage request.
      */
+    @VisibleForTesting
     public FeedJournalStorage(FeedJournalBridge bridge) {
         mFeedJournalBridge = bridge;
     }
@@ -89,30 +51,43 @@ public class FeedJournalStorage implements JournalStorage {
     @Override
     public void read(String journalName, Consumer < Result < List<byte[]>>> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.loadJournal(journalName, new ReadCallback(consumer));
+        mFeedJournalBridge.loadJournal(journalName, (byte[][] entries) -> {
+            List<byte[]> journal = Arrays.asList(entries);
+            consumer.accept(Result.success(journal));
+        }, (Void ignored) -> consumer.accept(Result.failure()));
     }
 
     @Override
     public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.commitJournalMutation(mutation, new CommitCallback(consumer));
+        mFeedJournalBridge.commitJournalMutation(mutation,
+                (Boolean result)
+                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
     }
 
     @Override
     public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.doesJournalExist(journalName, new StorageCallback<Boolean>(consumer));
+        mFeedJournalBridge.doesJournalExist(journalName,
+                (Boolean exist)
+                        -> consumer.accept(Result.success(exist)),
+                (Void ignored) -> consumer.accept(Result.failure()));
     }
 
     @Override
     public void getAllJournals(Consumer < Result < List<String>>> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.loadAllJournalKeys(new StorageCallback<List<String>>(consumer));
+        mFeedJournalBridge.loadAllJournalKeys(
+                (String[] data)
+                        -> consumer.accept(Result.success(Arrays.asList(data))),
+                (Void ignored) -> consumer.accept(Result.failure()));
     }
 
     @Override
     public void deleteAll(Consumer<CommitResult> consumer) {
         assert mFeedJournalBridge != null;
-        mFeedJournalBridge.deleteAllJournals(new CommitCallback(consumer));
+        mFeedJournalBridge.deleteAllJournals(
+                (Boolean result)
+                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
     }
 }

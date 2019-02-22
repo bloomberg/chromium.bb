@@ -5,16 +5,14 @@
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
@@ -22,6 +20,67 @@
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
+
+namespace {
+
+// Adjusts cull rect and paint chunk properties of the input ScopedPaintState
+// for ReplacedContentTransform if needed.
+class ScopedReplacedContentPaintState : public ScopedPaintState {
+ public:
+  ScopedReplacedContentPaintState(const ScopedPaintState& input,
+                                  const LayoutReplaced& replaced);
+};
+
+ScopedReplacedContentPaintState::ScopedReplacedContentPaintState(
+    const ScopedPaintState& input,
+    const LayoutReplaced& replaced)
+    : ScopedPaintState(input) {
+  if (!fragment_to_paint_)
+    return;
+
+  const auto* paint_properties = fragment_to_paint_->PaintProperties();
+  if (!paint_properties)
+    return;
+
+  PropertyTreeState new_properties =
+      input_paint_info_.context.GetPaintController()
+          .CurrentPaintChunkProperties();
+  bool property_changed = false;
+
+  const auto* content_transform = paint_properties->ReplacedContentTransform();
+  if (content_transform && replaced.IsSVGRoot()) {
+    new_properties.SetTransform(content_transform);
+    adjusted_paint_info_.emplace(input_paint_info_);
+    DCHECK(content_transform->Matrix().IsAffine());
+    adjusted_paint_info_->UpdateCullRect(
+        content_transform->Matrix().ToAffineTransform());
+    property_changed = true;
+  }
+
+  bool painter_implements_content_box_clip = replaced.IsLayoutImage();
+  if (paint_properties->OverflowClip() &&
+      (!painter_implements_content_box_clip ||
+       replaced.StyleRef().HasBorderRadius())) {
+    new_properties.SetClip(paint_properties->OverflowClip());
+    property_changed = true;
+  }
+
+  // Check filter for optimized image policy violation highlights, which
+  // may be applied locally.
+  if (paint_properties->Filter() &&
+      (!replaced.HasLayer() || !replaced.Layer()->IsSelfPaintingLayer())) {
+    new_properties.SetEffect(paint_properties->Filter());
+    property_changed = true;
+  }
+
+  if (property_changed) {
+    chunk_properties_.emplace(input_paint_info_.context.GetPaintController(),
+                              new_properties, replaced,
+                              input_paint_info_.DisplayItemTypeForClipping());
+  }
+}
+
+}  // anonymous namespace
 
 void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // TODO(crbug.com/797779): For now embedded contents don't know whether
@@ -35,12 +94,12 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
       cache_skipper.emplace(paint_info.context);
   }
 
-  PaintInfoWithOffset paint_info_with_offset(layout_replaced_, paint_info);
-  if (!ShouldPaint(paint_info_with_offset))
+  ScopedPaintState paint_state(layout_replaced_, paint_info);
+  if (!ShouldPaint(paint_state))
     return;
 
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
-  auto paint_offset = paint_info_with_offset.PaintOffset();
+  const auto& local_paint_info = paint_state.GetPaintInfo();
+  auto paint_offset = paint_state.PaintOffset();
   LayoutRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintSelfBlockBackground(local_paint_info.phase)) {
@@ -79,58 +138,20 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
     return;
 
   if (local_paint_info.phase == PaintPhase::kSelection &&
-      layout_replaced_.GetSelectionState() == SelectionState::kNone)
+      !layout_replaced_.IsSelected())
     return;
 
   bool skip_clip = layout_replaced_.IsSVGRoot() &&
                    !ToLayoutSVGRoot(layout_replaced_).ShouldApplyViewportClip();
   if (skip_clip || !layout_replaced_.PhysicalContentBoxRect().IsEmpty()) {
-    PaintInfo transformed_paint_info = local_paint_info;
-    base::Optional<ScopedPaintChunkProperties> chunk_properties;
-    if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {
-      if (const auto* paint_properties = fragment->PaintProperties()) {
-        PropertyTreeState new_properties =
-            local_paint_info.context.GetPaintController()
-                .CurrentPaintChunkProperties();
-        bool property_changed = false;
-        if (paint_properties->ReplacedContentTransform() &&
-            layout_replaced_.IsSVGRoot()) {
-          new_properties.SetTransform(
-              paint_properties->ReplacedContentTransform());
-          DCHECK(paint_properties->ReplacedContentTransform()
-                     ->Matrix()
-                     .IsAffine());
-          transformed_paint_info.UpdateCullRect(
-              paint_properties->ReplacedContentTransform()
-                  ->Matrix()
-                  .ToAffineTransform());
-          property_changed = true;
-        }
-        bool painter_implements_content_box_clip =
-            layout_replaced_.IsLayoutImage();
-        if (paint_properties->OverflowClip() &&
-            (!painter_implements_content_box_clip ||
-             layout_replaced_.StyleRef().HasBorderRadius())) {
-          new_properties.SetClip(paint_properties->OverflowClip());
-          property_changed = true;
-        }
-        // Check filter for optimized image policy violation highlights, which
-        // may be applied locally.
-        if (paint_properties->Filter() &&
-            (!layout_replaced_.HasLayer() ||
-             !layout_replaced_.Layer()->IsSelfPaintingLayer())) {
-          new_properties.SetEffect(paint_properties->Filter());
-          property_changed = true;
-        }
-        if (property_changed) {
-          chunk_properties.emplace(
-              local_paint_info.context.GetPaintController(), new_properties,
-              layout_replaced_, paint_info.DisplayItemTypeForClipping());
-        }
-      }
+    ScopedReplacedContentPaintState content_paint_state(paint_state,
+                                                        layout_replaced_);
+    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+      RecordHitTestData(content_paint_state.GetPaintInfo(),
+                        content_paint_state.PaintOffset());
     }
-
-    layout_replaced_.PaintReplaced(transformed_paint_info, paint_offset);
+    layout_replaced_.PaintReplaced(content_paint_state.GetPaintInfo(),
+                                   content_paint_state.PaintOffset());
   }
 
   if (layout_replaced_.CanResize()) {
@@ -143,7 +164,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   // want it to run right up to the edges of surrounding content.
   bool draw_selection_tint =
       local_paint_info.phase == PaintPhase::kForeground &&
-      IsSelected(layout_replaced_.GetSelectionState()) &&
+      layout_replaced_.IsSelected() && layout_replaced_.CanBeSelectionLeaf() &&
       !local_paint_info.IsPrinting();
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,
@@ -163,9 +184,28 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   }
 }
 
-bool ReplacedPainter::ShouldPaint(
-    const PaintInfoWithOffset& paint_info_with_offset) const {
-  const auto& paint_info = paint_info_with_offset.GetPaintInfo();
+void ReplacedPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                        const LayoutPoint& paint_offset) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  if (paint_info.phase != PaintPhase::kForeground)
+    return;
+
+  auto touch_action = layout_replaced_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = layout_replaced_.VisualOverflowRect();
+  rect.MoveBy(paint_offset);
+  HitTestData::RecordHitTestRect(paint_info.context, layout_replaced_,
+                                 HitTestRect(rect, touch_action));
+}
+
+bool ReplacedPainter::ShouldPaint(const ScopedPaintState& paint_state) const {
+  const auto& paint_info = paint_state.GetPaintInfo();
   if (paint_info.phase != PaintPhase::kForeground &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
       paint_info.phase != PaintPhase::kSelection &&
@@ -186,7 +226,7 @@ bool ReplacedPainter::ShouldPaint(
   LayoutRect local_rect(layout_replaced_.VisualOverflowRect());
   local_rect.Unite(layout_replaced_.LocalSelectionRect());
   layout_replaced_.FlipForWritingMode(local_rect);
-  if (!paint_info_with_offset.LocalRectIntersectsCullRect(local_rect))
+  if (!paint_state.LocalRectIntersectsCullRect(local_rect))
     return false;
 
   return true;

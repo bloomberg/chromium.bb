@@ -67,22 +67,21 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                                     RawResourceClient*);
 
   // Exposed for testing
-  static RawResource* CreateForTest(ResourceRequest request, Type type) {
+  static RawResource* CreateForTest(ResourceRequest request,
+                                    ResourceType type) {
     ResourceLoaderOptions options;
     return new RawResource(request, type, options);
   }
-  static RawResource* CreateForTest(const KURL& url, Type type) {
+  static RawResource* CreateForTest(const KURL& url,
+                                    scoped_refptr<const SecurityOrigin> origin,
+                                    ResourceType type) {
     ResourceRequest request(url);
+    request.SetRequestorOrigin(std::move(origin));
     return CreateForTest(request, type);
-  }
-  static RawResource* CreateForTest(const char* url, Type type) {
-    return CreateForTest(KURL(url), type);
   }
 
   // Resource implementation
-  MatchStatus CanReuse(
-      const FetchParameters&,
-      scoped_refptr<const SecurityOrigin> new_source_origin) const override;
+  MatchStatus CanReuse(const FetchParameters&) const override;
   bool WillFollowRedirect(const ResourceRequest&,
                           const ResourceResponse&) override;
 
@@ -110,7 +109,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
  private:
   class RawResourceFactory : public NonTextResourceFactory {
    public:
-    explicit RawResourceFactory(Resource::Type type)
+    explicit RawResourceFactory(ResourceType type)
         : NonTextResourceFactory(type) {}
 
     Resource* Create(const ResourceRequest& request,
@@ -119,7 +118,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
     }
   };
 
-  RawResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
+  RawResource(const ResourceRequest&,
+              ResourceType,
+              const ResourceLoaderOptions&);
 
   // Resource implementation
   void DidAddClient(ResourceClient*) override;
@@ -148,11 +149,11 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
 // RawResources to MemoryCache.
-inline bool IsRawResource(Resource::Type type) {
-  return type == Resource::kMainResource || type == Resource::kRaw ||
-         type == Resource::kTextTrack || type == Resource::kAudio ||
-         type == Resource::kVideo || type == Resource::kManifest ||
-         type == Resource::kImportResource;
+inline bool IsRawResource(ResourceType type) {
+  return type == ResourceType::kMainResource || type == ResourceType::kRaw ||
+         type == ResourceType::kTextTrack || type == ResourceType::kAudio ||
+         type == ResourceType::kVideo || type == ResourceType::kManifest ||
+         type == ResourceType::kImportResource;
 }
 inline bool IsRawResource(const Resource& resource) {
   return IsRawResource(resource.GetType());
@@ -164,12 +165,7 @@ inline RawResource* ToRawResource(Resource* resource) {
 
 class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
  public:
-  static bool IsExpectedType(ResourceClient* client) {
-    return client->GetResourceClientType() == kRawResourceType;
-  }
-  ResourceClientType GetResourceClientType() const final {
-    return kRawResourceType;
-  }
+  bool IsRawResourceClient() const final { return true; }
 
   // The order of the callbacks is as follows:
   // [Case 1] A successful load:

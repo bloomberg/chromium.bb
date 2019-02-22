@@ -24,6 +24,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -119,6 +120,11 @@ void GuestViewInternalCustomBindings::AddRoutes() {
       "RunWithGesture",
       base::Bind(&GuestViewInternalCustomBindings::RunWithGesture,
                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "AllowGuestViewElementDefinition",
+      base::BindRepeating(
+          &GuestViewInternalCustomBindings::AllowGuestViewElementDefinition,
+          base::Unretained(this)));
 }
 
 // static
@@ -457,6 +463,15 @@ void GuestViewInternalCustomBindings::RunWithGesture(
   CHECK(args[0]->IsFunction());
   context()->SafeCallFunction(
       v8::Local<v8::Function>::Cast(args[0]), 0, nullptr);
+}
+
+void GuestViewInternalCustomBindings::AllowGuestViewElementDefinition(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  blink::WebCustomElement::EmbedderNamesAllowedScope embedder_names_scope;
+  CHECK_EQ(args.Length(), 1);
+  CHECK(args[0]->IsFunction());
+  context()->SafeCallFunction(v8::Local<v8::Function>::Cast(args[0]), 0,
+                              nullptr);
 }
 
 }  // namespace extensions

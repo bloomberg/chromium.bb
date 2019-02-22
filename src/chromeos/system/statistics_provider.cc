@@ -177,6 +177,7 @@ bool GetInitialLocaleFromRegionalData(const base::DictionaryValue* region_dict,
 
 // Key values for GetMachineStatistic()/GetMachineFlag() calls.
 const char kActivateDateKey[] = "ActivateDate";
+const char kBlockDevModeKey[] = "block_devmode";
 const char kCheckEnrollmentKey[] = "check_enrollment";
 const char kShouldSendRlzPingKey[] = "should_send_rlz_ping";
 const char kShouldSendRlzPingValueFalse[] = "0";
@@ -186,6 +187,9 @@ const char kCustomizationIdKey[] = "customization_id";
 const char kDevSwitchBootKey[] = "devsw_boot";
 const char kDevSwitchBootValueDev[] = "1";
 const char kDevSwitchBootValueVerified[] = "0";
+const char kFirmwareWriteProtectBootKey[] = "wpsw_boot";
+const char kFirmwareWriteProtectBootValueOn[] = "1";
+const char kFirmwareWriteProtectBootValueOff[] = "0";
 const char kFirmwareTypeKey[] = "mainfw_type";
 const char kFirmwareTypeValueDeveloper[] = "developer";
 const char kFirmwareTypeValueNonchrome[] = "nonchrome";

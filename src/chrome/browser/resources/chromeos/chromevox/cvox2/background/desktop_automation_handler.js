@@ -48,6 +48,12 @@ DesktopAutomationHandler = function(node) {
   /** @private {AutomationNode} */
   this.lastValueTarget_ = null;
 
+  /** @private {AutomationNode} */
+  this.lastAttributeTarget_;
+
+  /** @private {Output} */
+  this.lastAttributeOutput_;
+
   /** @private {string} */
   this.lastRootUrl_ = '';
 
@@ -151,6 +157,11 @@ DesktopAutomationHandler.prototype = {
     output.withRichSpeechAndBraille(
         ChromeVoxState.instance.currentRange, prevRange, evt.type);
     output.go();
+
+    // Update some state here to ensure attribute changes don't duplicate
+    // output.
+    this.lastAttributeTarget_ = evt.target;
+    this.lastAttributeOutput_ = output;
   },
 
   /**
@@ -166,12 +177,17 @@ DesktopAutomationHandler.prototype = {
 
     if (prev.contentEquals(cursors.Range.fromNode(evt.target)) ||
         evt.target.state.focused) {
-      // Intentionally skip setting range.
-      new Output()
-          .withRichSpeechAndBraille(
-              cursors.Range.fromNode(evt.target), prev,
-              Output.EventType.NAVIGATE)
-          .go();
+      var prevTarget = this.lastAttributeTarget_;
+      this.lastAttributeTarget_ = evt.target;
+      var prevOutput = this.lastAttributeOutput_;
+      this.lastAttributeOutput_ = new Output().withRichSpeechAndBraille(
+          cursors.Range.fromNode(evt.target), prev, Output.EventType.NAVIGATE);
+
+      if (evt.target == prevTarget && prevOutput &&
+          prevOutput.equals(this.lastAttributeOutput_))
+        return;
+
+      this.lastAttributeOutput_.go();
     }
   },
 
@@ -197,20 +213,19 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationNode} node The hit result.
    */
   onHitTestResult: function(node) {
-    // It is possible that the user moved since we requested a hit test.
-    // The following events occur:
-    // load complete
-    // a hit test with reply is requested
-    // user moves
-    // we end up here
-    // As a result, check to ensure we're still on a root web area, before
-    // continuing.
+    // It is possible that the user moved since we requested a hit test.  Bail
+    // if the current range is valid and on the same page as the hit result (but
+    // not the root).
     if (ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.start &&
         ChromeVoxState.instance.currentRange.start.node &&
-        ChromeVoxState.instance.currentRange.start.node.role !=
-            RoleType.ROOT_WEB_AREA)
-      return;
+        ChromeVoxState.instance.currentRange.start.node.root) {
+      var cur = ChromeVoxState.instance.currentRange.start.node;
+      if (cur.role != RoleType.ROOT_WEB_AREA &&
+          AutomationUtil.getTopLevelRoot(node) ==
+              AutomationUtil.getTopLevelRoot(cur))
+        return;
+    }
 
     chrome.automation.getFocus(function(focus) {
       if (!focus && !node)
@@ -384,6 +399,9 @@ DesktopAutomationHandler.prototype = {
     if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.WEB_VIEW)
       return;
 
+    if (node.role == RoleType.UNKNOWN)
+      return;
+
     if (!node.root)
       return;
 
@@ -464,6 +482,17 @@ DesktopAutomationHandler.prototype = {
    */
   ignoreDocumentSelectionFromAction: function(val) {
     this.shouldIgnoreDocumentSelectionFromAction_ = val;
+  },
+
+  /**
+   * Update the state for the last attribute change that occurred in ChromeVox
+   * output.
+   * @param {!AutomationNode} node
+   * @param {!Output} output
+   */
+  updateLastAttributeState: function(node, output) {
+    this.lastAttributeTarget_ = node;
+    this.lastAttributeOutput_ = output;
   },
 
   /**
@@ -573,12 +602,10 @@ DesktopAutomationHandler.prototype = {
 
     chrome.automation.getFocus(function(focus) {
       // Desktop tabs get "selection" when there's a focused webview during tab
-      // switching.
-      if (focus.role == RoleType.WEB_VIEW && evt.target.role == RoleType.TAB) {
-        ChromeVoxState.instance.setCurrentRange(
-            cursors.Range.fromNode(focus.firstChild));
+      // switching. Ignore it.
+      if (evt.target.role == RoleType.TAB &&
+          evt.target.root.role == RoleType.DESKTOP)
         return;
-      }
 
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.

@@ -16,11 +16,12 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_interceptor_controller.h"
 #include "content/browser/devtools/devtools_io_context.h"
-#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/page.h"
@@ -35,6 +36,7 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/content_browser_client.h"
@@ -100,7 +102,7 @@ Network::CertificateTransparencyCompliance SerializeCTPolicyCompliance(
     case net::ct::CTPolicyCompliance::
         CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE:
       return Network::CertificateTransparencyComplianceEnum::Unknown;
-    case net::ct::CTPolicyCompliance::CT_POLICY_MAX:
+    case net::ct::CTPolicyCompliance::CT_POLICY_COUNT:
       NOTREACHED();
       return Network::CertificateTransparencyComplianceEnum::Unknown;
   }
@@ -208,8 +210,8 @@ class CookieRetriever : public base::RefCountedThreadSafe<CookieRetriever> {
     for (const auto& pair : cookies_)
       master_cookie_list.push_back(pair.second);
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CookieRetriever::SendCookiesResponseOnUI, this,
                        master_cookie_list));
   }
@@ -286,8 +288,8 @@ void ClearedCookiesOnIO(std::unique_ptr<ClearBrowserCookiesCallback> callback,
                         uint32_t num_deleted) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ClearBrowserCookiesCallback::sendSuccess,
                      std::move(callback)));
 }
@@ -304,7 +306,7 @@ void ClearCookiesOnIO(net::URLRequestContextGetter* context_getter,
 
 void DeletedCookiesOnIO(base::OnceClosure callback, uint32_t num_deleted) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(callback));
 }
 
 std::vector<net::CanonicalCookie> FilterCookies(
@@ -368,9 +370,9 @@ void DeleteCookiesOnIO(net::URLRequestContextGetter* context_getter,
 
 void CookieSetOnIO(std::unique_ptr<SetCookieCallback> callback, bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&SetCookieCallback::sendSuccess,
-                                         std::move(callback), success));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&SetCookieCallback::sendSuccess,
+                                          std::move(callback), success));
 }
 
 void DeleteFilteredCookies(network::mojom::CookieManager* cookie_manager,
@@ -455,8 +457,8 @@ void SetCookieOnIO(net::URLRequestContextGetter* context_getter,
 
 void CookiesSetOnIO(std::unique_ptr<SetCookiesCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SetCookiesCallback::sendSuccess, std::move(callback)));
 }
 
@@ -663,48 +665,49 @@ String NetErrorToString(int net_error) {
 bool AddInterceptedResourceType(
     const std::string& resource_type,
     base::flat_set<ResourceType>* intercepted_resource_types) {
-  if (resource_type == protocol::Page::ResourceTypeEnum::Document) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Document) {
     intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
     intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Stylesheet) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Stylesheet) {
     intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Image) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Image) {
     intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Media) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Media) {
     intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Font) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Font) {
     intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Script) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Script) {
     intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::XHR) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::XHR) {
     intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Fetch) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Fetch) {
     intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::CSPViolationReport) {
+  if (resource_type ==
+      protocol::Network::ResourceTypeEnum::CSPViolationReport) {
     intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Ping) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Ping) {
     intercepted_resource_types->insert(RESOURCE_TYPE_PING);
     return true;
   }
-  if (resource_type == protocol::Page::ResourceTypeEnum::Other) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Other) {
     intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
     intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
     intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
@@ -773,7 +776,7 @@ String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
   std::string protocol = info.alpn_negotiated_protocol;
   if (protocol.empty() || protocol == "unknown") {
     if (info.was_fetched_via_spdy) {
-      protocol = "spdy";
+      protocol = "h2";
     } else if (url.SchemeIsHTTPOrHTTPS()) {
       protocol = "http";
       if (info.headers->GetHttpVersion() == net::HttpVersion(0, 9))
@@ -929,8 +932,8 @@ class BackgroundSyncRestorer {
     scoped_refptr<BackgroundSyncContext> sync_context =
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetServiceWorkerOfflineOnIO, sync_context,
             base::RetainedRef(static_cast<ServiceWorkerContextWrapper*>(
@@ -984,8 +987,7 @@ NetworkHandler::~NetworkHandler() {
 // static
 std::vector<NetworkHandler*> NetworkHandler::ForAgentHost(
     DevToolsAgentHostImpl* host) {
-  return DevToolsSession::HandlersForAgentHost<NetworkHandler>(
-      host, Network::Metainfo::domainName);
+  return host->HandlersByName<NetworkHandler>(Network::Metainfo::domainName);
 }
 
 void NetworkHandler::Wire(UberDispatcher* dispatcher) {
@@ -1075,8 +1077,8 @@ void NetworkHandler::ClearBrowserCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ClearCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1103,8 +1105,8 @@ void NetworkHandler::GetCookies(Maybe<Array<String>> protocol_urls,
     scoped_refptr<CookieRetriever> retriever =
         new CookieRetriever(std::move(callback));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CookieRetriever::RetrieveCookiesOnIO, retriever,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1127,8 +1129,8 @@ void NetworkHandler::GetAllCookies(
     scoped_refptr<CookieRetriever> retriever =
         new CookieRetriever(std::move(callback));
 
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CookieRetriever::RetrieveAllCookiesOnIO, retriever,
             base::Unretained(storage_partition_->GetURLRequestContext())));
@@ -1177,8 +1179,8 @@ void NetworkHandler::SetCookie(const std::string& name,
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetCookieOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1217,8 +1219,8 @@ void NetworkHandler::SetCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SetCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()),
@@ -1269,8 +1271,8 @@ void NetworkHandler::DeleteCookies(
   }
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &DeleteCookiesOnIO,
             base::Unretained(storage_partition_->GetURLRequestContext()), name,
@@ -1602,7 +1604,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
   frontend_->RequestWillBeSent(
       id, id, url_without_fragment, std::move(request), current_ticks,
       current_wall_time, std::move(initiator), std::move(redirect_response),
-      std::string(Page::ResourceTypeEnum::Document), std::move(frame_token),
+      std::string(Network::ResourceTypeEnum::Document), std::move(frame_token),
       common_params.has_user_gesture);
 }
 
@@ -1639,7 +1641,7 @@ void NetworkHandler::RequestSent(const std::string& request_id,
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
       base::Time::Now().ToDoubleT(), std::move(initiator),
       std::unique_ptr<Network::Response>(),
-      std::string(Page::ResourceTypeEnum::Other),
+      std::string(Network::ResourceTypeEnum::Other),
       Maybe<std::string>() /* frame_id */, request.has_user_gesture);
 }
 
@@ -1839,7 +1841,6 @@ void NetworkHandler::ContinueInterceptedRequest(
   }
 
   base::Optional<net::Error> error;
-  bool mark_as_canceled = false;
   if (error_reason.isJust()) {
     bool ok;
     error = NetErrorFromString(error_reason.fromJust(), &ok);
@@ -1847,15 +1848,13 @@ void NetworkHandler::ContinueInterceptedRequest(
       callback->sendFailure(Response::InvalidParams("Invalid errorReason."));
       return;
     }
-
-    mark_as_canceled = true;
   }
 
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
           std::move(method), std::move(post_data), std::move(headers),
-          std::move(auth_challenge_response), mark_as_canceled);
+          std::move(auth_challenge_response));
 
   if (url_loader_interceptor_) {
     url_loader_interceptor_->ContinueInterceptedRequest(
@@ -2040,43 +2039,43 @@ namespace {
 const char* ResourceTypeToString(ResourceType resource_type) {
   switch (resource_type) {
     case RESOURCE_TYPE_MAIN_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
+      return protocol::Network::ResourceTypeEnum::Document;
     case RESOURCE_TYPE_SUB_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
+      return protocol::Network::ResourceTypeEnum::Document;
     case RESOURCE_TYPE_STYLESHEET:
-      return protocol::Page::ResourceTypeEnum::Stylesheet;
+      return protocol::Network::ResourceTypeEnum::Stylesheet;
     case RESOURCE_TYPE_SCRIPT:
-      return protocol::Page::ResourceTypeEnum::Script;
+      return protocol::Network::ResourceTypeEnum::Script;
     case RESOURCE_TYPE_IMAGE:
-      return protocol::Page::ResourceTypeEnum::Image;
+      return protocol::Network::ResourceTypeEnum::Image;
     case RESOURCE_TYPE_FONT_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Font;
+      return protocol::Network::ResourceTypeEnum::Font;
     case RESOURCE_TYPE_SUB_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_OBJECT:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_MEDIA:
-      return protocol::Page::ResourceTypeEnum::Media;
+      return protocol::Network::ResourceTypeEnum::Media;
     case RESOURCE_TYPE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_SHARED_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_PREFETCH:
-      return protocol::Page::ResourceTypeEnum::Fetch;
+      return protocol::Network::ResourceTypeEnum::Fetch;
     case RESOURCE_TYPE_FAVICON:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_XHR:
-      return protocol::Page::ResourceTypeEnum::XHR;
+      return protocol::Network::ResourceTypeEnum::XHR;
     case RESOURCE_TYPE_PING:
-      return protocol::Page::ResourceTypeEnum::Ping;
+      return protocol::Network::ResourceTypeEnum::Ping;
     case RESOURCE_TYPE_SERVICE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     case RESOURCE_TYPE_CSP_REPORT:
-      return protocol::Page::ResourceTypeEnum::CSPViolationReport;
+      return protocol::Network::ResourceTypeEnum::CSPViolationReport;
     case RESOURCE_TYPE_PLUGIN_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
     default:
-      return protocol::Page::ResourceTypeEnum::Other;
+      return protocol::Network::ResourceTypeEnum::Other;
   }
 }
 

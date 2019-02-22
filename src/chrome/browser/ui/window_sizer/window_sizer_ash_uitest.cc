@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/events/test/event_generator.h"
@@ -120,9 +121,15 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
   OpenBrowserUsingShelfOnRootWindow(root_windows[1]);
 
   // A new browser window should be opened on the 2nd display.
+  display::Screen* screen = display::Screen::GetScreen();
+  std::pair<display::Display, display::Display> displays =
+      ui_test_utils::GetDisplays(screen);
   EXPECT_EQ(1u, browser_list->size());
-  EXPECT_EQ(root_windows[1],
-            browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(displays.second.id(),
+            screen
+                ->GetDisplayNearestWindow(
+                    browser_list->get(0)->window()->GetNativeWindow())
+                .id());
   EXPECT_EQ(root_windows[1], ash::Shell::GetRootWindowForNewWindows());
 
   // Close the browser window so that clicking the icon creates a new window.
@@ -133,8 +140,11 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
 
   // A new browser window should be opened on the 1st display.
   EXPECT_EQ(1u, browser_list->size());
-  EXPECT_EQ(root_windows[0],
-            browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(displays.first.id(),
+            screen
+                ->GetDisplayNearestWindow(
+                    browser_list->get(0)->window()->GetNativeWindow())
+                .id());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
 
@@ -155,9 +165,15 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingContextMenu) {
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[1]);
 
   // A new browser window should be opened on the 2nd display.
+  display::Screen* screen = display::Screen::GetScreen();
+  std::pair<display::Display, display::Display> displays =
+      ui_test_utils::GetDisplays(screen);
   ASSERT_EQ(1u, browser_list->size());
-  EXPECT_EQ(root_windows[1],
-            browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(displays.second.id(),
+            screen
+                ->GetDisplayNearestWindow(
+                    browser_list->get(0)->window()->GetNativeWindow())
+                .id());
   EXPECT_EQ(root_windows[1], ash::Shell::GetRootWindowForNewWindows());
 
   CloseBrowserSynchronously(browser_list->get(0));
@@ -165,8 +181,11 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingContextMenu) {
 
   // A new browser window should be opened on the 1st display.
   ASSERT_EQ(1u, browser_list->size());
-  EXPECT_EQ(root_windows[0],
-            browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(displays.first.id(),
+            screen
+                ->GetDisplayNearestWindow(
+                    browser_list->get(0)->window()->GetNativeWindow())
+                .id());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
 

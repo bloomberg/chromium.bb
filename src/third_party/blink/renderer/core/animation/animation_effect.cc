@@ -64,11 +64,10 @@ AnimationEffect::AnimationEffect(const Timing& timing,
   timing_.AssertValid();
 }
 
-double AnimationEffect::IterationDuration() const {
-  double result = std::isnan(timing_.iteration_duration)
-                      ? IntrinsicIterationDuration()
-                      : timing_.iteration_duration;
-  DCHECK_GE(result, 0);
+AnimationTimeDelta AnimationEffect::IterationDuration() const {
+  AnimationTimeDelta result =
+      timing_.iteration_duration.value_or(IntrinsicIterationDuration());
+  DCHECK_GE(result, AnimationTimeDelta());
   return result;
 }
 
@@ -99,10 +98,11 @@ void AnimationEffect::getTiming(EffectTiming& effect_timing) const {
   effect_timing.setIterationStart(SpecifiedTiming().iteration_start);
   effect_timing.setIterations(SpecifiedTiming().iteration_count);
   UnrestrictedDoubleOrString duration;
-  if (IsNull(SpecifiedTiming().iteration_duration)) {
-    duration.SetString("auto");
+  if (SpecifiedTiming().iteration_duration) {
+    duration.SetUnrestrictedDouble(
+        SpecifiedTiming().iteration_duration->InMillisecondsF());
   } else {
-    duration.SetUnrestrictedDouble(SpecifiedTiming().iteration_duration * 1000);
+    duration.SetString("auto");
   }
   effect_timing.setDuration(duration);
   effect_timing.setDirection(
@@ -148,7 +148,7 @@ void AnimationEffect::getComputedTiming(
   computed_timing.setIterations(SpecifiedTiming().iteration_count);
 
   UnrestrictedDoubleOrString duration;
-  duration.SetUnrestrictedDouble(IterationDuration() * 1000);
+  duration.SetUnrestrictedDouble(IterationDuration().InMillisecondsF());
   computed_timing.setDuration(duration);
 
   computed_timing.setDirection(
@@ -197,7 +197,8 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
 
     double current_iteration;
     base::Optional<double> progress;
-    if (const double iteration_duration = this->IterationDuration()) {
+    if (!IterationDuration().is_zero()) {
+      const double iteration_duration = IterationDuration().InSecondsF();
       const double start_offset = MultiplyZeroAlwaysGivesZero(
           timing_.iteration_start, iteration_duration);
       DCHECK_GE(start_offset, 0);

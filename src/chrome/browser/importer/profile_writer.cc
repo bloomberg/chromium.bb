@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -35,10 +34,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-
-#if defined(OS_WIN)
-#include "components/password_manager/core/browser/webdata/password_web_data_service_win.h"
-#endif
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -96,13 +91,6 @@ void ProfileWriter::AddPasswordForm(const autofill::PasswordForm& form) {
       profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddLogin(form);
 }
 
-#if defined(OS_WIN)
-void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
-  WebDataServiceFactory::GetPasswordWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS)->AddIE7Login(info);
-}
-#endif
-
 void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {
   if (!page.empty())
@@ -112,8 +100,8 @@ void ProfileWriter::AddHistoryPage(const history::URLRows& page,
   // Measure the size of the history page after Auto Import on first run.
   if (first_run::IsChromeFirstRun() &&
       visit_source == history::SOURCE_IE_IMPORTED) {
-    UMA_HISTOGRAM_COUNTS("Import.ImportedHistorySize.AutoImportFromIE",
-                         page.size());
+    UMA_HISTOGRAM_COUNTS_1M("Import.ImportedHistorySize.AutoImportFromIE",
+                            page.size());
   }
 }
 
@@ -145,9 +133,7 @@ void ProfileWriter::AddBookmarks(
   // Reorder bookmarks so that the toolbar entries come first.
   std::vector<ImportedBookmarkEntry> toolbar_bookmarks;
   std::vector<ImportedBookmarkEntry> reordered_bookmarks;
-  for (std::vector<ImportedBookmarkEntry>::const_iterator it =
-           bookmarks.begin();
-       it != bookmarks.end(); ++it) {
+  for (auto it = bookmarks.begin(); it != bookmarks.end(); ++it) {
     if (it->in_toolbar)
       toolbar_bookmarks.push_back(*it);
     else
@@ -194,8 +180,7 @@ void ProfileWriter::AddBookmarks(
     // Ensure any enclosing folders are present in the model.  The bookmark's
     // enclosing folder structure should be
     //   path[0] > path[1] > ... > path[size() - 1]
-    for (std::vector<base::string16>::const_iterator folder_name =
-             bookmark->path.begin();
+    for (auto folder_name = bookmark->path.begin();
          folder_name != bookmark->path.end(); ++folder_name) {
       if (bookmark->in_toolbar && parent == bookmark_bar &&
           folder_name == bookmark->path.begin()) {
@@ -232,9 +217,7 @@ void ProfileWriter::AddBookmarks(
 
   // In order to keep the imported-to folders from appearing in the 'recently
   // added to' combobox, reset their modified times.
-  for (std::set<const BookmarkNode*>::const_iterator i =
-           folders_added_to.begin();
-       i != folders_added_to.end(); ++i) {
+  for (auto i = folders_added_to.begin(); i != folders_added_to.end(); ++i) {
     model->ResetDateFolderModified(*i);
   }
 

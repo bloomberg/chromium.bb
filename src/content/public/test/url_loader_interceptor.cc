@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -17,8 +18,10 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_util.h"
@@ -225,6 +228,12 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
     RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
         &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
         base::Unretained(this)));
+    // Note: This URLLoaderFactory creation callback will be used not only for
+    // subresource loading from service workers (i.e., fetch()), but also for
+    // loading non-installed service worker scripts.
+    EmbeddedWorkerInstance::SetNetworkFactoryForTesting(base::BindRepeating(
+        &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
+        base::Unretained(this)));
   }
 
   StoragePartitionImpl::
@@ -235,8 +244,8 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback)
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&URLLoaderInterceptor::InitializeOnIOThread,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -251,6 +260,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(
         RenderFrameHostImpl::CreateNetworkFactoryCallback());
+    EmbeddedWorkerInstance::SetNetworkFactoryForTesting(
+        RenderFrameHostImpl::CreateNetworkFactoryCallback());
   }
 
   StoragePartitionImpl::
@@ -258,8 +269,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
           StoragePartitionImpl::CreateNetworkFactoryCallback());
 
   base::RunLoop run_loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderInterceptor::ShutdownOnIOThread,
                      base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
@@ -336,8 +347,8 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
     int process_id,
     network::mojom::URLLoaderFactoryPtrInfo original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
             base::Unretained(this), std::move(request), process_id,

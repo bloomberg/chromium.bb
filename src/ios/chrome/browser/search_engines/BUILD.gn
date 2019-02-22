@@ -5,6 +5,17 @@
 import("//build/config/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "feature_flags.cc",
+    "feature_flags.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("search_engines") {
   sources = [
     "search_engine_observer_bridge.h",

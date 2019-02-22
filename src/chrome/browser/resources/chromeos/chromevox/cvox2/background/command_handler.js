@@ -10,8 +10,11 @@ goog.provide('CommandHandler');
 
 goog.require('ChromeVoxState');
 goog.require('CustomAutomationEvent');
+goog.require('LogStore');
 goog.require('Output');
+goog.require('TreeDumper');
 goog.require('cvox.ChromeVoxBackground');
+goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.ChromeVoxKbHandler');
 
 goog.scope(function() {
@@ -109,8 +112,42 @@ CommandHandler.onCommand = function(command) {
       chrome.commandLinePrivate.hasSwitch(
           'enable-chromevox-developer-option', function(enable) {
             if (enable) {
-              var logPage = {url: 'cvox2/background/log.html', type: 'panel'};
-              chrome.windows.create(logPage);
+              var logPage = {url: 'cvox2/background/log.html'};
+              chrome.tabs.create(logPage);
+            }
+          });
+      break;
+    case 'enableLogging':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                prefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+              }
+            }
+          });
+      break;
+    case 'disableLogging':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var prefs = new cvox.ChromeVoxPrefs();
+              for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
+                prefs.setLoggingPrefs(
+                    cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+              }
+            }
+          });
+      break;
+    case 'dumpTree':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              chrome.automation.getDesktop(function(root) {
+                LogStore.getInstance().writeTreeLog(new TreeDumper(root));
+              });
             }
           });
       break;
@@ -506,7 +543,17 @@ CommandHandler.onCommand = function(command) {
 
         if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE &&
             AutomationPredicate.editText(actionNode)) {
-          actionNode.focus();
+          // Dispatch a click to ensure the VK gets shown.
+          var location = actionNode.location;
+          var event = {
+            type: chrome.accessibilityPrivate.SyntheticMouseEventType.PRESS,
+            x: location.left + Math.round(location.width / 2),
+            y: location.top + Math.round(location.height / 2)
+          };
+          chrome.accessibilityPrivate.sendSyntheticMouseEvent(event);
+          event.type =
+              chrome.accessibilityPrivate.SyntheticMouseEventType.RELEASE;
+          chrome.accessibilityPrivate.sendSyntheticMouseEvent(event);
           return false;
         }
 

@@ -35,8 +35,8 @@ class ExtensionTabUtilTestDelegate : public ExtensionTabUtil::Delegate {
 // Test that the custom ScrubTabForExtension delegate works - in this test it
 // sets URL to a custom string.
 TEST(ExtensionTabUtilTest, Delegate) {
-  auto test_delegate = std::make_unique<ExtensionTabUtilTestDelegate>();
-  ExtensionTabUtil::SetPlatformDelegate(test_delegate.get());
+  ExtensionTabUtil::SetPlatformDelegate(
+      std::make_unique<ExtensionTabUtilTestDelegate>());
 
   api::tabs::Tab tab;
   ExtensionTabUtil::ScrubTabForExtension(nullptr, nullptr, &tab);

@@ -276,7 +276,7 @@ actionSheetCoordinatorWithDataTypesToRemove:
 
   browser_sync::ProfileSyncService* syncService =
       ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
-  if (syncService && syncService->IsSyncActive()) {
+  if (syncService && syncService->IsSyncFeatureActive()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
     // section, to work around a drawing bug in MDC.
     [model addSectionWithIdentifier:SectionIdentifierClearSyncAndSavedSiteData];

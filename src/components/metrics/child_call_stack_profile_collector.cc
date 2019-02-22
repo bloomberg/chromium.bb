@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 
@@ -20,7 +21,7 @@ ChildCallStackProfileCollector::ProfileState::ProfileState(ProfileState&&) =
 
 ChildCallStackProfileCollector::ProfileState::ProfileState(
     base::TimeTicks start_timestamp,
-    SampledProfile profile)
+    std::string profile)
     : start_timestamp(start_timestamp), profile(std::move(profile)) {}
 
 ChildCallStackProfileCollector::ProfileState::~ProfileState() = default;
@@ -47,8 +48,10 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
   parent_collector_ = std::move(parent_collector);
   if (parent_collector_) {
     for (ProfileState& state : profiles_) {
+      mojom::SampledProfilePtr mojo_profile = mojom::SampledProfile::New();
+      mojo_profile->contents = std::move(state.profile);
       parent_collector_->Collect(state.start_timestamp,
-                                 std::move(state.profile));
+                                 std::move(mojo_profile));
     }
   }
   profiles_.clear();
@@ -72,9 +75,16 @@ void ChildCallStackProfileCollector::Collect(base::TimeTicks start_timestamp,
   }
 
   if (parent_collector_) {
-    parent_collector_->Collect(start_timestamp, std::move(profile));
-  } else if (retain_profiles_) {
-    profiles_.push_back(ProfileState(start_timestamp, std::move(profile)));
+    mojom::SampledProfilePtr mojo_profile = mojom::SampledProfile::New();
+    profile.SerializeToString(&mojo_profile->contents);
+    parent_collector_->Collect(start_timestamp, std::move(mojo_profile));
+    return;
+  }
+
+  if (retain_profiles_) {
+    std::string serialized_profile;
+    profile.SerializeToString(&serialized_profile);
+    profiles_.emplace_back(start_timestamp, std::move(serialized_profile));
   }
 }
 

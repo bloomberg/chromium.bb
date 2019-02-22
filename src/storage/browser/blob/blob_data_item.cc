@@ -9,6 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace storage {
 
@@ -16,8 +17,6 @@ namespace {
 const base::FilePath::CharType kFutureFileName[] =
     FILE_PATH_LITERAL("_future_name_");
 }
-
-constexpr uint64_t BlobDataItem::kUnknownSize;
 
 bool BlobDataItem::DataHandle::IsValid() {
   return true;
@@ -42,7 +41,7 @@ scoped_refptr<BlobDataItem> BlobDataItem::CreateBytesDescription(
 
 // static
 scoped_refptr<BlobDataItem> BlobDataItem::CreateFile(base::FilePath path) {
-  return CreateFile(path, 0, kUnknownSize);
+  return CreateFile(path, 0, blink::BlobUtils::kUnknownSize);
 }
 
 // static

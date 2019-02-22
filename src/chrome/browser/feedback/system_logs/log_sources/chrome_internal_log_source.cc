@@ -241,8 +241,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   sync_logs->GetList(syncer::sync_ui_util::kDetailsKey, &details);
   if (!details)
     return;
-  for (base::ListValue::iterator it = details->begin();
-      it != details->end(); ++it) {
+  for (auto it = details->begin(); it != details->end(); ++it) {
     base::DictionaryValue* dict = NULL;
     if (it->GetAsDictionary(&dict)) {
       std::string title;

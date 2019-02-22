@@ -39,6 +39,7 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/window_port_mus_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -68,10 +69,12 @@ namespace {
 DEFINE_UI_CLASS_PROPERTY_KEY(uint8_t, kTestPropertyKey1, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(uint16_t, kTestPropertyKey2, 0);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kTestPropertyKey3, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestPropertyKey4, nullptr);
 
 const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";
 const char kTestPropertyServerKey3[] = "test-property-server3";
+const char kTestPropertyServerKey4[] = "test-property-server4";
 
 ws::Id server_id(Window* window) {
   return window ? WindowMus::Get(window)->server_id() : 0;
@@ -113,6 +116,8 @@ void RegisterTestProperties(PropertyConverter* converter) {
   converter->RegisterPrimitiveProperty(
       kTestPropertyKey3, kTestPropertyServerKey3,
       PropertyConverter::CreateAcceptAnyValueCallback());
+  converter->RegisterWindowPtrProperty(kTestPropertyKey4,
+                                       kTestPropertyServerKey4);
 }
 
 // Convert a primitive aura property value to a mus transport value.
@@ -269,11 +274,8 @@ TEST_F(WindowTreeClientTest, SetBoundsFailed) {
 // reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetBoundsFailedLocalSurfaceId) {
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   const gfx::Rect original_bounds(window.bounds());
   const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
@@ -295,111 +297,29 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTreeClientTestSurfaceSync,
                         ::testing::Bool());
 
-namespace {
-
-class FirstSurfaceActivationWindowDelegate : public test::TestWindowDelegate {
- public:
-  FirstSurfaceActivationWindowDelegate() = default;
-  ~FirstSurfaceActivationWindowDelegate() override = default;
-
-  const viz::SurfaceInfo& last_surface_info() const {
-    return last_surface_info_;
-  }
-
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-    last_surface_info_ = surface_info;
-  }
-
- private:
-  viz::SurfaceInfo last_surface_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(FirstSurfaceActivationWindowDelegate);
-};
-
-}  // namespace
-
-// Verifies that a ClientSurfaceEmbedder is created for a window once it has
-// a bounds, and a valid FrameSinkId.
-TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderOnValidEmbedding) {
-  FirstSurfaceActivationWindowDelegate delegate;
-  Window window(&delegate);
-  // EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds when their sizes
-  // change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
+// Verifies that windows with an embedding create a ClientSurfaceEmbedder.
+TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
+  Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // The window will allocate a viz::LocalSurfaceId once it has a bounds.
-  WindowMus* window_mus = WindowMus::Get(&window);
-  ASSERT_NE(nullptr, window_mus);
-  EXPECT_FALSE(window_mus->GetLocalSurfaceId().is_valid());
+  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
+  ASSERT_NE(nullptr, window_port_mus);
+  EXPECT_FALSE(WindowMus::Get(&window)->GetLocalSurfaceId().is_valid());
+  // A ClientSurfaceEmbedder is only created once there is bounds and a
+  // FrameSinkId.
+  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
   gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, window.bounds());
   window.SetBounds(new_bounds);
   EXPECT_EQ(new_bounds, window.bounds());
-  EXPECT_TRUE(window_mus->GetLocalSurfaceId().is_valid());
+  EXPECT_TRUE(WindowMus::Get(&window)->GetLocalSurfaceId().is_valid());
 
-  // An ClientSurfaceEmbedder isn't created UNTIL the window has a bounds and
-  // a valid FrameSinkId.
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Now that the window has a valid FrameSinkId, it can embed the client in a
-  // CompositorFrame.
-  window_tree_client()->OnFrameSinkIdAllocated(server_id(&window),
-                                               viz::FrameSinkId(1, 1));
+  // Once the bounds have been set, the ClientSurfaceEmbedder should be created.
   ClientSurfaceEmbedder* client_surface_embedder =
       window_port_mus->client_surface_embedder();
   ASSERT_NE(nullptr, client_surface_embedder);
-  EXPECT_FALSE(delegate.last_surface_info().is_valid());
-
-  // When a SurfaceInfo arrives from the window server, we use it as the
-  // fallback SurfaceInfo. Here we issue the primary SurfaceId back to the
-  // client lib. This should cause the gutter to go away, eliminating overdraw.
-  window_tree_client()->OnWindowSurfaceChanged(
-      server_id(&window),
-      viz::SurfaceInfo(window_port_mus->PrimarySurfaceIdForTesting(), 1.0f,
-                       gfx::Size(100, 100)));
-  EXPECT_TRUE(delegate.last_surface_info().is_valid());
-  EXPECT_EQ(delegate.last_surface_info().id(),
-            window_port_mus->PrimarySurfaceIdForTesting());
-}
-
-// Verifies that EMBED_IN_OWNER windows do not gutter.
-TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
-  FirstSurfaceActivationWindowDelegate delegate;
-  Window window(&delegate);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
-  window.Init(ui::LAYER_NOT_DRAWN);
-
-  // The window will allocate a viz::LocalSurfaceId once it has a bounds.
-  WindowMus* window_mus = WindowMus::Get(&window);
-  ASSERT_NE(nullptr, window_mus);
-  EXPECT_FALSE(window_mus->GetLocalSurfaceId().is_valid());
-  gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
-  ASSERT_NE(new_bounds, window.bounds());
-  window.SetBounds(new_bounds);
-  EXPECT_EQ(new_bounds, window.bounds());
-  EXPECT_TRUE(window_mus->GetLocalSurfaceId().is_valid());
-
-  // An ClientSurfaceEmbedder isn't created UNTIL the window has a bounds and
-  // a valid FrameSinkId.
-  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
-  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
-
-  // Now that the window has a valid FrameSinkId, it can embed the client in a
-  // CompositorFrame.
-  window_tree_client()->OnFrameSinkIdAllocated(server_id(&window),
-                                               viz::FrameSinkId(1, 1));
-  ClientSurfaceEmbedder* client_surface_embedder =
-      window_port_mus->client_surface_embedder();
-  ASSERT_NE(nullptr, client_surface_embedder);
-  EXPECT_FALSE(delegate.last_surface_info().is_valid());
 
   EXPECT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
   EXPECT_EQ(nullptr, client_surface_embedder->RightGutterForTesting());
@@ -410,11 +330,8 @@ TEST_P(WindowTreeClientTestSurfaceSync, NoEmbedInOwnerGutter) {
 TEST_P(WindowTreeClientTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
   ASSERT_EQ(base::nullopt, window_tree()->last_local_surface_id());
   Window window(nullptr);
-  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
-  // when their sizes change.
-  window.SetProperty(aura::client::kEmbedType,
-                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
   window.Init(ui::LAYER_NOT_DRAWN);
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // Resize the window and verify that we've allocated a viz::LocalSurfaceId.
   const gfx::Rect new_bounds(0, 0, 100, 100);
@@ -800,6 +717,26 @@ TEST_F(WindowTreeClientTest, SetStringProperty) {
   EXPECT_EQ(example, *root_window()->GetProperty(client::kNameKey));
 }
 
+TEST_F(WindowTreeClientTest, SetWindowPointerProperty) {
+  PropertyConverter* property_converter = GetPropertyConverter();
+  RegisterTestProperties(property_converter);
+
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.Show();
+  root_window()->SetProperty(kTestPropertyKey4, &window);
+  base::Optional<std::vector<uint8_t>> value =
+      window_tree()->GetLastPropertyValue();
+  ASSERT_TRUE(value.has_value());
+  EXPECT_EQ(WindowMus::Get(&window)->server_id(),
+            mojo::ConvertTo<ws::Id>(*value));
+  window_tree()->AckAllChanges();
+
+  root_window()->ClearProperty(kTestPropertyKey4);
+  value = window_tree()->GetLastPropertyValue();
+  EXPECT_FALSE(value.has_value());
+}
+
 // Verifies visible is reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientTest, SetVisibleFailed) {
   const bool original_visible = root_window()->TargetVisibility();
@@ -1010,13 +947,13 @@ TEST_F(WindowTreeClientTest, InputEventPointerEvent) {
   const gfx::Point event_location(2, 3);
   const uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event(
-      ui::ET_POINTER_MOVED, event_location, gfx::Point(), ui::EF_NONE, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      base::TimeTicks());
+  ui::MouseEvent mouse_event(
+      ui::ET_MOUSE_MOVED, event_location, event_location, ui::EventTimeForNow(),
+      ui::EF_NONE, ui::EF_NONE,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
   window_tree_client()->OnWindowInputEvent(event_id, server_id(&child),
                                            window_tree_host.display_id(),
-                                           ui::Event::Clone(pointer_event), 0);
+                                           ui::Event::Clone(mouse_event), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -1046,13 +983,13 @@ TEST_F(WindowTreeClientTest, InputEventPen) {
   const gfx::Point event_location(2, 3);
   const uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event(
-      ui::ET_POINTER_DOWN, event_location, gfx::Point(), ui::EF_NONE, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0),
-      ui::EventTimeForNow());
+  ui::MouseEvent mouse_event(
+      ui::ET_MOUSE_PRESSED, event_location, event_location,
+      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 0));
   window_tree_client()->OnWindowInputEvent(event_id, server_id(&child),
                                            window_tree_host.display_id(),
-                                           ui::Event::Clone(pointer_event), 0);
+                                           ui::Event::Clone(mouse_event), 0);
 
   // Pen event was handled.
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
@@ -1346,14 +1283,13 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
   const gfx::Point event_location(2, 3);
   uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, event_location, event_location,
-      ui::EF_LEFT_MOUSE_BUTTON, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      ui::EventTimeForNow());
+  ui::MouseEvent mouse_event_down(
+      ui::ET_MOUSE_PRESSED, event_location, event_location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child), window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_down), 0);
+      ui::Event::Clone(mouse_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -1366,14 +1302,13 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
   const gfx::Point event_location1(4, 5);
   event_id = 2;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_up(
-      ui::ET_POINTER_UP, event_location1, event_location,
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
-      ui::EventTimeForNow());
-  window_tree_client()->OnWindowInputEvent(
-      event_id, kInvalidServerId, window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_up), 0);
+  ui::MouseEvent mouse_event_up(
+      ui::ET_MOUSE_RELEASED, event_location1, event_location,
+      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0));
+  window_tree_client()->OnWindowInputEvent(event_id, kInvalidServerId,
+                                           window_tree_host.display_id(),
+                                           ui::Event::Clone(mouse_event_up), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
@@ -1410,13 +1345,12 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
   const gfx::Point event_location(2, 3);
   uint32_t event_id = 1;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, event_location, gfx::Point(), 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
-      ui::EventTimeForNow());
+  ui::TouchEvent touch_event_down(
+      ui::ET_TOUCH_PRESSED, event_location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   window_tree_client()->OnWindowInputEvent(
       event_id, server_id(&child), window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_down), 0);
+      ui::Event::Clone(touch_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   EXPECT_EQ(ws::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
@@ -1426,13 +1360,12 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
 
   event_id = 2;
   window_delegate.set_event_id(event_id);
-  ui::PointerEvent pointer_event_up(
-      ui::ET_POINTER_UP, event_location, gfx::Point(), 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
-      ui::EventTimeForNow());
-  window_tree_client()->OnWindowInputEvent(
-      event_id, kInvalidServerId, window_tree_host.display_id(),
-      ui::Event::Clone(pointer_event_up), 0);
+  ui::TouchEvent touch_event_up(
+      ui::ET_TOUCH_RELEASED, event_location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  window_tree_client()->OnWindowInputEvent(event_id, kInvalidServerId,
+                                           window_tree_host.display_id(),
+                                           ui::Event::Clone(touch_event_up), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
@@ -1543,12 +1476,12 @@ TEST_F(WindowTreeClientPointerObserverTest,
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
 
   // Simulate the server dispatching an event that also matched the observer.
-  std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 0,
+  ui::TouchEvent touch_event_down(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
-      base::TimeTicks::Now()));
-  window_tree_client()->OnWindowInputEvent(1, server_id(top_level), 0,
-                                           std::move(pointer_event_down), true);
+      ui::EF_CONTROL_DOWN);
+  window_tree_client()->OnWindowInputEvent(
+      1, server_id(top_level), 0, ui::Event::Clone(touch_event_down), true);
 
   // Delegate sensed the event.
   const ui::Event* last_event = last_event_observed();

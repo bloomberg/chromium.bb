@@ -9,6 +9,7 @@
 
 #include "libANGLE/renderer/gl/ContextGL.h"
 
+#include "libANGLE/Context.h"
 #include "libANGLE/renderer/gl/BufferGL.h"
 #include "libANGLE/renderer/gl/CompilerGL.h"
 #include "libANGLE/renderer/gl/FenceNVGL.h"
@@ -107,7 +108,7 @@ QueryImpl *ContextGL::createQuery(gl::QueryType type)
     switch (type)
     {
         case gl::QueryType::CommandsCompleted:
-            return new SyncQueryGL(type, getFunctions(), getStateManager());
+            return new SyncQueryGL(type, getFunctions());
 
         default:
             return new StandardQueryGL(type, getFunctions(), getStateManager());
@@ -169,10 +170,10 @@ gl::Error ContextGL::finish(const gl::Context *context)
     return mRenderer->finish();
 }
 
-gl::Error ContextGL::drawArrays(const gl::Context *context,
-                                gl::PrimitiveMode mode,
-                                GLint first,
-                                GLsizei count)
+angle::Result ContextGL::drawArrays(const gl::Context *context,
+                                    gl::PrimitiveMode mode,
+                                    GLint first,
+                                    GLsizei count)
 {
     return mRenderer->drawArrays(context, mode, first, count);
 }
@@ -365,10 +366,12 @@ void ContextGL::popDebugGroup()
     mRenderer->popDebugGroup();
 }
 
-gl::Error ContextGL::syncState(const gl::Context *context, const gl::State::DirtyBits &dirtyBits)
+angle::Result ContextGL::syncState(const gl::Context *context,
+                                   const gl::State::DirtyBits &dirtyBits,
+                                   const gl::State::DirtyBits &bitMask)
 {
-    mRenderer->getStateManager()->syncState(context, dirtyBits);
-    return gl::NoError();
+    mRenderer->getStateManager()->syncState(context, dirtyBits, bitMask);
+    return angle::Result::Continue();
 }
 
 GLint ContextGL::getGPUDisjoint()
@@ -460,4 +463,16 @@ gl::Error ContextGL::memoryBarrierByRegion(const gl::Context *context, GLbitfiel
     return mRenderer->memoryBarrierByRegion(barriers);
 }
 
+void ContextGL::handleError(GLenum errorCode,
+                            const char *message,
+                            const char *file,
+                            const char *function,
+                            unsigned int line)
+{
+    std::stringstream errorStream;
+    errorStream << "Internal OpenGL error: " << gl::FmtHex(errorCode) << ", in " << file << ", "
+                << function << ":" << line << ". " << message;
+
+    mErrors->handleError(gl::Error(errorCode, errorCode, errorStream.str()));
+}
 }  // namespace rx

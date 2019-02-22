@@ -71,11 +71,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // state that depends on |details|.
   void UpdateWith(mojom::PaymentDetailsPtr details);
 
-  // Called when the merchant calls updateWith() or retry().
-  void UpdateShippingAddressErrors(mojom::AddressErrorsPtr errors);
-
   // Called when the merchant calls retry().
-  void UpdatePayerErrors(mojom::PayerErrorFieldsPtr errors);
+  void Retry(mojom::PaymentValidationErrorsPtr errors);
 
   // Gets the display string for the shipping address error for the given
   // |type|.
@@ -241,7 +238,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   base::ObserverList<Observer>::Unchecked observers_;
 
   mojom::AddressErrorsPtr shipping_address_errors_;
-  mojom::PayerErrorFieldsPtr payer_errors_;
+  mojom::PayerErrorsPtr payer_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);
 };

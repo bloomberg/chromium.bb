@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/database/in_progress/in_progress_cache_impl.h"
@@ -56,6 +57,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -139,8 +141,8 @@ void CreateInterruptedDownload(
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &DownloadManager::StartDownload, download_manager,
           std::move(failed_created_info),
@@ -148,11 +150,13 @@ void CreateInterruptedDownload(
           nullptr, params->callback()));
 }
 
-void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
-                   std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-                   content::ResourceContext* resource_context,
-                   bool is_new_download,
-                   base::WeakPtr<DownloadManagerImpl> download_manager) {
+void BeginDownload(
+    std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
+    content::ResourceContext* resource_context,
+    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    bool is_new_download,
+    base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
@@ -161,8 +165,8 @@ void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
   params->set_blob_storage_context_getter(
       base::BindOnce(&BlobStorageContextGetter, resource_context));
   std::unique_ptr<net::URLRequest> url_request =
-      DownloadRequestCore::CreateRequestOnIOThread(is_new_download,
-                                                   params.get());
+      DownloadRequestCore::CreateRequestOnIOThread(
+          is_new_download, params.get(), std::move(url_request_context_getter));
   if (blob_data_handle) {
     storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
         url_request.get(), std::move(blob_data_handle));
@@ -190,8 +194,8 @@ void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
                                                   params.get(), false)
                          .release());
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &download::UrlDownloadHandler::Delegate::OnUrlDownloadHandlerCreated,
           download_manager, std::move(downloader)));
@@ -304,7 +308,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       weak_factory_(this) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     download::UrlDownloadHandlerFactory::Install(new UrlDownloaderFactory());
 
@@ -1256,14 +1260,13 @@ void DownloadManagerImpl::BeginDownloadInternal(
   } else {
     StoragePartition* storage_partition =
         BrowserContext::GetStoragePartitionForSite(browser_context_, site_url);
-    params->set_url_request_context_getter(
-        storage_partition->GetURLRequestContext());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&BeginDownload, std::move(params),
-                       std::move(blob_data_handle),
-                       browser_context_->GetResourceContext(), is_new_download,
-                       weak_factory_.GetWeakPtr()));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            &BeginDownload, std::move(params), std::move(blob_data_handle),
+            browser_context_->GetResourceContext(),
+            base::WrapRefCounted(storage_partition->GetURLRequestContext()),
+            is_new_download, weak_factory_.GetWeakPtr()));
   }
 }
 

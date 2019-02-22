@@ -4,6 +4,7 @@
 
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/scoped_testing_manifest_handler_registry.h"
 #include "extensions/test/logging_timer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,7 @@ namespace extensions {
 // and should be run after any substantial changes to the related
 // code.
 TEST(ManifestHandlerPerfTest, MANUAL_CommonInitialize) {
-  ManifestHandlerRegistry::ResetForTesting();
+  ScopedTestingManifestHandlerRegistry scoped_registry;
   static constexpr char kTimerId[] = "CommonInitialize";
   for (int i = 0; i < 100000; ++i) {
     {
@@ -33,7 +34,7 @@ TEST(ManifestHandlerPerfTest, MANUAL_CommonInitialize) {
 }
 
 TEST(ManifestHandlerPerfTest, MANUAL_LookupTest) {
-  ManifestHandlerRegistry::ResetForTesting();
+  ScopedTestingManifestHandlerRegistry scoped_registry;
   RegisterCommonManifestHandlers();
   ManifestHandler::FinalizeRegistration();
   ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
@@ -49,6 +50,20 @@ TEST(ManifestHandlerPerfTest, MANUAL_LookupTest) {
     for (const auto& name : handler_names) {
       registry->handlers_.find(name);
     }
+  }
+  LoggingTimer::Print();
+}
+
+TEST(ManifestHandlerPerfTest, MANUAL_CommonMeasureFinalization) {
+  ScopedTestingManifestHandlerRegistry scoped_registry;
+  static constexpr char kTimerId[] = "Finalize";
+  for (int i = 0; i < 100000; ++i) {
+    {
+      RegisterCommonManifestHandlers();
+      LoggingTimer timer(kTimerId);
+      ManifestHandler::FinalizeRegistration();
+    }
+    ManifestHandlerRegistry::ResetForTesting();
   }
   LoggingTimer::Print();
 }

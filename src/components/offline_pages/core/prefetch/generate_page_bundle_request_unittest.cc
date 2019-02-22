@@ -10,6 +10,7 @@
 #include "components/offline_pages/core/prefetch/proto/offline_pages.pb.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -43,7 +44,7 @@ class GeneratePageBundleRequestTest : public PrefetchRequestTestBase {
     return std::unique_ptr<GeneratePageBundleRequest>(
         new GeneratePageBundleRequest(
             kTestUserAgent, kTestGCMID, kTestMaxBundleSize, page_urls,
-            kTestChannel, request_context(), std::move(callback)));
+            kTestChannel, shared_url_loader_factory(), std::move(callback)));
   }
 };
 
@@ -56,19 +57,26 @@ TEST_F(GeneratePageBundleRequestTest, RequestData) {
   EXPECT_THAT(request->requested_urls(), Contains(kTestURL));
   EXPECT_THAT(request->requested_urls(), Contains(kTestURL2));
 
-  net::TestURLFetcher* fetcher = GetRunningFetcher();
-  EXPECT_TRUE(fetcher->GetOriginalURL().SchemeIs(url::kHttpsScheme));
-  EXPECT_TRUE(base::StartsWith(fetcher->GetOriginalURL().query(), "key",
+  network::TestURLLoaderFactory::PendingRequest* pending_request =
+      GetPendingRequest();
+  DCHECK(pending_request);
+  GURL request_url = pending_request->request.url;
+  EXPECT_TRUE(request_url.SchemeIs(url::kHttpsScheme));
+  EXPECT_TRUE(base::StartsWith(request_url.query(), "key",
                                base::CompareCase::SENSITIVE));
 
-  EXPECT_FALSE(fetcher->upload_content_type().empty());
-  EXPECT_FALSE(fetcher->upload_data().empty());
+  std::string upload_content_type;
+  pending_request->request.headers.GetHeader(
+      net::HttpRequestHeaders::kContentType, &upload_content_type);
+  EXPECT_FALSE(upload_content_type.empty());
+  EXPECT_FALSE(network::GetUploadData(pending_request->request).empty());
 
   // Experiment header should not be set.
-  EXPECT_EQ("", GetExperiementHeaderValue(fetcher));
+  EXPECT_EQ("", GetExperiementHeaderValue(pending_request));
 
   proto::GeneratePageBundleRequest bundle_data;
-  ASSERT_TRUE(bundle_data.ParseFromString(fetcher->upload_data()));
+  ASSERT_TRUE(bundle_data.ParseFromString(
+      network::GetUploadData(pending_request->request)));
   EXPECT_EQ(kTestUserAgent, bundle_data.user_agent());
   EXPECT_EQ(proto::FORMAT_MHTML, bundle_data.output_format());
   EXPECT_EQ(kTestMaxBundleSize, bundle_data.max_bundle_size_bytes());
@@ -87,11 +95,13 @@ TEST_F(GeneratePageBundleRequestTest, ExperimentHeaderInRequestData) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   std::unique_ptr<GeneratePageBundleRequest> request(
       CreateRequest(callback.Get()));
-  net::TestURLFetcher* fetcher = GetRunningFetcher();
+  network::TestURLLoaderFactory::PendingRequest* pending_request =
+      GetPendingRequest();
+  DCHECK(pending_request);
 
   // Experiment header should be set.
   EXPECT_EQ(kExperimentValueSetInFieldTrial,
-            GetExperiementHeaderValue(fetcher));
+            GetExperiementHeaderValue(pending_request));
 }
 
 TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
@@ -106,8 +116,9 @@ TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
                       SaveArg<2>(&pages)));
   RespondWithData("");
+  RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }
@@ -124,8 +135,9 @@ TEST_F(GeneratePageBundleRequestTest, InvalidResponse) {
       .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
                       SaveArg<2>(&pages)));
   RespondWithData("Some invalid data");
+  RunUntilIdle();
 
-  EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff, status);
   EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//build/buildflag_header.gni")
 import("//testing/test.gni")
@@ -14,7 +15,7 @@ buildflag_header("buildflags") {
 }
 
 if (enable_vulkan) {
-  component("vulkan") {
+  jumbo_component("vulkan") {
     output_name = "vulkan_wrapper"
 
     sources = [
@@ -22,29 +23,14 @@ if (enable_vulkan) {
       "vulkan_command_buffer.h",
       "vulkan_command_pool.cc",
       "vulkan_command_pool.h",
-      "vulkan_descriptor_layout.cc",
-      "vulkan_descriptor_layout.h",
-      "vulkan_descriptor_pool.cc",
-      "vulkan_descriptor_pool.h",
-      "vulkan_descriptor_set.cc",
-      "vulkan_descriptor_set.h",
       "vulkan_device_queue.cc",
       "vulkan_device_queue.h",
       "vulkan_export.h",
       "vulkan_function_pointers.cc",
       "vulkan_function_pointers.h",
-      "vulkan_image_view.cc",
-      "vulkan_image_view.h",
       "vulkan_implementation.cc",
       "vulkan_implementation.h",
       "vulkan_instance.cc",
-      "vulkan_instance.h",
-      "vulkan_render_pass.cc",
-      "vulkan_render_pass.h",
-      "vulkan_sampler.cc",
-      "vulkan_sampler.h",
-      "vulkan_shader_module.cc",
-      "vulkan_shader_module.h",
       "vulkan_surface.cc",
       "vulkan_surface.h",
       "vulkan_swap_chain.cc",
@@ -61,6 +47,11 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
+
+    data_deps = []
+    if (is_fuchsia) {
+      data_deps += [ "//third_party/fuchsia-sdk:vulkan_layers" ]
+    }
   }
 
   # TODO(cblume): These tests should run on each platform -- crbug.com/858614

@@ -16,6 +16,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_mach_port.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -124,13 +125,12 @@ static OSStatus GetInputDeviceStreamFormat(
 
 // Returns the number of physical processors on the device.
 static int NumberOfPhysicalProcessors() {
-  mach_port_t mach_host = mach_host_self();
+  base::mac::ScopedMachSendRight mach_host(mach_host_self());
   host_basic_info hbi = {};
   mach_msg_type_number_t info_count = HOST_BASIC_INFO_COUNT;
   kern_return_t kr =
-      host_info(mach_host, HOST_BASIC_INFO, reinterpret_cast<host_info_t>(&hbi),
-                &info_count);
-  mach_port_deallocate(mach_task_self(), mach_host);
+      host_info(mach_host.get(), HOST_BASIC_INFO,
+                reinterpret_cast<host_info_t>(&hbi), &info_count);
 
   int n_physical_cores = 0;
   if (kr != KERN_SUCCESS) {
@@ -148,11 +148,11 @@ static int NumberOfPhysicalProcessors() {
 // as expected.
 static void AddSystemInfoToUMA() {
   // Number of logical processors/cores on the current machine.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.LogicalProcessorsMac",
-                       base::SysInfo::NumberOfProcessors());
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.LogicalProcessorsMac",
+                          base::SysInfo::NumberOfProcessors());
   // Number of physical processors/cores on the current machine.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.PhysicalProcessorsMac",
-                       NumberOfPhysicalProcessors());
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.PhysicalProcessorsMac",
+                          NumberOfPhysicalProcessors());
   DVLOG(1) << "logical processors: " << base::SysInfo::NumberOfProcessors();
   DVLOG(1) << "physical processors: " << NumberOfPhysicalProcessors();
 }
@@ -1418,7 +1418,7 @@ void AUAudioInputStream::ReportAndResetStats() {
                              number_of_frames_provided_);
   // Even if there aren't any glitches, we want to record it to get a feel for
   // how often we get no glitches vs the alternative.
-  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", glitches_detected_);
+  UMA_HISTOGRAM_COUNTS_1M("Media.Audio.Capture.Glitches", glitches_detected_);
 
   auto lost_frames_ms = (total_lost_frames_ * 1000) / format_.mSampleRate;
   std::string log_message = base::StringPrintf(

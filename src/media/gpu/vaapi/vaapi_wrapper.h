@@ -41,6 +41,8 @@ class NativePixmap;
 
 namespace media {
 
+class ScopedVAImage;
+
 // This class handles VA-API calls and ensures proper locking of VA-API calls
 // to libva, the userspace shim to the HW codec driver. libva is not
 // thread-safe, so we have to perform locking ourselves. This class is fully
@@ -162,22 +164,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                             gfx::Size dest_size);
 #endif  // USE_X11
 
-  // Get a VAImage from a VASurface |va_surface_id| and map it into memory with
-  // given |format| and |size|. The output is |image| and the mapped memory is
-  // |mem|. If |format| doesn't equal to the internal format, the underlying
-  // implementation will do format conversion if supported. |size| should be
-  // smaller than or equal to the surface. If |size| is smaller, the image will
-  // be cropped. The VAImage should be released using the ReturnVaImage
-  // function. Returns true when successful.
-  bool GetVaImage(VASurfaceID va_surface_id,
-                  VAImageFormat* format,
-                  const gfx::Size& size,
-                  VAImage* image,
-                  void** mem);
-
-  // Release the VAImage (and the associated memory mapping) obtained from
-  // GetVaImage().
-  void ReturnVaImage(VAImage* image);
+  // Creates a ScopedVAImage from a VASurface |va_surface_id| and map it into
+  // memory with the given |format| and |size|. If |format| is not equal to the
+  // internal format, the underlying implementation will do format conversion if
+  // supported. |size| should be smaller than or equal to the surface. If |size|
+  // is smaller, the image will be cropped.
+  std::unique_ptr<ScopedVAImage> CreateVaImage(VASurfaceID va_surface_id,
+                                               VAImageFormat* format,
+                                               const gfx::Size& size);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
   bool UploadVideoFrameToSurface(const scoped_refptr<VideoFrame>& frame,
@@ -227,6 +221,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
+  friend class VaapiJpegDecodeAcceleratorTest;
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();

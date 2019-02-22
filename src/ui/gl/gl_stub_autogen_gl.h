@@ -118,8 +118,6 @@ void glColorMaskFn(GLboolean red,
                    GLboolean blue,
                    GLboolean alpha) override {}
 void glCompileShaderFn(GLuint shader) override {}
-void glCompressedCopyTextureCHROMIUMFn(GLuint sourceId,
-                                       GLuint destId) override {}
 void glCompressedTexImage2DFn(GLenum target,
                               GLint level,
                               GLenum internalformat,
@@ -878,6 +876,7 @@ void* glMapBufferRangeFn(GLenum target,
                          GLbitfield access) override;
 void glMatrixLoadfEXTFn(GLenum matrixMode, const GLfloat* m) override {}
 void glMatrixLoadIdentityEXTFn(GLenum matrixMode) override {}
+void glMaxShaderCompilerThreadsKHRFn(GLuint count) override {}
 void glMemoryBarrierByRegionFn(GLbitfield barriers) override {}
 void glMemoryBarrierEXTFn(GLbitfield barriers) override {}
 void glMinSampleShadingFn(GLfloat value) override {}

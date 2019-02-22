@@ -41,7 +41,7 @@ class MockHttpResponse : public chrome_cleaner::HttpResponse {
   }
 
   bool GetContentLength(bool* has_content_length,
-                        size_t* content_length) override {
+                        uint32_t* content_length) override {
     ADD_FAILURE() << "This method should not be called.";
     return false;
   }
@@ -58,7 +58,7 @@ class MockHttpResponse : public chrome_cleaner::HttpResponse {
     return config_->GetCurrentCalls().has_data_succeeds;
   }
 
-  bool ReadData(char* buffer, size_t* count) override {
+  bool ReadData(char* buffer, uint32_t* count) override {
     MockHttpAgentConfig::Calls& calls = config_->GetCurrentCalls();
 
     bool succeeds = calls.read_data_succeeds_by_default;
@@ -181,14 +181,15 @@ MockHttpAgentConfig::Calls& MockHttpAgentConfig::GetCurrentCalls() {
   return calls_[current_index_];
 }
 
-void MockHttpAgentConfig::ReadData(char* buffer, size_t* count) {
+void MockHttpAgentConfig::ReadData(char* buffer, uint32_t* count) {
   if (current_index_ >= calls_.size()) {
     ADD_FAILURE() << "Reading data for an unexpected call";
     *count = 0;
     return;
   }
   Calls& calls = calls_[current_index_];
-  *count = std::min(*count, calls.read_data_result.size());
+  *count =
+      std::min(*count, static_cast<uint32_t>(calls.read_data_result.size()));
   memcpy(buffer, calls.read_data_result.c_str(), *count);
   calls.read_data_result = calls.read_data_result.substr(*count);
 }

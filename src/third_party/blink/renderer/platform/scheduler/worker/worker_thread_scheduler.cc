@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
@@ -117,7 +118,10 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       initial_frame_status_(proxy ? proxy->initial_frame_status()
                                   : FrameStatus::kNone),
       ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId),
-      ukm_recorder_(proxy ? proxy->TakeUkmRecorder() : nullptr) {
+      connector_(proxy ? proxy->TakeConnector() : nullptr) {
+  if (connector_) {
+    ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector_.get());
+  }
   thread_start_time_ = helper()->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper()->AddTaskTimeObserver(this);
@@ -159,6 +163,12 @@ scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::CompositorTaskRunner() {
   DCHECK(initialized_);
   return compositor_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerThreadScheduler::IPCTaskRunner() {
+  NOTREACHED() << "Not implemented";
+  return nullptr;
 }
 
 bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
@@ -217,7 +227,7 @@ void WorkerThreadScheduler::InitImpl() {
 
 void WorkerThreadScheduler::OnTaskCompleted(
     NonMainThreadTaskQueue* task_queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const TaskQueue::TaskTiming& task_timing) {
   worker_metrics_helper_.RecordTaskMetrics(task_queue, task, task_timing);
 
@@ -296,7 +306,7 @@ void WorkerThreadScheduler::CreateTaskQueueThrottler() {
 
 void WorkerThreadScheduler::RecordTaskUkm(
     NonMainThreadTaskQueue* worker_task_queue,
-    const base::sequence_manager::TaskQueue::Task& task,
+    const base::sequence_manager::Task& task,
     const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
   if (!ShouldRecordTaskUkm(task_timing.has_thread_time()))
     return;
@@ -307,7 +317,7 @@ void WorkerThreadScheduler::RecordTaskUkm(
 
   builder.SetRendererBackgrounded(
       internal::ProcessState::Get()->is_process_backgrounded);
-  builder.SetTaskType(task.task_type());
+  builder.SetTaskType(task.task_type);
   builder.SetFrameStatus(static_cast<int>(initial_frame_status_));
   builder.SetTaskDuration(task_timing.wall_duration().InMicroseconds());
 

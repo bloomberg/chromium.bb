@@ -6,33 +6,65 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 
 namespace content {
 
 // static
-bool BackgroundSyncNetworkObserver::ignore_network_change_notifier_ = false;
+bool BackgroundSyncNetworkObserver::ignore_network_changes_ = false;
 
 // static
-void BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
+void BackgroundSyncNetworkObserver::SetIgnoreNetworkChangesForTests(
     bool ignore) {
-  ignore_network_change_notifier_ = ignore;
+  ignore_network_changes_ = ignore;
 }
 
 BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
-    const base::RepeatingClosure& network_changed_callback)
-    : connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
-      network_changed_callback_(network_changed_callback) {
+    const base::RepeatingClosure& connection_changed_callback)
+    : network_connection_tracker_(nullptr),
+      connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
+      connection_changed_callback_(connection_changed_callback),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&GetNetworkConnectionTracker),
+      base::BindOnce(
+          &BackgroundSyncNetworkObserver::RegisterWithNetworkConnectionTracker,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 BackgroundSyncNetworkObserver::~BackgroundSyncNetworkObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  if (network_connection_tracker_)
+    network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+}
+
+void BackgroundSyncNetworkObserver::RegisterWithNetworkConnectionTracker(
+    network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(network_connection_tracker);
+  network_connection_tracker_ = network_connection_tracker;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+
+  UpdateConnectionType();
+}
+
+void BackgroundSyncNetworkObserver::UpdateConnectionType() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  network::mojom::ConnectionType connection_type;
+  bool synchronous_return = network_connection_tracker_->GetConnectionType(
+      &connection_type,
+      base::BindOnce(&BackgroundSyncNetworkObserver::OnConnectionChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+  if (synchronous_return)
+    OnConnectionChanged(connection_type);
 }
 
 bool BackgroundSyncNetworkObserver::NetworkSufficient(
@@ -45,46 +77,47 @@ bool BackgroundSyncNetworkObserver::NetworkSufficient(
     case NETWORK_STATE_AVOID_CELLULAR:
       // Note that this returns true for CONNECTION_UNKNOWN to avoid never
       // firing.
-      return connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE &&
-             !net::NetworkChangeNotifier::IsConnectionCellular(
+      return connection_type_ !=
+                 network::mojom::ConnectionType::CONNECTION_NONE &&
+             !network::NetworkConnectionTracker::IsConnectionCellular(
                  connection_type_);
     case NETWORK_STATE_ONLINE:
-      return connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE;
+      return connection_type_ !=
+             network::mojom::ConnectionType::CONNECTION_NONE;
   }
 
   NOTREACHED();
   return false;
 }
 
-void BackgroundSyncNetworkObserver::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
+void BackgroundSyncNetworkObserver::OnConnectionChanged(
+    network::mojom::ConnectionType connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (ignore_network_change_notifier_)
+  if (ignore_network_changes_)
     return;
-  NotifyManagerIfNetworkChanged(connection_type);
+  NotifyManagerIfConnectionChanged(connection_type);
 }
 
-void BackgroundSyncNetworkObserver::NotifyManagerIfNetworkChangedForTesting(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
-  NotifyManagerIfNetworkChanged(connection_type);
+void BackgroundSyncNetworkObserver::NotifyManagerIfConnectionChangedForTesting(
+    network::mojom::ConnectionType connection_type) {
+  NotifyManagerIfConnectionChanged(connection_type);
 }
 
-void BackgroundSyncNetworkObserver::NotifyManagerIfNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
+void BackgroundSyncNetworkObserver::NotifyManagerIfConnectionChanged(
+    network::mojom::ConnectionType connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (connection_type == connection_type_)
     return;
 
   connection_type_ = connection_type;
-  NotifyNetworkChanged();
+  NotifyConnectionChanged();
 }
 
-void BackgroundSyncNetworkObserver::NotifyNetworkChanged() {
+void BackgroundSyncNetworkObserver::NotifyConnectionChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                network_changed_callback_);
+                                                connection_changed_callback_);
 }
 
 }  // namespace content

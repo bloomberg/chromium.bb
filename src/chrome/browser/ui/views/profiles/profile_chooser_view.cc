@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -68,12 +69,11 @@
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "components/sync/driver/sync_error_controller.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/paint_recorder.h"
@@ -118,8 +118,8 @@ constexpr int kFixedMenuWidthPreDice = 240;
 constexpr int kFixedMenuWidthDice = 288;
 constexpr int kIconSize = 16;
 
-// Spacing between the edge of the material design user menu and the
-// top/bottom or left/right of the menu items.
+// Spacing between the edge of the user menu and the top/bottom or left/right of
+// the menu items.
 constexpr int kMenuEdgeMargin = 16;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
@@ -333,14 +333,13 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_ =
       new ProfileChooserView(anchor_button, browser, view_mode,
                              manage_accounts_params.service_type, access_point);
-  if (!anchor_button) {
+  if (anchor_button) {
+    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  } else {
     DCHECK(parent_window);
     profile_bubble_->SetAnchorRect(anchor_rect);
     profile_bubble_->set_parent_window(parent_window);
   }
-
-  if (anchor_button && ui::MaterialDesignController::IsNewerMaterialUi())
-    anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
 
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
@@ -353,11 +352,6 @@ void ProfileChooserView::ShowBubble(
 // static
 bool ProfileChooserView::IsShowing() {
   return profile_bubble_ != NULL;
-}
-
-// static
-views::Widget* ProfileChooserView::GetCurrentBubbleWidget() {
-  return profile_bubble_ ? profile_bubble_->GetWidget() : nullptr;
 }
 
 // static
@@ -581,7 +575,7 @@ void ProfileChooserView::FocusFirstProfileButton() {
 
 void ProfileChooserView::WindowClosing() {
   DCHECK_EQ(profile_bubble_, this);
-  if (anchor_button_ && ui::MaterialDesignController::IsNewerMaterialUi())
+  if (anchor_button_)
     anchor_button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   profile_bubble_ = NULL;
 }
@@ -646,6 +640,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (browser_->profile()->IsGuestSession()) {
       profiles::CloseGuestProfileWindows();
     } else {
+      base::RecordAction(
+          base::UserMetricsAction("ProfileChooser_ManageClicked"));
       UserManager::Show(base::FilePath(),
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     }
@@ -730,7 +726,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowViewFromMode(view_mode_ == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                          ? profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER
                          : profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT);
-    base::RecordAction(base::UserMetricsAction("ProfileChooser_ManageClicked"));
   } else if (sender == signin_current_profile_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
   } else if (sender == signin_with_gaia_account_button_) {
@@ -1082,7 +1077,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   // disabled. Otherwise, show the email attached to the profile.
   bool show_email = !is_guest && avatar_item.signed_in && !mirror_enabled;
   const base::string16 hover_button_title =
-      dice_enabled_ && profile->IsSyncAllowed()
+      dice_enabled_ && profile->IsSyncAllowed() && show_email
           ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
   HoverButton* profile_card = new HoverButton(
@@ -1427,25 +1422,25 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
       profiles::kAvatarBubbleAccountsBackgroundColor));
   views::GridLayout* layout = CreateSingleColumnLayout(view, menu_width_);
 
-  Profile* profile = browser_->profile();
-  std::string primary_account =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedAccountId();
-  DCHECK(!primary_account.empty());
-  std::vector<std::string> accounts =
-      profiles::GetSecondaryAccountsForProfile(profile, primary_account);
-
   // Get state of authentication error, if any.
+  Profile* profile = browser_->profile();
   std::string error_account_id = GetAuthErrorAccountId(profile);
 
   // The primary account should always be listed first.
   // TODO(rogerta): we still need to further differentiate the primary account
   // from the others in the UI, so more work is likely required here:
   // crbug.com/311124.
-  CreateAccountButton(layout, primary_account, true,
-                      error_account_id == primary_account, menu_width_);
-  for (size_t i = 0; i < accounts.size(); ++i)
-    CreateAccountButton(layout, accounts[i], false,
-                        error_account_id == accounts[i], menu_width_);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->HasPrimaryAccount());
+  AccountInfo primary_account = identity_manager->GetPrimaryAccountInfo();
+
+  CreateAccountButton(layout, primary_account.account_id, true,
+                      error_account_id == primary_account.account_id,
+                      menu_width_);
+  for (const AccountInfo& account :
+       profiles::GetSecondaryAccountsForSignedInProfile(profile))
+    CreateAccountButton(layout, account.account_id, false,
+                        error_account_id == account.account_id, menu_width_);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing =

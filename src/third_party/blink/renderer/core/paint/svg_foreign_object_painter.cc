@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 
 namespace blink {
@@ -53,10 +53,10 @@ void SVGForeignObjectPainter::PaintLayer(const PaintInfo& paint_info) {
 
 void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   PaintInfo paint_info_before_filtering(paint_info);
-  SVGPaintContext paint_context(layout_svg_foreign_object_,
-                                paint_info_before_filtering);
-  if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground &&
-      !paint_context.ApplyClipMaskAndFilterIfNecessary())
+  ScopedSVGPaintState paint_state(layout_svg_foreign_object_,
+                                  paint_info_before_filtering);
+  if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground &&
+      !paint_state.ApplyClipMaskAndFilterIfNecessary())
     return;
 
   BlockPainter(layout_svg_foreign_object_).Paint(paint_info);

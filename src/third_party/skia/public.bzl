@@ -243,6 +243,7 @@ BASE_SRCS_ALL = struct(
         # TODO(mtklein): Move to opts?
         "src/pdf/SkDocument_PDF_None.cpp",  # We use src/pdf/SkPDFDocument.cpp.
         "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+        "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp",
 
         # Exclude files that don't compile everywhere.
         "src/svg/**/*",  # Depends on xml, SkJpegCodec, and SkPngCodec.
@@ -262,9 +263,6 @@ BASE_SRCS_ALL = struct(
 
         # Atlas text
         "src/atlastext/*",
-
-        # Not time for skcms in Google3 yet.
-        "src/core/SkColorSpaceXform_skcms.cpp",
 
         # Compute backend not yet even hooked into Skia.
         "src/compute/**/*",
@@ -399,6 +397,7 @@ INCLUDES = [
     "include/codec",
     "include/config",
     "include/core",
+    "include/docs",
     "include/effects",
     "include/encode",
     "include/gpu",
@@ -418,6 +417,7 @@ INCLUDES = [
     "src/ports",
     "src/sfnt",
     "src/shaders",
+    "src/shaders/gradients",
     "src/sksl",
     "src/utils",
     "third_party/gif",
@@ -431,6 +431,8 @@ DM_SRCS_ALL = struct(
     include = [
         "dm/*.cpp",
         "dm/*.h",
+        "experimental/pipe/*.cpp",
+        "experimental/pipe/*.h",
         "experimental/svg/model/*.cpp",
         "experimental/svg/model/*.h",
         "gm/*.cpp",
@@ -524,6 +526,7 @@ def dm_srcs(os_conditions):
 DM_INCLUDES = [
     "dm",
     "gm",
+    "experimental/pipe",
     "experimental/svg/model",
     "src/codec",
     "src/core",

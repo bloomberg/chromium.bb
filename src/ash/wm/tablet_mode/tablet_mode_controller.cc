@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/bind.h"
@@ -113,17 +113,13 @@ TabletModeController::UiMode GetTabletMode() {
   return TabletModeController::UiMode::kNone;
 }
 
-std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-CreateScopedDisableInternalMouseAndKeyboard() {
-  return std::make_unique<ScopedDisableInternalMouseAndKeyboardOzone>();
-}
-
 }  // namespace
 
 constexpr char TabletModeController::kLidAngleHistogramName[];
 
 TabletModeController::TabletModeController()
-    : tablet_mode_usage_interval_start_time_(base::Time::Now()),
+    : event_blocker_(new InternalInputDevicesEventBlocker),
+      tablet_mode_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       binding_(this),
       scoped_session_observer_(this),
@@ -139,12 +135,19 @@ TabletModeController::TabletModeController()
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
+    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
+        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
+                            base::Unretained(this)));
   }
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client->AddObserver(this);
   power_manager_client->GetSwitchStates(base::BindOnce(
       &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
+
+  TabletMode::SetCallback(base::BindRepeating(
+      &TabletModeController::IsTabletModeWindowManagerEnabled,
+      base::Unretained(this)));
 }
 
 TabletModeController::~TabletModeController() {
@@ -157,13 +160,8 @@ TabletModeController::~TabletModeController() {
   }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
-}
 
-bool TabletModeController::CanEnterTabletMode() {
-  // If we have ever seen accelerometer data, then HandleHingeRotation may
-  // trigger tablet mode at some point in the future.
-  // All TabletMode-enabled devices can enter tablet mode.
-  return have_seen_accelerometer_data_ || IsEnabled();
+  TabletMode::SetCallback(TabletMode::TabletModeCallback());
 }
 
 // TODO(jcliang): Hide or remove EnableTabletModeWindowManager
@@ -201,6 +199,8 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     if (client_)  // Null at startup and in tests.
       client_->OnTabletModeToggled(false);
   }
+
+  UpdateInternalInputDevicesEventBlocker();
 }
 
 bool TabletModeController::IsTabletModeWindowManagerEnabled() const {
@@ -236,9 +236,68 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
          wm::GetWindowState(widget->GetNativeWindow())->IsSnapped();
 }
 
+bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
+  return event_blocker_->is_blocked();
+}
+
+void TabletModeController::FlushForTesting() {
+  binding_.FlushForTesting();
+}
+
+bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
+  if (!record_lid_angle_timer_.IsRunning())
+    return false;
+
+  record_lid_angle_timer_.user_task().Run();
+  return true;
+}
+
+void TabletModeController::OnShellInitialized() {
+  force_ui_mode_ = GetTabletMode();
+  if (force_ui_mode_ == UiMode::kTabletMode)
+    AttemptEnterTabletMode();
+}
+
+void TabletModeController::OnDisplayConfigurationChanged() {
+  if (!display::Display::HasInternalDisplay() ||
+      !Shell::Get()->display_manager()->IsActiveDisplayId(
+          display::Display::InternalDisplayId())) {
+    AttemptLeaveTabletMode();
+  } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
+    // The internal display has returned, as we are exiting docked mode.
+    // The device is still in tablet mode, so trigger tablet mode, as this
+    // switch leads to the ignoring of accelerometer events. When the switch is
+    // not set the next stable accelerometer readings will trigger maximize
+    // mode.
+    AttemptEnterTabletMode();
+  }
+}
+
+void TabletModeController::OnChromeTerminating() {
+  // The system is about to shut down, so record TabletMode usage interval
+  // metrics based on whether TabletMode mode is currently active.
+  RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
+
+  if (CanEnterTabletMode()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
+                                total_tablet_mode_time_.InMinutes(), 1,
+                                base::TimeDelta::FromDays(7).InMinutes(), 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
+                                total_non_tablet_mode_time_.InMinutes(), 1,
+                                base::TimeDelta::FromDays(7).InMinutes(), 50);
+    base::TimeDelta total_runtime =
+        total_tablet_mode_time_ + total_non_tablet_mode_time_;
+    if (total_runtime.InSeconds() > 0) {
+      UMA_HISTOGRAM_PERCENTAGE("Ash.TouchView.TouchViewActivePercentage",
+                               100 * total_tablet_mode_time_.InSeconds() /
+                                   total_runtime.InSeconds());
+    }
+  }
+}
+
 void TabletModeController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowUiModeChange())
     return;
 
   have_seen_accelerometer_data_ = true;
@@ -276,20 +335,20 @@ void TabletModeController::OnAccelerometerUpdated(
 void TabletModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowUiModeChange())
     return;
 
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   lid_is_closed_ = !open;
 
   if (!tablet_mode_switch_is_on_)
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
 }
 
 void TabletModeController::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& time) {
-  if (!AllowEnterExitTabletMode())
+  if (!AllowUiModeChange())
     return;
 
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
@@ -307,8 +366,13 @@ void TabletModeController::TabletModeEventReceived(
     AttemptEnterTabletMode();
   } else if (!on && IsTabletModeWindowManagerEnabled() &&
              !can_detect_lid_angle_) {
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
   }
+
+  // Even if we do not change its ui mode, we should update its input device
+  // blocker as tablet mode events may come in because of the lid angle/or folio
+  // keyboard state changes but ui mode might still stay the same.
+  UpdateInternalInputDevicesEventBlocker();
 }
 
 void TabletModeController::SuspendImminent(
@@ -324,11 +388,15 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void TabletModeController::OnMouseDeviceConfigurationChanged() {
-  HandleMouseAddedOrRemoved();
+  HandlePointingDeviceAddedOrRemoved();
+}
+
+void TabletModeController::OnTouchpadDeviceConfigurationChanged() {
+  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::OnDeviceListsComplete() {
-  HandleMouseAddedOrRemoved();
+  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -392,7 +460,7 @@ void TabletModeController::HandleHingeRotation(
 
   // Toggle tablet mode on or off when corresponding thresholds are passed.
   if (is_angle_stable && lid_angle_ <= kExitTabletModeAngle) {
-    AttemptLeaveTabletMode(false);
+    AttemptLeaveTabletMode();
   } else if (!lid_is_closed_ && lid_angle_ >= kEnterTabletModeAngle &&
              (is_angle_stable || CanUseUnstableLidAngle())) {
     AttemptEnterTabletMode();
@@ -407,77 +475,46 @@ void TabletModeController::HandleHingeRotation(
   }
 }
 
+void TabletModeController::OnGetSwitchStates(
+    base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
+  if (!result.has_value())
+    return;
+  LidEventReceived(result->lid_state, base::TimeTicks::Now());
+  TabletModeEventReceived(result->tablet_mode, base::TimeTicks::Now());
+}
+
+bool TabletModeController::CanUseUnstableLidAngle() const {
+  DCHECK(!first_unstable_lid_angle_time_.is_null());
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  DCHECK(now >= first_unstable_lid_angle_time_);
+  const base::TimeDelta elapsed_time = now - first_unstable_lid_angle_time_;
+  return elapsed_time >= kUnstableLidAngleDuration;
+}
+
+bool TabletModeController::CanEnterTabletMode() {
+  // If we have ever seen accelerometer data, then HandleHingeRotation may
+  // trigger tablet mode at some point in the future.
+  // All TabletMode-enabled devices can enter tablet mode.
+  return have_seen_accelerometer_data_ || IsEnabled();
+}
+
 void TabletModeController::AttemptEnterTabletMode() {
-  event_blocker_.reset();
-  event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
-  for (auto& observer : tablet_mode_observers_)
-    observer.OnTabletModeEventsBlockingChanged();
-
-  if (IsTabletModeWindowManagerEnabled())
+  if (IsTabletModeWindowManagerEnabled() || has_external_pointing_device_) {
+    UpdateInternalInputDevicesEventBlocker();
     return;
-
-  should_enter_tablet_mode_ = true;
-
-  if (has_external_mouse_)
-    return;
+  }
 
   EnableTabletModeWindowManager(true);
 }
 
-void TabletModeController::AttemptLeaveTabletMode(
-    bool called_by_device_update) {
-  // Do not unlock internal keyboard if we enter clamshell by plugging in an
-  // external mouse.
-  if (!called_by_device_update) {
-    event_blocker_.reset();
-    for (auto& observer : tablet_mode_observers_)
-      observer.OnTabletModeEventsBlockingChanged();
-  }
-
-  if (!IsTabletModeWindowManagerEnabled())
+void TabletModeController::AttemptLeaveTabletMode() {
+  if (!IsTabletModeWindowManagerEnabled()) {
+    UpdateInternalInputDevicesEventBlocker();
     return;
-
-  if (!called_by_device_update)
-    should_enter_tablet_mode_ = false;
+  }
 
   EnableTabletModeWindowManager(false);
-}
-
-void TabletModeController::FlushForTesting() {
-  binding_.FlushForTesting();
-}
-
-bool TabletModeController::TriggerRecordLidAngleTimerForTesting() {
-  if (!record_lid_angle_timer_.IsRunning())
-    return false;
-
-  record_lid_angle_timer_.user_task().Run();
-  return true;
-}
-
-bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {
-  return !!event_blocker_.get();
-}
-
-void TabletModeController::OnShellInitialized() {
-  force_ui_mode_ = GetTabletMode();
-  if (force_ui_mode_ == UiMode::kTabletMode)
-    AttemptEnterTabletMode();
-}
-
-void TabletModeController::OnDisplayConfigurationChanged() {
-  if (!display::Display::HasInternalDisplay() ||
-      !Shell::Get()->display_manager()->IsActiveDisplayId(
-          display::Display::InternalDisplayId())) {
-    AttemptLeaveTabletMode(false);
-  } else if (tablet_mode_switch_is_on_ && !IsTabletModeWindowManagerEnabled()) {
-    // The internal display has returned, as we are exiting docked mode.
-    // The device is still in tablet mode, so trigger tablet mode, as this
-    // switch leads to the ignoring of accelerometer events. When the switch is
-    // not set the next stable accelerometer readings will trigger maximize
-    // mode.
-    AttemptEnterTabletMode();
-  }
 }
 
 void TabletModeController::RecordTabletModeUsageInterval(
@@ -521,78 +558,98 @@ void TabletModeController::SetClient(mojom::TabletModeClientPtr client) {
   client_->OnTabletModeToggled(IsTabletModeWindowManagerEnabled());
 }
 
-bool TabletModeController::AllowEnterExitTabletMode() const {
+bool TabletModeController::AllowUiModeChange() const {
   return force_ui_mode_ == UiMode::kNone;
 }
 
-void TabletModeController::HandleMouseAddedOrRemoved() {
-  if (!AllowEnterExitTabletMode())
+void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
+  if (!AllowUiModeChange())
     return;
 
-  bool has_external_mouse = false;
+  bool has_external_pointing_device = false;
+  // Check if there is an external mouse device.
   for (const ui::InputDevice& mouse :
        ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {
-    if (mouse.type == ui::INPUT_DEVICE_EXTERNAL) {
-      has_external_mouse = true;
+    if (mouse.type == ui::INPUT_DEVICE_USB ||
+        (mouse.type == ui::INPUT_DEVICE_BLUETOOTH &&
+         bluetooth_devices_observer_->IsConnectedBluetoothDevice(mouse))) {
+      has_external_pointing_device = true;
       break;
     }
   }
-
-  if (has_external_mouse_ == has_external_mouse)
-    return;
-
-  has_external_mouse_ = has_external_mouse;
-
-  // Try to tablet mode if we are already in tablet mode and
-  // |has_external_mouse| is true.
-  if (has_external_mouse) {
-    AttemptLeaveTabletMode(true);
-    return;
-  }
-
-  // Try to enter tablet mode if |has_external_mouse| is false and we
-  // are in an orientation that should be tablet mode.
-  if (should_enter_tablet_mode_)
-    AttemptEnterTabletMode();
-}
-
-void TabletModeController::OnChromeTerminating() {
-  // The system is about to shut down, so record TabletMode usage interval
-  // metrics based on whether TabletMode mode is currently active.
-  RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
-
-  if (CanEnterTabletMode()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
-                                total_tablet_mode_time_.InMinutes(), 1,
-                                base::TimeDelta::FromDays(7).InMinutes(), 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
-                                total_non_tablet_mode_time_.InMinutes(), 1,
-                                base::TimeDelta::FromDays(7).InMinutes(), 50);
-    base::TimeDelta total_runtime =
-        total_tablet_mode_time_ + total_non_tablet_mode_time_;
-    if (total_runtime.InSeconds() > 0) {
-      UMA_HISTOGRAM_PERCENTAGE("Ash.TouchView.TouchViewActivePercentage",
-                               100 * total_tablet_mode_time_.InSeconds() /
-                                   total_runtime.InSeconds());
+  // Check if there is an external touchpad device.
+  if (!has_external_pointing_device) {
+    for (const ui::InputDevice& touch_pad :
+         ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+      if (touch_pad.type == ui::INPUT_DEVICE_USB ||
+          (touch_pad.type == ui::INPUT_DEVICE_BLUETOOTH &&
+           bluetooth_devices_observer_->IsConnectedBluetoothDevice(
+               touch_pad))) {
+        has_external_pointing_device = true;
+        break;
+      }
     }
   }
-}
 
-void TabletModeController::OnGetSwitchStates(
-    base::Optional<chromeos::PowerManagerClient::SwitchStates> result) {
-  if (!result.has_value())
+  if (has_external_pointing_device_ == has_external_pointing_device)
     return;
-  LidEventReceived(result->lid_state, base::TimeTicks::Now());
-  TabletModeEventReceived(result->tablet_mode, base::TimeTicks::Now());
+
+  has_external_pointing_device_ = has_external_pointing_device;
+
+  // Enter clamshell mode whenever an external pointing device is attached.
+  if (has_external_pointing_device) {
+    AttemptLeaveTabletMode();
+  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
+    // If there is no external pointing device, only enter tablet mode if 1) the
+    // lid angle can be detected and is in tablet mode angle range. or 2) if the
+    // lid angle can't be detected (e.g., tablet device or clamshell device) and
+    // |tablet_mode_switch_is_on_| is true (it can only happen for tablet device
+    // as |tablet_mode_switch_is_on_| should never be true for a clamshell
+    // device).
+    AttemptEnterTabletMode();
+  }
 }
 
-bool TabletModeController::CanUseUnstableLidAngle() const {
-  DCHECK(!first_unstable_lid_angle_time_.is_null());
+void TabletModeController::UpdateBluetoothDevice(
+    device::BluetoothDevice* device) {
+  // We only care about pointing type bluetooth device change. Note KEYBOARD
+  // type is also included here as sometimes a bluetooth keyboard comes with a
+  // touch pad.
+  if (device->GetDeviceType() != device::BluetoothDeviceType::MOUSE &&
+      device->GetDeviceType() !=
+          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO &&
+      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD &&
+      device->GetDeviceType() != device::BluetoothDeviceType::TABLET) {
+    return;
+  }
 
-  const base::TimeTicks now = tick_clock_->NowTicks();
-  DCHECK(now >= first_unstable_lid_angle_time_);
-  const base::TimeDelta elapsed_time = now - first_unstable_lid_angle_time_;
-  return elapsed_time >= kUnstableLidAngleDuration;
+  HandlePointingDeviceAddedOrRemoved();
+}
+
+void TabletModeController::UpdateInternalInputDevicesEventBlocker() {
+  bool should_block_internal_events = false;
+  if (IsTabletModeWindowManagerEnabled()) {
+    // If we are currently in tablet mode, the internal input events should
+    // always be blocked.
+    should_block_internal_events = true;
+  } else if (LidAngleIsInTabletModeRange() || tablet_mode_switch_is_on_) {
+    // If we are currently in clamshell mode, the intenral input events should
+    // only be blocked if the current lid angle belongs to tablet mode angle
+    // or |tablet_mode_switch_is_on_| is true.
+    should_block_internal_events = true;
+  }
+
+  if (should_block_internal_events == AreInternalInputDeviceEventsBlocked())
+    return;
+
+  event_blocker_->UpdateInternalInputDevices(should_block_internal_events);
+  for (auto& observer : tablet_mode_observers_)
+    observer.OnTabletModeEventsBlockingChanged();
+}
+
+bool TabletModeController::LidAngleIsInTabletModeRange() {
+  return can_detect_lid_angle_ && !lid_is_closed_ &&
+         lid_angle_ >= kEnterTabletModeAngle;
 }
 
 }  // namespace ash

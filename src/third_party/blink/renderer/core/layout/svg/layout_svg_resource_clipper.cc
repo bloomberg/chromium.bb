@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/svg/svg_clip_path_element.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -214,6 +215,13 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
   }
 }
 
+SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
+  return ToSVGClipPathElement(GetElement())
+      ->clipPathUnits()
+      ->CurrentValue()
+      ->EnumValue();
+}
+
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
     const FloatRect& reference_box) const {
   AffineTransform transform =
@@ -244,14 +252,15 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
        Traversal<SVGElement>::ChildrenOf(*GetElement())) {
     if (!ContributesToClip(child_element))
       continue;
-    HitTestLocation location((LayoutPoint()));
+    HitTestLocation location(point);
     HitTestResult result(HitTestRequest::kSVGClipContent, location);
     LayoutObject* layout_object = child_element.GetLayoutObject();
 
     DCHECK(!layout_object->IsBoxModelObject() ||
            !ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer());
 
-    if (layout_object->NodeAtFloatPoint(result, point, kHitTestForeground))
+    if (layout_object->NodeAtPoint(result, location, LayoutPoint(),
+                                   kHitTestForeground))
       return true;
   }
   return false;
@@ -267,6 +276,15 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
     CalculateLocalClipBounds();
 
   return CalculateClipTransform(reference_box).MapRect(local_clip_bounds_);
+}
+
+void LayoutSVGResourceClipper::StyleDidChange(StyleDifference diff,
+                                              const ComputedStyle* old_style) {
+  LayoutSVGResourceContainer::StyleDidChange(diff, old_style);
+  if (diff.TransformChanged()) {
+    MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
+                                  SVGResourceClient::kPaintInvalidation);
+  }
 }
 
 void LayoutSVGResourceClipper::WillBeDestroyed() {

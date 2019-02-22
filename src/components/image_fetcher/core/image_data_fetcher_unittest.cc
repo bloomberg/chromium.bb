@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/bind_test_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -262,6 +263,22 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
 
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
   test_url_loader_factory_.AddResponse(kImageURL, oversize_download);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ImageDataFetcherTest, DeleteFromCallback) {
+  // Test to make sure that deleting an ImageDataFetcher from the callback
+  // passed to its FetchImageData() does not crash.
+  auto heap_fetcher = std::make_unique<ImageDataFetcher>(shared_factory_);
+  heap_fetcher->FetchImageData(
+      GURL(kImageURL),
+      base::BindLambdaForTesting(
+          [&](const std::string&, const RequestMetadata&) {
+            heap_fetcher = nullptr;
+          }),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  test_url_loader_factory_.AddResponse(kImageURL, "");
   base::RunLoop().RunUntilIdle();
 }
 

@@ -10,6 +10,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -73,11 +74,17 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   }
 }
 
+bool BrowserAccessibility::CanFireEvents() const {
+  // Allow events unless this object would be trimmed away.
+  return !PlatformIsChildOfLeaf();
+}
+
 uint32_t BrowserAccessibility::PlatformChildCount() const {
-  if (HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId)) {
+  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(
-            GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+        BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
       return 1;
 
@@ -127,10 +134,11 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   BrowserAccessibility* result = nullptr;
 
   if (child_index == 0 &&
-      HasIntAttribute(ax::mojom::IntAttribute::kChildTreeId)) {
+      HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    AXTreeID child_tree_id = AXTreeID::FromString(
+        GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
     BrowserAccessibilityManager* child_manager =
-        BrowserAccessibilityManager::FromID(
-            GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+        BrowserAccessibilityManager::FromID(child_tree_id);
     if (child_manager && child_manager->GetRoot()->PlatformGetParent() == this)
       result = child_manager->GetRoot();
   } else {
@@ -380,7 +388,9 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start,
       else
         start = 0;
     }
-    return bounds;
+    // When past the end of text, the area will be 0.
+    // In this case, use bounds provided for the caret.
+    return bounds.IsEmpty() ? GetPageBoundsPastEndOfText() : bounds;
   }
 
   int end = start + len;
@@ -489,6 +499,53 @@ gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start,
   // in screen coordinates.
   bounds.Offset(manager_->GetViewBounds().OffsetFromOrigin());
 
+  return bounds;
+}
+
+// Get a rect for a 1-width character past the end of text. This is what ATs
+// expect when getting the character extents past the last character in a line,
+// and equals what the caret bounds would be when past the end of the text.
+gfx::Rect BrowserAccessibility::GetPageBoundsPastEndOfText() const {
+  // Step 1: get approximate caret bounds. The thickness may not yet be correct.
+  gfx::Rect bounds;
+  if (InternalChildCount() > 0) {
+    // When past the end of text, use bounds provided by a last child if
+    // available, and then correct for thickness of caret.
+    BrowserAccessibility* child = InternalGetChild(InternalChildCount() - 1);
+    int child_text_len = child->GetText().size();
+    bounds = child->GetPageBoundsForRange(child_text_len, child_text_len);
+    if (bounds.width() == 0 && bounds.height() == 0)
+      return bounds;  // Inline text boxes info not yet available.
+  } else {
+    // Compute bounds of where caret would be, based on bounds of object.
+    bounds = GetPageBoundsRect();
+  }
+
+  // Step 2: correct for the thickness of the caret.
+  auto text_direction = static_cast<ax::mojom::TextDirection>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
+  constexpr int kCaretThickness = 1;
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::TextDirection::kLtr: {
+      bounds.set_width(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kRtl: {
+      bounds.set_x(bounds.right() - kCaretThickness);
+      bounds.set_width(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kTtb: {
+      bounds.set_height(kCaretThickness);
+      break;
+    }
+    case ax::mojom::TextDirection::kBtt: {
+      bounds.set_y(bounds.bottom() - kCaretThickness);
+      bounds.set_height(kCaretThickness);
+      break;
+    }
+  }
   return bounds;
 }
 
@@ -886,19 +943,19 @@ gfx::NativeViewAccessible BrowserAccessibility::GetNativeViewAccessible() {
 // AXPlatformNodeDelegate.
 //
 const ui::AXNodeData& BrowserAccessibility::GetData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXNodeData, empty_data, ());
+  static base::NoDestructor<ui::AXNodeData> empty_data;
   if (node_)
     return node_->data();
   else
-    return empty_data;
+    return *empty_data;
 }
 
 const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+  static base::NoDestructor<ui::AXTreeData> empty_data;
   if (manager())
     return manager()->GetTreeData();
   else
-    return empty_data;
+    return *empty_data;
 }
 
 gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {

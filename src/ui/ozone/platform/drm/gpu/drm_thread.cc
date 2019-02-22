@@ -19,9 +19,9 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
-#include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
+#include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
@@ -152,7 +152,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              std::unique_ptr<GbmBuffer>* buffer,
                              scoped_refptr<DrmFramebuffer>* framebuffer) {
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
-  DCHECK(drm);
+  CHECK(drm) << "No devices available for buffer allocation.";
 
   DrmWindow* window = screen_manager_->GetWindow(widget);
   uint32_t flags = BufferUsageToGbmFlags(usage);
@@ -242,17 +242,6 @@ void DrmThread::OnPlanesReadyForPageFlip(
     std::move(submission_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
   }
-}
-
-void DrmThread::GetVSyncParameters(
-    gfx::AcceleratedWidget widget,
-    const gfx::VSyncProvider::UpdateVSyncCallback& callback) {
-  DrmWindow* window = screen_manager_->GetWindow(widget);
-  // No need to call the callback if there isn't a window since the vsync
-  // provider doesn't require the callback to be called if there isn't a vsync
-  // data source.
-  if (window)
-    window->GetVSyncParameters(callback);
 }
 
 void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {

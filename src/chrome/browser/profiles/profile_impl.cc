@@ -29,7 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -54,7 +54,6 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
-#include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -102,7 +101,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -121,6 +119,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
@@ -150,8 +149,10 @@
 #include "chrome/browser/chromeos/locale_change_guard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
@@ -241,7 +242,7 @@ const char kPrefExitTypeCrashed[] = "Crashed";
 const char kPrefExitTypeSessionEnded[] = "SessionEnded";
 
 void CreateProfileReadme(const base::FilePath& profile_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath readme_path = profile_path.Append(chrome::kReadmeFilename);
   std::string product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   std::string readme_text = base::StringPrintf(
@@ -400,7 +401,6 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kProfileName, std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
-  registry->RegisterIntegerPref(prefs::kProfileLocalAvatarIndex, -1);
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
 #if defined(OS_ANDROID)
@@ -450,7 +450,6 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      predictor_(nullptr),
       reporting_permissions_checker_factory_(this) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
@@ -491,10 +490,6 @@ ProfileImpl::ProfileImpl(
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
   set_is_system_profile(path == ProfileManager::GetSystemProfilePath());
-
-  // If profile_manager is not present, it means we are in a unittest.
-  predictor_ = chrome_browser_net::Predictor::CreatePredictor(
-      g_browser_process->profile_manager() == NULL);
 
   // If we are creating the profile synchronously, then we should load the
   // policy data immediately.
@@ -617,21 +612,6 @@ void ProfileImpl::DoFinalInit() {
       base::Bind(&ProfileImpl::UpdateIsEphemeralInStorage,
                  base::Unretained(this)));
 
-  // When any of the following CT preferences change, we schedule an update
-  // to aggregate the actual update using a |ct_policy_update_timer_|.
-  pref_change_registrar_.Add(
-      certificate_transparency::prefs::kCTRequiredHosts,
-      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
-  pref_change_registrar_.Add(
-      certificate_transparency::prefs::kCTExcludedHosts,
-      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
-  pref_change_registrar_.Add(
-      certificate_transparency::prefs::kCTExcludedSPKIs,
-      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
-  pref_change_registrar_.Add(
-      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
-      base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
-
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
   // It would be nice to use PathService for fetching this directory, but
@@ -678,7 +658,7 @@ void ProfileImpl::DoFinalInit() {
 
   PrefService* local_state = g_browser_process->local_state();
   io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
-                GetPath(), predictor_, GetSpecialStoragePolicy(),
+                GetPath(), GetSpecialStoragePolicy(),
                 reporting_permissions_checker_factory_.CreateChecker(),
                 CreateDomainReliabilityMonitor(local_state));
 
@@ -745,8 +725,6 @@ void ProfileImpl::DoFinalInit() {
 
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
-
-  ScheduleUpdateCTPolicy();
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -1069,8 +1047,14 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
-  return io_data_.GetExtensionsRequestContextGetter().get();
+base::OnceCallback<net::CookieStore*()>
+ProfileImpl::GetExtensionsCookieStoreGetter() {
+  return base::BindOnce(
+      [](content::ResourceContext* context) {
+        auto* io_data = ProfileIOData::FromResourceContext(context);
+        return io_data->GetExtensionsCookieStore();
+      },
+      GetResourceContext());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1170,8 +1154,8 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     info.factory =
         InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
             ->CreatePrefServiceFactory();
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
+    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 
@@ -1183,8 +1167,8 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
       return std::unique_ptr<service_manager::Service>(
           std::make_unique<chromeos::assistant::Service>());
     });
-    info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::UI);
+    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+        {content::BrowserThread::UI});
     services->insert(
         std::make_pair(chromeos::assistant::mojom::kServiceName, info));
   }
@@ -1376,10 +1360,6 @@ void ProfileImpl::InitChromeOSPreferences() {
 
 #endif  // defined(OS_CHROMEOS)
 
-chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
-  return predictor_;
-}
-
 GURL ProfileImpl::GetHomePage() {
   // --homepage overrides any preferences.
   const base::CommandLine& command_line =
@@ -1458,36 +1438,6 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
   }
 }
 
-std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
-  std::vector<std::string> strings;
-  for (const base::Value& value : *list) {
-    DCHECK(value.is_string());
-    strings.push_back(value.GetString());
-  }
-  return strings;
-}
-
-void ProfileImpl::ScheduleUpdateCTPolicy() {
-  ct_policy_update_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0),
-                                this, &ProfileImpl::UpdateCTPolicy);
-}
-
-void ProfileImpl::UpdateCTPolicy() {
-  const base::ListValue* ct_required =
-      prefs_->GetList(certificate_transparency::prefs::kCTRequiredHosts);
-  const base::ListValue* ct_excluded =
-      prefs_->GetList(certificate_transparency::prefs::kCTExcludedHosts);
-  const base::ListValue* ct_excluded_spkis =
-      prefs_->GetList(certificate_transparency::prefs::kCTExcludedSPKIs);
-  const base::ListValue* ct_excluded_legacy_spkis =
-      prefs_->GetList(certificate_transparency::prefs::kCTExcludedLegacySPKIs);
-
-  GetDefaultStoragePartition(this)->GetNetworkContext()->SetCTPolicy(
-      TranslateStringArray(ct_required), TranslateStringArray(ct_excluded),
-      TranslateStringArray(ct_excluded_spkis),
-      TranslateStringArray(ct_excluded_legacy_spkis));
-}
-
 // Gets the media cache parameters from the command line. |cache_path| will be
 // set to the user provided path, or will not be touched if there is not an
 // argument. |max_size| will be the user provided value or zero by default.
@@ -1509,8 +1459,8 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
     return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {
@@ -1538,12 +1488,14 @@ ProfileImpl::CreateMultiDeviceSetupService() {
   return std::make_unique<chromeos::multidevice_setup::MultiDeviceSetupService>(
       GetPrefs(),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(this),
-      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
-          ->GetClient(),
       chromeos::multidevice_setup::AuthTokenValidatorFactory::GetForProfile(
+          this),
+      chromeos::multidevice_setup::OobeCompletionTrackerFactory::GetForProfile(
           this),
       std::make_unique<
           chromeos::multidevice_setup::AndroidSmsAppHelperDelegateImpl>(this),
+      std::make_unique<
+          chromeos::multidevice_setup::AndroidSmsPairingStateTrackerImpl>(this),
       chromeos::GcmDeviceInfoProviderImpl::GetInstance());
 }
 

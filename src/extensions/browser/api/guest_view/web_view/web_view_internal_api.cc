@@ -27,7 +27,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
-#include "third_party/blink/public/web/web_find_options.h"
 
 using content::WebContents;
 using extensions::ExtensionResource;
@@ -150,7 +149,7 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
                        extension->id(), extension->location());
   for (const std::string& match : script_value.matches) {
     URLPattern pattern(UserScript::ValidUserScriptSchemes(allowed_everywhere));
-    if (pattern.Parse(match) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(match) != URLPattern::ParseResult::kSuccess) {
       *error = errors::kInvalidMatches;
       return std::unique_ptr<extensions::UserScript>();
     }
@@ -165,7 +164,7 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
       URLPattern pattern(
           UserScript::ValidUserScriptSchemes(allowed_everywhere));
 
-      if (pattern.Parse(exclude_match) != URLPattern::PARSE_SUCCESS) {
+      if (pattern.Parse(exclude_match) != URLPattern::ParseResult::kSuccess) {
         *error = errors::kInvalidExcludeMatches;
         return std::unique_ptr<extensions::UserScript>();
       }
@@ -726,15 +725,15 @@ ExtensionFunction::ResponseAction WebViewInternalFindFunction::Run() {
       params->search_text.c_str(), params->search_text.length(), &search_text);
 
   // Set the find options to their default values.
-  blink::WebFindOptions options;
+  auto options = blink::mojom::FindOptions::New();
   if (params->options) {
-    options.forward =
+    options->forward =
         params->options->backward ? !*params->options->backward : true;
-    options.match_case =
+    options->match_case =
         params->options->match_case ? *params->options->match_case : false;
   }
 
-  guest_->StartFind(search_text, options, this);
+  guest_->StartFind(search_text, std::move(options), this);
   // It is possible that StartFind has already responded.
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
@@ -953,6 +952,39 @@ WebViewInternalClearDataFunction::WebViewInternalClearDataFunction()
 }
 
 WebViewInternalClearDataFunction::~WebViewInternalClearDataFunction() {
+}
+
+WebViewInternalSetSpatialNavigationEnabledFunction::
+    WebViewInternalSetSpatialNavigationEnabledFunction() {}
+
+WebViewInternalSetSpatialNavigationEnabledFunction::
+    ~WebViewInternalSetSpatialNavigationEnabledFunction() {}
+
+ExtensionFunction::ResponseAction
+WebViewInternalSetSpatialNavigationEnabledFunction::Run() {
+  std::unique_ptr<web_view_internal::SetSpatialNavigationEnabled::Params>
+      params(web_view_internal::SetSpatialNavigationEnabled::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  guest_->SetSpatialNavigationEnabled(params->spatial_nav_enabled);
+  return RespondNow(NoArguments());
+}
+
+WebViewInternalIsSpatialNavigationEnabledFunction::
+    WebViewInternalIsSpatialNavigationEnabledFunction() {}
+
+WebViewInternalIsSpatialNavigationEnabledFunction::
+    ~WebViewInternalIsSpatialNavigationEnabledFunction() {}
+
+ExtensionFunction::ResponseAction
+WebViewInternalIsSpatialNavigationEnabledFunction::Run() {
+  std::unique_ptr<web_view_internal::IsSpatialNavigationEnabled::Params> params(
+      web_view_internal::IsSpatialNavigationEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(guest_->IsSpatialNavigationEnabled())));
 }
 
 // Parses the |dataToRemove| argument to generate the remove mask. Sets

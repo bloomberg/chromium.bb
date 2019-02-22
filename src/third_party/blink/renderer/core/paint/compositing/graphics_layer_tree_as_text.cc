@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -44,8 +45,10 @@ void AddTransformJSONProperties(const GraphicsLayer* layer,
   if (!transform.IsIdentity())
     json.SetArray("transform", TransformAsJSONArray(transform));
 
-  if (!transform.IsIdentityOrTranslation())
-    json.SetArray("origin", PointAsJSONArray(layer->TransformOrigin()));
+  if (!transform.IsIdentityOrTranslation()) {
+    json.SetArray("origin",
+                  PointAsJSONArray(FloatPoint3D(layer->TransformOrigin())));
+  }
 
   AddFlattenInheritedTransformJSON(layer, json);
 
@@ -68,8 +71,12 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     const FloatPoint& position) {
   std::unique_ptr<JSONObject> json = JSONObject::Create();
 
-  if (flags & kLayerTreeIncludesDebugInfo)
+  if (flags & kLayerTreeIncludesDebugInfo) {
     json->SetString("this", PointerAsString(layer));
+    json->SetInteger("ccLayerId", layer->CcLayer()->id());
+    if (layer->HasContentsLayer())
+      json->SetInteger("ccContentsLayerId", layer->ContentsLayer()->id());
+  }
 
   json->SetString("name", layer->DebugName());
 
@@ -82,8 +89,9 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
                    SizeAsJSONArray(layer->OffsetFromLayoutObject()));
   }
 
-  if (layer->Size() != IntSize())
-    json->SetArray("bounds", SizeAsJSONArray(layer->Size()));
+  // This is testing against gfx::Size(), *not* whether the size is empty.
+  if (layer->Size() != gfx::Size())
+    json->SetArray("bounds", SizeAsJSONArray(IntSize(layer->Size())));
 
   if (layer->Opacity() != 1)
     json->SetDouble("opacity", layer->Opacity());
@@ -111,9 +119,9 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
   if (flags & kLayerTreeIncludesDebugInfo)
     json->SetString("client", PointerAsString(&layer->Client()));
 
-  if (layer->BackgroundColor().Alpha()) {
+  if (Color(layer->BackgroundColor()).Alpha()) {
     json->SetString("backgroundColor",
-                    layer->BackgroundColor().NameForLayoutTreeAsText());
+                    Color(layer->BackgroundColor()).NameForLayoutTreeAsText());
   }
 
   if (flags & kOutputAsLayerTree) {
@@ -194,7 +202,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     std::unique_ptr<JSONArray> mask_layer_json = JSONArray::Create();
     mask_layer_json->PushObject(
         GraphicsLayerAsJSON(layer->MaskLayer(), flags, rendering_context_map,
-                            layer->MaskLayer()->GetPosition()));
+                            FloatPoint(layer->MaskLayer()->GetPosition())));
     json->SetArray("maskLayer", std::move(mask_layer_json));
   }
 
@@ -203,7 +211,7 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
         JSONArray::Create();
     contents_clipping_mask_layer_json->PushObject(GraphicsLayerAsJSON(
         layer->ContentsClippingMaskLayer(), flags, rendering_context_map,
-        layer->ContentsClippingMaskLayer()->GetPosition()));
+        FloatPoint(layer->ContentsClippingMaskLayer()->GetPosition())));
     json->SetArray("contentsClippingMaskLayer",
                    std::move(contents_clipping_mask_layer_json));
   }
@@ -300,7 +308,7 @@ class LayersAsJSONArray {
   void Walk(const GraphicsLayer& layer,
             int parent_transform_id,
             const FloatPoint& parent_position) {
-    FloatPoint position = parent_position + layer.GetPosition();
+    FloatPoint position = parent_position + FloatPoint(layer.GetPosition());
     int transform_id = parent_transform_id;
     AddLayer(layer, transform_id, position);
     for (auto* const child : layer.Children())
@@ -321,11 +329,11 @@ std::unique_ptr<JSONObject> GraphicsLayerTreeAsJSON(
     LayerTreeFlags flags,
     RenderingContextMap& rendering_context_map) {
   std::unique_ptr<JSONObject> json = GraphicsLayerAsJSON(
-      layer, flags, rendering_context_map, layer->GetPosition());
+      layer, flags, rendering_context_map, FloatPoint(layer->GetPosition()));
 
   if (layer->Children().size()) {
     std::unique_ptr<JSONArray> children_json = JSONArray::Create();
-    for (size_t i = 0; i < layer->Children().size(); i++) {
+    for (wtf_size_t i = 0; i < layer->Children().size(); i++) {
       children_json->PushObject(GraphicsLayerTreeAsJSON(
           layer->Children()[i], flags, rendering_context_map));
     }

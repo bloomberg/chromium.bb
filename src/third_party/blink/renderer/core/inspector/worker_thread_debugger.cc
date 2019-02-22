@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
@@ -39,7 +38,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
-#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -78,7 +77,7 @@ void WorkerThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
                                                 SourceLocation* location) {
   if (!context)
     return;
-  ToWorkerOrWorkletGlobalScope(context)
+  To<WorkerOrWorkletGlobalScope>(context)
       ->GetThread()
       ->GetWorkerReportingProxy()
       .ReportConsoleMessage(source, level, message, location);
@@ -98,13 +97,18 @@ void WorkerThreadDebugger::WorkerThreadDestroyed(WorkerThread* worker_thread) {
   int worker_context_group_id = ContextGroupId(worker_thread);
   DCHECK(worker_threads_.Contains(worker_context_group_id));
   worker_threads_.erase(worker_context_group_id);
+  if (worker_context_group_id == paused_context_group_id_) {
+    paused_context_group_id_ = kInvalidContextGroupId;
+    nested_runner_->QuitNow();
+  }
 }
 
 void WorkerThreadDebugger::ContextCreated(WorkerThread* worker_thread,
                                           const KURL& url_for_debugger,
                                           v8::Local<v8::Context> context) {
   int worker_context_group_id = ContextGroupId(worker_thread);
-  DCHECK(worker_threads_.Contains(worker_context_group_id));
+  if (!worker_threads_.Contains(worker_context_group_id))
+    return;
   v8_inspector::V8ContextInfo context_info(context, worker_context_group_id,
                                            v8_inspector::StringView());
   String origin = url_for_debugger;
@@ -115,8 +119,7 @@ void WorkerThreadDebugger::ContextCreated(WorkerThread* worker_thread,
 void WorkerThreadDebugger::ContextWillBeDestroyed(
     WorkerThread* worker_thread,
     v8::Local<v8::Context> context) {
-  int worker_context_group_id = ContextGroupId(worker_thread);
-  DCHECK(worker_threads_.Contains(worker_context_group_id));
+  // Note that we might have already got WorkerThreadDestroyed by this point.
   GetV8Inspector()->contextDestroyed(context);
 }
 
@@ -131,9 +134,11 @@ void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
       worker_thread->GlobalScope()->ScriptController()->GetScriptState();
   if (script_state && script_state->ContextIsValid()) {
     ScriptState::Scope scope(script_state);
+    ScriptValue error = event->error(script_state);
     v8::Local<v8::Value> exception =
-        V8ErrorHandler::LoadExceptionFromErrorEventWrapper(
-            script_state, event, script_state->GetContext()->Global());
+        error.IsEmpty()
+            ? v8::Local<v8::Value>(v8::Null(script_state->GetIsolate()))
+            : error.V8Value();
     SourceLocation* location = event->Location();
     String message = event->MessageForConsole();
     String url = location->Url();
@@ -147,36 +152,53 @@ void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
 }
 
 int WorkerThreadDebugger::ContextGroupId(ExecutionContext* context) {
-  return ContextGroupId(ToWorkerOrWorkletGlobalScope(context)->GetThread());
+  return ContextGroupId(To<WorkerOrWorkletGlobalScope>(context)->GetThread());
+}
+
+void WorkerThreadDebugger::PauseWorkerOnStart(WorkerThread* worker_thread) {
+  DCHECK(!worker_thread->GlobalScope()->IsClosing());
+  if (paused_context_group_id_ == kInvalidContextGroupId)
+    runMessageLoopOnPause(ContextGroupId(worker_thread));
 }
 
 void WorkerThreadDebugger::runMessageLoopOnPause(int context_group_id) {
+  if (!worker_threads_.Contains(context_group_id))
+    return;
+
   DCHECK_EQ(kInvalidContextGroupId, paused_context_group_id_);
-  DCHECK(worker_threads_.Contains(context_group_id));
   paused_context_group_id_ = context_group_id;
-  worker_threads_.at(context_group_id)
-      ->StartRunningDebuggerTasksOnPauseOnWorkerThread();
+
+  WorkerThread* thread = worker_threads_.at(context_group_id);
+  DCHECK(!thread->GlobalScope()->IsClosing());
+  thread->GetWorkerInspectorController()->FlushProtocolNotifications();
+  thread->GlobalScope()->PauseScheduledTasks();
+  if (!nested_runner_)
+    nested_runner_ = Platform::Current()->CreateNestedMessageLoopRunner();
+  nested_runner_->Run();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause() {
   DCHECK_NE(kInvalidContextGroupId, paused_context_group_id_);
   DCHECK(worker_threads_.Contains(paused_context_group_id_));
-  worker_threads_.at(paused_context_group_id_)
-      ->StopRunningDebuggerTasksOnPauseOnWorkerThread();
+
+  WorkerThread* thread = worker_threads_.at(paused_context_group_id_);
   paused_context_group_id_ = kInvalidContextGroupId;
+  DCHECK(!thread->GlobalScope()->IsClosing());
+
+  nested_runner_->QuitNow();
+  thread->GlobalScope()->UnpauseScheduledTasks();
 }
 
 void WorkerThreadDebugger::muteMetrics(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
 }
 
 void WorkerThreadDebugger::unmuteMetrics(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
 }
 
 v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(
     int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
+  if (!worker_threads_.Contains(context_group_id))
+    return v8::Local<v8::Context>();
   ScriptState* script_state = worker_threads_.at(context_group_id)
                                   ->GlobalScope()
                                   ->ScriptController()
@@ -185,22 +207,18 @@ v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(
 }
 
 void WorkerThreadDebugger::beginEnsureAllContextsInGroup(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
 }
 
 void WorkerThreadDebugger::endEnsureAllContextsInGroup(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
 }
 
 bool WorkerThreadDebugger::canExecuteScripts(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
   return true;
 }
 
 void WorkerThreadDebugger::runIfWaitingForDebugger(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
-  worker_threads_.at(context_group_id)
-      ->StopRunningDebuggerTasksOnPauseOnWorkerThread();
+  if (paused_context_group_id_ == context_group_id)
+    quitMessageLoopOnPause();
 }
 
 void WorkerThreadDebugger::consoleAPIMessage(
@@ -211,7 +229,8 @@ void WorkerThreadDebugger::consoleAPIMessage(
     unsigned line_number,
     unsigned column_number,
     v8_inspector::V8StackTrace* stack_trace) {
-  DCHECK(worker_threads_.Contains(context_group_id));
+  if (!worker_threads_.Contains(context_group_id))
+    return;
   WorkerThread* worker_thread = worker_threads_.at(context_group_id);
   std::unique_ptr<SourceLocation> location =
       SourceLocation::Create(ToCoreString(url), line_number, column_number,
@@ -222,7 +241,8 @@ void WorkerThreadDebugger::consoleAPIMessage(
 }
 
 void WorkerThreadDebugger::consoleClear(int context_group_id) {
-  DCHECK(worker_threads_.Contains(context_group_id));
+  if (!worker_threads_.Contains(context_group_id))
+    return;
   WorkerThread* worker_thread = worker_threads_.at(context_group_id);
   worker_thread->GetConsoleMessageStorage()->Clear();
 }

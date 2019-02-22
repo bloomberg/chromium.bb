@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_typeface.h"
 
 namespace blink {
 
@@ -25,8 +24,7 @@ namespace {
 static scoped_refptr<SimpleFontData> CreateTestSimpleFontData(
     bool force_rotation = false) {
   FontPlatformData platform_data(
-      PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), CString(), 10,
-      false, false,
+      SkTypeface::MakeDefault(), CString(), 10, false, false,
       force_rotation ? FontOrientation::kVerticalUpright
                      : FontOrientation::kHorizontal);
   return SimpleFontData::Create(platform_data, nullptr);

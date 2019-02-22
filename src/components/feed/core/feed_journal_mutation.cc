@@ -6,12 +6,13 @@
 
 #include <utility>
 
-#include "components/feed/core/feed_journal_operation.h"
+#include "base/logging.h"
 
 namespace feed {
 
 JournalMutation::JournalMutation(std::string journal_name)
-    : journal_name_(std::move(journal_name)) {}
+    : journal_name_(std::move(journal_name)),
+      start_time_(base::TimeTicks::Now()) {}
 
 JournalMutation::~JournalMutation() = default;
 
@@ -37,10 +38,23 @@ bool JournalMutation::Empty() {
   return operations_list_.empty();
 }
 
+size_t JournalMutation::Size() const {
+  return operations_list_.size();
+}
+
+base::TimeTicks JournalMutation::GetStartTime() const {
+  return start_time_;
+}
+
 JournalOperation JournalMutation::TakeFristOperation() {
   JournalOperation operation = std::move(operations_list_.front());
   operations_list_.pop_front();
   return operation;
+}
+
+JournalOperation::Type JournalMutation::FirstOperationType() {
+  DCHECK(!operations_list_.empty());
+  return operations_list_.front().type();
 }
 
 }  // namespace feed

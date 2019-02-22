@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -116,9 +117,7 @@ bool ExecutionContext::ShouldSanitizeScriptError(
   if (cors_status == kOpaqueResource)
     return true;
   const KURL& url = CompleteURL(source_url);
-  if (url.ProtocolIsData())
-    return false;
-  return !(GetSecurityOrigin()->CanRequest(url) ||
+  return !(GetSecurityOrigin()->CanReadContent(url) ||
            cors_status == kSharableCrossOrigin);
 }
 
@@ -209,6 +208,12 @@ String ExecutionContext::OutgoingReferrer() const {
 
   // Step 3.2: "Otherwise, let referrerSource be environment's creation URL."
   return Url().StrippedForUseAsReferrer();
+}
+
+FetchClientSettingsObjectSnapshot*
+ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
+  return new FetchClientSettingsObjectSnapshot(
+      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer());
 }
 
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,

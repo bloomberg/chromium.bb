@@ -316,11 +316,14 @@ bool SimpleSessionNotifier::IsFrameOutstanding(const QuicFrame& frame) const {
          (frame.stream_frame.fin && state.fin_outstanding);
 }
 
-bool SimpleSessionNotifier::HasPendingCryptoData() const {
+bool SimpleSessionNotifier::HasUnackedCryptoData() const {
   if (!QuicContainsKey(stream_map_, kCryptoStreamId)) {
     return false;
   }
   const auto& state = stream_map_.find(kCryptoStreamId)->second;
+  if (state.bytes_total > state.bytes_sent) {
+    return true;
+  }
   QuicIntervalSet<QuicStreamOffset> bytes_to_ack(0, state.bytes_total);
   bytes_to_ack.Difference(state.bytes_acked);
   return !bytes_to_ack.Empty();

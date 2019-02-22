@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
+#include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "ash/public/cpp/ash_features.h"
 #include "base/command_line.h"
@@ -21,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -37,6 +34,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,11 +68,13 @@ namespace get_surprise_me_image = wallpaper_private::GetSurpriseMeImage;
 
 namespace {
 
-// The time in seconds and retry limit to re-check the profile sync service
-// status. Only after the profile sync service has been configured, we can get
-// the correct value of the user sync preference of "syncThemes".
-constexpr int kRetryDelay = 10;
+// The time and retry limit to re-check the profile sync service status. The
+// sync extension function can get the correct value of the "syncThemes" user
+// preference only after the profile sync service has been configured.
+constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(10);
 constexpr int kRetryLimit = 3;
+
+constexpr char kSyncThemes[] = "syncThemes";
 
 constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
 constexpr char kJpgFilePattern[] = "*.[jJ][pP][gG]";
@@ -152,7 +152,7 @@ const user_manager::User* GetUserFromBrowserContext(
   return user;
 }
 
-ash::WallpaperType getWallpaperType(wallpaper_private::WallpaperSource source) {
+ash::WallpaperType GetWallpaperType(wallpaper_private::WallpaperSource source) {
   switch (source) {
     case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
       return ash::ONLINE;
@@ -284,8 +284,8 @@ void WallpaperPrivateGetStringsFunction::OnWallpaperInfoReturned(
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
                          CheckProfileSyncServiceStatus,
                      this));
@@ -295,11 +295,11 @@ WallpaperPrivateGetSyncSettingFunction::Run() {
 void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  if (retry_number > kRetryLimit) {
+  if (retry_number_ > kRetryLimit) {
     // It's most likely that the wallpaper synchronization is enabled (It's
     // enabled by default so unless the user disables it explicitly it remains
     // enabled).
-    dict->SetBoolean("syncThemes", true);
+    dict->SetBoolean(kSyncThemes, true);
     Respond(OneArgument(std::move(dict)));
     return;
   }
@@ -308,14 +308,14 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   if (!sync_service) {
-    dict->SetBoolean("syncThemes", false);
+    dict->SetBoolean(kSyncThemes, false);
     Respond(OneArgument(std::move(dict)));
     return;
   }
 
   if (sync_service->GetTransportState() ==
       syncer::SyncService::TransportState::ACTIVE) {
-    dict->SetBoolean("syncThemes",
+    dict->SetBoolean(kSyncThemes,
                      sync_service->GetActiveDataTypes().Has(syncer::THEMES));
     Respond(OneArgument(std::move(dict)));
     return;
@@ -325,13 +325,13 @@ void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   // when we're trying to query the user preference (this seems only happen for
   // the first time configuration). In this case GetActiveDataTypes() returns an
   // empty set. So re-check the status later.
-  retry_number++;
-  BrowserThread::PostDelayedTask(
-      BrowserThread::UI, FROM_HERE,
+  retry_number_++;
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
                          CheckProfileSyncServiceStatus,
                      this),
-      base::TimeDelta::FromSeconds(retry_number * kRetryDelay));
+      retry_number_ * kRetryDelay);
 }
 
 WallpaperPrivateSetWallpaperIfExistsFunction::
@@ -578,19 +578,19 @@ void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
   std::string data;
   if (GetData(path, &data)) {
     if (data.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileNotLoaded,
                          this));
     } else {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileLoaded,
                          this, data));
     }
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateGetThumbnailFunction::Failure, this,
                        path.BaseName().value()));
   }
@@ -632,12 +632,12 @@ void WallpaperPrivateSaveThumbnailFunction::Save(
   WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Success, this));
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Failure, this,
                        file_name));
   }
@@ -673,7 +673,7 @@ WallpaperPrivateRecordWallpaperUMAFunction::Run() {
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  ash::WallpaperType source = getWallpaperType(params->source);
+  ash::WallpaperType source = GetWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
                             ash::WALLPAPER_TYPE_COUNT);
   return RespondNow(NoArguments());

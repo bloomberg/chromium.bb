@@ -69,13 +69,14 @@ bool BoxModelObjectPainter::
 void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
                                               const IntRect& mask_rect,
                                               const LayoutPoint& paint_offset,
-                                              bool) {
+                                              bool object_has_multiple_boxes) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
   if (flow_box_) {
     LayoutSize local_offset = ToLayoutSize(flow_box_->Location());
-    if (box_model_.StyleRef().BoxDecorationBreak() ==
-        EBoxDecorationBreak::kSlice) {
+    if (object_has_multiple_boxes &&
+        box_model_.StyleRef().BoxDecorationBreak() ==
+            EBoxDecorationBreak::kSlice) {
       local_offset -= LogicalOffsetOnLine(*flow_box_);
     }
     const RootInlineBox& root = flow_box_->Root();

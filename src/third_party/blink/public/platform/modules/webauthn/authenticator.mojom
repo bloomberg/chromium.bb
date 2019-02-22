@@ -21,11 +21,21 @@ enum AuthenticatorStatus {
   CREDENTIAL_NOT_RECOGNIZED,
   NOT_IMPLEMENTED,
   NOT_FOCUSED,
+  RESIDENT_CREDENTIALS_UNSUPPORTED,
   USER_VERIFICATION_UNSUPPORTED,
   ALGORITHM_UNSUPPORTED,
   EMPTY_ALLOW_CREDENTIALS,
   ANDROID_NOT_SUPPORTED_ERROR,
   UNKNOWN_ERROR,
+};
+
+// See https://www.w3.org/TR/webauthn/#transport
+enum AuthenticatorTransport {
+  USB,
+  NFC,
+  BLE,
+  CABLE,
+  INTERNAL,
 };
 
 // Credential information returned by both Authenticator::MakeCredential
@@ -48,6 +58,10 @@ struct MakeCredentialAuthenticatorResponse {
 
   // A blob of data returned by the authenticator after creating a credential.
   array<uint8> attestation_object;
+
+  // A list of transports that the authenticator supports, with the transport
+  // used for the registration as the first element.
+  array<AuthenticatorTransport> transports;
 };
 
 struct GetAssertionAuthenticatorResponse {
@@ -260,14 +274,6 @@ struct PublicKeyCredentialDescriptor {
   array<uint8> id;
 
   array<AuthenticatorTransport> transports;
-};
-
-enum AuthenticatorTransport {
-  USB,
-  NFC,
-  BLE,
-  CABLE,
-  INTERNAL,
 };
 
 // Interface to direct authenticators to create or use a public key credential.

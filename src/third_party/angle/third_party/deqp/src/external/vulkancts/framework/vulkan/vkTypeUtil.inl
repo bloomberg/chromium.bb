@@ -422,6 +422,16 @@ inline VkPresentRegionKHR makePresentRegionKHR (deUint32 rectangleCount, const V
 	return res;
 }
 
+inline VkConformanceVersionKHR makeConformanceVersionKHR (deUint8 major, deUint8 minor, deUint8 subminor, deUint8 patch)
+{
+	VkConformanceVersionKHR res;
+	res.major		= major;
+	res.minor		= minor;
+	res.subminor	= subminor;
+	res.patch		= patch;
+	return res;
+}
+
 inline VkIndirectCommandsTokenNVX makeIndirectCommandsTokenNVX (VkIndirectCommandsTokenTypeNVX tokenType, VkBuffer buffer, VkDeviceSize offset)
 {
 	VkIndirectCommandsTokenNVX res;
@@ -554,5 +564,13 @@ inline VkSampleLocationEXT makeSampleLocationEXT (float x, float y)
 	VkSampleLocationEXT res;
 	res.x	= x;
 	res.y	= y;
+	return res;
+}
+
+inline VkVertexInputBindingDivisorDescriptionEXT makeVertexInputBindingDivisorDescriptionEXT (deUint32 binding, deUint32 divisor)
+{
+	VkVertexInputBindingDivisorDescriptionEXT res;
+	res.binding	= binding;
+	res.divisor	= divisor;
 	return res;
 }

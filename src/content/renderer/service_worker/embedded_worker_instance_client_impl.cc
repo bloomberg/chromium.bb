@@ -13,9 +13,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
-#include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_installed_scripts_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -24,12 +22,6 @@
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 
 namespace content {
-
-EmbeddedWorkerInstanceClientImpl::WorkerWrapper::WorkerWrapper(
-    std::unique_ptr<blink::WebEmbeddedWorker> worker)
-    : worker_(std::move(worker)) {}
-
-EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
@@ -42,17 +34,17 @@ void EmbeddedWorkerInstanceClientImpl::Create(
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
-  DCHECK(wrapper_);
+  DCHECK(worker_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed");
   // Destroys |this|.
-  wrapper_.reset();
+  worker_.reset();
 }
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
     mojom::EmbeddedWorkerStartParamsPtr params) {
   DCHECK(ChildThreadImpl::current());
-  DCHECK(!wrapper_);
+  DCHECK(!worker_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
@@ -88,41 +80,38 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   UMA_HISTOGRAM_ENUMERATION(
       "ServiceWorker.EmbeddedWorkerInstanceClient.StartWorker", metric,
       StartWorkerHistogramEnum::NUM_TYPES);
-  wrapper_ = StartWorkerContext(std::move(params), std::move(client),
-                                std::move(cache_storage),
-                                std::move(interface_provider),
-                                std::move(privacy_preferences));
+  worker_ = StartWorkerContext(
+      std::move(params), std::move(client), std::move(cache_storage),
+      std::move(interface_provider), std::move(privacy_preferences));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
   // StopWorker must be called after StartWorker is called.
   DCHECK(ChildThreadImpl::current());
-  DCHECK(wrapper_);
+  DCHECK(worker_);
 
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
-  wrapper_->worker()->TerminateWorkerContext();
+  worker_->TerminateWorkerContext();
 }
 
 void EmbeddedWorkerInstanceClientImpl::ResumeAfterDownload() {
-  DCHECK(wrapper_);
-  DCHECK(wrapper_->worker());
-  wrapper_->worker()->ResumeAfterDownload();
+  DCHECK(worker_);
+  worker_->ResumeAfterDownload();
 }
 
 void EmbeddedWorkerInstanceClientImpl::AddMessageToConsole(
     blink::WebConsoleMessage::Level level,
     const std::string& message) {
-  DCHECK(wrapper_);
-  DCHECK(wrapper_->worker());
-  wrapper_->worker()->AddMessageToConsole(
+  DCHECK(worker_);
+  worker_->AddMessageToConsole(
       blink::WebConsoleMessage(level, blink::WebString::FromUTF8(message)));
 }
 
 void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
+    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
     blink::mojom::DevToolsAgentAssociatedRequest request) {
-  DCHECK(wrapper_);
-  DCHECK(wrapper_->worker());
-  wrapper_->worker()->BindDevToolsAgent(request.PassHandle());
+  DCHECK(worker_);
+  worker_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
@@ -143,32 +132,41 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
   temporal_self_.reset();
 }
 
-std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
+std::unique_ptr<blink::WebEmbeddedWorker>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     mojom::EmbeddedWorkerStartParamsPtr params,
     std::unique_ptr<ServiceWorkerContextClient> context_client,
     blink::mojom::CacheStoragePtrInfo cache_storage,
     service_manager::mojom::InterfaceProviderPtrInfo interface_provider,
     blink::PrivacyPreferences privacy_preferences) {
-  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
+  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>
+      installed_scripts_manager_params;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
   // the update.
   if (params->installed_scripts_info) {
-    manager = WebServiceWorkerInstalledScriptsManagerImpl::Create(
-        std::move(params->installed_scripts_info), io_thread_runner_);
+    installed_scripts_manager_params = std::make_unique<
+        blink::WebServiceWorkerInstalledScriptsManagerParams>();
+    installed_scripts_manager_params->installed_scripts_urls =
+        std::move(params->installed_scripts_info->installed_urls);
+    installed_scripts_manager_params->manager_request =
+        params->installed_scripts_info->manager_request.PassMessagePipe();
+    installed_scripts_manager_params->manager_host_ptr =
+        params->installed_scripts_info->manager_host_ptr.PassHandle();
+    DCHECK(installed_scripts_manager_params->manager_request.is_valid());
+    DCHECK(installed_scripts_manager_params->manager_host_ptr.is_valid());
   }
 
-  auto wrapper =
-      std::make_unique<WorkerWrapper>(blink::WebEmbeddedWorker::Create(
-          std::move(context_client), std::move(manager),
-          params->content_settings_proxy.PassHandle(),
-          cache_storage.PassHandle(), interface_provider.PassHandle()));
+  auto worker = blink::WebEmbeddedWorker::Create(
+      std::move(context_client), std::move(installed_scripts_manager_params),
+      params->content_settings_proxy.PassHandle(), cache_storage.PassHandle(),
+      interface_provider.PassHandle());
 
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.script_url = params->script_url;
   start_data.user_agent =
       blink::WebString::FromUTF8(GetContentClient()->GetUserAgent());
+  start_data.script_type = params->script_type;
   start_data.wait_for_debugger_mode =
       params->wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
@@ -182,8 +180,8 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
           : blink::WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
   start_data.privacy_preferences = std::move(privacy_preferences);
 
-  wrapper->worker()->StartWorkerContext(start_data);
-  return wrapper;
+  worker->StartWorkerContext(start_data);
+  return worker;
 }
 
 }  // namespace content

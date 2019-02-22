@@ -127,6 +127,7 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 ToolbarView::~ToolbarView() {
@@ -206,21 +207,19 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    if (media_router::MediaRouterEnabled(browser_->profile()) &&
-        media_router::ShouldUseViewsDialog()) {
-      cast_ = media_router::CastToolbarButton::Create(browser_).release();
-    }
-
-    bool show_avatar_toolbar_button = true;
-#if defined(OS_CHROMEOS)
-    // ChromeOS only badges Incognito and Guest icons in the browser window.
-    show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
-                                 browser_->profile()->IsGuestSession();
-#endif  // !defined(OS_CHROMEOS)
-    if (show_avatar_toolbar_button)
-      avatar_ = new AvatarToolbarButton(browser_);
+  if (media_router::MediaRouterEnabled(browser_->profile()) &&
+      media_router::ShouldUseViewsDialog()) {
+    cast_ = media_router::CastToolbarButton::Create(browser_).release();
   }
+
+  bool show_avatar_toolbar_button = true;
+#if defined(OS_CHROMEOS)
+  // ChromeOS only badges Incognito and Guest icons in the browser window.
+  show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+                               browser_->profile()->IsGuestSession();
+#endif  // !defined(OS_CHROMEOS)
+  if (show_avatar_toolbar_button)
+    avatar_ = new AvatarToolbarButton(browser_);
 
   app_menu_button_ = new BrowserAppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);
@@ -303,11 +302,9 @@ void ToolbarView::ShowIntentPickerBubble(
       location_bar()->Layout();
     }
 
-    views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
+    IntentPickerBubbleView::ShowBubble(
         intent_picker_view, GetWebContents(), std::move(app_info),
         disable_stay_in_chrome, std::move(callback));
-    if (bubble_widget && intent_picker_view)
-      intent_picker_view->OnBubbleWidgetCreated(bubble_widget);
   }
 }
 #endif  // defined(OS_CHROMEOS)
@@ -321,11 +318,9 @@ void ToolbarView::ShowBookmarkBubble(
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
-  views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
-      anchor_view, gfx::Rect(), nullptr, observer, std::move(delegate),
-      browser_->profile(), url, already_bookmarked);
-  if (bubble_widget && star_view)
-    star_view->OnBubbleWidgetCreated(bubble_widget);
+  BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
+                                 observer, std::move(delegate),
+                                 browser_->profile(), url, already_bookmarked);
 }
 
 void ToolbarView::ShowTranslateBubble(
@@ -337,23 +332,11 @@ void ToolbarView::ShowTranslateBubble(
   PageActionIconView* translate_icon_view =
       location_bar()->translate_icon_view();
 
-  views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
-      anchor_view, gfx::Point(), web_contents, step, error_type,
-      is_user_gesture ? TranslateBubbleView::USER_GESTURE
-                      : TranslateBubbleView::AUTOMATIC);
-  if (bubble_widget && translate_icon_view)
-    translate_icon_view->OnBubbleWidgetCreated(bubble_widget);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, AccessiblePaneView overrides:
-
-bool ToolbarView::SetPaneFocus(views::View* initial_focus) {
-  if (!AccessiblePaneView::SetPaneFocus(initial_focus))
-    return false;
-
-  location_bar_->SetFullKeyboardAcessibilityMode(true);
-  return true;
+  TranslateBubbleView::ShowBubble(anchor_view, translate_icon_view,
+                                  gfx::Point(), web_contents, step, error_type,
+                                  is_user_gesture
+                                      ? TranslateBubbleView::USER_GESTURE
+                                      : TranslateBubbleView::AUTOMATIC);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -680,9 +663,10 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
   return true;
 }
 
-void ToolbarView::RemovePaneFocus() {
-  AccessiblePaneView::RemovePaneFocus();
-  location_bar_->SetFullKeyboardAcessibilityMode(false);
+// ui::MaterialDesignControllerObserver:
+void ToolbarView::OnMdModeChanged() {
+  LoadImages();
+  PreferredSizeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -56,8 +56,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   LayoutBoxModelObject* GetLayoutBoxModelObject() const;
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
-  AccessibilityRole DetermineAccessibilityRole() override;
-  AccessibilityRole NativeAccessibilityRoleIgnoringAria() const override;
+  ax::mojom::Role DetermineAccessibilityRole() override;
+  ax::mojom::Role NativeRoleIgnoringAria() const override;
 
   // If this is an anonymous block, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
@@ -107,8 +107,8 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   float FontSize() const final;
   String ImageDataUrl(const IntSize& max_size) const final;
   String GetText() const override;
-  AccessibilityTextDirection GetTextDirection() const final;
-  AXTextPosition GetTextPosition() const final;
+  ax::mojom::TextDirection GetTextDirection() const final;
+  ax::mojom::TextPosition GetTextPosition() const final;
   int TextLength() const override;
   TextStyle GetTextStyle() const final;
   KURL Url() const override;
@@ -125,7 +125,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AriaDescribedbyElements(AXObjectVector&) const override;
   void AriaOwnsElements(AXObjectVector&) const override;
 
-  AXHasPopup HasPopup() const override;
+  ax::mojom::HasPopup HasPopup() const override;
   bool SupportsARIADragging() const override;
   bool SupportsARIADropping() const override;
   bool SupportsARIAFlowTo() const override;
@@ -139,7 +139,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 
@@ -202,7 +202,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   unsigned RowIndex() const override;  // Also for a table row.
   unsigned ColumnSpan() const override;
   unsigned RowSpan() const override;
-  SortDirection GetSortDirection() const override;
+  ax::mojom::SortDirection GetSortDirection() const override;
 
   // For a table row or column.
   AXObject* HeaderObject() const override;
@@ -224,9 +224,9 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddRemoteSVGChildren();
   void AddTableChildren();
   void AddInlineTextBoxChildren(bool force);
-  AccessibilityRole DetermineTableCellRole() const;
-  AccessibilityRole DetermineTableRowRole() const;
-  bool FindAllTableCellsWithRole(AccessibilityRole, AXObjectVector&) const;
+  ax::mojom::Role DetermineTableCellRole() const;
+  ax::mojom::Role DetermineTableRowRole() const;
+  bool FindAllTableCellsWithRole(ax::mojom::Role, AXObjectVector&) const;
 
   LayoutRect ComputeElementRect() const;
   AXSelection TextControlSelection() const;
@@ -236,6 +236,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreTextAsEmpty() const;
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
+  bool IsPlaceholder() const;
 
   bool is_autofill_available_;
 

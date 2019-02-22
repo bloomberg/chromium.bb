@@ -21,8 +21,11 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/contact_info.h"
 #include "components/autofill/core/browser/phone_number.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 
 namespace autofill {
+
+struct AutofillMetadata;
 
 // A collection of FormGroups stored in a profile.  AutofillProfile also
 // implements the FormGroup interface so that owners of this object can request
@@ -51,6 +54,13 @@ class AutofillProfile : public AutofillDataModel,
     UNSUPPORTED = 4,
   };
 
+  enum ValidationSource {
+    // The validity state is according to the client validation.
+    CLIENT = 0,
+    // The validity state is according to the server validation.
+    SERVER = 1,
+  };
+
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
@@ -65,10 +75,22 @@ class AutofillProfile : public AutofillDataModel,
 
   AutofillProfile& operator=(const AutofillProfile& profile);
 
+  // AutofillDataModel:
+  AutofillMetadata GetMetadata() const override;
+  bool SetMetadata(const AutofillMetadata metadata) override;
+
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,
                         const std::string& app_locale,
                         ServerFieldTypeSet* matching_types) const override;
+
+  void GetMatchingTypesAndValidities(
+      const base::string16& text,
+      const std::string& app_locale,
+      ServerFieldTypeSet* matching_types,
+      std::map<ServerFieldType, AutofillProfile::ValidityState>*
+          matching_types_validities) const;
+
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
 
@@ -205,20 +227,44 @@ class AutofillProfile : public AutofillDataModel,
   void set_has_converted(bool has_converted) { has_converted_ = has_converted; }
 
   // Returns the validity state of the specified autofill type.
-  ValidityState GetValidityState(ServerFieldType type) const;
+  ValidityState GetValidityState(ServerFieldType type,
+                                 ValidationSource source) const;
 
   // Sets the validity state of the specified autofill type.
-  void SetValidityState(ServerFieldType type, ValidityState validity);
+  void SetValidityState(ServerFieldType type,
+                        ValidityState validity,
+                        ValidationSource validation_source);
+
+  // Update the validity map based on the server side validity maps from the
+  // prefs.
+  void UpdateServerValidityMap(const ProfileValidityMap& validity_states);
 
   // Returns whether autofill does the validation of the specified |type|.
-  static bool IsValidationSupportedForType(ServerFieldType type);
+  static bool IsClientValidationSupportedForType(ServerFieldType type);
 
-  // Returns the bitfield value representing the validity state of this profile.
-  int GetValidityBitfieldValue() const;
+  // Returns the bitfield value representing the validity state of this profile
+  // based on client validation source.
+  int GetClientValidityBitfieldValue() const;
 
   // Sets the validity state of the profile based on the specified
-  // |bitfield_value|.
-  void SetValidityFromBitfieldValue(int bitfield_value);
+  // |bitfield_value| based on client validation source.
+  void SetClientValidityFromBitfieldValue(int bitfield_value);
+
+  // Returns true if type is a phone type and it's invalid, either explicitly,
+  // or by looking at its components.
+  bool IsAnInvalidPhoneNumber(ServerFieldType type) const;
+
+  const std::map<ServerFieldType, ValidityState>& GetServerValidityMap() const {
+    return server_validity_states_;
+  };
+
+  bool is_client_validity_states_updated() const {
+    return is_client_validity_states_updated_;
+  }
+  void set_is_client_validity_states_updated(
+      bool is_client_validity_states_updated) {
+    is_client_validity_states_updated_ = is_client_validity_states_updated;
+  }
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
@@ -275,8 +321,15 @@ class AutofillProfile : public AutofillDataModel,
   // converted to a local profile.
   bool has_converted_;
 
-  // A map identifying what fields are valid.
-  std::map<ServerFieldType, ValidityState> validity_states_;
+  // This flag denotes whether the client_validity_states_ are updated according
+  // to the changes in the autofill profile values.
+  bool is_client_validity_states_updated_ = false;
+
+  // A map identifying what fields are valid according to server validation.
+  std::map<ServerFieldType, ValidityState> server_validity_states_;
+
+  // A map identifying what fields are valid according to client validation.
+  std::map<ServerFieldType, ValidityState> client_validity_states_;
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

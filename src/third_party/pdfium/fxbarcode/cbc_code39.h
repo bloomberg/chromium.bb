@@ -21,13 +21,10 @@ class CBC_Code39 final : public CBC_OneCode {
   ~CBC_Code39() override;
 
   // CBC_OneCode:
+  BC_TYPE GetType() override;
   bool Encode(const WideStringView& contents) override;
   bool RenderDevice(CFX_RenderDevice* device,
                     const CFX_Matrix* matrix) override;
-  BC_TYPE GetType() override;
-
-  bool SetTextLocation(BC_TEXT_LOC location);
-  bool SetWideNarrowRatio(int8_t ratio);
 
  private:
   CBC_OnedCode39Writer* GetOnedCode39Writer();

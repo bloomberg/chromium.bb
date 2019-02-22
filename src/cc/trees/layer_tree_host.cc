@@ -72,49 +72,55 @@ static base::AtomicSequenceNumber s_image_decode_sequence_number;
 namespace cc {
 
 LayerTreeHost::InitParams::InitParams() = default;
-
 LayerTreeHost::InitParams::~InitParams() = default;
+LayerTreeHost::InitParams::InitParams(InitParams&&) = default;
+LayerTreeHost::InitParams& LayerTreeHost::InitParams::operator=(InitParams&&) =
+    default;
 
 std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    InitParams* params) {
-  DCHECK(params->main_task_runner.get());
-  DCHECK(impl_task_runner.get());
-  DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::THREADED));
-  layer_tree_host->InitializeThreaded(params->main_task_runner,
-                                      impl_task_runner);
+    InitParams params) {
+  DCHECK(params.settings);
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
+      params.main_task_runner;
+  DCHECK(main_task_runner);
+  DCHECK(impl_task_runner);
+  auto layer_tree_host = base::WrapUnique(
+      new LayerTreeHost(std::move(params), CompositorMode::THREADED));
+  layer_tree_host->InitializeThreaded(std::move(main_task_runner),
+                                      std::move(impl_task_runner));
   return layer_tree_host;
 }
 
-std::unique_ptr<LayerTreeHost>
-LayerTreeHost::CreateSingleThreaded(
+std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
-    InitParams* params) {
-  DCHECK(params->settings);
-  std::unique_ptr<LayerTreeHost> layer_tree_host(
-      new LayerTreeHost(params, CompositorMode::SINGLE_THREADED));
+    InitParams params) {
+  DCHECK(params.settings);
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
+      params.main_task_runner;
+  auto layer_tree_host = base::WrapUnique(
+      new LayerTreeHost(std::move(params), CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
-                                            params->main_task_runner);
+                                            std::move(main_task_runner));
   return layer_tree_host;
 }
 
-LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
+LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
     : micro_benchmark_controller_(this),
-      image_worker_task_runner_(params->image_worker_task_runner),
-      ukm_recorder_factory_(std::move(params->ukm_recorder_factory)),
+      image_worker_task_runner_(std::move(params.image_worker_task_runner)),
+      ukm_recorder_factory_(std::move(params.ukm_recorder_factory)),
       compositor_mode_(mode),
       ui_resource_manager_(std::make_unique<UIResourceManager>()),
-      client_(params->client),
+      client_(params.client),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      settings_(*params->settings),
+      settings_(*params.settings),
       debug_state_(settings_.initial_debug_state),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
-      task_graph_runner_(params->task_graph_runner),
+      task_graph_runner_(params.task_graph_runner),
       content_source_id_(0),
       event_listener_properties_(),
-      mutator_host_(params->mutator_host) {
+      mutator_host_(params.mutator_host),
+      defer_commits_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 
@@ -271,8 +277,8 @@ const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate(VisualStateUpdate requested_update) {
-  client_->UpdateLayerTreeHost(requested_update);
+void LayerTreeHost::RequestMainFrameUpdate() {
+  client_->UpdateLayerTreeHost();
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -366,6 +372,27 @@ void LayerTreeHost::FinishCommitOnImplThread(
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
   property_trees_.ResetAllChangeTracking();
+
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host=3
+  if (VLOG_IS_ON(3)) {
+    VLOG(3) << "After finishing commit on impl, the sync tree:";
+    // Because the property tree and layer list output can be verbose, the VLOG
+    // output is split by line to avoid line buffer limits on android.
+    VLOG(3) << "property trees:";
+    std::string property_trees;
+    base::JSONWriter::WriteWithOptions(
+        *sync_tree->property_trees()->AsTracedValue()->ToBaseValue(),
+        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+    std::stringstream property_trees_stream(property_trees);
+    for (std::string line; std::getline(property_trees_stream, line);)
+      VLOG(3) << line;
+
+    VLOG(3) << "layers:";
+    std::stringstream layers_stream(host_impl->LayerListAsJson());
+    for (std::string line; std::getline(layers_stream, line);)
+      VLOG(3) << line;
+  }
 }
 
 void LayerTreeHost::ImageDecodesFinished(
@@ -419,7 +446,7 @@ void LayerTreeHost::WillCommit() {
 
 
 void LayerTreeHost::UpdateDeferCommitsInternal() {
-  proxy_->SetDeferCommits(defer_commits_ ||
+  proxy_->SetDeferCommits(defer_commits_count_ > 0 ||
                           (settings_.enable_surface_synchronization &&
                            !local_surface_id_from_parent_.is_valid()));
 }
@@ -507,11 +534,23 @@ void LayerTreeHost::DidLoseLayerTreeFrameSink() {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetDeferCommits(bool defer_commits) {
-  if (defer_commits_ == defer_commits)
-    return;
-  defer_commits_ = defer_commits;
-  UpdateDeferCommitsInternal();
+ScopedDeferCommits::ScopedDeferCommits(LayerTreeHost* host)
+    : host_(host->defer_commits_weak_ptr_factory_.GetWeakPtr()) {
+  host->defer_commits_count_++;
+  host->UpdateDeferCommitsInternal();
+}
+
+ScopedDeferCommits::~ScopedDeferCommits() {
+  LayerTreeHost* host = host_.get();
+  if (host) {
+    DCHECK_GT(host->defer_commits_count_, 0u);
+    if (--host->defer_commits_count_ == 0)
+      host->UpdateDeferCommitsInternal();
+  }
+}
+
+std::unique_ptr<ScopedDeferCommits> LayerTreeHost::DeferCommits() {
+  return std::make_unique<ScopedDeferCommits>(this);
 }
 
 DISABLE_CFI_PERF
@@ -577,12 +616,6 @@ void LayerTreeHost::SetDebugState(
       debug_state_.RecordRenderingStats());
 
   SetNeedsCommit();
-}
-
-void LayerTreeHost::ResetGpuRasterizationTracking() {
-  content_has_slow_paths_ = false;
-  content_has_non_aa_paint_ = false;
-  gpu_rasterization_histogram_recorded_ = false;
 }
 
 void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
@@ -716,30 +749,6 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 
-  Layer* root_scroll =
-      PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
-  Layer* page_scale_layer = viewport_layers_.page_scale.get();
-  if (!page_scale_layer && root_scroll)
-    page_scale_layer = root_scroll->parent();
-
-  if (hud_layer_) {
-    hud_layer_->PrepareForCalculateDrawProperties(device_viewport_size_,
-                                                  device_scale_factor_);
-    // The HUD layer is managed outside the layer list sent to LayerTreeHost
-    // and needs to have its property tree state set.
-    if (IsUsingLayerLists() && root_layer_.get()) {
-      hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
-      hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
-      hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
-      hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
-      hud_layer_->set_property_tree_sequence_number(
-          root_layer_->property_tree_sequence_number());
-    }
-  }
-
-  gfx::Transform identity_transform;
-  LayerList update_layer_list;
-
   // The non-layer-list mode is used when blink provides cc with a layer tree
   // and cc needs to compute property trees from that.
   // In layer lists mode, blink sends cc property trees directly so they do not
@@ -749,6 +758,12 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),
                  "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
+    Layer* root_scroll =
+        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer);
+    Layer* page_scale_layer = viewport_layers_.page_scale.get();
+    if (!page_scale_layer && root_scroll)
+      page_scale_layer = root_scroll->parent();
+    gfx::Transform identity_transform;
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer(),
         outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
@@ -757,63 +772,75 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
     TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
                          property_trees_.AsTracedValue());
-    } else {
-      TRACE_EVENT_INSTANT1("cc",
-                           "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
-                           TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                           property_trees_.AsTracedValue());
+  } else {
+    TRACE_EVENT_INSTANT1("cc",
+                         "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
+                         TRACE_EVENT_SCOPE_THREAD, "property_trees",
+                         property_trees_.AsTracedValue());
+    // The HUD layer is managed outside the layer list sent to LayerTreeHost
+    // and needs to have its property tree state set.
+    if (hud_layer_ && root_layer_.get()) {
+      hud_layer_->SetTransformTreeIndex(root_layer_->transform_tree_index());
+      hud_layer_->SetEffectTreeIndex(root_layer_->effect_tree_index());
+      hud_layer_->SetClipTreeIndex(root_layer_->clip_tree_index());
+      hud_layer_->SetScrollTreeIndex(root_layer_->scroll_tree_index());
+      hud_layer_->set_property_tree_sequence_number(
+          root_layer_->property_tree_sequence_number());
     }
+  }
 
 #if DCHECK_IS_ON()
-    // Ensure property tree nodes were created for all layers. When using layer
-    // lists, this can fail if blink doesn't setup layers or nodes correctly in
-    // |PaintArtifactCompositor|. When not using layer lists, this can fail if
-    // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
-    // nodes.
-    for (auto* layer : *this) {
-      DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
-      DCHECK(
-          property_trees_.transform_tree.Node(layer->transform_tree_index()));
-      DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
-      DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
-    }
+  // Ensure property tree nodes were created for all layers. When using layer
+  // lists, this can fail if blink doesn't setup layers or nodes correctly in
+  // |PaintArtifactCompositor|. When not using layer lists, this can fail if
+  // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
+  // nodes.
+  for (auto* layer : *this) {
+    DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
+    DCHECK(property_trees_.transform_tree.Node(layer->transform_tree_index()));
+    DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
+    DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
+  }
 #endif
 
-    draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
-    draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
-                                                   &update_layer_list);
+  draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
 
-    // Dump property trees useful for debugging --blink-gen-property-trees
-    // flag. We care only about the renderer compositor.
-    if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
-      VLOG(3) << "CC Property Trees:";
-      std::string out;
-      base::JSONWriter::WriteWithOptions(
-          *property_trees_.AsTracedValue()->ToBaseValue(),
-          base::JSONWriter::OPTIONS_PRETTY_PRINT, &out);
-      std::stringstream ss(out);
-      while (!ss.eof()) {
-        std::string line;
-        std::getline(ss, line);
-        VLOG(3) << line;
-      }
+  LayerList update_layer_list;
+  draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
+                                                 &update_layer_list);
 
-      VLOG(3) << "CC Layer List:";
-      for (auto* layer : *this) {
-        VLOG(3) << "layer id " << layer->id();
-        VLOG(3) << "  element_id: " << layer->element_id();
-        VLOG(3) << "  bounds: " << layer->bounds().ToString();
-        VLOG(3) << "  opacity: " << layer->opacity();
-        VLOG(3) << "  position: " << layer->position().ToString();
-        VLOG(3) << "  draws_content: " << layer->DrawsContent();
-        VLOG(3) << "  scrollable: " << layer->scrollable();
-        VLOG(3) << "  contents_opaque: " << layer->contents_opaque();
-        VLOG(3) << "  transform_tree_index: " << layer->transform_tree_index();
-        VLOG(3) << "  clip_tree_index: " << layer->clip_tree_index();
-        VLOG(3) << "  effect_tree_index: " << layer->effect_tree_index();
-        VLOG(3) << "  scroll_tree_index: " << layer->scroll_tree_index();
-      }
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host=3
+  // This only prints output for the renderer.
+  if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
+    VLOG(3) << "After updating layers on the main thread:";
+    // Because the property tree and layer list output can be verbose, the VLOG
+    // output is split by line to avoid line buffer limits on android.
+    VLOG(3) << "property trees:";
+    std::string property_trees;
+    base::JSONWriter::WriteWithOptions(
+        *property_trees_.AsTracedValue()->ToBaseValue(),
+        base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_trees);
+    std::stringstream property_trees_stream(property_trees);
+    for (std::string line; std::getline(property_trees_stream, line);)
+      VLOG(3) << line;
+
+    VLOG(3) << "layers:";
+    for (auto* layer : *this) {
+      VLOG(3) << "  layer id " << layer->id();
+      VLOG(3) << "    element_id: " << layer->element_id();
+      VLOG(3) << "    bounds: " << layer->bounds().ToString();
+      VLOG(3) << "    opacity: " << layer->opacity();
+      VLOG(3) << "    position: " << layer->position().ToString();
+      VLOG(3) << "    draws_content: " << layer->DrawsContent();
+      VLOG(3) << "    scrollable: " << layer->scrollable();
+      VLOG(3) << "    contents_opaque: " << layer->contents_opaque();
+      VLOG(3) << "    transform_tree_index: " << layer->transform_tree_index();
+      VLOG(3) << "    clip_tree_index: " << layer->clip_tree_index();
+      VLOG(3) << "    effect_tree_index: " << layer->effect_tree_index();
+      VLOG(3) << "    scroll_tree_index: " << layer->scroll_tree_index();
     }
+  }
 
   bool painted_content_has_slow_paths = false;
   bool painted_content_has_non_aa_paint = false;
@@ -842,13 +869,13 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   return did_paint_content;
 }
 
-void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
+void LayerTreeHost::ApplyViewportDeltas(const ScrollAndScaleSet& info) {
   gfx::Vector2dF inner_viewport_scroll_delta;
-  if (info->inner_viewport_scroll.element_id)
-    inner_viewport_scroll_delta = info->inner_viewport_scroll.scroll_delta;
+  if (info.inner_viewport_scroll.element_id)
+    inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
-  if (inner_viewport_scroll_delta.IsZero() && info->page_scale_delta == 1.f &&
-      info->elastic_overscroll_delta.IsZero() && !info->top_controls_delta)
+  if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
+      info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta)
     return;
 
   // Preemptively apply the scroll offset and scale delta here before sending
@@ -861,21 +888,21 @@ void LayerTreeHost::ApplyViewportDeltas(ScrollAndScaleSet* info) {
             inner_viewport_scroll_delta));
   }
 
-  ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
+  ApplyPageScaleDeltaFromImplSide(info.page_scale_delta);
   SetElasticOverscrollFromImplSide(elastic_overscroll_ +
-                                   info->elastic_overscroll_delta);
+                                   info.elastic_overscroll_delta);
   // TODO(ccameron): pass the elastic overscroll here so that input events
   // may be translated appropriately.
-  client_->ApplyViewportDeltas(inner_viewport_scroll_delta, gfx::Vector2dF(),
-                               info->elastic_overscroll_delta,
-                               info->page_scale_delta,
-                               info->top_controls_delta);
+  client_->ApplyViewportChanges(
+      {inner_viewport_scroll_delta, info.elastic_overscroll_delta,
+       info.page_scale_delta, info.top_controls_delta});
   SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
-  bool has_scrolled_by_wheel = info->has_scrolled_by_wheel;
-  bool has_scrolled_by_touch = info->has_scrolled_by_touch;
+void LayerTreeHost::RecordWheelAndTouchScrollingCount(
+    const ScrollAndScaleSet& info) {
+  bool has_scrolled_by_wheel = info.has_scrolled_by_wheel;
+  bool has_scrolled_by_touch = info.has_scrolled_by_touch;
 
   if (has_scrolled_by_wheel || has_scrolled_by_touch) {
     client_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
@@ -884,6 +911,7 @@ void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
 }
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
+  DCHECK(info);
   for (auto& swap_promise : info->swap_promises) {
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
@@ -912,9 +940,13 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   // This needs to happen after scroll deltas have been sent to prevent top
   // controls from clamping the layout viewport both on the compositor and
   // on the main thread.
-  ApplyViewportDeltas(info);
+  ApplyViewportDeltas(*info);
 
-  RecordWheelAndTouchScrollingCount(info);
+  RecordWheelAndTouchScrollingCount(*info);
+}
+
+void LayerTreeHost::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
+  client_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler()
@@ -970,7 +1002,7 @@ void LayerTreeHost::SetLayerTreeMutator(
   // from the main thread, which will not be the case if we're running in
   // single-threaded mode.
   if (!task_runner_provider_->HasImplThread()) {
-    LOG(ERROR) << "LayerTreeMutator not supported in single-thread mode";
+    DLOG(ERROR) << "LayerTreeMutator not supported in single-thread mode";
     return;
   }
   proxy_->SetMutator(std::move(mutator));
@@ -1010,7 +1042,9 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
 
   // Reset gpu rasterization tracking.
   // This flag is sticky until a new tree comes along.
-  ResetGpuRasterizationTracking();
+  content_has_slow_paths_ = false;
+  content_has_non_aa_paint_ = false;
+  gpu_rasterization_histogram_recorded_ = false;
 
   SetNeedsFullTreeSync();
 }
@@ -1067,20 +1101,36 @@ void LayerTreeHost::SetEventListenerProperties(
   if (event_listener_properties_[index] == properties)
     return;
 
+  // If the mouse wheel event listener is blocking, then every layer in the
+  // layer tree sets a wheel event handler region to be its entire bounds,
+  // otherwise it sets it to empty.
+  //
+  // Thus when it changes, we might want to request every layer to push
+  // properties and recompute its wheel event handler region, since the
+  // computation is done in PushPropertiesTo. However neither
+  // SetSubtreePropertyChanged() nor SetNeedsFullTreeSync() do this, so
+  // it is unclear why we call them.
+  // Also why we don't want to recompute the wheel event handler region for all
+  // layers when the blocking state goes away is unclear. Also why we mark all
+  // layers below the root layer as damaged is unclear.
+  // TODO(bokan): Sort out what should be set and why. https://crbug.com/881011
+  //
   // TODO(sunxd): Remove NeedsFullTreeSync when computing mouse wheel event
   // handler region is done.
-  // We only do full tree sync if the mouse wheel event listener property
-  // changes from kNone/kPassive to kBlocking/kBlockingAndPassive.
-  if (event_class == EventListenerClass::kMouseWheel &&
-      !(event_listener_properties_[index] ==
-            EventListenerProperties::kBlocking ||
-        event_listener_properties_[index] ==
-            EventListenerProperties::kBlockingAndPassive) &&
-      (properties == EventListenerProperties::kBlocking ||
-       properties == EventListenerProperties::kBlockingAndPassive)) {
-    if (root_layer())
-      root_layer()->SetSubtreePropertyChanged();
-    SetNeedsFullTreeSync();
+  if (event_class == EventListenerClass::kMouseWheel) {
+    bool new_property_is_blocking =
+        properties == EventListenerProperties::kBlocking ||
+        properties == EventListenerProperties::kBlockingAndPassive;
+    EventListenerProperties old_properties = event_listener_properties_[index];
+    bool old_property_is_blocking =
+        old_properties == EventListenerProperties::kBlocking ||
+        old_properties == EventListenerProperties::kBlockingAndPassive;
+
+    if (!old_property_is_blocking && new_property_is_blocking) {
+      if (root_layer())
+        root_layer()->SetSubtreePropertyChanged();
+      SetNeedsFullTreeSync();
+    }
   }
 
   event_listener_properties_[index] = properties;
@@ -1282,7 +1332,7 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
     mutator_host_->UnregisterElement(layer->element_id(),
                                      ElementListType::ACTIVE);
   }
-  RemoveLayerShouldPushProperties(layer);
+  layers_that_should_push_properties_.erase(layer);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1335,13 +1385,8 @@ void LayerTreeHost::RemoveLayerShouldPushProperties(Layer* layer) {
   layers_that_should_push_properties_.erase(layer);
 }
 
-std::unordered_set<Layer*>& LayerTreeHost::LayersThatShouldPushProperties() {
-  return layers_that_should_push_properties_;
-}
-
-bool LayerTreeHost::LayerNeedsPushPropertiesForTesting(Layer* layer) const {
-  return layers_that_should_push_properties_.find(layer) !=
-         layers_that_should_push_properties_.end();
+void LayerTreeHost::ClearLayersThatShouldPushProperties() {
+  layers_that_should_push_properties_.clear();
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
@@ -1365,9 +1410,13 @@ void LayerTreeHost::SetElasticOverscrollFromImplSide(
 
 void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
   if (show_hud_info) {
-    if (!hud_layer_.get()) {
+    if (!hud_layer_.get())
       hud_layer_ = HeadsUpDisplayLayer::Create();
-    }
+
+    gfx::Size device_viewport_in_layout_pixels =
+        gfx::Size(device_viewport_size_.width() / device_scale_factor_,
+                  device_viewport_size_.height() / device_scale_factor_);
+    hud_layer_->SetBounds(device_viewport_in_layout_pixels);
 
     if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);

@@ -40,6 +40,7 @@ class ThemeProperties {
     COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE,
     COLOR_TOOLBAR,
     COLOR_TAB_TEXT,
+    COLOR_TAB_TEXT_INACTIVE,
     COLOR_BACKGROUND_TAB_TEXT,
     COLOR_BACKGROUND_TAB_TEXT_INACTIVE,
     COLOR_BACKGROUND_TAB_TEXT_INCOGNITO,
@@ -60,7 +61,7 @@ class ThemeProperties {
 
     NTP_BACKGROUND_ALIGNMENT,
     NTP_BACKGROUND_TILING,
-    NTP_LOGO_ALTERNATE
+    NTP_LOGO_ALTERNATE,
   };
 
   // A bitfield mask for alignments.
@@ -137,6 +138,13 @@ class ThemeProperties {
     COLOR_TAB_PIP_PLAYING,
     COLOR_TAB_ALERT_CAPTURING,
 
+    // Calculated representative colors for the background of window control
+    // buttons.
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
+    COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,
@@ -146,29 +154,12 @@ class ThemeProperties {
     COLOR_SUPERVISED_USER_LABEL_BORDER,
 #endif
 
-#if defined(OS_MACOSX)
-    COLOR_FRAME_VIBRANCY_OVERLAY,
-    COLOR_TOOLBAR_INACTIVE,
-    COLOR_TOOLBAR_BEZEL,
-    COLOR_TOOLBAR_STROKE,
-    COLOR_TOOLBAR_STROKE_INACTIVE,
-    COLOR_TOOLBAR_STROKE_THEME,
-    COLOR_TOOLBAR_STROKE_THEME_INACTIVE,
-    // The color of a toolbar button's border.
-    COLOR_TOOLBAR_BUTTON_STROKE,
-    COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
-    GRADIENT_TOOLBAR,
-    GRADIENT_TOOLBAR_INACTIVE,
-    GRADIENT_TOOLBAR_BUTTON,
-    GRADIENT_TOOLBAR_BUTTON_INACTIVE,
-    GRADIENT_TOOLBAR_BUTTON_PRESSED,
-    GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE,
-#endif  // OS_MACOSX
-
 #if defined(OS_WIN)
     // The color of the 1px border around the window on Windows 10.
     COLOR_ACCENT_BORDER,
 #endif  // OS_WIN
+
+    SHOULD_FILL_BACKGROUND_TAB_COLOR,
   };
 
   // Represents the lookup values for a theme property.

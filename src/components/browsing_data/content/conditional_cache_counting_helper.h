@@ -61,7 +61,7 @@ class ConditionalCacheCountingHelper {
   void Finished();
 
   void CountHttpCacheOnIOThread();
-  void DoCountCache(int rv);
+  void DoCountCache(int64_t rv);
 
   // State used for legacy path. Will eventually go away.
 

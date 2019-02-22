@@ -49,10 +49,11 @@ class WTFVectorPersistentValueVectorTraits {
   static bool IsEmpty(const Impl* impl) { return impl->IsEmpty(); }
   static size_t Size(const Impl* impl) { return impl->size(); }
   static v8::PersistentContainerValue Get(const Impl* impl, size_t i) {
-    return (i < impl->size()) ? impl->at(i) : v8::kPersistentContainerNotFound;
+    return (i < impl->size()) ? impl->at(static_cast<wtf_size_t>(i))
+                              : v8::kPersistentContainerNotFound;
   }
   static void ReserveCapacity(Impl* impl, size_t capacity) {
-    impl->ReserveCapacity(capacity);
+    impl->ReserveCapacity(static_cast<wtf_size_t>(capacity));
   }
   static void Clear(Impl* impl) { impl->clear(); }
 };

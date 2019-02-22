@@ -21,10 +21,9 @@
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -35,6 +34,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/url_constants.h"
 
 namespace subresource_filter {
@@ -55,6 +55,44 @@ enum PageActivationNotificationTiming {
   WILL_PROCESS_RESPONSE,
 };
 
+class FakeSubresourceFilterAgent : public mojom::SubresourceFilterAgent {
+ public:
+  FakeSubresourceFilterAgent() : binding_(this) {}
+  ~FakeSubresourceFilterAgent() override = default;
+
+  void OnSubresourceFilterAgentRequest(
+      mojo::ScopedInterfaceEndpointHandle handle) {
+    binding_.Bind(
+        mojo::AssociatedInterfaceRequest<mojom::SubresourceFilterAgent>(
+            std::move(handle)));
+  }
+
+  // mojom::SubresourceFilterAgent:
+  void ActivateForNextCommittedLoad(mojom::ActivationStatePtr activation_state,
+                                    bool is_ad_subframe) override {
+    last_activation_ = std::move(activation_state);
+    is_ad_subframe_ = is_ad_subframe;
+  }
+
+  // These methods reset state back to default when they are called.
+  bool LastAdSubframe() {
+    bool is_ad_subframe = is_ad_subframe_;
+    is_ad_subframe_ = false;
+    return is_ad_subframe;
+  }
+  bool LastActivated() {
+    bool activated = last_activation_ && last_activation_->activation_level !=
+                                             mojom::ActivationLevel::kDisabled;
+    last_activation_.reset();
+    return activated;
+  }
+
+ private:
+  mojom::ActivationStatePtr last_activation_;
+  bool is_ad_subframe_ = false;
+  mojo::AssociatedBinding<mojom::SubresourceFilterAgent> binding_;
+};
+
 // Simple throttle that sends page-level activation to the manager for a
 // specific set of URLs.
 class MockPageStateActivationThrottle : public content::NavigationThrottle {
@@ -65,14 +103,17 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
       : content::NavigationThrottle(navigation_handle),
         activation_throttle_state_(activation_throttle_state) {
     // Add some default activations.
-    mock_page_activations_[GURL(kTestURLWithActivation)] =
-        ActivationState(ActivationLevel::ENABLED);
-    mock_page_activations_[GURL(kTestURLWithActivation2)] =
-        ActivationState(ActivationLevel::ENABLED);
-    mock_page_activations_[GURL(kTestURLWithDryRun)] =
-        ActivationState(ActivationLevel::DRYRUN);
+    mojom::ActivationState enabled_state;
+    enabled_state.activation_level = mojom::ActivationLevel::kEnabled;
+
+    mojom::ActivationState dry_run_state;
+    dry_run_state.activation_level = mojom::ActivationLevel::kDryRun;
+
+    mock_page_activations_[GURL(kTestURLWithActivation)] = enabled_state;
+    mock_page_activations_[GURL(kTestURLWithActivation2)] = enabled_state;
+    mock_page_activations_[GURL(kTestURLWithDryRun)] = dry_run_state;
     mock_page_activations_[GURL(kTestURLWithNoActivation)] =
-        ActivationState(ActivationLevel::DISABLED);
+        mojom::ActivationState();
   }
   ~MockPageStateActivationThrottle() override {}
 
@@ -104,7 +145,7 @@ class MockPageStateActivationThrottle : public content::NavigationThrottle {
     return content::NavigationThrottle::PROCEED;
   }
 
-  std::map<GURL, ActivationState> mock_page_activations_;
+  std::map<GURL, mojom::ActivationState> mock_page_activations_;
   PageActivationNotificationTiming activation_throttle_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPageStateActivationThrottle);
@@ -122,6 +163,9 @@ class ContentSubresourceFilterThrottleManagerTest
   // content::RenderViewHostTestHarness:
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
+    content::WebContents* web_contents =
+        RenderViewHostTestHarness::web_contents();
+    CreateAgentForHost(web_contents->GetMainFrame());
 
     NavigateAndCommit(GURL("https://example.first"));
 
@@ -145,9 +189,8 @@ class ContentSubresourceFilterThrottleManagerTest
 
     throttle_manager_ =
         std::make_unique<ContentSubresourceFilterThrottleManager>(
-            this, dealer_handle_.get(),
-            RenderViewHostTestHarness::web_contents());
-    Observe(RenderViewHostTestHarness::web_contents());
+            this, dealer_handle_.get(), web_contents);
+    Observe(web_contents);
   }
 
   void TearDown() override {
@@ -160,21 +203,13 @@ class ContentSubresourceFilterThrottleManagerTest
   void ExpectActivationSignalForFrame(content::RenderFrameHost* rfh,
                                       bool expect_activation,
                                       bool expect_is_ad_subframe = false) {
-    content::MockRenderProcessHost* render_process_host =
-        static_cast<content::MockRenderProcessHost*>(rfh->GetProcess());
-    const IPC::Message* message =
-        render_process_host->sink().GetFirstMessageMatching(
-            SubresourceFilterMsg_ActivateForNextCommittedLoad::ID);
-    ASSERT_EQ(expect_activation, !!message);
-    if (expect_activation) {
-      std::tuple<ActivationState, bool> args;
-      SubresourceFilterMsg_ActivateForNextCommittedLoad::Read(message, &args);
-      ActivationLevel level = std::get<0>(args).activation_level;
-      EXPECT_NE(ActivationLevel::DISABLED, level);
-      bool is_ad_subframe = std::get<1>(args);
-      EXPECT_EQ(expect_is_ad_subframe, is_ad_subframe);
-    }
-    render_process_host->sink().ClearMessages();
+    // In some cases we need to verify that messages were _not_ sent, in which
+    // case using a Wait() idiom would cause hangs. RunUntilIdle instead to
+    // ensure mojo calls make it to the fake agent.
+    base::RunLoop().RunUntilIdle();
+    FakeSubresourceFilterAgent* agent = agent_map_[rfh].get();
+    EXPECT_EQ(expect_activation, agent->LastActivated());
+    EXPECT_EQ(expect_is_ad_subframe, agent->LastAdSubframe());
   }
 
   // Helper methods:
@@ -260,6 +295,14 @@ class ContentSubresourceFilterThrottleManagerTest
 
  protected:
   // content::WebContentsObserver
+  void RenderFrameCreated(content::RenderFrameHost* new_host) override {
+    CreateAgentForHost(new_host);
+  }
+
+  void FrameDeleted(content::RenderFrameHost* host) override {
+    agent_map_.erase(host);
+  }
+
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
     if (navigation_handle->IsSameDocument())
@@ -280,11 +323,21 @@ class ContentSubresourceFilterThrottleManagerTest
     }
   }
 
+  void CreateAgentForHost(content::RenderFrameHost* host) {
+    auto new_agent = std::make_unique<FakeSubresourceFilterAgent>();
+    host->GetRemoteAssociatedInterfaces()->OverrideBinderForTesting(
+        mojom::SubresourceFilterAgent::Name_,
+        base::BindRepeating(
+            &FakeSubresourceFilterAgent::OnSubresourceFilterAgentRequest,
+            base::Unretained(new_agent.get())));
+    agent_map_[host] = std::move(new_agent);
+  }
+
   // SubresourceFilterClient:
   void ShowNotification() override { ++disallowed_notification_count_; }
-  ActivationLevel OnPageActivationComputed(
+  mojom::ActivationLevel OnPageActivationComputed(
       content::NavigationHandle* navigation_handle,
-      ActivationLevel effective_activation_level,
+      mojom::ActivationLevel effective_activation_level,
       ActivationDecision* decision) override {
     return effective_activation_level;
   }
@@ -301,6 +354,10 @@ class ContentSubresourceFilterThrottleManagerTest
 
   std::unique_ptr<ContentSubresourceFilterThrottleManager> throttle_manager_;
 
+  std::map<content::RenderFrameHost*,
+           std::unique_ptr<FakeSubresourceFilterAgent>>
+      agent_map_;
+
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
   // Incremented on every OnFirstSubresourceLoadDisallowed call.
@@ -309,7 +366,7 @@ class ContentSubresourceFilterThrottleManagerTest
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterThrottleManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(PageActivationNotificationTiming,
+INSTANTIATE_TEST_CASE_P(,
                         ContentSubresourceFilterThrottleManagerTest,
                         ::testing::Values(WILL_START_REQUEST,
                                           WILL_PROCESS_RESPONSE));
@@ -697,15 +754,18 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
       "SubresourceFilter.PageLoad.ActivationState";
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::DRYRUN), 1);
+                           static_cast<int>(mojom::ActivationLevel::kDryRun),
+                           1);
 
   NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::DISABLED), 1);
+                           static_cast<int>(mojom::ActivationLevel::kDisabled),
+                           1);
 
   NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
   tester.ExpectBucketCount(kActivationStateHistogram,
-                           static_cast<int>(ActivationLevel::ENABLED), 1);
+                           static_cast<int>(mojom::ActivationLevel::kEnabled),
+                           1);
 
   // Navigate a subframe that is not filtered, but should still activate.
   CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
@@ -734,18 +794,13 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
                                  false /* is_ad_subframe */);
 
   // A disallowed subframe navigation should be successfully filtered.
-  content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
+  CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), main_rfh());
 
   SimulateStartAndExpectResult(
       content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
 
   EXPECT_EQ(1, disallowed_notification_count());
-
-  // Since the IPC is not actually sent, is_ad_subframe is not really checked
-  // but adding it here since we do tag even if its not a dryrun scenario.
-  ExpectActivationSignalForFrame(subframe, false /* expect_activation */,
-                                 true /* is_ad_subframe */);
 }
 
 // If the RenderFrame determines that the frame is an ad, then any navigation
@@ -843,7 +898,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
   grandchild_frame =
       SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
-  ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
+  ExpectActivationSignalForFrame(grandchild_frame, true /* expect_activation */,
                                  true /* is_ad_subframe */);
   EXPECT_TRUE(
       throttle_manager()->IsFrameTaggedAsAdForTesting(grandchild_frame));
@@ -938,10 +993,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // Simulate the previous navigation sending an IPC that a load was disallowed.
   // This could happen e.g. for cross-process navigations, which have no
   // ordering guarantees.
-  throttle_manager()->OnMessageReceived(
-      SubresourceFilterHostMsg_DidDisallowFirstSubresource(
-          main_rfh()->GetRoutingID()),
-      main_rfh());
+  throttle_manager()->DidDisallowFirstSubresource();
   EXPECT_EQ(0, disallowed_notification_count());
 }
 

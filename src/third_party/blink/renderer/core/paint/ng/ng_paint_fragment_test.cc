@@ -456,4 +456,115 @@ TEST_F(NGPaintFragmentTest, FlippedBlock) {
   EXPECT_EQ(LayoutRect(180, 40, 10, 30), text3.VisualRect());
 }
 
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br>line 2<br id=target>line 3<br>"
+      "</div>");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_FALSE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
+      "</div>");
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_TRUE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br>line 2<span id=target><br></span>line 3<br>"
+      "</div>");
+  // |target| is a culled inline box. There is no fragment in fragment tree.
+  Element& target = *GetDocument().getElementById("target");
+  target.remove();
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_FALSE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtStart) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
+      "</div>");
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  const scoped_refptr<const NGPaintFragment> line1 = container.Children()[0];
+  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
+  const scoped_refptr<const NGPaintFragment> line2 = container.Children()[1];
+  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
+  const scoped_refptr<const NGPaintFragment> line3 = container.Children()[2];
+  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
+                                    &target);
+  GetDocument().UpdateStyleAndLayout();
+
+  EXPECT_TRUE(line1->IsDirty());
+  EXPECT_FALSE(line2->IsDirty());
+  EXPECT_FALSE(line3->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtLast) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
+      "</div>");
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  const scoped_refptr<const NGPaintFragment> line1 = container.Children()[0];
+  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
+  const scoped_refptr<const NGPaintFragment> line2 = container.Children()[1];
+  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
+  const scoped_refptr<const NGPaintFragment> line3 = container.Children()[2];
+  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->appendChild(Text::Create(GetDocument(), "XYZ"));
+  GetDocument().UpdateStyleAndLayout();
+
+  EXPECT_FALSE(line1->IsDirty());
+  EXPECT_FALSE(line2->IsDirty());
+  EXPECT_TRUE(line3->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByInsertAtMiddle) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
+      "</div>");
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  const scoped_refptr<const NGPaintFragment> line1 = container.Children()[0];
+  ASSERT_TRUE(line1->PhysicalFragment().IsLineBox()) << line1;
+  const scoped_refptr<const NGPaintFragment> line2 = container.Children()[1];
+  ASSERT_TRUE(line2->PhysicalFragment().IsLineBox()) << line2;
+  const scoped_refptr<const NGPaintFragment> line3 = container.Children()[2];
+  ASSERT_TRUE(line3->PhysicalFragment().IsLineBox()) << line3;
+  Element& target = *GetDocument().getElementById("target");
+  target.parentNode()->insertBefore(Text::Create(GetDocument(), "XYZ"),
+                                    target.nextSibling());
+  GetDocument().UpdateStyleAndLayout();
+
+  EXPECT_TRUE(line1->IsDirty());
+  EXPECT_FALSE(line2->IsDirty());
+  EXPECT_FALSE(line3->IsDirty());
+}
+
+TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
+  SetBodyInnerHTML(
+      "<div id=container>line 1<br><b id=target>line 2</b><br>line "
+      "3<br></div>");
+  Element& target = *GetDocument().getElementById("target");
+  ToText(*target.firstChild()).setData("abc");
+  const NGPaintFragment& container = *GetPaintFragmentByElementId("container");
+  EXPECT_FALSE(container.Children()[0]->IsDirty());
+  EXPECT_TRUE(container.Children()[1]->IsDirty());
+  EXPECT_FALSE(container.Children()[2]->IsDirty());
+}
+
 }  // namespace blink

@@ -19,10 +19,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/drive/service/drive_service_interface.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace google_apis {
 class AboutResource;
 class ChangeResource;
@@ -49,16 +45,6 @@ class FakeDriveService : public DriveServiceInterface {
   FakeDriveService();
   ~FakeDriveService() override;
 
-  // Loads the app list for Drive API. Returns true on success.
-  bool LoadAppListForDriveApi(const std::string& relative_path);
-
-  // Adds an app to app list.
-  void AddApp(const std::string& app_id,
-              const std::string& app_name,
-              const std::string& product_id,
-              const std::string& create_url,
-              bool is_removable);
-
   // Adds a Team Drive to the Team Drive resource list.
   void AddTeamDrive(const std::string& id, const std::string& name);
 
@@ -66,12 +52,6 @@ class FakeDriveService : public DriveServiceInterface {
   void AddTeamDrive(const std::string& id,
                     const std::string& name,
                     const std::string& start_page_token);
-
-  // Removes an app by product id.
-  void RemoveAppByProductId(const std::string& product_id);
-
-  // Returns true if the service knows the given drive app id.
-  bool HasApp(const std::string& app_id) const;
 
   // Changes the offline state. All functions fail with DRIVE_NO_CONNECTION
   // when offline. By default the offline state is false.
@@ -87,12 +67,6 @@ class FakeDriveService : public DriveServiceInterface {
   // By default, it's set to 0, which is unlimited.
   void set_default_max_results(int default_max_results) {
     default_max_results_ = default_max_results;
-  }
-
-  // Sets the url to the test server to be used as a base for generated share
-  // urls to the share dialog.
-  void set_share_url_base(const GURL& share_url_base) {
-    share_url_base_ = share_url_base;
   }
 
   // Changes the quota fields returned from GetAboutResource().
@@ -130,10 +104,6 @@ class FakeDriveService : public DriveServiceInterface {
     return about_resource_load_count_;
   }
 
-  // Returns the number of times the app list is successfully loaded by
-  // GetAppList().
-  int app_list_load_count() const { return app_list_load_count_; }
-
   // Returns the number of times GetAllFileList are blocked due to
   // set_never_return_all_file_list().
   int blocked_file_list_load_count() const {
@@ -150,13 +120,6 @@ class FakeDriveService : public DriveServiceInterface {
   // invocation.
   const base::FilePath& last_cancelled_file() const {
     return last_cancelled_file_;
-  }
-
-  // Sets the printf format for constructing the response of AuthorizeApp().
-  // The format string must include two %s that are to be filled with
-  // resource_id and app_id.
-  void set_open_url_format(const std::string& url_format) {
-    open_url_format_ = url_format;
   }
 
   // DriveServiceInterface Overrides
@@ -207,17 +170,11 @@ class FakeDriveService : public DriveServiceInterface {
   google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
       const google_apis::FileResourceCallback& callback) override;
-  google_apis::CancelCallback GetShareUrl(
-      const std::string& resource_id,
-      const GURL& embed_origin,
-      const google_apis::GetShareUrlCallback& callback) override;
   google_apis::CancelCallback GetAboutResource(
       const google_apis::AboutResourceCallback& callback) override;
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
       const google_apis::StartPageTokenCallback& callback) override;
-  google_apis::CancelCallback GetAppList(
-      const google_apis::AppListCallback& callback) override;
   google_apis::CancelCallback DeleteResource(
       const std::string& resource_id,
       const std::string& etag,
@@ -301,13 +258,6 @@ class FakeDriveService : public DriveServiceInterface {
       const UploadExistingFileOptions& options,
       const google_apis::FileResourceCallback& callback,
       const google_apis::ProgressCallback& progress_callback) override;
-  google_apis::CancelCallback AuthorizeApp(
-      const std::string& resource_id,
-      const std::string& app_id,
-      const google_apis::AuthorizeAppCallback& callback) override;
-  google_apis::CancelCallback UninstallApp(
-      const std::string& app_id,
-      const google_apis::EntryActionCallback& callback) override;
   google_apis::CancelCallback AddPermission(
       const std::string& resource_id,
       const std::string& email,
@@ -382,6 +332,9 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       google_apis::drive::FileVisibility* visibility);
 
+  google_apis::DriveApiErrorCode SetFileAsSharedWithMe(
+      const std::string& resource_id);
+
   void AddChangeObserver(ChangeObserver* observer);
   void RemoveChangeObserver(ChangeObserver* observer);
 
@@ -455,7 +408,6 @@ class FakeDriveService : public DriveServiceInterface {
   std::map<std::string, std::unique_ptr<EntryInfo>> entries_;
   std::unique_ptr<google_apis::AboutResource> about_resource_;
   std::unique_ptr<google_apis::StartPageToken> start_page_token_;
-  std::unique_ptr<base::DictionaryValue> app_info_value_;
   std::vector<std::unique_ptr<google_apis::TeamDriveResource>>
       team_drive_value_;
   std::map<std::string, std::unique_ptr<google_apis::StartPageToken>>
@@ -472,15 +424,12 @@ class FakeDriveService : public DriveServiceInterface {
   int change_list_load_count_;
   int directory_load_count_;
   int about_resource_load_count_;
-  int app_list_load_count_;
   int blocked_file_list_load_count_;
   int start_page_token_load_count_;
   bool offline_;
   bool never_return_all_file_list_;
   base::FilePath last_cancelled_file_;
-  GURL share_url_base_;
   std::string app_json_template_;
-  std::string open_url_format_;
 
   base::ObserverList<ChangeObserver>::Unchecked change_observers_;
 

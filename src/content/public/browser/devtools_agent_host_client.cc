@@ -12,4 +12,16 @@ bool DevToolsAgentHostClient::MayAttachToRenderer(
   return true;
 }
 
+bool DevToolsAgentHostClient::MayAttachToBrowser() {
+  return true;
+}
+
+bool DevToolsAgentHostClient::MayDiscoverTargets() {
+  return true;
+}
+
+bool DevToolsAgentHostClient::MayAffectLocalFiles() {
+  return true;
+}
+
 }  // namespace content

@@ -32,10 +32,6 @@ enum class SelectionState {
   kContain
 };
 
-inline bool IsSelected(const SelectionState state) {
-  return state != SelectionState::kNone && state != SelectionState::kContain;
-}
-
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const SelectionState);
 
 }  // namespace blink

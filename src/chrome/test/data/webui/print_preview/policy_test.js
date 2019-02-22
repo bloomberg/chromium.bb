@@ -77,7 +77,8 @@ cr.define('policy_tests', function() {
     }
 
     function getCheckbox() {
-      return page.$$('print-preview-other-options-settings').$.headerFooter;
+      return page.$$('print-preview-other-options-settings')
+          .$$('#headerFooter');
     }
 
     /**

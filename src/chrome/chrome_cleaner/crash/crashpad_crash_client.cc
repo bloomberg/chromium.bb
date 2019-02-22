@@ -8,6 +8,7 @@
 #include <psapi.h>
 #include <stdio.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -197,6 +198,9 @@ bool CrashpadCrashClient::InitializeCrashReporting(Mode mode,
       break;
     case SandboxType::kJsonParser:
       SetCrashKey(kProcessType, "json_parser");
+      break;
+    case SandboxType::kZipArchiver:
+      SetCrashKey(kProcessType, "zip_archiver");
       break;
     default:
       NOTREACHED();

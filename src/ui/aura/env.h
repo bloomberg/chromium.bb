@@ -59,6 +59,7 @@ class MouseLocationManager;
 class MusMouseLocationUpdater;
 class Window;
 class WindowEventDispatcherObserver;
+class WindowOcclusionTracker;
 class WindowPort;
 class WindowTreeClient;
 class WindowTreeHost;
@@ -191,6 +192,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
       mojo::InterfacePtr<ws::mojom::WindowTreeClient> client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
+  // Get WindowOcclusionTracker instance. Create it if it is not yet created.
+  WindowOcclusionTracker* GetWindowOcclusionTracker();
+
  private:
   friend class test::EnvTestHelper;
   friend class test::EnvWindowTreeClientSetter;
@@ -284,6 +288,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   // Only created if CreateMouseLocationManager() was called.
   std::unique_ptr<MouseLocationManager> mouse_location_manager_;
+
+  // Lazily created for LOCAL aura.
+  std::unique_ptr<WindowOcclusionTracker> window_occlusion_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

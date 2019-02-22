@@ -12,8 +12,10 @@
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
-#include "components/offline_pages/core/task_test_base.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "components/offline_pages/task/task_test_base.h"
+#include "components/prefs/testing_pref_service.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 namespace offline_pages {
 struct PrefetchItem;
@@ -53,12 +55,11 @@ class PrefetchTaskTestBase : public TaskTestBase {
       const std::set<PrefetchItem>& items,
       PrefetchItemState state);
 
+  network::TestURLLoaderFactory::PendingRequest* GetPendingRequest(
+      size_t index = 0);
+
   TestPrefetchNetworkRequestFactory* prefetch_request_factory() {
     return &prefetch_request_factory_;
-  }
-
-  net::TestURLFetcherFactory* url_fetcher_factory() {
-    return &url_fetcher_factory_;
   }
 
   PrefetchStore* store() { return store_test_util_.store(); }
@@ -67,8 +68,13 @@ class PrefetchTaskTestBase : public TaskTestBase {
 
   MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
 
+  TestingPrefServiceSimple* prefs() { return &prefs_; }
+
  private:
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  TestingPrefServiceSimple prefs_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
   TestPrefetchNetworkRequestFactory prefetch_request_factory_;
   PrefetchStoreTestUtil store_test_util_;
   MockPrefetchItemGenerator item_generator_;

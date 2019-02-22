@@ -278,6 +278,8 @@ HAVE_LIST="
 EXPERIMENT_LIST="
     fp_mb_stats
     emulate_hardware
+    non_greedy_mv
+    ml_var_partition
 "
 CONFIG_LIST="
     dependency_tracking
@@ -634,6 +636,12 @@ process_toolchain() {
         # Avoid this warning for third_party C++ sources. Some reorganization
         # would be needed to apply this only to test/*.cc.
         check_cflags -Wshorten-64-to-32 && add_cflags_only -Wshorten-64-to-32
+
+        # Quiet gcc 6 vs 7 abi warnings:
+        # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77728
+        if enabled arm; then
+          check_add_cxxflags -Wno-psabi
+        fi
     fi
 
     if enabled icc; then

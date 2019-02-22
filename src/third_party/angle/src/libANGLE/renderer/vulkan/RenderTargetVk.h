@@ -35,8 +35,11 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
   public:
     RenderTargetVk(vk::ImageHelper *image,
                    vk::ImageView *imageView,
-                   vk::CommandGraphResource *resource);
+                   size_t layerIndex);
     ~RenderTargetVk();
+
+    // Used in std::vector initialization.
+    RenderTargetVk(RenderTargetVk &&other);
 
     // Note: RenderTargets should be called in order, with the depth/stencil onRender last.
     void onColorDraw(vk::CommandGraphResource *framebufferVk,
@@ -54,10 +57,10 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
                                      vk::CommandBuffer *commandBuffer);
     vk::ImageHelper *getImageForWrite(vk::CommandGraphResource *writingResource) const;
     vk::ImageView *getImageView() const;
-    vk::CommandGraphResource *getResource() const;
 
     const vk::Format &getImageFormat() const;
     const gl::Extents &getImageExtents() const;
+    size_t getLayerIndex() const { return mLayerIndex; }
 
     // Special mutator for Surface RenderTargets. Allows the Framebuffer to keep a single
     // RenderTargetVk pointer.
@@ -66,7 +69,7 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
   private:
     vk::ImageHelper *mImage;
     vk::ImageView *mImageView;
-    vk::CommandGraphResource *mResource;
+    size_t mLayerIndex;
 };
 
 }  // namespace rx

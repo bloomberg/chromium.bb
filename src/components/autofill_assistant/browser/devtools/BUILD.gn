@@ -81,8 +81,8 @@ action("gen_devtools_client_api") {
 
 source_set("devtools") {
   sources = [
-    "assistant_devtools_client.cc",
-    "assistant_devtools_client.h",
+    "devtools_client.cc",
+    "devtools_client.h",
     "error_reporter.cc",
     "error_reporter.h",
     "message_dispatcher.h",

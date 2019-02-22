@@ -15,9 +15,9 @@ struct ServiceOptions {
   };
 
   InstanceSharingType instance_sharing = InstanceSharingType::NONE;
-  bool allow_other_user_ids = false;
-  bool allow_other_instance_names = false;
-  bool instance_for_client_process = false;
+  bool can_connect_to_other_services_as_any_user = false;
+  bool can_connect_to_other_services_with_any_instance_name = false;
+  bool can_create_other_service_instances = false;
 };
 
 }  // namespace catalog

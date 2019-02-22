@@ -16,6 +16,8 @@ APIBindingsSystem::APIBindingsSystem(
     const GetAPISchemaMethod& get_api_schema,
     const BindingAccessChecker::AvailabilityCallback& is_available,
     const APIRequestHandler::SendRequestMethod& send_request,
+    const APIRequestHandler::GetUserActivationState&
+        get_user_activation_state_callback,
     const APIEventListeners::ListenersUpdated& event_listeners_changed,
     const APIEventHandler::ContextOwnerIdGetter& context_owner_getter,
     const APIBinding::OnSilentRequest& on_silent_request,
@@ -26,7 +28,8 @@ APIBindingsSystem::APIBindingsSystem(
       exception_handler_(add_console_error),
       request_handler_(send_request,
                        std::move(last_error),
-                       &exception_handler_),
+                       &exception_handler_,
+                       get_user_activation_state_callback),
       event_handler_(event_listeners_changed,
                      context_owner_getter,
                      &exception_handler_),

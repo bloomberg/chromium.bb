@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_ERROR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_ERROR_H_
 
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
@@ -48,6 +49,12 @@ class ServiceWorkerError {
   using WebType = const WebServiceWorkerError&;
   static DOMException* Take(ScriptPromiseResolver*,
                             const WebServiceWorkerError& web_error);
+
+  // TODO(crbug.com/879019): Eventually we'll remove WebServiceWorkerError and
+  // use this GetException() everywhere instead of the above Take().
+  static DOMException* GetException(ScriptPromiseResolver*,
+                                    mojom::blink::ServiceWorkerErrorType error,
+                                    const String& error_msg);
 };
 
 class ServiceWorkerErrorForUpdate : public ServiceWorkerError {

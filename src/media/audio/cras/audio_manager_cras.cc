@@ -186,9 +186,14 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   if (HasKeyboardMic(devices))
     params.set_effects(AudioParameters::KEYBOARD_MIC);
 
-  if (GetSystemAecSupportedPerBoard())
-    params.set_effects(params.effects() |
-                       AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  // Allow experimentation with system echo cancellation with all devices,
+  // but enable it by default on devices that actually support it.
+  params.set_effects(params.effects() |
+                     AudioParameters::EXPERIMENTAL_ECHO_CANCELLER);
+  if (base::FeatureList::IsEnabled(features::kCrOSSystemAEC) &&
+      GetSystemAecSupportedPerBoard()) {
+    params.set_effects(params.effects() | AudioParameters::ECHO_CANCELLER);
+  }
 
   return params;
 }

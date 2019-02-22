@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Trova un tasto, poi solleva il dito per digitarlo</translation>
 <translation id="1012173283529841972">Voce elenco</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Scorri verso destra con due dita</translation>
 <translation id="1022586497894531524">È la prima volta che utilizzi la funzione di lettura vocale di ChromeVox? Questo breve tutorial spiega le nozioni di base per iniziare a utilizzare ChromeVox.</translation>
 <translation id="1023866615269196768">Con spanning.</translation>
 <translation id="1025074108959230262">Modalità persistente disattivata</translation>
@@ -21,6 +22,7 @@
 <translation id="1106741348836243114">Attiva o disattiva feedback audio (icone audio).</translation>
 <translation id="1108651818222110612">sottotitolo</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">Scorri verso l'alto con due dita</translation>
 <translation id="1124771028211010580">È attivo lo stile del display affiancato.</translation>
 <translation id="113582498867142724">Raccolta <ph name="TAG" /> con <ph name="NUM" /> elementi</translation>
 <translation id="1155043339247954670">Nessuna voce elenco successiva.</translation>
@@ -91,6 +93,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Immagine successiva</translation>
+<translation id="1765245556747822181">Scorri verso l'alto con un dito</translation>
 <translation id="1781173782405573156">Tasto pass through</translation>
 <translation id="1787176709638001873">Testo di modifica della password</translation>
 <translation id="1802710350767629429">Mostra note sull'aggiornamento</translation>
@@ -136,6 +139,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2223693656926968778">Agisci su voce corrente</translation>
 <translation id="225732394367814946">Aumenta velocità comandi vocali</translation>
 <translation id="2267945578749931355">Carattere successivo</translation>
+<translation id="2278490101488436824">Scorri verso sinistra con tre dita</translation>
 <translation id="2281234842553884450">Dispositivo di scorrimento precedente</translation>
 <translation id="2294136146931447363">Inizio del testo corsivo</translation>
 <translation id="2311237334957139798">Vai al livello di dettaglio precedente</translation>
@@ -208,17 +212,20 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2864481629947106776">Link precedente</translation>
 <translation id="2867808975387772810">Bibliografia</translation>
 <translation id="2873259058405069099">Vai all'inizio della tabella</translation>
+<translation id="2879867157561757640">Scorri verso il basso con tre dita</translation>
 <translation id="288178314850623291">Utilizza i comandi di spostamento per passare a specifici tipi di elementi. Per avanzare tra le intestazioni, premi il tasto per la ricerca + H o per retrocedere il tasto per la ricerca + MAIUSC + H.</translation>
 <translation id="2894654529758326923">Informazioni</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{parentesi graffa di apertura}other{# parentesi graffe di apertura}}</translation>
 <translation id="2909478709401302630">Inizio apice</translation>
 <translation id="2911433807131383493">Apri il tutorial di ChromeVox</translation>
+<translation id="2912405967290226587">Scorri verso destra con tre dita</translation>
 <translation id="2932083475399492303">Alterna tipo di linea strutturale o di layout</translation>
 <translation id="2944762337049891859">Leggi automaticamente la pagina al termine del caricamento.</translation>
 <translation id="2964026537669811554">Gruppo di intestazioni</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{carattere di tabulazione}other{# caratteri di tabulazione}}</translation>
 <translation id="2972078295414139404">Nessun link visitato precedente.</translation>
 <translation id="2972205263822847197">Descrizione comando</translation>
+<translation id="297825089465017871">Scorri verso sinistra con due dita</translation>
 <translation id="2998131015536248178">Carattere precedente</translation>
 <translation id="2999559350546931576">Abbassa tono</translation>
 <translation id="2999945368667127852">Nessun widget multimediale successivo.</translation>
@@ -230,6 +237,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3046838483509668188">Opzioni ChromeVox</translation>
 <translation id="3047143736589213134">Mappa di chiavi sperimentale</translation>
 <translation id="3060756054951570867">Menu <ph name="TITLE" /> aperto</translation>
+<translation id="3070245424257836917">Scorri verso l'alto con tre dita</translation>
 <translation id="3078345202707391975">Intestazione livello 2 successiva</translation>
 <translation id="3078740164268491126">tabella</translation>
 <translation id="3082249673510793544">Scorri indietro</translation>
@@ -342,6 +350,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3599054940393788245">Non incluso nella categoria "matematica"</translation>
 <translation id="360241989769010433">Riconoscimenti</translation>
 <translation id="3616113530831147358">Audio</translation>
+<translation id="3622350485154495700">Tocca due volte con un dito</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{apice inverso}other{# apici inversi}}</translation>
 <translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dollaro}other{# simboli dollaro}}</translation>
@@ -371,6 +380,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="3914173277599553213">Obbligatorie</translation>
 <translation id="3914732343065571127">Riferimenti per i comandi di ChromeVox</translation>
 <translation id="3930498801443296724">Citazione</translation>
+<translation id="3941269780691800708">Leggi il testo sotto il puntatore del mouse.</translation>
 <translation id="3962990492275676168">Inizia a leggere dalla posizione corrente</translation>
 <translation id="4004802134384979325">selezionata</translation>
 <translation id="4006140876663370126">img</translation>
@@ -461,6 +471,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Punto di riferimento precedente</translation>
 <translation id="4696413482802371445">Nessuna intestazione livello 5 successiva.</translation>
+<translation id="4710166929009737753">Scorri verso destra con un dito</translation>
 <translation id="4729095194763193578">Riga tabella precedente</translation>
 <translation id="4736221692378411923">Agosto</translation>
 <translation id="4740661827607246557">Comandi della Guida</translation>
@@ -473,6 +484,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4826415162591436065">Spostati avanti</translation>
 <translation id="4826604887384865800">Collegamento successivo</translation>
 <translation id="4827410568042294688">non selezionato</translation>
+<translation id="4838490795649708173">Tocca con quattro dita</translation>
 <translation id="4839925464551908214">Consente di andare alla riga precedente</translation>
 <translation id="4842108708071771135">Nessuna citazione lunga successiva.</translation>
 <translation id="4844625982113518938">Premi un tasto qualsiasi per conoscerne il nome. Premi CTRL + W per chiudere la modalità di apprendimento.</translation>
@@ -609,6 +621,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5750633686117194034">Nessun tasto di modifica premuto; premi e tieni premuti uno o più tasti di modifica; solleva le dita una volta terminata l'operazione e verranno pronunciati i tasti impostati. Premi Tab per uscire.</translation>
 <translation id="5760594853119905566">Appendice</translation>
 <translation id="5788275253279308023">scheda <ph name="TITLE" /> della finestra di navigazione in incognito</translation>
+<translation id="5805940204952508776">Tocca con due dita</translation>
 <translation id="5806206155699461681">Ottimizza siti specifici (ad esempio Ricerca Google).</translation>
 <translation id="5819072574982403430">Elemento albero</translation>
 <translation id="5826479389509458994">riga <ph name="ROW" /> colonna <ph name="COL" /></translation>
@@ -713,8 +726,10 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="6786800275320335305">Articolo</translation>
 <translation id="6787839852456839824">Scorciatoie da tastiera</translation>
 <translation id="6793101435925451627">lstbx</translation>
+<translation id="6826226459053491773">Scorri verso il basso con due dita</translation>
 <translation id="6833103209700200188">Piè di pagina</translation>
 <translation id="6858047746862060282">Prologo</translation>
+<translation id="6859876496651143278">Scorri verso sinistra con un dito</translation>
 <translation id="6871161210040114857">Le maiuscole/minuscole vengono ignorate.</translation>
 <translation id="6877435256196695200">Nessuna immagine successiva.</translation>
 <translation id="6897341342232909480">Sposta a sinistra</translation>
@@ -964,6 +979,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="923331726185079994">ChromeVox aggiornato</translation>
 <translation id="930275611743429116">Inizia o termina la selezione.</translation>
 <translation id="948171205378458592">Diminuisci velocità comandi vocali</translation>
+<translation id="958854023026327378">Scorri verso il basso con un dito</translation>
 <translation id="962913030769097253">Intestazione livello 1 successiva</translation>
 <translation id="973955474346881951">Attiva/disattiva modalità persistente</translation>
 <translation id="976849232629612000">Nessun elemento.</translation>

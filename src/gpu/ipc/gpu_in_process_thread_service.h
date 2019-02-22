@@ -33,8 +33,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
       const GpuPreferences& gpu_preferences);
 
   // CommandBufferTaskExecutor implementation.
-  bool ForceVirtualizedGLContexts() override;
-  bool BlockThreadOnWaitSyncToken() override;
+  bool ForceVirtualizedGLContexts() const override;
+  bool ShouldCreateMemoryTracker() const override;
+  bool BlockThreadOnWaitSyncToken() const override;
   std::unique_ptr<CommandBufferTaskExecutor::Sequence> CreateSequence()
       override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;

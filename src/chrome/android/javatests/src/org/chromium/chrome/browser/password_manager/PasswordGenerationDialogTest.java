@@ -13,7 +13,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.mockito.Mockito.verify;
 
 import android.support.test.filters.SmallTest;
-import android.view.View;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,8 +39,6 @@ public class PasswordGenerationDialogTest {
     private String mGeneratedPassword = "generatedpassword";
     private String mExplanationString = "Explanation string.";
 
-    @Mock
-    private Callback<View> mExplanationTextLinkCallback;
     @Mock
     private Callback<Boolean> mOnPasswordAcceptedOrRejectedCallback;
 

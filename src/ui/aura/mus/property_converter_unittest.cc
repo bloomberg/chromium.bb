@@ -43,6 +43,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int16_t, kTestPropertyKey7, 1);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kTestPropertyKey8, -1);
 DEFINE_UI_CLASS_PROPERTY_KEY(int64_t, kTestPropertyKey9, 777);
 
+DEFINE_UI_CLASS_PROPERTY_KEY(base::TimeDelta,
+                             kTestTimeDeltaKey,
+                             base::TimeDelta());
+
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
                                    kTestImageSkiaPropertyKey,
                                    nullptr);
@@ -52,6 +56,9 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(
      std::string, kTestStringPropertyKey, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
                                  nullptr);
+
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrPropertyKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kTestWindowPtrUnregisteredKey, nullptr);
 
 const char kTestPropertyServerKey0[] = "test-property-server0";
 const char kTestPropertyServerKey1[] = "test-property-server1";
@@ -69,6 +76,10 @@ const char kTestRectPropertyServerKey[] = "test-rect-property-server";
 const char kTestSizePropertyServerKey[] = "test-size-property-server";
 const char kTestStringPropertyServerKey[] = "test-string-property-server";
 const char kTestString16PropertyServerKey[] = "test-string16-property-server";
+const char kTestTimeDeltaPropertyServerKey[] =
+    "test-time-delta-property-server";
+const char kTestWindowPtrPropertyServerKey[] =
+    "test-window-ptr-property-server";
 
 // Test registration, naming and value conversion for primitive property types.
 template <typename T>
@@ -367,6 +378,86 @@ TEST_F(PropertyConverterTest, String16Property) {
   property_converter.SetPropertyFromTransportValue(
       window.get(), kTestString16PropertyServerKey, &transport_value);
   EXPECT_EQ(value_2, *window->GetProperty(kTestString16PropertyKey));
+}
+
+TEST_F(PropertyConverterTest, TimeDeltaProperty) {
+  PropertyConverter property_converter;
+  property_converter.RegisterTimeDeltaProperty(kTestTimeDeltaKey,
+                                               kTestTimeDeltaPropertyServerKey);
+  EXPECT_EQ(
+      kTestTimeDeltaPropertyServerKey,
+      property_converter.GetTransportNameForPropertyKey(kTestTimeDeltaKey));
+  EXPECT_TRUE(property_converter.IsTransportNameRegistered(
+      kTestTimeDeltaPropertyServerKey));
+
+  std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+  const base::TimeDelta time_delta =
+      base::TimeDelta::FromMilliseconds(123456789);
+  window->SetProperty(kTestTimeDeltaKey, time_delta);
+
+  std::string transport_name_out;
+  std::unique_ptr<std::vector<uint8_t>> transport_value_out;
+  EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
+      window.get(), kTestTimeDeltaKey, &transport_name_out,
+      &transport_value_out));
+  EXPECT_EQ(kTestTimeDeltaPropertyServerKey, transport_name_out);
+  const int64_t storage_value_1 = time_delta.InMicroseconds();
+  std::vector<uint8_t> transport_value =
+      mojo::ConvertTo<std::vector<uint8_t>>(storage_value_1);
+  EXPECT_EQ(transport_value, *transport_value_out.get());
+
+  int64_t decoded_value_1 = 0;
+  EXPECT_TRUE(property_converter.GetPropertyValueFromTransportValue(
+      kTestTimeDeltaPropertyServerKey, *transport_value_out, &decoded_value_1));
+  EXPECT_EQ(time_delta.InMicroseconds(), decoded_value_1);
+
+  window->SetProperty(kTestTimeDeltaKey, base::TimeDelta());
+  property_converter.SetPropertyFromTransportValue(
+      window.get(), kTestTimeDeltaPropertyServerKey, &transport_value);
+  EXPECT_EQ(time_delta, window->GetProperty(kTestTimeDeltaKey));
+}
+
+TEST_F(PropertyConverterTest, WindowPtrProperty) {
+  PropertyConverter property_converter;
+  property_converter.RegisterString16Property(kTestString16PropertyKey,
+                                              kTestString16PropertyServerKey);
+  property_converter.RegisterWindowPtrProperty(kTestWindowPtrPropertyKey,
+                                               kTestWindowPtrPropertyServerKey);
+  EXPECT_EQ(kTestWindowPtrPropertyServerKey,
+            property_converter.GetTransportNameForPropertyKey(
+                kTestWindowPtrPropertyKey));
+  EXPECT_TRUE(property_converter.IsTransportNameRegistered(
+      kTestWindowPtrPropertyServerKey));
+
+  EXPECT_TRUE(property_converter.IsWindowPtrPropertyRegistered(
+      kTestWindowPtrPropertyKey));
+  EXPECT_EQ(kTestWindowPtrPropertyKey, property_converter.GetWindowPtrProperty(
+                                           kTestWindowPtrPropertyServerKey));
+  EXPECT_FALSE(property_converter.IsWindowPtrPropertyRegistered(
+      kTestWindowPtrUnregisteredKey));
+  EXPECT_FALSE(
+      property_converter.GetWindowPtrProperty(kTestString16PropertyServerKey));
+
+  std::unique_ptr<Window> window1(
+      CreateNormalWindow(1, root_window(), nullptr));
+  std::unique_ptr<Window> window2(
+      CreateNormalWindow(2, root_window(), nullptr));
+  window1->SetProperty(kTestWindowPtrPropertyKey, window2.get());
+
+  std::string transport_name_out;
+  std::unique_ptr<std::vector<uint8_t>> transport_value_out;
+  EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
+      window1.get(), kTestWindowPtrPropertyKey, &transport_name_out,
+      &transport_value_out));
+  EXPECT_EQ(kTestWindowPtrPropertyServerKey, transport_name_out);
+  EXPECT_FALSE(transport_value_out);
+
+  window1->ClearProperty(kTestWindowPtrPropertyKey);
+  std::vector<uint8_t> transport_value = mojo::ConvertTo<std::vector<uint8_t>>(
+      reinterpret_cast<uint64_t>(window2.get()));
+  property_converter.SetPropertyFromTransportValue(
+      window1.get(), kTestWindowPtrPropertyServerKey, &transport_value);
+  EXPECT_FALSE(window1->GetProperty(kTestWindowPtrPropertyKey));
 }
 
 }  // namespace aura

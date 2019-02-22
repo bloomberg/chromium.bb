@@ -263,8 +263,9 @@ angle::Result Framebuffer11::readPixelsImpl(const gl::Context *context,
     {
         Buffer11 *packBufferStorage      = GetImplAs<Buffer11>(packBuffer);
         const angle::Format &angleFormat = GetFormatFromFormatType(format, type);
-        PackPixelsParams packParams(area, angleFormat, static_cast<GLuint>(outputPitch), pack,
-                                    packBuffer, reinterpret_cast<ptrdiff_t>(pixels));
+        PackPixelsParams packParams(area, angleFormat, static_cast<GLuint>(outputPitch),
+                                    pack.reverseRowOrder, packBuffer,
+                                    reinterpret_cast<ptrdiff_t>(pixels));
 
         return packBufferStorage->packPixels(context, *readAttachment, packParams);
     }
@@ -378,8 +379,8 @@ GLenum Framebuffer11::getRenderTargetImplementationFormat(RenderTargetD3D *rende
     return renderTarget11->getFormatSet().format().fboImplementationInternalFormat;
 }
 
-gl::Error Framebuffer11::syncState(const gl::Context *context,
-                                   const gl::Framebuffer::DirtyBits &dirtyBits)
+angle::Result Framebuffer11::syncState(const gl::Context *context,
+                                       const gl::Framebuffer::DirtyBits &dirtyBits)
 {
     ANGLE_TRY(mRenderTargetCache.update(context, mState, dirtyBits));
     ANGLE_TRY(FramebufferD3D::syncState(context, dirtyBits));
@@ -393,7 +394,7 @@ gl::Error Framebuffer11::syncState(const gl::Context *context,
         mRenderer->getStateManager()->invalidateViewport(context);
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 gl::Error Framebuffer11::getSamplePosition(const gl::Context *context,

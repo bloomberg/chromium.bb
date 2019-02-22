@@ -14,7 +14,6 @@ PASS getComputedStyle(affectedByAuto).direction is "rtl"
 PASS getComputedStyle(explicitLTR).direction is "ltr"
 
 Forcing everything back to LTR with dir attribute:
-
 PASS internals.updateStyleAndReturnAffectedElementCount() is 4
 PASS getComputedStyle(outerAuto).direction is "ltr"
 PASS getComputedStyle(textInsertionPoint).direction is "ltr"

@@ -5,19 +5,22 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.5'
+__version__ = '0.9.0'
 
+import collections
 import errno
 import functools
 import logging
 import optparse
 import os
+import Queue
 import re
 import signal
 import stat
 import sys
 import tarfile
 import tempfile
+import threading
 import time
 import zlib
 
@@ -362,34 +365,18 @@ class Storage(object):
 
   def __init__(self, storage_api):
     self._storage_api = storage_api
-    self._use_zip = isolated_format.is_namespace_with_compression(
-        storage_api.namespace) and not storage_api.internal_compression
-    self._hash_algo = isolated_format.get_hash_algo(storage_api.namespace)
     self._cpu_thread_pool = None
     self._net_thread_pool = None
     self._aborted = False
     self._prev_sig_handlers = {}
 
   @property
-  def hash_algo(self):
-    """Hashing algorithm used to name files in storage based on their content.
+  def server_ref(self):
+    """Shortcut to get the server_ref from storage_api.
 
-    Defined by |namespace|. See also isolated_format.get_hash_algo().
+    This can be used to get the underlying hash_algo.
     """
-    return self._hash_algo
-
-  @property
-  def location(self):
-    """URL of the backing store that this class is using."""
-    return self._storage_api.location
-
-  @property
-  def namespace(self):
-    """Isolate namespace used by this storage.
-
-    Indirectly defines hashing scheme and compression method used.
-    """
-    return self._storage_api.namespace
+    return self._storage_api.server_ref
 
   @property
   def cpu_thread_pool(self):
@@ -448,9 +435,35 @@ class Storage(object):
     return False
 
   def upload_items(self, items):
-    """Uploads a bunch of items to the isolate server.
+    """Uploads a generator of Item to the isolate server.
 
     It figures out what items are missing from the server and uploads only them.
+
+    It uses 3 threads internally:
+    - One to create batches based on a timeout
+    - One to dispatch the /contains RPC and field the missing entries
+    - One to field the /push RPC
+
+    The main threads enumerates 'items' and pushes to the first thread. Then it
+    join() all the threads, waiting for them to complete.
+
+        (enumerate items of Item, this can be slow as disk is traversed)
+              |
+              v
+    _create_items_batches_thread       Thread #1
+        (generates list(Item), every 3s or 20~100 items)
+              |
+              v
+      _do_lookups_thread               Thread #2
+         |         |
+         v         v
+     (missing)  (was on server)
+         |
+         v
+    _handle_missing_thread             Thread #3
+          |
+          v
+      (upload Item, append to uploaded)
 
     Arguments:
       items: list of isolate_storage.Item instances that represents data to
@@ -459,83 +472,161 @@ class Storage(object):
     Returns:
       List of items that were uploaded. All other items are already there.
     """
-    logging.info('upload_items(items=%d)', len(items))
-
-    # Ensure all digests are calculated.
-    for item in items:
-      item.prepare(self._hash_algo)
-
-    # For each digest keep only first isolate_storage.Item that matches it. All
-    # other items are just indistinguishable copies from the point of view of
-    # isolate server (it doesn't care about paths at all, only content and
-    # digests).
-    seen = {}
-    duplicates = 0
-    for item in items:
-      if seen.setdefault(item.digest, item) is not item:
-        duplicates += 1
-    items = seen.values()
-    if duplicates:
-      logging.info('Skipped %d files with duplicated content', duplicates)
-
-    # Enqueue all upload tasks.
-    missing = set()
+    incoming = Queue.Queue()
+    batches_to_lookup = Queue.Queue()
+    missing = Queue.Queue()
     uploaded = []
-    channel = threading_utils.TaskChannel()
-    for missing_item, push_state in self.get_missing_items(items):
-      missing.add(missing_item)
-      self.async_push(channel, missing_item, push_state)
 
-    # No need to spawn deadlock detector thread if there's nothing to upload.
-    if missing:
+    def _create_items_batches_thread():
+      """Creates batches for /contains RPC lookup from individual items.
+
+      Input: incoming
+      Output: batches_to_lookup
+      """
+      try:
+        batch_size_index = 0
+        batch_size = ITEMS_PER_CONTAINS_QUERIES[batch_size_index]
+        batch = []
+        while not self._aborted:
+          try:
+            item = incoming.get(True, timeout=3)
+            if item:
+              batch.append(item)
+          except Queue.Empty:
+            item = False
+          if len(batch) == batch_size or (not item and batch):
+            if len(batch) == batch_size:
+              batch_size_index += 1
+              batch_size = ITEMS_PER_CONTAINS_QUERIES[
+                  min(batch_size_index, len(ITEMS_PER_CONTAINS_QUERIES)-1)]
+            batches_to_lookup.put(batch)
+            batch = []
+          if item is None:
+            break
+      finally:
+        # Unblock the next pipeline.
+        batches_to_lookup.put(None)
+
+    def _do_lookups_thread():
+      """Enqueues all the /contains RPCs and emits the missing items.
+
+      Input: batches_to_lookup
+      Output: missing, to_upload
+      """
+      try:
+        channel = threading_utils.TaskChannel()
+        def _contains(b):
+          if self._aborted:
+            raise Aborted()
+          return self._storage_api.contains(b)
+
+        pending_contains = 0
+        while not self._aborted:
+          batch = batches_to_lookup.get()
+          if batch is None:
+            break
+          self.net_thread_pool.add_task_with_channel(
+              channel, threading_utils.PRIORITY_HIGH, _contains, batch)
+          pending_contains += 1
+          while pending_contains and not self._aborted:
+            try:
+              v = channel.next(timeout=0)
+            except threading_utils.TaskChannel.Timeout:
+              break
+            pending_contains -= 1
+            for missing_item, push_state in v.iteritems():
+              missing.put((missing_item, push_state))
+        while pending_contains and not self._aborted:
+          for missing_item, push_state in channel.next().iteritems():
+            missing.put((missing_item, push_state))
+          pending_contains -= 1
+      finally:
+        # Unblock the next pipeline.
+        missing.put((None, None))
+
+    def _handle_missing_thread():
+      """Sends the missing items to the uploader.
+
+      Input: missing
+      Output: uploaded
+      """
       with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
-        # Wait for all started uploads to finish.
-        while len(uploaded) != len(missing):
+        channel = threading_utils.TaskChannel()
+        pending_upload = 0
+        while not self._aborted:
+          try:
+            missing_item, push_state = missing.get(True, timeout=5)
+            if missing_item is None:
+              break
+            self._async_push(channel, missing_item, push_state)
+            pending_upload += 1
+          except Queue.Empty:
+            pass
           detector.ping()
-          item = channel.pull()
+          while not self._aborted and pending_upload:
+            try:
+              item = channel.next(timeout=0)
+            except threading_utils.TaskChannel.Timeout:
+              break
+            uploaded.append(item)
+            pending_upload -= 1
+            logging.debug(
+                'Uploaded %d; %d pending: %s (%d)',
+                len(uploaded), pending_upload, item.digest, item.size)
+        while not self._aborted and pending_upload:
+          item = channel.next()
           uploaded.append(item)
+          pending_upload -= 1
           logging.debug(
-              'Uploaded %d / %d: %s', len(uploaded), len(missing), item.digest)
-    logging.info('All files are uploaded')
+              'Uploaded %d; %d pending: %s (%d)',
+              len(uploaded), pending_upload, item.digest, item.size)
 
-    # Print stats.
-    total = len(items)
-    total_size = sum(f.size for f in items)
-    logging.info(
-        'Total:      %6d, %9.1fkb',
-        total,
-        total_size / 1024.)
-    cache_hit = set(items) - missing
-    cache_hit_size = sum(f.size for f in cache_hit)
-    logging.info(
-        'cache hit:  %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
-        len(cache_hit),
-        cache_hit_size / 1024.,
-        len(cache_hit) * 100. / total,
-        cache_hit_size * 100. / total_size if total_size else 0)
-    cache_miss = missing
-    cache_miss_size = sum(f.size for f in cache_miss)
-    logging.info(
-        'cache miss: %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
-        len(cache_miss),
-        cache_miss_size / 1024.,
-        len(cache_miss) * 100. / total,
-        cache_miss_size * 100. / total_size if total_size else 0)
+    threads = [
+        threading.Thread(target=_create_items_batches_thread),
+        threading.Thread(target=_do_lookups_thread),
+        threading.Thread(target=_handle_missing_thread),
+    ]
+    for t in threads:
+      t.start()
 
+    try:
+      # For each digest keep only first isolate_storage.Item that matches it.
+      # All other items are just indistinguishable copies from the point of view
+      # of isolate server (it doesn't care about paths at all, only content and
+      # digests).
+      seen = {}
+      try:
+        # TODO(maruel): Reorder the items as a priority queue, with larger items
+        # being processed first. This is, before hashing the data.
+        # This must be done in the primary thread since items can be a
+        # generator.
+        for item in items:
+          # This is I/O heavy.
+          item.prepare(self.server_ref.hash_algo)
+          if seen.setdefault(item.digest, item) is item:
+            incoming.put(item)
+      finally:
+        incoming.put(None)
+    finally:
+      for t in threads:
+        t.join()
+
+    logging.info('All %s files are uploaded', len(uploaded))
+    _print_upload_stats(seen.values(), uploaded)
     return uploaded
 
-  def async_push(self, channel, item, push_state):
+  def _async_push(self, channel, item, push_state):
     """Starts asynchronous push to the server in a parallel thread.
 
-    Can be used only after |item| was checked for presence on a server with
-    'get_missing_items' call. 'get_missing_items' returns |push_state| object
-    that contains storage specific information describing how to upload
-    the item (for example in case of cloud storage, it is signed upload URLs).
+    Can be used only after |item| was checked for presence on a server with a
+    /contains RPC.
 
     Arguments:
       channel: TaskChannel that receives back |item| when upload ends.
       item: item to upload as instance of isolate_storage.Item class.
-      push_state: push state returned by 'get_missing_items' call for |item|.
+      push_state: push state returned by storage_api.contains(). It contains
+          storage specific information describing how to upload the item (for
+          example in case of cloud storage, it is signed upload URLs).
 
     Returns:
       None, but |channel| later receives back |item| when upload ends.
@@ -545,18 +636,18 @@ class Storage(object):
         threading_utils.PRIORITY_HIGH if item.high_priority
         else threading_utils.PRIORITY_MED)
 
-    def push(content):
+    def _push(content):
       """Pushes an isolate_storage.Item and returns it to |channel|."""
       if self._aborted:
         raise Aborted()
-      item.prepare(self._hash_algo)
+      item.prepare(self.server_ref.hash_algo)
       self._storage_api.push(item, push_state, content)
       return item
 
     # If zipping is not required, just start a push task. Don't pass 'content'
     # so that it can create a new generator when it retries on failures.
-    if not self._use_zip:
-      self.net_thread_pool.add_task_with_channel(channel, priority, push, None)
+    if not self.server_ref.is_with_compression:
+      self.net_thread_pool.add_task_with_channel(channel, priority, _push, None)
       return
 
     # If zipping is enabled, zip in a separate thread.
@@ -576,26 +667,28 @@ class Storage(object):
       # one provided by 'item'. Since '[data]' is a list, it can safely be
       # reused during retries.
       self.net_thread_pool.add_task_with_channel(
-          channel, priority, push, [data])
+          channel, priority, _push, [data])
     self.cpu_thread_pool.add_task(priority, zip_and_push)
 
   def push(self, item, push_state):
     """Synchronously pushes a single item to the server.
 
     If you need to push many items at once, consider using 'upload_items' or
-    'async_push' with instance of TaskChannel.
+    '_async_push' with instance of TaskChannel.
 
     Arguments:
       item: item to upload as instance of isolate_storage.Item class.
-      push_state: push state returned by 'get_missing_items' call for |item|.
+      push_state: push state returned by storage_api.contains(). It contains
+          storage specific information describing how to upload the item (for
+          example in case of cloud storage, it is signed upload URLs).
 
     Returns:
       Pushed item (same object as |item|).
     """
     channel = threading_utils.TaskChannel()
     with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT):
-      self.async_push(channel, item, push_state)
-      pushed = channel.pull()
+      self._async_push(channel, item, push_state)
+      pushed = channel.next()
       assert pushed is item
     return item
 
@@ -613,10 +706,11 @@ class Storage(object):
       try:
         # Prepare reading pipeline.
         stream = self._storage_api.fetch(digest, size, 0)
-        if self._use_zip:
+        if self.server_ref.is_with_compression:
           stream = zip_decompress(stream, isolated_format.DISK_FILE_CHUNK)
         # Run |stream| through verifier that will assert its size.
-        verifier = FetchStreamVerifier(stream, self._hash_algo, digest, size)
+        verifier = FetchStreamVerifier(
+            stream, self.server_ref.hash_algo, digest, size)
         # Verified stream goes to |sink|.
         sink(verifier.run())
       except Exception as err:
@@ -627,73 +721,6 @@ class Storage(object):
     # Don't bother with zip_thread_pool for decompression. Decompression is
     # really fast and most probably IO bound anyway.
     self.net_thread_pool.add_task_with_channel(channel, priority, fetch)
-
-  def get_missing_items(self, items):
-    """Yields items that are missing from the server.
-
-    Issues multiple parallel queries via StorageApi's 'contains' method.
-
-    Arguments:
-      items: a list of isolate_storage.Item objects to check.
-
-    Yields:
-      For each missing item it yields a pair (item, push_state), where:
-        * item - isolate_storage.Item object that is missing (one of |items|).
-        * push_state - opaque object that contains storage specific information
-            describing how to upload the item (for example in case of cloud
-            storage, it is signed upload URLs). It can later be passed to
-            'async_push'.
-    """
-    channel = threading_utils.TaskChannel()
-    pending = 0
-
-    # Ensure all digests are calculated.
-    for item in items:
-      item.prepare(self._hash_algo)
-
-    def contains(batch):
-      if self._aborted:
-        raise Aborted()
-      return self._storage_api.contains(batch)
-
-    # Enqueue all requests.
-    for batch in batch_items_for_check(items):
-      self.net_thread_pool.add_task_with_channel(
-          channel, threading_utils.PRIORITY_HIGH, contains, batch)
-      pending += 1
-
-    # Yield results as they come in.
-    for _ in xrange(pending):
-      for missing_item, push_state in channel.pull().iteritems():
-        yield missing_item, push_state
-
-
-def batch_items_for_check(items):
-  """Splits list of items to check for existence on the server into batches.
-
-  Each batch corresponds to a single 'exists?' query to the server via a call
-  to StorageApi's 'contains' method.
-
-  Arguments:
-    items: a list of isolate_storage.Item objects.
-
-  Yields:
-    Batches of items to query for existence in a single operation,
-    each batch is a list of isolate_storage.Item objects.
-  """
-  batch_count = 0
-  batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[0]
-  next_queries = []
-  for item in sorted(items, key=lambda x: x.size, reverse=True):
-    next_queries.append(item)
-    if len(next_queries) == batch_size_limit:
-      yield next_queries
-      next_queries = []
-      batch_count += 1
-      batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[
-          min(batch_count, len(ITEMS_PER_CONTAINS_QUERIES) - 1)]
-  if next_queries:
-    yield next_queries
 
 
 class FetchQueue(object):
@@ -780,7 +807,7 @@ class FetchQueue(object):
 
     # Wait for one waited-on item to be fetched.
     while self._pending:
-      digest = self._channel.pull()
+      digest = self._channel.next()
       self._pending.remove(digest)
       self._fetched.add(digest)
       if digest in self._waiting_on:
@@ -893,13 +920,21 @@ class FetchStreamVerifier(object):
 class IsolatedBundle(object):
   """Fetched and parsed .isolated file with all dependencies."""
 
-  def __init__(self):
+  def __init__(self, filter_cb):
+    """
+    filter_cb: callback function to filter downloaded content.
+               When filter_cb is not None, Isolated file is downloaded iff
+               filter_cb(filepath) returns True.
+    """
+
     self.command = []
     self.files = {}
     self.read_only = None
     self.relative_cwd = None
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
+
+    self._filter_cb = filter_cb
 
   def fetch(self, fetch_queue, root_isolated_hash, algo):
     """Fetches the .isolated and all the included .isolated.
@@ -989,6 +1024,9 @@ class IsolatedBundle(object):
     files = isolated.data.get('files', {})
     logging.debug('fetch_files(%s, %d)', isolated.obj_hash, len(files))
     for filepath, properties in files.iteritems():
+      if self._filter_cb and not self._filter_cb(filepath):
+        continue
+
       # Root isolated has priority on the files being mapped. In particular,
       # overridden files must not be fetched.
       if filepath not in self.files:
@@ -1023,54 +1061,21 @@ class IsolatedBundle(object):
       self.relative_cwd = node.data['relative_cwd']
 
 
-def get_storage(url, namespace):
+def get_storage(server_ref):
   """Returns Storage class that can upload and download from |namespace|.
 
   Arguments:
-    url: URL of isolate service to use shared cloud based storage.
-    namespace: isolate namespace to operate in, also defines hashing and
-        compression scheme used, i.e. namespace names that end with '-gzip'
-        store compressed data.
+    server_ref: isolate_storage.ServerRef instance.
 
   Returns:
     Instance of Storage.
   """
-  return Storage(isolate_storage.get_storage_api(url, namespace))
+  assert isinstance(server_ref, isolate_storage.ServerRef), repr(server_ref)
+  return Storage(isolate_storage.get_storage_api(server_ref))
 
 
-def upload_tree(base_url, infiles, namespace):
-  """Uploads the given tree to the given url.
-
-  Arguments:
-    base_url:  The url of the isolate server to upload to.
-    infiles:   iterable of pairs (absolute path, metadata dict) of files.
-    namespace: The namespace to use on the server.
-  """
-  # Convert |infiles| into a list of FileItem objects, skip duplicates.
-  # Filter out symlinks, since they are not represented by items on isolate
-  # server side.
-  items = []
-  seen = set()
-  skipped = 0
-  for filepath, metadata in infiles:
-    assert isinstance(filepath, unicode), filepath
-    if 'l' not in metadata and filepath not in seen:
-      seen.add(filepath)
-      item = FileItem(
-          path=filepath,
-          digest=metadata['h'],
-          size=metadata['s'],
-          high_priority=metadata.get('priority') == '0')
-      items.append(item)
-    else:
-      skipped += 1
-
-  logging.info('Skipped %d duplicated entries', skipped)
-  with get_storage(base_url, namespace) as storage:
-    return storage.upload_items(items)
-
-
-def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
+def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
+                   filter_cb=None):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
   Arguments:
@@ -1080,6 +1085,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
            locally.
     outdir: Output directory to map file tree to.
     use_symlinks: Use symlinks instead of hardlinks when True.
+    filter_cb: filter that works as whitelist for downloaded files.
 
   Returns:
     IsolatedBundle object that holds details about loaded *.isolated file.
@@ -1088,9 +1094,9 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
       'fetch_isolated(%s, %s, %s, %s, %s)',
       isolated_hash, storage, cache, outdir, use_symlinks)
   # Hash algorithm to use, defined by namespace |storage| is using.
-  algo = storage.hash_algo
+  algo = storage.server_ref.hash_algo
   fetch_queue = FetchQueue(storage, cache)
-  bundle = IsolatedBundle()
+  bundle = IsolatedBundle(filter_cb)
 
   with tools.Profiler('GetIsolateds'):
     # Optionally support local files by manually adding them to cache.
@@ -1195,8 +1201,9 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
           last_update = time.time()
     assert fetch_queue.wait_queue_empty, 'FetchQueue should have been emptied'
 
+  # Save the cache right away to not loose the state of the new objects.
+  cache.save()
   # Cache could evict some items we just tried to fetch, it's a fatal error.
-  cache.trim()
   if not fetch_queue.verify_all_cached():
     free_disk = file_path.get_free_space(cache.cache_dir)
     msg = (
@@ -1207,118 +1214,170 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
   return bundle
 
 
-def directory_to_metadata(root, algo, blacklist):
-  """Returns the FileItem list and .isolated metadata for a directory."""
+def _directory_to_metadata(root, algo, blacklist):
+  """Yields every file and/or symlink found.
+
+  Yields:
+    tuple(FileItem, relpath, metadata)
+    For a symlink, FileItem is None.
+  """
   root = file_path.get_native_path_case(root)
-  paths = isolated_format.expand_directory_and_symlink(
-      root, u'.' + os.path.sep, blacklist, sys.platform != 'win32')
-  metadata = {
-    relpath: isolated_format.file_to_metadata(
+  for relpath in isolated_format.expand_directory_and_symlink(
+      root,
+      u'.' + os.path.sep,
+      blacklist,
+      follow_symlinks=(sys.platform != 'win32')):
+    # Immediately hash the file. We need the hash to construct the isolated
+    # file.
+    # TODO(maruel): This should be done lazily?
+    meta = isolated_format.file_to_metadata(
         os.path.join(root, relpath), {}, 0, algo, False)
-    for relpath in paths
+    meta.pop('t')
+    item = None
+    if 'h' in meta:
+      item = FileItem(
+            path=os.path.join(root, relpath),
+            digest=meta['h'],
+            size=meta['s'],
+            high_priority=relpath.endswith('.isolated'))
+    yield item, relpath, meta
+
+
+def _print_upload_stats(items, missing):
+  """Prints upload stats."""
+  total = len(items)
+  total_size = sum(f.size for f in items)
+  logging.info(
+      'Total:      %6d, %9.1fkiB', total, total_size / 1024.)
+  cache_hit = set(items).difference(missing)
+  cache_hit_size = sum(f.size for f in cache_hit)
+  logging.info(
+      'cache hit:  %6d, %9.1fkiB, %6.2f%% files, %6.2f%% size',
+      len(cache_hit),
+      cache_hit_size / 1024.,
+      len(cache_hit) * 100. / total,
+      cache_hit_size * 100. / total_size if total_size else 0)
+  cache_miss = missing
+  cache_miss_size = sum(f.size for f in cache_miss)
+  logging.info(
+      'cache miss: %6d, %9.1fkiB, %6.2f%% files, %6.2f%% size',
+      len(cache_miss),
+      cache_miss_size / 1024.,
+      len(cache_miss) * 100. / total,
+      cache_miss_size * 100. / total_size if total_size else 0)
+
+
+def _enqueue_dir(dirpath, blacklist, tempdir, hash_algo, hash_algo_name):
+  """Called by archive_files_to_storage for a directory.
+
+  Create an .isolated file.
+
+  Yields:
+    FileItem for every file found, plus one for the isolated file itself.
+  """
+  files = {}
+  for item, relpath, meta in _directory_to_metadata(
+      dirpath, hash_algo, blacklist):
+    files[relpath] = meta
+    if item.digest:
+      yield item
+
+  data = {
+      'algo': hash_algo_name,
+      'files': files,
+      'version': isolated_format.ISOLATED_FILE_VERSION,
   }
-  for v in metadata.itervalues():
-    v.pop('t')
-  items = [
-      FileItem(
-          path=os.path.join(root, relpath),
-          digest=meta['h'],
-          size=meta['s'],
-          high_priority=relpath.endswith('.isolated'))
-      for relpath, meta in metadata.iteritems() if 'h' in meta
-  ]
-  return items, metadata
+  # TODO(maruel): Stop putting to disk.
+  handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
+  os.close(handle)
+  isolated_format.save_isolated(isolated, data)
+  yield FileItem(
+      path=isolated,
+      digest=isolated_format.hash_file(isolated, hash_algo),
+      size=fs.stat(isolated).st_size,
+      high_priority=True)
 
 
 def archive_files_to_storage(storage, files, blacklist):
-  """Stores every entries and returns the relevant data.
+  """Stores every entries into remote storage and returns stats.
 
   Arguments:
     storage: a Storage object that communicates with the remote object store.
-    files: list of file paths to upload. If a directory is specified, a
-           .isolated file is created and its hash is returned.
+    files: iterable of files to upload. If a directory is specified (with a
+          trailing slash), a .isolated file is created and its hash is returned.
+          Duplicates are skipped.
     blacklist: function that returns True if a file should be omitted.
 
   Returns:
-    tuple(list(tuple(hash, path)), list(FileItem cold), list(FileItem hot)).
+    tuple(OrderedDict(path: hash), list(FileItem cold), list(FileItem hot)).
     The first file in the first item is always the isolated file.
   """
-  assert all(isinstance(i, unicode) for i in files), files
-  if len(files) != len(set(map(os.path.abspath, files))):
-    raise AlreadyExists('Duplicate entries found.')
-
-  # List of tuple(hash, path).
-  results = []
-  # The temporary directory is only created as needed.
-  tempdir = None
+  # Dict of path to hash.
+  results = collections.OrderedDict()
+  hash_algo = storage.server_ref.hash_algo
+  hash_algo_name = storage.server_ref.hash_algo_name
+  # TODO(maruel): Stop needing a temporary directory.
+  tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
   try:
-    # TODO(maruel): Yield the files to a worker thread.
-    items_to_upload = []
-    for f in files:
-      try:
-        filepath = os.path.abspath(f)
-        if fs.isdir(filepath):
-          # Uploading a whole directory.
-          items, metadata = directory_to_metadata(
-              filepath, storage.hash_algo, blacklist)
+    # Generator of FileItem to pass to upload_items() concurrent operation.
+    channel = threading_utils.TaskChannel()
+    uploaded_digests = set()
+    def _upload_items():
+      results = storage.upload_items(channel)
+      uploaded_digests.update(f.digest for f in results)
+    t = threading.Thread(target=_upload_items)
+    t.start()
 
-          # Create the .isolated file.
-          if not tempdir:
-            tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
-          handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
-          os.close(handle)
-          data = {
-              'algo':
-                  isolated_format.SUPPORTED_ALGOS_REVERSE[storage.hash_algo],
-              'files': metadata,
-              'version': isolated_format.ISOLATED_FILE_VERSION,
-          }
-          isolated_format.save_isolated(isolated, data)
-          h = isolated_format.hash_file(isolated, storage.hash_algo)
-          items_to_upload.extend(items)
-          items_to_upload.append(
-              FileItem(
-                  path=isolated,
-                  digest=h,
-                  size=fs.stat(isolated).st_size,
-                  high_priority=True))
-          results.append((h, f))
-
-        elif fs.isfile(filepath):
-          h = isolated_format.hash_file(filepath, storage.hash_algo)
-          items_to_upload.append(
-            FileItem(
+    # Keep track locally of the items to determine cold and hot items.
+    items_found = []
+    try:
+      for f in files:
+        assert isinstance(f, unicode), repr(f)
+        if f in results:
+          # Duplicate
+          continue
+        try:
+          h = None
+          filepath = os.path.abspath(f)
+          if fs.isdir(filepath):
+            # Uploading a whole directory.
+            for item in _enqueue_dir(
+                filepath, blacklist, tempdir, hash_algo, hash_algo_name):
+              channel.send_result(item)
+              items_found.append(item)
+              # The very last item will be the isolated file.
+              h = item.digest
+          elif fs.isfile(filepath):
+            h = isolated_format.hash_file(filepath, hash_algo)
+            item = FileItem(
                 path=filepath,
                 digest=h,
                 size=fs.stat(filepath).st_size,
-                high_priority=f.endswith('.isolated')))
-          results.append((h, f))
-        else:
-          raise Error('%s is neither a file or directory.' % f)
-      except OSError:
-        raise Error('Failed to process %s.' % f)
-    uploaded = storage.upload_items(items_to_upload)
-    cold = [i for i in items_to_upload if i in uploaded]
-    hot = [i for i in items_to_upload if i not in uploaded]
+                high_priority=f.endswith('.isolated'))
+            channel.send_result(item)
+            items_found.append(item)
+          else:
+            raise Error('%s is neither a file or directory.' % f)
+          results[f] = h
+        except OSError:
+          raise Error('Failed to process %s.' % f)
+    finally:
+      # Stops the generator, so _upload_items() can exit.
+      channel.send_done()
+    t.join()
+
+    cold = []
+    hot = []
+    for i in items_found:
+      # Note that multiple FileItem may have the same .digest.
+      if i.digest in uploaded_digests:
+        cold.append(i)
+      else:
+        hot.append(i)
     return results, cold, hot
   finally:
     if tempdir and fs.isdir(tempdir):
       file_path.rmtree(tempdir)
-
-
-def archive(out, namespace, files, blacklist):
-  if files == ['-']:
-    files = sys.stdin.readlines()
-
-  if not files:
-    raise Error('Nothing to upload')
-
-  files = [f.decode('utf-8') for f in files]
-  blacklist = tools.gen_blacklist(blacklist)
-  with get_storage(out, namespace) as storage:
-    # Ignore stats.
-    results = archive_files_to_storage(storage, files, blacklist)[0]
-  print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
 
 
 @subcommand.usage('<file1..fileN> or - to read from stdin')
@@ -1337,10 +1396,20 @@ def CMDarchive(parser, args):
   add_archive_options(parser)
   options, files = parser.parse_args(args)
   process_isolate_server_options(parser, options, True, True)
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  if files == ['-']:
+    files = (l.rstrip('\n\r') for l in sys.stdin)
+  if not files:
+    parser.error('Nothing to upload')
+  files = (f.decode('utf-8') for f in files)
+  blacklist = tools.gen_blacklist(options.blacklist)
   try:
-    archive(options.isolate_server, options.namespace, files, options.blacklist)
+    with get_storage(server_ref) as storage:
+      results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
   except (Error, local_caching.NoMoreSpace) as e:
     parser.error(e.args[0])
+  print('\n'.join('%s %s' % (h, f) for f, h in results.iteritems()))
   return 0
 
 
@@ -1385,7 +1454,9 @@ def CMDdownload(parser, args):
         (fs.isdir(options.target) and fs.listdir(options.target))):
       parser.error(
           '--target \'%s\' exists, please use another target' % options.target)
-  with get_storage(options.isolate_server, options.namespace) as storage:
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  with get_storage(server_ref) as storage:
     # Fetching individual files.
     if options.file:
       # TODO(maruel): Enable cache in this case too.
@@ -1402,7 +1473,7 @@ def CMDdownload(parser, args):
             functools.partial(
                 local_caching.file_write, os.path.join(options.target, dest)))
       while pending:
-        fetched = channel.pull()
+        fetched = channel.next()
         dest = pending.pop(fetched)
         logging.info('%s: %s', fetched, dest)
 
@@ -1513,10 +1584,12 @@ def process_cache_options(options, trim, **kwargs):
 
     # |options.cache| path may not exist until DiskContentAddressedCache()
     # instance is created.
+    server_ref = isolate_storage.ServerRef(
+        options.isolate_server, options.namespace)
     return local_caching.DiskContentAddressedCache(
         unicode(os.path.abspath(options.cache)),
         policies,
-        isolated_format.get_hash_algo(options.namespace),
+        server_ref.hash_algo(),  # pylint: disable=not-callable
         trim,
         **kwargs)
   else:

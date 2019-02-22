@@ -10,9 +10,10 @@
 #ifndef LIBANGLE_SAMPLER_H_
 #define LIBANGLE_SAMPLER_H_
 
-#include "libANGLE/angletypes.h"
 #include "libANGLE/Debug.h"
+#include "libANGLE/Observer.h"
 #include "libANGLE/RefCountObject.h"
+#include "libANGLE/angletypes.h"
 
 namespace rx
 {
@@ -23,13 +24,13 @@ class SamplerImpl;
 namespace gl
 {
 
-class Sampler final : public RefCountObject, public LabeledObject
+class Sampler final : public RefCountObject, public LabeledObject, public angle::Subject
 {
   public:
     Sampler(rx::GLImplFactory *factory, GLuint id);
     ~Sampler() override;
 
-    Error onDestroy(const Context *context) override;
+    void onDestroy(const Context *context) override;
 
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;

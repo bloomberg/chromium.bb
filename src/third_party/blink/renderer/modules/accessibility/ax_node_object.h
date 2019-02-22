@@ -55,14 +55,12 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool initialized_ = false;
 #endif
   // The accessibility role, not taking ARIA into account.
-  AccessibilityRole native_role_;
+  ax::mojom::Role native_role_;
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
   const AXObject* InheritsPresentationalRoleFrom() const override;
-  AccessibilityRole DetermineAccessibilityRole() override;
-  virtual AccessibilityRole NativeAccessibilityRoleIgnoringAria() const;
-  String AccessibilityDescriptionForElements(
-      HeapVector<Member<Element>>& elements) const;
+  ax::mojom::Role DetermineAccessibilityRole() override;
+  virtual ax::mojom::Role NativeRoleIgnoringAria() const;
   void AlterSliderOrSpinButtonValue(bool increase);
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
@@ -144,8 +142,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String GetText() const override;
 
   // Properties of interactive elements.
-  AriaCurrentState GetAriaCurrentState() const final;
-  InvalidState GetInvalidState() const final;
+  ax::mojom::AriaCurrentState GetAriaCurrentState() const final;
+  ax::mojom::InvalidState GetInvalidState() const final;
   // Only used when invalidState() returns InvalidStateOther.
   String AriaInvalidValue() const final;
   String ValueDescription() const override;
@@ -156,24 +154,25 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String StringValue() const override;
 
   // ARIA attributes.
-  AccessibilityRole AriaRoleAttribute() const final;
+  ax::mojom::Role AriaRoleAttribute() const final;
 
   // AX name calculation.
-  String GetName(AXNameFrom&, AXObjectVector* name_objects) const override;
+  String GetName(ax::mojom::NameFrom&,
+                 AXObjectVector* name_objects) const override;
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
-  String Placeholder(AXNameFrom) const override;
+  String Placeholder(ax::mojom::NameFrom) const override;
   bool NameFromLabelElement() const override;
 
   // Location
@@ -197,6 +196,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool NeedsToUpdateChildren() const override { return children_dirty_; }
   void SetNeedsToUpdateChildren() override { children_dirty_ = true; }
   void UpdateChildrenIfNecessary() override;
+  void SelectedOptions(AXObjectVector&) const override;
 
   // DOM and Render tree access.
   Element* ActionElement() const override;
@@ -235,7 +235,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String TextFromDescendants(AXObjectSet& visited,
                              bool recursive) const override;
   String NativeTextAlternative(AXObjectSet& visited,
-                               AXNameFrom&,
+                               ax::mojom::NameFrom&,
                                AXRelatedObjectVector*,
                                NameSources*,
                                bool* found_text_alternative) const;

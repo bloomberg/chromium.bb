@@ -5,6 +5,8 @@
 #include "extensions/common/extensions_client.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extensions_api_provider.h"
 #include "extensions/common/features/feature_provider.h"
@@ -112,13 +114,19 @@ void ExtensionsClient::DoInitialize() {
 
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
   PermissionsInfo* permissions_info = PermissionsInfo::GetInstance();
+  const base::ElapsedTimer timer;
   for (const auto& provider : api_providers_) {
     provider->RegisterManifestHandlers();
-    provider->AddPermissionsProviders(permissions_info);
+    provider->RegisterPermissions(permissions_info);
   }
   ManifestHandler::FinalizeRegistration();
 
   Initialize();
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Extensions.ChromeExtensionsClientInitTime2", timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
 }
 
 }  // namespace extensions

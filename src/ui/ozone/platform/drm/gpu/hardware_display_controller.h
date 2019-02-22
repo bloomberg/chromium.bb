@@ -31,7 +31,7 @@ namespace ui {
 
 class CrtcController;
 class DrmFramebuffer;
-class DrmBuffer;
+class DrmDumbBuffer;
 class DrmDevice;
 
 // The HDCOz will handle modesettings and scannout operations for hardware
@@ -156,7 +156,6 @@ class HardwareDisplayController {
   gfx::Point origin() const { return origin_; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
-  uint32_t GetRefreshRate() const;
   base::TimeDelta GetRefreshInterval() const;
   base::TimeTicks GetTimeOfLastFlip() const;
 
@@ -176,7 +175,7 @@ class HardwareDisplayController {
                               scoped_refptr<PageFlipRequest> page_flip_request,
                               std::unique_ptr<gfx::GpuFence>* out_fence);
   void AllocateCursorBuffers();
-  DrmBuffer* NextCursorBuffer();
+  DrmDumbBuffer* NextCursorBuffer();
   void UpdateCursorImage();
   void UpdateCursorLocation();
   void ResetCursor();
@@ -195,10 +194,10 @@ class HardwareDisplayController {
   DrmOverlayPlaneList current_planes_;
   base::TimeTicks time_of_last_flip_;
 
-  std::unique_ptr<DrmBuffer> cursor_buffers_[2];
+  std::unique_ptr<DrmDumbBuffer> cursor_buffers_[2];
   gfx::Point cursor_location_;
   int cursor_frontbuffer_ = 0;
-  DrmBuffer* current_cursor_ = nullptr;
+  DrmDumbBuffer* current_cursor_ = nullptr;
 
   bool is_disabled_;
 

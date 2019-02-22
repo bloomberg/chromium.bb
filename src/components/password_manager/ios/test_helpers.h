@@ -9,13 +9,16 @@
 
 namespace autofill {
 struct PasswordFormFillData;
-}
+}  // namespace autofill
+
+namespace password_manager {
+struct FillData;
+}  // namespace password_manager
 
 namespace test_helpers {
 
 // Populates |form_data| with test values.
-void SetPasswordFormFillData(autofill::PasswordFormFillData& form_data,
-                             const std::string& origin,
+void SetPasswordFormFillData(const std::string& origin,
                              const std::string& action,
                              const char* username_field,
                              const char* username_value,
@@ -23,8 +26,18 @@ void SetPasswordFormFillData(autofill::PasswordFormFillData& form_data,
                              const char* password_value,
                              const char* additional_username,
                              const char* additional_password,
-                             bool wait_for_username);
+                             bool wait_for_username,
+                             autofill::PasswordFormFillData* form_data);
 
-}  // namespace  test_helpers
+// Populates |fill_data| with test values.
+void SetFillData(const std::string& origin,
+                 const std::string& action,
+                 const char* username_field,
+                 const char* username_value,
+                 const char* password_field,
+                 const char* password_value,
+                 password_manager::FillData* fill_data);
+
+}  // namespace test_helpers
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_IOS_TEST_HELPERS_H_

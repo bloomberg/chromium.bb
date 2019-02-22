@@ -32,6 +32,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
@@ -143,11 +144,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   };
 
   ResourceResponse();
-  explicit ResourceResponse(
-      const KURL&,
-      const AtomicString& mime_type = g_null_atom,
-      long long expected_length = 0,
-      const AtomicString& text_encoding_name = g_null_atom);
+  explicit ResourceResponse(const KURL&);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
 
@@ -231,6 +228,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   HTTPVersion HttpVersion() const { return http_version_; }
   void SetHTTPVersion(HTTPVersion version) { http_version_ = version; }
 
+  int RequestId() const { return request_id_; }
+  void SetRequestId(int request_id) { request_id_ = request_id; }
+
   bool HasMajorCertificateErrors() const {
     return has_major_certificate_errors_;
   }
@@ -301,6 +301,14 @@ class PLATFORM_EXPORT ResourceResponse final {
     response_type_ = value;
   }
   bool IsOpaqueResponseFromServiceWorker() const;
+  // https://html.spec.whatwg.org/#cors-same-origin
+  bool IsCORSSameOrigin() const {
+    return network::cors::IsCORSSameOriginResponseType(response_type_);
+  }
+  // https://html.spec.whatwg.org/#cors-cross-origin
+  bool IsCORSCrossOrigin() const {
+    return network::cors::IsCORSCrossOriginResponseType(response_type_);
+  }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
@@ -404,6 +412,15 @@ class PLATFORM_EXPORT ResourceResponse final {
     async_revalidation_requested_ = requested;
   }
 
+  bool IsSignedExchangeInnerResponse() const {
+    return is_signed_exchange_inner_response_;
+  }
+
+  void SetIsSignedExchangeInnerResponse(
+      bool is_signed_exchange_inner_response) {
+    is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
+  }
+
   // This method doesn't compare the all members.
   static bool Compare(const ResourceResponse&, const ResourceResponse&);
 
@@ -412,7 +429,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   KURL url_;
   AtomicString mime_type_;
-  long long expected_content_length_;
+  long long expected_content_length_ = 0;
   AtomicString text_encoding_name_;
 
   unsigned connection_id_ = 0;
@@ -467,12 +484,19 @@ class PLATFORM_EXPORT ResourceResponse final {
   // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
   bool async_revalidation_requested_ = false;
 
+  // True if this resource is from an inner response of a signed exchange.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+  bool is_signed_exchange_inner_response_ = false;
+
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =
       network::mojom::FetchResponseType::kDefault;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_ = kHTTPVersionUnknown;
+
+  // Request id given to the resource by the WebUrlLoader.
+  int request_id_ = 0;
 
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is

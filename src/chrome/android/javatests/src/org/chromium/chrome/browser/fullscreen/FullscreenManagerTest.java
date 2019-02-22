@@ -45,16 +45,16 @@ import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
-import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.UiUtils;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeUnit;
@@ -279,9 +279,8 @@ public class FullscreenManagerTest {
         };
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
-        WebContents webContents = tab.getWebContents();
         GestureListenerManager gestureListenerManager =
-                GestureListenerManager.fromWebContents(webContents);
+                WebContentsUtils.getGestureListenerManager(tab.getWebContents());
         gestureListenerManager.addListener(scrollListener);
 
         final CallbackHelper viewportCallback = new CallbackHelper();
@@ -347,15 +346,10 @@ public class FullscreenManagerTest {
                 "Failed to reset scrolling state", gestureListenerManager.isScrollInProgress());
     }
 
-    /**
-     * TODO(https://crbug.com/876097): Remove the DisableFeatures block turning off contextual
-     * suggestions.
-     */
     @Test
     @LargeTest
     @Feature({"Fullscreen"})
-    @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
-            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
+    @Features.DisableFeatures({ChromeFeatureList.OFFLINE_INDICATOR})
     public void testHidingBrowserControlsRemovesSurfaceFlingerOverlay()
             throws InterruptedException {
         FullscreenManagerTestUtils.disableBrowserOverrides();

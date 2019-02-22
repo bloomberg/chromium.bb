@@ -37,9 +37,11 @@
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
 #include "third_party/blink/renderer/core/css/css_property_equality.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -75,7 +77,7 @@ template CORE_EXPORT void KeyframeEffectModelBase::SetFrames(
 bool KeyframeEffectModelBase::Sample(
     int iteration,
     double fraction,
-    double iteration_duration,
+    AnimationTimeDelta iteration_duration,
     HeapVector<Member<Interpolation>>& result) const {
   DCHECK_GE(iteration, 0);
   EnsureKeyframeGroups();
@@ -86,8 +88,8 @@ bool KeyframeEffectModelBase::Sample(
   last_iteration_ = iteration;
   last_fraction_ = fraction;
   last_iteration_duration_ = iteration_duration;
-  interpolation_effect_->GetActiveInterpolations(fraction, iteration_duration,
-                                                 result);
+  interpolation_effect_->GetActiveInterpolations(
+      fraction, iteration_duration.InSecondsF(), result);
   return changed;
 }
 
@@ -112,25 +114,19 @@ bool KeyframeEffectModelBase::SnapshotNeutralCompositorKeyframes(
     const ComputedStyle& old_style,
     const ComputedStyle& new_style,
     const ComputedStyle* parent_style) const {
-  bool updated = false;
-  EnsureKeyframeGroups();
-  static const CSSProperty** compositable_properties = CompositableProperties();
-  for (size_t i = 0; i < num_compositable_properties; i++) {
-    const CSSProperty& property = *compositable_properties[i];
-    if (CSSPropertyEquality::PropertiesEqual(PropertyHandle(property),
-                                             old_style, new_style))
-      continue;
-    PropertySpecificKeyframeGroup* keyframe_group =
-        keyframe_groups_->at(PropertyHandle(property));
-    if (!keyframe_group)
-      continue;
-    for (auto& keyframe : keyframe_group->keyframes_) {
-      if (keyframe->IsNeutral())
-        updated |= keyframe->PopulateAnimatableValue(property, element,
-                                                     new_style, parent_style);
-    }
-  }
-  return updated;
+  ShouldSnapshotPropertyCallback should_snapshot_property_callback =
+      [&old_style, &new_style](const PropertyHandle& property) {
+        return !CSSPropertyEquality::PropertiesEqual(property, old_style,
+                                                     new_style);
+      };
+  ShouldSnapshotKeyframeCallback should_snapshot_keyframe_callback =
+      [](const PropertySpecificKeyframe& keyframe) {
+        return keyframe.IsNeutral();
+      };
+
+  return SnapshotCompositableProperties(element, new_style, parent_style,
+                                        should_snapshot_property_callback,
+                                        should_snapshot_keyframe_callback);
 }
 
 bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframesIfNecessary(
@@ -140,25 +136,85 @@ bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframesIfNecessary(
   if (!needs_compositor_keyframes_snapshot_)
     return false;
   needs_compositor_keyframes_snapshot_ = false;
-  bool updated = false;
+
   bool has_neutral_compositable_keyframe = false;
-  EnsureKeyframeGroups();
-  static const CSSProperty** compositable_properties = CompositableProperties();
-  for (size_t i = 0; i < num_compositable_properties; i++) {
-    const CSSProperty& property = *compositable_properties[i];
-    PropertySpecificKeyframeGroup* keyframe_group =
-        keyframe_groups_->at(PropertyHandle(property));
-    if (!keyframe_group)
-      continue;
-    for (auto& keyframe : keyframe_group->keyframes_) {
-      updated |= keyframe->PopulateAnimatableValue(property, element,
-                                                   base_style, parent_style);
-      has_neutral_compositable_keyframe |= keyframe->IsNeutral();
-    }
-  }
+  ShouldSnapshotPropertyCallback should_snapshot_property_callback =
+      [](const PropertyHandle& property) { return true; };
+  ShouldSnapshotKeyframeCallback should_snapshot_keyframe_callback =
+      [&has_neutral_compositable_keyframe](
+          const PropertySpecificKeyframe& keyframe) mutable {
+        has_neutral_compositable_keyframe |= keyframe.IsNeutral();
+        return true;
+      };
+
+  bool updated = SnapshotCompositableProperties(
+      element, base_style, parent_style, should_snapshot_property_callback,
+      should_snapshot_keyframe_callback);
+
   if (updated && has_neutral_compositable_keyframe) {
     UseCounter::Count(element.GetDocument(),
                       WebFeature::kSyntheticKeyframesInCompositedCSSAnimation);
+  }
+  return updated;
+}
+
+bool KeyframeEffectModelBase::SnapshotCompositableProperties(
+    Element& element,
+    const ComputedStyle& computed_style,
+    const ComputedStyle* parent_style,
+    ShouldSnapshotPropertyCallback should_snapshot_property_callback,
+    ShouldSnapshotKeyframeCallback should_snapshot_keyframe_callback) const {
+  EnsureKeyframeGroups();
+  bool updated = false;
+  static const CSSProperty** compositable_properties = CompositableProperties();
+  for (size_t i = 0; i < num_compositable_properties; i++) {
+    updated |= SnapshotCompositorKeyFrames(
+        PropertyHandle(*compositable_properties[i]), element, computed_style,
+        parent_style, should_snapshot_property_callback,
+        should_snapshot_keyframe_callback);
+  }
+  // Custom properties need to be handled separately, since not all values
+  // can be animated.  Need to resolve the value of each custom property to
+  // ensure that it can be animated.
+  if (auto* inherited_variables = computed_style.InheritedVariables()) {
+    for (const auto& name : inherited_variables->GetCustomPropertyNames()) {
+      updated |= SnapshotCompositorKeyFrames(
+          PropertyHandle(name), element, computed_style, parent_style,
+          should_snapshot_property_callback, should_snapshot_keyframe_callback);
+    }
+  }
+  if (auto* non_inherited_variables = computed_style.NonInheritedVariables()) {
+    for (const auto& name : non_inherited_variables->GetCustomPropertyNames()) {
+      updated |= SnapshotCompositorKeyFrames(
+          PropertyHandle(name), element, computed_style, parent_style,
+          should_snapshot_property_callback, should_snapshot_keyframe_callback);
+    }
+  }
+  return updated;
+}
+
+bool KeyframeEffectModelBase::SnapshotCompositorKeyFrames(
+    const PropertyHandle& property,
+    Element& element,
+    const ComputedStyle& computed_style,
+    const ComputedStyle* parent_style,
+    ShouldSnapshotPropertyCallback should_snapshot_property_callback,
+    ShouldSnapshotKeyframeCallback should_snapshot_keyframe_callback) const {
+  if (!should_snapshot_property_callback(property))
+    return false;
+
+  PropertySpecificKeyframeGroup* keyframe_group =
+      keyframe_groups_->at(property);
+  if (!keyframe_group)
+    return false;
+
+  bool updated = false;
+  for (auto& keyframe : keyframe_group->keyframes_) {
+    if (!should_snapshot_keyframe_callback(*keyframe))
+      continue;
+
+    updated |= keyframe->PopulateAnimatableValue(property, element,
+                                                 computed_style, parent_style);
   }
   return updated;
 }
@@ -194,12 +250,12 @@ Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
     result.front() = 0;
   }
 
-  size_t last_index = 0;
+  wtf_size_t last_index = 0;
   last_offset = result.front();
-  for (size_t i = 1; i < result.size(); ++i) {
+  for (wtf_size_t i = 1; i < result.size(); ++i) {
     double offset = result[i];
     if (!std::isnan(offset)) {
-      for (size_t j = 1; j < i - last_index; ++j) {
+      for (wtf_size_t j = 1; j < i - last_index; ++j) {
         result[last_index + j] =
             last_offset + (offset - last_offset) * j / (i - last_index);
       }
@@ -238,7 +294,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
   DCHECK_EQ(computed_offsets.size(), keyframes_.size());
-  for (size_t i = 0; i < keyframes_.size(); i++) {
+  for (wtf_size_t i = 0; i < keyframes_.size(); i++) {
     double computed_offset = computed_offsets[i];
     const auto& keyframe = keyframes_[i];
 
@@ -277,9 +333,9 @@ void KeyframeEffectModelBase::EnsureInterpolationEffectPopulated() const {
 
   for (const auto& entry : *keyframe_groups_) {
     const PropertySpecificKeyframeVector& keyframes = entry.value->Keyframes();
-    for (size_t i = 0; i < keyframes.size() - 1; i++) {
-      size_t start_index = i;
-      size_t end_index = i + 1;
+    for (wtf_size_t i = 0; i < keyframes.size() - 1; i++) {
+      wtf_size_t start_index = i;
+      wtf_size_t end_index = i + 1;
       double start_offset = keyframes[start_index]->Offset();
       double end_offset = keyframes[end_index]->Offset();
       double apply_from = start_offset;

@@ -64,7 +64,7 @@ cr.define('print_header_interactive_test', function() {
     // Tests that the print button is automatically focused when the destination
     // is ready.
     test(assert(TestNames.FocusPrintOnReady), function() {
-      const printButton = header.$$('.print');
+      const printButton = header.$$('.action-button');
       assertTrue(!!printButton);
       const whenFocusDone = test_util.eventToPromise('focus', printButton);
 

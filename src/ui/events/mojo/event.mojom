@@ -7,6 +7,7 @@ module ui.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/events/mojo/keyboard_codes.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/latency/mojo/latency_info.mojom";
 
 struct KeyData {
@@ -46,23 +47,13 @@ struct KeyData {
   // Like |text|, but unmodified by concurrently held modifier keys (except
   // shift). Corresponds to blink::WebKeyboardEvent::unmodifiedText.
   uint16 unmodified_text;
-
-  // Mirrors KeyEvent::properties_.
-  map<string, array<uint8>>? properties;
 };
 
 struct LocationData {
-  // |x| and |y| are in the coordinate system of the View.
-  // Typically, this will be an integer-valued translation w.r.t.
-  // the screen and in this case, |x| and |y| are in units of physical
-  // pixels. However, some View embedders may apply arbitrary transformations
-  // of a view w.r.t. the screen.
-  float x;
-  float y;
-  // |screen_x| and |screen_y| are in screen coordinates in units of
-  // physical pixels.
-  float screen_x;
-  float screen_y;
+  // |relative_location| is in the coordinate system of the target and in DIPs.
+  gfx.mojom.PointF relative_location;
+  // |root_location| is relative to the client's root and in dips.
+  gfx.mojom.PointF root_location;
 };
 
 // TODO(rjkroege,sadrul): Add gesture representation.
@@ -143,6 +134,37 @@ struct ScrollData {
   ScrollEventPhase scroll_event_phase;
 };
 
+// This mirrors the C++ class of the same name, see it for details.
+struct PointerDetails {
+  PointerKind pointer_type;
+  float radius_x;
+  float radius_y;
+  float force;
+  float tilt_x;
+  float tilt_y;
+  float tangential_pressure;
+  float twist;
+  int32 id;
+  int32 offset_x;
+  int32 offset_y;
+};
+
+struct MouseData {
+  int32 changed_button_flags;
+  LocationData location;
+  PointerDetails pointer_details;
+  // Only used for mouse wheel.
+  gfx.mojom.Vector2d wheel_offset;
+};
+
+// This is used for TouchEvents.
+struct TouchData {
+  bool may_cause_scrolling;
+  bool hovering;
+  LocationData location;
+  PointerDetails pointer_details;
+};
+
 struct Event {
   // TODO(sky): rename to type.
   EventType action;
@@ -160,4 +182,7 @@ struct Event {
   PointerData? pointer_data;
   GestureData? gesture_data;
   ScrollData? scroll_data;
+  TouchData? touch_data;
+  MouseData? mouse_data;
+  map<string, array<uint8>>? properties;
 };

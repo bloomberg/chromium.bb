@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -70,6 +71,9 @@ void OomInterventionImpl::Check(TimerBase*) {
                   current_memory.current_vm_size_kb * 1024 >
                       detection_args_->virtual_memory_thresold;
 
+  // Report memory stats every second to send UMA.
+  ReportMemoryStats(current_memory);
+
   if (oom_detected) {
     if (navigate_ads_enabled_) {
       for (const auto& page : Page::OrdinaryPages()) {
@@ -92,6 +96,24 @@ void OomInterventionImpl::Check(TimerBase*) {
     // intervention runs, as it indicates that memory usage is high.
     V8GCForContextDispose::Instance().SetForcePageNavigationGC();
   }
+}
+
+void OomInterventionImpl::ReportMemoryStats(
+    OomInterventionMetrics& current_memory) {
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.OomIntervention.RendererBlinkUsage",
+      current_memory.current_blink_usage_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.OomIntervention."
+      "RendererPrivateMemoryFootprint",
+      current_memory.current_private_footprint_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_MB(
+      "Memory.Experimental.OomIntervention.RendererSwapFootprint",
+      current_memory.current_swap_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.OomIntervention.RendererVmSize",
+      current_memory.current_vm_size_kb / 1024);
+
   CrashMemoryMetricsReporterImpl::Instance().WriteIntoSharedMemory(
       current_memory);
 }

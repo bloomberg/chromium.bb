@@ -10,16 +10,18 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/drive/file_system_core_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/file_chooser_file_info.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/task_util.h"
@@ -35,6 +37,10 @@ using content::BrowserThread;
 
 namespace file_manager {
 namespace util {
+
+using blink::mojom::FileChooserFileInfo;
+using blink::mojom::FileSystemFileInfo;
+using blink::mojom::NativeFileInfo;
 
 namespace {
 
@@ -68,7 +74,7 @@ class FileDefinitionListConverter {
   FileDefinitionListConverter(Profile* profile,
                               const std::string& extension_id,
                               const FileDefinitionList& file_definition_list,
-                              const EntryDefinitionListCallback& callback);
+                              EntryDefinitionListCallback callback);
   ~FileDefinitionListConverter() = default;
 
  private:
@@ -98,7 +104,7 @@ class FileDefinitionListConverter {
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   const std::string extension_id_;
   const FileDefinitionList file_definition_list_;
-  const EntryDefinitionListCallback callback_;
+  EntryDefinitionListCallback callback_;
   std::unique_ptr<EntryDefinitionList> result_;
 };
 
@@ -106,10 +112,10 @@ FileDefinitionListConverter::FileDefinitionListConverter(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
-    const EntryDefinitionListCallback& callback)
+    EntryDefinitionListCallback callback)
     : extension_id_(extension_id),
       file_definition_list_(file_definition_list),
-      callback_(callback),
+      callback_(std::move(callback)),
       result_(new EntryDefinitionList) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -134,7 +140,7 @@ void FileDefinitionListConverter::ConvertNextIterator(
   if (iterator == file_definition_list_.end()) {
     // The converter object will be destroyed since |self_deleter| gets out of
     // scope.
-    callback_.Run(std::move(result_));
+    std::move(callback_).Run(std::move(result_));
     return;
   }
 
@@ -154,11 +160,9 @@ void FileDefinitionListConverter::ConvertNextIterator(
   // The converter object will be deleted if the callback is not called because
   // of shutdown during ResolveURL().
   file_system_context_->ResolveURL(
-      url,
-      base::Bind(&FileDefinitionListConverter::OnResolvedURL,
-                 base::Unretained(this),
-                 base::Passed(&self_deleter),
-                 iterator));
+      url, base::BindOnce(&FileDefinitionListConverter::OnResolvedURL,
+                          base::Unretained(this), std::move(self_deleter),
+                          iterator));
 }
 
 void FileDefinitionListConverter::OnResolvedURL(
@@ -216,10 +220,10 @@ void FileDefinitionListConverter::OnIteratorConverted(
 // Helper function to return the converted definition entry directly, without
 // the redundant container.
 void OnConvertFileDefinitionDone(
-    const EntryDefinitionCallback& callback,
+    EntryDefinitionCallback callback,
     std::unique_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK_EQ(1u, entry_definition_list->size());
-  callback.Run(entry_definition_list->at(0));
+  std::move(callback).Run(entry_definition_list->at(0));
 }
 
 // Checks if the |file_path| points non-native location or not.
@@ -251,32 +255,31 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       storage::FileSystemContext* context,
       const GURL& origin,
       const SelectedFileInfoList& selected_info_list,
-      const FileChooserFileInfoListCallback& callback)
+      FileChooserFileInfoListCallback callback)
       : context_(context),
-        chooser_info_list_(new FileChooserFileInfoList),
-        callback_(callback) {
+        callback_(std::move(callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     Lifetime lifetime(this);
     bool need_fill_metadata = false;
 
     for (size_t i = 0; i < selected_info_list.size(); ++i) {
-      content::FileChooserFileInfo chooser_info;
-
       // Native file.
       if (!IsUnderNonNativeLocalPath(*context,
                                      selected_info_list[i].file_path)) {
-        chooser_info.file_path = selected_info_list[i].file_path;
-        chooser_info.display_name = selected_info_list[i].display_name;
-        chooser_info_list_->push_back(chooser_info);
+        chooser_info_list_.push_back(
+            FileChooserFileInfo::NewNativeFile(NativeFileInfo::New(
+                selected_info_list[i].file_path,
+                base::UTF8ToUTF16(selected_info_list[i].display_name))));
         continue;
       }
 
       // Non-native file, but it has a native snapshot file.
       if (!selected_info_list[i].local_path.empty()) {
-        chooser_info.file_path = selected_info_list[i].local_path;
-        chooser_info.display_name = selected_info_list[i].display_name;
-        chooser_info_list_->push_back(chooser_info);
+        chooser_info_list_.push_back(
+            FileChooserFileInfo::NewNativeFile(NativeFileInfo::New(
+                selected_info_list[i].local_path,
+                base::UTF8ToUTF16(selected_info_list[i].display_name))));
         continue;
       }
 
@@ -295,22 +298,23 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
         return;
       }
 
-      chooser_info.file_path = selected_info_list[i].file_path;
-      chooser_info.file_system_url = url;
-      chooser_info_list_->push_back(chooser_info);
+      auto fs_info = FileSystemFileInfo::New();
+      fs_info->url = url;
+      chooser_info_list_.push_back(
+          FileChooserFileInfo::NewFileSystem(std::move(fs_info)));
       need_fill_metadata = true;
     }
 
     // If the list includes at least one non-native file (wihtout a snapshot
     // file), move to IO thread to obtian metadata for the non-native file.
     if (need_fill_metadata) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   FillMetadataOnIOThread,
-              base::Unretained(this), base::Passed(&lifetime),
-              chooser_info_list_->begin()));
+              base::Unretained(this), std::move(lifetime),
+              chooser_info_list_.begin()));
       return;
     }
 
@@ -318,13 +322,11 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
   }
 
   ~ConvertSelectedFileInfoListToFileChooserFileInfoListImpl() {
-    if (chooser_info_list_) {
-      for (size_t i = 0; i < chooser_info_list_->size(); ++i) {
-        if (chooser_info_list_->at(i).file_system_url.is_valid()) {
-          storage::IsolatedContext::GetInstance()->RevokeFileSystem(
-              context_->CrackURL(chooser_info_list_->at(i).file_system_url)
-                  .mount_filesystem_id());
-        }
+    for (const auto& info : chooser_info_list_) {
+      if (info && info->is_file_system()) {
+        storage::IsolatedContext::GetInstance()->RevokeFileSystem(
+            context_->CrackURL(info->get_file_system()->url)
+                .mount_filesystem_id());
       }
     }
   }
@@ -335,29 +337,30 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
                               const FileChooserFileInfoList::iterator& it) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    if (it == chooser_info_list_->end()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+    if (it == chooser_info_list_.end()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyComplete,
-              base::Unretained(this), base::Passed(&lifetime)));
+              base::Unretained(this), std::move(lifetime)));
       return;
     }
 
-    if (!it->file_system_url.is_valid()) {
+    if ((*it)->is_native_file()) {
       FillMetadataOnIOThread(std::move(lifetime), it + 1);
       return;
     }
 
     context_->operation_runner()->GetMetadata(
-        context_->CrackURL(it->file_system_url),
+        context_->CrackURL((*it)->get_file_system()->url),
         storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
             storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
             storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-        base::Bind(&ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
-                       OnGotMetadataOnIOThread,
-                   base::Unretained(this), base::Passed(&lifetime), it));
+        base::BindOnce(
+            &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
+                OnGotMetadataOnIOThread,
+            base::Unretained(this), std::move(lifetime), it));
   }
 
   // Callback invoked after GetMetadata.
@@ -368,39 +371,38 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (result != base::File::FILE_OK) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyError,
-              base::Unretained(this), base::Passed(&lifetime)));
+              base::Unretained(this), std::move(lifetime)));
       return;
     }
 
-    it->length = file_info.size;
-    it->modification_time = file_info.last_modified;
-    it->is_directory = file_info.is_directory;
+    (*it)->get_file_system()->length = file_info.size;
+    (*it)->get_file_system()->modification_time = file_info.last_modified;
+    DCHECK(!file_info.is_directory);
     FillMetadataOnIOThread(std::move(lifetime), it + 1);
   }
 
   // Returns a result to the |callback_|.
   void NotifyComplete(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(*chooser_info_list_);
-    // Reset the list so that the file systems are not revoked at the
+    // Move the list content so that the file systems are not revoked at the
     // destructor.
-    chooser_info_list_.reset();
+    std::move(callback_).Run(std::move(chooser_info_list_));
   }
 
   // Returns an empty list to the |callback_|.
   void NotifyError(Lifetime /* lifetime */) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_.Run(FileChooserFileInfoList());
+    std::move(callback_).Run(FileChooserFileInfoList());
   }
 
   scoped_refptr<storage::FileSystemContext> context_;
-  std::unique_ptr<FileChooserFileInfoList> chooser_info_list_;
-  const FileChooserFileInfoListCallback callback_;
+  FileChooserFileInfoList chooser_info_list_;
+  FileChooserFileInfoListCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(
       ConvertSelectedFileInfoListToFileChooserFileInfoListImpl);
@@ -422,7 +424,7 @@ void GetMetadataForPathOnIoThread(
     storage::FileSystemOperationRunner::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   file_system_context->operation_runner()->GetMetadata(internal_url, fields,
-                                                       callback);
+                                                       std::move(callback));
 }
 
 }  // namespace
@@ -519,44 +521,64 @@ void ConvertFileDefinitionListToEntryDefinitionList(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinitionList& file_definition_list,
-    const EntryDefinitionListCallback& callback) {
+    EntryDefinitionListCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The converter object destroys itself.
-  new FileDefinitionListConverter(
-      profile, extension_id, file_definition_list, callback);
+  new FileDefinitionListConverter(profile, extension_id, file_definition_list,
+                                  std::move(callback));
 }
 
 void ConvertFileDefinitionToEntryDefinition(
     Profile* profile,
     const std::string& extension_id,
     const FileDefinition& file_definition,
-    const EntryDefinitionCallback& callback) {
+    EntryDefinitionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileDefinitionList file_definition_list;
   file_definition_list.push_back(file_definition);
   ConvertFileDefinitionListToEntryDefinitionList(
-      profile,
-      extension_id,
-      file_definition_list,
-      base::Bind(&OnConvertFileDefinitionDone, callback));
+      profile, extension_id, file_definition_list,
+      base::BindOnce(&OnConvertFileDefinitionDone, std::move(callback)));
 }
 
 void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     storage::FileSystemContext* context,
     const GURL& origin,
     const SelectedFileInfoList& selected_info_list,
-    const FileChooserFileInfoListCallback& callback) {
+    FileChooserFileInfoListCallback callback) {
   // The object deletes itself.
   new ConvertSelectedFileInfoListToFileChooserFileInfoListImpl(
-      context, origin, selected_info_list, callback);
+      context, origin, selected_info_list, std::move(callback));
+}
+
+std::unique_ptr<base::DictionaryValue> ConvertEntryDefinitionToValue(
+    const EntryDefinition& entry_definition) {
+  auto entry = std::make_unique<base::DictionaryValue>();
+  entry->SetString("fileSystemName", entry_definition.file_system_name);
+  entry->SetString("fileSystemRoot", entry_definition.file_system_root_url);
+  entry->SetString(
+      "fileFullPath",
+      base::FilePath("/").Append(entry_definition.full_path).AsUTF8Unsafe());
+  entry->SetBoolean("fileIsDirectory", entry_definition.is_directory);
+  return entry;
+}
+
+std::unique_ptr<base::ListValue> ConvertEntryDefinitionListToListValue(
+    const EntryDefinitionList& entry_definition_list) {
+  auto entries = std::make_unique<base::ListValue>();
+  for (auto it = entry_definition_list.begin();
+       it != entry_definition_list.end(); ++it) {
+    entries->Append(ConvertEntryDefinitionToValue(*it));
+  }
+  return entries;
 }
 
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& directory_path,
-    const storage::FileSystemOperationRunner::StatusCallback& callback) {
+    storage::FileSystemOperationRunner::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalFileSystemBackend* const backend =
@@ -565,17 +587,18 @@ void CheckIfDirectoryExists(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), directory_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
-                     internal_url, google_apis::CreateRelayCallback(callback)));
+                     internal_url,
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::FilePath& entry_path,
     int fields,
-    const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
+    storage::FileSystemOperationRunner::GetMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalFileSystemBackend* const backend =
@@ -584,11 +607,11 @@ void GetMetadataForPath(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), entry_path);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
                      internal_url, fields,
-                     google_apis::CreateRelayCallback(callback)));
+                     google_apis::CreateRelayCallback(std::move(callback))));
 }
 
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(

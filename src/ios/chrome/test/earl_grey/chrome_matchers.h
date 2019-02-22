@@ -83,6 +83,9 @@ id<GREYMatcher> ToolsMenuButton();
 // Matcher for the Share menu button.
 id<GREYMatcher> ShareButton();
 
+// Returns the GREYMatcher for the button that opens the tab switcher.
+id<GREYMatcher> TabletTabSwitcherOpenButton();
+
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
 
@@ -234,6 +237,12 @@ id<GREYMatcher> SystemSelectionCalloutCopyButton();
 
 // Returns matcher for the Copy item on the context menu.
 id<GREYMatcher> ContextMenuCopyButton();
+
+// Returns matcher for defoucesed omnibox on a new tab.
+id<GREYMatcher> NewTabPageOmnibox();
+
+// Returns a matcher for the current WebView.
+id<GREYMatcher> WebViewMatcher();
 
 }  // namespace chrome_test_util
 

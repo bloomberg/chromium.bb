@@ -40,8 +40,6 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~OAuth2TokenFetcher() override;
 
-  void StartExchangeFromCookies(const std::string& session_index,
-                                const std::string& signin_scoped_device_id);
   void StartExchangeFromAuthCode(const std::string& auth_code,
                                  const std::string& signin_scoped_device_id);
 

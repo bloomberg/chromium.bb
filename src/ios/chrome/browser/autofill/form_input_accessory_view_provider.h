@@ -30,7 +30,7 @@ typedef void (^AccessoryViewReadyCompletion)(
 // Asynchronously retrieves an accessory view from this provider for the
 // specified form/field and returns it via |accessoryViewUpdateBlock|. View
 // will be nil if no accessories are available from this provider.
-- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
+- (void)retrieveAccessoryViewForForm:(const autofill::FormActivityParams&)params
                             webState:(web::WebState*)webState
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock;

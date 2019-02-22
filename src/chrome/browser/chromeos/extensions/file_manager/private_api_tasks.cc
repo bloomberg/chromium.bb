@@ -186,8 +186,7 @@ void FileManagerPrivateInternalGetFileTasksFunction::
   }
 
   file_manager::file_tasks::FindAllTypesOfTasks(
-      GetProfile(), drive::util::GetDriveAppRegistryByProfile(GetProfile()),
-      entries, urls_,
+      GetProfile(), entries, urls_,
       base::Bind(
           &FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed,
           this));

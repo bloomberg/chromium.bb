@@ -132,10 +132,19 @@ class AbstractInlineBox {
   TextDirection ParagraphDirection() const {
     DCHECK(IsNotNull());
     if (IsOldLayout()) {
-      // TODO(editing-dev): Bidi adjustment should check base direction of
-      // containing line instead of containing block, to handle unicode-bidi
-      // correctly.
-      return GetInlineBox().Root().Block().Style()->Direction();
+      const ComputedStyle& block_style = *GetInlineBox().Root().Block().Style();
+      if (block_style.GetUnicodeBidi() != UnicodeBidi::kPlaintext)
+        return block_style.Direction();
+
+      // There is no reliable way to get the paragraph direction in legacy
+      // layout when 'unicode-bidi: plaintext' is set. Use the lowest-level
+      // inline box's direction as a workaround.
+      UBiDiLevel min_level = 128;
+      for (const InlineBox* runner = GetInlineBox().Root().FirstLeafChild();
+           runner; runner = runner->NextLeafChild()) {
+        min_level = std::min(min_level, runner->BidiLevel());
+      }
+      return DirectionFromLevel(min_level);
     }
     const NGPhysicalLineBoxFragment& line_box =
         ToNGPhysicalLineBoxFragmentOrDie(
@@ -415,7 +424,7 @@ AbstractInlineBox FindBoundaryOfBidiRunIgnoringLineBreak(
 AbstractInlineBox FindBoundaryOfEntireBidiRunInternal(
     const AbstractInlineBox& start,
     unsigned bidi_level,
-    std::function<AbstractInlineBox(const AbstractInlineBox&)> forward) {
+    AbstractInlineBox (*forward)(const AbstractInlineBox&)) {
   DCHECK(start.IsNotNull());
   AbstractInlineBox last_runner = start;
   for (AbstractInlineBox runner = forward(start); runner.IsNotNull();
@@ -480,34 +489,13 @@ class CaretPositionResolutionAdjuster {
         result_box);
   }
 
-  static bool ShouldUseLegacyUnicodeBidiHack(const AbstractInlineBox& box,
-                                             UnicodeBidi unicode_bidi) {
-    if (!box.IsOldLayout())
-      return false;
-    if (unicode_bidi != UnicodeBidi::kPlaintext)
-      return false;
-    // Even in 'unicode-bidi: plaintext', we still need bidi adjustment at bidi
-    // boundaries.
-    // TODO(editing-dev): The code below may miss some cases of bidi boundaries.
-    const AbstractInlineBox backward_box =
-        TraversalStrategy::BackwardIgnoringLineBreak(box);
-    return backward_box.IsNull() || backward_box.BidiLevel() == box.BidiLevel();
-  }
-
   static AbstractInlineBoxAndSideAffinity AdjustFor(
-      const AbstractInlineBox& box,
-      UnicodeBidi unicode_bidi) {
+      const AbstractInlineBox& box) {
     DCHECK(box.IsNotNull());
 
     const TextDirection primary_direction = box.ParagraphDirection();
     if (box.Direction() == primary_direction)
       return AdjustForPrimaryDirectionAlgorithm(box);
-
-    // In legacy layout we don't have a reliable way to get the line direction,
-    // which is different from block direction with 'unicode-bidi: plaintext'.
-    // We do hacky things in this case.
-    if (ShouldUseLegacyUnicodeBidiHack(box, unicode_bidi))
-      return UnadjustedCaretPosition(box);
 
     const unsigned char level = box.BidiLevel();
     const AbstractInlineBox backward_box =
@@ -857,15 +845,14 @@ const InlineBox& InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
 }
 
 InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
-    const InlineBoxPosition& caret_position,
-    UnicodeBidi unicode_bidi) {
+    const InlineBoxPosition& caret_position) {
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
           ? CaretPositionResolutionAdjuster<TraverseRight>::AdjustFor(
-                unadjusted.GetBox(), unicode_bidi)
+                unadjusted.GetBox())
           : CaretPositionResolutionAdjuster<TraverseLeft>::AdjustFor(
-                unadjusted.GetBox(), unicode_bidi);
+                unadjusted.GetBox());
   return adjusted.ToInlineBoxPosition();
 }
 
@@ -875,9 +862,9 @@ NGCaretPosition BidiAdjustment::AdjustForCaretPositionResolution(
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
           ? CaretPositionResolutionAdjuster<TraverseRight>::AdjustFor(
-                unadjusted.GetBox(), UnicodeBidi())
+                unadjusted.GetBox())
           : CaretPositionResolutionAdjuster<TraverseLeft>::AdjustFor(
-                unadjusted.GetBox(), UnicodeBidi());
+                unadjusted.GetBox());
   return adjusted.ToNGCaretPosition();
 }
 

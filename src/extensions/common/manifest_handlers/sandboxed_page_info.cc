@@ -82,7 +82,8 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
     URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    if (pattern.Parse(extension->url().spec()) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(extension->url().spec()) !=
+        URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidURLPatternError, extension->url().spec());
       return false;
@@ -112,7 +113,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
     sandboxed_info->content_security_policy =
         csp_validator::GetEffectiveSandoxedPageCSP(content_security_policy,
                                                    &warnings);
-    extension->AddInstallWarnings(warnings);
+    extension->AddInstallWarnings(std::move(warnings));
   } else {
     sandboxed_info->content_security_policy =
         kDefaultSandboxedPageContentSecurityPolicy;

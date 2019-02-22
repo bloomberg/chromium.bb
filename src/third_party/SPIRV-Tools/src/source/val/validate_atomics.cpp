@@ -200,10 +200,33 @@ spv_result_t AtomicsPass(ValidationState_t& _, const Instruction* inst) {
         }
         if (spvIsVulkanEnv(_.context()->target_env) &&
             _.GetBitWidth(result_type) != 32) {
-          return _.diag(SPV_ERROR_INVALID_DATA, inst)
-                 << spvOpcodeString(opcode)
-                 << ": according to the Vulkan spec atomic Result Type needs "
-                    "to be a 32-bit int scalar type";
+          switch (opcode) {
+            case SpvOpAtomicSMin:
+            case SpvOpAtomicUMin:
+            case SpvOpAtomicSMax:
+            case SpvOpAtomicUMax:
+            case SpvOpAtomicAnd:
+            case SpvOpAtomicOr:
+            case SpvOpAtomicXor:
+            case SpvOpAtomicIAdd:
+            case SpvOpAtomicLoad:
+            case SpvOpAtomicStore:
+            case SpvOpAtomicExchange:
+            case SpvOpAtomicCompareExchange: {
+              if (_.GetBitWidth(result_type) == 64 &&
+                  !_.HasCapability(SpvCapabilityInt64Atomics))
+                return _.diag(SPV_ERROR_INVALID_DATA, inst)
+                       << spvOpcodeString(opcode)
+                       << ": 64-bit atomics require the Int64Atomics "
+                          "capability";
+            } break;
+            default:
+              return _.diag(SPV_ERROR_INVALID_DATA, inst)
+                     << spvOpcodeString(opcode)
+                     << ": according to the Vulkan spec atomic Result Type "
+                        "needs "
+                        "to be a 32-bit int scalar type";
+          }
         }
       }
 
@@ -229,11 +252,21 @@ spv_result_t AtomicsPass(ValidationState_t& _, const Instruction* inst) {
         case SpvStorageClassStorageBuffer:
           break;
         default:
-          return _.diag(SPV_ERROR_INVALID_DATA, inst)
-                 << spvOpcodeString(opcode)
-                 << ": expected Pointer Storage Class to be Uniform, "
-                    "Workgroup, CrossWorkgroup, Generic, AtomicCounter, Image "
-                    "or StorageBuffer";
+          if (spvIsOpenCLEnv(_.context()->target_env)) {
+            if (storage_class != SpvStorageClassFunction) {
+              return _.diag(SPV_ERROR_INVALID_DATA, inst)
+                     << spvOpcodeString(opcode)
+                     << ": expected Pointer Storage Class to be Uniform, "
+                        "Workgroup, CrossWorkgroup, Generic, AtomicCounter, "
+                        "Image, StorageBuffer or Function";
+            }
+          } else {
+            return _.diag(SPV_ERROR_INVALID_DATA, inst)
+                   << spvOpcodeString(opcode)
+                   << ": expected Pointer Storage Class to be Uniform, "
+                      "Workgroup, CrossWorkgroup, Generic, AtomicCounter, "
+                      "Image or StorageBuffer";
+          }
       }
 
       if (opcode == SpvOpAtomicFlagTestAndSet ||
@@ -278,9 +311,8 @@ spv_result_t AtomicsPass(ValidationState_t& _, const Instruction* inst) {
         if (value_type != data_type) {
           return _.diag(SPV_ERROR_INVALID_DATA, inst)
                  << spvOpcodeString(opcode)
-                 << ": expected Value type and the type pointed to by Pointer "
-                    "to"
-                 << " be the same";
+                 << ": expected Value type and the type pointed to by "
+                    "Pointer to be the same";
         }
       } else if (opcode != SpvOpAtomicLoad && opcode != SpvOpAtomicIIncrement &&
                  opcode != SpvOpAtomicIDecrement &&

@@ -19,7 +19,8 @@ loadTimeData.data = {
   DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
   DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
   REMOVABLE_DIRECTORY_LABEL: 'External Storage',
-  ARCHIVE_DIRECTORY_LABEL: 'Archives'
+  ARCHIVE_DIRECTORY_LABEL: 'Archives',
+  MY_FILES_ROOT_LABEL: 'My files',
 };
 
 function setUp() {
@@ -96,7 +97,7 @@ function testCreateDirectoryTree(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {
     addEventListener: function(name, callback) {}
   };
@@ -159,7 +160,7 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -221,7 +222,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -262,6 +263,64 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 }
 
 /**
+ * Test case for updateSubElementsFromList setting section-start attribute.
+ *
+ * 'section-start' attribute is used to display a line divider between
+ * "sections" in the directory tree. This is calculated in NavigationListModel.
+ */
+function testUpdateSubElementsFromListSections() {
+  // Creates elements.
+  const parentElement = document.createElement('div');
+  const directoryTree = document.createElement('div');
+  parentElement.appendChild(directoryTree);
+
+  // Creates mocks.
+  const directoryModel = new MockDirectoryModel();
+  const volumeManager = new MockVolumeManager();
+  const fileOperationManager = {
+    addEventListener: function(name, callback) {}
+  };
+
+  const treeModel = new NavigationListModel(
+      volumeManager,
+      new MockFolderShortcutDataModel([]),
+      null, /* recentItem */
+      null, /* addNewServicesItem */
+      false /* opt_disableMyFilesNavigation */
+  );
+
+  const myFilesItem = treeModel.item(0);
+  const driveItem = treeModel.item(1);
+
+  assertEquals(NavigationSection.MY_FILES, myFilesItem.section);
+  assertEquals(NavigationSection.CLOUD, driveItem.section);
+
+  DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
+      null, fileOperationManager, true);
+  directoryTree.dataModel = treeModel;
+  directoryTree.updateSubElementsFromList(false);
+
+  // First element should not have section-start attribute, to not display a
+  // division line in the first section.
+  // My files:
+  assertEquals(null, directoryTree.items[0].getAttribute('section-start'));
+
+  // Drive should have section-start, because it's a new section but not the
+  // first section.
+  assertEquals(
+      NavigationSection.CLOUD,
+      directoryTree.items[1].getAttribute('section-start'));
+
+  // Regenerate so it re-calculates the 'section-start' without creating the
+  // DirectoryItem.
+  directoryTree.updateSubElementsFromList(false);
+  assertEquals(
+      NavigationSection.CLOUD,
+      directoryTree.items[1].getAttribute('section-start'));
+
+}
+
+/**
  * Test case for updateSubElementsFromList.
  *
  * Mounts/unmounts removable and archive volumes, and checks these volumes come
@@ -275,7 +334,7 @@ function testUpdateSubElementsFromList() {
 
   // Creates mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {
     addEventListener: function(name, callback) {}
   };
@@ -298,11 +357,10 @@ function testUpdateSubElementsFromList() {
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Mounts a removable volume.
-  var removableVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.REMOVABLE,
-      'removable',
+  var removableVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable',
       str('REMOVABLE_DIRECTORY_LABEL'));
-  volumeManager.volumeInfoList.push(removableVolume);
+  volumeManager.volumeInfoList.add(removableVolume);
 
   // Asserts that the directoryTree is not updated before the update.
   assertArrayEquals([
@@ -318,12 +376,11 @@ function testUpdateSubElementsFromList() {
     str('REMOVABLE_DIRECTORY_LABEL')
   ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 
-  // Mounts an archive volume before the removable directory.
-  var archiveVolume = MockVolumeManagerWrapper.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.ARCHIVE,
-      'archive',
+  // Mounts an archive volume.
+  var archiveVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE, 'archive',
       str('ARCHIVE_DIRECTORY_LABEL'));
-  volumeManager.volumeInfoList.splice(2, 0, archiveVolume);
+  volumeManager.volumeInfoList.add(archiveVolume);
 
   // Asserts that the directoryTree is not updated before the update.
   assertArrayEquals([
@@ -334,23 +391,27 @@ function testUpdateSubElementsFromList() {
 
   // Asserts that an archive directory is added before the removable directory.
   directoryTree.updateSubElementsFromList(false);
-  assertArrayEquals([
-    str('DRIVE_DIRECTORY_LABEL'),
-    str('DOWNLOADS_DIRECTORY_LABEL'),
-    str('ARCHIVE_DIRECTORY_LABEL'),
-    str('REMOVABLE_DIRECTORY_LABEL')
-  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+  assertArrayEquals(
+      [
+        str('DRIVE_DIRECTORY_LABEL'),
+        str('DOWNLOADS_DIRECTORY_LABEL'),
+        str('REMOVABLE_DIRECTORY_LABEL'),
+        str('ARCHIVE_DIRECTORY_LABEL'),
+      ],
+      getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Deletes an archive directory.
-  volumeManager.volumeInfoList.splice(2, 1);
+  volumeManager.volumeInfoList.remove('archive');
 
   // Asserts that the directoryTree is not updated before the update.
-  assertArrayEquals([
-    str('DRIVE_DIRECTORY_LABEL'),
-    str('DOWNLOADS_DIRECTORY_LABEL'),
-    str('ARCHIVE_DIRECTORY_LABEL'),
-    str('REMOVABLE_DIRECTORY_LABEL')
-  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+  assertArrayEquals(
+      [
+        str('DRIVE_DIRECTORY_LABEL'),
+        str('DOWNLOADS_DIRECTORY_LABEL'),
+        str('REMOVABLE_DIRECTORY_LABEL'),
+        str('ARCHIVE_DIRECTORY_LABEL'),
+      ],
+      getDirectoryTreeItemLabelsAsAList(directoryTree));
 
   // Asserts that an archive directory is deleted.
   directoryTree.updateSubElementsFromList(false);
@@ -379,7 +440,7 @@ function testAddFirstTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -449,7 +510,7 @@ function testRemoveLastTeamDrive(callback) {
 
   // Create mocks.
   var directoryModel = new MockDirectoryModel();
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Set entry which is returned by
@@ -526,7 +587,7 @@ function testInsideMyDriveAndInsideDrive(callback) {
 
   // Create mocks.
   const directoryModel = new MockDirectoryModel();
-  const volumeManager = new MockVolumeManagerWrapper();
+  const volumeManager = new MockVolumeManager();
   const fileOperationManager = {addEventListener: function(name, callback) {}};
 
   // Setup My Drive and Downloads and one folder inside each of them.

@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -65,8 +67,8 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
 
   void OnStopped() {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&StoppedObserver::OnStopped, this));
       return;
     }
@@ -98,8 +100,8 @@ void StopServiceWorkerForPattern(ServiceWorkerContext* context,
                                  const GURL& pattern,
                                  base::OnceClosure completion_callback_ui) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&StopServiceWorkerForPattern, context, pattern,
                        std::move(completion_callback_ui)));
     return;

@@ -58,8 +58,7 @@ constexpr VkImageUsageFlags kSurfaceVKDepthStencilImageUsageFlags =
 
 }  // namespace
 
-OffscreenSurfaceVk::AttachmentImage::AttachmentImage(vk::CommandGraphResource *commandGraphResource)
-    : renderTarget(&image, &imageView, commandGraphResource)
+OffscreenSurfaceVk::AttachmentImage::AttachmentImage() : renderTarget(&image, &imageView, 0)
 {
 }
 
@@ -91,24 +90,19 @@ angle::Result OffscreenSurfaceVk::AttachmentImage::initialize(DisplayVk *display
     return angle::Result::Continue();
 }
 
-void OffscreenSurfaceVk::AttachmentImage::destroy(const egl::Display *display,
-                                                  Serial storedQueueSerial)
+void OffscreenSurfaceVk::AttachmentImage::destroy(const egl::Display *display)
 {
     const DisplayVk *displayVk = vk::GetImpl(display);
     RendererVk *renderer       = displayVk->getRenderer();
 
-    image.release(renderer->getCurrentQueueSerial(), renderer);
-    renderer->releaseObject(storedQueueSerial, &imageView);
+    image.release(renderer);
+    renderer->releaseObject(renderer->getCurrentQueueSerial(), &imageView);
 }
 
 OffscreenSurfaceVk::OffscreenSurfaceVk(const egl::SurfaceState &surfaceState,
                                        EGLint width,
                                        EGLint height)
-    : SurfaceImpl(surfaceState),
-      mWidth(width),
-      mHeight(height),
-      mColorAttachment(this),
-      mDepthStencilAttachment(this)
+    : SurfaceImpl(surfaceState), mWidth(width), mHeight(height)
 {
 }
 
@@ -145,8 +139,8 @@ angle::Result OffscreenSurfaceVk::initializeImpl(DisplayVk *displayVk)
 
 void OffscreenSurfaceVk::destroy(const egl::Display *display)
 {
-    mColorAttachment.destroy(display, getStoredQueueSerial());
-    mDepthStencilAttachment.destroy(display, getStoredQueueSerial());
+    mColorAttachment.destroy(display);
+    mDepthStencilAttachment.destroy(display);
 }
 
 FramebufferImpl *OffscreenSurfaceVk::createDefaultFramebuffer(const gl::Context *context,
@@ -222,10 +216,11 @@ EGLint OffscreenSurfaceVk::getSwapBehavior() const
     return EGL_BUFFER_PRESERVED;
 }
 
-gl::Error OffscreenSurfaceVk::getAttachmentRenderTarget(const gl::Context * /*context*/,
-                                                        GLenum binding,
-                                                        const gl::ImageIndex & /*imageIndex*/,
-                                                        FramebufferAttachmentRenderTarget **rtOut)
+angle::Result OffscreenSurfaceVk::getAttachmentRenderTarget(
+    const gl::Context *context,
+    GLenum binding,
+    const gl::ImageIndex &imageIndex,
+    FramebufferAttachmentRenderTarget **rtOut)
 {
     if (binding == GL_BACK)
     {
@@ -237,14 +232,14 @@ gl::Error OffscreenSurfaceVk::getAttachmentRenderTarget(const gl::Context * /*co
         *rtOut = &mDepthStencilAttachment.renderTarget;
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
-gl::Error OffscreenSurfaceVk::initializeContents(const gl::Context *context,
-                                                 const gl::ImageIndex &imageIndex)
+angle::Result OffscreenSurfaceVk::initializeContents(const gl::Context *context,
+                                                     const gl::ImageIndex &imageIndex)
 {
     UNIMPLEMENTED();
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 WindowSurfaceVk::SwapchainImage::SwapchainImage()  = default;
@@ -268,8 +263,8 @@ WindowSurfaceVk::WindowSurfaceVk(const egl::SurfaceState &surfaceState,
       mSurface(VK_NULL_HANDLE),
       mInstance(VK_NULL_HANDLE),
       mSwapchain(VK_NULL_HANDLE),
-      mColorRenderTarget(nullptr, nullptr, this),
-      mDepthStencilRenderTarget(&mDepthStencilImage, &mDepthStencilImageView, this),
+      mColorRenderTarget(nullptr, nullptr, 0),
+      mDepthStencilRenderTarget(&mDepthStencilImage, &mDepthStencilImageView, 0),
       mCurrentSwapchainImageIndex(0)
 {
 }
@@ -292,7 +287,7 @@ void WindowSurfaceVk::destroy(const egl::Display *display)
 
     mAcquireNextImageSemaphore.destroy(device);
 
-    mDepthStencilImage.release(renderer->getCurrentQueueSerial(), renderer);
+    mDepthStencilImage.release(renderer);
     mDepthStencilImageView.destroy(device);
 
     for (SwapchainImage &swapchainImage : mSwapchainImages)
@@ -446,9 +441,8 @@ angle::Result WindowSurfaceVk::initializeImpl(DisplayVk *displayVk)
     // We need transfer src for reading back from the backbuffer.
     VkImageUsageFlags imageUsageFlags = kSurfaceVKColorImageUsageFlags;
 
-    VkSwapchainCreateInfoKHR swapchainInfo;
+    VkSwapchainCreateInfoKHR swapchainInfo = {};
     swapchainInfo.sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainInfo.pNext                 = nullptr;
     swapchainInfo.flags                 = 0;
     swapchainInfo.surface               = mSurface;
     swapchainInfo.minImageCount         = minImageCount;
@@ -478,11 +472,7 @@ angle::Result WindowSurfaceVk::initializeImpl(DisplayVk *displayVk)
     ANGLE_VK_TRY(displayVk,
                  vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, swapchainImages.data()));
 
-    // Allocate a command buffer for clearing our images to black.
-    vk::CommandBuffer *commandBuffer = nullptr;
-    ANGLE_TRY(beginWriteResource(displayVk, &commandBuffer));
-
-    VkClearColorValue transparentBlack;
+    VkClearColorValue transparentBlack = {};
     transparentBlack.float32[0] = 0.0f;
     transparentBlack.float32[1] = 0.0f;
     transparentBlack.float32[2] = 0.0f;
@@ -499,6 +489,10 @@ angle::Result WindowSurfaceVk::initializeImpl(DisplayVk *displayVk)
         ANGLE_TRY(member.image.initImageView(displayVk, gl::TextureType::_2D,
                                              VK_IMAGE_ASPECT_COLOR_BIT, gl::SwizzleState(),
                                              &member.imageView, 1));
+
+        // Allocate a command buffer for clearing our images to black.
+        vk::CommandBuffer *commandBuffer = nullptr;
+        ANGLE_TRY(member.image.recordCommands(displayVk, &commandBuffer));
 
         // Set transfer dest layout, and clear the image to black.
         member.image.clearColor(transparentBlack, 0, 1, commandBuffer);
@@ -525,13 +519,15 @@ angle::Result WindowSurfaceVk::initializeImpl(DisplayVk *displayVk)
         const VkImageAspectFlags aspect = vk::GetDepthStencilAspectFlags(dsFormat.textureFormat());
         VkClearDepthStencilValue depthStencilClearValue = {1.0f, 0};
 
-        // Set transfer dest layout, and clear the image.
+        // Clear the image.
+        vk::CommandBuffer *commandBuffer = nullptr;
+        ANGLE_TRY(mDepthStencilImage.recordCommands(displayVk, &commandBuffer));
         mDepthStencilImage.clearDepthStencil(aspect, depthStencilClearValue, commandBuffer);
 
         ANGLE_TRY(mDepthStencilImage.initImageView(displayVk, gl::TextureType::_2D, aspect,
                                                    gl::SwizzleState(), &mDepthStencilImageView, 1));
 
-        // TODO(jmadill): Figure out how to pass depth/stencil image views to the RenderTargetVk.
+        // We will need to pass depth/stencil image views to the RenderTargetVk in the future.
     }
 
     return angle::Result::Continue();
@@ -542,6 +538,15 @@ FramebufferImpl *WindowSurfaceVk::createDefaultFramebuffer(const gl::Context *co
 {
     RendererVk *renderer = vk::GetImpl(context)->getRenderer();
     return FramebufferVk::CreateDefaultFBO(renderer, state, this);
+}
+
+egl::Error WindowSurfaceVk::swapWithDamage(const gl::Context *context,
+                                           EGLint * /*rects*/,
+                                           EGLint /*n_rects*/)
+{
+    DisplayVk *displayVk = vk::GetImpl(context->getCurrentDisplay());
+    angle::Result result = swapImpl(displayVk);
+    return angle::ToEGL(result, displayVk, EGL_BAD_SURFACE);
 }
 
 egl::Error WindowSurfaceVk::swap(const gl::Context *context)
@@ -556,7 +561,8 @@ angle::Result WindowSurfaceVk::swapImpl(DisplayVk *displayVk)
     RendererVk *renderer = displayVk->getRenderer();
 
     vk::CommandBuffer *swapCommands = nullptr;
-    ANGLE_TRY(beginWriteResource(displayVk, &swapCommands));
+    ANGLE_TRY(mSwapchainImages[mCurrentSwapchainImageIndex].image.recordCommands(displayVk,
+                                                                                 &swapCommands));
 
     SwapchainImage &image = mSwapchainImages[mCurrentSwapchainImageIndex];
 
@@ -567,9 +573,8 @@ angle::Result WindowSurfaceVk::swapImpl(DisplayVk *displayVk)
     ANGLE_TRY(
         renderer->flush(displayVk, image.imageAcquiredSemaphore, image.commandsCompleteSemaphore));
 
-    VkPresentInfoKHR presentInfo;
+    VkPresentInfoKHR presentInfo   = {};
     presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext              = nullptr;
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores    = image.commandsCompleteSemaphore.ptr();
     presentInfo.swapchainCount     = 1;
@@ -581,6 +586,8 @@ angle::Result WindowSurfaceVk::swapImpl(DisplayVk *displayVk)
 
     // Get the next available swapchain image.
     ANGLE_TRY(nextSwapchainImage(displayVk));
+
+    ANGLE_TRY(renderer->syncPipelineCacheVk(displayVk));
 
     return angle::Result::Continue();
 }
@@ -666,10 +673,10 @@ EGLint WindowSurfaceVk::getSwapBehavior() const
     return EGL_BUFFER_DESTROYED;
 }
 
-gl::Error WindowSurfaceVk::getAttachmentRenderTarget(const gl::Context * /*context*/,
-                                                     GLenum binding,
-                                                     const gl::ImageIndex & /*target*/,
-                                                     FramebufferAttachmentRenderTarget **rtOut)
+angle::Result WindowSurfaceVk::getAttachmentRenderTarget(const gl::Context *context,
+                                                         GLenum binding,
+                                                         const gl::ImageIndex &imageIndex,
+                                                         FramebufferAttachmentRenderTarget **rtOut)
 {
     if (binding == GL_BACK)
     {
@@ -681,7 +688,7 @@ gl::Error WindowSurfaceVk::getAttachmentRenderTarget(const gl::Context * /*conte
         *rtOut = &mDepthStencilRenderTarget;
     }
 
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 angle::Result WindowSurfaceVk::getCurrentFramebuffer(vk::Context *context,
@@ -697,13 +704,12 @@ angle::Result WindowSurfaceVk::getCurrentFramebuffer(vk::Context *context,
         return angle::Result::Continue();
     }
 
-    VkFramebufferCreateInfo framebufferInfo;
+    VkFramebufferCreateInfo framebufferInfo = {};
 
     const gl::Extents &extents            = mColorRenderTarget.getImageExtents();
     std::array<VkImageView, 2> imageViews = {{VK_NULL_HANDLE, mDepthStencilImageView.getHandle()}};
 
     framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.pNext           = nullptr;
     framebufferInfo.flags           = 0;
     framebufferInfo.renderPass      = compatibleRenderPass.getHandle();
     framebufferInfo.attachmentCount = (mDepthStencilImage.valid() ? 2u : 1u);
@@ -723,11 +729,11 @@ angle::Result WindowSurfaceVk::getCurrentFramebuffer(vk::Context *context,
     return angle::Result::Continue();
 }
 
-gl::Error WindowSurfaceVk::initializeContents(const gl::Context *context,
-                                              const gl::ImageIndex &imageIndex)
+angle::Result WindowSurfaceVk::initializeContents(const gl::Context *context,
+                                                  const gl::ImageIndex &imageIndex)
 {
     UNIMPLEMENTED();
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 }  // namespace rx

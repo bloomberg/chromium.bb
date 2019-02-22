@@ -327,8 +327,8 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params.task_graph_runner = &task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.mutator_host = animation_host.get();
-  std::unique_ptr<LayerTreeHost> host1 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+  std::unique_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
+      &single_thread_client, std::move(params));
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
@@ -341,8 +341,8 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   params2.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params2.client = &host_client2;
   params2.mutator_host = animation_host2.get();
-  std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
+  std::unique_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
+      &single_thread_client, std::move(params2));
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 
@@ -399,8 +399,8 @@ TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
   params.task_graph_runner = &task_graph_runner;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.mutator_host = animation_host.get();
-  std::unique_ptr<LayerTreeHost> host1 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+  std::unique_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
+      &single_thread_client, std::move(params));
   host1->SetVisible(true);
   host_client1.SetLayerTreeHost(host1.get());
 
@@ -413,8 +413,8 @@ TEST(PictureLayerTest, ChangingHostsWithCollidingFrames) {
   params2.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params2.client = &host_client2;
   params2.mutator_host = animation_host2.get();
-  std::unique_ptr<LayerTreeHost> host2 =
-      LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params2);
+  std::unique_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
+      &single_thread_client, std::move(params2));
   host2->SetVisible(true);
   host_client2.SetLayerTreeHost(host2.get());
 

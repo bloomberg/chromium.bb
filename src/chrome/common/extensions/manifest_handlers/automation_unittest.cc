@@ -79,10 +79,9 @@ TEST_F(AutomationManifestTest, Matches) {
   scoped_refptr<Extension> extension = LoadAndExpectWarning(
       "automation_matches.json",
       ErrorUtils::FormatErrorMessage(
-          automation_errors::kErrorInvalidMatch,
-          "www.badpattern.com",
+          automation_errors::kErrorInvalidMatch, "www.badpattern.com",
           URLPattern::GetParseResultString(
-              URLPattern::PARSE_ERROR_MISSING_SCHEME_SEPARATOR)));
+              URLPattern::ParseResult::kMissingSchemeSeparator)));
   ASSERT_TRUE(extension.get());
 
   EXPECT_TRUE(VerifyOnePermissionMessage(
@@ -150,10 +149,9 @@ TEST_F(AutomationManifestTest, NoValidMatches) {
   EXPECT_EQ("", error);
   EXPECT_EQ(2u, extension->install_warnings().size());
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
-                automation_errors::kErrorInvalidMatch,
-                "www.badpattern.com",
+                automation_errors::kErrorInvalidMatch, "www.badpattern.com",
                 URLPattern::GetParseResultString(
-                    URLPattern::PARSE_ERROR_MISSING_SCHEME_SEPARATOR)),
+                    URLPattern::ParseResult::kMissingSchemeSeparator)),
             extension->install_warnings()[0].message);
   EXPECT_EQ(automation_errors::kErrorNoMatchesProvided,
             extension->install_warnings()[1].message);

@@ -31,12 +31,6 @@ AnimationWorkletThread::AnimationWorkletThread(
 
 AnimationWorkletThread::~AnimationWorkletThread() = default;
 
-WebThread* AnimationWorkletThread::GetSharedBackingThread() {
-  auto* instance = WorkletThreadHolder<AnimationWorkletThread>::GetInstance();
-  DCHECK(instance);
-  return &(instance->GetThread()->BackingThread().PlatformThread());
-}
-
 WorkerBackingThread& AnimationWorkletThread::GetWorkerBackingThread() {
   return *WorkletThreadHolder<AnimationWorkletThread>::GetInstance()
               ->GetThread();
@@ -61,24 +55,18 @@ void AnimationWorkletThread::CollectAllGarbage() {
 
 void AnimationWorkletThread::EnsureSharedBackingThread() {
   WorkletThreadHolder<AnimationWorkletThread>::EnsureInstance(
-      WebThreadCreationParams(WebThreadType::kAnimationWorkletThread));
+      ThreadCreationParams(WebThreadType::kAnimationWorkletThread));
 }
 
 void AnimationWorkletThread::ClearSharedBackingThread() {
   WorkletThreadHolder<AnimationWorkletThread>::ClearInstance();
 }
 
-void AnimationWorkletThread::CreateSharedBackingThreadForTest() {
-  WorkletThreadHolder<AnimationWorkletThread>::CreateForTest(
-      WebThreadCreationParams(WebThreadType::kAnimationWorkletThread));
-}
-
 WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::CreateWorkerGlobalScope");
-  return AnimationWorkletGlobalScope::Create(std::move(creation_params),
-                                             GetIsolate(), this);
+  return AnimationWorkletGlobalScope::Create(std::move(creation_params), this);
 }
 
 }  // namespace blink

@@ -104,6 +104,7 @@ const char kId[] = "id";
 const char kETag[] = "etag";
 const char kItems[] = "items";
 const char kLargestChangeId[] = "largestChangeId";
+const char kName[] = "name";
 const char kNextPageToken[] = "nextPageToken";
 
 // About Resource
@@ -112,31 +113,6 @@ const char kAboutKind[] = "drive#about";
 const char kQuotaBytesTotal[] = "quotaBytesTotal";
 const char kQuotaBytesUsedAggregate[] = "quotaBytesUsedAggregate";
 const char kRootFolderId[] = "rootFolderId";
-
-// App Icon
-// https://developers.google.com/drive/v2/reference/apps
-const char kCategory[] = "category";
-const char kSize[] = "size";
-const char kIconUrl[] = "iconUrl";
-
-// Apps Resource
-// https://developers.google.com/drive/v2/reference/apps
-const char kAppKind[] = "drive#app";
-const char kName[] = "name";
-const char kObjectType[] = "objectType";
-const char kProductId[] = "productId";
-const char kSupportsCreate[] = "supportsCreate";
-const char kRemovable[] = "removable";
-const char kPrimaryMimeTypes[] = "primaryMimeTypes";
-const char kSecondaryMimeTypes[] = "secondaryMimeTypes";
-const char kPrimaryFileExtensions[] = "primaryFileExtensions";
-const char kSecondaryFileExtensions[] = "secondaryFileExtensions";
-const char kIcons[] = "icons";
-const char kCreateUrl[] = "createUrl";
-
-// Apps List
-// https://developers.google.com/drive/v2/reference/apps/list
-const char kAppListKind[] = "drive#appList";
 
 // Parent Resource
 // https://developers.google.com/drive/v2/reference/parents
@@ -238,18 +214,6 @@ constexpr ChangeTypeMap kChangeTypeMap[] = {
   { ChangeResource::TEAM_DRIVE, "teamDrive" },
 };
 
-// Maps category name to enum IconCategory.
-struct AppIconCategoryMap {
-  DriveAppIcon::IconCategory category;
-  const char* category_name;
-};
-
-constexpr AppIconCategoryMap kAppIconCategoryMap[] = {
-  { DriveAppIcon::DOCUMENT, "document" },
-  { DriveAppIcon::APPLICATION, "application" },
-  { DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
-};
-
 // Checks if the JSON is expected kind.  In Drive API, JSON data structure has
 // |kind| property which denotes the type of the structure (e.g. "drive#file").
 bool IsResourceKindExpected(const base::Value& value,
@@ -305,145 +269,6 @@ bool AboutResource::Parse(const base::Value& value) {
   base::JSONValueConverter<AboutResource> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid About resource JSON!";
-    return false;
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DriveAppIcon implementation
-
-DriveAppIcon::DriveAppIcon() : category_(UNKNOWN), icon_side_length_(0) {}
-
-DriveAppIcon::~DriveAppIcon() {}
-
-// static
-void DriveAppIcon::RegisterJSONConverter(
-    base::JSONValueConverter<DriveAppIcon>* converter) {
-  converter->RegisterCustomField<IconCategory>(
-      kCategory,
-      &DriveAppIcon::category_,
-      &DriveAppIcon::GetIconCategory);
-  converter->RegisterIntField(kSize, &DriveAppIcon::icon_side_length_);
-  converter->RegisterCustomField<GURL>(kIconUrl,
-                                       &DriveAppIcon::icon_url_,
-                                       GetGURLFromString);
-}
-
-// static
-std::unique_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(
-    const base::Value& value) {
-  std::unique_ptr<DriveAppIcon> resource(new DriveAppIcon());
-  if (!resource->Parse(value)) {
-    LOG(ERROR) << "Unable to create: Invalid DriveAppIcon JSON!";
-    return std::unique_ptr<DriveAppIcon>();
-  }
-  return resource;
-}
-
-bool DriveAppIcon::Parse(const base::Value& value) {
-  base::JSONValueConverter<DriveAppIcon> converter;
-  if (!converter.Convert(value, this)) {
-    LOG(ERROR) << "Unable to parse: Invalid DriveAppIcon";
-    return false;
-  }
-  return true;
-}
-
-// static
-bool DriveAppIcon::GetIconCategory(base::StringPiece category,
-                                   DriveAppIcon::IconCategory* result) {
-  for (size_t i = 0; i < arraysize(kAppIconCategoryMap); i++) {
-    if (category == kAppIconCategoryMap[i].category_name) {
-      *result = kAppIconCategoryMap[i].category;
-      return true;
-    }
-  }
-  DVLOG(1) << "Unknown icon category " << category;
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AppResource implementation
-
-AppResource::AppResource()
-    : supports_create_(false),
-      removable_(false) {
-}
-
-AppResource::~AppResource() {}
-
-// static
-void AppResource::RegisterJSONConverter(
-    base::JSONValueConverter<AppResource>* converter) {
-  converter->RegisterStringField(kId, &AppResource::application_id_);
-  converter->RegisterStringField(kName, &AppResource::name_);
-  converter->RegisterStringField(kObjectType, &AppResource::object_type_);
-  converter->RegisterStringField(kProductId, &AppResource::product_id_);
-  converter->RegisterBoolField(kSupportsCreate, &AppResource::supports_create_);
-  converter->RegisterBoolField(kRemovable, &AppResource::removable_);
-  converter->RegisterRepeatedString(kPrimaryMimeTypes,
-                                    &AppResource::primary_mimetypes_);
-  converter->RegisterRepeatedString(kSecondaryMimeTypes,
-                                    &AppResource::secondary_mimetypes_);
-  converter->RegisterRepeatedString(kPrimaryFileExtensions,
-                                    &AppResource::primary_file_extensions_);
-  converter->RegisterRepeatedString(kSecondaryFileExtensions,
-                                    &AppResource::secondary_file_extensions_);
-  converter->RegisterRepeatedMessage(kIcons, &AppResource::icons_);
-  converter->RegisterCustomField<GURL>(kCreateUrl,
-                                       &AppResource::create_url_,
-                                       GetGURLFromString);
-}
-
-// static
-std::unique_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
-  std::unique_ptr<AppResource> resource(new AppResource());
-  if (!IsResourceKindExpected(value, kAppKind) || !resource->Parse(value)) {
-    LOG(ERROR) << "Unable to create: Invalid AppResource JSON!";
-    return std::unique_ptr<AppResource>();
-  }
-  return resource;
-}
-
-bool AppResource::Parse(const base::Value& value) {
-  base::JSONValueConverter<AppResource> converter;
-  if (!converter.Convert(value, this)) {
-    LOG(ERROR) << "Unable to parse: Invalid AppResource";
-    return false;
-  }
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// AppList implementation
-
-AppList::AppList() {}
-
-AppList::~AppList() {}
-
-// static
-void AppList::RegisterJSONConverter(
-    base::JSONValueConverter<AppList>* converter) {
-  converter->RegisterStringField(kETag, &AppList::etag_);
-  converter->RegisterRepeatedMessage<AppResource>(kItems,
-                                                   &AppList::items_);
-}
-
-// static
-std::unique_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
-  std::unique_ptr<AppList> resource(new AppList());
-  if (!IsResourceKindExpected(value, kAppListKind) || !resource->Parse(value)) {
-    LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
-    return std::unique_ptr<AppList>();
-  }
-  return resource;
-}
-
-bool AppList::Parse(const base::Value& value) {
-  base::JSONValueConverter<AppList> converter;
-  if (!converter.Convert(value, this)) {
-    LOG(ERROR) << "Unable to parse: Invalid AppList";
     return false;
   }
   return true;

@@ -68,7 +68,8 @@ enum class HdcpVersion {
   kHdcpVersion2_0,
   kHdcpVersion2_1,
   kHdcpVersion2_2,
-  kHdcpVersionMax = kHdcpVersion2_2
+  kHdcpVersion2_3,
+  kHdcpVersionMax = kHdcpVersion2_3
 };
 
 // An interface that represents the Content Decryption Module (CDM) in the

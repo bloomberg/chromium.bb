@@ -14,6 +14,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views_bridge_mac/drag_drop_client.h"
 
 // This class acts as a bridge between NSPasteboardItem and OSExchangeData by
 // implementing NSPasteboardItemDataProvider and writing data from
@@ -32,16 +33,16 @@ namespace test {
 class DragDropClientMacTest;
 }
 
-class BridgedNativeWidget;
+class BridgedNativeWidgetImpl;
 class View;
 
 // Implements drag and drop on MacViews. This class acts as a bridge between
 // the Views and native system's drag and drop. This class mimics
 // DesktopDragDropClientAuraX11.
-class VIEWS_EXPORT DragDropClientMac {
+class VIEWS_EXPORT DragDropClientMac : public views_bridge_mac::DragDropClient {
  public:
-  explicit DragDropClientMac(BridgedNativeWidget* bridge, View* root_view);
-  ~DragDropClientMac();
+  DragDropClientMac(BridgedNativeWidgetImpl* bridge, View* root_view);
+  ~DragDropClientMac() override;
 
   // Initiates a drag and drop session. Returns the drag operation that was
   // applied at the end of the drag drop session.
@@ -50,19 +51,13 @@ class VIEWS_EXPORT DragDropClientMac {
                         int operation,
                         ui::DragDropTypes::DragEventSource source);
 
-  // Called when mouse is dragged during a drag and drop.
-  NSDragOperation DragUpdate(id<NSDraggingInfo>);
-
-  // Called when mouse is released during a drag and drop.
-  NSDragOperation Drop(id<NSDraggingInfo> sender);
-
-  // Called when the drag and drop session has ended.
-  void EndDrag();
-
-  // Called when mouse leaves the drop area.
-  void DragExit();
-
   DropHelper* drop_helper() { return &drop_helper_; }
+
+  // views_bridge_mac::DragDropClient:
+  NSDragOperation DragUpdate(id<NSDraggingInfo>) override;
+  NSDragOperation Drop(id<NSDraggingInfo> sender) override;
+  void EndDrag() override;
+  void DragExit() override;
 
  private:
   friend class test::DragDropClientMacTest;
@@ -80,7 +75,7 @@ class VIEWS_EXPORT DragDropClientMac {
   int operation_;
 
   // The bridge between the content view and the drag drop client.
-  BridgedNativeWidget* bridge_;  // Weak. Owns |this|.
+  BridgedNativeWidgetImpl* bridge_;  // Weak. Owns |this|.
 
   // The closure for the drag and drop's run loop.
   base::Closure quit_closure_;

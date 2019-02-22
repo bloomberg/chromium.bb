@@ -42,6 +42,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/data_decoder/public/cpp/json_sanitizer.h"
@@ -121,7 +122,7 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
 }
 
 void RecordUncleanUninstall() {
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&base::RecordAction,
@@ -202,7 +203,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
         continue;
 
       // Ignore folders that correspond to registered whitelists.
-      if (registered_whitelists.count(crx_id) > 0)
+      if (base::ContainsKey(registered_whitelists, crx_id))
         continue;
 
       RecordUncleanUninstall();
@@ -233,7 +234,7 @@ void RemoveUnregisteredWhitelistsOnTaskRunner(
         continue;
 
       // Ignore files that correspond to registered whitelists.
-      if (registered_whitelists.count(crx_id) > 0)
+      if (base::ContainsKey(registered_whitelists, crx_id))
         continue;
 
       RecordUncleanUninstall();
@@ -518,7 +519,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
     // previously registered on the command line but isn't anymore.
     const base::ListValue* clients = nullptr;
     if ((!dict->GetList(kClients, &clients) || clients->empty()) &&
-        command_line_whitelists.count(id) == 0) {
+        !base::ContainsKey(command_line_whitelists, id)) {
       stale_whitelists.insert(id);
       continue;
     }

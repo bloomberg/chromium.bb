@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -93,16 +94,13 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
   s->BindInt64(index++, modification_date.ToTimeT());
   s->BindString(index++, profile.origin());
   s->BindString(index++, profile.language_code());
-  s->BindInt64(index++, profile.GetValidityBitfieldValue());
+  s->BindInt64(index++, profile.GetClientValidityBitfieldValue());
+  s->BindBool(index++, profile.is_client_validity_states_updated());
 }
 
-std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
-    const sql::Statement& s) {
-  std::unique_ptr<AutofillProfile> profile(new AutofillProfile);
-  int index = 0;
-  profile->set_guid(s.ColumnString(index++));
-  DCHECK(base::IsValidGUID(profile->guid()));
-
+void AddAutofillProfileDetailsFromStatement(const sql::Statement& s,
+                                            AutofillProfile* profile) {
+  int index = 1;  // 0 is for the guid.
   profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
   profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, s.ColumnString16(index++));
   profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -117,9 +115,8 @@ std::unique_ptr<AutofillProfile> AutofillProfileFromStatement(
   profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
   profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
-  profile->SetValidityFromBitfieldValue(s.ColumnInt64(index++));
-
-  return profile;
+  profile->SetClientValidityFromBitfieldValue(s.ColumnInt64(index++));
+  profile->set_is_client_validity_states_updated(s.ColumnBool(index++));
 }
 
 void BindEncryptedCardToColumn(sql::Statement* s,
@@ -482,6 +479,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 78:
       *update_compatible_version = true;
       return MigrateToVersion78AddModelTypeColumns();
+    case 80:
+      *update_compatible_version = true;
+      return MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   }
   return true;
 }
@@ -805,8 +805,9 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       "INSERT INTO autofill_profiles"
       "(guid, company_name, street_address, dependent_locality, city, state,"
       " zipcode, sorting_code, country_code, use_count, use_date, "
-      " date_modified, origin, language_code, validity_bitfield)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      " date_modified, origin, language_code, validity_bitfield, "
+      " is_client_validity_states_updated)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   BindAutofillProfileToStatement(profile, AutofillClock::Now(), &s);
 
   if (!s.Run())
@@ -835,14 +836,15 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
       "SET guid=?, company_name=?, street_address=?, dependent_locality=?, "
       "    city=?, state=?, zipcode=?, sorting_code=?, country_code=?, "
       "    use_count=?, use_date=?, date_modified=?, origin=?, "
-      "    language_code=?, validity_bitfield=? "
+      "    language_code=?, validity_bitfield=?, "
+      "    is_client_validity_states_updated=?"
       "WHERE guid=?"));
   BindAutofillProfileToStatement(profile,
                                  update_modification_date
                                      ? AutofillClock::Now()
                                      : old_profile->modification_date(),
                                  &s);
-  s.BindString(15, profile.guid());
+  s.BindString(16, profile.guid());
 
   bool result = s.Run();
   DCHECK_GT(db_->GetLastChangeCount(), 0);
@@ -885,27 +887,33 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, street_address, dependent_locality, city,"
       " state, zipcode, sorting_code, country_code, use_count, use_date,"
-      " date_modified, origin, language_code, validity_bitfield "
+      " date_modified, origin, language_code, validity_bitfield,"
+      " is_client_validity_states_updated "
       "FROM autofill_profiles "
       "WHERE guid=?"));
   s.BindString(0, guid);
 
-  std::unique_ptr<AutofillProfile> p;
   if (!s.Step())
-    return p;
+    return nullptr;
 
-  p = AutofillProfileFromStatement(s);
+  std::unique_ptr<AutofillProfile> profile(new AutofillProfile);
+  profile->set_guid(s.ColumnString(0));
+  DCHECK(base::IsValidGUID(profile->guid()));
 
-  // Get associated name info.
-  AddAutofillProfileNamesToProfile(db_, p.get());
+  // Get associated name info using guid.
+  AddAutofillProfileNamesToProfile(db_, profile.get());
 
-  // Get associated email info.
-  AddAutofillProfileEmailsToProfile(db_, p.get());
+  // Get associated email info using guid.
+  AddAutofillProfileEmailsToProfile(db_, profile.get());
 
-  // Get associated phone info.
-  AddAutofillProfilePhonesToProfile(db_, p.get());
+  // Get associated phone info using guid.
+  AddAutofillProfilePhonesToProfile(db_, profile.get());
 
-  return p;
+  // The details should be added after the other info to make sure they don't
+  // change when we change the names/emails/phones.
+  AddAutofillProfileDetailsFromStatement(s, profile.get());
+
+  return profile;
 }
 
 bool AutofillTable::GetAutofillProfiles(
@@ -1295,6 +1303,21 @@ bool AutofillTable::MaskServerCreditCard(const std::string& id) {
   return DeleteFromUnmaskedCreditCards(id);
 }
 
+bool AutofillTable::AddServerCardMetadata(
+    const AutofillMetadata& card_metadata) {
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_card_metadata(use_count, "
+                              "use_date, billing_address_id, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, card_metadata.use_count);
+  s.BindInt64(1, card_metadata.use_date.ToInternalValue());
+  s.BindString(2, card_metadata.billing_address_id);
+  s.BindString(3, card_metadata.id);
+  s.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
 bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   DCHECK_NE(CreditCard::LOCAL_CARD, credit_card.record_type());
 
@@ -1311,6 +1334,52 @@ bool AutofillTable::UpdateServerCardMetadata(const CreditCard& credit_card) {
   s.BindInt64(1, credit_card.use_date().ToInternalValue());
   s.BindString(2, credit_card.billing_address_id());
   s.BindString(3, credit_card.server_id());
+  s.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::RemoveServerCardMetadata(const std::string& id) {
+  sql::Statement remove(
+      db_->GetUniqueStatement("DELETE FROM server_card_metadata WHERE id = ?"));
+  remove.BindString(0, id);
+  remove.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::GetServerCardsMetadata(
+    std::map<std::string, AutofillMetadata>* cards_metadata) const {
+  cards_metadata->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT id, use_count, use_date, "
+                              "billing_address_id FROM server_card_metadata"));
+
+  while (s.Step()) {
+    int index = 0;
+
+    AutofillMetadata card_metadata;
+    card_metadata.id = s.ColumnString(index++);
+    card_metadata.use_count = s.ColumnInt64(index++);
+    card_metadata.use_date =
+        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    card_metadata.billing_address_id = s.ColumnString(index++);
+    (*cards_metadata)[card_metadata.id] = card_metadata;
+  }
+  return s.Succeeded();
+}
+
+bool AutofillTable::AddServerAddressMetadata(
+    const AutofillMetadata& address_metadata) {
+  sql::Statement s(
+      db_->GetUniqueStatement("INSERT INTO server_address_metadata(use_count, "
+                              "use_date, has_converted, id)"
+                              "VALUES (?,?,?,?)"));
+  s.BindInt64(0, address_metadata.use_count);
+  s.BindInt64(1, address_metadata.use_date.ToInternalValue());
+  s.BindBool(2, address_metadata.has_converted);
+  s.BindString(3, address_metadata.id);
   s.Run();
 
   return db_->GetLastChangeCount() > 0;
@@ -1344,6 +1413,36 @@ bool AutofillTable::UpdateServerAddressMetadata(
   transaction.Commit();
 
   return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::RemoveServerAddressMetadata(const std::string& id) {
+  sql::Statement remove(db_->GetUniqueStatement(
+      "DELETE FROM server_address_metadata WHERE id = ?"));
+  remove.BindString(0, id);
+  remove.Run();
+
+  return db_->GetLastChangeCount() > 0;
+}
+
+bool AutofillTable::GetServerAddressesMetadata(
+    std::map<std::string, AutofillMetadata>* addresses_metadata) const {
+  addresses_metadata->clear();
+
+  sql::Statement s(
+      db_->GetUniqueStatement("SELECT id, use_count, use_date, has_converted "
+                              "FROM server_address_metadata"));
+  while (s.Step()) {
+    int index = 0;
+
+    AutofillMetadata address_metadata;
+    address_metadata.id = s.ColumnString(index++);
+    address_metadata.use_count = s.ColumnInt64(index++);
+    address_metadata.use_date =
+        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    address_metadata.has_converted = s.ColumnBool(index++);
+    (*addresses_metadata)[address_metadata.id] = address_metadata;
+  }
+  return s.Succeeded();
 }
 
 void AutofillTable::SetPaymentsCustomerData(
@@ -1407,6 +1506,11 @@ bool AutofillTable::ClearAllServerData() {
   sql::Statement address_metadata(
       db_->GetUniqueStatement("DELETE FROM server_address_metadata"));
   address_metadata.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  sql::Statement customer_data(
+      db_->GetUniqueStatement("DELETE FROM payments_customer_data"));
+  customer_data.Run();
   changed |= db_->GetLastChangeCount() > 0;
 
   transaction.Commit();
@@ -2361,6 +2465,15 @@ bool AutofillTable::MigrateToVersion78AddModelTypeColumns() {
          transaction.Commit();
 }
 
+bool AutofillTable::MigrateToVersion80AddIsClientValidityStatesUpdatedColumn() {
+  // Add the client validity states updated flag column to the autofill_profiles
+  // table.
+  return db_->Execute(
+      "ALTER TABLE autofill_profiles ADD COLUMN "
+      "is_client_validity_states_updated BOOL NOT "
+      "NULL DEFAULT FALSE");
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -2643,7 +2756,9 @@ bool AutofillTable::InitProfilesTable() {
                       "language_code VARCHAR, "
                       "use_count INTEGER NOT NULL DEFAULT 0, "
                       "use_date INTEGER NOT NULL DEFAULT 0, "
-                      "validity_bitfield UNSIGNED NOT NULL DEFAULT 0) ")) {
+                      "validity_bitfield UNSIGNED NOT NULL DEFAULT 0, "
+                      "is_client_validity_states_updated BOOL NOT NULL DEFAULT "
+                      "FALSE) ")) {
       NOTREACHED();
       return false;
     }

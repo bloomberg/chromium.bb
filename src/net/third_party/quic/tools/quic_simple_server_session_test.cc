@@ -63,9 +63,9 @@ class QuicSimpleServerSessionPeer {
     return s->CreateIncomingDynamicStream(id);
   }
 
-  static QuicSimpleServerStream* CreateOutgoingDynamicStream(
+  static QuicSimpleServerStream* CreateOutgoingUnidirectionalStream(
       QuicSimpleServerSession* s) {
-    return s->CreateOutgoingDynamicStream();
+    return s->CreateOutgoingUnidirectionalStream();
   }
 };
 
@@ -204,6 +204,7 @@ class QuicSimpleServerSessionTest
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<MockQuicSimpleServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &memory_cache_backend_);
@@ -368,7 +369,8 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_QUIC_BUG(
-      QuicSimpleServerSessionPeer::CreateOutgoingDynamicStream(session_.get()),
+      QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
+          session_.get()),
       "ShouldCreateOutgoingDynamicStream called when disconnected");
 
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
@@ -384,7 +386,8 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUnencrypted) {
   // established.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
   EXPECT_QUIC_BUG(
-      QuicSimpleServerSessionPeer::CreateOutgoingDynamicStream(session_.get()),
+      QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
+          session_.get()),
       "Encryption not established so no outgoing stream created.");
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
 }
@@ -416,15 +419,16 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   // Create push streams till reaching the upper limit of allowed open streams.
   for (size_t i = 0; i < kMaxStreamsForTest; ++i) {
     QuicSpdyStream* created_stream =
-        QuicSimpleServerSessionPeer::CreateOutgoingDynamicStream(
+        QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
             session_.get());
     EXPECT_EQ(GetNthServerInitiatedId(i), created_stream->id());
     EXPECT_EQ(i + 1, session_->GetNumOpenOutgoingStreams());
   }
 
   // Continuing creating push stream would fail.
-  EXPECT_EQ(nullptr, QuicSimpleServerSessionPeer::CreateOutgoingDynamicStream(
-                         session_.get()));
+  EXPECT_EQ(nullptr,
+            QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
+                session_.get()));
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
 
   // Create peer initiated stream should have no problem.

@@ -49,6 +49,7 @@ enum Event {
   kLiveRegionCreated,         // Implicit
   kLiveRegionChanged,         // Web
   kLoadComplete,              // Web
+  kLoadStart,                 // Web / AuraLinux
   kLocationChanged,           // Web
   kMediaStartedPlaying,       // Native / Automation
   kMediaStoppedPlaying,       // Native / Automation
@@ -426,7 +427,7 @@ enum StringAttribute {
    // Only used when invalid_state == invalid_state_other.
   kAriaInvalidValue,
   kAutoComplete,
-  kChromeChannel,   // Native / Automation
+  kChildTreeId,
   kClassName,       // Native / Android
   kContainerLiveRelevant,
   kContainerLiveStatus,
@@ -510,9 +511,6 @@ enum IntAttribute {
   kMemberOfId,
   kNextOnLineId,
   kPreviousOnLineId,
-
-   // Identifies a child tree which this node hosts.
-  kChildTreeId,
 
    // Input restriction, if any, such as readonly or disabled.
    // Of type AXRestriction, see below.
@@ -631,11 +629,6 @@ enum IntListAttribute {
   kFlowtoIds,
   kLabelledbyIds,
   kRadioGroupIds,
-
-   // For static text. Character indices where line breaks occur. Note that
-   // this attribute is only available on Chrome OS and will be deprecated
-   // soon.
-  kLineBreaks,
 
    // For static text. These int lists must be the same size; they represent
    // the start and end character offset of each marker. Examples of markers
@@ -816,9 +809,11 @@ enum NameFrom {
   kUninitialized,
   kAttribute,
   kAttributeExplicitlyEmpty,
+  kCaption,
   kContents,
   kPlaceholder,
   kRelatedElement,
+  kTitle,
   kValue,
 };
 

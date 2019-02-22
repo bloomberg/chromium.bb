@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"
@@ -19,7 +20,10 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/network_service.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_service_client.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -63,16 +67,41 @@ const char kQuotaExceededErrorResource[] =
 
 class FilesListRequestRunnerTest : public testing::Test {
  public:
-  FilesListRequestRunnerTest() {}
+  FilesListRequestRunnerTest() {
+    network::mojom::NetworkServicePtr network_service_ptr;
+    network::mojom::NetworkServiceRequest network_service_request =
+        mojo::MakeRequest(&network_service_ptr);
+    network_service_ =
+        network::NetworkService::Create(std::move(network_service_request),
+                                        /*netlog=*/nullptr);
+    network::mojom::NetworkContextParamsPtr context_params =
+        network::mojom::NetworkContextParams::New();
+    context_params->enable_data_url_support = true;
+    network_service_ptr->CreateNetworkContext(
+        mojo::MakeRequest(&network_context_), std::move(context_params));
+
+    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    network_service_client_ =
+        std::make_unique<network::TestNetworkServiceClient>(
+            mojo::MakeRequest(&network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+
+    network::mojom::URLLoaderFactoryParamsPtr params =
+        network::mojom::URLLoaderFactoryParams::New();
+    params->process_id = network::mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    network_context_->CreateURLLoaderFactory(
+        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            url_loader_factory_.get());
+  }
 
   void SetUp() override {
-    request_context_getter_ =
-        new net::TestURLRequestContextGetter(message_loop_.task_runner());
-
-    request_sender_.reset(
-        new RequestSender(new DummyAuthService, request_context_getter_.get(),
-                          message_loop_.task_runner(), kTestUserAgent,
-                          TRAFFIC_ANNOTATION_FOR_TESTS));
+    request_sender_ = std::make_unique<RequestSender>(
+        std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
+        scoped_task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
+        TRAFFIC_ANNOTATION_FOR_TESTS);
 
     test_server_.RegisterRequestHandler(
         base::Bind(&FilesListRequestRunnerTest::OnFilesListRequest,
@@ -82,8 +111,7 @@ class FilesListRequestRunnerTest : public testing::Test {
     runner_.reset(new FilesListRequestRunner(
         request_sender_.get(),
         google_apis::DriveApiUrlGenerator(test_server_.base_url(),
-                                          test_server_.GetURL("/thumbnail/"),
-                                          TEAM_DRIVES_INTEGRATION_DISABLED)));
+                                          test_server_.GetURL("/thumbnail/"))));
   }
 
   void TearDown() override {
@@ -120,11 +148,17 @@ class FilesListRequestRunnerTest : public testing::Test {
     return std::move(fake_server_response_);
   }
 
-  base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<RequestSender> request_sender_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<FilesListRequestRunner> runner_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  std::unique_ptr<network::mojom::NetworkService> network_service_;
+  std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
+  network::mojom::NetworkContextPtr network_context_;
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_loader_factory_;
   base::Closure on_completed_callback_;
 
   // Response set by test cases to be returned from the HTTP server.
@@ -149,7 +183,8 @@ TEST_F(FilesListRequestRunnerTest, Success_NoBackoff) {
 
   ASSERT_TRUE(http_request_.get());
   EXPECT_EQ(
-      "/drive/v2/files?maxResults=4&q=testing-query&fields=testing-fields",
+      "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+      "&corpora=default&maxResults=4&q=testing-query&fields=testing-fields",
       http_request_->relative_url);
 
   ASSERT_TRUE(response_error_.get());
@@ -171,7 +206,8 @@ TEST_F(FilesListRequestRunnerTest, Success_Backoff) {
 
     ASSERT_TRUE(http_request_.get());
     EXPECT_EQ(
-        "/drive/v2/files?maxResults=4&q=testing-query&fields=testing-fields",
+        "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+        "&corpora=default&maxResults=4&q=testing-query&fields=testing-fields",
         http_request_->relative_url);
     EXPECT_FALSE(response_error_.get());
   }
@@ -186,7 +222,8 @@ TEST_F(FilesListRequestRunnerTest, Success_Backoff) {
 
     ASSERT_TRUE(http_request_.get());
     EXPECT_EQ(
-        "/drive/v2/files?maxResults=2&q=testing-query&fields=testing-fields",
+        "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+        "&corpora=default&maxResults=2&q=testing-query&fields=testing-fields",
         http_request_->relative_url);
 
     ASSERT_TRUE(response_error_.get());
@@ -209,7 +246,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_TooManyBackoffs) {
 
     ASSERT_TRUE(http_request_.get());
     EXPECT_EQ(
-        "/drive/v2/files?maxResults=4&q=testing-query&fields=testing-fields",
+        "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+        "&corpora=default&maxResults=4&q=testing-query&fields=testing-fields",
         http_request_->relative_url);
     EXPECT_FALSE(response_error_.get());
   }
@@ -226,7 +264,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_TooManyBackoffs) {
 
     ASSERT_TRUE(http_request_.get());
     EXPECT_EQ(
-        "/drive/v2/files?maxResults=2&q=testing-query&fields=testing-fields",
+        "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+        "&corpora=default&maxResults=2&q=testing-query&fields=testing-fields",
         http_request_->relative_url);
     EXPECT_FALSE(response_error_.get());
   }
@@ -242,7 +281,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_TooManyBackoffs) {
 
     ASSERT_TRUE(http_request_.get());
     EXPECT_EQ(
-        "/drive/v2/files?maxResults=1&q=testing-query&fields=testing-fields",
+        "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+        "&corpora=default&maxResults=1&q=testing-query&fields=testing-fields",
         http_request_->relative_url);
 
     ASSERT_TRUE(response_error_.get());
@@ -265,7 +305,8 @@ TEST_F(FilesListRequestRunnerTest, Failure_AnotherError) {
 
   ASSERT_TRUE(http_request_.get());
   EXPECT_EQ(
-      "/drive/v2/files?maxResults=4&q=testing-query&fields=testing-fields",
+      "/drive/v2/files?supportsTeamDrives=true&includeTeamDriveItems=true"
+      "&corpora=default&maxResults=4&q=testing-query&fields=testing-fields",
       http_request_->relative_url);
 
   // There must be no backoff in case of an error different than

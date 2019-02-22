@@ -34,7 +34,7 @@ class TestVisitor : public QuicTlsAdapter::Visitor {
   std::vector<QuicString> received_messages_;
 };
 
-class QuicTlsAdapterTest : public QuicTestWithParam<Perspective> {
+class QuicTlsAdapterTest : public QuicTest {
  public:
   QuicTlsAdapterTest() : adapter_(&visitor_) { bio_ = adapter_.bio(); }
 
@@ -44,14 +44,9 @@ class QuicTlsAdapterTest : public QuicTestWithParam<Perspective> {
   BIO* bio_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests,
-                        QuicTlsAdapterTest,
-                        ::testing::Values(Perspective::IS_CLIENT,
-                                          Perspective::IS_SERVER));
-
-TEST_P(QuicTlsAdapterTest, ProcessInput) {
+TEST_F(QuicTlsAdapterTest, ProcessInput) {
   QuicString input = "abc";
-  EXPECT_TRUE(adapter_.ProcessInput(input, GetParam()));
+  EXPECT_TRUE(adapter_.ProcessInput(input, ENCRYPTION_NONE));
   EXPECT_EQ(1, visitor_.data_available_count());
 
   char buf[4];
@@ -60,11 +55,11 @@ TEST_P(QuicTlsAdapterTest, ProcessInput) {
   EXPECT_EQ(input, QuicString(buf, input.length()));
 }
 
-TEST_P(QuicTlsAdapterTest, BIORead) {
+TEST_F(QuicTlsAdapterTest, BIORead) {
   QuicString input1 = "abcd";
   QuicString input2 = "efgh";
 
-  EXPECT_TRUE(adapter_.ProcessInput(input1, GetParam()));
+  EXPECT_TRUE(adapter_.ProcessInput(input1, ENCRYPTION_NONE));
   EXPECT_EQ(QUIC_NO_ERROR, adapter_.error());
   EXPECT_EQ(1, visitor_.data_available_count());
 
@@ -78,7 +73,7 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
 
   // Test that the bytes read by BIO_read can span input read in by
   // ProcessInput.
-  EXPECT_TRUE(adapter_.ProcessInput(input2, GetParam()));
+  EXPECT_TRUE(adapter_.ProcessInput(input2, ENCRYPTION_NONE));
   EXPECT_EQ(QUIC_NO_ERROR, adapter_.error());
   EXPECT_EQ(2, visitor_.data_available_count());
   char buf2[5];
@@ -88,7 +83,7 @@ TEST_P(QuicTlsAdapterTest, BIORead) {
   EXPECT_EQ(0u, adapter_.InputBytesRemaining());
 }
 
-TEST_P(QuicTlsAdapterTest, BIOWrite) {
+TEST_F(QuicTlsAdapterTest, BIOWrite) {
   QuicString input = "abcde";
   // Test that just calling BIO_write does not post any messages to the Visitor.
   EXPECT_EQ(static_cast<int>(input.length()),

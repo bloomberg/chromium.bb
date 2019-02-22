@@ -117,7 +117,7 @@ class TextureGL : public TextureImpl
                              const gl::ImageIndex &index,
                              const gl::Offset &destOffset,
                              size_t sourceLevel,
-                             const gl::Rectangle &sourceArea,
+                             const gl::Box &sourceBox,
                              bool unpackFlipY,
                              bool unpackPremultiplyAlpha,
                              bool unpackUnmultiplyAlpha,
@@ -165,14 +165,14 @@ class TextureGL : public TextureImpl
 
     gl::TextureType getType() const;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Texture::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Texture::DirtyBits &dirtyBits) override;
     bool hasAnyDirtyBit() const;
 
     gl::Error setBaseLevel(const gl::Context *context, GLuint baseLevel) override;
 
-    gl::Error initializeContents(const gl::Context *context,
-                                 const gl::ImageIndex &imageIndex) override;
+    angle::Result initializeContents(const gl::Context *context,
+                                     const gl::ImageIndex &imageIndex) override;
 
     void setMinFilter(const gl::Context *context, GLenum filter);
     void setMagFilter(const gl::Context *context, GLenum filter);
@@ -223,11 +223,13 @@ class TextureGL : public TextureImpl
                                  GLenum value,
                                  GLenum *outValue);
 
-    void setLevelInfo(gl::TextureTarget target,
+    void setLevelInfo(const gl::Context *context,
+                      gl::TextureTarget target,
                       size_t level,
                       size_t levelCount,
                       const LevelInfoGL &levelInfo);
-    void setLevelInfo(gl::TextureType type,
+    void setLevelInfo(const gl::Context *context,
+                      gl::TextureType type,
                       size_t level,
                       size_t levelCount,
                       const LevelInfoGL &levelInfo);

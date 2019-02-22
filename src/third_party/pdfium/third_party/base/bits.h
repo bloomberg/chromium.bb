@@ -4,11 +4,13 @@
 
 // This file defines some bit utilities.
 
-#ifndef BASE_BITS_H_
-#define BASE_BITS_H_
+#ifndef THIRD_PARTY_BASE_BITS_H_
+#define THIRD_PARTY_BASE_BITS_H_
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <type_traits>
 
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/logging.h"
@@ -169,4 +171,4 @@ inline int Log2Ceiling(uint32_t n) {
 }  // namespace base
 }  // namespace pdfium
 
-#endif  // BASE_BITS_H_
+#endif  // THIRD_PARTY_BASE_BITS_H_

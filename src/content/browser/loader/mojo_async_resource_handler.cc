@@ -186,6 +186,7 @@ void MojoAsyncResourceHandler::OnResponseStarted(
   response->head.request_start = request()->creation_time();
   response->head.response_start = base::TimeTicks::Now();
   sent_received_response_message_ = true;
+  response->head.was_fetched_via_cache = request()->was_cached();
 
   if ((url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoWithResponse) &&
@@ -298,7 +299,7 @@ void MojoAsyncResourceHandler::OnWillRead(
     }
     DCHECK(!is_using_io_buffer_not_from_writer_);
     is_using_io_buffer_not_from_writer_ = true;
-    buffer_ = new net::IOBufferWithSize(kMinAllocationSize);
+    buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(kMinAllocationSize);
   }
 
   *buf = buffer_;

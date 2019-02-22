@@ -71,7 +71,7 @@ public class CastWebContentsComponent {
     @VisibleForTesting
     class ActivityDelegate implements Delegate {
         private static final String TAG = "cr_CastWebContent_AD";
-        private boolean mStarted = false;
+        private boolean mStarted;
 
         @Override
         public void start(StartParams params) {

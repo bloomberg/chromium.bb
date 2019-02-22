@@ -440,7 +440,8 @@ class AndroidProfileTool(object):
     """
     print 'Pulling profile data...'
     self._SetUpHostFolders()
-    self._device.PullFile(self._DEVICE_PROFILE_DIR, self._host_profile_dir)
+    self._device.PullFile(self._DEVICE_PROFILE_DIR, self._host_profile_dir,
+                          timeout=300)
 
     # Temporary workaround/investigation: if (for unknown reason) 'adb pull' of
     # the directory 'orderfile' '.../Release/profile_data' produces
@@ -454,12 +455,12 @@ class AndroidProfileTool(object):
         files.extend(os.path.join(profile_dir, f)
                      for f in os.listdir(profile_dir))
       else:
-        files.append(root_file)
+        files.append(os.path.join(self._host_profile_dir, root_file))
 
     if len(files) == 0:
       raise NoProfileDataError('No profile data was collected')
 
-    return [os.path.join(profile_dir, x) for x in files]
+    return files
 
 
 def AddProfileCollectionArguments(parser):

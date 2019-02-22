@@ -45,6 +45,18 @@ TEST(JniArray, BasicConversions) {
   EXPECT_EQ(expected_vec, vectorFromBytes);
 }
 
+TEST(JniArray, ByteArrayStringConversions) {
+  JNIEnv* env = AttachCurrentThread();
+  std::string inputString("hello\0world");
+  ScopedJavaLocalRef<jbyteArray> bytesFromString =
+      ToJavaByteArray(env, inputString);
+  ASSERT_TRUE(bytesFromString.obj());
+
+  std::string stringFromString;
+  JavaByteArrayToString(env, bytesFromString.obj(), &stringFromString);
+  EXPECT_EQ(inputString, stringFromString);
+}
+
 void CheckBoolConversion(JNIEnv* env,
                          const bool* bool_array,
                          const size_t len,

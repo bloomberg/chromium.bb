@@ -15,6 +15,7 @@
 #include "modules/audio_processing/logging/apm_data_dumper.h"
 #include "rtc_base/atomicops.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
 
@@ -42,7 +43,7 @@ void GainController2::Process(AudioBuffer* audio) {
   AudioFrameView<float> float_frame(audio->channels_f(), audio->num_channels(),
                                     audio->num_frames());
   if (adaptive_digital_mode_) {
-    adaptive_agc_.Process(float_frame);
+    adaptive_agc_.Process(float_frame, fixed_gain_controller_.LastAudioLevel());
   }
   fixed_gain_controller_.Process(float_frame);
 }
@@ -69,10 +70,10 @@ bool GainController2::Validate(
 
 std::string GainController2::ToString(
     const AudioProcessing::Config::GainController2& config) {
-  std::stringstream ss;
+  rtc::StringBuilder ss;
   ss << "{enabled: " << (config.enabled ? "true" : "false") << ", "
      << "fixed_gain_dB: " << config.fixed_gain_db << "}";
-  return ss.str();
+  return ss.Release();
 }
 
 }  // namespace webrtc

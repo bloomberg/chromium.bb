@@ -11,6 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/video_frame.h"
@@ -51,7 +53,7 @@ namespace {
 
 // Convenience macro to post a task to run on the device thread.
 #define POST_DEVICE_TASK(closure) \
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, closure)
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, closure)
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
@@ -86,7 +88,7 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
 
   MOCK_METHOD2(SetFormat,
                void(media::VideoPixelFormat format,
-                    media::ColorSpace color_space));
+                    const gfx::ColorSpace& color_space));
   MOCK_METHOD1(SetMinCapturePeriod, void(base::TimeDelta min_period));
   MOCK_METHOD1(SetMinSizeChangePeriod, void(base::TimeDelta));
   MOCK_METHOD3(SetResolutionConstraints,
@@ -258,8 +260,8 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 
  protected:
   void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](MockFrameSinkVideoCapturer* capturer,
                viz::mojom::FrameSinkVideoCapturerRequest request) {
@@ -371,7 +373,8 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
               media::mojom::VideoFrameInfo::New(
                   kMinCapturePeriod * frame_number,
                   base::Value(base::Value::Type::DICTIONARY), kFormat,
-                  kResolution, gfx::Rect(kResolution)),
+                  kResolution, gfx::Rect(kResolution),
+                  gfx::ColorSpace::CreateREC709(), nullptr),
               gfx::Rect(kResolution), gfx::Rect(kResolution),
               viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
                   std::move(callbacks_info)));

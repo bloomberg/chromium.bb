@@ -29,10 +29,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -146,7 +147,7 @@ public class WarmupManagerTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testClearsDeadWebContents() throws Throwable {
         mWarmupManager.createSpareWebContents();
-        mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+        WebContentsUtils.simulateRendererKilled(mWarmupManager.mSpareWebContents, false);
         Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
     }
 
@@ -175,7 +176,7 @@ public class WarmupManagerTest {
         mWarmupManager.createSpareWebContents();
         Assert.assertEquals(2, createdDelta.getDelta());
         Assert.assertNotNull(mWarmupManager.mSpareWebContents);
-        mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+        WebContentsUtils.simulateRendererKilled(mWarmupManager.mSpareWebContents, false);
         Assert.assertEquals(1, killedDelta.getDelta());
         Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
 

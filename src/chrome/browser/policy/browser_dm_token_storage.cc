@@ -75,6 +75,25 @@ std::string BrowserDMTokenStorage::RetrieveDMToken() {
   return dm_token_;
 }
 
+void BrowserDMTokenStorage::OnDMTokenStored(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(store_callback_);
+
+  if (!store_callback_.is_null())
+    std::move(store_callback_).Run(success);
+}
+
+void BrowserDMTokenStorage::ScheduleUnusedPolicyDirectoryDeletion() {
+  // TODO(crbug.com/883869): Add a UMA metrics to track the deletion progress.
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE,
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
+      base::BindOnce(&BrowserDMTokenStorage::DeletePolicyDirectory,
+                     base::Unretained(this)));
+}
+
 void BrowserDMTokenStorage::InitIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -96,12 +115,6 @@ void BrowserDMTokenStorage::InitIfNeeded() {
   DVLOG(1) << "DM Token = " << dm_token_;
 }
 
-void BrowserDMTokenStorage::OnDMTokenStored(bool success) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(store_callback_);
-
-  if (!store_callback_.is_null())
-    std::move(store_callback_).Run(success);
-}
+void BrowserDMTokenStorage::DeletePolicyDirectory() {}
 
 }  // namespace policy

@@ -1020,8 +1020,8 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
   // Construct a string of the URL chain.
   std::string url_list("<none>");
   if (!request_info_.url_chain.empty()) {
-    std::vector<GURL>::const_iterator iter = request_info_.url_chain.begin();
-    std::vector<GURL>::const_iterator last = request_info_.url_chain.end();
+    auto iter = request_info_.url_chain.begin();
+    auto last = request_info_.url_chain.end();
     url_list = (*iter).is_valid() ? (*iter).spec() : "<invalid>";
     ++iter;
     for (; verbose && (iter != last); ++iter) {
@@ -1185,8 +1185,7 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   //   will be used with the last server that sent them to us.
   // - The redirect chain contains all the servers that were involved in this
   //   download since the initial request, in order.
-  std::vector<GURL>::const_iterator chain_iter =
-      new_create_info.url_chain.begin();
+  auto chain_iter = new_create_info.url_chain.begin();
   if (*chain_iter == request_info_.url_chain.back())
     ++chain_iter;
 
@@ -2307,7 +2306,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   ResumeMode mode = GetResumeMode();
   if (mode == ResumeMode::IMMEDIATE_RESTART ||
       mode == ResumeMode::USER_RESTART) {
-    DCHECK(GetFullPath().empty());
+    LOG_IF(ERROR, !GetFullPath().empty())
+        << "Download full path should be empty before resumption";
     destination_info_.received_bytes = 0;
     last_modified_time_.clear();
     etag_.clear();
@@ -2345,7 +2345,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
   std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(GetURL(), nullptr, traffic_annotation));
+      new DownloadUrlParameters(GetURL(), traffic_annotation));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<DownloadItem::ReceivedSlice> slices_to_download =

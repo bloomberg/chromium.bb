@@ -26,6 +26,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -72,11 +73,8 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         @Override
         public Set<Integer> getActiveDataTypes() {
-            if (mSyncable) {
-                return CollectionUtil.newHashSet(ModelType.HISTORY_DELETE_DIRECTIVES);
-            } else {
-                return new HashSet<Integer>();
-            }
+            return mSyncable ? CollectionUtil.newHashSet(ModelType.HISTORY_DELETE_DIRECTIVES)
+                             : new HashSet<Integer>();
         }
     }
 
@@ -122,10 +120,11 @@ public class ClearBrowsingDataPreferencesBasicTest {
                         (ClearBrowsingDataPreferencesBasic) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                String cookiesSummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_COOKIES);
-                String historySummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_HISTORY);
+                String cookiesSummary = getCheckboxSummary(screen,
+                        ClearBrowsingDataPreferences.getPreferenceKey(
+                                DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
+                String historySummary = getCheckboxSummary(screen,
+                        ClearBrowsingDataPreferences.getPreferenceKey(DialogOption.CLEAR_HISTORY));
 
                 assertThat(cookiesSummary, not(containsString(GOOGLE_ACCOUNT)));
                 assertThat(historySummary, not(containsString(OTHER_ACTIVITY)));
@@ -154,8 +153,8 @@ public class ClearBrowsingDataPreferencesBasicTest {
                         (ClearBrowsingDataPreferencesBasic) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                String historySummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_HISTORY);
+                String historySummary = getCheckboxSummary(screen,
+                        ClearBrowsingDataPreferences.getPreferenceKey(DialogOption.CLEAR_HISTORY));
 
                 assertThat(historySummary, containsString(OTHER_ACTIVITY));
                 assertThat(historySummary, not(containsString(SIGNED_IN_DEVICES)));
@@ -183,8 +182,8 @@ public class ClearBrowsingDataPreferencesBasicTest {
                         (ClearBrowsingDataPreferencesBasic) preferences.getFragmentForTest();
                 PreferenceScreen screen = fragment.getPreferenceScreen();
 
-                String historySummary =
-                        getCheckboxSummary(screen, ClearBrowsingDataPreferencesBasic.PREF_HISTORY);
+                String historySummary = getCheckboxSummary(screen,
+                        ClearBrowsingDataPreferences.getPreferenceKey(DialogOption.CLEAR_HISTORY));
 
                 assertThat(historySummary, containsString(OTHER_ACTIVITY));
                 assertThat(historySummary, containsString(SIGNED_IN_DEVICES));

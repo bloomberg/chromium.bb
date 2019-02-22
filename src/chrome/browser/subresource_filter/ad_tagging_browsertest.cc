@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -137,7 +138,9 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
   content::TestNavigationObserver navigation_observer(web_contents, 1);
-  EXPECT_TRUE(content::ExecuteScript(rfh, script));
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(rfh, script, &result));
+  EXPECT_TRUE(result);
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
@@ -205,6 +208,7 @@ const char kGoogleOriginStatusHistogram[] =
     "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.OriginStatus";
 const char kAllOriginStatusHistogram[] =
     "PageLoad.Clients.Ads.All.FrameCounts.AdFrames.PerFrame.OriginStatus";
+const char kWindowOpenFromAdStateHistogram[] = "Blink.WindowOpen.FromAdState";
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
   base::HistogramTester histogram_tester;
@@ -222,8 +226,7 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifySameOriginWithoutNavigate) {
       AdsPageLoadMetricsObserver::AdOriginStatus::kSame, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest,
-                       DISABLED_VerifyCrossOriginWithoutNavigate) {
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, VerifyCrossOriginWithoutNavigate) {
   base::HistogramTester histogram_tester;
 
   // Main frame.
@@ -340,14 +343,14 @@ const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
   return nullptr;
 }
 
-void ExpectLatestUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
-                          size_t expected_num_entries,
-                          base::StringPiece metric_name,
-                          bool from_main_frame,
-                          const GURL& main_frame_url,
-                          int64_t expected_value) {
+void ExpectLatestWindowOpenUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
+                                    size_t expected_num_entries,
+                                    bool from_main_frame,
+                                    const GURL& main_frame_url,
+                                    bool from_ad_subframe,
+                                    bool from_ad_script) {
   auto entries = ukm_recorder.GetEntriesByName(
-      ukm::builders::AbusiveExperienceHeuristic::kEntryName);
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kEntryName);
   EXPECT_EQ(expected_num_entries, entries.size());
 
   // Check that the event is keyed to |main_frame_url| only if it was from the
@@ -379,17 +382,51 @@ void ExpectLatestUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
             *ukm_recorder.GetEntryMetric(
                 dc_entry, ukm::builders::DocumentCreated::kIsMainFrameName));
 
-  ukm_recorder.ExpectEntryMetric(entries.back(), metric_name, expected_value);
+  ukm_recorder.ExpectEntryMetric(
+      entries.back(),
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kFromAdSubframeName,
+      from_ad_subframe);
+  ukm_recorder.ExpectEntryMetric(
+      entries.back(),
+      ukm::builders::AbusiveExperienceHeuristic_WindowOpen::kFromAdScriptName,
+      from_ad_script);
+}
+
+void ExpectWindowOpenUmaStatus(
+    const base::HistogramTester& histogram_tester,
+    base::HistogramBase::Count expected_num_from_adscript_adframe,
+    base::HistogramBase::Count expected_num_from_nonadscript_adframe,
+    base::HistogramBase::Count expected_num_from_adscript_nonadframe,
+    base::HistogramBase::Count expected_num_from_nonadscript_nonadframe) {
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram_tester.ExpectBucketCount(
+      kWindowOpenFromAdStateHistogram,
+      0 /* blink::WindowOpenFromAdState::kAdScriptAndAdFrame */,
+      expected_num_from_adscript_adframe);
+  histogram_tester.ExpectBucketCount(
+      kWindowOpenFromAdStateHistogram,
+      1 /* blink::WindowOpenFromAdState::kNonAdScriptAndAdFrame */,
+      expected_num_from_nonadscript_adframe);
+  histogram_tester.ExpectBucketCount(
+      kWindowOpenFromAdStateHistogram,
+      2 /* blink::WindowOpenFromAdState::kAdScriptAndNonAdFrame */,
+      expected_num_from_adscript_nonadframe);
+  histogram_tester.ExpectBucketCount(
+      kWindowOpenFromAdStateHistogram,
+      3 /* blink::WindowOpenFromAdState::kNonAdScriptAndNonAdFrame */,
+      expected_num_from_nonadscript_nonadframe);
 }
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
   GURL main_frame_url =
       embedded_test_server()->GetURL("a.com", "/ad_tagging/frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
   content::WebContents* main_tab = GetWebContents();
 
   size_t expected_num_entries = 0;
+  size_t expected_num_from_ad_subframe = 0;
   for (bool cross_origin : {false, true}) {
     for (bool ad_frame : {false, true}) {
       std::string hostname = cross_origin ? "b.com" : "a.com";
@@ -401,32 +438,45 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
           main_tab, embedded_test_server()->GetURL(
                         hostname, "/ad_tagging/frame_factory.html?1" + suffix));
       EXPECT_TRUE(content::ExecuteScript(child, "window.open();"));
-      ExpectLatestUkmEntry(ukm_recorder, ++expected_num_entries,
-                           ukm::builders::AbusiveExperienceHeuristic::
-                               kDidWindowOpenFromAdSubframeName,
-                           false /* from_main_frame */, main_frame_url,
-                           ad_frame);
+      ++expected_num_entries;
+      if (ad_frame)
+        ++expected_num_from_ad_subframe;
+      ExpectLatestWindowOpenUkmEntry(
+          ukm_recorder, expected_num_entries, false /* from_main_frame */,
+          main_frame_url, ad_frame /* from_ad_subframe */,
+          ad_frame /* from_ad_script */);
+      ExpectWindowOpenUmaStatus(
+          histogram_tester,
+          expected_num_from_ad_subframe /* adscript_adframe */,
+          0 /* nonadscript_adframe */, 0 /* adscript_nonadframe */,
+          expected_num_entries -
+              expected_num_from_ad_subframe /* nonadscript_nonadframe */);
     }
   }
 }
 
 IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenWithScriptInStack) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
+  base::HistogramTester histogram_tester;
   GURL main_frame_url = GetURL("frame_factory.html");
   ui_test_utils::NavigateToURL(browser(), main_frame_url);
   content::WebContents* main_tab = GetWebContents();
 
   EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromNonAdScript();"));
-  ExpectLatestUkmEntry(
-      ukm_recorder, 1 /* expected_num_entries */,
-      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
-      true /* from_main_frame */, main_frame_url, false /* expected_value */);
+  ExpectLatestWindowOpenUkmEntry(
+      ukm_recorder, 1 /* expected_num_entries */, true /* from_main_frame */,
+      main_frame_url, false /* from_ad_subframe */, false /* from_ad_script */);
+  ExpectWindowOpenUmaStatus(
+      histogram_tester, 0 /* adscript_adframe */, 0 /* nonadscript_adframe */,
+      0 /* adscript_nonadframe */, 1 /* nonadscript_nonadframe */);
 
   EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromAdScript();"));
-  ExpectLatestUkmEntry(
-      ukm_recorder, 2 /* expected_num_entries */,
-      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
-      true /* from_main_frame */, main_frame_url, true /* expected_value */);
+  ExpectLatestWindowOpenUkmEntry(
+      ukm_recorder, 2 /* expected_num_entries */, true /* from_main_frame */,
+      main_frame_url, false /* from_ad_subframe */, true /* from_ad_script */);
+  ExpectWindowOpenUmaStatus(
+      histogram_tester, 0 /* adscript_adframe */, 0 /* nonadscript_adframe */,
+      1 /* adscript_nonadframe */, 1 /* nonadscript_nonadframe */);
 }
 
 }  // namespace

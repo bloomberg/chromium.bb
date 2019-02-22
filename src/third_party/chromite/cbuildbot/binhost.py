@@ -16,6 +16,16 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
+from chromite.lib import portage_util
+
+
+def _Ascii(s):
+  """Convert |s| to ASCII.
+
+  Produces slightly simpler output when debugging, and all these fields are
+  guaranteed to only be ASCII.
+  """
+  return s.encode('ascii')
 
 
 # A unique identifier for looking up CompatIds by board/useflags.
@@ -29,7 +39,7 @@ def BoardKey(board, useflags):
     board: The board associated with this config.
     useflags: A sequence of extra useflags associated with this config.
   """
-  return _BoardKey(board, tuple(useflags))
+  return _BoardKey(_Ascii(board), tuple(_Ascii(x) for x in useflags))
 
 
 def GetBoardKey(config, board=None):
@@ -159,7 +169,7 @@ class PrebuiltMapping(_PrebuiltMapping):
         output.append({'key': key.__dict__, 'compat_id': compat_id.__dict__})
 
     with open(filename, 'w') as f:
-      json.dump(output, f, sort_keys=True, indent=2)
+      json.dump(output, f, sort_keys=True, indent=2, separators=(',', ': '))
 
   @classmethod
   def Load(cls, filename):
@@ -211,7 +221,7 @@ def GetChromeUseFlags(board, extra_useflags):
   assert cros_build_lib.IsInsideChroot()
   assert os.path.exists('/build/%s' % board), 'Board %s not set up' % board
   extra_env = {'USE': ' '.join(extra_useflags)}
-  cmd = ['equery-%s' % board, 'uses', constants.CHROME_CP]
+  cmd = ['equery-%s' % board, '-Cq', 'uses', constants.CHROME_CP]
   chrome_useflags = cros_build_lib.RunCommand(
       cmd, capture_output=True, print_cmd=False,
       extra_env=extra_env).output.rstrip().split()
@@ -250,7 +260,9 @@ def CompatId(arch, useflags, cflags):
     useflags: The full list of use flags for Chrome.
     cflags: The full list of CFLAGS.
   """
-  return _CompatId(arch, tuple(useflags), tuple(cflags))
+  return _CompatId(_Ascii(arch),
+                   tuple(_Ascii(x) for x in useflags),
+                   tuple(_Ascii(x) for x in cflags))
 
 
 def CalculateCompatId(board, extra_useflags):
@@ -268,12 +280,8 @@ def CalculateCompatId(board, extra_useflags):
   """
   assert cros_build_lib.IsInsideChroot()
   useflags = GetChromeUseFlags(board, extra_useflags)
-  cmd = ['portageq-%s' % board, 'envvar', 'ARCH', 'CFLAGS']
-  arch_cflags = cros_build_lib.RunCommand(
-      cmd, print_cmd=False, capture_output=True).output.rstrip()
-  arch, cflags = arch_cflags.split('\n', 1)
-  cflags_split = cflags.split()
-  return CompatId(arch, useflags, cflags_split)
+  result = portage_util.PortageqEnvvars(['ARCH', 'CFLAGS'], board=board)
+  return CompatId(result['ARCH'], useflags, result['CFLAGS'].split())
 
 
 class CompatIdFetcher(object):

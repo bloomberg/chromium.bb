@@ -34,7 +34,8 @@ struct SimpleMessage {
     if (value == "foo") {
       *field = FOO;
       return true;
-    } else if (value == "bar") {
+    }
+    if (value == "bar") {
       *field = BAR;
       return true;
     }

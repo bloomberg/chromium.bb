@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_latin1.h"
 
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_ascii_fast_path.h"
@@ -105,7 +106,7 @@ void TextCodecLatin1::RegisterCodecs(TextCodecRegistrar registrar) {
 }
 
 String TextCodecLatin1::Decode(const char* bytes,
-                               size_t length,
+                               wtf_size_t length,
                                FlushBehavior,
                                bool,
                                bool&) {
@@ -203,14 +204,15 @@ upConvertTo16Bit:
 
 template <typename CharType>
 static CString EncodeComplexWindowsLatin1(const CharType* characters,
-                                          size_t length,
+                                          wtf_size_t length,
                                           UnencodableHandling handling) {
-  size_t target_length = length;
+  DCHECK_NE(handling, kNoUnencodables);
+  wtf_size_t target_length = length;
   Vector<char> result(target_length);
   char* bytes = result.data();
 
-  size_t result_length = 0;
-  for (size_t i = 0; i < length;) {
+  wtf_size_t result_length = 0;
+  for (wtf_size_t i = 0; i < length;) {
     UChar32 c;
     // If CharType is LChar the U16_NEXT call reads a byte and increments;
     // since the convention is that LChar is already latin1 this is safe.
@@ -252,7 +254,7 @@ static CString EncodeComplexWindowsLatin1(const CharType* characters,
 
 template <typename CharType>
 CString TextCodecLatin1::EncodeCommon(const CharType* characters,
-                                      size_t length,
+                                      wtf_size_t length,
                                       UnencodableHandling handling) {
   {
     char* bytes;
@@ -261,7 +263,7 @@ CString TextCodecLatin1::EncodeCommon(const CharType* characters,
     // Convert the string a fast way and simultaneously do an efficient check to
     // see if it's all ASCII.
     UChar ored = 0;
-    for (size_t i = 0; i < length; ++i) {
+    for (wtf_size_t i = 0; i < length; ++i) {
       UChar c = characters[i];
       bytes[i] = static_cast<char>(c);
       ored |= c;
@@ -276,13 +278,13 @@ CString TextCodecLatin1::EncodeCommon(const CharType* characters,
 }
 
 CString TextCodecLatin1::Encode(const UChar* characters,
-                                size_t length,
+                                wtf_size_t length,
                                 UnencodableHandling handling) {
   return EncodeCommon(characters, length, handling);
 }
 
 CString TextCodecLatin1::Encode(const LChar* characters,
-                                size_t length,
+                                wtf_size_t length,
                                 UnencodableHandling handling) {
   return EncodeCommon(characters, length, handling);
 }

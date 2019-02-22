@@ -119,10 +119,20 @@ testcase.driveOpenSidebarOffline = function() {
  * "shared-with-me" should be shown.
  */
 testcase.driveOpenSidebarSharedWithMe = function() {
-  var appId;
+  let appId;
+  let isDriveFsEnabled;
   StepsRunner.run([
     function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+      sendTestMessage({name: 'getDriveFsEnabled'}).then(this.next);
+    },
+    function(result) {
+      isDriveFsEnabled = result === 'true';
+
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET.concat([
+            ENTRIES.sharedDirectory,
+            ENTRIES.sharedDirectoryFile,
+          ]));
     },
     // Click the icon of the Shared With Me volume.
     function(results) {
@@ -132,17 +142,45 @@ testcase.driveOpenSidebarSharedWithMe = function() {
                                     appId,
                                     ['drive_shared_with_me'], this.next);
     },
-    // Wait until the file list is updated.
+    // Wait until the breadcrumb path is updated.
     function(result) {
       chrome.test.assertFalse(!result);
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-          then(this.next);
+      remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me')
+          .then(this.next);
     },
     // Verify the file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(SHARED_WITH_ME_ENTRY_SET).sort(),
-          actualFilesAfter);
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows(
+                  SHARED_WITH_ME_ENTRY_SET.concat([ENTRIES.sharedDirectory])))
+          .then(this.next);
+    },
+    // Navigate to the directory within Shared with me.
+    function() {
+      remoteCall.callRemoteTestUtil('openFile', appId, ['Shared Directory'])
+          .then(this.next);
+    },
+    // Wait until the breadcrumb path is updated.
+    function(result) {
+      chrome.test.assertFalse(!result);
+      remoteCall
+          .waitUntilCurrentDirectoryIsChanged(
+              appId,
+              isDriveFsEnabled ? '/Shared with me/Shared Directory' :
+                                 '/My Drive/Shared Directory')
+          .then(this.next);
+    },
+    // Verify the file list.
+    function() {
+      remoteCall
+          .waitForFiles(
+              appId,
+              TestEntryInfo.getExpectedRows([ENTRIES.sharedDirectoryFile]))
+          .then(this.next);
+    },
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -167,7 +205,7 @@ testcase.driveClickFirstSearchResult = function() {
       appId = id;
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#autocomplete-list', 'ArrowDown', 'Down', false, false, false],
+          ['#autocomplete-list', 'ArrowDown', false, false, false],
           this.next);
     },
     function(result) {
@@ -216,8 +254,7 @@ testcase.drivePressEnterToSearch = function() {
       function(result) {
         remoteCall.callRemoteTestUtil(
             'fakeKeyDown', appId,
-            ['#search-box cr-input', 'Enter', 'Enter', false, false, false],
-            this.next);
+            ['#search-box cr-input', 'Enter', false, false, false], this.next);
       },
       function(result) {
         remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length)
@@ -330,7 +367,7 @@ testcase.drivePressCtrlAFromSearch = function() {
     function(result) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#search-box cr-input', 'A', 'A', true, false, false], this.next);
+          ['#search-box cr-input', 'A', true, false, false], this.next);
     },
     // Check we didn't enter check-select mode.
     function(result) {
@@ -343,4 +380,308 @@ testcase.drivePressCtrlAFromSearch = function() {
     },
   ];
   StepsRunner.run(steps);
+};
+
+/**
+ * Pin hello.txt in the old Drive client.
+ */
+testcase.PRE_driveMigratePinnedFile = function() {
+  testPromise(
+      setupAndWaitUntilReady(null, RootPath.DRIVE).then(function(results) {
+        var windowId = results.windowId;
+        return remoteCall
+            .callRemoteTestUtil('selectFile', windowId, ['hello.txt'])
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['.table-row[selected]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseRightClick', windowId, ['.table-row[selected]']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu:not([hidden])');
+            })
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['[command="#toggle-pinned"]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseClick', windowId, ['[command="#toggle-pinned"]']);
+            })
+            .then(function(result) {
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu[hidden]');
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeEvent', windowId, ['#file-list', 'contextmenu']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '[command="#toggle-pinned"][checked]');
+            });
+      }));
+};
+
+/**
+ * Verify hello.txt is still pinned after migrating to DriveFS.
+ */
+testcase.driveMigratePinnedFile = function() {
+  // After enabling DriveFS, ensure the file is still pinned.
+  testPromise(
+      setupAndWaitUntilReady(null, RootPath.DRIVE).then(function(results) {
+        var windowId = results.windowId;
+        return remoteCall
+            .callRemoteTestUtil('selectFile', windowId, ['hello.txt'])
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, ['.table-row[selected]']);
+            })
+            .then(function() {
+              return remoteCall.callRemoteTestUtil(
+                  'fakeMouseRightClick', windowId, ['.table-row[selected]']);
+            })
+            .then(function(result) {
+              chrome.test.assertTrue(result);
+              return remoteCall.waitForElement(
+                  windowId, '#file-context-menu:not([hidden])');
+            })
+            .then(function() {
+              return remoteCall.waitForElement(
+                  windowId, '[command="#toggle-pinned"][checked]');
+            });
+      }));
+
+};
+
+// Match the way the production version formats dates.
+function formatDate(date) {
+  var padAndConvert = function(i) {
+    return (i < 10 ? '0' : '') + i.toString();
+  };
+
+  var year = date.getFullYear().toString();
+  // Months are 0-based, but days aren't.
+  var month = padAndConvert(date.getMonth() + 1);
+  var day = padAndConvert(date.getDate());
+
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Test that a images within a DCIM directory on removable media is backed up to
+ * Drive, in the Chrome OS Cloud backup/<current date> directory.
+ */
+testcase.driveBackupPhotos = function() {
+  let appId;
+
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
+  let date;
+
+  StepsRunner.run([
+    // Open Files app on local downloads.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Mount USB volume in the Downloads window.
+    function(results) {
+      appId = results.windowId;
+      sendTestMessage({name: 'mountFakeUsbDcim'}).then(this.next);
+    },
+    // Wait for the USB mount.
+    function() {
+      remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
+    },
+    // Navigate to the DCIM directory.
+    function() {
+      remoteCall
+          .navigateWithDirectoryTree(appId, '/DCIM', 'fake-usb', 'removable')
+          .then(this.next);
+    },
+    // Wait for the import button to be ready.
+    function() {
+      remoteCall
+          .waitForElement(
+              appId, '#cloud-import-button [icon="files:cloud-upload"]')
+          .then(this.next);
+    },
+    // Start the import.
+    function() {
+      date = new Date();
+      remoteCall
+          .callRemoteTestUtil('fakeMouseClick', appId, ['#cloud-import-button'])
+          .then(this.next);
+    },
+    // Wait for the image to be marked as imported.
+    function(success) {
+      chrome.test.assertTrue(success);
+      remoteCall
+          .waitForElement(appId, '.status-icon[file-status-icon="imported"]')
+          .then(this.next);
+    },
+    // Navigate to today's backup directory in Drive.
+    function() {
+      const formattedDate = formatDate(date);
+      remoteCall
+          .navigateWithDirectoryTree(
+              appId, `/root/Chrome OS Cloud backup/${formattedDate}`,
+              'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Verify the backed-up file list contains only a copy of the image within
+    // DCIM in the removable storage.
+    function() {
+      const files = TestEntryInfo.getExpectedRows([ENTRIES.image3]);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Create some dirty files in Drive.
+ *
+ * Create /root/never-sync.txt and /root/A/never-sync.txt. These files will
+ * never complete syncing to the fake drive service so will remain dirty
+ * forever.
+ */
+testcase.PRE_driveRecoverDirtyFiles = function() {
+  let appId;
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.neverSync],
+          [ENTRIES.directoryA]);
+    },
+    // Select never-sync.txt.
+    function(results) {
+      appId = results.windowId;
+
+      remoteCall.callRemoteTestUtil('selectFile', appId, ['never-sync.txt'])
+          .then(this.next);
+    },
+    // Copy it.
+    function(result) {
+      chrome.test.assertTrue(result, 'selectFile failed');
+
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'c', true, false, false])
+          .then(this.next);
+    },
+    // Navigate to My Drive.
+    function(result) {
+      chrome.test.assertTrue(result, 'copy failed');
+
+      return remoteCall
+          .navigateWithDirectoryTree(appId, '/root', 'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Paste.
+    function() {
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'v', true, false, false])
+          .then(this.next);
+    },
+    // Wait for the paste to complete.
+    function(result) {
+      chrome.test.assertTrue(result, 'paste failed');
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        ENTRIES.directoryA.getExpectedRow(),
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to My Drive/A.
+    function() {
+      return remoteCall
+          .navigateWithDirectoryTree(appId, '/root/A', 'My Drive', 'drive')
+          .then(this.next);
+    },
+    // Paste.
+    function() {
+      return remoteCall
+          .callRemoteTestUtil(
+              'fakeKeyDown', appId, ['#file-list', 'v', true, false, false])
+          .then(this.next);
+    },
+    // Wait for the paste to complete.
+    function(result) {
+      chrome.test.assertTrue(result, 'paste failed');
+      const expectedEntryRows = [ENTRIES.neverSync.getExpectedRow()];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
+ * Verify that when enabling DriveFS, the dirty files are recovered to
+ * Downloads/Recovered files from Google Drive. The directory structure should
+ * be flattened with uniquified names:
+ * - never-sync.txt
+ * - never-sync (1).txt
+ */
+testcase.driveRecoverDirtyFiles = function() {
+  let appId;
+  // After enabling DriveFS, ensure the dirty files have been recovered into
+  // Downloads.
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next, [], []);
+    },
+    // Wait for the Recovered files directory to be in Downloads.
+    function(results) {
+      appId = results.windowId;
+
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        ['Recovered files from Google Drive', '--', 'Folder'],
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Navigate to the recovered files directory.
+    function() {
+      return remoteCall
+          .navigateWithDirectoryTree(
+              appId, '/Recovered files from Google Drive', 'Downloads')
+          .then(this.next);
+    },
+    // Ensure it contains never-sync.txt and never-sync (1).txt.
+    function() {
+      var uniquifiedNeverSync = ENTRIES.neverSync.getExpectedRow();
+      uniquifiedNeverSync[0] = 'never-sync (1).txt';
+      const expectedEntryRows = [
+        ENTRIES.neverSync.getExpectedRow(),
+        uniquifiedNeverSync,
+      ];
+      remoteCall
+          .waitForFiles(
+              appId, expectedEntryRows, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
 };

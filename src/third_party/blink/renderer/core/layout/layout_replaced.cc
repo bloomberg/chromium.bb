@@ -683,7 +683,7 @@ LayoutUnit LayoutReplaced::ComputeConstrainedLogicalWidth(
   // 'margin-left' + 'border-left-width' + 'padding-left' + 'width' +
   // 'padding-right' + 'border-right-width' + 'margin-right' = width of
   // containing block
-  LayoutUnit logical_width = ContainingBlock()->AvailableLogicalWidth();
+  LayoutUnit logical_width = ContainingBlockLogicalWidthForContent();
 
   // This solves above equation for 'width' (== logicalWidth).
   LayoutUnit margin_start =
@@ -975,8 +975,10 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
 }
 
 LayoutRect LayoutReplaced::LocalSelectionRect() const {
-  if (GetSelectionState() == SelectionState::kNone)
+  if (GetSelectionState() == SelectionState::kNone ||
+      GetSelectionState() == SelectionState::kContain) {
     return LayoutRect();
+  }
 
   if (IsInline()) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(this);

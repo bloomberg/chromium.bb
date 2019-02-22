@@ -30,6 +30,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -155,6 +156,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
+        blink::mojom::ScriptType::kClassic,
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
     EXPECT_EQ(url::Origin::Create(pattern_), version_->script_origin());
@@ -213,7 +215,7 @@ class ServiceWorkerVersionTest : public testing::Test {
 
     // And finish request, as if a response to the event was received.
     EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */,
-                                        base::Time::Now()));
+                                        base::TimeTicks::Now()));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
@@ -445,7 +447,21 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
 
   // Dispatch an event without starting the worker.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  EXPECT_TRUE(version_->HasNoWork());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
+
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // The worker may still be handling events dispatched directly from
+    // controllees. We cannot say the version doesn't handle any tasks until the
+    // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
+    // is called).
+    EXPECT_FALSE(version_->HasNoWork());
+  } else {
+    // In non-S13nServiceWorker case, ServiceWorkerVersion manages all of events
+    // dispatched to the service worker. Once all events have finished in the
+    // browser, the version should have no work.
+    EXPECT_TRUE(version_->HasNoWork());
+  }
 
   // The worker should be now started.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -453,8 +469,22 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   // Stop the worker, and then dispatch an event immediately after that.
   bool has_stopped = false;
   version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
+  EXPECT_TRUE(version_->HasNoWork());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_TRUE(has_stopped);
+
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // The worker may still be handling events dispatched directly from
+    // controllees. We cannot say the version doesn't handle any tasks until the
+    // worker reports "No Work" (= ServiceWorkerVersion::OnRequestTermination()
+    // is called).
+    EXPECT_FALSE(version_->HasNoWork());
+  } else {
+    // In non-S13nServiceWorker case, ServiceWorkerVersion manages all of events
+    // dispatched to the service worker. Once all events have finished in the
+    // browser, the version should have no work.
+    EXPECT_TRUE(version_->HasNoWork());
+  }
 
   // The worker should be now started again.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -624,7 +654,7 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
       version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
                              CreateReceiverOnCurrentThread(&status));
   EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */,
-                                      base::Time::Now()));
+                                      base::TimeTicks::Now()));
   EXPECT_LT(idle_time, version_->idle_time_);
 }
 
@@ -981,12 +1011,12 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
             error_status.value());
   // Calling FinishRequest should be no-op, since the request timed out.
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   // Simulate the renderer aborting the inflight event.
   // This should not crash: https://crbug.com/676984.
   TakeExtendableMessageEventCallback().Run(
-      blink::mojom::ServiceWorkerEventStatus::ABORTED, base::Time::Now());
+      blink::mojom::ServiceWorkerEventStatus::ABORTED, base::TimeTicks::Now());
   base::RunLoop().RunUntilIdle();
 
   // Simulate the renderer stopping the worker.
@@ -1013,7 +1043,7 @@ TEST_F(ServiceWorkerVersionTest, RequestNowTimeout) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   // CONTINUE_ON_TIMEOUT timeouts don't stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -1037,7 +1067,7 @@ TEST_F(ServiceWorkerVersionTest, RequestNowTimeoutKill) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1095,10 +1125,10 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
             second_status.value());
 
   EXPECT_FALSE(version_->FinishRequest(first_request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   EXPECT_FALSE(version_->FinishRequest(
-      second_request_id, true /* was_handled */, base::Time::Now()));
+      second_request_id, true /* was_handled */, base::TimeTicks::Now()));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1135,7 +1165,7 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
 
   // Gracefully handle the sync event finishing after the timeout.
   EXPECT_FALSE(version_->FinishRequest(sync_request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   // Verify that the fetch times out later.
   version_->SetAllRequestExpirations(base::TimeTicks::Now());
@@ -1146,7 +1176,7 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
 
   // Fetch request should no longer exist.
   EXPECT_FALSE(version_->FinishRequest(fetch_request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 
   // Other timeouts do stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1282,7 +1312,7 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
 
   // Request already failed, calling finsh should return false.
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::Time::Now()));
+                                       base::TimeTicks::Now()));
 }
 
 TEST_F(ServiceWorkerVersionTest, PingController) {
@@ -1312,6 +1342,7 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
+      blink::mojom::ScriptType::kClassic,
       helper_->context()->storage()->NewVersionId(),
       helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;

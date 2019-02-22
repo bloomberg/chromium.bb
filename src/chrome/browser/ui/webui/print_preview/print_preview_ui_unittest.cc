@@ -96,9 +96,8 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
   scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
-  preview_ui->SetPrintPreviewDataForIndex(
-      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
-      dummy_data.get());
+  preview_ui->SetPrintPreviewDataForIndexForTest(
+      printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, dummy_data.get());
   preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
       &data);
@@ -106,7 +105,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   EXPECT_EQ(dummy_data.get(), data.get());
 
   // Clear the preview data.
-  preview_ui->ClearAllPreviewData();
+  preview_ui->ClearAllPreviewDataForTest();
 
   preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
@@ -142,15 +141,15 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
   scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
-  preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
-                                          dummy_data.get());
+  preview_ui->SetPrintPreviewDataForIndexForTest(printing::FIRST_PAGE_INDEX,
+                                                 dummy_data.get());
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
   EXPECT_EQ(dummy_data->size(), data->size());
   EXPECT_EQ(dummy_data.get(), data.get());
 
   // Set and get the third page data.
-  preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 2,
-                                          dummy_data.get());
+  preview_ui->SetPrintPreviewDataForIndexForTest(printing::FIRST_PAGE_INDEX + 2,
+                                                 dummy_data.get());
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 2,
                                           &data);
   EXPECT_EQ(dummy_data->size(), data->size());
@@ -161,15 +160,15 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
                                           &data);
   EXPECT_FALSE(data);
 
-  preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 1,
-                                          dummy_data.get());
+  preview_ui->SetPrintPreviewDataForIndexForTest(printing::FIRST_PAGE_INDEX + 1,
+                                                 dummy_data.get());
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 1,
                                           &data);
   EXPECT_EQ(dummy_data->size(), data->size());
   EXPECT_EQ(dummy_data.get(), data.get());
 
   // Clear the preview data.
-  preview_ui->ClearAllPreviewData();
+  preview_ui->ClearAllPreviewDataForTest();
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
   EXPECT_FALSE(data);
 }

@@ -1248,5 +1248,32 @@ TEST_F(QuicPacketGeneratorTest,
   }
 }
 
+TEST_F(QuicPacketGeneratorTest, AddMessageFrame) {
+  if (framer_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  delegate_.SetCanWriteAnything();
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
+
+  MakeIOVector("foo", &iov_);
+  generator_.ConsumeData(kHeadersStreamId, &iov_, 1u, iov_.iov_len, 0, FIN);
+  EXPECT_EQ(MESSAGE_STATUS_SUCCESS, generator_.AddMessageFrame(1, "message"));
+  EXPECT_TRUE(generator_.HasQueuedFrames());
+  EXPECT_TRUE(generator_.HasRetransmittableFrames());
+
+  // Add a message which causes the flush of current packet.
+  EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
+            generator_.AddMessageFrame(
+                2, QuicString(generator_.GetLargestMessagePayload(), 'a')));
+  EXPECT_TRUE(generator_.HasRetransmittableFrames());
+
+  // Failed to send messages which cannot fit into one packet.
+  EXPECT_EQ(
+      MESSAGE_STATUS_TOO_LARGE,
+      generator_.AddMessageFrame(
+          3, QuicString(generator_.GetLargestMessagePayload() + 10, 'a')));
+}
+
 }  // namespace test
 }  // namespace quic

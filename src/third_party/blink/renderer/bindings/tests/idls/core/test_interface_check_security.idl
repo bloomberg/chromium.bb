@@ -44,4 +44,5 @@
     [CrossOrigin, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
     [CrossOrigin] void doNotCheckSecurityVoidOverloadMethod(String argument1, String argument2);
     [CrossOrigin, RuntimeEnabled=FeatureName] void doNotCheckSecurityVoidOverloadMethod(String argument1, optional long argument2);
+    [SecureContext, RuntimeEnabled=FeatureName] void secureContextRuntimeEnabledMethod(String arg);
 };

@@ -8,17 +8,21 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ppapi/cpp/dev/buffer_dev.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
 struct PP_PdfPrintSettings_Dev;
 struct PP_PrintSettings_Dev;
 struct PP_PrintPageNumberRange_Dev;
 
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
+
 namespace chrome_pdf {
 
 class PDFiumEngine;
-class PDFiumPage;
 
 class PDFiumPrint {
  public:
@@ -29,16 +33,14 @@ class PDFiumPrint {
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count);
 
-  pp::Buffer_Dev PrintPagesAsRasterPDF(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
-  pp::Buffer_Dev PrintPagesAsPDF(
-      const PP_PrintPageNumberRange_Dev* page_ranges,
-      uint32_t page_range_count,
-      const PP_PrintSettings_Dev& print_settings,
-      const PP_PdfPrintSettings_Dev& pdf_print_settings);
+  // Performs N-up PDF generation for |doc| based on |pages_per_sheet|,
+  // |page_size|, and |printable_area|.
+  // On success, returns the N-up version of |doc| as a vector.
+  // On failure, returns an empty vector.
+  static std::vector<uint8_t> CreateNupPdf(ScopedFPDFDocument doc,
+                                           size_t pages_per_sheet,
+                                           const gfx::Size& page_size,
+                                           const gfx::Rect& printable_area);
 
   // Check the source doc orientation.  Returns true if the doc is landscape.
   // For now the orientation of the doc is determined by its first page's
@@ -49,24 +51,33 @@ class PDFiumPrint {
   // will not be rotated.
   static bool IsSourcePdfLandscape(FPDF_DOCUMENT doc);
 
- private:
-  FPDF_DOCUMENT CreateSinglePageRasterPdf(
-      double source_page_width,
-      double source_page_height,
+  static void FitContentsToPrintableArea(FPDF_DOCUMENT doc,
+                                         const gfx::Size& page_size,
+                                         const gfx::Rect& printable_area);
+
+  std::vector<uint8_t> PrintPagesAsPdf(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
       const PP_PrintSettings_Dev& print_settings,
-      PDFiumPage* page_to_print);
+      const PP_PdfPrintSettings_Dev& pdf_print_settings,
+      bool raster);
 
-  // Perform N-up PDF generation from |doc| based on |pages_per_sheet| and
-  // the parameters in |print_settings|.
-  // On success, the returned buffer contains the N-up version of |doc|.
-  // On failure, the returned buffer is empty.
-  pp::Buffer_Dev NupPdfToPdf(FPDF_DOCUMENT doc,
-                             uint32_t pages_per_sheet,
-                             const PP_PrintSettings_Dev& print_settings);
+ private:
+  ScopedFPDFDocument CreatePrintPdf(
+      const PP_PrintPageNumberRange_Dev* page_ranges,
+      uint32_t page_range_count,
+      const PP_PrintSettings_Dev& print_settings,
+      const PP_PdfPrintSettings_Dev& pdf_print_settings);
 
-  bool FlattenPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetPrintData(FPDF_DOCUMENT doc);
-  pp::Buffer_Dev GetFlattenedPrintData(FPDF_DOCUMENT doc);
+  ScopedFPDFDocument CreateRasterPdf(
+      ScopedFPDFDocument doc,
+      const PP_PrintSettings_Dev& print_settings);
+
+  ScopedFPDFDocument CreateSinglePageRasterPdf(
+      FPDF_PAGE page_to_print,
+      const PP_PrintSettings_Dev& print_settings);
+
+  bool FlattenPrintData(FPDF_DOCUMENT doc) const;
 
   PDFiumEngine* const engine_;
 

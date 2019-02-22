@@ -10,6 +10,7 @@
 
 #include "base/debug/stack_trace.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -84,7 +85,8 @@ class MockFrameHost : public mojom::FrameHost {
   void BeginNavigation(const CommonNavigationParams& common_params,
                        mojom::BeginNavigationParamsPtr begin_params,
                        blink::mojom::BlobURLTokenPtr blob_url_token,
-                       mojom::NavigationClientAssociatedPtrInfo) override {}
+                       mojom::NavigationClientAssociatedPtrInfo,
+                       blink::mojom::NavigationInitiatorPtr) override {}
 
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override {}
@@ -111,6 +113,10 @@ class MockFrameHost : public mojom::FrameHost {
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
   void FullscreenStateChanged(bool is_fullscreen) override {}
+
+#if defined(OS_ANDROID)
+  void UpdateUserGestureCarryoverInfo() override {}
+#endif
 
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

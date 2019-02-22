@@ -121,7 +121,7 @@ function addProvidedVolume(volumeManager, providerId, volumeId) {
       '',                                         // diskFileSystemType
       {});                                        // iconSet
 
-  volumeManager.volumeInfoList.push(volumeInfo);
+  volumeManager.volumeInfoList.add(volumeInfo);
 }
 
 function setUp() {
@@ -140,7 +140,7 @@ function setUp() {
   chrome.runtime = {};
 
   // Create a dummy volume manager.
-  volumeManager = new MockVolumeManagerWrapper();
+  volumeManager = new MockVolumeManager();
   addProvidedVolume(
       volumeManager, MOUNTED_SINGLE_PROVIDING_EXTENSION.providerId, 'volume-1');
   addProvidedVolume(

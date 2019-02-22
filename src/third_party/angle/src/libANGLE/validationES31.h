@@ -363,14 +363,19 @@ bool ValidateFramebufferTextureEXT(Context *context,
                                    GLint level);
 
 // GL_ANGLE_texture_multisample_array
-bool ValidateTexStorage3DMultisampleANGLE(Context *context,
-                                          TextureType target,
-                                          GLsizei samples,
-                                          GLint sizedinternalformat,
-                                          GLsizei width,
-                                          GLsizei height,
-                                          GLsizei depth,
-                                          GLboolean fixedsamplelocations);
+bool ValidateTexStorage3DMultisampleOES(Context *context,
+                                        TextureType target,
+                                        GLsizei samples,
+                                        GLint sizedinternalformat,
+                                        GLsizei width,
+                                        GLsizei height,
+                                        GLsizei depth,
+                                        GLboolean fixedsamplelocations);
+
+bool ValidateGetProgramResourceLocationIndexEXT(Context *context,
+                                                GLuint program,
+                                                GLenum programInterface,
+                                                const char *name);
 
 }  // namespace gl
 

@@ -25,7 +25,7 @@ import java.util.Random;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ProviderBookmarkNodeUnitTest {
     Random mGenerator = new Random();
-    byte[][] mImageBlobs = null;
+    byte[][] mImageBlobs;
 
     @Before
     public void setUp() throws Exception {

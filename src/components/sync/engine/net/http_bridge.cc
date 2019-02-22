@@ -47,19 +47,19 @@ void LogTimeout(bool timed_out) {
 
 void RecordSyncRequestContentLengthHistograms(int64_t compressed_content_length,
                                               int64_t original_content_length) {
-  UMA_HISTOGRAM_COUNTS("Sync.RequestContentLength.Compressed",
-                       compressed_content_length);
-  UMA_HISTOGRAM_COUNTS("Sync.RequestContentLength.Original",
-                       original_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Compressed",
+                          compressed_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Sync.RequestContentLength.Original",
+                          original_content_length);
 }
 
 void RecordSyncResponseContentLengthHistograms(
     int64_t compressed_content_length,
     int64_t original_content_length) {
-  UMA_HISTOGRAM_COUNTS("Sync.ResponseContentLength.Compressed",
-                       compressed_content_length);
-  UMA_HISTOGRAM_COUNTS("Sync.ResponseContentLength.Original",
-                       original_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Sync.ResponseContentLength.Compressed",
+                          compressed_content_length);
+  UMA_HISTOGRAM_COUNTS_1M("Sync.ResponseContentLength.Original",
+                          original_content_length);
 }
 
 base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky

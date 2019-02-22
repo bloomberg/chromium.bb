@@ -11,7 +11,8 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-GURL GetBoardSpecificLearnMoreUrl();
+GURL GetBoardSpecificBetterTogetherSuiteLearnMoreUrl();
+GURL GetBoardSpecificMessagesLearnMoreUrl();
 
 }  // namespace multidevice_setup
 

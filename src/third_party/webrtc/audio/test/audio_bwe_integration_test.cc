@@ -123,8 +123,8 @@ class NoBandwidthDropAfterDtx : public AudioBweTest {
     return test::ResourcePath("voice_engine/audio_dtx16", "wav");
   }
 
-  DefaultNetworkSimulationConfig GetNetworkPipeConfig() override {
-    DefaultNetworkSimulationConfig pipe_config;
+  BuiltInNetworkBehaviorConfig GetNetworkPipeConfig() override {
+    BuiltInNetworkBehaviorConfig pipe_config;
     pipe_config.link_capacity_kbps = 50;
     pipe_config.queue_length_packets = 1500;
     pipe_config.queue_delay_ms = 300;
@@ -138,7 +138,7 @@ class NoBandwidthDropAfterDtx : public AudioBweTest {
   void PerformTest() override {
     stats_poller_.PostDelayedTask(
         std::unique_ptr<rtc::QueuedTask>(new StatsPollTask(sender_call_)), 100);
-    sender_call_->OnTransportOverheadChanged(webrtc::MediaType::AUDIO, 0);
+    sender_call_->OnAudioTransportOverheadChanged(0);
     AudioBweTest::PerformTest();
   }
 

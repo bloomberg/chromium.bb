@@ -123,25 +123,6 @@ class FakeAssistantClient : mojom::Client {
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
 };
 
-class FakeAudioInput : mojom::AudioInput {
- public:
-  FakeAudioInput() : binding_(this) {}
-
-  mojom::AudioInputPtr CreateInterfacePtrAndBind() {
-    mojom::AudioInputPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
- private:
-  // mojom::AudioInput:
-  void AddObserver(mojom::AudioInputObserverPtr observer) override {}
-
-  mojo::Binding<mojom::AudioInput> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAudioInput);
-};
-
 class FakeDeviceActions : mojom::DeviceActions {
  public:
   FakeDeviceActions() : binding_(this) {}
@@ -156,6 +137,12 @@ class FakeDeviceActions : mojom::DeviceActions {
   // mojom::DeviceActions:
   void SetWifiEnabled(bool enabled) override {}
   void SetBluetoothEnabled(bool enabled) override {}
+  void GetScreenBrightnessLevel(
+      GetScreenBrightnessLevelCallback callback) override {
+    std::move(callback).Run(true, 1.0);
+  }
+  void SetScreenBrightnessLevel(double level, bool gradual) override {}
+  void SetNightLightEnabled(bool enabled) override {}
 
   mojo::Binding<mojom::DeviceActions> binding_;
 
@@ -244,7 +231,6 @@ class ServiceTest : public service_manager::test::ServiceTest {
     fake_identity_manager_ = std::make_unique<FakeIdentityManager>();
     fake_assistant_client_ = std::make_unique<FakeAssistantClient>();
     fake_device_actions_ = std::make_unique<FakeDeviceActions>();
-    fake_audio_input_ = std::make_unique<FakeAudioInput>();
     fake_assistant_manager_ptr_ = new FakeAssistantManagerServiceImpl();
 
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
@@ -293,7 +279,6 @@ class ServiceTest : public service_manager::test::ServiceTest {
   std::unique_ptr<FakeIdentityManager> fake_identity_manager_;
   std::unique_ptr<FakeAssistantClient> fake_assistant_client_;
 
-  std::unique_ptr<FakeAudioInput> fake_audio_input_;
   std::unique_ptr<FakeDeviceActions> fake_device_actions_;
 
   FakeAssistantManagerServiceImpl* fake_assistant_manager_ptr_;

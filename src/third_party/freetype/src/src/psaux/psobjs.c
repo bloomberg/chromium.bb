@@ -36,7 +36,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_psobjs
+#define FT_COMPONENT  psobjs
 
 
   /*************************************************************************/
@@ -1447,6 +1447,8 @@
                                           bytes,
                                           max_bytes );
 
+    parser->cursor = cur;
+
     if ( delimiters )
     {
       if ( cur < parser->limit && *cur != '>' )
@@ -1456,10 +1458,8 @@
         goto Exit;
       }
 
-      cur++;
+      parser->cursor++;
     }
-
-    parser->cursor = cur;
 
   Exit:
     return error;

@@ -30,8 +30,7 @@ class WebAppPolicyManager {
   // Constructs a WebAppPolicyManager instance that uses
   // |pending_app_manager| to manage apps. |pending_app_manager| should outlive
   // this class.
-  explicit WebAppPolicyManager(Profile* profile,
-                               PendingAppManager* pending_app_manager);
+  WebAppPolicyManager(Profile* profile, PendingAppManager* pending_app_manager);
   ~WebAppPolicyManager();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -50,11 +49,6 @@ class WebAppPolicyManager {
   PendingAppManager* pending_app_manager_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  // URLs of the apps that this class last installed. Populated with the current
-  // policy-installed apps at start up and replaced every time this class calls
-  // PendingAppManager::InstallApps().
-  std::vector<GURL> last_app_urls_;
 
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 

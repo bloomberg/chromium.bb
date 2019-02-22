@@ -33,12 +33,11 @@ int64_t ConvertTimespecToMicros(const struct timespec& ts) {
     result *= base::Time::kMicrosecondsPerSecond;
     result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
     return result;
-  } else {
-    base::CheckedNumeric<int64_t> result(ts.tv_sec);
-    result *= base::Time::kMicrosecondsPerSecond;
-    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
-    return result.ValueOrDie();
   }
+  base::CheckedNumeric<int64_t> result(ts.tv_sec);
+  result *= base::Time::kMicrosecondsPerSecond;
+  result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+  return result.ValueOrDie();
 }
 
 // Helper function to get results from clock_gettime() and convert to a

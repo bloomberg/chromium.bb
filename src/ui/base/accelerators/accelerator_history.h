@@ -31,6 +31,10 @@ class UI_BASE_EXPORT AcceleratorHistory {
     return previous_accelerator_;
   }
 
+  const std::set<KeyboardCode>& currently_pressed_keys() const {
+    return currently_pressed_keys_;
+  }
+
   // Stores the given |accelerator| only if it's different than the currently
   // stored one.
   void StoreCurrentAccelerator(const Accelerator& accelerator);

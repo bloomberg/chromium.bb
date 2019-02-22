@@ -34,7 +34,11 @@ em_config = "\"$em_config\""
 #  generate_html: when true generates also an example .html file which contains
 #      a minimal console to interact with the module (useful for testing).
 template("wasm_lib") {
-  _lib_name = target_name
+  assert(defined(invoker.name))
+
+  # If the name is foo the target_name must be foo_wasm.
+  assert(invoker.name + "_wasm" == target_name)
+  _lib_name = invoker.name
 
   if (is_wasm) {
     assert(defined(invoker.sources))
@@ -50,7 +54,9 @@ template("wasm_lib") {
       "-s",
       "NO_DYNAMIC_EXECUTION=1",
       "-s",
-      "TOTAL_MEMORY=536870912",
+      "TOTAL_MEMORY=33554432",
+      "-s",
+      "ALLOW_MEMORY_GROWTH=1",
       "-s",
       "RESERVED_FUNCTION_POINTERS=32",
       "-s",
@@ -60,7 +66,9 @@ template("wasm_lib") {
       "-s",
       "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'addFunction']",
     ]
-    if (!is_debug) {
+    if (is_debug) {
+      _target_ldflags += [ "-g4" ]
+    } else {
       _target_ldflags += [ "-O3" ]
     }
 
@@ -102,6 +110,9 @@ template("wasm_lib") {
       outputs = [
         "$root_out_dir/$_lib_name.wasm",
       ]
+      if (is_debug) {
+        outputs += [ "$root_out_dir/$_lib_name.wasm.map" ]
+      }
       args = [ "--noop" ]
       script = "//gn/standalone/build_tool_wrapper.py"
     }

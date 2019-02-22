@@ -9,13 +9,23 @@
 
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
-@protocol CRWWebViewProxy;
 class WebStateList;
+
+// Delegate for the coordinator actions.
+@protocol FormInputAccessoryCoordinatorDelegate<NSObject>
+
+// Opens the passwords settings.
+- (void)openPasswordSettings;
+
+@end
 
 // Creates and manages a custom input accessory view while the user is
 // interacting with a form. Also handles hiding and showing the default
 // accessory view elements.
 @interface FormInputAccessoryCoordinator : ChromeCoordinator
+
+// The delegate for the password coordinator. Must be set before it starts.
+@property(nonatomic, weak) id<FormInputAccessoryCoordinatorDelegate> delegate;
 
 // Creates a coordinator that uses a |viewController| a |browserState| and
 // a |webStateList|.

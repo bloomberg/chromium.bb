@@ -18,9 +18,12 @@ source_set("app_shim") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
+    "//content/public/browser",
     "//ipc",
     "//mojo/core/embedder",
+    "//ui/accelerated_widget_mac",
     "//ui/base",
+    "//ui/views:views",
   ]
 }
 

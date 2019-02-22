@@ -8,4 +8,18 @@ namespace blink {
 
 SelectorFilterParentScope* SelectorFilterParentScope::current_scope_ = nullptr;
 
+void SelectorFilterParentScope::PushAncestors(Element& element) {
+  if (Element* ancestor = element.ParentOrShadowHostElement()) {
+    PushAncestors(*ancestor);
+    resolver_->GetSelectorFilter().PushParent(*ancestor);
+  }
+}
+
+void SelectorFilterParentScope::PopAncestors(Element& element) {
+  if (Element* ancestor = element.ParentOrShadowHostElement()) {
+    resolver_->GetSelectorFilter().PopParent(*ancestor);
+    PopAncestors(*ancestor);
+  }
+}
+
 }  // namespace blink

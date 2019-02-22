@@ -22,8 +22,8 @@ class CORE_EXPORT ConsoleMessageStorage
 
   void AddConsoleMessage(ExecutionContext*, ConsoleMessage*);
   void Clear();
-  size_t size() const;
-  ConsoleMessage* at(size_t index) const;
+  wtf_size_t size() const;
+  ConsoleMessage* at(wtf_size_t index) const;
   int ExpiredCount() const;
 
   void Trace(blink::Visitor*);

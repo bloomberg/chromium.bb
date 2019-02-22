@@ -1,29 +1,41 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="/js-test-resources/js-test.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-window.testCount = 8;
+let counter = 0;
 
-// Don't log console messages as the order of CORS error messages is not
-// stable. It's ok to ignore them since we're checking whether the elements
-// got loaded or errored.
-if (window.testRunner) {
-    testRunner.setDumpConsoleMessages(false);
+async_test((t) => {
+  self.test = t;
+}, "A stylesheet with a crossorigin attribute should not load a cross-origin " +
+   "resource that isn't CORS enabled");
+
+const fail = test.step_func((target) => {
+  const href = target.href;
+  assert_unreached('"' + href + '"');
+});
+
+function pass() {
+  ++counter;
+  if (counter !== 8) {
+    return;
+  }
+
+  self.test.done();
 }
 </script>
-<script src="resources/link-crossorigin-common.js"></script>
 </head>
 <body>
 <p>Test that a linked stylesheet with a crossorigin attribute does not load a cross-origin resource that isn't CORS enabled.</p>
-<link crossorigin="anonymous" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?1" onload="fail()" onerror="pass()">
-<link crossorigin="use-credentials" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?2" onload="fail()" onerror="pass()">
+<link crossorigin="anonymous" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?1" onload="fail(this)" onerror="pass()">
+<link crossorigin="use-credentials" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?2" onload="fail(this)" onerror="pass()">
 <!-- Check that from-cache loads are also failing (and does not generate separate loads.) -->
-<link crossorigin="anonymous" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?1" onload="fail()" onerror="pass()">
-<link crossorigin="use-credentials" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?2" onload="fail()" onerror="pass()">
+<link crossorigin="anonymous" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?1" onload="fail(this)" onerror="pass()">
+<link crossorigin="use-credentials" rel="stylesheet" href="http://localhost:8080/security/resources/green-background.css?2" onload="fail(this)" onerror="pass()">
 <!-- These are same-origin and should load as the fetch wasn't out of origin -->
-<link crossorigin="anonymous" rel="stylesheet" href="resources/green-background.css?3" onload="pass()" onerror="fail()">
-<link crossorigin="use-credentials" rel="stylesheet" href="resources/green-background.css?4" onload="pass()" onerror="fail()">
+<link crossorigin="anonymous" rel="stylesheet" href="resources/green-background.css?3" onload="pass()" onerror="fail(this)">
+<link crossorigin="use-credentials" rel="stylesheet" href="resources/green-background.css?4" onload="pass()" onerror="fail(this)">
 <script>
 function runTest()
 {
@@ -31,7 +43,7 @@ function runTest()
     var link = document.createElement("link");
     link.rel = "stylesheet";
     link.crossOrigin = "anonymous";
-    link.onload = fail;
+    link.onload = fail.bind(link, link);
     link.onerror = pass;
     link.href = "http://localhost:8080/security/resources/green-background.css?8";
     document.body.appendChild(link);
@@ -39,7 +51,7 @@ function runTest()
     link = document.createElement("link");
     link.rel = "stylesheet";
     link.crossOrigin = "use-credentials";
-    link.onload = fail;
+    link.onload = fail.bind(link, link);
     link.onerror = pass;
     link.href = "http://localhost:8080/security/resources/green-background.css?9";
     document.body.appendChild(link);

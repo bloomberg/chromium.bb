@@ -4,7 +4,7 @@
 
 import httplib
 import json
-
+from urlparse import urlparse
 
 class _Method(object):
   GET = 'GET'
@@ -68,6 +68,8 @@ class Command(object):
   GET_ELEMENT_SIZE = (_Method.GET, '/session/:sessionId/element/:id/size')
   GET_ELEMENT_ATTRIBUTE = (
       _Method.GET, '/session/:sessionId/element/:id/attribute/:name')
+  GET_ELEMENT_PROPERTY = (
+      _Method.GET, '/session/:sessionId/element/:id/property/:name')
   ELEMENT_EQUALS = (
       _Method.GET, '/session/:sessionId/element/:id/equals/:other')
   GET_COOKIES = (_Method.GET, '/session/:sessionId/cookie')
@@ -78,7 +80,7 @@ class Command(object):
   SWITCH_TO_FRAME = (_Method.POST, '/session/:sessionId/frame')
   SWITCH_TO_PARENT_FRAME = (_Method.POST, '/session/:sessionId/frame/parent')
   SWITCH_TO_WINDOW = (_Method.POST, '/session/:sessionId/window')
-  GET_WINDOW_RECT = (_Method.GET, 'session/:sessionId/window/rect')
+  GET_WINDOW_RECT = (_Method.GET, '/session/:sessionId/window/rect')
   GET_WINDOW_SIZE = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/size')
   GET_WINDOW_POSITION = (
@@ -169,6 +171,8 @@ class Command(object):
       _Method.POST, '/session/:sessionId/chromium/send_command')
   SEND_COMMAND_AND_GET_RESULT = (
       _Method.POST, '/session/:sessionId/chromium/send_command_and_get_result')
+  GENERATE_TEST_REPORT = (
+      _Method.POST, '/session/:sessionId/reporting/generate_test_report')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')
@@ -178,8 +182,9 @@ class Command(object):
 class CommandExecutor(object):
   def __init__(self, server_url):
     self._server_url = server_url
-    port = int(server_url.split(':')[2].split('/')[0])
-    self._http_client = httplib.HTTPConnection('127.0.0.1', port, timeout=30)
+    parsed_url = urlparse(server_url)
+    self._http_client = httplib.HTTPConnection(
+        parsed_url.hostname, parsed_url.port, timeout=30)
 
   def Execute(self, command, params):
     url_parts = command[1].split('/')

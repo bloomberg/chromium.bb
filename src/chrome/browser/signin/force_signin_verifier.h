@@ -62,7 +62,7 @@ class ForceSigninVerifier
   void SendRequestIfNetworkAvailable(
       network::mojom::ConnectionType network_type);
 
-  virtual bool ShouldSendRequest();
+  bool ShouldSendRequest();
 
   virtual void CloseAllBrowserWindows();
 

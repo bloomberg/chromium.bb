@@ -11,6 +11,17 @@ namespace media_perception_private {
 
 namespace {
 
+std::unique_ptr<Metadata> MetadataProtoToIdl(const mri::Metadata& metadata) {
+  std::unique_ptr<Metadata> metadata_result = std::make_unique<Metadata>();
+  if (metadata.has_visual_experience_controller_version()) {
+    metadata_result->visual_experience_controller_version =
+        std::make_unique<std::string>(
+            metadata.visual_experience_controller_version());
+  }
+
+  return metadata_result;
+}
+
 HotwordType HotwordTypeProtoToIdl(const mri::HotwordDetection::Type& type) {
   switch (type) {
     case mri::HotwordDetection::UNKNOWN_TYPE:
@@ -466,6 +477,10 @@ PerceptionSample PerceptionSampleProtoToIdl(
         std::make_unique<AudioVisualPerception>(AudioVisualPerceptionProtoToIdl(
             perception_sample.audio_visual_perception()));
   }
+  if (perception_sample.has_metadata()) {
+    perception_sample_result.metadata =
+        MetadataProtoToIdl(perception_sample.metadata());
+  }
   return perception_sample_result;
 }
 
@@ -510,6 +525,36 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
   }
   NOTREACHED() << "Reached status not in switch.";
   return mri::State::STATUS_UNSPECIFIED;
+}
+
+Feature FeatureProtoToIdl(int feature) {
+  switch (feature) {
+    case mri::State::FEATURE_AUTOZOOM:
+      return FEATURE_AUTOZOOM;
+    case mri::State::FEATURE_HOTWORD_DETECTION:
+      return FEATURE_HOTWORD_DETECTION;
+    case mri::State::FEATURE_OCCUPANCY_DETECTION:
+      return FEATURE_OCCUPANCY_DETECTION;
+    case mri::State::FEATURE_UNSET:
+      return FEATURE_NONE;
+  }
+  NOTREACHED() << "Reached feature not in switch.";
+  return FEATURE_NONE;
+}
+
+mri::State::Feature FeatureIdlToProto(const Feature& feature) {
+  switch (feature) {
+    case FEATURE_AUTOZOOM:
+      return mri::State::FEATURE_AUTOZOOM;
+    case FEATURE_HOTWORD_DETECTION:
+      return mri::State::FEATURE_HOTWORD_DETECTION;
+    case FEATURE_OCCUPANCY_DETECTION:
+      return mri::State::FEATURE_OCCUPANCY_DETECTION;
+    case FEATURE_NONE:
+      return mri::State::FEATURE_UNSET;
+  }
+  NOTREACHED() << "Reached feature not in switch.";
+  return mri::State::FEATURE_UNSET;
 }
 
 void VideoStreamParamIdlToProto(mri::VideoStreamParam* param_result,
@@ -599,7 +644,14 @@ State StateProtoToIdl(const mri::State& state) {
   }
   if (state.has_whiteboard())
     state_result.whiteboard = WhiteboardProtoToIdl(state.whiteboard());
-
+  if (state.features_size() > 0) {
+    state_result.features = std::make_unique<std::vector<Feature>>();
+    for (const auto& feature : state.features()) {
+      const Feature feature_result = FeatureProtoToIdl(feature);
+      if (feature_result != FEATURE_NONE)
+        state_result.features->emplace_back(feature_result);
+    }
+  }
   return state_result;
 }
 
@@ -623,6 +675,11 @@ mri::State StateIdlToProto(const State& state) {
 
   if (state.whiteboard)
     WhiteboardIdlToProto(*state.whiteboard, state_result.mutable_whiteboard());
+
+  if (state.features && state.features.get() != nullptr) {
+    for (size_t i = 0; i < state.features.get()->size(); ++i)
+      state_result.add_features(FeatureIdlToProto(state.features.get()->at(i)));
+  }
 
   return state_result;
 }
@@ -660,6 +717,11 @@ MediaPerception MediaPerceptionProtoToIdl(
       media_perception_result.audio_visual_perceptions->emplace_back(
           AudioVisualPerceptionProtoToIdl(perception));
     }
+  }
+
+  if (media_perception.has_metadata()) {
+    media_perception_result.metadata =
+        MetadataProtoToIdl(media_perception.metadata());
   }
 
   return media_perception_result;

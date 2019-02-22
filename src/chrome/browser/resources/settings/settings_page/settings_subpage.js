@@ -54,9 +54,15 @@ Polymer({
     active_: {
       type: Boolean,
       value: false,
-      observer: 'onActiveChanged_',
     },
   },
+
+  observers: [
+    'onActiveChanged_(active_, searchLabel)',
+  ],
+
+  /** @private {boolean} */
+  lastActiveValue_: false,
 
   /** @override */
   attached: function() {
@@ -87,8 +93,9 @@ Polymer({
 
   /** @private */
   onActiveChanged_: function() {
-    if (!this.searchLabel)
+    if (!this.searchLabel || this.lastActiveValue_ == this.active_)
       return;
+    this.lastActiveValue_ = this.active_;
 
     if (this.active_)
       this.becomeActiveFindShortcutListener();

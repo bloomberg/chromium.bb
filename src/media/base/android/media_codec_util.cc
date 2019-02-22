@@ -157,7 +157,7 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
       return model == other.model;
     }
   };
-  static const std::vector<BlacklistEntry> blacklist = {
+  static const BlacklistEntry blacklist[] = {
       // crbug.com/653905
       {"LGMS330", SDK_VERSION_LOLLIPOP_MR1},
 
@@ -192,9 +192,9 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
       {"GT-I8262B", SDK_VERSION_JELLY_BEAN_MR2},
   };
 
-  const auto iter =
-      std::find(blacklist.begin(), blacklist.end(), BlacklistEntry(model, 0));
-  return iter == blacklist.end() || sdk > iter->last_bad_sdk;
+  const BlacklistEntry* iter = std::find(
+      std::begin(blacklist), std::end(blacklist), BlacklistEntry(model, 0));
+  return iter == std::end(blacklist) || sdk > iter->last_bad_sdk;
 }
 
 // static

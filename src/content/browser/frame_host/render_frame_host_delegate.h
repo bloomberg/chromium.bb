@@ -56,9 +56,13 @@ class Origin;
 
 namespace blink {
 struct WebFullscreenOptions;
+namespace mojom {
+class FileChooserParams;
+}
 }
 
 namespace content {
+class FileSelectListener;
 class FrameTreeNode;
 class InterstitialPage;
 class PageState;
@@ -69,7 +73,6 @@ class WebContents;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
-struct FileChooserParams;
 struct GlobalRequestID;
 
 namespace mojom {
@@ -135,8 +138,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                       IPC::Message* reply_msg) {}
 
   // Called when a file selection is to be done.
-  virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              const FileChooserParams& params) {}
+  // Overrides of this function must call either listener->FileSelected() or
+  // listener->FileSelectionCanceled().
+  virtual void RunFileChooser(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<content::FileSelectListener> listener,
+      const blink::mojom::FileChooserParams& params);
 
   // The pending page load was canceled, so the address bar should be updated.
   virtual void DidCancelLoading() {}
@@ -237,6 +244,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notification that this frame has changed fullscreen state.
   virtual void FullscreenStateChanged(RenderFrameHost* rfh,
                                       bool is_fullscreen) {}
+
+#if defined(OS_ANDROID)
+  // Updates information to determine whether a user gesture should carryover to
+  // future navigations. This is needed so navigations within a certain
+  // timeframe of a request initiated by a gesture will be treated as if they
+  // were initiated by a gesture too, otherwise the navigation may be blocked.
+  virtual void UpdateUserGestureCarryoverInfo() {}
+#endif
 
   // Let the delegate decide whether postMessage should be delivered to
   // |target_rfh| from a source frame in the given SiteInstance.  This defaults

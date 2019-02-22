@@ -7,7 +7,6 @@
 #ifndef CORE_FPDFAPI_FONT_CPDF_CMAPPARSER_H_
 #define CORE_FPDFAPI_FONT_CPDF_CMAPPARSER_H_
 
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -36,11 +35,10 @@ class CPDF_CMapParser {
   static CIDSet CharsetFromOrdering(const ByteStringView& ordering);
 
  private:
-
   UnownedPtr<CPDF_CMap> const m_pCMap;
   int m_Status;
   int m_CodeSeq;
-  std::vector<CPDF_CMap::CodeRange> m_CodeRanges;
+  std::vector<CPDF_CMap::CodeRange> m_PendingRanges;
   std::vector<CPDF_CMap::CIDRange> m_AdditionalCharcodeToCIDMappings;
   ByteString m_LastWord;
   uint32_t m_CodePoints[4];

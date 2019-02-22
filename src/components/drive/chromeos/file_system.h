@@ -149,15 +149,12 @@ class FileSystem : public FileSystemInterface,
   void ReadDirectory(const base::FilePath& directory_path,
                      ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
-  void GetAvailableSpace(const GetAvailableSpaceCallback& callback) override;
-  void GetShareUrl(const base::FilePath& file_path,
-                   const GURL& embed_origin,
-                   const GetShareUrlCallback& callback) override;
+  void GetAvailableSpace(GetAvailableSpaceCallback callback) override;
   void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
-                              const MarkMountedCallback& callback) override;
+                              MarkMountedCallback callback) override;
   void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
-                                  const IsMountedCallback& callback) override;
+                                  IsMountedCallback callback) override;
   void MarkCacheFileAsUnmounted(const base::FilePath& cache_file_path,
                                 const FileOperationCallback& callback) override;
   void AddPermission(const base::FilePath& drive_file_path,
@@ -233,7 +230,7 @@ class FileSystem : public FileSystemInterface,
 
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
-      const GetAvailableSpaceCallback& callback,
+      GetAvailableSpaceCallback callback,
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
 
@@ -251,17 +248,6 @@ class FileSystem : public FileSystemInterface,
   void GetResourceEntryAfterRead(const base::FilePath& file_path,
                                  GetResourceEntryCallback callback,
                                  FileError error);
-
-  // Part of GetShareUrl. Resolves the resource entry to get the resource it,
-  // and then uses it to ask for the share url. |callback| must not be null.
-  void GetShareUrlAfterGetResourceEntry(const base::FilePath& file_path,
-                                        const GURL& embed_origin,
-                                        const GetShareUrlCallback& callback,
-                                        ResourceEntry* entry,
-                                        FileError error);
-  void OnGetResourceEntryForGetShareUrl(const GetShareUrlCallback& callback,
-                                        google_apis::DriveApiErrorCode status,
-                                        const GURL& share_url);
 
   void OnGetMetadata(
       GetFilesystemMetadataCallback callback,

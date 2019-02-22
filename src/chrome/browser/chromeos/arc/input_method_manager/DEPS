@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(mash): Fix this. https://crbug.com/890677
+  "arc_input_method_manager_service\.cc": [
+    "+ash/shell.h",
+  ],
+}

@@ -16,7 +16,7 @@
  * @param {!QuickViewUma} quickViewUma
  * @param {!MetadataBoxController} metadataBoxController
  * @param {DialogType} dialogType
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  *
  * @constructor
  */
@@ -85,7 +85,7 @@ function QuickViewController(
   this.dialogType_ = dialogType;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @private
    */
   this.volumeManager_ = volumeManager;
@@ -480,6 +480,7 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
  */
 QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
   return new Promise(function(resolve) {
-    ImageLoaderClient.getInstance().load(url, resolve);
+    ImageLoaderClient.getInstance().load(
+        LoadImageRequest.createForUrl(url), resolve);
   });
 };

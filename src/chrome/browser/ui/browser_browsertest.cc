@@ -1396,8 +1396,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   // Apps launched in a window from the NTP have an extensions tab helper with
   // extension_app set.
   ASSERT_TRUE(extensions::TabHelper::FromWebContents(app_window));
-  EXPECT_TRUE(
-      extensions::TabHelper::FromWebContents(app_window)->extension_app());
+  EXPECT_TRUE(extensions::TabHelper::FromWebContents(app_window)->is_app());
   EXPECT_EQ(extensions::AppLaunchInfo::GetFullLaunchURL(extension_app),
             app_window->GetURL());
 
@@ -1891,13 +1890,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose1) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-// Flaky on Chrome OS, Linux and Windows. TODO(https://crbug.com/823043) fix it.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_WindowOpenClose2 DISABLED_WindowOpenClose2
-#else
-#define MAYBE_WindowOpenClose2 WindowOpenClose2
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose2) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2647,15 +2640,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(ASCIIToUTF16("fullscreen"), app_contents);
 }
 
+#if defined(OS_MACOSX)
+// The size computation on popups is wrong in MacViews, https://crbug.com/834908
+#define MAYBE_TestPopupBounds DISABLED_TestPopupBounds
+#else
+#define MAYBE_TestPopupBounds TestPopupBounds
+#endif
+
 // Test to ensure the bounds of popup, devtool, and app windows are properly
 // restored.
-IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
-#if BUILDFLAG(MAC_VIEWS_BROWSER)
-  // The size computation on popups is wrong in MacViews:
-  // https://crbug.com/834908.
-  if (!views_mode_controller::IsViewsBrowserCocoa())
-    return;
-#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_TestPopupBounds) {
   // TODO(tdanderson|pkasting): Change this to verify that the contents bounds
   // set by params.initial_bounds are the same as the contents bounds in the
   // initialized window. See crbug.com/585856.

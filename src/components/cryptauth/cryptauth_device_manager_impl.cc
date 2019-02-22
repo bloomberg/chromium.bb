@@ -715,6 +715,12 @@ void CryptAuthDeviceManagerImpl::UpdateUnlockKeysFromPrefs() {
 
 void CryptAuthDeviceManagerImpl::OnSyncRequested(
     std::unique_ptr<SyncScheduler::SyncRequest> sync_request) {
+  // If a sync is already in progress, there is no need to start a new one.
+  if (sync_request_) {
+    sync_request->Cancel();
+    return;
+  }
+
   NotifySyncStarted();
 
   sync_request_ = std::move(sync_request);

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -219,27 +220,6 @@ class TestLoFiDecider : public LoFiDecider {
     }
   }
 
-  bool IsSlowPagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const override {
-    std::string header_value;
-    if (headers.GetHeader(chrome_proxy_accept_transform_header(),
-                          &header_value)) {
-      return header_value == empty_image_directive() ||
-             header_value == lite_page_directive();
-    }
-    return false;
-  }
-
-  bool IsLitePagePreviewRequested(
-      const net::HttpRequestHeaders& headers) const override {
-    std::string header_value;
-    if (headers.GetHeader(chrome_proxy_accept_transform_header(),
-                          &header_value)) {
-      return header_value == lite_page_directive();
-    }
-    return false;
-  }
-
   void RemoveAcceptTransformHeader(
       net::HttpRequestHeaders* headers) const override {
     if (ignore_is_using_data_reduction_proxy_check_)
@@ -409,7 +389,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                              .append(
                                  "\r\n"
                                  "Proxy-Connection: keep-alive\r\n"
-                                 "User-Agent:\r\n"
+                                 "User-Agent: \r\n"
                                  "Accept-Encoding: gzip, deflate\r\n"
                                  "Accept-Language: en-us,fr\r\n");
 
@@ -574,8 +554,45 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                      .append(host)
                                      .append(
                                          "\r\n"
-                                         "Proxy-Connection: keep-alive\r\n"
-                                         "User-Agent:\r\n");
+                                         "Proxy-Connection: keep-alive\r\n");
+    std::string user_agent_header = "User-Agent: \r\n";
+
+    // Set the base Accept-Encoding header value; Brotli may be added to it.
+    std::string accept_encoding_header_value;
+    bool accept_encoding_header_value_includes_brotli = false;
+    bool has_accept_encoding_request_header =
+        request_headers &&
+        request_headers->HasHeader(net::HttpRequestHeaders::kAcceptEncoding);
+    if (has_accept_encoding_request_header) {
+      request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                                 &accept_encoding_header_value);
+      // Check for if the Accept-Encoding header value already includes Brotli.
+      std::set<std::string> accept_encoding_header_entry_set;
+      if (net::HttpUtil::ParseAcceptEncoding(
+              accept_encoding_header_value,
+              &accept_encoding_header_entry_set) &&
+          accept_encoding_header_entry_set.find("br") !=
+              accept_encoding_header_entry_set.end()) {
+        accept_encoding_header_value_includes_brotli = true;
+      }
+    } else {
+      accept_encoding_header_value = "gzip, deflate";
+    }
+
+    // Add Brotli to the Accept-Encoding header value if it is expected and not
+    // already included. Brotli is expected if the request went to the network
+    // (i.e., it was not a cached response), and it is a case where the data
+    // reduction proxy network delegate adds Brotli to the header.
+    if (expect_brotli && !expect_cached &&
+        !accept_encoding_header_value_includes_brotli) {
+      if (!accept_encoding_header_value.empty())
+        accept_encoding_header_value += ", ";
+      accept_encoding_header_value += "br";
+      accept_encoding_header_value_includes_brotli = true;
+    }
+
+    std::string accept_encoding_header =
+        "Accept-Encoding: " + accept_encoding_header_value + "\r\n";
 
     std::string accept_language_header("Accept-Language: en-us,fr\r\n");
     std::string ect_header = "chrome-proxy-ect: " +
@@ -583,27 +600,19 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                                  net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)) +
                              "\r\n";
 
-    // Brotli is included in accept-encoding header only if the request went
-    // to the network (i.e., it was not a cached response), and if data
-    // reduction ptroxy network delegate added Brotli to the header.
-    std::string accept_encoding_header =
-        expect_brotli && !expect_cached
-            ? "Accept-Encoding: gzip, deflate, br\r\n"
-            : "Accept-Encoding: gzip, deflate\r\n";
-
     std::string suffix_headers =
         std::string("Chrome-Proxy: ") +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         std::string("\r\n\r\n");
 
-    std::string mock_write = prefix_headers + accept_language_header +
-                             ect_header + accept_encoding_header +
-                             suffix_headers;
-
-    if (expect_cached || !expect_brotli) {
-      // Order of headers is different if the headers were modified by data
-      // reduction proxy network delegate.
-      mock_write = prefix_headers + accept_encoding_header +
+    // If an Accept-Encoding header was provided, then Accept-Encoding appears
+    // before User-Agent; otherwise, it appears after it.
+    std::string mock_write;
+    if (has_accept_encoding_request_header) {
+      mock_write = prefix_headers + accept_encoding_header + user_agent_header +
+                   accept_language_header + ect_header + suffix_headers;
+    } else {
+      mock_write = prefix_headers + user_agent_header + accept_encoding_header +
                    accept_language_header + ect_header + suffix_headers;
     }
 
@@ -625,39 +634,35 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     if (!expect_cached) {
       EXPECT_EQ(response_body_size,
                 request->received_response_content_length());
-      EXPECT_NE(0, request->GetTotalSentBytes());
-      EXPECT_NE(0, request->GetTotalReceivedBytes());
-      EXPECT_FALSE(request->was_cached());
-      VerifyBrotliPresent(request.get(), expect_brotli);
-    } else {
-      EXPECT_TRUE(request->was_cached());
-      std::string content_encoding_value;
-      request->GetResponseHeaderByName("Content-Encoding",
-                                       &content_encoding_value);
-      EXPECT_EQ(expect_brotli, content_encoding_value == "br");
+      VerifyBrotliPresent(request.get(),
+                          accept_encoding_header_value_includes_brotli,
+                          expect_brotli);
     }
+    EXPECT_EQ(expect_cached, request->GetTotalSentBytes() == 0);
+    EXPECT_EQ(expect_cached, request->GetTotalReceivedBytes() == 0);
+    EXPECT_EQ(expect_cached, request->was_cached());
   }
 
-  void VerifyBrotliPresent(net::URLRequest* request, bool expect_brotli) {
+  void VerifyBrotliPresent(net::URLRequest* request,
+                           bool expect_accept_encoding_brotli,
+                           bool expect_content_encoding_brotli) {
     net::HttpRequestHeaders request_headers_sent;
     EXPECT_TRUE(request->GetFullRequestHeaders(&request_headers_sent));
     std::string accept_encoding_value;
     EXPECT_TRUE(request_headers_sent.GetHeader("Accept-Encoding",
                                                &accept_encoding_value));
-    EXPECT_NE(std::string::npos, accept_encoding_value.find("gzip"));
+
+    std::set<std::string> accept_encoding_value_set;
+    net::HttpUtil::ParseAcceptEncoding(accept_encoding_value,
+                                       &accept_encoding_value_set);
+    EXPECT_EQ(expect_accept_encoding_brotli,
+              accept_encoding_value_set.find("br") !=
+                  accept_encoding_value_set.end());
 
     std::string content_encoding_value;
     request->GetResponseHeaderByName("Content-Encoding",
                                      &content_encoding_value);
-
-    if (expect_brotli) {
-      // Brotli should be the last entry in the Accept-Encoding header.
-      EXPECT_EQ(accept_encoding_value.length() - 2,
-                accept_encoding_value.find("br"));
-      EXPECT_EQ("br", content_encoding_value);
-    } else {
-      EXPECT_EQ(std::string::npos, accept_encoding_value.find("br"));
-    }
+    EXPECT_EQ(expect_content_encoding_brotli, content_encoding_value == "br");
   }
 
   void FetchURLRequestAndVerifyPageIdDirective(base::Optional<uint64_t> page_id,
@@ -706,7 +711,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     std::string mock_write =
         "GET http://www.google.com/ HTTP/1.1\r\nHost: "
         "www.google.com\r\nProxy-Connection: "
-        "keep-alive\r\nUser-Agent:\r\nAccept-Encoding: gzip, "
+        "keep-alive\r\nUser-Agent: \r\nAccept-Encoding: gzip, "
         "deflate\r\nAccept-Language: en-us,fr\r\n"
         "chrome-proxy-ect: Unknown\r\n"
         "Chrome-Proxy: " +
@@ -908,11 +913,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   Init(USE_INSECURE_PROXY, false);
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviews,
-       features::kDataReductionProxyDecidesTransform},
-      {});
 
   // Enable Lo-Fi.
   bool is_data_reduction_proxy_enabled[] = {false, true};
@@ -940,16 +940,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(config()->ShouldAcceptServerPreview(
-          *fake_request, test_previews_decider));
+      lofi_decider()->SetIsUsingLoFi(true);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
 
       VerifyHeaders(is_data_reduction_proxy_enabled[i], true, headers);
       VerifyDataReductionProxyData(*fake_request,
-                                   is_data_reduction_proxy_enabled[i],
-                                   config()->ShouldAcceptServerPreview(
-                                       *fake_request, test_previews_decider));
+                                   is_data_reduction_proxy_enabled[i], true);
     }
 
     {
@@ -1023,14 +1020,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       std::unique_ptr<net::URLRequest> fake_request = context()->CreateRequest(
           GURL(kTestURL), net::IDLE, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
-      lofi_decider()->SetIsUsingLoFi(config()->ShouldAcceptServerPreview(
-          *fake_request, test_previews_decider));
+      lofi_decider()->SetIsUsingLoFi(true);
       NotifyNetworkDelegate(fake_request.get(), data_reduction_proxy_info,
                             proxy_retry_info, &headers);
       VerifyDataReductionProxyData(*fake_request,
-                                   is_data_reduction_proxy_enabled[i],
-                                   config()->ShouldAcceptServerPreview(
-                                       *fake_request, test_previews_decider));
+                                   is_data_reduction_proxy_enabled[i], true);
     }
   }
 }
@@ -1706,6 +1700,32 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
 }
 
+// Test that Brotli is not added to the accept-encoding header when
+// kDataReductionProxyBrotliHoldback feature is enabled.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisement_BrotliHoldbackEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyBrotliHoldback);
+
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
+
+  ReadBrotliFile();
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 140\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Vary: accept-encoding\r\n";
+  response_headers += "\r\n";
+
+  // Use secure sockets when fetching the request since Brotli is only enabled
+  // for secure connections.
+  FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, false);
+}
+
 // Test that Brotli is not added to the accept-encoding header when the request
 // is fetched from an insecure proxy.
 TEST_F(DataReductionProxyNetworkDelegateTest,
@@ -1729,7 +1749,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   EXPECT_NE(0, request->GetTotalReceivedBytes());
   EXPECT_FALSE(request->was_cached());
   // Brotli should be added to Accept Encoding header only if secure proxy is in
-  VerifyBrotliPresent(request.get(), false);
+  VerifyBrotliPresent(request.get(), false, false);
 }
 
 // Test that Brotli is not added to the accept-encoding header when it is
@@ -1771,6 +1791,54 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
 
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, false, true);
   FetchURLRequestAndVerifyBrotli(nullptr, response_headers, true, true);
+}
+
+// Test that Brotli is not added a second time to the Accept-Encoding header
+// when it is enabled globally but already present in the pre-existing header.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisementAcceptEncodingIncludesBr) {
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
+
+  net::HttpRequestHeaders request_headers;
+  request_headers.AddHeaderFromString("Accept-Encoding: gzip, deflate, br");
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Content-Encoding: br\r\n"
+      "Vary: accept-encoding\r\n";
+  response_headers += "\r\n";
+
+  FetchURLRequestAndVerifyBrotli(&request_headers, response_headers, false,
+                                 true);
+  FetchURLRequestAndVerifyBrotli(&request_headers, response_headers, true,
+                                 true);
+}
+
+// Test that Brotli is correctly added to the Accept-Encoding header when it is
+// enabled globally and the pre-existing header is empty.
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       BrotliAdvertisementAcceptEncodingEmpty) {
+  Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
+
+  net::HttpRequestHeaders request_headers;
+  request_headers.AddHeaderFromString("Accept-Encoding:");
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "Chrome-Proxy: ofcl=200\r\n"
+      "Cache-Control: max-age=1200\r\n"
+      "Content-Encoding: br\r\n"
+      "Vary: accept-encoding\r\n";
+  response_headers += "\r\n";
+
+  FetchURLRequestAndVerifyBrotli(&request_headers, response_headers, false,
+                                 true);
+  FetchURLRequestAndVerifyBrotli(&request_headers, response_headers, true,
+                                 true);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, IncrementingMainFramePageId) {

@@ -30,6 +30,10 @@ message App {
   bool no_display = 5;
   string startup_wm_class = 6;
   bool startup_notify = 7;
+
+  // If set, the package_id of the installed package that owns this .desktop
+  // file. If not set, the .desktop file is not owned by an installed package.
+  string package_id = 8;
 }
 
 message ApplicationList {

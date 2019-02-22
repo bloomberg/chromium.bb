@@ -22,7 +22,7 @@ class PLATFORM_EXPORT WorkerMetricsHelper : public MetricsHelper {
 
   void RecordTaskMetrics(
       NonMainThreadTaskQueue* queue,
-      const base::sequence_manager::TaskQueue::Task& task,
+      const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
 
   void SetParentFrameType(FrameOriginType frame_type);

@@ -14,8 +14,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class BrowserDistribution;
-
 // Internal free-standing functions that are exported here for testing.
 namespace profiles {
 namespace internal {
@@ -23,24 +21,22 @@ namespace internal {
 // Returns the full path to the profile icon file.
 base::FilePath GetProfileIconPath(const base::FilePath& profile_path);
 
-// Returns the default shortcut filename for the given profile name,
-// given |distribution|. Returns a filename appropriate for a
-// single-user installation if |profile_name| is empty.
-base::string16 GetShortcutFilenameForProfile(const base::string16& profile_name,
-                                             BrowserDistribution* distribution);
+// Returns the default shortcut filename for the given profile name. Returns a
+// filename appropriate for a single-user installation if |profile_name| is
+// empty.
+base::string16 GetShortcutFilenameForProfile(
+    const base::string16& profile_name);
 
 // The same as GetShortcutFilenameForProfile but uniqueness is guaranteed.
 // Makes an unique filename among |excludes|.
 base::string16 GetUniqueShortcutFilenameForProfile(
     const base::string16& profile_name,
-    const std::set<base::FilePath>& excludes,
-    BrowserDistribution* distribution);
+    const std::set<base::FilePath>& excludes);
 
 // This class checks that shortcut filename matches certain profile.
 class ShortcutFilenameMatcher {
  public:
-  ShortcutFilenameMatcher(const base::string16& profile_name,
-                          BrowserDistribution* distribution);
+  explicit ShortcutFilenameMatcher(const base::string16& profile_name);
 
   // Check that shortcut filename has a name given by us (by
   // GetShortcutFilenameForProfile or GetUniqueShortcutFilenameForProfile).

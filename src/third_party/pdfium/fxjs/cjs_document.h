@@ -14,6 +14,8 @@
 #include "core/fxcrt/observable.h"
 #include "fxjs/js_define.h"
 
+class CPDFSDK_InteractiveForm;
+class CPDF_InteractiveForm;
 class CPDF_TextObject;
 struct CJS_DelayData;
 
@@ -298,15 +300,14 @@ class CJS_Document final : public CJS_Object, public Observable<CJS_Document> {
   CJS_Result removeIcon(CJS_Runtime* pRuntime,
                         const std::vector<v8::Local<v8::Value>>& params);
 
-  bool IsEnclosedInRect(CFX_FloatRect rect, CFX_FloatRect LinkRect);
-  int CountWords(CPDF_TextObject* pTextObj);
-  WideString GetObjWordStr(CPDF_TextObject* pTextObj, int nWordIndex);
-
   CJS_Result getPropertyInternal(CJS_Runtime* pRuntime,
                                  const ByteString& propName);
   CJS_Result setPropertyInternal(CJS_Runtime* pRuntime,
                                  v8::Local<v8::Value> vp,
                                  const ByteString& propName);
+
+  CPDF_InteractiveForm* GetCoreInteractiveForm();
+  CPDFSDK_InteractiveForm* GetSDKInteractiveForm();
 
   WideString m_cwBaseURL;
   CPDFSDK_FormFillEnvironment::ObservedPtr m_pFormFillEnv;

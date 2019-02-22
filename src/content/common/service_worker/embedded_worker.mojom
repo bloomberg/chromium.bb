@@ -17,6 +17,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
 import "third_party/blink/public/platform/web_feature.mojom";
 import "third_party/blink/public/web/console_message.mojom";
 import "third_party/blink/public/web/devtools_agent.mojom";
@@ -38,6 +39,9 @@ struct EmbeddedWorkerStartParams {
   // This service worker's script url:
   // https://w3c.github.io/ServiceWorker/#dom-serviceworker-scripturl
   url.mojom.Url script_url;
+  // This service worker's script type:
+  // https://w3c.github.io/ServiceWorker/#dfn-type
+  blink.mojom.ScriptType script_type;
   // The id to talk with the DevTools agent for the worker.
   int32 worker_devtools_agent_route_id;
   // Unique token identifying this worker for DevTools.
@@ -106,7 +110,8 @@ interface EmbeddedWorkerInstanceClient {
   AddMessageToConsole(blink.mojom.ConsoleMessageLevel level, string message);
   // Returns a DevToolsAgent interface for this embedded worker, used for
   // remote debugging. See DevToolsAgent for details.
-  BindDevToolsAgent(associated blink.mojom.DevToolsAgent& devtools_agent);
+  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
+                    associated blink.mojom.DevToolsAgent& agent);
 };
 
 // EmbeddedWorkerInstanceHost is the browser-side ("Host") of

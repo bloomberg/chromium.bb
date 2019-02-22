@@ -16,12 +16,17 @@
 
 namespace ash {
 
-WorkspaceEventHandler::WorkspaceEventHandler() : click_component_(HTNOWHERE) {}
+WorkspaceEventHandler::WorkspaceEventHandler(aura::Window* workspace_window)
+    : workspace_window_(workspace_window), click_component_(HTNOWHERE) {
+  workspace_window_->AddPreTargetHandler(this);
+}
 
-WorkspaceEventHandler::~WorkspaceEventHandler() = default;
+WorkspaceEventHandler::~WorkspaceEventHandler() {
+  workspace_window_->RemovePreTargetHandler(this);
+}
 
-void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event,
-                                         aura::Window* target) {
+void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   if (event->type() == ui::ET_MOUSE_PRESSED && event->IsOnlyLeftMouseButton() &&
       ((event->flags() & (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) ==
        0)) {
@@ -70,11 +75,11 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event,
   }
 }
 
-void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event,
-                                           aura::Window* target) {
+void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (event->handled() || event->type() != ui::ET_GESTURE_TAP)
     return;
 
+  aura::Window* target = static_cast<aura::Window*>(event->target());
   int previous_target_component = click_component_;
   click_component_ = wm::GetNonClientComponent(target, event->location());
 

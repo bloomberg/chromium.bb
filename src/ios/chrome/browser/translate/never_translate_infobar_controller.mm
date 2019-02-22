@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#import "ios/chrome/browser/infobars/infobar_controller+protected.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/confirm_infobar_view.h"
@@ -20,9 +21,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface NeverTranslateInfoBarController () {
-  translate::TranslateInfoBarDelegate* _translateInfoBarDelegate;
-}
+@interface NeverTranslateInfoBarController ()
+
+// Overrides superclass property.
+@property(nonatomic, readonly)
+    translate::TranslateInfoBarDelegate* infoBarDelegate;
 
 // Action for any of the user defined buttons.
 - (void)infoBarButtonDidPress:(id)sender;
@@ -31,28 +34,26 @@
 
 @implementation NeverTranslateInfoBarController
 
+@dynamic infoBarDelegate;
+
 #pragma mark -
 #pragma mark InfoBarControllerProtocol
 
 - (instancetype)initWithInfoBarDelegate:
-    (translate::TranslateInfoBarDelegate*)delegate {
-  self = [super init];
-  if (self) {
-    _translateInfoBarDelegate = delegate;
-  }
-  return self;
+    (translate::TranslateInfoBarDelegate*)infoBarDelegate {
+  return [super initWithInfoBarDelegate:infoBarDelegate];
 }
 
 - (UIView<InfoBarViewSizing>*)viewForFrame:(CGRect)frame {
   ConfirmInfoBarView* infoBarView =
       [[ConfirmInfoBarView alloc] initWithFrame:frame];
   // Icon
-  gfx::Image icon = _translateInfoBarDelegate->GetIcon();
+  gfx::Image icon = self.infoBarDelegate->GetIcon();
   if (!icon.IsEmpty())
     [infoBarView addLeftIcon:icon.ToUIImage()];
   // Main text.
   base::string16 originalLanguage =
-      _translateInfoBarDelegate->original_language_name();
+      self.infoBarDelegate->original_language_name();
   [infoBarView
       addLabel:l10n_util::GetNSStringF(IDS_IOS_TRANSLATE_INFOBAR_NEVER_MESSAGE,
                                        originalLanguage)];
@@ -77,26 +78,22 @@
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {
-  // This press might have occurred after the user has already pressed a button,
-  // in which case the view has been detached from the delegate and this press
-  // should be ignored.
-  if (!self.delegate) {
+  if ([self shouldIgnoreUserInteraction])
     return;
-  }
 
   NSUInteger buttonId = base::mac::ObjCCastStrict<UIButton>(sender).tag;
   switch (buttonId) {
     case TranslateInfoBarIOSTag::CLOSE:
-      _translateInfoBarDelegate->InfoBarDismissed();
+      self.infoBarDelegate->InfoBarDismissed();
       self.delegate->RemoveInfoBar();
       break;
     case TranslateInfoBarIOSTag::DENY_LANGUAGE:
-      _translateInfoBarDelegate->NeverTranslatePageLanguage();
+      self.infoBarDelegate->NeverTranslatePageLanguage();
       self.delegate->RemoveInfoBar();
       break;
     case TranslateInfoBarIOSTag::DENY_WEBSITE:
-      if (!_translateInfoBarDelegate->IsSiteBlacklisted())
-        _translateInfoBarDelegate->ToggleSiteBlacklist();
+      if (!self.infoBarDelegate->IsSiteBlacklisted())
+        self.infoBarDelegate->ToggleSiteBlacklist();
       self.delegate->RemoveInfoBar();
       break;
     default:

@@ -28,6 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_CARET_DISPLAY_ITEM_CLIENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -41,7 +42,7 @@ class GraphicsContext;
 class LayoutBlock;
 struct PaintInvalidatorContext;
 
-class CaretDisplayItemClient final : public DisplayItemClient {
+class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
  public:
   CaretDisplayItemClient();
   ~CaretDisplayItemClient() override;
@@ -92,13 +93,13 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   LayoutRect local_rect_;
   LayoutBlock* layout_block_ = nullptr;
 
-  // Visual rect of the caret in m_layoutBlock. This is updated by
-  // invalidatePaintIfNeeded().
+  // Visual rect of the caret in layout_block_. This is updated by
+  // InvalidatePaintIfNeeded().
   LayoutRect visual_rect_;
 
-  // These are set to the previous value of m_layoutBlock and m_visualRect
-  // during updateStyleAndLayoutIfNeeded() if they haven't been set since the
-  // last paint invalidation. They can only be used in invalidatePaintIfNeeded()
+  // These are set to the previous value of layout_bloc_k and visual_rect_
+  // during UpdateStyleAndLayoutIfNeeded() if they haven't been set since the
+  // last paint invalidation. They can only be used in InvalidatePaintIfNeeded()
   // to invalidate the caret in the previous layout block.
   const LayoutBlock* previous_layout_block_ = nullptr;
   LayoutRect visual_rect_in_previous_layout_block_;

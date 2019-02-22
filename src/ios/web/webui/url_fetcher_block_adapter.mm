@@ -5,8 +5,8 @@
 #import "ios/web/webui/url_fetcher_block_adapter.h"
 
 #include "base/logging.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,27 +16,39 @@ namespace web {
 
 URLFetcherBlockAdapter::URLFetcherBlockAdapter(
     const GURL& url,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     web::URLFetcherBlockAdapterCompletion completion_handler)
     : url_(url),
-      request_context_(request_context),
-      completion_handler_([completion_handler copy]) {
-}
+      url_loader_factory_(std::move(url_loader_factory)),
+      completion_handler_([completion_handler copy]) {}
 
 URLFetcherBlockAdapter::~URLFetcherBlockAdapter() {
 }
 
 void URLFetcherBlockAdapter::Start() {
-  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
-  fetcher_->SetRequestContext(request_context_);
-  fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url_;
+
+  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                 NO_TRAFFIC_ANNOTATION_YET);
+  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&URLFetcherBlockAdapter::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
-void URLFetcherBlockAdapter::OnURLFetchComplete(const net::URLFetcher* source) {
+void URLFetcherBlockAdapter::OnURLLoadComplete(
+    std::unique_ptr<std::string> response_body) {
   std::string response;
-  if (!source->GetResponseAsString(&response)) {
-    DLOG(WARNING) << "String for resource URL not found" << source->GetURL();
+  if (!response_body) {
+    DLOG(WARNING) << "String for resource URL not found"
+                  << url_loader_->GetFinalURL();
+  } else {
+    response = *response_body;
   }
+
+  url_loader_.reset();
+
   NSData* data =
       [NSData dataWithBytes:response.c_str() length:response.length()];
   completion_handler_.get()(data, this);

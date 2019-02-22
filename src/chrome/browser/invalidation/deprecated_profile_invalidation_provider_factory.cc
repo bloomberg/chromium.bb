@@ -28,6 +28,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -81,8 +82,7 @@ DeprecatedProfileInvalidationProviderFactory::
     DeprecatedProfileInvalidationProviderFactory()
     : BrowserContextKeyedServiceFactory(
           "InvalidationService",
-          BrowserContextDependencyManager::GetInstance()),
-      testing_factory_(NULL) {
+          BrowserContextDependencyManager::GetInstance()) {
 #if !defined(OS_ANDROID)
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
@@ -93,15 +93,15 @@ DeprecatedProfileInvalidationProviderFactory::
     ~DeprecatedProfileInvalidationProviderFactory() {}
 
 void DeprecatedProfileInvalidationProviderFactory::RegisterTestingFactory(
-    TestingFactoryFunction testing_factory) {
-  testing_factory_ = testing_factory;
+    TestingFactory testing_factory) {
+  testing_factory_ = std::move(testing_factory);
 }
 
 KeyedService*
 DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (testing_factory_)
-    return testing_factory_(context).release();
+    return testing_factory_.Run(context).release();
 
 #if defined(OS_ANDROID)
   // Android does not need an IdentityProvider, because it gets the account
@@ -136,7 +136,8 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
           profile->GetRequestContext(),
           content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess());
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          content::GetNetworkConnectionTracker());
   service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 

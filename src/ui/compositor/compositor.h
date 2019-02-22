@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/element_id.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -49,7 +50,6 @@ class AnimationTimeline;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeFrameSink;
-class LayerTreeHost;
 class TaskGraphRunner;
 }
 
@@ -151,8 +151,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
       const gfx::ColorSpace& blending_color_space,
       const gfx::ColorSpace& output_color_space) = 0;
 
-  virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
-                                             base::TimeDelta interval) = 0;
   // Mac path for transporting vsync parameters to the display.  Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
@@ -207,7 +205,6 @@ class COMPOSITOR_EXPORT ContextFactory {
 // view hierarchy.
 class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                      public cc::LayerTreeHostSingleThreadClient,
-                                     public CompositorLockManagerClient,
                                      public viz::HostFrameSinkClient,
                                      public ExternalBeginFrameClient {
  public:
@@ -310,14 +307,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                gfx::ScrollOffset* offset) const;
   bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
 
-  // The "authoritative" vsync interval, if provided, will override interval
-  // reported from 3D context. This is typically the value reported by a more
-  // reliable source, e.g, the platform display configuration.
-  // In the particular case of ChromeOS -- this is the value queried through
-  // XRandR, which is more reliable than the value queried through the 3D
-  // context.
-  void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval);
-
   // Most platforms set their vsync info via
   // BrowerCompositorLayerTreeFrameSink::OnUpdateVSyncParametersFromGpu(), but
   // Mac routes vsync info via the browser compositor instead through this path.
@@ -376,7 +365,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       CompositorLockClient* client,
       base::TimeDelta timeout =
           base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs)) {
-    return lock_manager_.GetCompositorLock(client, timeout);
+    return lock_manager_.GetCompositorLock(client, timeout,
+                                           host_->DeferCommits());
   }
 
   // Registers a callback that is run when the next frame successfully makes it
@@ -398,12 +388,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
-  void UpdateLayerTreeHost(VisualStateUpdate requested_update) override;
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
+  void UpdateLayerTreeHost() override;
+  void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
+  }
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
   void RequestNewLayerTreeFrameSink() override;
@@ -417,6 +404,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
@@ -425,9 +413,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
-
-  // CompositorLockManagerClient implementation.
-  void OnCompositorLockStateChanged(bool locked) override;
 
   bool IsLocked() { return lock_manager_.IsLocked(); }
 

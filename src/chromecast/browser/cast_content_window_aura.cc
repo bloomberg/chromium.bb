@@ -74,7 +74,8 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
 CastContentWindowAura::CastContentWindowAura(
     const CastContentWindow::CreateParams& params)
     : delegate_(params.delegate),
-      gesture_dispatcher_(std::make_unique<CastGestureDispatcher>(delegate_)),
+      gesture_dispatcher_(
+          std::make_unique<CastContentGestureHandler>(delegate_)),
       gesture_priority_(params.gesture_priority),
       is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),
@@ -142,6 +143,9 @@ void CastContentWindowAura::RequestVisibility(
 void CastContentWindowAura::NotifyVisibilityChange(
     VisibilityType visibility_type) {
   delegate_->OnVisibilityChange(visibility_type);
+  for (auto& observer : observer_list_) {
+    observer.OnVisibilityChange(visibility_type);
+  }
 }
 
 void CastContentWindowAura::RequestMoveOut(){};

@@ -5,6 +5,7 @@
 #include "core/fpdfapi/parser/cpdf_object_avail.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -27,7 +28,7 @@ class TestReadValidator final : public CPDF_ReadValidator {
 
   void SimulateReadError() { ReadBlock(nullptr, 0, 1); }
 
- protected:
+ private:
   TestReadValidator()
       : CPDF_ReadValidator(
             pdfium::MakeRetain<CFX_InvalidSeekableReadStream>(100),

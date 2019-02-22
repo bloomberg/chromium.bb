@@ -10,7 +10,6 @@ from dashboard.common import utils
 from dashboard.pinpoint.models import change
 from dashboard.pinpoint.models import job as job_module
 from dashboard.pinpoint.models import quest as quest_module
-from dashboard.pinpoint.models.change import patch
 
 
 _ERROR_BUG_ID = 'Bug ID must be an integer.'
@@ -20,7 +19,7 @@ _ERROR_TAGS_DICT = 'Tags must be a dict of key/value string pairs.'
 class New(api_request_handler.ApiRequestHandler):
   """Handler that cooks up a fresh Pinpoint job."""
 
-  def AuthorizedPost(self):
+  def PrivilegedPost(self):
     try:
       job = _CreateJob(self.request)
       job.Start()
@@ -89,33 +88,33 @@ def _ValidateBugId(bug_id):
 def _ValidateChanges(arguments):
   changes = arguments.get('changes')
   if changes:
-    # FromDict() performs input validation.
-    return [change.Change.FromDict(c) for c in json.loads(changes)]
+    # FromData() performs input validation.
+    return [change.Change.FromData(c) for c in json.loads(changes)]
 
-  change_1 = {
-      'commits': [{
-          'repository': arguments.get('repository'),
-          'git_hash': arguments.get('start_git_hash')
-      }],
-  }
+  commit_1 = change.Commit.FromDict({
+      'repository': arguments.get('repository'),
+      'git_hash': arguments.get('start_git_hash'),
+  })
 
-  change_2 = {
-      'commits': [{
-          'repository': arguments.get('repository'),
-          'git_hash': arguments.get('end_git_hash')
-      }]
-  }
+  commit_2 = change.Commit.FromDict({
+      'repository': arguments.get('repository'),
+      'git_hash': arguments.get('end_git_hash'),
+  })
 
-  if arguments.get('patch'):
-    change_2['patch'] = arguments.get('patch')
+  if 'patch' in arguments:
+    patch = change.GerritPatch.FromUrl(arguments['patch'])
+  else:
+    patch = None
 
-  # FromDict() performs input validation.
-  return (change.Change.FromDict(change_1), change.Change.FromDict(change_2))
+  change_1 = change.Change(commits=(commit_1,))
+  change_2 = change.Change(commits=(commit_2,), patch=patch)
+
+  return change_1, change_2
 
 
 def _ValidatePatch(patch_data):
   if patch_data:
-    patch_details = patch.FromDict(patch_data)
+    patch_details = change.GerritPatch.FromData(patch_data)
     return patch_details.server, patch_details.change
   return None, None
 
@@ -146,30 +145,40 @@ def _GenerateQuests(arguments):
     A tuple of (arguments, quests), where arguments is a dict containing the
     request arguments that were used, and quests is a list of Quests.
   """
-  target = arguments.get('target')
-  if target in ('performance_test_suite', 'performance_webview_test_suite',
-                'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
-    quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
-                     quest_module.ReadHistogramsJsonValue)
+  quests = arguments.get('quests')
+  if quests:
+    if isinstance(quests, basestring):
+      quests = quests.split(',')
+    quest_classes = []
+    for quest in quests:
+      if not hasattr(quest_module, quest):
+        raise ValueError('Unknown quest: "%s"' % quest)
+      quest_classes.append(getattr(quest_module, quest))
   else:
-    quest_classes = (quest_module.FindIsolate, quest_module.RunGTest,
-                     quest_module.ReadGraphJsonValue)
+    target = arguments.get('target')
+    if target in ('performance_test_suite', 'performance_webview_test_suite',
+                  'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
+      quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
+                       quest_module.ReadHistogramsJsonValue)
+    else:
+      quest_classes = (quest_module.FindIsolate, quest_module.RunGTest,
+                       quest_module.ReadGraphJsonValue)
 
-  quests = []
+  quest_instances = []
   for quest_class in quest_classes:
     # FromDict() performs input validation.
     quest = quest_class.FromDict(arguments)
     if not quest:
       break
-    quests.append(quest)
+    quest_instances.append(quest)
 
-  return quests
+  return quest_instances
 
 
 def _ValidatePin(pin):
   if not pin:
     return None
-  return change.Change.FromDict({'commits': [], 'patch': pin})
+  return change.Change.FromData(pin)
 
 
 def _ValidateTags(tags):

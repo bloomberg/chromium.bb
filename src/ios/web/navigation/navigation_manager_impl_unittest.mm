@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
@@ -163,6 +164,7 @@ class NavigationManagerTest
   CRWFakeBackForwardList* mock_wk_list_;
   WKWebView* mock_web_view_;
   base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
 
  private:
   TestBrowserState browser_state_;
@@ -1984,6 +1986,9 @@ TEST_P(NavigationManagerTest, Restore) {
   for (size_t i = 0; i < raw_items.size(); ++i) {
     EXPECT_EQ(raw_items[i], navigation_manager()->GetItemAtIndex(i));
   }
+
+  histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
+  histogram_tester_.ExpectBucketCount(kRestoreNavigationItemCount, 3, 1);
 }
 
 // Tests that pending item is not considered part of session history so that

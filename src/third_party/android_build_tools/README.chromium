@@ -6,15 +6,12 @@ License File: NOT_SHIPPED
 URL: https://developer.android.com/guide/app-bundle/build
 Security Critical: No
 
-Description:
-Android App Bundle support requires more recent versions of the
-'bundletool' and 'aapt2' build tools than those provided with the
-copies of the Android SDK currently used by internal or public
-Chrome source checkouts.
+Description: The tools in this directory either require more recent
+versions than are provided by the Android SDK used by internal or
+public Chrome source checkouts, or are not provided by the SDK at
+all.
 
-This directory contains their binaries, distributed through DEPS
-as two CIPD packages. See bundletool/cipd.yaml and aapt2/cipd.yaml
-for more details.
+See the readme and *.yaml files in each directory for details.
 
 Local Modifications:
 None

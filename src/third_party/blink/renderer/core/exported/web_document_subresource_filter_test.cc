@@ -32,7 +32,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
       : load_policy_(policy) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
-                           WebURLRequest::RequestContext) override {
+                           mojom::RequestContextType) override {
     std::string resource_path = WebString(KURL(resource_url).GetPath()).Utf8();
     if (std::find(queried_subresource_paths_.begin(),
                   queried_subresource_paths_.end(),
@@ -75,8 +75,10 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 class SubresourceFilteringWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void DidStartProvisionalLoad(WebDocumentLoader* data_source,
-                               WebURLRequest& request) override {
+  void DidStartProvisionalLoad(
+      WebDocumentLoader* data_source,
+      WebURLRequest& request,
+      mojo::ScopedMessagePipeHandle navigation_initiator_handle) override {
     // Normally, the filter should be set when the load is committed. For
     // the sake of this test, however, inject it earlier to verify that it
     // is not consulted for the main resource load.

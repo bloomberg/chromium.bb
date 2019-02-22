@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "net/nqe/network_quality_estimator_params.h"
@@ -169,14 +170,11 @@ void ObservationBuffer::GetPercentileForEachHostWithCounts(
 
 void ObservationBuffer::RemoveObservationsWithSource(
     bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX]) {
-  observations_.erase(
-      std::remove_if(
-          observations_.begin(), observations_.end(),
-          [deleted_observation_sources](const Observation& observation) {
-            return deleted_observation_sources[static_cast<size_t>(
-                observation.source())];
-          }),
-      observations_.end());
+  base::EraseIf(observations_,
+                [deleted_observation_sources](const Observation& observation) {
+                  return deleted_observation_sources[static_cast<size_t>(
+                      observation.source())];
+                });
 }
 
 void ObservationBuffer::ComputeWeightedObservations(

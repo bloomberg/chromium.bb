@@ -230,14 +230,16 @@ dictionary RTCTransportStats : RTCStats {
              DOMString selectedCandidatePairId;
              DOMString localCertificateId;
              DOMString remoteCertificateId;
+             DOMString tlsVersion;
              DOMString dtlsCipher;
              DOMString srtpCipher;
+             DOMString tlsGroup;
 };
 
 dictionary RTCIceCandidateStats : RTCStats {
              DOMString transportId;
              RTCNetworkType networkType;
-             DOMString ip;
+             DOMString address;
              long port;
              DOMString protocol;
              RTCIceCandidateType candidateType;

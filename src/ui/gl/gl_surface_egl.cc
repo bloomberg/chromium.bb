@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
@@ -492,10 +493,8 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
 void AddInitDisplay(std::vector<DisplayType>* init_displays,
                     DisplayType display_type) {
   // Make sure to not add the same display type twice.
-  if (std::find(init_displays->begin(), init_displays->end(), display_type) ==
-      init_displays->end()) {
+  if (!base::ContainsValue(*init_displays, display_type))
     init_displays->push_back(display_type);
-  }
 }
 
 const char* GetDebugMessageTypeString(EGLint source) {
@@ -1484,9 +1483,14 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
   if (presentation_time_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
     return false;
   }
-  *presentation_time = base::TimeTicks() +
-                       base::TimeDelta::FromNanoseconds(presentation_time_ns);
-  *presentation_flags = presentation_flags_;
+  if (presentation_time_ns == EGL_TIMESTAMP_INVALID_ANDROID) {
+    *presentation_time = base::TimeTicks::Now();
+  } else {
+    *presentation_time = base::TimeTicks() +
+                         base::TimeDelta::FromNanoseconds(presentation_time_ns);
+    *presentation_flags = presentation_flags_;
+  }
+  DCHECK(!presentation_time->is_null());
   return true;
 }
 

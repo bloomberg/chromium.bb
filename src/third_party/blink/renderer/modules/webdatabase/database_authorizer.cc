@@ -72,7 +72,7 @@ const FunctionNameList& WhitelistedFunctions() {
       ({
           // SQLite functions used to help implement some operations
           // ALTER TABLE helpers
-          "sqlite_rename_table", "sqlite_rename_trigger",
+          "sqlite_rename_column", "sqlite_rename_table", "sqlite_rename_test",
           // GLOB helpers
           "glob",
           // SQLite core functions

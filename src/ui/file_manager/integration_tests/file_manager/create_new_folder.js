@@ -24,7 +24,7 @@ function selectFirstFileListItem(appId) {
     return remoteCall.waitForElementLost(appId, '#file-list [selected]');
   }).then(function() {
     // Press DownArrow key to select an item.
-    const key = ['#file-list', 'ArrowDown', 'Down', false, false, false];
+    const key = ['#file-list', 'ArrowDown', false, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
@@ -58,7 +58,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Press Ctrl+E to create a new folder.
-    const key = ['#file-list', 'e', 'U+0045', true, false, false];
+    const key = ['#file-list', 'e', true, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
@@ -101,7 +101,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
         'inputText', appId, [textInput, 'Test Folder Name']);
   }).then(function() {
     // Press the Enter key.
-    const key = [textInput, 'Enter', 'Enter', false, false, false];
+    const key = [textInput, 'Enter', false, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
@@ -127,7 +127,9 @@ function createNewFolder(appId, initialEntrySet, selector) {
   }).then(function(elements) {
     // Check: the test folder only should be 'selected'.
     chrome.test.assertEq(1, elements.length);
-    chrome.test.assertEq(0, elements[0].text.indexOf('Test Folder Name--'));
+    chrome.test.assertEq(
+        0, elements[0].text.indexOf('Test Folder Name--'),
+        'Actual text was: ' + elements[0].text);
   });
 }
 
@@ -197,20 +199,26 @@ testcase.createFolderDownloads = function() {
 testcase.createFolderNestedDownloads = function() {
   let appId;
 
-  const promise = new Promise(function(resolve) {
-    setupAndWaitUntilReady(
-        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
-  }).then(function(results) {
-    appId = results.windowId;
-    return expandRoot(appId, TREEITEM_DOWNLOADS);
-  }).then(function() {
-    return navigateWithDirectoryTree(appId, '/photos', 'Downloads');
-  }).then(function() {
-    return remoteCall.waitForFiles(
-        appId, [], {ignoreLastModifiedTime: true});
-  }).then(function() {
-    return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
-  });
+  const promise =
+      new Promise(function(resolve) {
+        setupAndWaitUntilReady(
+            null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
+      })
+          .then(function(results) {
+            appId = results.windowId;
+            return expandRoot(appId, TREEITEM_DOWNLOADS);
+          })
+          .then(function() {
+            return remoteCall.navigateWithDirectoryTree(
+                appId, '/photos', 'Downloads');
+          })
+          .then(function() {
+            return remoteCall.waitForFiles(
+                appId, [], {ignoreLastModifiedTime: true});
+          })
+          .then(function() {
+            return createNewFolder(appId, [], TREEITEM_DOWNLOADS);
+          });
 
   testPromise(promise);
 };

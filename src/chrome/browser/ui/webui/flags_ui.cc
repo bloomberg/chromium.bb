@@ -284,6 +284,7 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
                           Profile* profile,
                           FlagsDOMHandler* dom_handler,
                           bool current_user_is_owner) {
+  DCHECK(!profile->IsOffTheRecord());
   // If the flags_ui has gone away, there's nothing to do.
   if (!flags_ui)
     return;
@@ -325,16 +326,19 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::move(handler_owner));
 
 #if defined(OS_CHROMEOS)
+  // Bypass possible incognito profile.
+  Profile* original_profile = profile->GetOriginalProfile();
   if (base::SysInfo::IsRunningOnChromeOS() &&
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile)) {
+          original_profile)) {
     chromeos::OwnerSettingsServiceChromeOS* service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-            profile);
-    service->IsOwnerAsync(base::Bind(
-        &FinishInitialization, weak_factory_.GetWeakPtr(), profile, handler));
+            original_profile);
+    service->IsOwnerAsync(base::Bind(&FinishInitialization,
+                                     weak_factory_.GetWeakPtr(),
+                                     original_profile, handler));
   } else {
-    FinishInitialization(weak_factory_.GetWeakPtr(), profile, handler,
+    FinishInitialization(weak_factory_.GetWeakPtr(), original_profile, handler,
                          false /* current_user_is_owner */);
   }
 #else

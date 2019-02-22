@@ -420,7 +420,7 @@ EGLBoolean EGLAPIENTRY eglStreamConsumerReleaseKHR(EGLDisplay dpy, EGLStreamKHR 
 
 EGLBoolean EGLAPIENTRY eglStreamConsumerGLTextureExternalAttribsNV(EGLDisplay dpy,
                                                                    EGLStreamKHR stream,
-                                                                   EGLAttrib *attrib_list)
+                                                                   const EGLAttrib *attrib_list)
 {
     return egl::StreamConsumerGLTextureExternalAttribsNV(dpy, stream, attrib_list);
 }
@@ -509,6 +509,13 @@ EGLint EGLAPIENTRY eglLabelObjectKHR(EGLDisplay dpy,
                                      EGLLabelKHR label)
 {
     return egl::LabelObjectKHR(dpy, objectType, object, label);
+}
+
+void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy,
+                                             EGLSetBlobFuncANDROID set,
+                                             EGLGetBlobFuncANDROID get)
+{
+    return egl::SetBlobCacheFuncsANDROID(dpy, set, get);
 }
 
 }  // extern "C"

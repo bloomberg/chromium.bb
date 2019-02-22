@@ -282,18 +282,16 @@ void HeadlessPrintManager::OnPrintingFailed(int cookie) {
 void HeadlessPrintManager::OnDidPrintDocument(
     const PrintHostMsg_DidPrintDocument_Params& params) {
   auto& content = params.content;
-  if (!base::SharedMemory::IsHandleValid(content.metafile_data_handle)) {
+  if (!content.metafile_data_region.IsValid()) {
     ReleaseJob(INVALID_MEMORY_HANDLE);
     return;
   }
-  auto shared_buf =
-      std::make_unique<base::SharedMemory>(content.metafile_data_handle, true);
-  if (!shared_buf->Map(content.data_size)) {
+  base::ReadOnlySharedMemoryMapping map = content.metafile_data_region.Map();
+  if (!map.IsValid()) {
     ReleaseJob(METAFILE_MAP_ERROR);
     return;
   }
-  data_ = std::string(static_cast<const char*>(shared_buf->memory()),
-                      content.data_size);
+  data_ = std::string(static_cast<const char*>(map.memory()), map.size());
   ReleaseJob(PRINT_SUCCESS);
 }
 

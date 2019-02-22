@@ -139,57 +139,6 @@ enum class FieldFilteringLevel {
   USER_INPUT = 2
 };
 
-// Layout classification of password forms
-// A layout sequence of a form is the sequence of it's non-password and password
-// input fields, represented by "N" and "P", respectively. A form like this
-// <form>
-//   <input type='text' ...>
-//   <input type='hidden' ...>
-//   <input type='password' ...>
-//   <input type='submit' ...>
-// </form>
-// has the layout sequence "NP" -- "N" for the first field, and "P" for the
-// third. The second and fourth fields are ignored, because they are not text
-// fields.
-//
-// The code below classifies the layout (see PasswordForm::Layout) of a form
-// based on its layout sequence. This is done by assigning layouts regular
-// expressions over the alphabet {N, P}. LAYOUT_OTHER is implicitly the type
-// corresponding to all layout sequences not matching any other layout.
-//
-// LAYOUT_LOGIN_AND_SIGNUP is classified by NPN+P.*. This corresponds to a form
-// which starts with a login section (NP) and continues with a sign-up section
-// (N+P.*). The aim is to distinguish such forms from change password-forms
-// (N*PPP?.*) and forms which use password fields to store private but
-// non-password data (could look like, e.g., PN+P.*).
-const char kLoginAndSignupRegex[] =
-    "NP"   // Login section.
-    "N+P"  // Sign-up section.
-    ".*";  // Anything beyond that.
-
-struct LoginAndSignupLazyInstanceTraits
-    : public base::internal::DestructorAtExitLazyInstanceTraits<re2::RE2> {
-  static re2::RE2* New(void* instance) {
-    return CreateMatcher(instance, kLoginAndSignupRegex);
-  }
-};
-
-base::LazyInstance<re2::RE2, LoginAndSignupLazyInstanceTraits>
-    g_login_and_signup_matcher = LAZY_INSTANCE_INITIALIZER;
-
-// Given the sequence of non-password and password text input fields of a form,
-// represented as a string of Ns (non-password) and Ps (password), computes the
-// layout type of that form.
-PasswordForm::Layout SequenceToLayout(base::StringPiece layout_sequence) {
-  if (re2::RE2::FullMatch(
-          re2::StringPiece(layout_sequence.data(),
-                           base::checked_cast<int>(layout_sequence.size())),
-          g_login_and_signup_matcher.Get())) {
-    return PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
-  }
-  return PasswordForm::Layout::LAYOUT_OTHER;
-}
-
 // Helper to determine which password is the main (current) one, and which is
 // the new password (e.g., on a sign-up or change password form), if any. If the
 // new password is found and there is another password field with the same user
@@ -649,15 +598,6 @@ bool GetPasswordForm(
     }
   }
 
-  // Evaluate the structure of the form for determining the form type (e.g.,
-  // sign-up, sign-in, etc.).
-  std::string layout_sequence;
-  layout_sequence.reserve(plausible_inputs.size());
-  for (const FormFieldData* input : plausible_inputs) {
-    layout_sequence.push_back((input->form_control_type == "password") ? 'P'
-                                                                       : 'N');
-  }
-
   // Populate all_possible_passwords and form_has_autofilled_value in
   // |password_form|.
   // Contains the first password element for each non-empty password value.
@@ -820,26 +760,12 @@ bool GetPasswordForm(
   }
   password_form->other_possible_usernames = std::move(other_possible_usernames);
 
-  // Report metrics.
-  if (!username_field) {
-    // To get a better idea on how password forms without a username field
-    // look like, report the total number of text and password fields.
-    UMA_HISTOGRAM_COUNTS_100(
-        "PasswordManager.EmptyUsernames.TextAndPasswordFieldCount",
-        layout_sequence.size());
-    // For comparison, also report the number of password fields.
-    UMA_HISTOGRAM_COUNTS_100(
-        "PasswordManager.EmptyUsernames.PasswordFieldCount",
-        std::count(layout_sequence.begin(), layout_sequence.end(), 'P'));
-  }
-
   password_form->origin = std::move(form_origin);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
   password_form->scheme = PasswordForm::SCHEME_HTML;
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
-  password_form->layout = SequenceToLayout(layout_sequence);
 
   return true;
 }
@@ -883,9 +809,9 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
   for (const blink::WebFormControlElement& element : web_control_elements) {
     // We're only interested in the presence
     // of <input type="hidden" /> elements.
-    CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));
+    static base::NoDestructor<WebString> kHidden("hidden");
     const blink::WebInputElement* input = blink::ToWebInputElement(&element);
-    if (!input || input->FormControlTypeForAutofill() != kHidden)
+    if (!input || input->FormControlTypeForAutofill() != *kHidden)
       continue;
 
     // There must be a hidden input named "rart".

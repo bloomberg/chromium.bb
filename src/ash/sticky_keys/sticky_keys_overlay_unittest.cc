@@ -4,7 +4,6 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"

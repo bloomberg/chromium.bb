@@ -21,6 +21,7 @@
 #include "libANGLE/Error.h"
 #include "libANGLE/FramebufferAttachment.h"
 #include "libANGLE/Image.h"
+#include "libANGLE/Observer.h"
 #include "libANGLE/Stream.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/formatutils.h"
@@ -187,18 +188,21 @@ struct TextureState final : private angle::NonCopyable
 bool operator==(const TextureState &a, const TextureState &b);
 bool operator!=(const TextureState &a, const TextureState &b);
 
-class Texture final : public RefCountObject, public egl::ImageSibling, public LabeledObject
+class Texture final : public RefCountObject,
+                      public egl::ImageSibling,
+                      public LabeledObject,
+                      public angle::ObserverInterface
 {
   public:
     Texture(rx::GLImplFactory *factory, GLuint id, TextureType type);
     ~Texture() override;
 
-    Error onDestroy(const Context *context) override;
+    void onDestroy(const Context *context) override;
 
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;
 
-    TextureType getType() const;
+    TextureType getType() const { return mState.mType; }
 
     void setSwizzleRed(GLenum swizzleRed);
     GLenum getSwizzleRed() const;
@@ -341,7 +345,7 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
                          GLint level,
                          const Offset &destOffset,
                          GLint sourceLevel,
-                         const Rectangle &sourceArea,
+                         const Box &sourceBox,
                          bool unpackFlipY,
                          bool unpackPremultiplyAlpha,
                          bool unpackUnmultiplyAlpha,
@@ -378,6 +382,9 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
     Extents getAttachmentSize(const ImageIndex &imageIndex) const override;
     Format getAttachmentFormat(GLenum binding, const ImageIndex &imageIndex) const override;
     GLsizei getAttachmentSamples(const ImageIndex &imageIndex) const override;
+    bool isRenderable(const Context *context,
+                      GLenum binding,
+                      const ImageIndex &imageIndex) const override;
 
     bool getAttachmentFixedSampleLocations(const ImageIndex &imageIndex) const;
 
@@ -392,9 +399,9 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
     GLuint getId() const override;
 
     // Needed for robust resource init.
-    Error ensureInitialized(const Context *context);
+    angle::Result ensureInitialized(const Context *context);
     InitState initState(const ImageIndex &imageIndex) const override;
-    InitState initState() const;
+    InitState initState() const { return mState.mInitState; }
     void setInitState(const ImageIndex &imageIndex, InitState initState) override;
 
     enum DirtyBitType
@@ -424,13 +431,19 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
         // Misc
         DIRTY_BIT_LABEL,
         DIRTY_BIT_USAGE,
+        DIRTY_BIT_IMPLEMENTATION,
 
         DIRTY_BIT_COUNT,
     };
     using DirtyBits = angle::BitSet<DIRTY_BIT_COUNT>;
 
-    Error syncState(const Context *context);
+    angle::Result syncState(const Context *context);
     bool hasAnyDirtyBit() const { return mDirtyBits.any(); }
+
+    // ObserverInterface implementation.
+    void onSubjectStateChange(const gl::Context *context,
+                              angle::SubjectIndex index,
+                              angle::SubjectMessage message) override;
 
   private:
     rx::FramebufferAttachmentObjectImpl *getAttachmentImpl() const override;
@@ -461,6 +474,7 @@ class Texture final : public RefCountObject, public egl::ImageSibling, public La
     TextureState mState;
     DirtyBits mDirtyBits;
     rx::TextureImpl *mTexture;
+    angle::ObserverBinding mImplObserver;
 
     std::string mLabel;
 

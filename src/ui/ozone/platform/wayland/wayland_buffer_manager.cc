@@ -5,8 +5,8 @@
 #include "ui/ozone/platform/wayland/wayland_buffer_manager.h"
 
 #include <drm_fourcc.h>
-
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <presentation-time-client-protocol.h>
 
 #include "base/trace_event/trace_event.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
@@ -14,6 +14,40 @@
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 namespace ui {
+
+namespace {
+
+uint32_t GetPresentationKindFlags(uint32_t flags) {
+  uint32_t presentation_flags = 0;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_VSYNC)
+    presentation_flags |= gfx::PresentationFeedback::kVSync;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK)
+    presentation_flags |= gfx::PresentationFeedback::kHWClock;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION)
+    presentation_flags |= gfx::PresentationFeedback::kHWCompletion;
+  if (flags & WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY)
+    presentation_flags |= gfx::PresentationFeedback::kZeroCopy;
+
+  return presentation_flags;
+}
+
+base::TimeTicks GetPresentationFeedbackTimeStamp(uint32_t tv_sec_hi,
+                                                 uint32_t tv_sec_lo,
+                                                 uint32_t tv_nsec) {
+  const int64_t seconds = (static_cast<int64_t>(tv_sec_hi) << 32) + tv_sec_lo;
+  const int64_t microseconds = seconds * base::Time::kMicrosecondsPerSecond +
+                               tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+  return base::TimeTicks() + base::TimeDelta::FromMicroseconds(microseconds);
+}
+
+}  // namespace
+
+WaylandBufferManager::Buffer::Buffer() = default;
+WaylandBufferManager::Buffer::Buffer(uint32_t id,
+                                     zwp_linux_buffer_params_v1* zwp_params,
+                                     const gfx::Size& buffer_size)
+    : buffer_id(id), size(buffer_size), params(zwp_params) {}
+WaylandBufferManager::Buffer::~Buffer() = default;
 
 WaylandBufferManager::WaylandBufferManager(
     zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
@@ -31,8 +65,7 @@ WaylandBufferManager::WaylandBufferManager(
 }
 
 WaylandBufferManager::~WaylandBufferManager() {
-  DCHECK(pending_buffer_map_.empty() && params_to_id_map_.empty() &&
-         buffers_.empty());
+  DCHECK(buffers_.empty());
 }
 
 bool WaylandBufferManager::CreateBuffer(base::File file,
@@ -64,14 +97,17 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
   DCHECK(zwp_linux_dmabuf_);
   struct zwp_linux_buffer_params_v1* params =
       zwp_linux_dmabuf_v1_create_params(zwp_linux_dmabuf_.get());
-  params_to_id_map_.insert(
-      std::pair<struct zwp_linux_buffer_params_v1*, uint32_t>(params,
-                                                              buffer_id));
+
+  std::unique_ptr<Buffer> buffer =
+      std::make_unique<Buffer>(buffer_id, params, gfx::Size(width, height));
+  buffers_.insert(std::pair<uint32_t, std::unique_ptr<Buffer>>(
+      buffer_id, std::move(buffer)));
+
   uint32_t fd = file.TakePlatformFile();
   for (size_t i = 0; i < planes_count; i++) {
     zwp_linux_buffer_params_v1_add(params, fd, i /* plane id */, offsets[i],
-                                   strides[i], 0 /* modifier hi */,
-                                   0 /* modifier lo */);
+                                   strides[i], modifiers[i] >> 32,
+                                   modifiers[i] & UINT32_MAX);
   }
   zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
   zwp_linux_buffer_params_v1_create(params, width, height, format, 0);
@@ -81,48 +117,37 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
 }
 
 // TODO(msisov): handle buffer swap failure or success.
-bool WaylandBufferManager::SwapBuffer(gfx::AcceleratedWidget widget,
-                                      uint32_t buffer_id) {
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
-               buffer_id);
+bool WaylandBufferManager::ScheduleBufferSwap(gfx::AcceleratedWidget widget,
+                                              uint32_t buffer_id,
+                                              const gfx::Rect& damage_region,
+                                              wl::BufferSwapCallback callback) {
+  TRACE_EVENT1("Wayland", "WaylandBufferManager::ScheduleSwapBuffer",
+               "Buffer id", buffer_id);
 
   if (!ValidateDataFromGpu(widget, buffer_id))
     return false;
 
   auto it = buffers_.find(buffer_id);
-  // A buffer might not exist by this time. So, store the request and process
-  // it once it is created.
   if (it == buffers_.end()) {
-    auto pending_buffers_it = pending_buffer_map_.find(buffer_id);
-    if (pending_buffers_it != pending_buffer_map_.end()) {
-      // If a buffer didn't exist and second call for a swap comes, buffer must
-      // be associated with the same widget.
-      DCHECK_EQ(pending_buffers_it->second, widget);
-    } else {
-      pending_buffer_map_.insert(
-          std::pair<uint32_t, gfx::AcceleratedWidget>(buffer_id, widget));
-    }
-    return true;
-  }
-  struct wl_buffer* buffer = it->second.get();
-
-  WaylandWindow* window = connection_->GetWindow(widget);
-  if (!window) {
-    error_message_ = "A WaylandWindow with current widget does not exist";
+    error_message_ =
+        "Buffer with " + std::to_string(buffer_id) + " id does not exist";
     return false;
   }
 
-  // TODO(msisov): it would be beneficial to use real damage regions to improve
-  // performance.
-  //
-  // TODO(msisov): also start using wl_surface_frame callbacks for better
-  // performance.
-  wl_surface_damage(window->surface(), 0, 0, window->GetBounds().width(),
-                    window->GetBounds().height());
-  wl_surface_attach(window->surface(), buffer, 0, 0);
-  wl_surface_commit(window->surface());
+  Buffer* buffer = it->second.get();
+  DCHECK(buffer);
 
-  connection_->ScheduleFlush();
+  // Assign a widget to this buffer, which is used to find a corresponding
+  // WaylandWindow.
+  buffer->widget = widget;
+  buffer->buffer_swap_callback = std::move(callback);
+  buffer->damage_region = damage_region;
+
+  if (buffer->wl_buffer) {
+    // A wl_buffer might not exist by this time. Silently return.
+    // TODO: check this.
+    return SwapBuffer(buffer);
+  }
   return true;
 }
 
@@ -135,6 +160,15 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
     error_message_ = "Trying to destroy non-existing buffer";
     return false;
   }
+  // It can happen that a buffer is destroyed before a frame callback comes.
+  // Thus, just mark this as a successful swap, which is ok to do.
+  Buffer* buffer = it->second.get();
+  if (!buffer->buffer_swap_callback.is_null()) {
+    std::move(buffer->buffer_swap_callback)
+        .Run(gfx::SwapResult::SWAP_ACK,
+             gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                       base::TimeDelta(), 0));
+  }
   buffers_.erase(it);
 
   connection_->ScheduleFlush();
@@ -143,8 +177,55 @@ bool WaylandBufferManager::DestroyBuffer(uint32_t buffer_id) {
 
 void WaylandBufferManager::ClearState() {
   buffers_.clear();
-  params_to_id_map_.clear();
-  pending_buffer_map_.clear();
+}
+
+// TODO(msisov): handle buffer swap failure or success.
+bool WaylandBufferManager::SwapBuffer(Buffer* buffer) {
+  TRACE_EVENT1("Wayland", "WaylandBufferManager::SwapBuffer", "Buffer id",
+               buffer->buffer_id);
+
+  WaylandWindow* window = connection_->GetWindow(buffer->widget);
+  if (!window) {
+    error_message_ = "A WaylandWindow with current widget does not exist";
+    return false;
+  }
+
+  gfx::Rect damage_region = buffer->damage_region;
+  // If the size of the damage region is empty, wl_surface_damage must be
+  // supplied with the actual size of the buffer, which is going to be
+  // committed.
+  if (damage_region.size().IsEmpty())
+    damage_region.set_size(buffer->size);
+
+  wl_surface_damage_buffer(window->surface(), damage_region.x(),
+                           damage_region.y(), damage_region.width(),
+                           damage_region.height());
+  wl_surface_attach(window->surface(), buffer->wl_buffer.get(), 0, 0);
+
+  static const wl_callback_listener frame_listener = {
+      WaylandBufferManager::FrameCallbackDone};
+  DCHECK(!buffer->wl_frame_callback);
+  buffer->wl_frame_callback.reset(wl_surface_frame(window->surface()));
+  wl_callback_add_listener(buffer->wl_frame_callback.get(), &frame_listener,
+                           this);
+
+  // Set up presentation feedback.
+  static const wp_presentation_feedback_listener feedback_listener = {
+      WaylandBufferManager::FeedbackSyncOutput,
+      WaylandBufferManager::FeedbackPresented,
+      WaylandBufferManager::FeedbackDiscarded};
+  if (connection_->presentation()) {
+    DCHECK(!buffer->wp_presentation_feedback);
+    buffer->wp_presentation_feedback.reset(wp_presentation_feedback(
+        connection_->presentation(), window->surface()));
+    wp_presentation_feedback_add_listener(
+        buffer->wp_presentation_feedback.get(), &feedback_listener, this);
+  }
+
+  wl_surface_commit(window->surface());
+
+  connection_->ScheduleFlush();
+  return true;
 }
 
 bool WaylandBufferManager::ValidateDataFromGpu(
@@ -187,6 +268,12 @@ bool WaylandBufferManager::ValidateDataFromGpu(
   if (buffer_id < 1)
     reason = "Invalid buffer id: " + std::to_string(buffer_id);
 
+  auto it = buffers_.find(buffer_id);
+  if (it != buffers_.end()) {
+    reason = "A buffer with " + std::to_string(buffer_id) +
+             " id has already existed";
+  }
+
   if (!reason.empty()) {
     error_message_ = std::move(reason);
     return false;
@@ -218,24 +305,27 @@ void WaylandBufferManager::CreateSucceededInternal(
     struct wl_buffer* new_buffer) {
   // Find which buffer id |params| belong to and store wl_buffer
   // with that id.
-  auto it = params_to_id_map_.find(params);
-  CHECK(it != params_to_id_map_.end());
-  uint32_t buffer_id = it->second;
-  params_to_id_map_.erase(params);
+  Buffer* buffer = nullptr;
+  for (auto& item : buffers_) {
+    if (item.second.get()->params == params) {
+      buffer = item.second.get();
+      break;
+    }
+  }
+
+  DCHECK(buffer);
+  buffer->wl_buffer.reset(new_buffer);
+  buffer->params = nullptr;
   zwp_linux_buffer_params_v1_destroy(params);
 
-  buffers_.insert(std::pair<uint32_t, wl::Object<wl_buffer>>(
-      buffer_id, wl::Object<wl_buffer>(new_buffer)));
+  if (buffer->widget != gfx::kNullAcceleratedWidget)
+    SwapBuffer(buffer);
+}
 
-  TRACE_EVENT1("Wayland", "WaylandBufferManager::CreateSucceeded", "Buffer id",
-               buffer_id);
-
-  auto pending_buffers_it = pending_buffer_map_.find(buffer_id);
-  if (pending_buffers_it != pending_buffer_map_.end()) {
-    gfx::AcceleratedWidget widget = pending_buffers_it->second;
-    pending_buffer_map_.erase(pending_buffers_it);
-    SwapBuffer(widget, buffer_id);
-  }
+void WaylandBufferManager::OnBufferSwapped(Buffer* buffer) {
+  DCHECK(!buffer->buffer_swap_callback.is_null());
+  std::move(buffer->buffer_swap_callback)
+      .Run(buffer->swap_result, std::move(buffer->feedback));
 }
 
 // static
@@ -277,6 +367,97 @@ void WaylandBufferManager::CreateFailed(
     struct zwp_linux_buffer_params_v1* params) {
   zwp_linux_buffer_params_v1_destroy(params);
   LOG(FATAL) << "zwp_linux_buffer_params.create failed";
+}
+
+// static
+void WaylandBufferManager::FrameCallbackDone(void* data,
+                                             wl_callback* callback,
+                                             uint32_t time) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wl_frame_callback.get() == callback) {
+      buffer->swap_result = gfx::SwapResult::SWAP_ACK;
+      buffer->wl_frame_callback.reset();
+
+      // If presentation feedback is not supported, use fake feedback and
+      // trigger the callback.
+      if (!self->connection_->presentation()) {
+        buffer->feedback = gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                                     base::TimeDelta(), 0);
+        self->OnBufferSwapped(buffer);
+      }
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+// static
+void WaylandBufferManager::FeedbackSyncOutput(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback,
+    struct wl_output* output) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+// static
+void WaylandBufferManager::FeedbackPresented(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback,
+    uint32_t tv_sec_hi,
+    uint32_t tv_sec_lo,
+    uint32_t tv_nsec,
+    uint32_t refresh,
+    uint32_t seq_hi,
+    uint32_t seq_lo,
+    uint32_t flags) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
+      // Frame callback must come before a feedback is presented.
+      DCHECK(!buffer->wl_frame_callback);
+
+      buffer->feedback = gfx::PresentationFeedback(
+          GetPresentationFeedbackTimeStamp(tv_sec_hi, tv_sec_lo, tv_nsec),
+          base::TimeDelta::FromNanoseconds(refresh),
+          GetPresentationKindFlags(flags));
+
+      buffer->wp_presentation_feedback.reset();
+      self->OnBufferSwapped(buffer);
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+// static
+void WaylandBufferManager::FeedbackDiscarded(
+    void* data,
+    struct wp_presentation_feedback* wp_presentation_feedback) {
+  WaylandBufferManager* self = static_cast<WaylandBufferManager*>(data);
+  DCHECK(self);
+
+  for (auto& item : self->buffers_) {
+    Buffer* buffer = item.second.get();
+    if (buffer->wp_presentation_feedback.get() == wp_presentation_feedback) {
+      // Frame callback must come before a feedback is presented.
+      DCHECK(!buffer->wl_frame_callback);
+      buffer->feedback = gfx::PresentationFeedback::Failure();
+
+      buffer->wp_presentation_feedback.reset();
+      self->OnBufferSwapped(buffer);
+      return;
+    }
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace ui

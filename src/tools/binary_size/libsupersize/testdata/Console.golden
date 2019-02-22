@@ -86,7 +86,8 @@ Histogram of symbols based on PSS:
      [2,4): 6    [16,32): 10        [128,256): 2    [131072,262144): 2     [1048576,2097152): 2
      [4,8): 6    [32,64): 9         [256,512): 1    [262144,524288): 1     [2097152,4194304): 1
     [8,16): 3   [64,128): 1    [65536,131072): 2   [524288,1048576): 2   [33554432,67108864): 2
-.text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Sizes: .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=32.4mb     total=74.2mb
+Counts: .text=19 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=1
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other

@@ -242,6 +242,7 @@ void PageSignalGeneratorImpl::OnSystemEventReceived(
           data->last_state_change < measurement_start) {
         DispatchPageSignal(
             page, &mojom::PageSignalReceiver::OnLoadTimePerformanceEstimate,
+            page->TimeSinceLastNavigation(),
             page->cumulative_cpu_usage_estimate(),
             page->private_footprint_kb_estimate());
         data->performance_estimate_issued = true;

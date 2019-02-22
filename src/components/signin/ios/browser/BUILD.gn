@@ -22,7 +22,6 @@ source_set("browser") {
 
   deps = [
     ":active_state_manager",
-    "//base",
     "//components/content_settings/core/browser",
     "//components/google/core/browser",
     "//components/keyed_service/core",

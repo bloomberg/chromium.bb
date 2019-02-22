@@ -259,8 +259,9 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
   ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
-  quota_manager_->SetQuota(
-      kOrigin, FileSystemTypeToQuotaStorageType(kFileSystemType), 10);
+  quota_manager_->SetQuota(url::Origin::Create(kOrigin),
+                           FileSystemTypeToQuotaStorageType(kFileSystemType),
+                           10);
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                   blob.GetBlobDataHandle(), 0,
                                                   RecordWriteCallback());

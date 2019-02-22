@@ -224,6 +224,12 @@ void AutofillProfileSyncBridge::ActOnLocalChange(
           metadata_change_list.get());
       break;
     case AutofillChange::REMOVE:
+      // Removals have no data_model() so this change can still be for a
+      // SERVER_PROFILE. We have no simple way to rule it out. For the time
+      // being we rely on the processor ignoring deletions for storage keys it
+      // does not know.
+      // TODO(jkrcal): implement a hash map of known storage_keys and use it
+      // here.
       change_processor()->Delete(change.key(), metadata_change_list.get());
       break;
   }

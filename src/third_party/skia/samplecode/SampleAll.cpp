@@ -4,36 +4,36 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 #include "Sample.h"
-#include "SkBlurMask.h"
-#include "SkCanvas.h"
+
+#include "DecodeFile.h"
 #include "Sk1DPathEffect.h"
 #include "Sk2DPathEffect.h"
+#include "SkBlurMask.h"
 #include "SkBlurMaskFilter.h"
+#include "SkCanvas.h"
 #include "SkColorMatrixFilter.h"
 #include "SkColorPriv.h"
 #include "SkCornerPathEffect.h"
 #include "SkDashPathEffect.h"
 #include "SkDiscretePathEffect.h"
 #include "SkEmbossMaskFilter.h"
-#include "SkReadBuffer.h"
-#include "SkWriteBuffer.h"
 #include "SkGradientShader.h"
 #include "SkMath.h"
 #include "SkPath.h"
-#include "SkPictureRecorder.h"
-#include "SkRegion.h"
-#include "SkShader.h"
-#include "SkCornerPathEffect.h"
 #include "SkPathMeasure.h"
 #include "SkPicture.h"
+#include "SkPictureRecorder.h"
 #include "SkRandom.h"
-#include "SkTextOnPath.h"
+#include "SkReadBuffer.h"
+#include "SkRegion.h"
+#include "SkShader.h"
 #include "SkTypeface.h"
 #include "SkUTF.h"
+#include "SkWriteBuffer.h"
 
 #include <math.h>
-#include "DecodeFile.h"
 
 class Dot2DPathEffect : public Sk2DPathEffect {
 public:
@@ -139,8 +139,6 @@ protected:
         char ascii[] = "ascii...";
         int asciiLength = sizeof(ascii) - 1;
         char utf8[] = "utf8" "\xe2\x80\xa6";
-        short utf16[] = {'u', 't', 'f', '1', '6', 0x2026 };
-        short utf16simple[] = {'u', 't', 'f', '1', '6', '!' };
 
         makePath(path);
         SkTDArray<SkPoint> pos;
@@ -257,15 +255,6 @@ protected:
         canvas->translate(SkIntToScalar(50), 0);
         paint.setColor(SK_ColorCYAN);
         canvas->drawText(utf8, sizeof(utf8) - 1, x, y, paint);
-
-        canvas->translate(SkIntToScalar(30), 0);
-        paint.setColor(SK_ColorMAGENTA);
-        paint.setTextEncoding(SkPaint::kUTF16_TextEncoding);
-        matrix.setTranslate(SkIntToScalar(10), SkIntToScalar(10));
-        SkDrawTextOnPath((void*)utf16, sizeof(utf16), paint, path, &matrix, canvas);
-        canvas->translate(0, SkIntToScalar(20));
-        SkDrawTextOnPath((void*) utf16simple, sizeof(utf16simple), paint, path, &matrix, canvas);
-        canvas->restore();
 
         canvas->translate(0, SkIntToScalar(60));
         paint.setTextEncoding(SkPaint::kUTF8_TextEncoding);

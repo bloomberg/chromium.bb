@@ -30,6 +30,7 @@ namespace vk
 {
 
 void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
+                  const VkPhysicalDeviceFeatures &physicalDeviceFeatures,
                   const gl::TextureCapsMap &textureCaps,
                   gl::Caps *outCaps,
                   gl::Extensions *outExtensions,
@@ -44,6 +45,13 @@ void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
     outExtensions->textureStorage = true;
     outExtensions->framebufferBlit = true;
     outExtensions->copyTexture     = true;
+    outExtensions->debugMarker     = true;
+    outExtensions->robustness      = true;
+
+    // We use secondary command buffers almost everywhere and they require a feature to be
+    // able to execute in the presence of queries.  As a result, we won't support queries
+    // unless that feature is available.
+    outExtensions->occlusionQueryBoolean = physicalDeviceFeatures.inheritedQueries;
 
     // TODO(lucferron): Eventually remove everything above this line in this function as the caps
     // get implemented.
@@ -58,8 +66,10 @@ void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
     outCaps->minAliasedPointSize =
         std::max(1.0f, physicalDeviceProperties.limits.pointSizeRange[0]);
     outCaps->maxAliasedPointSize   = physicalDeviceProperties.limits.pointSizeRange[1];
-    outCaps->minAliasedLineWidth   = physicalDeviceProperties.limits.lineWidthRange[0];
-    outCaps->maxAliasedLineWidth   = physicalDeviceProperties.limits.lineWidthRange[1];
+
+    outCaps->minAliasedLineWidth = 1.0f;
+    outCaps->maxAliasedLineWidth = 1.0f;
+
     outCaps->maxDrawBuffers =
         std::min<uint32_t>(physicalDeviceProperties.limits.maxColorAttachments,
                            physicalDeviceProperties.limits.maxFragmentOutputAttachments);

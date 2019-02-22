@@ -15,6 +15,7 @@
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_codecs.h"
 #include "media/gpu/codec_picture.h"
+#include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -116,14 +117,10 @@ class AcceleratedVideoEncoder {
     DISALLOW_COPY_AND_ASSIGN(EncodeJob);
   };
 
-  // Initializes the encoder to encode frames of |visible_size| into a stream
-  // for |profile|, at |initial_bitrate| and |initial_framerate|.
+  // Initializes the encoder with requested parameter set |config|.
   // Returns false if the requested set of parameters is not supported,
   // true on success.
-  virtual bool Initialize(const gfx::Size& visible_size,
-                          VideoCodecProfile profile,
-                          uint32_t initial_bitrate,
-                          uint32_t initial_framerate) = 0;
+  virtual bool Initialize(const VideoEncodeAccelerator::Config& config) = 0;
 
   // Updates current framerate and/or bitrate to |framerate| in FPS
   // and the specified video bitrate allocation.

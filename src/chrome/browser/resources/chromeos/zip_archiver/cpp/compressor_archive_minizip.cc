@@ -2,15 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "compressor_archive_minizip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <utility>
 
 #include "base/time/time.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_stream.h"
 #include "ppapi/cpp/logging.h"
 
 namespace {
+
+const char kCreateArchiveError[] = "Failed to create archive.";
+const char kAddToArchiveError[] = "Failed to add entry to archive.";
+const char kCloseArchiveError[] = "Failed to close archive.";
+
+// We need at least 256KB for MiniZip.
+const int64_t kMaximumDataChunkSize = 512 * 1024;
 
 uint32_t UnixToDosdate(const int64_t datetime) {
   tm tm_datetime;
@@ -119,15 +130,11 @@ CompressorArchiveMinizip::CompressorArchiveMinizip(
     : CompressorArchive(compressor_stream),
       compressor_stream_(compressor_stream),
       zip_file_(nullptr),
+      destination_buffer_(std::make_unique<char[]>(kMaximumDataChunkSize)),
       offset_(0),
-      length_(0) {
-  destination_buffer_ =
-      new char[compressor_stream_constants::kMaximumDataChunkSize];
-}
+      length_(0) {}
 
-CompressorArchiveMinizip::~CompressorArchiveMinizip() {
-  delete destination_buffer_;
-}
+CompressorArchiveMinizip::~CompressorArchiveMinizip() = default;
 
 bool CompressorArchiveMinizip::CreateArchive() {
   // Set up archive object.
@@ -144,7 +151,7 @@ bool CompressorArchiveMinizip::CreateArchive() {
   zip_file_ = zipOpen2(nullptr /* pathname */, APPEND_STATUS_CREATE,
                        nullptr /* globalcomment */, &zip_funcs);
   if (!zip_file_) {
-    set_error_message(compressor_archive_constants::kCreateArchiveError);
+    set_error_message(kCreateArchiveError);
     return false /* Error */;
   }
   return true /* Success */;
@@ -201,7 +208,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
                            LANGUAGE_ENCODING_FLAG);  // flagBase
   if (open_result != ZIP_OK) {
     CloseArchive(true /* has_error */);
-    set_error_message(compressor_archive_constants::kAddToArchiveError);
+    set_error_message(kAddToArchiveError);
     return false /* Error */;
   }
 
@@ -209,12 +216,11 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
   if (!is_directory) {
     int64_t remaining_size = file_size;
     while (remaining_size > 0) {
-      int64_t chunk_size = std::min(
-          remaining_size, compressor_stream_constants::kMaximumDataChunkSize);
+      int64_t chunk_size = std::min(remaining_size, kMaximumDataChunkSize);
       PP_DCHECK(chunk_size > 0);
 
       int64_t read_bytes =
-          compressor_stream_->Read(chunk_size, destination_buffer_);
+          compressor_stream_->Read(chunk_size, destination_buffer_.get());
       // Negative read_bytes indicates an error occurred when reading chunks.
       // 0 just means there is no more data available, but here we need positive
       // length of bytes, so this is also an error here.
@@ -227,8 +233,8 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
         break;
       }
 
-      if (zipWriteInFileInZip(zip_file_, destination_buffer_, read_bytes) !=
-          ZIP_OK) {
+      if (zipWriteInFileInZip(zip_file_, destination_buffer_.get(),
+                              read_bytes) != ZIP_OK) {
         has_error = true;
         break;
       }
@@ -241,7 +247,7 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
 
   if (has_error) {
     CloseArchive(true /* has_error */);
-    set_error_message(compressor_archive_constants::kAddToArchiveError);
+    set_error_message(kAddToArchiveError);
     return false /* Error */;
   }
 
@@ -255,12 +261,12 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
 
 bool CompressorArchiveMinizip::CloseArchive(bool has_error) {
   if (zipClose(zip_file_, nullptr /* global_comment */) != ZIP_OK) {
-    set_error_message(compressor_archive_constants::kCloseArchiveError);
+    set_error_message(kCloseArchiveError);
     return false /* Error */;
   }
   if (!has_error) {
     if (compressor_stream()->Flush() < 0) {
-      set_error_message(compressor_archive_constants::kCloseArchiveError);
+      set_error_message(kCloseArchiveError);
       return false /* Error */;
     }
   }

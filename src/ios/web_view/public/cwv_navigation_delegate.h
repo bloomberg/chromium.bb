@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "cwv_export.h"
 #import "cwv_navigation_type.h"
 
 @protocol CRIWVTranslateDelegate;
@@ -15,7 +14,6 @@
 
 // Navigation delegate protocol for CWVWebViews.  Allows embedders to hook
 // page loading and receive events for navigation.
-CWV_EXPORT
 @protocol CWVNavigationDelegate<NSObject>
 @optional
 

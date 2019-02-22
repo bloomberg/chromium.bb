@@ -324,16 +324,6 @@ class HWTestList(object):
                                           **default_dict)]
     return suite_list
 
-  def AsanTest(self, **kwargs):
-    """Return a list of HWTESTConfigs which run asan tests."""
-    default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
-                        priority=constants.HWTEST_DEFAULT_PRIORITY)
-    default_dict.update(kwargs)
-    return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                    **default_dict),
-            config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                    **default_dict)]
-
   def ToolchainTestFull(self, machine_pool, **kwargs):
     """Return full set of HWTESTConfigs to run toolchain correctness tests."""
     default_dict = dict(pool=machine_pool, async=False,
@@ -507,7 +497,6 @@ _arm_internal_release_boards = frozenset([
     'octavius',
     'peach_pi',
     'peach_pit',
-    'rainier',
     'romer',
     'scarlet',
     'veyron_fievel',
@@ -557,6 +546,7 @@ _x86_internal_release_boards = frozenset([
     'enguarde',
     'eve',
     'eve-arcnext',
+    'eve-arcvm',
     'eve-campfire',
     'expresso',
     'falco',
@@ -575,6 +565,7 @@ _x86_internal_release_boards = frozenset([
     'guado_moblab',
     'heli',
     'jecht',
+    'kalista',
     'kefka',
     'kip',
     'lakitu',
@@ -587,7 +578,6 @@ _x86_internal_release_boards = frozenset([
     'link',
     'lulu',
     'mccloud',
-    'meowth',
     'monroe',
     'nami',
     'nautilus',
@@ -627,7 +617,6 @@ _x86_internal_release_boards = frozenset([
     'wizpig',
     'wolf',
     'zako',
-    'zoombini',
 ])
 
 _x86_external_boards = frozenset([
@@ -1446,16 +1435,6 @@ def GeneralTemplates(site_config, ge_build_config):
                                   warn_only=True)],
   )
 
-  site_config.AddTemplate(
-      'cheets_release',
-      site_config.templates.release,
-      description='Cheets release builders',
-      hw_tests=[
-          config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE),
-          config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                  warn_only=True)],
-  )
-
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
 
@@ -1829,6 +1808,12 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
+  # The PreCQ Launcher doesn't limit eternal PreCQ builds to external
+  # CLs.  as a hack, use internal checkouts for external builds so
+  # they can apply (and ignore) internal CLs. crbug.com/882965
+  for b in  _arm_external_boards | _x86_external_boards:
+    board_configs[b].apply(site_config.templates.internal)
+
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
@@ -1844,7 +1829,8 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       prebuilts=False,
       cpe_export=False,
       vm_tests=[config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                        test_suite='smoke')],
+                                        test_suite='smoke',
+                                        use_ctest=False)],
       vm_tests_override=None,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
@@ -1886,7 +1872,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       boards=[],
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      display_label=config_lib.DISPLAY_LABEL_PRECQ,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       description='Launcher for Pre-CQ builders',
@@ -2162,17 +2148,16 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.master_android_pfq_mixin,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
-      schedule='with 150m interval',
+      schedule='with 60m interval',
   )
 
   _pi_no_hwtest_boards = frozenset([])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
-      'grunt',
-      'nocturne',
   ])
   _pi_hwtest_boards = frozenset([
       'caroline-arcnext',
+      'grunt',
       'kevin-arcnext',
   ])
   _pi_hwtest_experimental_boards = frozenset([])
@@ -2336,6 +2321,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       'arm-generic',
       'daisy',
       'kevin',
+      'kevin64',
       'lakitu',
       'oak',
       'tael',
@@ -2402,7 +2388,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_important_boards = frozenset([
       'amd64-generic',
       'arm-generic',
+      'auron_paine',
       'auron_yuna',
+      'atlas',
       'beaglebone',
       'betty',
       'betty-arc64',
@@ -2412,6 +2400,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'caroline-arcnext',
       'cave',
       'chell',
+      'cheza',
       'coral',
       'cyan',
       'daisy',
@@ -2419,6 +2408,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'daisy_spring',
       'edgar',
       'elm',
+      'eve',
       'falco',
       'fizz',
       'gale',
@@ -2429,6 +2419,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
       'kevin-arcnext',
       'kip',
+      'kukui',
       'lakitu',
       'lakitu-gpu',
       'lakitu-st',
@@ -2437,6 +2428,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'monroe',
       'moblab-generic-vm',
       'nami',
+      'nocturne',
       'nyan_big',
       'nyan_kitty',
       'oak',
@@ -2446,11 +2438,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'poppy',
       'quawks',
-      'rainier',
       'reef',
       'samus',
+      'scarlet',
       'sentry',
       'stout',
+      'tael',
       'tatl',
       'terra',
       'tidus',
@@ -2465,7 +2458,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'winky',
       'wizpig',
       'wolf',
-      'zoombini',
   ])
 
   # Paladin configs that exist and should be important as soon as they are
@@ -2488,14 +2480,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
-      'auron_paine',
-      'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'kukui', # contact:zhuohao@
       'rammus', # contact:zhuohao@
-      'tael',
-      'atlas',
+      'kalista', # contact:zhuohao@
   ])
 
   # Paladin configs that exist and should stay as experimental until further
@@ -2504,7 +2492,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri', # contact:ghines@
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
-      'eve', # contact: michaelpg@ (crbug.com/872351)
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
@@ -2513,13 +2500,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
-      'nocturne',
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'wooten', # contact:icoolidge@
       'nyan_blaze', # contact: xixuan@
-      'scarlet', #contact: shapiroc@ (crbug.com/878863)
   ])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
@@ -2749,25 +2734,32 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     (None,            None,            'caroline-arcnext', None),            # arcnext
     ('nyan_blaze',    None,            None,               None),            # Add for Skylab test
     ('scarlet'   ,    None,            None,               None),            # scarlet (RK3399 unibuild)
+    ('grunt',         None,            'grunt',            None),            # grunt (AMD unibuild)
   ])
   # pylint: enable=bad-continuation, bad-whitespace, line-too-long
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
   # Run provision suite first everywhere.
   default_tests = [sharded_hw_tests.pop(0)]
+  config_default_reset = set()
   for board_assignments in _paladin_hwtest_assignments:
     assert len(board_assignments) == len(sharded_hw_tests)
     for board, suite in zip(board_assignments, sharded_hw_tests):
       if board is None:
         continue
+
       config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
       # Only configurate hw_tests for unified builds if they have specified
       # models they want to test against (based on lab provisioning)
-      if board in _unified_board_names:
-        if site_config[config_name]['models']:
-          site_config[config_name]['hw_tests'] = default_tests + [suite]
-      else:
-        site_config[config_name]['hw_tests'] = default_tests + [suite]
+      if (board in _unified_board_names and
+          not site_config[config_name]['models']):
+        continue
+
+      if config_name not in config_default_reset:
+        site_config[config_name]['hw_tests'] = default_tests[:]
+        config_default_reset.add(config_name)
+
+      site_config[config_name]['hw_tests'] += [suite]
 
   #
   # Paladins with alternative configs.
@@ -3194,6 +3186,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
+      goma_client_type='candidate',
   )
 
   _chrome_perf_boards = frozenset([
@@ -3348,6 +3341,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'daisy_skate',
       'eve',
       'eve-arcnext',
+      'grunt',
       'kevin-arcnext',
       'nocturne',
       'peach_pit',
@@ -3404,6 +3398,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           active_waterfall=waterfall.WATERFALL_SWARMING,
       )
   )
+
   # Define the result of the build configs for tryjob purposes.
   site_config.AddForBoards(
       'chrome-pfq',
@@ -3455,20 +3450,120 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.no_vmtest_builder,
     )
 
-  site_config.AddWithoutTemplate(
-      'prototype-firmwarebranch',
+  # Requires that you set boards, and workspace_branch.
+  site_config.AddTemplate(
+      'firmwarebranch',
       site_config.templates.firmware,
-      boards=['poppy'],
-      workspace_branch='firmware-poppy-10431.B',
       build_type=constants.GENERIC_TYPE,
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
-      builder_class_name='firmware_builders.FirmwareBranchBuilder',
+      builder_class_name='workspace_builders.FirmwareBranchBuilder',
       build_timeout=6*60 * 60,
       description='TOT builder to build a firmware branch.',
       doc='https://goto.google.com/tot-for-firmware-branches',
   )
+
+  # Defines "active", "branch", "boards" for firmwarebranch builds.
+  #
+  # Active:
+  #   None: Do not schedule automatically.
+  ACTIVE = 'with 24h interval'  # 1 day interval
+  INACTIVE = 'with 720h interval'  # 30 day interval
+  firmware_branch_builders = [
+      (None, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
+      (None, 'firmware-pit-4482.B', ['peach_pit', 'peach_pi']),
+      (None, 'firmware-wolf-4389.24.B', ['wolf']),
+      (None, 'firmware-leon-4389.61.B', ['leon']),
+      (None, 'firmware-monroe-4921.B', ['monroe']),
+      (None, 'firmware-panther-4920.24.B', ['panther']),
+      (INACTIVE, 'firmware-skate-3824.129.B', ['daisy_skate']),
+      (None, 'firmware-zako-5219.B', ['zako']),
+      (None, 'firmware-squawks-5216.152.B', ['squawks']),
+      (None, 'firmware-nyan-5771.B', ['nyan_big', 'nyan_blaze']),
+      (None, 'firmware-glimmer-5216.198.B', ['glimmer']),
+      (None, 'firmware-clapper-5216.199.B', ['clapper']),
+      (None, 'firmware-enguarde-5216.201.B', ['enguarde']),
+      (None, 'firmware-zako-5219.17.B', ['zako']),
+      (None, 'firmware-mccloud-5827.B', ['mccloud']),
+      (None, 'firmware-tricky-5829.B', ['tricky']),
+      (None, 'firmware-quawks-5216.204.B', ['quawks']),
+      (None, 'firmware-expresso-5216.223.B', ['expresso']),
+      (None, 'firmware-kip-5216.227.B', ['kip']),
+      (None, 'firmware-swanky-5216.238.B', ['swanky']),
+      (None, 'firmware-gnawty-5216.239.B', ['gnawty']),
+      (None, 'firmware-winky-5216.265.B', ['winky']),
+      (None, 'firmware-kitty-5771.61.B', ['nyan_kitty']),
+      (None, 'firmware-samus-6300.B', ['samus']),
+      (None, 'firmware-auron-6301.B', ['jecht']),
+      (None, 'firmware-candy-5216.310.B', ['candy']),
+      (INACTIVE, 'firmware-veyron-6588.B', [
+          'veyron_jerry', 'veyron_mighty',
+          'veyron_speedy', 'veyron_jaq',
+          'veyron_minnie',
+          'veyron_mickey', 'veyron_rialto', 'veyron_tiger',
+          'veyron_fievel']),
+      (None, 'firmware-paine-6301.58.B', ['auron_paine']),
+      (None, 'firmware-yuna-6301.59.B', ['auron_yuna']),
+      (None, 'firmware-guado-6301.108.B', ['guado']),
+      (None, 'firmware-tidus-6301.109.B', ['tidus']),
+      (None, 'firmware-rikku-6301.110.B', ['rikku']),
+      (None, 'firmware-banjo-5216.334.B', ['banjo']),
+      (None, 'firmware-lulu-6301.136.B', ['lulu']),
+      (None, 'firmware-orco-5216.362.B', ['orco']),
+      (None, 'firmware-gandof-6301.155.B', ['gandof']),
+      (None, 'firmware-ninja-5216.383.B', ['ninja']),
+      (None, 'firmware-sumo-5216.382.B', ['sumo']),
+      (None, 'firmware-strago-7287.B', [
+          'wizpig', 'setzer', 'banon', 'kefka', 'relm']),
+      (None, 'firmware-heli-5216.392.B', ['heli']),
+      (None, 'firmware-cyan-7287.57.B', ['cyan']),
+      (None, 'firmware-celes-7287.92.B', ['celes']),
+      (None, 'firmware-ultima-7287.131.B', ['ultima']),
+      (None, 'firmware-reks-7287.133.B', ['reks']),
+      (None, 'firmware-buddy-6301.202.B', ['buddy']),
+      (None, 'firmware-glados-7820.B', [
+          'glados', 'chell', 'lars',
+          'sentry', 'cave', 'asuka', 'caroline']),
+      (None, 'firmware-terra-7287.154.B', ['terra']),
+      (None, 'firmware-edgar-7287.167.B', ['edgar']),
+      (None, 'firmware-gale-8281.B', ['gale']),
+      (None, 'firmware-oak-8438.B', ['oak', 'elm', 'hana']),
+      (None, 'firmware-gru-8785.B', ['gru', 'kevin', 'bob']),
+      (None, 'firmware-reef-9042.B', ['reef', 'pyro', 'sand', 'snappy']),
+      (None, 'firmware-cr50-9308.B', ['reef']),
+      (None, 'firmware-eve-9584.B', ['eve']),
+      (None, 'firmware-eve-campfire-9584.131.B', ['eve']),
+      (None, 'firmware-cr50-9308.24.B', ['reef']),
+      (None, 'firmware-cr50-release-9308.25.B', ['reef']),
+      (None, 'firmware-cr50-mp-release-9308.87.B', ['reef']),
+      (None, 'firmware-coral-10068.B', ['coral']),
+      (None, 'firmware-servo-9040.B', ['falco']),
+      (None, 'firmware-servo-11011.B', ['oak']),
+      (None, 'firmware-fizz-10139.B', ['fizz']),
+      (None, 'firmware-fizz-10139.94.B', ['fizz']),
+      (None, 'firmware-scarlet-10388.B', ['scarlet']),
+      (None, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus']),
+      (ACTIVE, 'firmware-nami-10775.B', ['nami']),
+      (None, 'firmware-nocturne-10984.B', ['nocturne']),
+      (None, 'firmware-grunt-11031.B', ['grunt']),
+  ]
+
+  for active, branch, boards in firmware_branch_builders:
+    schedule = {}
+    if active:
+      schedule = {
+          'active_waterfall': waterfall.WATERFALL_SWARMING,
+          'schedule': active,
+      }
+
+    site_config.Add(
+        '%s-firmwarebranch' % branch,
+        site_config.templates.firmwarebranch,
+        boards=boards,
+        workspace_branch=branch,
+        **schedule
+    )
 
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
@@ -3538,7 +3633,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   _release_experimental_boards = frozenset([
       'nyan_blaze',
-      'reef',
   ])
 
   _release_enable_skylab_hwtest = frozenset([
@@ -3893,6 +3987,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
+      'grunt-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
       'kevin-arcnext-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
@@ -3938,14 +4036,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'nami-release': {
           'sign_types': ['recovery', 'factory'],
-      },
-
-      'meowth-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
-      'nocturne-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
 
       'octopus-release': {
@@ -4042,21 +4132,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
-      'som-dispatcher',
-      site_config.templates.internal,
-      site_config.templates.no_hwtest_builder,
-      site_config.templates.no_vmtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_UTILITY,
-      description=('Updates alerts displayed on SoM website. go/som/chromeos'),
-      build_type=constants.GENERIC_TYPE,
-      boards=[],
-      builder_class_name='alert_builders.SomDispatcherBuilder',
-      active_waterfall=constants.WATERFALL_SWARMING,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      schedule='with 3m interval',
-  )
-
-  site_config.AddWithoutTemplate(
       'config-updater',
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
@@ -4070,6 +4145,25 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=constants.WATERFALL_SWARMING,
       binhost_test=True,
       schedule='@hourly',
+  )
+
+  site_config.AddWithoutTemplate(
+      'luci-scheduler-updater',
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
+      description=('Deploy changes to luci_scheduler.cfg.'),
+      build_type=constants.GENERIC_TYPE,
+      boards=[],
+      builder_class_name='config_builders.LuciSchedulerBuilder',
+      active_waterfall=constants.WATERFALL_SWARMING,
+      binhost_test=True,
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromiumos/chromite',
+          ['refs/heads/master']
+      ]],
   )
 
   site_config.AddWithoutTemplate(
@@ -4164,6 +4258,18 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       android_rev=constants.ANDROID_REV_LATEST,
       android_package='android-container-nyc',
       android_import_branch=constants.ANDROID_NYC_BUILD_BRANCH,
+      prebuilts=False,
+  )
+
+  site_config.Add(
+      'grunt-android-pi-pre-flight-branch',
+      site_config.templates.pre_flight_branch,
+      display_label=config_lib.DISPLAY_LABEL_PI_ANDROID_PFQ,
+      boards=['grunt'],
+      sync_chrome=True,
+      android_rev=constants.ANDROID_REV_LATEST,
+      android_package='android-container-pi',
+      android_import_branch=constants.ANDROID_PI_BUILD_BRANCH,
       prebuilts=False,
   )
 
@@ -4328,8 +4434,19 @@ def BranchScheduleConfig():
   #     https://github.com/luci/luci-go/blob/master/scheduler/
   #                        appengine/messages/config.proto
   #
+  # When updating this be sure to run
+  # `config/chromeos_config_unittest --update`
+  # or the change will fail chromite unittests.
 
   branch_builds = (
+      ('release-R70-11021.B', 'master-release',
+       release_label, '0 6 * * *', None),
+      ('release-R70-11021.B', 'reef-android-nyc-pre-flight-branch',
+       release_label, '0 2,6,10,14,18,22 * * *', None),
+      ('release-R70-11021.B', 'grunt-android-pi-pre-flight-branch',
+       release_label, '0 2,6,10,14,18,22 * * *', None),
+      ('release-R70-11021.B', 'samus-chrome-pre-flight-branch',
+       release_label, '0 2,6,10,14,18,22 * * *', None),
       ('release-R69-10895.B', 'master-release',
        release_label, '0 5 * * *', None),
       ('release-R69-10895.B', 'reef-android-nyc-pre-flight-branch',

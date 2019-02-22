@@ -29,9 +29,9 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
@@ -52,7 +52,7 @@ public class BluetoothChooserDialogTest {
     static class BluetoothChooserDialogWithFakeNatives extends BluetoothChooserDialog {
         int mFinishedEventType = -1;
         String mFinishedDeviceId;
-        int mRestartSearchCount = 0;
+        int mRestartSearchCount;
 
         BluetoothChooserDialogWithFakeNatives(WindowAndroid windowAndroid, String origin,
                 int securityLevel, long nativeBluetoothChooserDialogPtr) {
@@ -417,9 +417,9 @@ public class BluetoothChooserDialogTest {
     }
 
     private static class TestAndroidPermissionDelegate implements AndroidPermissionDelegate {
-        Dialog mDialog = null;
-        PermissionCallback mCallback = null;
-        String[] mPermissionsRequested = null;
+        Dialog mDialog;
+        PermissionCallback mCallback;
+        String[] mPermissionsRequested;
 
         public TestAndroidPermissionDelegate(Dialog dialog) {
             mDialog = dialog;
@@ -459,7 +459,7 @@ public class BluetoothChooserDialogTest {
     }
 
     private static class FakeLocationUtils extends LocationUtils {
-        public boolean mLocationGranted = false;
+        public boolean mLocationGranted;
 
         @Override
         public boolean hasAndroidLocationPermission() {

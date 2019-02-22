@@ -64,6 +64,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
+  bool OnCryptoFrame(const QuicCryptoFrame& frame) override {
+    // TODO(nharper): Implement this.
+    return false;
+  }
+
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     QuicAckFrame ack_frame;
@@ -73,13 +78,18 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnAckRange(QuicPacketNumber start,
-                  QuicPacketNumber end,
-                  bool /*last_range*/) override {
+  bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
     DCHECK(!ack_frames_.empty());
     ack_frames_[ack_frames_.size() - 1].packets.AddRange(start, end);
     return true;
   }
+
+  bool OnAckTimestamp(QuicPacketNumber packet_number,
+                      QuicTime timestamp) override {
+    return true;
+  }
+
+  bool OnAckFrameEnd(QuicPacketNumber /*start*/) override { return true; }
 
   bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override {
     stop_waiting_frames_.push_back(frame);
@@ -114,6 +124,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   bool OnNewConnectionIdFrame(const QuicNewConnectionIdFrame& frame) override {
     new_connection_id_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnNewTokenFrame(const QuicNewTokenFrame& frame) override {
+    new_token_frames_.push_back(frame);
     return true;
   }
 
@@ -153,6 +168,11 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
     blocked_frames_.push_back(frame);
+    return true;
+  }
+
+  bool OnMessageFrame(const QuicMessageFrame& frame) override {
+    message_frames_.push_back(frame);
     return true;
   }
 
@@ -197,6 +217,9 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return stop_waiting_frames_;
   }
   const std::vector<QuicPingFrame>& ping_frames() const { return ping_frames_; }
+  const std::vector<QuicMessageFrame>& message_frames() const {
+    return message_frames_;
+  }
   const std::vector<QuicWindowUpdateFrame>& window_update_frames() const {
     return window_update_frames_;
   }
@@ -231,6 +254,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   std::vector<QuicWindowUpdateFrame> window_update_frames_;
   std::vector<QuicBlockedFrame> blocked_frames_;
   std::vector<QuicNewConnectionIdFrame> new_connection_id_frames_;
+  std::vector<QuicNewTokenFrame> new_token_frames_;
+  std::vector<QuicMessageFrame> message_frames_;
   std::vector<std::unique_ptr<QuicString>> stream_data_;
 };
 
@@ -291,6 +316,10 @@ const std::vector<QuicStopWaitingFrame>& SimpleQuicFramer::stop_waiting_frames()
 
 const std::vector<QuicPingFrame>& SimpleQuicFramer::ping_frames() const {
   return visitor_->ping_frames();
+}
+
+const std::vector<QuicMessageFrame>& SimpleQuicFramer::message_frames() const {
+  return visitor_->message_frames();
 }
 
 const std::vector<QuicWindowUpdateFrame>&

@@ -19,8 +19,10 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
-#import "ui/base/cocoa/accessibility_hostable.h"
+#include "content/public/common/web_contents_ns_view_bridge.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #import "ui/base/cocoa/base_view.h"
+#import "ui/base/cocoa/views_hostable.h"
 #include "ui/gfx/geometry/size.h"
 
 @class WebDragDest;
@@ -37,12 +39,8 @@ namespace gfx {
 class Vector2d;
 }
 
-namespace ui {
-class Layer;
-}
-
 CONTENT_EXPORT
-@interface WebContentsViewCocoa : BaseView<AccessibilityHostable> {
+@interface WebContentsViewCocoa : BaseView<ViewsHostable> {
  @private
   // Instances of this class are owned by both webContentsView_ and AppKit. It
   // is possible for an instance to outlive its webContentsView_. The
@@ -55,6 +53,12 @@ CONTENT_EXPORT
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
+
+// Sets |accessibilityParent| as the object returned when the
+// receiver is queried for its accessibility parent.
+// TODO(lgrey/ellyjones): Remove this in favor of setAccessibilityParent:
+// when we switch to the new accessibility API.
+- (void)setAccessibilityParentElement:(id)accessibilityParent;
 
 // Returns the available drag operations. This is a required method for
 // NSDraggingSource. It is supposedly deprecated, but the non-deprecated API
@@ -69,7 +73,9 @@ namespace content {
 // contains all of the contents of the tab and associated child views.
 class WebContentsViewMac : public WebContentsView,
                            public RenderViewHostDelegateView,
-                           public PopupMenuHelper::Delegate {
+                           public PopupMenuHelper::Delegate,
+                           public mojom::WebContentsNSViewClient,
+                           public ui::ViewsHostableView {
  public:
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
@@ -91,14 +97,12 @@ class WebContentsViewMac : public WebContentsView,
   void FocusThroughTabTraversal(bool reverse) override;
   DropData* GetDropData() const override;
   gfx::Rect GetViewBounds() const override;
-  void SetAllowOtherViews(bool allow) override;
-  bool GetAllowOtherViews() const override;
   void CreateView(const gfx::Size& initial_size,
                   gfx::NativeView context) override;
   RenderWidgetHostViewBase* CreateViewForWidget(
       RenderWidgetHost* render_widget_host,
       bool is_guest_view_hack) override;
-  RenderWidgetHostViewBase* CreateViewForPopupWidget(
+  RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
   void RenderViewCreated(RenderViewHost* host) override;
@@ -134,11 +138,16 @@ class WebContentsViewMac : public WebContentsView,
   // PopupMenuHelper::Delegate:
   void OnMenuClosed() override;
 
+  // ViewsHostableView:
+  void OnViewsHostableAttached(ViewsHostableView::Host* host) override;
+  void OnViewsHostableDetached() override;
+  void OnViewsHostableShow(const gfx::Rect& bounds_in_window) override;
+  void OnViewsHostableHide() override;
+  void OnViewsHostableMakeFirstResponder() override;
+
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
-
-  void SetParentUiLayer(ui::Layer* parent_ui_layer);
 
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
@@ -151,6 +160,10 @@ class WebContentsViewMac : public WebContentsView,
       RenderWidgetHostViewCreateFunction create_render_widget_host_view);
 
  private:
+  // Return the list of child RenderWidgetHostViewMacs. This will remove any
+  // destroyed instances before returning.
+  std::list<RenderWidgetHostViewMac*> GetChildViews();
+
   // Returns the fullscreen view, if one exists; otherwise, returns the content
   // native view. This ensures that the view currently attached to a NSWindow is
   // being used to query or set first responder state.
@@ -165,9 +178,6 @@ class WebContentsViewMac : public WebContentsView,
   // Our optional delegate.
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
-  // Whether to allow other views.
-  bool allow_other_views_;
-
   // This contains all RenderWidgetHostViewMacs that have been added as child
   // NSViews to this NSView. Note that this list may contain RWHVMacs besides
   // just |web_contents_->GetRenderWidgetHostView()|. The only time that the
@@ -175,9 +185,18 @@ class WebContentsViewMac : public WebContentsView,
   // destroyed.
   std::list<base::WeakPtr<RenderWidgetHostViewBase>> child_views_;
 
-  ui::Layer* parent_ui_layer_ = nullptr;
+  // Interface to the views::View host of this view.
+  ViewsHostableView::Host* views_host_ = nullptr;
 
   std::unique_ptr<PopupMenuHelper> popup_menu_helper_;
+
+  // The id that may be used to look up this NSView.
+  const uint64_t ns_view_id_;
+
+  // Mojo bindings for an out of process instance of this NSView.
+  mojom::WebContentsNSViewBridgeAssociatedPtr ns_view_bridge_remote_;
+  mojo::AssociatedBinding<mojom::WebContentsNSViewClient>
+      ns_view_client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

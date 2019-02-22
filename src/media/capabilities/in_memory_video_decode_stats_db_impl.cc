@@ -15,23 +15,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capabilities/video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"
 
 namespace media {
-
-InMemoryVideoDecodeStatsDBFactory::InMemoryVideoDecodeStatsDBFactory(
-    VideoDecodeStatsDBProvider* seed_db_provider)
-    : seed_db_provider_(seed_db_provider) {
-  DVLOG(2) << __func__ << " has_seed_provider:" << !!seed_db_provider_;
-}
-
-InMemoryVideoDecodeStatsDBFactory::~InMemoryVideoDecodeStatsDBFactory() =
-    default;
-
-std::unique_ptr<VideoDecodeStatsDB>
-InMemoryVideoDecodeStatsDBFactory::CreateDB() {
-  return std::make_unique<InMemoryVideoDecodeStatsDBImpl>(seed_db_provider_);
-}
 
 InMemoryVideoDecodeStatsDBImpl::InMemoryVideoDecodeStatsDBImpl(
     VideoDecodeStatsDBProvider* seed_db_provider)
@@ -41,6 +28,9 @@ InMemoryVideoDecodeStatsDBImpl::InMemoryVideoDecodeStatsDBImpl(
 
 InMemoryVideoDecodeStatsDBImpl::~InMemoryVideoDecodeStatsDBImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (seed_db_)
+    seed_db_->set_dependent_db(nullptr);
 }
 
 void InMemoryVideoDecodeStatsDBImpl::Initialize(InitializeCB init_cb) {
@@ -69,7 +59,12 @@ void InMemoryVideoDecodeStatsDBImpl::OnGotSeedDB(InitializeCB init_cb,
   DVLOG(2) << __func__ << (db ? " has" : " null") << " seed db";
 
   db_init_ = true;
+
+  CHECK(!seed_db_) << __func__ << " Already have a seed_db_?";
   seed_db_ = db;
+
+  if (seed_db_)
+    seed_db_->set_dependent_db(this);
 
   // Hard coding success = true. There are rare cases (e.g. disk corruption)
   // where an incognito profile may fail to acquire a reference to the base
@@ -193,7 +188,7 @@ void InMemoryVideoDecodeStatsDBImpl::OnGotSeedEntry(
   std::move(get_stats_cb).Run(true, std::move(seed_entry));
 }
 
-void InMemoryVideoDecodeStatsDBImpl::DestroyStats(
+void InMemoryVideoDecodeStatsDBImpl::ClearStats(
     base::OnceClosure destroy_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << __func__;

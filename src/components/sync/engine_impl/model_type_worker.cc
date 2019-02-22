@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -13,17 +15,61 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/hash_util.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
+#include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
+
+namespace {
+
+bool ContainsDuplicate(std::vector<std::string> values) {
+  std::sort(values.begin(), values.end());
+  return std::adjacent_find(values.begin(), values.end()) != values.end();
+}
+
+bool ContainsDuplicateClientTagHash(const UpdateResponseDataList& updates) {
+  std::vector<std::string> client_tag_hashes;
+  for (const UpdateResponseData& update : updates) {
+    if (!update.entity->client_tag_hash.empty()) {
+      client_tag_hashes.push_back(update.entity->client_tag_hash);
+    }
+  }
+  return ContainsDuplicate(std::move(client_tag_hashes));
+}
+
+bool ContainsDuplicateServerID(const UpdateResponseDataList& updates) {
+  std::vector<std::string> server_ids;
+  for (const UpdateResponseData& update : updates) {
+    server_ids.push_back(update.entity->id);
+  }
+  return ContainsDuplicate(std::move(server_ids));
+}
+
+// Enumeration of possible values for the positioning schemes used in Sync
+// entities. Used in UMA metrics. Do not re-order or delete these entries; they
+// are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
+// if a value is added.
+enum class SyncPositioningScheme {
+  UNIQUE_POSITION = 0,
+  POSITION_IN_PARENT = 1,
+  INSERT_AFTER_ITEM_ID = 2,
+  MISSING = 3,
+  kMaxValue = MISSING
+};
+
+}  // namespace
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
@@ -123,6 +169,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
   counters->num_updates_received += applicable_updates.size();
 
+  std::vector<std::string> client_tag_hashes;
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
@@ -134,6 +181,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
                                        &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(response_data);
+        if (!response_data.entity->client_tag_hash.empty()) {
+          client_tag_hashes.push_back(response_data.entity->client_tag_hash);
+        }
         break;
       case DECRYPTION_PENDING:
         entries_pending_decryption_[update_entity->id_string()] = response_data;
@@ -143,6 +193,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         break;
     }
   }
+  std::string suffix = ModelTypeToHistogramSuffix(type_);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateClientTagHashInGetUpdatesResponse." + suffix,
+      ContainsDuplicate(std::move(client_tag_hashes)));
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
@@ -165,7 +219,55 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.non_unique_name = update_entity.name();
   data.is_folder = update_entity.folder();
   data.parent_id = update_entity.parent_id_string();
-  data.unique_position = update_entity.unique_position();
+
+  // Handle deprecated positioning fields. Relevant only for bookmarks.
+  bool has_position_scheme = false;
+  SyncPositioningScheme syncPositioningScheme;
+  if (update_entity.has_unique_position()) {
+    data.unique_position = update_entity.unique_position();
+    has_position_scheme = true;
+    syncPositioningScheme = SyncPositioningScheme::UNIQUE_POSITION;
+  } else if (update_entity.has_position_in_parent() ||
+             update_entity.has_insert_after_item_id()) {
+    bool missing_originator_fields = false;
+    if (!update_entity.has_originator_cache_guid() ||
+        !update_entity.has_originator_client_item_id()) {
+      DLOG(ERROR) << "Update is missing requirements for bookmark position.";
+      missing_originator_fields = true;
+    }
+
+    std::string suffix =
+        missing_originator_fields
+            ? UniquePosition::RandomSuffix()
+            : GenerateSyncableHash(
+                  syncer::GetModelType(update_entity),
+                  /*client_tag=*/update_entity.originator_cache_guid() +
+                      update_entity.originator_client_item_id());
+
+    if (update_entity.has_position_in_parent()) {
+      data.unique_position =
+          UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
+              .ToProto();
+      has_position_scheme = true;
+      syncPositioningScheme = SyncPositioningScheme::POSITION_IN_PARENT;
+    } else {
+      // If update_entity has insert_after_item_id, use 0 index.
+      DCHECK(update_entity.has_insert_after_item_id());
+      data.unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+      has_position_scheme = true;
+      syncPositioningScheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
+    }
+  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
+             !update_entity.deleted()) {
+    DLOG(ERROR) << "Missing required position information in update.";
+    has_position_scheme = true;
+    syncPositioningScheme = SyncPositioningScheme::MISSING;
+  }
+  if (has_position_scheme) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
+                              syncPositioningScheme);
+  }
+
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Deleted entities must use the default instance of EntitySpecifics in
@@ -235,6 +337,42 @@ void ModelTypeWorker::ApplyPendingUpdates() {
                                  pending_updates_.size());
 
   DCHECK(entries_pending_decryption_.empty());
+
+  const bool contains_duplicate_server_ids =
+      ContainsDuplicateServerID(pending_updates_);
+  const bool contains_duplicate_client_tag_hashes =
+      ContainsDuplicateClientTagHash(pending_updates_);
+
+  // Having duplicates should be rare, so only do the de-duping if
+  // we've actually detected one.
+
+  // Deduplicate updates first based on server ids.
+  if (contains_duplicate_server_ids) {
+    DeduplicatePendingUpdatesBasedOnServerId();
+  }
+
+  // Check for duplicate client tag hashes after removing duplicate server
+  // ids.
+  const bool contains_duplicate_client_tag_hashes_after_deduping_server_ids =
+      ContainsDuplicateClientTagHash(pending_updates_);
+
+  // Deduplicate updates based on client tag hashes.
+  if (contains_duplicate_client_tag_hashes_after_deduping_server_ids) {
+    DeduplicatePendingUpdatesBasedOnClientTagHash();
+  }
+
+  std::string suffix = ModelTypeToHistogramSuffix(type_);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateClientTagHashInApplyPendingUpdates." + suffix,
+      contains_duplicate_client_tag_hashes);
+  base::UmaHistogramBoolean(
+      "Sync.DuplicateServerIdInApplyPendingUpdates." + suffix,
+      contains_duplicate_server_ids);
+  base::UmaHistogramBoolean(
+      "Sync."
+      "DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates." +
+          suffix,
+      contains_duplicate_client_tag_hashes_after_deduping_server_ids);
 
   model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
@@ -379,6 +517,58 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update.entity = data->UpdateSpecifics(specifics);
     pending_updates_.push_back(decrypted_update);
     it = entries_pending_decryption_.erase(it);
+  }
+}
+
+void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
+  UpdateResponseDataList candidates;
+  pending_updates_.swap(candidates);
+
+  std::map<std::string, size_t> id_to_index;
+  for (UpdateResponseData& candidate : candidates) {
+    if (candidate.entity->id.empty()) {
+      continue;
+    }
+    // Try to insert. If we already saw an item with the same server id,
+    // this will fail but give us its iterator.
+    auto it_and_success =
+        id_to_index.emplace(candidate.entity->id, pending_updates_.size());
+    if (it_and_success.second) {
+      // New server id, append at the end. Note that we already inserted
+      // the correct index (|pending_updates_.size()|) above.
+      pending_updates_.push_back(std::move(candidate));
+    } else {
+      // Duplicate! Overwrite the existing item.
+      size_t existing_index = it_and_success.first->second;
+      pending_updates_[existing_index] = std::move(candidate);
+    }
+  }
+}
+
+void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
+  UpdateResponseDataList candidates;
+  pending_updates_.swap(candidates);
+
+  std::map<std::string, size_t> tag_to_index;
+  for (UpdateResponseData& candidate : candidates) {
+    // Items with empty client tag hash just get passed through.
+    if (candidate.entity->client_tag_hash.empty()) {
+      pending_updates_.push_back(std::move(candidate));
+      continue;
+    }
+    // Try to insert. If we already saw an item with the same client tag hash,
+    // this will fail but give us its iterator.
+    auto it_and_success = tag_to_index.emplace(
+        candidate.entity->client_tag_hash, pending_updates_.size());
+    if (it_and_success.second) {
+      // New client tag hash, append at the end. Note that we already inserted
+      // the correct index (|pending_updates_.size()|) above.
+      pending_updates_.push_back(std::move(candidate));
+    } else {
+      // Duplicate! Overwrite the existing item.
+      size_t existing_index = it_and_success.first->second;
+      pending_updates_[existing_index] = std::move(candidate);
+    }
   }
 }
 

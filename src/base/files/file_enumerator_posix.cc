@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -101,7 +101,7 @@ FileEnumerator::FileEnumerator(const FilePath& root_path,
 FileEnumerator::~FileEnumerator() = default;
 
 FilePath FileEnumerator::Next() {
-  AssertBlockingAllowed();
+  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
 
   ++current_directory_entry_;
 

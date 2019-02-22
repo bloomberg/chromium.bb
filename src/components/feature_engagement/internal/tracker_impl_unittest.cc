@@ -33,14 +33,14 @@
 namespace feature_engagement {
 
 namespace {
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBaz{"test_baz",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureQux{"test_qux",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTrackerTestFeatureFoo{"test_foo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTrackerTestFeatureBar{"test_bar",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTrackerTestFeatureBaz{"test_baz",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTrackerTestFeatureQux{"test_qux",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 void RegisterFeatureConfig(EditableConfiguration* configuration,
                            const base::Feature& feature,
@@ -79,9 +79,9 @@ class StoringInitializedCallback {
 
 // An InMemoryEventStore that is able to fake successful and unsuccessful
 // loading of state.
-class TestInMemoryEventStore : public InMemoryEventStore {
+class TestTrackerInMemoryEventStore : public InMemoryEventStore {
  public:
-  explicit TestInMemoryEventStore(bool load_should_succeed)
+  explicit TestTrackerInMemoryEventStore(bool load_should_succeed)
       : load_should_succeed_(load_should_succeed) {}
 
   void Load(const OnLoadedCallback& callback) override {
@@ -101,7 +101,7 @@ class TestInMemoryEventStore : public InMemoryEventStore {
 
   std::map<std::string, Event> events_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestInMemoryEventStore);
+  DISALLOW_COPY_AND_ASSIGN(TestTrackerInMemoryEventStore);
 };
 
 class StoreEverythingEventStorageValidator : public EventStorageValidator {
@@ -135,10 +135,10 @@ class TestTimeProvider : public TimeProvider {
   DISALLOW_COPY_AND_ASSIGN(TestTimeProvider);
 };
 
-class TestAvailabilityModel : public AvailabilityModel {
+class TestTrackerAvailabilityModel : public AvailabilityModel {
  public:
-  TestAvailabilityModel() : ready_(true) {}
-  ~TestAvailabilityModel() override = default;
+  TestTrackerAvailabilityModel() : ready_(true) {}
+  ~TestTrackerAvailabilityModel() override = default;
 
   void Initialize(AvailabilityModel::OnInitializedCallback callback,
                   uint32_t current_day) override {
@@ -158,13 +158,13 @@ class TestAvailabilityModel : public AvailabilityModel {
  private:
   bool ready_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAvailabilityModel);
+  DISALLOW_COPY_AND_ASSIGN(TestTrackerAvailabilityModel);
 };
 
-class TestDisplayLockController : public DisplayLockController {
+class TestTrackerDisplayLockController : public DisplayLockController {
  public:
-  TestDisplayLockController() = default;
-  ~TestDisplayLockController() override = default;
+  TestTrackerDisplayLockController() = default;
+  ~TestTrackerDisplayLockController() override = default;
 
   std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() override {
     return std::move(next_display_lock_handle_);
@@ -181,7 +181,7 @@ class TestDisplayLockController : public DisplayLockController {
   // The next DisplayLockHandle to return.
   std::unique_ptr<DisplayLockHandle> next_display_lock_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayLockController);
+  DISALLOW_COPY_AND_ASSIGN(TestTrackerDisplayLockController);
 };
 
 class TrackerImplTest : public ::testing::Test {
@@ -193,28 +193,29 @@ class TrackerImplTest : public ::testing::Test {
         std::make_unique<EditableConfiguration>();
     configuration_ = configuration.get();
 
-    RegisterFeatureConfig(configuration.get(), kTestFeatureFoo,
+    RegisterFeatureConfig(configuration.get(), kTrackerTestFeatureFoo,
                           true /* is_valid */, false /* tracking_only */);
-    RegisterFeatureConfig(configuration.get(), kTestFeatureBar,
+    RegisterFeatureConfig(configuration.get(), kTrackerTestFeatureBar,
                           true /* is_valid */, false /* tracking_only */);
-    RegisterFeatureConfig(configuration.get(), kTestFeatureBaz,
+    RegisterFeatureConfig(configuration.get(), kTrackerTestFeatureBaz,
                           true /* is_valid */, true /* tracking_only */);
-    RegisterFeatureConfig(configuration.get(), kTestFeatureQux,
+    RegisterFeatureConfig(configuration.get(), kTrackerTestFeatureQux,
                           false /* is_valid */, false /* tracking_only */);
 
-    std::unique_ptr<TestInMemoryEventStore> event_store = CreateEventStore();
+    std::unique_ptr<TestTrackerInMemoryEventStore> event_store =
+        CreateEventStore();
     event_store_ = event_store.get();
 
     auto event_model = std::make_unique<EventModelImpl>(
         std::move(event_store),
         std::make_unique<StoreEverythingEventStorageValidator>());
 
-    auto availability_model = std::make_unique<TestAvailabilityModel>();
+    auto availability_model = std::make_unique<TestTrackerAvailabilityModel>();
     availability_model_ = availability_model.get();
     availability_model_->SetIsReady(ShouldAvailabilityStoreBeReady());
 
     auto display_lock_controller =
-        std::make_unique<TestDisplayLockController>();
+        std::make_unique<TestTrackerDisplayLockController>();
     display_lock_controller_ = display_lock_controller.get();
 
     tracker_.reset(new TrackerImpl(
@@ -407,18 +408,18 @@ class TrackerImplTest : public ::testing::Test {
   }
 
  protected:
-  virtual std::unique_ptr<TestInMemoryEventStore> CreateEventStore() {
+  virtual std::unique_ptr<TestTrackerInMemoryEventStore> CreateEventStore() {
     // Returns a EventStore that will successfully initialize.
-    return std::make_unique<TestInMemoryEventStore>(true);
+    return std::make_unique<TestTrackerInMemoryEventStore>(true);
   }
 
   virtual bool ShouldAvailabilityStoreBeReady() { return true; }
 
   base::MessageLoop message_loop_;
   std::unique_ptr<TrackerImpl> tracker_;
-  TestInMemoryEventStore* event_store_;
-  TestAvailabilityModel* availability_model_;
-  TestDisplayLockController* display_lock_controller_;
+  TestTrackerInMemoryEventStore* event_store_;
+  TestTrackerAvailabilityModel* availability_model_;
+  TestTrackerDisplayLockController* display_lock_controller_;
   Configuration* configuration_;
   base::HistogramTester histogram_tester_;
 
@@ -432,9 +433,9 @@ class FailingStoreInitTrackerImplTest : public TrackerImplTest {
   FailingStoreInitTrackerImplTest() = default;
 
  protected:
-  std::unique_ptr<TestInMemoryEventStore> CreateEventStore() override {
+  std::unique_ptr<TestTrackerInMemoryEventStore> CreateEventStore() override {
     // Returns a EventStore that will fail to initialize.
-    return std::make_unique<TestInMemoryEventStore>(false);
+    return std::make_unique<TestTrackerInMemoryEventStore>(false);
   }
 
  private:
@@ -609,12 +610,12 @@ TEST_F(TrackerImplTest, TestTriggering) {
   base::UserActionTester user_action_tester;
 
   // The first time a feature triggers it should be shown.
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureQux, 0);
   VerifyUserActionsTriggerChecks(user_action_tester, 2, 0, 0, 1);
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 0, 0, 1);
@@ -625,10 +626,10 @@ TEST_F(TrackerImplTest, TestTriggering) {
 
   // While in-product help is currently showing, no other features should be
   // shown.
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  VerifyEventTriggerEvents(kTestFeatureBar, 0);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 0);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureQux, 0);
   VerifyUserActionsTriggerChecks(user_action_tester, 2, 1, 0, 2);
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 1, 0, 2);
@@ -638,13 +639,13 @@ TEST_F(TrackerImplTest, TestTriggering) {
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
-  tracker_->Dismissed(kTestFeatureFoo);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  VerifyEventTriggerEvents(kTestFeatureBar, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  tracker_->Dismissed(kTrackerTestFeatureFoo);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureQux, 0);
   VerifyUserActionsTriggerChecks(user_action_tester, 3, 2, 0, 3);
   VerifyUserActionsTriggered(user_action_tester, 1, 1, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 2, 1, 0, 3);
@@ -653,14 +654,14 @@ TEST_F(TrackerImplTest, TestTriggering) {
   VerifyHistograms(true, 1, 2, 0, true, 1, 1, 0, false, 0, 0, 0, true, 0, 3, 0);
 
   // After dismissing the second registered feature, no more in-product help
-  // should be shown, since kTestFeatureQux is invalid.
-  tracker_->Dismissed(kTestFeatureBar);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  VerifyEventTriggerEvents(kTestFeatureBar, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureQux, 0);
+  // should be shown, since kTrackerTestFeatureQux is invalid.
+  tracker_->Dismissed(kTrackerTestFeatureBar);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureQux, 0);
   VerifyUserActionsTriggerChecks(user_action_tester, 4, 3, 0, 4);
   VerifyUserActionsTriggered(user_action_tester, 1, 1, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 3, 2, 0, 4);
@@ -677,11 +678,12 @@ TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;
 
-  // Tracking only kTestFeatureBaz should never be shown, but should be counted.
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBaz));
-  VerifyEventTriggerEvents(kTestFeatureBaz, 1u);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 0u);
+  // Tracking only kTrackerTestFeatureBaz should never be shown, but should be
+  // counted.
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBaz));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBaz, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 0u);
   VerifyUserActionsTriggerChecks(user_action_tester, 1, 0, 1, 0);
   VerifyUserActionsTriggered(user_action_tester, 0, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 0, 0, 0);
@@ -692,8 +694,8 @@ TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
 
   // While in-product help is currently showing, even in a tracking only
   // setting, no other features should be shown.
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 0);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 0);
   VerifyUserActionsTriggerChecks(user_action_tester, 2, 0, 1, 0);
   VerifyUserActionsTriggered(user_action_tester, 0, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 2, 0, 0, 0);
@@ -704,11 +706,11 @@ TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
 
   // After dismissing the current in-product help, that feature can not be shown
   // again, but a different feature should.
-  tracker_->Dismissed(kTestFeatureBaz);
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBaz));
-  VerifyEventTriggerEvents(kTestFeatureBaz, 1u);
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
+  tracker_->Dismissed(kTrackerTestFeatureBaz);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBaz));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBaz, 1u);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
   VerifyUserActionsTriggerChecks(user_action_tester, 3, 0, 2, 0);
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 2, 0, 1, 0);
@@ -727,12 +729,12 @@ TEST_F(TrackerImplTest, TestWouldTriggerInspection) {
   base::UserActionTester user_action_tester;
 
   // Initially, both foo and bar would have been shown.
-  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTestFeatureBar));
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 0u);
-  VerifyEventTriggerEvents(kTestFeatureBar, 0u);
-  VerifyEventTriggerEvents(kTestFeatureQux, 0u);
+  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureBar));
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 0u);
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 0u);
+  VerifyEventTriggerEvents(kTrackerTestFeatureQux, 0u);
   VerifyUserActionsTriggerChecks(user_action_tester, 0, 0, 0, 0);
   VerifyUserActionsTriggered(user_action_tester, 0, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 0, 0, 0, 0);
@@ -742,11 +744,11 @@ TEST_F(TrackerImplTest, TestWouldTriggerInspection) {
                    0);
 
   // While foo shows, nothing else would have been shown.
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureBar));
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureBar));
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1);
   VerifyUserActionsTriggerChecks(user_action_tester, 1, 0, 0, 0);
   VerifyUserActionsTriggered(user_action_tester, 1, 0, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 0, 0, 0, 0);
@@ -757,14 +759,14 @@ TEST_F(TrackerImplTest, TestWouldTriggerInspection) {
 
   // After foo has been dismissed, it would not have triggered again, but bar
   // would have.
-  tracker_->Dismissed(kTestFeatureFoo);
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTestFeatureBar));
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTestFeatureQux));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1);
-  VerifyEventTriggerEvents(kTestFeatureBar, 1);
+  tracker_->Dismissed(kTrackerTestFeatureFoo);
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_TRUE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureBar));
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  EXPECT_FALSE(tracker_->WouldTriggerHelpUI(kTrackerTestFeatureQux));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1);
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 1);
   VerifyUserActionsTriggerChecks(user_action_tester, 2, 1, 0, 0);
   VerifyUserActionsTriggered(user_action_tester, 1, 1, 0, 0);
   VerifyUserActionsNotTriggered(user_action_tester, 1, 0, 0, 0);
@@ -777,9 +779,9 @@ TEST_F(TrackerImplTest, TestWouldTriggerInspection) {
 TEST_F(TrackerImplTest, TestTriggerStateInspection) {
   // Before initialization has finished, NOT_READY should always be returned.
   EXPECT_EQ(Tracker::TriggerState::NOT_READY,
-            tracker_->GetTriggerState(kTestFeatureFoo));
+            tracker_->GetTriggerState(kTrackerTestFeatureFoo));
   EXPECT_EQ(Tracker::TriggerState::NOT_READY,
-            tracker_->GetTriggerState(kTestFeatureQux));
+            tracker_->GetTriggerState(kTrackerTestFeatureQux));
 
   // Ensure all initialization is finished.
   StoringInitializedCallback callback;
@@ -789,37 +791,37 @@ TEST_F(TrackerImplTest, TestTriggerStateInspection) {
   base::UserActionTester user_action_tester;
 
   EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureFoo));
+            tracker_->GetTriggerState(kTrackerTestFeatureFoo));
   EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureBar));
+            tracker_->GetTriggerState(kTrackerTestFeatureBar));
 
   // The first time a feature triggers it should be shown.
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
   EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureFoo));
+            tracker_->GetTriggerState(kTrackerTestFeatureFoo));
 
   // Trying to show again should keep state as displayed.
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
-  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
   EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureFoo));
+            tracker_->GetTriggerState(kTrackerTestFeatureFoo));
 
   // Other features should also be kept at not having been displayed.
-  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  VerifyEventTriggerEvents(kTestFeatureBar, 0);
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 0);
   EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureBar));
+            tracker_->GetTriggerState(kTrackerTestFeatureBar));
 
   // Dismiss foo and show qux, which should update TriggerState of bar, and keep
   // TriggerState for foo.
-  tracker_->Dismissed(kTestFeatureFoo);
-  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
-  VerifyEventTriggerEvents(kTestFeatureBar, 1);
+  tracker_->Dismissed(kTrackerTestFeatureFoo);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 1);
   EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureFoo));
+            tracker_->GetTriggerState(kTrackerTestFeatureFoo));
   EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
-            tracker_->GetTriggerState(kTestFeatureBar));
+            tracker_->GetTriggerState(kTrackerTestFeatureBar));
 }
 
 TEST_F(TrackerImplTest, TestNotifyEvent) {
@@ -832,8 +834,8 @@ TEST_F(TrackerImplTest, TestNotifyEvent) {
   tracker_->NotifyEvent("foo");
   tracker_->NotifyEvent("foo");
   tracker_->NotifyEvent("bar");
-  tracker_->NotifyEvent(kTestFeatureFoo.name + std::string("_used"));
-  tracker_->NotifyEvent(kTestFeatureFoo.name + std::string("_trigger"));
+  tracker_->NotifyEvent(kTrackerTestFeatureFoo.name + std::string("_used"));
+  tracker_->NotifyEvent(kTrackerTestFeatureFoo.name + std::string("_trigger"));
 
   // Used event will record both NotifyEvent and NotifyUsedEvent. Explicitly
   // specify the whole user action string here.

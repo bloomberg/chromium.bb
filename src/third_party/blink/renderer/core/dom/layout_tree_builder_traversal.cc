@@ -301,9 +301,9 @@ LayoutObject* LayoutTreeBuilderTraversal::NextInTopLayer(
     return nullptr;
   const HeapVector<Member<Element>>& top_layer_elements =
       element.GetDocument().TopLayerElements();
-  size_t position = top_layer_elements.Find(&element);
+  wtf_size_t position = top_layer_elements.Find(&element);
   DCHECK_NE(position, kNotFound);
-  for (size_t i = position + 1; i < top_layer_elements.size(); ++i) {
+  for (wtf_size_t i = position + 1; i < top_layer_elements.size(); ++i) {
     if (LayoutObject* layout_object = top_layer_elements[i]->GetLayoutObject())
       return layout_object;
   }

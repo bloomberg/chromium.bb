@@ -71,12 +71,6 @@ class TestURLRequestContext : public URLRequestContext {
     client_socket_factory_ = factory;
   }
 
-  ProxyDelegate* proxy_delegate() { return proxy_delegate_; }
-
-  void set_proxy_delegate(ProxyDelegate* proxy_delegate) {
-    proxy_delegate_ = proxy_delegate;
-  }
-
   void set_http_network_session_params(
       std::unique_ptr<HttpNetworkSession::Params> session_params) {
     http_network_session_params_ = std::move(session_params);
@@ -107,8 +101,6 @@ class TestURLRequestContext : public URLRequestContext {
 
   // Not owned:
   ClientSocketFactory* client_socket_factory_ = nullptr;
-
-  ProxyDelegate* proxy_delegate_ = nullptr;
 
   bool create_default_http_user_agent_settings_ = true;
 
@@ -388,10 +380,12 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       AuthCallback callback,
       AuthCredentials* credentials) override;
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list) override;
+                       const CookieList& cookie_list,
+                       bool allowed_from_caller) override;
   bool OnCanSetCookie(const URLRequest& request,
                       const net::CanonicalCookie& cookie,
-                      CookieOptions* options) override;
+                      CookieOptions* options,
+                      bool allowed_from_caller) override;
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;

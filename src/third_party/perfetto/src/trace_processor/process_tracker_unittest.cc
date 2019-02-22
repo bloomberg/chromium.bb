@@ -17,7 +17,6 @@
 #include "src/trace_processor/process_tracker.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "src/trace_processor/proto_trace_parser.h"
 #include "src/trace_processor/sched_tracker.h"
 #include "src/trace_processor/trace_processor.h"
 
@@ -32,9 +31,9 @@ using ::testing::Invoke;
 class ProcessTrackerTest : public ::testing::Test {
  public:
   ProcessTrackerTest() {
+    context.storage.reset(new TraceStorage());
     context.process_tracker.reset(new ProcessTracker(&context));
     context.sched_tracker.reset(new SchedTracker(&context));
-    context.storage.reset(new TraceStorage());
   }
 
  protected:
@@ -79,12 +78,9 @@ TEST_F(ProcessTrackerTest, UpdateThreadMatch) {
   static const char kCommProc2[] = "process2";
 
   context.sched_tracker->PushSchedSwitch(cpu, timestamp, /*tid=*/1, prev_state,
-                                         kCommProc1,
-                                         /*tid=*/4);
+                                         /*tid=*/4, kCommProc1);
   context.sched_tracker->PushSchedSwitch(cpu, timestamp + 1, /*tid=*/4,
-                                         prev_state, kCommProc2,
-
-                                         /*tid=*/1);
+                                         prev_state, /*tid=*/1, kCommProc2);
 
   context.process_tracker->UpdateProcess(2, "test");
   context.process_tracker->UpdateThread(4, 2);

@@ -15,6 +15,7 @@ EffectNode::EffectNode()
       stable_id(INVALID_STABLE_ID),
       opacity(1.f),
       screen_space_opacity(1.f),
+      backdrop_filter_quality(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       has_render_surface(false),
       cache_render_surface(false),
@@ -44,6 +45,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
          stable_id == other.stable_id && opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
+         backdrop_filter_quality == other.backdrop_filter_quality &&
          has_render_surface == other.has_render_surface &&
          cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
@@ -80,6 +82,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("parent_id", parent_id);
   value->SetInteger("stable_id", stable_id);
   value->SetDouble("opacity", opacity);
+  value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);
+  value->SetString("blend_mode", SkBlendMode_Name(blend_mode));
   value->SetBoolean("has_render_surface", has_render_surface);
   value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);

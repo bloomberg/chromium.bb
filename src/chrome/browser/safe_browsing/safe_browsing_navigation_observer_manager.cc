@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -81,7 +82,7 @@ static const double kUserGestureTTLInSecond = 1.0;
 // expired. So we clean up these navigation footprints every 2 minutes.
 static const double kNavigationFootprintTTLInSecond = 120.0;
 // The maximum number of latest NavigationEvent we keep. It is used to limit
-// memory usage of navigation tracking. This number if picked based on UMA
+// memory usage of navigation tracking. This number is picked based on UMA
 // metric "SafeBrowsing.NavigationObserver.NavigationEventCleanUpCount".
 // Lowering it could make room for abuse.
 static const int kNavigationRecordMaxSize = 100;
@@ -549,13 +550,10 @@ void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
   std::size_t remove_count = 0;
   for (auto it = host_to_ip_map_.begin(); it != host_to_ip_map_.end();) {
     std::size_t size_before_removal = it->second.size();
-    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
-                                    [](const ResolvedIPAddress& resolved_ip) {
-                                      return IsEventExpired(
-                                          resolved_ip.timestamp,
-                                          kNavigationFootprintTTLInSecond);
-                                    }),
-                     it->second.end());
+    base::EraseIf(it->second, [](const ResolvedIPAddress& resolved_ip) {
+      return IsEventExpired(resolved_ip.timestamp,
+                            kNavigationFootprintTTLInSecond);
+    });
     std::size_t size_after_removal = it->second.size();
     remove_count += (size_before_removal - size_after_removal);
     if (size_after_removal == 0)
@@ -563,8 +561,6 @@ void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
     else
       ++it;
   }
-  UMA_HISTOGRAM_COUNTS_10000(
-      "SafeBrowsing.NavigationObserver.IPAddressCleanUpCount", remove_count);
 }
 
 bool SafeBrowsingNavigationObserverManager::IsCleanUpScheduled() const {

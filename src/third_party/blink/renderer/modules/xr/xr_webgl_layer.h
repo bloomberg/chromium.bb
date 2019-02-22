@@ -44,10 +44,8 @@ class XRWebGLLayer final : public XRLayer,
       WebGLRenderingContextOrWebGL2RenderingContext&) const;
 
   WebGLFramebuffer* framebuffer() const { return framebuffer_; }
-  unsigned long framebufferWidth() const {
-    return drawing_buffer_->size().Width();
-  }
-  unsigned long framebufferHeight() const {
+  uint32_t framebufferWidth() const { return drawing_buffer_->size().Width(); }
+  uint32_t framebufferHeight() const {
     return drawing_buffer_->size().Height();
   }
 
@@ -69,6 +67,8 @@ class XRWebGLLayer final : public XRLayer,
   void OnFrameStart(const base::Optional<gpu::MailboxHolder>&) override;
   void OnFrameEnd() override;
   void OnResize() override;
+  void HandleBackgroundImage(const gpu::MailboxHolder&,
+                             const IntSize&) override;
 
   void OverwriteColorBufferFromMailboxTexture(const gpu::MailboxHolder&,
                                               const IntSize& size);

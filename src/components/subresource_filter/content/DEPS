@@ -3,6 +3,7 @@ include_rules = [
   "+content/public/common",
   "+ipc",
   "+services/network/public/cpp",
+  "+third_party/blink/public/common",
 ]
 
 specific_include_rules = {

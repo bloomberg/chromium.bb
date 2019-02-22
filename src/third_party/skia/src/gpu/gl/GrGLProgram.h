@@ -33,7 +33,8 @@ public:
      * Additionally, these store the attribute location.
      */
     struct Attribute {
-        GrVertexAttribType fType;
+        GrVertexAttribType fCPUType;
+        GrSLType fGPUType;
         size_t fOffset;
         GrGLint fLocation;
     };
@@ -112,12 +113,16 @@ public:
 
     /**
      * This function uploads uniforms, calls each GrGLSL*Processor's setData. It binds all fragment
-     * processor textures. Primitive process textures are also bound here but are passed separately.
+     * processor textures. Primitive process textures can be bound using this function or by
+     * calling updatePrimitiveProcessorTextureBindings.
      *
      * It is the caller's responsibility to ensure the program is bound before calling.
      */
     void updateUniformsAndTextureBindings(const GrPrimitiveProcessor&, const GrPipeline&,
                                           const GrTextureProxy* const primitiveProcessorTextures[]);
+
+    void updatePrimitiveProcessorTextureBindings(const GrPrimitiveProcessor&,
+                                                 const GrTextureProxy* const[]);
 
     int vertexStride() const { return fVertexStride; }
     int instanceStride() const { return fInstanceStride; }

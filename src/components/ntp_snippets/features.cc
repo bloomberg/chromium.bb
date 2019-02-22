@@ -21,7 +21,6 @@ const base::Feature kRemoteSuggestionsBackendFeature{
 
 // Keep sorted, and keep nullptr at the end.
 const base::Feature* const kAllFeatures[] = {
-    &kArticleSuggestionsExpandableHeader,
     &kArticleSuggestionsFeature,
     &kBookmarkSuggestionsFeature,
     &kBreakingNewsPushFeature,
@@ -34,9 +33,6 @@ const base::Feature* const kAllFeatures[] = {
     &kNotificationsFeature,
     &kPublisherFaviconsFromNewServerFeature,
     &kRemoteSuggestionsBackendFeature};
-
-const base::Feature kArticleSuggestionsExpandableHeader{
-    "NTPArticleSuggestionsExpandableHeader", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -58,7 +54,7 @@ const base::Feature kCategoryRanker{"ContentSuggestionsCategoryRanker",
 
 const base::Feature kPublisherFaviconsFromNewServerFeature{
     "ContentSuggestionsFaviconsFromNewServer",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRemoteSuggestionsEmulateM58FetchingSchedule{
     "RemoteSuggestionsEmulateM58FetchingSchedule",

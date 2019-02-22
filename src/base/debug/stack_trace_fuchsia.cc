@@ -9,7 +9,6 @@
 #include <string.h>
 #include <threads.h>
 #include <unwind.h>
-#include <zircon/crashlogger.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
 #include <zircon/syscalls/definitions.h>
@@ -173,8 +172,8 @@ StackTrace::StackTrace(size_t count) : count_(0) {
   _Unwind_Backtrace(&UnwindStore, &data);
 }
 
-void StackTrace::Print() const {
-  OutputToStream(&std::cerr);
+void StackTrace::PrintWithPrefix(const char* prefix_string) const {
+  OutputToStreamWithPrefix(&std::cerr, prefix_string);
 }
 
 // Sample stack trace output is designed to be similar to Fuchsia's crashlogger:
@@ -185,12 +184,15 @@ void StackTrace::Print() const {
 // bt#21: pc 0x1527a05b51b4 (app:/system/base_unittests,0x18e81b4)
 // bt#22: pc 0x54fdbf3593de (libc.so,0x1c3de)
 // bt#23: end
-void StackTrace::OutputToStream(std::ostream* os) const {
+void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
+                                          const char* prefix_string) const {
   SymbolMap map;
 
   size_t i = 0;
   for (; (i < count_) && os->good(); ++i) {
     SymbolMap::Entry* entry = map.GetForAddress(trace_[i]);
+    if (prefix_string)
+      *os << prefix_string;
     if (entry) {
       size_t offset = reinterpret_cast<uintptr_t>(trace_[i]) -
                       reinterpret_cast<uintptr_t>(entry->addr);

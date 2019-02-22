@@ -9,6 +9,8 @@
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
 #include "ash/wm/window_util.h"  // nogncheck
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -142,6 +144,20 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
 
         widget->OnGestureEvent(located_event->AsGestureEvent());
       }
+
+      // Records UMA when user clicks/taps on the notification surface. Note
+      // that here we cannot determine which actions are performed since
+      // mouse/gesture events are directly forwarded to Android side.
+      // Interactions with the notification itself e.g. toggling notification
+      // settings are being captured as well, while clicks/taps on the close
+      // button won't reach this. Interactions from keyboard are handled
+      // separately in ArcNotificationItemImpl.
+      if (event->type() == ui::ET_MOUSE_RELEASED ||
+          event->type() == ui::ET_GESTURE_TAP) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Arc.UserInteraction",
+            arc::UserInteractionType::NOTIFICATION_INTERACTION);
+      }
     }
 
     // If AXTree is attached to notification content view, notification surface
@@ -150,7 +166,8 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // pass tab key event to focus manager of content view.
     // TODO(yawano): include elements inside Android notification in tab focus
     // traversal rather than skipping them.
-    if (owner_->surface_ && owner_->surface_->GetAXTreeId() != -1 &&
+    if (owner_->surface_ &&
+        owner_->surface_->GetAXTreeId() != ui::AXTreeIDUnknown() &&
         event->IsKeyEvent()) {
       ui::KeyEvent* key_event = event->AsKeyEvent();
       if (key_event->key_code() == ui::VKEY_TAB &&
@@ -666,7 +683,7 @@ void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(
         item_->GetSnapshot(), 0, 0, item_->GetSnapshot().width(),
         item_->GetSnapshot().height(), contents_bounds.x(), contents_bounds.y(),
-        contents_bounds.width(), contents_bounds.height(), false);
+        contents_bounds.width(), contents_bounds.height(), true /* filter */);
   } else {
     // Draw a blank background otherwise. The height of the view and surface are
     // not exactly synced and user may see the blank area out of the surface.
@@ -691,7 +708,7 @@ void ArcNotificationContentView::OnFocus() {
   NativeViewHost::OnFocus();
   notification_view->OnContentFocused();
 
-  if (surface_ && surface_->GetAXTreeId() != -1)
+  if (surface_ && surface_->GetAXTreeId() != ui::AXTreeIDUnknown())
     ActivateWidget(true);
 }
 
@@ -744,10 +761,10 @@ views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {
 
 void ArcNotificationContentView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  if (surface_ && surface_->GetAXTreeId() != -1) {
+  if (surface_ && surface_->GetAXTreeId() != ui::AXTreeIDUnknown()) {
     node_data->role = ax::mojom::Role::kClient;
-    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
-                               surface_->GetAXTreeId());
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                  surface_->GetAXTreeId());
   } else {
     node_data->role = ax::mojom::Role::kButton;
     node_data->AddStringAttribute(
@@ -788,8 +805,9 @@ void ArcNotificationContentView::OnWindowDestroying(aura::Window* window) {
 }
 
 void ArcNotificationContentView::OnWidgetClosing(views::Widget* widget) {
-  // Show copied surface, since the mask doesn't work correctly with closing
-  // animation (fade-out): https://crbug.com/811634.
+  // Actually this code doesn't show copied surface. Since it looks it doesn't
+  // work during closing. This just hides the surface and revails hidden
+  // snapshot: https://crbug.com/890701.
   ShowCopiedSurface();
 
   if (attached_widget_) {

@@ -47,7 +47,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::Fetch(FetchParameters& params,
                                                     ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
-  params.SetRequestContext(WebURLRequest::kRequestContextStyle);
+  params.SetRequestContext(mojom::RequestContextType::STYLE);
   CSSStyleSheetResource* resource = ToCSSStyleSheetResource(
       fetcher->RequestResource(params, CSSStyleSheetResourceFactory(), client));
   return resource;
@@ -68,8 +68,10 @@ CSSStyleSheetResource::CSSStyleSheetResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const TextResourceDecoderOptions& decoder_options)
-    : TextResource(resource_request, kCSSStyleSheet, options, decoder_options) {
-}
+    : TextResource(resource_request,
+                   ResourceType::kCSSStyleSheet,
+                   options,
+                   decoder_options) {}
 
 CSSStyleSheetResource::~CSSStyleSheetResource() = default;
 

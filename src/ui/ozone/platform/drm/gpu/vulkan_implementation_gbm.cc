@@ -31,7 +31,7 @@ bool VulkanImplementationGbm::InitializeVulkanInstance() {
       "VK_KHR_external_fence_capabilities",
       "VK_KHR_get_physical_device_properties2",
   };
-  if (!vulkan_instance_.Initialize(required_extensions)) {
+  if (!vulkan_instance_.Initialize(required_extensions, {})) {
     vulkan_instance_.Destroy();
     return false;
   }

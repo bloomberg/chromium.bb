@@ -77,6 +77,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                            HostFrameSinkClient* client);
 
+  // Returns true if RegisterFrameSinkId() was called with |frame_sink_id| and
+  // InvalidateFrameSinkId() has not been called.
+  bool IsFrameSinkIdRegistered(const FrameSinkId& frame_sink_id) const;
+
   // Invalidates |frame_sink_id| which cleans up any dangling temporary
   // references assigned to it. If there is a CompositorFrameSink for
   // |frame_sink_id| then it will be destroyed and the message pipe to the
@@ -132,12 +136,15 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
-  void DropTemporaryReference(const SurfaceId& surface_id);
+  // Returns true if RegisterFrameSinkHierarchy() was called with the supplied
+  // arguments.
+  bool IsFrameSinkHierarchyRegistered(
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) const;
 
-  // These two functions should only be used by WindowServer.
-  void WillAssignTemporaryReferencesExternally();
-  void AssignTemporaryReference(const SurfaceId& surface_id,
-                                const FrameSinkId& owner);
+  // Returns the first ancestor of |start| (including |start|) that is a root.
+  base::Optional<FrameSinkId> FindRootFrameSinkId(
+      const FrameSinkId& start) const;
 
   // Asks viz to send updates regarding video activity to |observer|.
   void AddVideoDetectorObserver(mojom::VideoDetectorObserverPtr observer);
@@ -221,10 +228,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 
-  // Assigns the temporary reference to the frame sink that is expected to
-  // embed |surface_id|, otherwise drops the temporary reference.
-  void PerformAssignTemporaryReference(const SurfaceId& surface_id);
-
   // Handles connection loss to |frame_sink_manager_ptr_|. This should only
   // happen when the GPU process crashes.
   void OnConnectionLost();
@@ -233,7 +236,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void RegisterAfterConnectionLoss();
 
   // mojom::FrameSinkManagerClient:
-  void OnSurfaceCreated(const SurfaceId& surface_id) override;
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnAggregatedHitTestRegionListUpdated(
       const FrameSinkId& frame_sink_id,
@@ -261,11 +263,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // If |frame_sink_manager_ptr_| connection was lost.
   bool connection_was_lost_ = false;
-
-  // If a FrameSinkId owner should be assigned when a new surface is created.
-  // This will be set false if using surface sequences or if temporary
-  // references are being assigned externally.
-  bool assign_temporary_references_ = true;
 
   base::RepeatingClosure connection_lost_callback_;
 

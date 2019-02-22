@@ -39,7 +39,7 @@ group("jingle_deps") {
   ]
 }
 
-static_library("webrtc") {
+source_set("webrtc") {
   public_deps = [
     ":jingle_deps",
 
@@ -57,31 +57,22 @@ static_library("webrtc") {
     cflags = [ "/wd4005" ]
   }
 
+  # When Chromium is built for NACL or Chromecast, WebRTC provides a
+  # field_trial implementation so there is no need to depend on
+  # ":field_trial".
+  # This configuration happens here:
+  # https://cs.chromium.org/chromium/src/third_party/webrtc/webrtc.gni?l=44-51&rcl=95c56eebe0a2b31ad5752138d15b431124e17d36
   if (is_nacl) {
-    # For NACL, we have to add a default implementation for field_trial and
-    # runtime_enabled_features.
     deps += [
       "//native_client_sdk/src/libraries/nacl_io",
-      "//third_party/webrtc/system_wrappers:field_trial_default",
-      "//third_party/webrtc/system_wrappers:runtime_enabled_features_default",
     ]
-  } else if (is_chromecast) {
-    # Cast builds use the default implementation for field_trial and
-    # runtime_enabled_features.
+  } else if (!is_chromecast) {
+    # When Chromium doesn't build for NaCL or Chromecast, WebRTC doesn't
+    # provide an implementation for field_trial and a custom one (that uses
+    # base/metrics/field_trial.h is provided).
     deps += [
-      "//third_party/webrtc/system_wrappers:field_trial_default",
-      "//third_party/webrtc/system_wrappers:runtime_enabled_features_default",
-    ]
-  } else {
-    # Otherwise, we just add the field_trial which redirects to base and
-    # runtime_enabled_features which redirects to content/public/common.
-    sources = [
-      "field_trial.cc",
-      "runtime_enabled_features.cc",
-    ]
-    deps += [
+      ":field_trial",
       "//base",
-      "//third_party/webrtc/system_wrappers:runtime_enabled_features_api",
     ]
   }
 
@@ -112,10 +103,29 @@ static_library("init_webrtc") {
     ":libjingle_webrtc_common",
   ]
   deps = [
+    ":metrics",
     ":task_queue_impl",
     "//base",
     "//third_party/webrtc/rtc_base",
     "//third_party/webrtc/system_wrappers",
+  ]
+}
+
+static_library("metrics") {
+  sources = [
+    "metrics.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+static_library("field_trial") {
+  sources = [
+    "field_trial.cc",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -145,6 +155,9 @@ source_set("libjingle_webrtc_common") {
 source_set("task_queue_impl") {
   sources = [
     "rtc_base/task_queue.cc",
+  ]
+  configs += [
+    "//third_party/webrtc:library_impl_config",
   ]
   deps = [
     "//base",

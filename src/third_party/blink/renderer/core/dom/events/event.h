@@ -136,13 +136,34 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned short eventPhase() const { return event_phase_; }
   void SetEventPhase(unsigned short event_phase) { event_phase_ = event_phase; }
 
+  void SetFireOnlyCaptureListenersAtTarget(
+      bool fire_only_capture_listeners_at_target) {
+    DCHECK_EQ(event_phase_, kAtTarget);
+    fire_only_capture_listeners_at_target_ =
+        fire_only_capture_listeners_at_target;
+  }
+
+  void SetFireOnlyNonCaptureListenersAtTarget(
+      bool fire_only_non_capture_listeners_at_target) {
+    DCHECK_EQ(event_phase_, kAtTarget);
+    fire_only_non_capture_listeners_at_target_ =
+        fire_only_non_capture_listeners_at_target;
+  }
+
+  bool FireOnlyCaptureListenersAtTarget() const {
+    return fire_only_capture_listeners_at_target_;
+  }
+  bool FireOnlyNonCaptureListenersAtTarget() const {
+    return fire_only_non_capture_listeners_at_target_;
+  }
+
   bool bubbles() const { return bubbles_; }
   bool cancelable() const { return cancelable_; }
   bool composed() const { return composed_; }
   bool IsScopedInV0() const;
 
   // Event creation timestamp in milliseconds. It returns a DOMHighResTimeStamp
-  // using the platform timestamp (see |m_platformTimeStamp|).
+  // using the platform timestamp (see |platform_time_stamp_|).
   // For more info see http://crbug.com/160524
   double timeStamp(ScriptState*) const;
   TimeTicks PlatformTimeStamp() const { return platform_time_stamp_; }
@@ -187,6 +208,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
   virtual bool IsBeforeTextInsertedEvent() const;
 
   virtual bool IsBeforeUnloadEvent() const;
+  virtual bool IsErrorEvent() const;
 
   virtual bool IsActivateInvisibleEvent() const;
 
@@ -320,8 +342,8 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // does Event Timing report it.
   unsigned executed_listener_or_default_action_ : 1;
 
-  // Whether preventDefault was called when |m_handlingPassive| is
-  // true. This field is reset on each call to setHandlingPassive.
+  // Whether preventDefault was called when |handling_passive_| is
+  // true. This field is reset on each call to SetHandlingPassive.
   unsigned prevent_default_called_during_passive_ : 1;
   // Whether preventDefault was called on uncancelable event.
   unsigned prevent_default_called_on_uncancelable_event_ : 1;
@@ -331,6 +353,11 @@ class CORE_EXPORT Event : public ScriptWrappable {
   // https://dom.spec.whatwg.org/#dispatching-events
   // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
   unsigned legacy_did_listeners_throw_flag_ : 1;
+
+  // This fields are effective only when
+  // CallCaptureListenersAtCapturePhaseAtShadowHosts runtime flag is enabled.
+  unsigned fire_only_capture_listeners_at_target_ : 1;
+  unsigned fire_only_non_capture_listeners_at_target_ : 1;
 
   PassiveMode handling_passive_;
   unsigned short event_phase_;

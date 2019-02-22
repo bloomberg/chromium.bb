@@ -22,7 +22,7 @@
 namespace blink {
 
 class CORE_EXPORT ByteStringSequenceSequenceOrByteStringByteStringRecord final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   ByteStringSequenceSequenceOrByteStringByteStringRecord();
   bool IsNull() const { return type_ == SpecificType::kNone; }

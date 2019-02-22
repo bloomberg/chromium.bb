@@ -187,19 +187,30 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   DCHECK(!result().empty());
   DCHECK_NE(kNoMatch, selected_line_);
 
+  const AutocompleteResult& result = this->result();
+  if (result.empty())
+    return;
+
+  const AutocompleteMatch& match = result.match_at(selected_line_);
+  GURL current_destination(match.destination_url);
+
   if (state == KEYWORD) {
-    const AutocompleteMatch& match = result().match_at(selected_line_);
     DCHECK(match.associated_keyword.get());
   }
 
   if (state == TAB_SWITCH) {
-    const AutocompleteMatch& match = result().match_at(selected_line_);
-    DCHECK(match.has_tab_match);
-    old_focused_url_ = result().match_at(selected_line_).destination_url;
+    // TODO(orinj): If in-suggestion Pedals are kept, refactor a bit
+    // so that button presence doesn't always assume tab switching use case.
+    DCHECK(match.has_tab_match || match.pedal);
+    old_focused_url_ = current_destination;
   }
 
   selected_line_state_ = state;
   view_->InvalidateLine(selected_line_);
+
+  // Ensures update of accessibility data.
+  edit_model_->view()->OnTemporaryTextMaybeChanged(
+    edit_model_->view()->GetText(), match, false, false);
 }
 
 void OmniboxPopupModel::TryDeletingCurrentItem() {
@@ -313,8 +324,7 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   }
 
   const auto& vector_icon_type = AutocompleteMatch::TypeToVectorIcon(
-      match.type, IsStarredMatch(match), match.has_tab_match,
-      match.document_type);
+      match.type, IsStarredMatch(match), match.document_type);
 
   return edit_model_->client()->GetSizedIcon(vector_icon_type,
                                              vector_icon_color);

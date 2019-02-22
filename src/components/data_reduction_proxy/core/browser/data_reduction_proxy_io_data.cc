@@ -30,7 +30,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/previews/core/previews_decider.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -120,26 +119,18 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(net_log);
   DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
-  std::unique_ptr<DataReductionProxyParams> params(
-      new DataReductionProxyParams());
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));
-  bool use_config_client =
-      params::IsConfigClientEnabled() && client_ != Client::CRONET_ANDROID;
+  configurator_->SetConfigUpdatedCallback(base::BindRepeating(
+      &DataReductionProxyIOData::OnProxyConfigUpdated, base::Unretained(this)));
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
-  if (use_config_client) {
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
         std::make_unique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner, net_log, network_connection_tracker_,
         std::move(mutable_config), configurator_.get(), event_creator_.get()));
-  } else {
-    config_.reset(new DataReductionProxyConfig(
-        io_task_runner, net_log, network_connection_tracker_, std::move(params),
-        configurator_.get(), event_creator_.get()));
-  }
 
   // It is safe to use base::Unretained here, since it gets executed
   // synchronously on the IO thread, and |this| outlives the caller (since the
@@ -159,21 +150,19 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       base::BindRepeating(&DataReductionProxyIOData::UpdateProxyRequestHeaders,
                           base::Unretained(this)));
 
-  if (use_config_client) {
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives the caller (since the
     // caller is owned by |this|.
-    config_client_.reset(new DataReductionProxyConfigServiceClient(
-        std::move(params), GetBackoffPolicy(), request_options_.get(),
-        raw_mutable_config, config_.get(), event_creator_.get(), this, net_log_,
-        network_connection_tracker_,
-        base::Bind(&DataReductionProxyIOData::StoreSerializedConfig,
-                   base::Unretained(this))));
-  }
+  config_client_.reset(new DataReductionProxyConfigServiceClient(
+      GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
+      config_.get(), event_creator_.get(), this, net_log_,
+      network_connection_tracker_,
+      base::BindRepeating(&DataReductionProxyIOData::StoreSerializedConfig,
+                          base::Unretained(this))));
 
   proxy_delegate_.reset(new DataReductionProxyDelegate(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_, network_connection_tracker_));
+      bypass_stats_.get(), net_log_));
   network_properties_manager_.reset(new NetworkPropertiesManager(
       base::DefaultClock::GetInstance(), prefs, ui_task_runner_));
 }
@@ -212,6 +201,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   service_ = data_reduction_proxy_service;
   url_request_context_getter_ = service_->url_request_context_getter();
+  url_loader_factory_info_ = service_->url_loader_factory_info();
   // Using base::Unretained is safe here, unless the browser is being shut down
   // before the Initialize task can be executed. The task is only created as
   // part of class initialization.
@@ -227,13 +217,18 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(network_properties_manager_);
+
+  DCHECK(url_loader_factory_info_);
+  auto url_loader_factory = network::SharedURLLoaderFactory::Create(
+      std::move(url_loader_factory_info_));
+
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get(),
-                                url_request_context_getter_,
+                                url_loader_factory,
                                 network_properties_manager_.get());
   bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread(this);
   if (config_client_)
-    config_client_->InitializeOnIOThread(url_request_context_getter_);
+    config_client_->InitializeOnIOThread(url_loader_factory);
   if (ui_task_runner_->BelongsToCurrentThread()) {
     service_->SetIOData(weak_factory_.GetWeakPtr());
     return;
@@ -297,7 +292,7 @@ DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),
-      bypass_stats_.get(), net_log_, network_connection_tracker_);
+      bypass_stats_.get(), net_log_);
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.
@@ -340,15 +335,13 @@ void DataReductionProxyIOData::SetDataReductionProxyConfiguration(
     config_client_->ApplySerializedConfig(serialized_config);
 }
 
-bool DataReductionProxyIOData::ShouldAcceptServerPreview(
-    const net::URLRequest& request,
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(previews_decider);
-  DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
-  if (!config_ || !request.url().SchemeIsHTTPOrHTTPS()) {
-    return false;
-  }
-  return config_->ShouldAcceptServerPreview(request, *previews_decider);
+void DataReductionProxyIOData::SetIgnoreLongTermBlackListRules(
+    bool ignore_long_term_black_list_rules) {
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &DataReductionProxyService::SetIgnoreLongTermBlackListRules, service_,
+          ignore_long_term_black_list_rules));
 }
 
 void DataReductionProxyIOData::UpdateDataUseForHost(int64_t network_bytes,
@@ -462,25 +455,40 @@ void DataReductionProxyIOData::SetDataUseAscriber(
   }
 }
 
-void DataReductionProxyIOData::SetPreviewsDecider(
-    previews::PreviewsDecider* previews_decider) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(previews_decider);
-  previews_decider_ = previews_decider;
-}
-
 void DataReductionProxyIOData::UpdateProxyRequestHeaders(
-    net::HttpRequestHeaders headers) {
+    const net::HttpRequestHeaders& headers) {
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DataReductionProxyService::SetProxyRequestHeaders,
+      base::BindOnce(&DataReductionProxyService::SetProxyRequestHeadersOnUI,
                      service_, std::move(headers)));
+  OnProxyConfigUpdated();
+}
+
+void DataReductionProxyIOData::OnProxyConfigUpdated() {
+  if (!proxy_config_client_)
+    return;
+
+  auto config = network::mojom::CustomProxyConfig::New();
+  config->rules = configurator_->GetProxyConfig().proxy_rules();
+
+  net::EffectiveConnectionType type = GetEffectiveConnectionType();
+  if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
+    config->pre_cache_headers.SetHeader(
+        chrome_proxy_ect_header(),
+        net::GetNameForEffectiveConnectionType(type));
+  }
+
+  request_options_->AddRequestHeader(&config->post_cache_headers,
+                                     base::nullopt);
+  proxy_config_client_->OnCustomProxyConfigUpdated(std::move(config));
 }
 
 void DataReductionProxyIOData::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType type) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   effective_connection_type_ = type;
+  OnProxyConfigUpdated();
 }
 
 void DataReductionProxyIOData::OnRTTOrThroughputEstimatesComputed(
@@ -493,6 +501,12 @@ net::EffectiveConnectionType
 DataReductionProxyIOData::GetEffectiveConnectionType() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return effective_connection_type_;
+}
+
+void DataReductionProxyIOData::SetCustomProxyConfigClient(
+    network::mojom::CustomProxyConfigClientPtrInfo config_client_info) {
+  proxy_config_client_.Bind(std::move(config_client_info));
+  OnProxyConfigUpdated();
 }
 
 }  // namespace data_reduction_proxy

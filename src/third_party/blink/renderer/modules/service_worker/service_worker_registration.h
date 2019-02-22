@@ -8,6 +8,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration_proxy.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
@@ -54,9 +55,9 @@ class ServiceWorkerRegistration final
 
   // WebServiceWorkerRegistrationProxy overrides.
   void DispatchUpdateFoundEvent() override;
-  void SetInstalling(std::unique_ptr<WebServiceWorker::Handle>) override;
-  void SetWaiting(std::unique_ptr<WebServiceWorker::Handle>) override;
-  void SetActive(std::unique_ptr<WebServiceWorker::Handle>) override;
+  void SetInstalling(WebServiceWorkerObjectInfo) override;
+  void SetWaiting(WebServiceWorkerObjectInfo) override;
+  void SetActive(WebServiceWorkerObjectInfo) override;
 
   // Returns an existing registration object for the handle if it exists.
   // Otherwise, returns a new registration object.

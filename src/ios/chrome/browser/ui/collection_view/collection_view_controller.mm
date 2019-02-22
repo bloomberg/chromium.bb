@@ -45,6 +45,12 @@
         self.collectionView;
     // After all other views have been registered.
     [self addChildViewController:_appBarViewController];
+    // Match the width of the parent view.
+    CGRect frame = self.appBarViewController.view.frame;
+    frame.origin.x = 0;
+    frame.size.width =
+        self.appBarViewController.parentViewController.view.bounds.size.width;
+    self.appBarViewController.view.frame = frame;
     [self.view addSubview:self.appBarViewController.view];
     [self.appBarViewController didMoveToParentViewController:self];
   }

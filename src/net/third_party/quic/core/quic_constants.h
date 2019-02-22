@@ -220,8 +220,14 @@ const size_t kPacketHeaderTypeSize = 1;
 // Number of bytes reserved for connection ID length.
 const size_t kConnectionIdLengthSize = 1;
 
+// Length of an encoded variable length connection ID, in bytes.
+const size_t kQuicConnectionIdLength = 8;
+
 // Minimum length of random bytes in IETF stateless reset packet.
 const size_t kMinRandomBytesLengthInStatelessReset = 20;
+
+// Maximum length allowed for the token in a NEW_TOKEN frame.
+const size_t kMaxNewTokenTokenLength = 0xffff;
 
 }  // namespace quic
 

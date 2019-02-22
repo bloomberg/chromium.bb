@@ -21,6 +21,7 @@ enum class AudioContentType {
   kAlarm,          // Alarm sounds.
   kCommunication,  // Voice communication, eg assistant TTS.
   kOther,          // No content type volume control (only per-stream control).
+  kNumTypes,       // Not a valid type; should always be last in the enum.
 };
 
 // Observer for volume/mute state changes. This is useful to detect volume

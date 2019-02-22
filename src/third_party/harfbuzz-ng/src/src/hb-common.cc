@@ -26,9 +26,9 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-private.hh"
+#include "hb.hh"
 
-#include "hb-machinery-private.hh"
+#include "hb-machinery.hh"
 
 #include <locale.h>
 #ifdef HAVE_XLOCALE_H
@@ -361,7 +361,14 @@ hb_language_to_string (hb_language_t language)
 /**
  * hb_language_get_default:
  *
+ * Get default language from current locale.
  *
+ * Note that the first time this function is called, it calls
+ * "setlocale (LC_CTYPE, nullptr)" to fetch current locale.  The underlying
+ * setlocale function is, in many implementations, NOT threadsafe.  To avoid
+ * problems, call this function once before multiple threads can call it.
+ * This function is only used from hb_buffer_guess_segment_properties() by
+ * HarfBuzz itself.
  *
  * Return value: (transfer none):
  *
@@ -531,7 +538,6 @@ hb_script_get_horizontal_direction (hb_script_t script)
 
     /* Unicode-8.0 additions */
     case HB_SCRIPT_HATRAN:
-    case HB_SCRIPT_OLD_HUNGARIAN:
 
     /* Unicode-9.0 additions */
     case HB_SCRIPT_ADLAM:
@@ -545,6 +551,7 @@ hb_script_get_horizontal_direction (hb_script_t script)
 
 
     /* https://github.com/harfbuzz/harfbuzz/issues/1000 */
+    case HB_SCRIPT_OLD_HUNGARIAN:
     case HB_SCRIPT_OLD_ITALIC:
     case HB_SCRIPT_RUNIC:
 
@@ -877,8 +884,8 @@ parse_feature_indices (const char **pp, const char *end, hb_feature_t *feature)
 
   bool has_start;
 
-  feature->start = 0;
-  feature->end = (unsigned int) -1;
+  feature->start = HB_FEATURE_GLOBAL_START;
+  feature->end = HB_FEATURE_GLOBAL_END;
 
   if (!parse_char (pp, end, '['))
     return true;
@@ -1065,7 +1072,7 @@ hb_variation_to_string (hb_variation_t *variation,
   while (len && s[len - 1] == ' ')
     len--;
   s[len++] = '=';
-  len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", variation->value));
+  len += MAX (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) variation->value));
 
   assert (len < ARRAY_LENGTH (s));
   len = MIN (len, size - 1);

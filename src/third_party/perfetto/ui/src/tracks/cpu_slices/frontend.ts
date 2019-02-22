@@ -13,15 +13,23 @@
 // limitations under the License.
 
 import {assertTrue} from '../../base/logging';
-import {requestTrackData} from '../../common/actions';
+import {Actions} from '../../common/actions';
 import {TrackState} from '../../common/state';
+import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
 import {Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
 
-import {CPU_SLICE_TRACK_KIND, CpuSliceTrackData} from './common';
+import {
+  Config,
+  CPU_SLICE_TRACK_KIND,
+  Data,
+  SliceData,
+  SummaryData
+} from './common';
 
-const MARGIN_TOP = 20;
+// 0.5 Makes the horizontal lines sharp.
+const MARGIN_TOP = 5.5;
 const RECT_HEIGHT = 30;
 
 function cropText(str: string, charWidth: number, rectWidth: number) {
@@ -46,7 +54,7 @@ function getCurResolution() {
   return Math.pow(10, Math.floor(Math.log10(resolution)));
 }
 
-class CpuSliceTrack extends Track {
+class CpuSliceTrack extends Track<Config, Data> {
   static readonly kind = CPU_SLICE_TRACK_KIND;
   static create(trackState: TrackState): CpuSliceTrack {
     return new CpuSliceTrack(trackState);
@@ -55,12 +63,14 @@ class CpuSliceTrack extends Track {
   private hoveredUtid = -1;
   private mouseXpos?: number;
   private reqPending = false;
+  private hue: number;
 
   constructor(trackState: TrackState) {
     super(trackState);
+    // TODO: this needs to be kept in sync with the hue generation algorithm
+    // of overview_timeline_panel.ts
+    this.hue = (128 + (32 * this.config.cpu)) % 256;
   }
-
-  consumeData() {}
 
   reqDataDeferred() {
     const {visibleWindowTime} = globals.frontendLocalState;
@@ -68,68 +78,87 @@ class CpuSliceTrack extends Track {
     const reqEnd = visibleWindowTime.end + visibleWindowTime.duration;
     const reqRes = getCurResolution();
     this.reqPending = false;
-    globals.dispatch(
-        requestTrackData(this.trackState.id, reqStart, reqEnd, reqRes));
+    globals.dispatch(Actions.reqTrackData({
+      trackId: this.trackState.id,
+      start: reqStart,
+      end: reqEnd,
+      resolution: reqRes
+    }));
   }
 
   renderCanvas(ctx: CanvasRenderingContext2D): void {
     // TODO: fonts and colors should come from the CSS and not hardcoded here.
-
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
-    const trackData = this.trackData;
+    const data = this.data();
 
-    // If there aren't enough cached slices data in |trackData| request more to
+    // If there aren't enough cached slices data in |data| request more to
     // the controller.
-    const inRange = trackData !== undefined &&
-        (visibleWindowTime.start >= trackData.start &&
-         visibleWindowTime.end <= trackData.end);
-    if (!inRange || trackData.resolution > getCurResolution()) {
+    const inRange = data !== undefined &&
+        (visibleWindowTime.start >= data.start &&
+         visibleWindowTime.end <= data.end);
+    if (!inRange || data.resolution !== getCurResolution()) {
       if (!this.reqPending) {
         this.reqPending = true;
         setTimeout(() => this.reqDataDeferred(), 50);
       }
-      if (trackData === undefined) return;  // Can't possibly draw anything.
     }
+    if (data === undefined) return;  // Can't possibly draw anything.
+
+    // If the cached trace slices don't fully cover the visible time range,
+    // show a gray rectangle with a "Loading..." label.
+    checkerboardExcept(
+        ctx,
+        timeScale.timeToPx(visibleWindowTime.start),
+        timeScale.timeToPx(visibleWindowTime.end),
+        timeScale.timeToPx(data.start),
+        timeScale.timeToPx(data.end));
+
+    if (data.kind === 'summary') {
+      this.renderSummary(ctx, data);
+    } else if (data.kind === 'slice') {
+      this.renderSlices(ctx, data);
+    }
+  }
+
+  renderSummary(ctx: CanvasRenderingContext2D, data: SummaryData): void {
+    const {timeScale, visibleWindowTime} = globals.frontendLocalState;
+    const startPx = Math.floor(timeScale.timeToPx(visibleWindowTime.start));
+    const bottomY = MARGIN_TOP + RECT_HEIGHT;
+
+    let lastX = startPx;
+    let lastY = bottomY;
+
+    ctx.fillStyle = `hsl(${this.hue}, 50%, 60%)`;
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    for (let i = 0; i < data.utilizations.length; i++) {
+      const utilization = data.utilizations[i];
+      const startTime = i * data.bucketSizeSeconds + data.start;
+
+      lastX = Math.floor(timeScale.timeToPx(startTime));
+
+      ctx.lineTo(lastX, lastY);
+      lastY = MARGIN_TOP + Math.round(RECT_HEIGHT * (1 - utilization));
+      ctx.lineTo(lastX, lastY);
+    }
+    ctx.lineTo(lastX, bottomY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  renderSlices(ctx: CanvasRenderingContext2D, data: SliceData): void {
+    const {timeScale, visibleWindowTime} = globals.frontendLocalState;
+    assertTrue(data.starts.length === data.ends.length);
+    assertTrue(data.starts.length === data.utids.length);
+
     ctx.textAlign = 'center';
     ctx.font = '12px Google Sans';
     const charWidth = ctx.measureText('dbpqaouk').width / 8;
 
-    // TODO: this needs to be kept in sync with the hue generation algorithm
-    // of overview_timeline_panel.ts
-    const hue = (128 + (32 * this.trackState.cpu)) % 256;
-
-    // If the cached trace slices don't fully cover the visible time range,
-    // show a gray rectangle with a "Loading..." label.
-    ctx.font = '12px Google Sans';
-    if (trackData.start > visibleWindowTime.start) {
-      const rectWidth =
-          timeScale.timeToPx(Math.min(trackData.start, visibleWindowTime.end));
-      ctx.fillStyle = '#eee';
-      ctx.fillRect(0, MARGIN_TOP, rectWidth, RECT_HEIGHT);
-      ctx.fillStyle = '#666';
-      ctx.fillText(
-          'loading...', rectWidth / 2, MARGIN_TOP + RECT_HEIGHT / 2, rectWidth);
-    }
-    if (trackData.end < visibleWindowTime.end) {
-      const rectX =
-          timeScale.timeToPx(Math.max(trackData.end, visibleWindowTime.start));
-      const rectWidth = timeScale.timeToPx(visibleWindowTime.end) - rectX;
-      ctx.fillStyle = '#eee';
-      ctx.fillRect(rectX, MARGIN_TOP, rectWidth, RECT_HEIGHT);
-      ctx.fillStyle = '#666';
-      ctx.fillText(
-          'loading...',
-          rectX + rectWidth / 2,
-          MARGIN_TOP + RECT_HEIGHT / 2,
-          rectWidth);
-    }
-
-    assertTrue(trackData.starts.length === trackData.ends.length);
-    assertTrue(trackData.starts.length === trackData.utids.length);
-    for (let i = 0; i < trackData.starts.length; i++) {
-      const tStart = trackData.starts[i];
-      const tEnd = trackData.ends[i];
-      const utid = trackData.utids[i];
+    for (let i = 0; i < data.starts.length; i++) {
+      const tStart = data.starts[i];
+      const tEnd = data.ends[i];
+      const utid = data.utids[i];
       if (tEnd <= visibleWindowTime.start || tStart >= visibleWindowTime.end) {
         continue;
       }
@@ -139,7 +168,7 @@ class CpuSliceTrack extends Track {
       if (rectWidth < 0.1) continue;
 
       const hovered = this.hoveredUtid === utid;
-      ctx.fillStyle = `hsl(${hue}, 50%, ${hovered ? 25 : 60}%`;
+      ctx.fillStyle = `hsl(${this.hue}, 50%, ${hovered ? 25 : 60}%)`;
       ctx.fillRect(rectStart, MARGIN_TOP, rectEnd - rectStart, RECT_HEIGHT);
 
       // TODO: consider de-duplicating this code with the copied one from
@@ -151,6 +180,10 @@ class CpuSliceTrack extends Track {
         title = `${threadInfo.procName} [${threadInfo.pid}]`;
         subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
       }
+
+      // Don't render text when we have less than 5px to play with.
+      if (rectWidth < 5) continue;
+
       title = cropText(title, charWidth, rectWidth);
       subTitle = cropText(subTitle, charWidth, rectWidth);
       const rectXCenter = rectStart + rectWidth / 2;
@@ -164,22 +197,28 @@ class CpuSliceTrack extends Track {
 
     const hoveredThread = globals.threads.get(this.hoveredUtid);
     if (hoveredThread !== undefined) {
-      ctx.fillStyle = 'hsl(200, 50%, 40%)';
-      ctx.textAlign = 'left';
       const procTitle = `P: ${hoveredThread.procName} [${hoveredThread.pid}]`;
       const threadTitle =
           `T: ${hoveredThread.threadName} [${hoveredThread.tid}]`;
+
       ctx.font = '10px Google Sans';
-      ctx.fillText(procTitle, this.mouseXpos! + 5, 8);
-      ctx.font = '10px Google Sans';
-      ctx.fillText(threadTitle, this.mouseXpos! + 5, 18);
+      const procTitleWidth = ctx.measureText(procTitle).width;
+      const threadTitleWidth = ctx.measureText(threadTitle).width;
+      const width = Math.max(procTitleWidth, threadTitleWidth);
+
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.fillRect(this.mouseXpos!, MARGIN_TOP, width + 16, RECT_HEIGHT);
+      ctx.fillStyle = 'hsl(200, 50%, 40%)';
+      ctx.textAlign = 'left';
+      ctx.fillText(procTitle, this.mouseXpos! + 8, 18);
+      ctx.fillText(threadTitle, this.mouseXpos! + 8, 28);
     }
   }
 
   onMouseMove({x, y}: {x: number, y: number}) {
-    const trackData = this.trackData;
+    const data = this.data();
     this.mouseXpos = x;
-    if (trackData === undefined) return;
+    if (data === undefined || data.kind === 'summary') return;
     const {timeScale} = globals.frontendLocalState;
     if (y < MARGIN_TOP || y > MARGIN_TOP + RECT_HEIGHT) {
       this.hoveredUtid = -1;
@@ -188,10 +227,10 @@ class CpuSliceTrack extends Track {
     const t = timeScale.pxToTime(x);
     this.hoveredUtid = -1;
 
-    for (let i = 0; i < trackData.starts.length; i++) {
-      const tStart = trackData.starts[i];
-      const tEnd = trackData.ends[i];
-      const utid = trackData.utids[i];
+    for (let i = 0; i < data.starts.length; i++) {
+      const tStart = data.starts[i];
+      const tEnd = data.ends[i];
+      const utid = data.utids[i];
       if (tStart <= t && t <= tEnd) {
         this.hoveredUtid = utid;
         break;
@@ -202,10 +241,6 @@ class CpuSliceTrack extends Track {
   onMouseOut() {
     this.hoveredUtid = -1;
     this.mouseXpos = 0;
-  }
-
-  private get trackData(): CpuSliceTrackData {
-    return globals.trackDataStore.get(this.trackState.id) as CpuSliceTrackData;
   }
 }
 

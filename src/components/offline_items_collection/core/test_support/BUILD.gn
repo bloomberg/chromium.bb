@@ -6,6 +6,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "mock_filtered_offline_item_observer.cc",
+    "mock_filtered_offline_item_observer.h",
     "mock_offline_content_provider.cc",
     "mock_offline_content_provider.h",
     "offline_item_test_support.cc",

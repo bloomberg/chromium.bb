@@ -13,6 +13,7 @@ import("//build/config/host_byteorder.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/cc_wrapper.gni")
+import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
 
@@ -102,9 +103,6 @@ declare_args() {
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false
 
-  # Strip the debug info of symbols file in lib.unstripped to reduce size.
-  strip_debug_info = false
-
   # Path to an AFDO profile to use while building with clang, if any. Empty
   # implies none.
   clang_sample_profile_path = ""
@@ -138,6 +136,9 @@ declare_args() {
   # the space overhead is too great. We should use some mixture of profiles and
   # optimization settings to better tune the size increase.
   thin_lto_enable_optimizations = is_chromeos
+
+  # By default only the binaries in official builds get build IDs.
+  force_local_build_id = false
 }
 
 declare_args() {
@@ -337,7 +338,7 @@ config("compiler") {
       }
     }
 
-    if (is_official_build) {
+    if (is_official_build || force_local_build_id) {
       # Explicitly pass --build-id to ld. Compilers used to always pass this
       # implicitly but don't any more (in particular clang when built without
       # ENABLE_LINKER_BUILD_ID=ON). The crash infrastructure does need a build
@@ -501,8 +502,7 @@ config("compiler") {
     }
   }
 
-  if (is_clang && !is_nacl && current_toolchain == host_toolchain &&
-      target_os != "chromeos") {
+  if (is_clang && !is_nacl && !use_xcode_clang) {
     cflags += [
       # TODO(hans): Remove this once Clang generates better optimized debug info
       # by default. https://crbug.com/765793
@@ -1057,29 +1057,16 @@ config("compiler_cpu_abi") {
         ]
       }
     } else if (current_cpu == "ppc64") {
-      if (v8_current_cpu == "ppc") {
-        cflags += [ "-m32" ]
-        ldflags += [ "-m32" ]
-      } else if (v8_current_cpu == "ppc64") {
-        if (current_os == "aix") {
-          cflags += [ "-maix64" ]
-          ldflags += [ "-maix64" ]
-        } else {
-          cflags += [ "-m64" ]
-          ldflags += [ "-m64" ]
-        }
-      }
-    } else if (current_cpu == "s390x") {
-      if (v8_current_cpu == "s390" && host_byteorder == "little") {
-        cflags += [ "-m32" ]
-        ldflags += [ "-m32" ]
-      } else if (v8_current_cpu == "s390") {
-        cflags += [ "-m31" ]
-        ldflags += [ "-m31" ]
-      } else if (v8_current_cpu == "s390x") {
+      if (current_os == "aix") {
+        cflags += [ "-maix64" ]
+        ldflags += [ "-maix64" ]
+      } else {
         cflags += [ "-m64" ]
         ldflags += [ "-m64" ]
       }
+    } else if (current_cpu == "s390x") {
+      cflags += [ "-m64" ]
+      ldflags += [ "-m64" ]
     }
   }
 
@@ -1515,6 +1502,9 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
           "-Wno-ignored-pragma-optimize",
+
+          # TODO(hans): https://crbug.com/890307
+          "-Wno-defaulted-function-deleted",
         ]
       }
     }
@@ -1572,7 +1562,7 @@ config("chromium_code") {
       defines += [ "_FORTIFY_SOURCE=2" ]
     }
 
-    if (is_mac || is_ios) {
+    if (is_mac) {
       cflags_objc = [ "-Wobjc-missing-property-synthesis" ]
       cflags_objcc = [ "-Wobjc-missing-property-synthesis" ]
     }
@@ -1747,8 +1737,7 @@ config("no_exceptions") {
 # destructors, which will slow down closing the program.
 # TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
 config("wexit_time_destructors") {
-  # TODO: Enable on Windows too, http://crbug.com/404525
-  if (is_clang && !is_win) {
+  if (is_clang) {
     cflags = [ "-Wexit-time-destructors" ]
   }
 }
@@ -1762,10 +1751,38 @@ config("wexit_time_destructors") {
 # Note that this can be applied regardless of platform and architecture to
 # clean up the call sites. This will only apply the flag when necessary.
 #
+# This config is just an alias to no_shorten_64_warnings and will
+# suppress a superset of warning 4267 and any 64-bit -> 32-bit implicit
+# conversions. Having both for a time means not having to go through and
+# update all references to no_size_t_to_int_warning throughout the codebase
+# atomically.
+#
+# Any new warning suppressions should use the no_shorten_64_warnings
+# config below and not this.
+#
 # TODO(jschuh): crbug.com/167187 fix this and delete this config.
 config("no_size_t_to_int_warning") {
-  if (is_win && current_cpu == "x64") {
-    cflags = [ "/wd4267" ]
+  configs = [ ":no_shorten_64_warnings" ]
+}
+
+# As part of re-enabling -Wconversion (see issue 588506) some code
+# will continue to generate warnings.
+# The first warning to be enabled will be -Wshorten-64-to-32.
+#
+# Code that currently generates warnings for this can include this
+# config to disable them.
+config("no_shorten_64_warnings") {
+  if (current_cpu == "x64") {
+    if (is_clang) {
+      cflags = [ "-Wno-shorten-64-to-32" ]
+    } else {
+      if (is_win) {
+        # MSVC does not have an explicit warning equivalent to
+        # -Wshorten-64-to-32 but 4267 warns for size_t -> int
+        # on 64-bit builds, so is the closest.
+        cflags = [ "/wd4267" ]
+      }
+    }
   }
 }
 
@@ -2165,6 +2182,22 @@ config("afdo") {
 #   configs -= [ "//build/config/compiler:default_symbols" ]
 #   configs += [ "//build/config/compiler:symbols" ]
 
+# A helper config that all configs passing /DEBUG to the linker should
+# include as sub-config.
+config("win_pdbaltpath") {
+  visibility = [
+    ":symbols",
+    ":minimal_symbols",
+  ]
+
+  # /DEBUG causes the linker to generate a pdb file, and to write the absolute
+  # path to it in the executable file it generates.  This flag turns that
+  # absolute path into just the basename of the pdb file, which helps with
+  # build reproducibility. Debuggers look for pdb files next to executables,
+  # so there's no downside to always using this.
+  ldflags = [ "/pdbaltpath:%_PDB%" ]
+}
+
 # Full symbols.
 config("symbols") {
   if (is_win) {
@@ -2195,6 +2228,9 @@ config("symbols") {
       ldflags = [ "/DEBUG" ]
     }
 
+    # All configs using /DEBUG should include this:
+    configs = [ ":win_pdbaltpath" ]
+
     if (is_clang) {
       # /DEBUG:FASTLINK requires every object file to have standalone debug
       # information.
@@ -2217,7 +2253,7 @@ config("symbols") {
       }
     } else {
       cflags = []
-      if (!use_debug_fission && target_cpu == "arm") {
+      if (!use_debug_fission && current_cpu == "arm") {
         # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
         # TODO(thakis): Remove this again once dump_syms is fixed.
         #
@@ -2247,7 +2283,7 @@ config("symbols") {
     # obj/native_client/src/trusted/service_runtime/sel_asm/nacl_switch_32.o:
     # DWARF info may be corrupt; offsets in a range list entry are in different
     # sections" there.  Maybe just a bug in nacl_switch_32.S.
-    if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
+    if (!is_mac && !is_ios && !is_nacl && current_cpu != "x86" &&
         (use_gold || use_lld)) {
       if (is_clang) {
         # This flag enables the GNU-format pubnames and pubtypes sections,
@@ -2270,6 +2306,9 @@ config("minimal_symbols") {
     cflags = []
     ldflags = [ "/DEBUG" ]
 
+    # All configs using /DEBUG should include this:
+    configs = [ ":win_pdbaltpath" ]
+
     # For win/asan, get stack traces with full line numbers.
     # AddressSanitizerTests.TestAddressSanitizer needs this, and since
     # win/asan isn't a default cq bot the build time hit is ok.
@@ -2280,7 +2319,7 @@ config("minimal_symbols") {
     }
   } else {
     cflags = []
-    if (target_cpu == "arm") {
+    if (current_cpu == "arm") {
       # dump_syms has issues with dwarf4 on arm, https://crbug.com/744956
       # TODO(thakis): Remove this again once dump_syms is fixed.
       cflags += [ "-gdwarf-3" ]

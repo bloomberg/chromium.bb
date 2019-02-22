@@ -12,6 +12,7 @@ import com.google.android.libraries.feed.host.storage.ContentOperation.Type;
 import com.google.android.libraries.feed.host.storage.ContentOperation.Upsert;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -30,17 +31,19 @@ public class FeedContentBridge {
     /**
      * Creates a {@link FeedContentBridge} for accessing native content storage
      * implementation for the current user, and initial native side bridge.
-     */
-    public FeedContentBridge() {}
-
-    /**
-     * Initializes the native side of this bridge.
      *
      * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
-    public void init(Profile profile) {
+    public FeedContentBridge(Profile profile) {
         mNativeFeedContentBridge = nativeInit(profile);
     }
+
+    /**
+     * Creates a {@link FeedContentBridge} for accessing native content storage
+     * implementation for the current user, and initial native side bridge.
+     */
+    @VisibleForTesting
+    public FeedContentBridge() {}
 
     /** Cleans up native half of this bridge. */
     public void destroy() {
@@ -49,20 +52,24 @@ public class FeedContentBridge {
         mNativeFeedContentBridge = 0;
     }
 
-    public void loadContent(List<String> keys, Callback<Map<String, byte[]>> callback) {
+    public void loadContent(List<String> keys, Callback<Map<String, byte[]>> successCallback,
+            Callback<Void> failureCallback) {
         assert mNativeFeedContentBridge != 0;
         String[] keysArray = keys.toArray(new String[keys.size()]);
-        nativeLoadContent(mNativeFeedContentBridge, keysArray, callback);
+        nativeLoadContent(mNativeFeedContentBridge, keysArray, successCallback, failureCallback);
     }
 
-    public void loadContentByPrefix(String prefix, Callback<Map<String, byte[]>> callback) {
+    public void loadContentByPrefix(String prefix, Callback<Map<String, byte[]>> successCallback,
+            Callback<Void> failureCallback) {
         assert mNativeFeedContentBridge != 0;
-        nativeLoadContentByPrefix(mNativeFeedContentBridge, prefix, callback);
+        nativeLoadContentByPrefix(
+                mNativeFeedContentBridge, prefix, successCallback, failureCallback);
     }
 
-    public void loadAllContentKeys(Callback<String[]> callback) {
+    public void loadAllContentKeys(
+            Callback<String[]> successCallback, Callback<Void> failureCallback) {
         assert mNativeFeedContentBridge != 0;
-        nativeLoadAllContentKeys(mNativeFeedContentBridge, callback);
+        nativeLoadAllContentKeys(mNativeFeedContentBridge, successCallback, failureCallback);
     }
 
     public void commitContentMutation(ContentMutation contentMutation, Callback<Boolean> callback) {
@@ -111,12 +118,12 @@ public class FeedContentBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedContentBridge);
-    private native void nativeLoadContent(
-            long nativeFeedContentBridge, String[] keys, Callback<Map<String, byte[]>> callback);
-    private native void nativeLoadContentByPrefix(
-            long nativeFeedContentBridge, String prefix, Callback<Map<String, byte[]>> callback);
-    private native void nativeLoadAllContentKeys(
-            long nativeFeedContentBridge, Callback<String[]> callback);
+    private native void nativeLoadContent(long nativeFeedContentBridge, String[] keys,
+            Callback<Map<String, byte[]>> successCallback, Callback<Void> failureCallback);
+    private native void nativeLoadContentByPrefix(long nativeFeedContentBridge, String prefix,
+            Callback<Map<String, byte[]>> successCallback, Callback<Void> failureCallback);
+    private native void nativeLoadAllContentKeys(long nativeFeedContentBridge,
+            Callback<String[]> successCallback, Callback<Void> failureCallback);
     private native void nativeCommitContentMutation(
             long nativeFeedContentBridge, Callback<Boolean> callback);
     private native void nativeCreateContentMutation(long nativeFeedContentBridge);

@@ -92,7 +92,6 @@ per-file shell_integration_linux*=thomasanderson@chromium.org
 
 per-file site_details*=creis@chromium.org
 per-file site_details*=nasko@chromium.org
-per-file site_details*=nick@chromium.org
 
 per-file site_per_process_interactive_browsertest.cc=file://content/OWNERS
 per-file site_per_process_interactive_browsertest.cc=kenrb@chromium.org

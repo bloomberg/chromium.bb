@@ -48,7 +48,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -96,15 +95,7 @@ SkColor IncreaseLightness(SkColor color, double percent) {
 // Writes the theme pack to disk on a separate thread.
 void WritePackToDiskCallback(BrowserThemePack* pack,
                              const base::FilePath& directory) {
-  base::FilePath path = directory.Append(chrome::kThemePackFilename);
-  if (!pack->WriteToDisk(path))
-    NOTREACHED() << "Could not write theme pack to disk";
-
-  // Clean up any theme .pak that was generated during the Material Design
-  // transitional period.
-  // TODO(estade): remove this line in Q2 2017.
-  base::DeleteFile(directory.AppendASCII("Cached Theme Material Design.pak"),
-                   false);
+  pack->WriteToDisk(directory.Append(chrome::kThemePackFilename));
 }
 
 // For legacy reasons, the theme supplier requires the incognito variants of
@@ -277,7 +268,6 @@ ThemeService::ThemeService()
 
 ThemeService::~ThemeService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  FreePlatformCaches();
 }
 
 void ThemeService::Init(Profile* profile) {
@@ -340,11 +330,8 @@ void ThemeService::UseDefaultTheme() {
   }
 #endif
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
-  // IncreasedContrastThemeSupplier is designed for the Refresh UI only.
-  if (native_theme && native_theme->UsesHighContrastColors() &&
-      ui::MaterialDesignController::IsRefreshUi()) {
+  if (native_theme && native_theme->UsesHighContrastColors())
     SetCustomDefaultTheme(new IncreasedContrastThemeSupplier);
-  }
   ClearAllThemeData();
   NotifyThemeChanged();
 }
@@ -458,8 +445,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
   const int kNtpText = ThemeProperties::COLOR_NTP_TEXT;
   const int kLabelBackground =
       ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
-  const bool is_newer_material =
-      ui::MaterialDesignController::IsNewerMaterialUi();
   switch (id) {
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return color_utils::HSLShift(
@@ -469,7 +454,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       // The active color is overridden in GtkUi.
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
-          is_newer_material ? 0x6E : 0x33);
+          0x6E);
     case ThemeProperties::COLOR_LOCATION_BAR_BORDER:
       return SkColorSetA(SK_ColorBLACK, 0x4D);
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
@@ -492,28 +477,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x4D);
-    }
-    case ThemeProperties::COLOR_BACKGROUND_TAB:
-    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE: {
-      // Touchable hardcodes the background tab color. This can break custom
-      // themes, but touchable is replaced by touchable refresh, which doesn't
-      // use the default background tab color at all, so this issue won't be
-      // fixed.
-      if (is_newer_material)
-        break;
-
-      // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
-      // That tint is used to create background tab images for custom themes by
-      // lightening the frame images.  The tints here create solid colors for
-      // background tabs by darkening the foreground tab (toolbar) color.  These
-      // values are chosen to turn the default normal and incognito MD frame
-      // colors (0xf2f2f2 and 0x505050) into 0xd0d0d0 and 0x373737,
-      // respectively.
-      const color_utils::HSL kTint = {-1, -1, 0.42975};
-      const color_utils::HSL kTintIncognito = {-1, -1, 0.34375};
-      return color_utils::HSLShift(
-          GetColor(ThemeProperties::COLOR_TOOLBAR, incognito),
-          incognito ? kTintIncognito : kTint);
     }
     case ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
       if (UsingDefaultTheme())
@@ -579,9 +542,6 @@ void ThemeService::ClearAllThemeData() {
     return;
 
   SwapThemeSupplier(nullptr);
-
-  // Clear our image cache.
-  FreePlatformCaches();
 
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
   SaveThemeID(kDefaultThemeID);
@@ -649,21 +609,11 @@ void ThemeService::NotifyThemeChanged() {
   service->Notify(chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                   content::Source<ThemeService>(this),
                   content::NotificationService::NoDetails());
-#if defined(OS_MACOSX)
-  NotifyPlatformThemeChanged();
-#endif  // OS_MACOSX
-
   // Notify sync that theme has changed.
   if (theme_syncable_service_.get()) {
     theme_syncable_service_->OnThemeChange();
   }
 }
-
-#if defined(USE_AURA)
-void ThemeService::FreePlatformCaches() {
-  // Views (Skia) has no platform image cache to clear.
-}
-#endif
 
 bool ThemeService::ShouldUseNativeFrame() const {
   return false;
@@ -795,6 +745,9 @@ int ThemeService::GetDisplayProperty(int id) const {
       return IsColorGrayscale(
           GetColor(ThemeProperties::COLOR_NTP_BACKGROUND, false)) ? 0 : 1;
     }
+
+    case ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR:
+      return 1;
 
     default:
       return -1;
@@ -947,7 +900,6 @@ void ThemeService::OnThemeBuiltFromExtension(
   SwapThemeSupplier(pack);
 
   // Clear our image cache.
-  FreePlatformCaches();
   SaveThemeID(extension->id());
   NotifyThemeChanged();
 

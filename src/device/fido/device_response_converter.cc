@@ -51,7 +51,8 @@ CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer) {
 // Decodes byte array response from authenticator to CBOR value object and
 // checks for correct encoding format.
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(base::span<const uint8_t> buffer) {
+ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
+                               base::span<const uint8_t> buffer) {
   if (buffer.size() <= kResponseCodeLength)
     return base::nullopt;
 
@@ -80,6 +81,7 @@ ReadCTAPMakeCredentialResponse(base::span<const uint8_t> buffer) {
     return base::nullopt;
 
   return AuthenticatorMakeCredentialResponse(
+      transport_used,
       AttestationObject(std::move(*authenticator_data),
                         std::make_unique<OpaqueAttestationStatement>(
                             format, it->second.Clone())));

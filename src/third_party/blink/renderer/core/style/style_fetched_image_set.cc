@@ -51,6 +51,15 @@ void StyleFetchedImageSet::Dispose() {
   best_fit_image_ = nullptr;
 }
 
+bool StyleFetchedImageSet::IsEqual(const StyleImage& other) const {
+  if (!other.IsImageResourceSet())
+    return false;
+  const auto& other_image = ToStyleFetchedImageSet(other);
+  if (best_fit_image_ != other_image.best_fit_image_)
+    return false;
+  return url_ == other_image.url_;
+}
+
 WrappedImagePtr StyleFetchedImageSet::Data() const {
   return best_fit_image_.Get();
 }

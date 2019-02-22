@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
@@ -23,8 +24,10 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -84,7 +87,7 @@ WebViewBrowserState::WebViewBrowserState(
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
       GetStatePath(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 
   BrowserState::Initialize(this, path_);
 
@@ -175,6 +178,7 @@ void WebViewBrowserState::RegisterPrefs(
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(pref_registry);
+  sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 

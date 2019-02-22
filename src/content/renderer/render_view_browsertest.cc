@@ -26,7 +26,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -39,8 +39,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/public/renderer/document_state.h"
-#include "content/public/renderer/navigation_state.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/render_view_test.h"
@@ -50,7 +48,7 @@
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/loader/request_extra_data.h"
-#include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/navigation_state.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
@@ -88,7 +86,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_window_features.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -657,9 +655,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   WebUITestWebUIControllerFactory factory;
   WebUIControllerFactory::RegisterFactory(&factory);
 
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
-
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
@@ -667,7 +662,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       network::mojom::FetchCredentialsMode::kInclude);
   request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextInternal);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   blink::WebLocalFrameClient::NavigationPolicyInfo policy_info(request);
   policy_info.navigation_type = blink::kWebNavigationTypeLinkClicked;
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -699,9 +694,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
-
   RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
   view()->OnSetRendererPrefs(prefs);
@@ -731,9 +723,6 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   // Enable bindings to simulate a WebUI view.
   view()->GetMainRenderFrame()->AllowBindings(BINDINGS_POLICY_WEB_UI);
-
-  DocumentState state;
-  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs will be sent to browser process.
   blink::WebURLRequest request(GURL("http://foo.com"));
@@ -1173,10 +1162,10 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+    EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
               msg->type());
-    ViewHostMsg_TextInputStateChanged::Param params;
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    WidgetHostMsg_TextInputStateChanged::Param params;
+    WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
     TextInputState p = std::get<0>(params);
     ui::TextInputType type = p.type;
     ui::TextInputMode input_mode = p.mode;
@@ -1195,9 +1184,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     view()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
-    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+    EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
               msg->type());
-    ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+    WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
     p = std::get<0>(params);
     type = p.type;
     input_mode = p.mode;
@@ -1221,9 +1210,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != nullptr);
-      EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_TextInputStateChanged::ID),
+      EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
                 msg->type());
-      ViewHostMsg_TextInputStateChanged::Read(msg, &params);
+      WidgetHostMsg_TextInputStateChanged::Read(msg, &params);
       p = std::get<0>(params);
       type = p.type;
       input_mode = p.mode;
@@ -1868,7 +1857,7 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
   for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
     const uint32_t type = render_thread_->sink().GetMessageAt(i)->type();
-    if (type == ViewHostMsg_TextInputStateChanged::ID) {
+    if (type == WidgetHostMsg_TextInputStateChanged::ID) {
       is_input_type_called = true;
       last_input_type = i;
     } else if (type == FrameHostMsg_SelectionChanged::ID) {
@@ -2111,7 +2100,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   // See that subresource requests are also tagged with the provider's id.
   EXPECT_EQ(frame(), RenderFrameImpl::FromWebFrame(GetMainFrame()));
   blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetRequestContext(blink::WebURLRequest::kRequestContextSubresource);
+  request.SetRequestContext(blink::mojom::RequestContextType::SUBRESOURCE);
   blink::WebURLResponse redirect_response;
   webprovider->WillSendRequest(request);
   extra_data = static_cast<RequestExtraData*>(request.GetExtraData());
@@ -2143,11 +2132,11 @@ TEST_F(RenderViewImplTest, RendererNavigationStartTransmittedToBrowser) {
   frame()->GetWebFrame()->LoadHTMLString(
       "hello world", blink::WebURL(GURL("data:text/html,")));
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  base::TimeTicks transmitted_start = std::get<2>(host_nav_params);
-  EXPECT_FALSE(transmitted_start.is_null());
-  EXPECT_LE(lower_bound_navigation_start, transmitted_start);
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  EXPECT_FALSE(navigation_state->common_params().navigation_start.is_null());
+  EXPECT_LE(lower_bound_navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 // Checks that a browser-initiated navigation in an initial document that was
@@ -2158,9 +2147,10 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
   frame()->Navigate(common_params, RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 // Sanity check for the Navigation Timing API |navigationStart| override. We
@@ -2194,9 +2184,10 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   frame()->Navigate(common_params, RequestNavigationParams());
 
-  FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForReload) {
@@ -2216,11 +2207,11 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   // be fired during Navigate.
   frame()->Navigate(common_params, RequestNavigationParams());
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-
   // The browser navigation_start is always used.
-  EXPECT_EQ(common_params.navigation_start, std::get<2>(host_nav_params));
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
@@ -2241,12 +2232,12 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(-1, back_state, common_params_back,
                        RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetDocumentLoader());
 
   // The browser navigation_start is always used.
-  EXPECT_EQ(common_params_back.navigation_start, std::get<2>(host_nav_params));
-  render_thread_->sink().ClearMessages();
+  EXPECT_EQ(common_params_back.navigation_start,
+            navigation_state->common_params().navigation_start);
 
   // Go forward.
   CommonNavigationParams common_params_forward;
@@ -2257,10 +2248,10 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
   GoToOffsetWithParams(1, forward_state, common_params_forward,
                        RequestNavigationParams());
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
+  navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetDocumentLoader());
   EXPECT_EQ(common_params_forward.navigation_start,
-            std::get<2>(host_nav_params2));
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
@@ -2278,9 +2269,10 @@ TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   request_params.current_history_list_length = 1;
   frame()->Navigate(common_params, request_params);
 
-  FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
-      ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  EXPECT_EQ(std::get<2>(host_nav_params), common_params.navigation_start);
+  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetProvisionalDocumentLoader());
+  EXPECT_EQ(common_params.navigation_start,
+            navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, PreferredSizeZoomed) {

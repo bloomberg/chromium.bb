@@ -21,6 +21,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -946,16 +947,19 @@ TEST_F(MagnificationControllerTest, ZoomsIntoCenter) {
 // is enabled.
 TEST_F(MagnificationControllerTest, KeyboardOverscrollDisabled) {
   GetMagnificationController()->SetEnabled(false);
-  bool old_keyboard_overscroll_value = keyboard::IsKeyboardOverscrollEnabled();
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  bool old_keyboard_overscroll_value =
+      keyboard_controller->IsKeyboardOverscrollEnabled();
 
   // Enable magnification. Keyboard overscroll should be disabled.
   GetMagnificationController()->SetEnabled(true);
-  EXPECT_FALSE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardOverscrollEnabled());
 
   // Disable magnification. Keyboard overscroll should be back to the way it was
   // before magnification was enabled.
   GetMagnificationController()->SetEnabled(false);
-  EXPECT_EQ(keyboard::IsKeyboardOverscrollEnabled(),
+  EXPECT_EQ(keyboard_controller->IsKeyboardOverscrollEnabled(),
             old_keyboard_overscroll_value);
 }
 

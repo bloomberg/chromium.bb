@@ -427,6 +427,11 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
     return;
   }
 
+  entry->url_chain = download.url_chain;
+  entry->response_headers = download.response_headers;
+  entry->did_received_response = true;
+  model_->Update(*entry);
+
   download::Client* client = clients_->GetClient(entry->client);
   DCHECK(client);
   using ShouldDownload = download::Client::ShouldDownload;
@@ -561,7 +566,7 @@ void ControllerImpl::OnItemUpdated(bool success,
   // DriverEntry.  If we restart we'll see a COMPLETE state and handle it
   // accordingly.
   if (entry->state == Entry::State::COMPLETE)
-    driver_->Remove(guid);
+    driver_->Remove(guid, false);
 
   // TODO(dtrainor): If failed, clean up any download state accordingly.
 
@@ -727,7 +732,7 @@ void ControllerImpl::CancelOrphanedRequests() {
   }
 
   for (const auto& guid : guids_to_remove) {
-    driver_->Remove(guid);
+    driver_->Remove(guid, false);
     model_->Remove(guid);
   }
 
@@ -790,6 +795,15 @@ void ControllerImpl::ResolveInitialRequestStates() {
           break;
         }
 
+        // We didn't persist the response headers in time, so just restart the
+        // the fetch. The driver entry and the temporary file will also be
+        // deleted.
+        if (state == Entry::State::ACTIVE && entry->require_response_headers &&
+            !entry->did_received_response) {
+          driver_->Remove(entry->guid, true /* remove_file */);
+          break;
+        }
+
         // If we have a real DriverEntry::State, we need to determine which of
         // those states makes sense for our Entry.  Our entry can either be in
         // two states now: It's effective 'active' state (ACTIVE or PAUSED) or
@@ -837,7 +851,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
       case Entry::State::AVAILABLE:  // Intentional fallthrough.
         // We should not have a DriverEntry here.
         if (driver_entry.has_value())
-          driver_->Remove(entry->guid);
+          driver_->Remove(entry->guid, false);
         break;
       case Entry::State::ACTIVE:  // Intentional fallthrough.
       case Entry::State::PAUSED:
@@ -862,7 +876,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
         } else {
           // We're staying in COMPLETE.  Make sure there is no DriverEntry here.
           if (driver_entry.has_value())
-            driver_->Remove(entry->guid);
+            driver_->Remove(entry->guid, false);
         }
         break;
       case Entry::State::COUNT:
@@ -1124,7 +1138,8 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     entry->completion_time = driver_entry->completion_time;
     entry->bytes_downloaded = driver_entry->bytes_downloaded;
     CompletionInfo completion_info(driver_entry->current_file_path,
-                                   driver_entry->bytes_downloaded);
+                                   driver_entry->bytes_downloaded,
+                                   entry->url_chain, entry->response_headers);
     completion_info.blob_handle = driver_entry->blob_handle;
 
     entry->last_cleanup_check_time = driver_entry->completion_time;
@@ -1135,15 +1150,20 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     TransitTo(entry, Entry::State::COMPLETE, model_.get());
     ScheduleCleanupTask();
   } else {
+    CompletionInfo completion_info;
+    completion_info.url_chain = entry->url_chain;
+    completion_info.response_headers = entry->response_headers;
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ControllerImpl::SendOnDownloadFailed,
-                                  weak_ptr_factory_.GetWeakPtr(), entry->client,
-                                  guid, FailureReasonFromCompletionType(type)));
+        FROM_HERE,
+        base::BindOnce(&ControllerImpl::SendOnDownloadFailed,
+                       weak_ptr_factory_.GetWeakPtr(), entry->client, guid,
+                       completion_info, FailureReasonFromCompletionType(type)));
     log_sink_->OnServiceDownloadFailed(type, *entry);
 
     // TODO(dtrainor): Handle the case where we crash before the model write
     // happens and we have no driver entry.
-    driver_->Remove(entry->guid);
+    driver_->Remove(entry->guid, false);
     model_->Remove(guid);
   }
 
@@ -1343,10 +1363,11 @@ void ControllerImpl::SendOnDownloadSucceeded(
 void ControllerImpl::SendOnDownloadFailed(
     DownloadClient client_id,
     const std::string& guid,
+    const CompletionInfo& completion_info,
     download::Client::FailureReason reason) {
   auto* client = clients_->GetClient(client_id);
   DCHECK(client);
-  client->OnDownloadFailed(guid, reason);
+  client->OnDownloadFailed(guid, completion_info, reason);
 }
 
 }  // namespace download

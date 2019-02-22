@@ -31,7 +31,7 @@ void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
       arc::ArcServiceManager::Get()
           ? ARC_GET_INSTANCE_FOR_METHOD(
                 arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
-                GetAppShortcutItems)
+                GetAppShortcutGlobalQueryItems)
           : nullptr;
 
   if (!app_instance || query.empty()) {
@@ -43,11 +43,12 @@ void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   app_instance->GetAppShortcutGlobalQueryItems(
       base::UTF16ToUTF8(query), max_results_,
-      base::BindOnce(&ArcAppShortcutsSearchProvider::OnGetAppShortcutItems,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAppShortcutsSearchProvider::OnGetAppShortcutItems(
+void ArcAppShortcutsSearchProvider::OnGetAppShortcutGlobalQueryItems(
     std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items) {
   SearchProvider::Results search_results;
   for (auto& item : shortcut_items) {

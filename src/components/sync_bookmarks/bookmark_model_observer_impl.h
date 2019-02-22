@@ -53,6 +53,7 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
                            int old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
+  void OnWillRemoveAllUserBookmarks(bookmarks::BookmarkModel* model) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,
                                    const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,

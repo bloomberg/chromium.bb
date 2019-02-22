@@ -177,8 +177,10 @@ void ImageDocumentParser::Finish() {
     GetDocument()->ImageLoaded();
   }
 
-  if (!IsDetached())
+  if (!IsDetached()) {
+    GetDocument()->SetReadyState(Document::kInteractive);
     GetDocument()->FinishedParsing();
+  }
 }
 
 // --------

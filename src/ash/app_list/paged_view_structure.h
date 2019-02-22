@@ -35,16 +35,20 @@ class APP_LIST_EXPORT PagedViewStructure {
   // in the view model.
   void SaveToMetadata();
 
-  // Populates overflowing item views to next page and removes empty page.
-  // Returns true if view structure is changed.
-  bool Sanitize();
-
-  // Operations allowed to modify the view structure.
-  void Move(AppListItemView* view, const GridIndex& target_index);
-  void Remove(AppListItemView* view);
-  void RemoveWithoutSanitize(AppListItemView* view);
-  void Add(AppListItemView* view, const GridIndex& target_index);
-  void AddWithoutSanitize(AppListItemView* view, const GridIndex& target_index);
+  // Operations allowed to modify the view structure. Populates overflowing item
+  // views to next page if |clear_overflow| is true. Clears empty pages if
+  // |clear_empty_pages| is true. Both are true by default.
+  void Move(AppListItemView* view,
+            const GridIndex& target_index,
+            bool clear_overflow = true,
+            bool clear_empty_pages = true);
+  void Remove(AppListItemView* view,
+              bool clear_overflow = true,
+              bool clear_empty_pages = true);
+  void Add(AppListItemView* view,
+           const GridIndex& target_index,
+           bool clear_overflow = true,
+           bool clear_empty_pages = true);
 
   // Convert between the model index and the visual index. The model index
   // is the index of the item in AppListModel (Also the same index in
@@ -89,6 +93,13 @@ class APP_LIST_EXPORT PagedViewStructure {
   const Pages& pages() const { return pages_; }
 
  private:
+  // Clear overflowing item views by moving them to the next page. Returns true
+  // if view structure is changed.
+  bool ClearOverflow();
+
+  // Removes empty page. Returns true if view structure is changed.
+  bool ClearEmptyPages();
+
   // Represents the item views' locations in each page. This is only used when
   // apps grid gap is enabled. (We don't need this in non-gap apps grid since
   // all item views are linearly laid out in |view_model_|.)

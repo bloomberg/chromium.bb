@@ -4,7 +4,7 @@
 
 /**
  * @param {DialogType} dialogType
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!FileManagerUI} ui
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryModel} directoryModel
@@ -23,7 +23,7 @@ function TaskController(
   this.dialogType_ = dialogType;
 
   /**
-   * @private {!VolumeManagerWrapper}
+   * @private {!VolumeManager}
    * @const
    */
   this.volumeManager_ = volumeManager;
@@ -269,7 +269,11 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 TaskController.prototype.executeDefaultTask = function() {
   this.getFileTasks()
       .then(function(tasks) {
-        tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem);
+        var task = {
+          taskId: this.ui_.fileContextMenu.defaultTaskMenuItem.taskId,
+          title: this.ui_.fileContextMenu.defaultTaskMenuItem.label,
+        };
+        tasks.execute(task);
       }.bind(this))
       .catch(function(error) {
         if (error)
@@ -431,8 +435,7 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
     }
 
-    if (defaultTask.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ||
-        defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID)
+    if (defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID)
       this.ui_.fileContextMenu.defaultTaskMenuItem.label = str('TASK_OPEN');
     else
       this.ui_.fileContextMenu.defaultTaskMenuItem.label = defaultTask.title;

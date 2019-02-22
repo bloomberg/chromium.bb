@@ -31,6 +31,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
@@ -46,7 +47,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 #include "chrome/installer/util/shell_util.h"
@@ -145,8 +145,6 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
 }
 
 void MigrateTaskbarPinsCallback() {
-  base::AssertBlockingAllowed();
-
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
@@ -161,13 +159,22 @@ void MigrateTaskbarPinsCallback() {
   win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
+// Windows treats a given scheme as an Internet scheme only if its registry
+// entry has a "URL Protocol" key. Check this, otherwise we allow ProgIDs to be
+// used as custom protocols which leads to security bugs.
+bool IsValidCustomProtocol(const base::string16& scheme) {
+  if (scheme.empty())
+    return false;
+  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, scheme.c_str(), KEY_QUERY_VALUE);
+  return cmd_key.Valid() && cmd_key.HasValue(L"URL Protocol");
+}
+
 // Windows 8 introduced a new protocol->executable binding system which cannot
 // be retrieved in the HKCR registry subkey method implemented below. We call
 // AssocQueryString with the new Win8-only flag ASSOCF_IS_PROTOCOL instead.
 base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
-  base::string16 url_scheme = base::ASCIIToUTF16(url.scheme());
-  // Don't attempt to query protocol association on an empty string.
-  if (url_scheme.empty())
+  const base::string16 url_scheme = base::ASCIIToUTF16(url.scheme());
+  if (!IsValidCustomProtocol(url_scheme))
     return base::string16();
 
   // Query AssocQueryString for a human-readable description of the program
@@ -176,12 +183,9 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
   // an unknown external protocol.
   wchar_t out_buffer[1024];
   DWORD buffer_size = arraysize(out_buffer);
-  HRESULT hr = AssocQueryString(ASSOCF_IS_PROTOCOL,
-                                ASSOCSTR_FRIENDLYAPPNAME,
-                                url_scheme.c_str(),
-                                NULL,
-                                out_buffer,
-                                &buffer_size);
+  HRESULT hr =
+      AssocQueryString(ASSOCF_IS_PROTOCOL, ASSOCSTR_FRIENDLYAPPNAME,
+                       url_scheme.c_str(), NULL, out_buffer, &buffer_size);
   if (FAILED(hr)) {
     DLOG(WARNING) << "AssocQueryString failed!";
     return base::string16();
@@ -190,11 +194,13 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
 }
 
 base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
-  base::string16 command_to_launch;
+  const base::string16 url_scheme = base::ASCIIToUTF16(url.scheme());
+  if (!IsValidCustomProtocol(url_scheme))
+    return base::string16();
 
   // First, try and extract the application's display name.
-  base::string16 cmd_key_path = base::ASCIIToUTF16(url.scheme());
-  base::win::RegKey cmd_key_name(HKEY_CLASSES_ROOT, cmd_key_path.c_str(),
+  base::string16 command_to_launch;
+  base::win::RegKey cmd_key_name(HKEY_CLASSES_ROOT, url_scheme.c_str(),
                                  KEY_READ);
   if (cmd_key_name.ReadValue(NULL, &command_to_launch) == ERROR_SUCCESS &&
       !command_to_launch.empty()) {
@@ -203,7 +209,7 @@ base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
 
   // Otherwise, parse the command line in the registry, and return the basename
   // of the program path if it exists.
-  cmd_key_path = base::ASCIIToUTF16(url.scheme() + "\\shell\\open\\command");
+  const base::string16 cmd_key_path = url_scheme + L"\\shell\\open\\command";
   base::win::RegKey cmd_key_exe(HKEY_CLASSES_ROOT, cmd_key_path.c_str(),
                                 KEY_READ);
   if (cmd_key_exe.ReadValue(NULL, &command_to_launch) == ERROR_SUCCESS) {
@@ -264,8 +270,7 @@ class DefaultBrowserActionRecorder : public SettingsAppMonitor::Delegate {
   }
 
   void OnBrowserChosen(const base::string16& browser_name) override {
-    if (browser_name ==
-        BrowserDistribution::GetDistribution()->GetDisplayName()) {
+    if (browser_name == InstallUtil::GetDisplayName()) {
       base::RecordAction(
           base::UserMetricsAction("SettingsAppMonitor.ChromeBrowserChosen"));
     } else {
@@ -325,8 +330,6 @@ class OpenSystemSettingsHelper {
   // watched. The array must contain at least one element.
   static void Begin(const wchar_t* const protocols[],
                     const base::Closure& on_finished_callback) {
-    base::AssertBlockingAllowed();
-
     delete instance_;
     instance_ = new OpenSystemSettingsHelper(protocols, on_finished_callback);
   }
@@ -529,7 +532,7 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
 }  // namespace
 
 bool SetAsDefaultBrowser() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -538,8 +541,7 @@ bool SetAsDefaultBrowser() {
   }
 
   // From UI currently we only allow setting default browser for current user.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefault(dist, ShellUtil::CURRENT_USER, chrome_exe,
+  if (!ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER, chrome_exe,
                                     true /* elevate_if_not_admin */)) {
     LOG(ERROR) << "Chrome could not be set as default browser.";
     return false;
@@ -550,7 +552,7 @@ bool SetAsDefaultBrowser() {
 }
 
 bool SetAsDefaultProtocolClient(const std::string& protocol) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   if (protocol.empty())
     return false;
@@ -562,9 +564,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   }
 
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe,
-                                                  wprotocol)) {
+  if (!ShellUtil::MakeChromeDefaultProtocolClient(chrome_exe, wprotocol)) {
     LOG(ERROR) << "Chrome could not be set as default handler for "
                << protocol << ".";
     return false;
@@ -589,10 +589,9 @@ bool IsElevationNeededForSettingDefaultProtocolClient() {
 }
 
 base::string16 GetApplicationNameForProtocol(const GURL& url) {
-  base::string16 application_name;
   // Windows 8 or above has a new protocol association query.
   if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    application_name = GetAppForProtocolUsingAssocQuery(url);
+    base::string16 application_name = GetAppForProtocolUsingAssocQuery(url);
     if (!application_name.empty())
       return application_name;
   }
@@ -633,7 +632,7 @@ DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
 namespace win {
 
 bool SetAsDefaultBrowserUsingIntentPicker() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -641,8 +640,7 @@ bool SetAsDefaultBrowserUsingIntentPicker() {
     return false;
   }
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_exe)) {
     LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
     return false;
   }
@@ -653,8 +651,6 @@ bool SetAsDefaultBrowserUsingIntentPicker() {
 
 void SetAsDefaultBrowserUsingSystemSettings(
     const base::Closure& on_finished_callback) {
-  base::AssertBlockingAllowed();
-
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
@@ -667,7 +663,6 @@ void SetAsDefaultBrowserUsingSystemSettings(
   std::unique_ptr<DefaultBrowserActionRecorder> recorder(
       new DefaultBrowserActionRecorder(base::Bind(
           base::IgnoreResult(&ShellUtil::ShowMakeChromeDefaultSystemUI),
-          base::Unretained(BrowserDistribution::GetDistribution()),
           chrome_exe)));
 
   // The helper manages its own lifetime. Bind the action recorder
@@ -680,7 +675,7 @@ void SetAsDefaultBrowserUsingSystemSettings(
 }
 
 bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -688,9 +683,8 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
     return false;
   }
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
+  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe,
                                                               wprotocol)) {
     LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
     return false;
@@ -703,8 +697,6 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
 void SetAsDefaultProtocolClientUsingSystemSettings(
     const std::string& protocol,
     const base::Closure& on_finished_callback) {
-  base::AssertBlockingAllowed();
-
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED() << "Error getting app exe path";
@@ -717,9 +709,7 @@ void SetAsDefaultProtocolClientUsingSystemSettings(
   const wchar_t* const kProtocols[] = {wprotocol.c_str(), nullptr};
   OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
-                                                         wprotocol);
+  ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe, wprotocol);
 }
 
 base::string16 GetAppModelIdForProfile(const base::string16& app_name,

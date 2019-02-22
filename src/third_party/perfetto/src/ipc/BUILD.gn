@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import("../../gn/perfetto.gni")
+import("../../gn/fuzzer.gni")
 import("../../gn/ipc_library.gni")
 import("../../gn/proto_library.gni")
 
@@ -29,6 +30,7 @@ source_set("ipc") {
   public_configs = [ "../../gn:default_config" ]
   public_deps = [
     "../../include/perfetto/ipc",
+    "../base:unix_socket",
   ]
   deps = [
     ":wire_protocol",
@@ -42,24 +44,19 @@ source_set("ipc") {
     "host_impl.cc",
     "host_impl.h",
     "service_proxy.cc",
-    "unix_socket.cc",
-    "unix_socket.h",
     "virtual_destructors.cc",
   ]
 }
 
-if (use_libfuzzer && !build_with_chromium) {
-  executable("buffered_frame_deserializer_fuzzer") {
-    sources = [
-      "buffered_frame_deserializer_fuzzer.cc",
-    ]
-    deps = [
-      ":ipc",
-      ":wire_protocol",
-      "../../gn:default_deps",
-    ]
-    configs += [ "../../gn:fuzzer_config" ]
-  }
+perfetto_fuzzer_test("buffered_frame_deserializer_fuzzer") {
+  sources = [
+    "buffered_frame_deserializer_fuzzer.cc",
+  ]
+  deps = [
+    ":ipc",
+    ":wire_protocol",
+    "../../gn:default_deps",
+  ]
 }
 
 source_set("unittests") {
@@ -79,7 +76,6 @@ source_set("unittests") {
     "deferred_unittest.cc",
     "host_impl_unittest.cc",
     "test/ipc_integrationtest.cc",
-    "unix_socket_unittest.cc",
   ]
 }
 

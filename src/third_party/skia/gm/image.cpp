@@ -5,18 +5,18 @@
  * found in the LICENSE file.
  */
 
-#include <functional>
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include "GrContext.h"
 #include "SkAutoPixmapStorage.h"
+#include "SkCanvas.h"
 #include "SkColorPriv.h"
 #include "SkData.h"
-#include "SkCanvas.h"
 #include "SkRandom.h"
 #include "SkStream.h"
 #include "SkSurface.h"
+#include "gm.h"
+#include "sk_tool_utils.h"
 
-#include "GrContext.h"
+#include <functional>
 
 static void drawContents(SkSurface* surface, SkColor fillC) {
     SkSize size = SkSize::Make(SkIntToScalar(surface->width()),
@@ -311,14 +311,12 @@ DEF_SIMPLE_GM(new_texture_image, canvas, 280, 60) {
         },
         // Create encoded image.
         [bmp] {
-            sk_sp<SkData> src(
-                sk_tool_utils::EncodeImageToData(bmp, SkEncodedImageFormat::kPNG, 100));
+            auto src = SkEncodeBitmap(bmp, SkEncodedImageFormat::kPNG, 100);
             return SkImage::MakeFromEncoded(std::move(src));
         },
         // Create YUV encoded image.
         [bmp] {
-            sk_sp<SkData> src(
-                sk_tool_utils::EncodeImageToData(bmp, SkEncodedImageFormat::kJPEG, 100));
+            auto src = SkEncodeBitmap(bmp, SkEncodedImageFormat::kJPEG, 100);
             return SkImage::MakeFromEncoded(std::move(src));
         },
         // Create a picture image.

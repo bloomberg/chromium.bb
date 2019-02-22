@@ -4,6 +4,10 @@
 
 assert(is_fuchsia)
 
+import("//gpu/vulkan/features.gni")
+
+visibility = [ "//ui/ozone/*" ]
+
 source_set("scenic") {
   sources = [
     "client_native_pixmap_factory_scenic.cc",
@@ -29,12 +33,12 @@ source_set("scenic") {
   deps = [
     "//base",
     "//skia",
-    "//third_party/fuchsia-sdk:gfx",
-    "//third_party/fuchsia-sdk:images",
-    "//third_party/fuchsia-sdk:mem",
-    "//third_party/fuchsia-sdk:scenic",
-    "//third_party/fuchsia-sdk:viewsv1",
-    "//third_party/fuchsia-sdk:viewsv1token",
+    "//third_party/fuchsia-sdk/sdk:gfx",
+    "//third_party/fuchsia-sdk/sdk:images",
+    "//third_party/fuchsia-sdk/sdk:mem",
+    "//third_party/fuchsia-sdk/sdk:scenic",
+    "//third_party/fuchsia-sdk/sdk:viewsv1",
+    "//third_party/fuchsia-sdk/sdk:viewsv1token",
     "//ui/base",
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
@@ -44,4 +48,13 @@ source_set("scenic") {
     "//ui/ozone/common",
     "//ui/platform_window",
   ]
+
+  if (enable_vulkan) {
+    sources += [
+      "vulkan_implementation_scenic.cc",
+      "vulkan_implementation_scenic.h",
+      "vulkan_magma.h",
+    ]
+    defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
+  }
 }

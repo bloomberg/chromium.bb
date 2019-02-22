@@ -259,6 +259,9 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   // Filtered background texture.
   sk_sp<SkImage> background_image;
   GLuint background_image_id = 0;
+  // A multiplier for the temporary surface we create to apply the backdrop
+  // filter.
+  float backdrop_filter_quality = 1.0;
   // Whether the original background texture is needed for the mask.
   bool mask_for_background = false;
 };
@@ -792,9 +795,15 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, GetFramebufferCopyTextureFormat(),
-                      window_rect.x(), window_rect.y(), window_rect.width(),
+  unsigned internalformat = GetFramebufferCopyTextureFormat();
+  // CopyTexImage2D requires inernalformat channels to be a subset of
+  // the channels of the source texture internalformat.
+  DCHECK(internalformat == GL_RGB || internalformat == GL_RGBA ||
+         internalformat == GL_BGRA_EXT);
+  if (internalformat == GL_BGRA_EXT)
+    internalformat = GL_RGBA;
+  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, internalformat, window_rect.x(),
+                      window_rect.y(), window_rect.width(),
                       window_rect.height(), 0);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   return texture_id;
@@ -805,7 +814,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const cc::FilterOperations& background_filters,
     uint32_t background_texture,
     const gfx::Rect& rect,
-    const gfx::Rect& unclipped_rect) {
+    const gfx::Rect& unclipped_rect,
+    const float backdrop_filter_quality) {
   DCHECK(ShouldApplyBackgroundFilters(quad, &background_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
@@ -834,9 +844,12 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     return nullptr;
   }
 
+  gfx::Rect quality_adjusted_rect =
+      ScaleToEnclosingRect(rect, backdrop_filter_quality);
+
   // Create surface to draw into.
-  SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(rect.width(), rect.height());
+  SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
+      quality_adjusted_rect.width(), quality_adjusted_rect.height());
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
       use_gr_context->context(), SkBudgeted::kYes, dst_info);
   if (!surface) {
@@ -850,12 +863,17 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   // to disable subnormal floats for performance and security reasons.
   cc::ScopedSubnormalFloatDisabler disabler;
   SkMatrix local_matrix;
-  local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+  local_matrix.setScale(quad->filters_scale.x() * backdrop_filter_quality,
+                        quad->filters_scale.y() * backdrop_filter_quality);
 
   SkPaint paint;
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-rect.x(), -rect.y());
-  surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
+  surface->getCanvas()->translate(-quality_adjusted_rect.x(),
+                                  -quality_adjusted_rect.y());
+  surface->getCanvas()->drawImageRect(
+      src_image, SkRect::MakeWH(rect.width(), rect.height()),
+      RectToSkRect(quality_adjusted_rect), &paint);
+
   // Flush the drawing before source texture read lock goes out of scope.
   // Skia API does not guarantee that when the SkImage goes out of scope,
   // its externally referenced resources would force the rendering to be
@@ -870,54 +888,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
 }
 
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-#if defined(OS_MACOSX)
-  // On Macs, this path can sometimes lead to all black output.
-  // TODO(enne): investigate this and remove this hack.
-  return nullptr;
-#endif
-
-  // Can only collapse a single tile quad.
-  if (pass->quad_list.size() != 1)
-    return nullptr;
-  // If we need copy requests, then render pass has to exist.
-  if (!pass->copy_requests.empty())
-    return nullptr;
-
-  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
-  // Hack: this could be supported by concatenating transforms, but
-  // in practice if there is one quad, it is at the origin of the render pass
-  // and has the same size as the pass.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity() ||
-      quad->rect != pass->output_rect)
-    return nullptr;
-  // The quad is expected to be the entire layer so that AA edges are correct.
-  if (quad->shared_quad_state->quad_layer_rect != quad->rect)
-    return nullptr;
-  if (quad->material != DrawQuad::TILED_CONTENT)
-    return nullptr;
-
-  // TODO(chrishtr): support could be added for opacity, but care needs
-  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
-  if (quad->shared_quad_state->opacity != 1.0f)
-    return nullptr;
-
-  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
-  // Hack: this could be supported by passing in a subrectangle to draw
-  // render pass, although in practice if there is only one quad there
-  // will be no border texels on the input.
-  if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
-    return nullptr;
-  // Tile quad features not supported in render pass shaders.
-  if (tile_quad->swizzle_contents || tile_quad->nearest_neighbor)
-    return nullptr;
-  // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
-  // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
-  GLenum target =
-      resource_provider_->GetResourceTextureTarget(tile_quad->resource_id());
-  if (target != GL_TEXTURE_2D)
-    return nullptr;
-
-  return tile_quad;
+  return DirectRenderer::CanPassBeDrawnDirectly(pass, false,
+                                                resource_provider_);
 }
 
 void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
@@ -929,6 +901,7 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
+  params.backdrop_filter_quality = quad->backdrop_filter_quality;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // The projection matrix used by GLRenderer has a flip.  As tile texture
@@ -1081,7 +1054,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
             quad, *params->background_filters, params->background_texture,
-            params->background_rect, unclipped_rect);
+            params->background_rect, unclipped_rect,
+            params->backdrop_filter_quality);
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());
@@ -1403,6 +1377,8 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     if (params->background_image_id) {
       gl_->ActiveTexture(GL_TEXTURE0 + last_texture_unit);
       gl_->BindTexture(GL_TEXTURE_2D, params->background_image_id);
+      if (params->backdrop_filter_quality != 1.0f)
+        gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       gl_->ActiveTexture(GL_TEXTURE0);
     }
     // If |mask_for_background| then we have both |background_image_id| and

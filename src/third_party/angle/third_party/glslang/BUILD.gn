@@ -40,6 +40,8 @@ static_library("glslang") {
     "src/SPIRV/Logger.h",
     "src/SPIRV/SpvBuilder.cpp",
     "src/SPIRV/SpvBuilder.h",
+    "src/SPIRV/SpvPostProcess.cpp",
+    "src/SPIRV/SpvPostProcess.h",
     "src/SPIRV/bitutils.h",
     "src/SPIRV/disassemble.cpp",
     "src/SPIRV/disassemble.h",
@@ -119,6 +121,7 @@ static_library("glslang") {
 
   if (is_win) {
     cflags = [
+      "/wd4065",  # switch statement w/ default but no case
       "/wd4100",  # Unreferenced formal parameter
       "/wd4456",  # Declaration hides previous local declaration
       "/wd4457",  # Declaration hides function parameter
@@ -139,7 +142,10 @@ executable("glslang_validator") {
     "src/StandAlone/DirStackFileIncluder.h",
     "src/StandAlone/StandAlone.cpp",
   ]
-  defines = [ "ENABLE_OPT" ]
+  if (!is_win) {
+    cflags = [ "-Woverflow" ]
+  }
+  defines = [ "ENABLE_OPT=0" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   public_deps = [

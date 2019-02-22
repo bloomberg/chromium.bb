@@ -21,6 +21,7 @@
 #include "api/audio_codecs/audio_decoder.h"
 #include "api/rtp_headers.h"
 #include "common_types.h"  // NOLINT(build/include)
+#include "modules/audio_coding/neteq/defines.h"
 #include "modules/audio_coding/neteq/neteq_decoder_enum.h"
 #include "rtc_base/constructormagic.h"
 #include "rtc_base/scoped_ref_ptr.h"
@@ -71,6 +72,27 @@ struct NetEqLifetimeStatistics {
   uint64_t jitter_buffer_delay_ms = 0;
   // Below stat is not part of the spec.
   uint64_t voice_concealed_samples = 0;
+};
+
+// Metrics that describe the operations performed in NetEq, and the internal
+// state.
+struct NetEqOperationsAndState {
+  // These sample counters are cumulative, and don't reset. As a reference, the
+  // total number of output samples can be found in
+  // NetEqLifetimeStatistics::total_samples_received.
+  uint64_t preemptive_samples = 0;
+  uint64_t accelerate_samples = 0;
+  // Count of the number of buffer flushes.
+  uint64_t packet_buffer_flushes = 0;
+  // The statistics below are not cumulative.
+  // The waiting time of the last decoded packet.
+  uint64_t last_waiting_time_ms = 0;
+  // The sum of the packet and jitter buffer size in ms.
+  uint64_t current_buffer_size_ms = 0;
+  // The current frame size in ms.
+  uint64_t current_frame_size_ms = 0;
+  // Flag to indicate that the next packet is available.
+  bool next_packet_available = false;
 };
 
 // This is the interface class for NetEq.
@@ -129,9 +151,14 @@ class NetEq {
   // If muted state is enabled (through Config::enable_muted_state), |muted|
   // may be set to true after a prolonged expand period. When this happens, the
   // |data_| in |audio_frame| is not written, but should be interpreted as being
-  // all zeros.
+  // all zeros. For testing purposes, an override can be supplied in the
+  // |action_override| argument, which will cause NetEq to take this action
+  // next, instead of the action it would normally choose.
   // Returns kOK on success, or kFail in case of an error.
-  virtual int GetAudio(AudioFrame* audio_frame, bool* muted) = 0;
+  virtual int GetAudio(
+      AudioFrame* audio_frame,
+      bool* muted,
+      absl::optional<Operations> action_override = absl::nullopt) = 0;
 
   // Replaces the current set of decoders with the given one.
   virtual void SetCodecs(const std::map<int, SdpAudioFormat>& codecs) = 0;
@@ -199,6 +226,10 @@ class NetEq {
   // Returns a copy of this class's lifetime statistics. These statistics are
   // never reset.
   virtual NetEqLifetimeStatistics GetLifetimeStatistics() const = 0;
+
+  // Returns statistics about the performed operations and internal state. These
+  // statistics are never reset.
+  virtual NetEqOperationsAndState GetOperationsAndState() const = 0;
 
   // Writes the current RTCP statistics to |stats|. The statistics are reset
   // and a new report period is started with the call.

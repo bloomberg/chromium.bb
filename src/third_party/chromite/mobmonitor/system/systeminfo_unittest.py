@@ -367,8 +367,8 @@ class DiskTest(cros_test_lib.MockTestCase):
     mock_labels = ['BOOT-PARTITION']
     mock_lsblk = 'NAME="sda1" RM="0" TYPE="part" SIZE="%s"' % mock_size
 
-    self.StartPatcher(mock.patch('chromite.lib.osutils.ResolveSymlink'))
-    osutils.ResolveSymlink.return_value = '/dev/sda1'
+    mock_realpath = self.PatchObject(os.path, 'realpath')
+    mock_realpath.return_value = '/dev/sda1'
 
     with cros_test_lib.RunCommandMock() as rc_mock:
       rc_mock.AddCmdResult(

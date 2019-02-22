@@ -10,7 +10,6 @@
 #include "base/debug/alias.h"
 #include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
@@ -41,7 +40,6 @@ namespace {
 // the system. This limit can be breached by in-use cache items, which cannot
 // be deleted.
 static const int kNormalMaxItemsInCacheForGpu = 2000;
-static const int kThrottledMaxItemsInCacheForGpu = 100;
 static const int kSuspendedMaxItemsInCacheForGpu = 0;
 
 // The maximum number of images that we can lock simultaneously in our working
@@ -193,47 +191,39 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
                               draw_image.frame_index(), client_id);
   }
 
-  // If we can't decode/scale directly, we will handle this in up to 3 steps.
+  // If we can't decode/scale directly, we will handle this in 2 steps.
   // Step 1: Decode at the nearest (larger) directly supported size or the
   // original size if nearest neighbor quality is requested.
+  // Step 2: Scale to |pixmap| size. If decoded image is half float backed and
+  // the device does not support image resize, decode to N32 color type and
+  // convert to F16 afterward.
   SkISize decode_size =
       is_nearest_neighbor
           ? SkISize::Make(paint_image.width(), paint_image.height())
           : supported_size;
   SkImageInfo decode_info =
-      SkImageInfo::MakeN32Premul(decode_size.width(), decode_size.height());
+      pixmap.info().makeWH(decode_size.width(), decode_size.height());
+  SkFilterQuality filter_quality = CalculateDesiredFilterQuality(draw_image);
+  bool decode_to_f16_using_n32_intermediate =
+      decode_info.colorType() == kRGBA_F16_SkColorType &&
+      !ImageDecodeCacheUtils::CanResizeF16Image(filter_quality);
+  if (decode_to_f16_using_n32_intermediate)
+    decode_info = decode_info.makeColorType(kN32_SkColorType);
+
   SkBitmap decode_bitmap;
   if (!decode_bitmap.tryAllocPixels(decode_info))
     return false;
-  SkPixmap decode_pixmap(decode_bitmap.info(), decode_bitmap.getPixels(),
-                         decode_bitmap.rowBytes());
+  SkPixmap decode_pixmap = decode_bitmap.pixmap();
   if (!paint_image.Decode(decode_pixmap.writable_addr(), &decode_info,
                           color_space, draw_image.frame_index(), client_id)) {
     return false;
   }
 
-  // Step 2a: Scale to |pixmap| directly if kN32_SkColorType.
-  if (pixmap.info().colorType() == kN32_SkColorType) {
-    return decode_pixmap.scalePixels(pixmap,
-                                     CalculateDesiredFilterQuality(draw_image));
+  if (decode_to_f16_using_n32_intermediate) {
+    return ImageDecodeCacheUtils::ScaleToHalfFloatPixmapUsingN32Intermediate(
+        decode_pixmap, &pixmap, filter_quality);
   }
-
-  // Step 2b: Scale to temporary pixmap of kN32_SkColorType.
-  SkImageInfo scaled_info = pixmap.info().makeColorType(kN32_SkColorType);
-  SkBitmap scaled_bitmap;
-  if (!scaled_bitmap.tryAllocPixels(scaled_info))
-    return false;
-  SkPixmap scaled_pixmap(scaled_bitmap.info(), scaled_bitmap.getPixels(),
-                         scaled_bitmap.rowBytes());
-  if (!decode_pixmap.scalePixels(scaled_pixmap,
-                                 CalculateDesiredFilterQuality(draw_image))) {
-    return false;
-  }
-
-  // Step 3: Copy the temporary scaled pixmap to |pixmap|, performing
-  // color type conversion. We can't do the color conversion in step 1, as
-  // the scale in step 2 must happen in kN32_SkColorType.
-  return scaled_pixmap.readPixels(pixmap);
+  return decode_pixmap.scalePixels(pixmap, filter_quality);
 }
 
 // Takes ownership of the backing texture of an SkImage. This allows us to
@@ -693,8 +683,9 @@ GpuImageDecodeCache::GpuImageDecodeCache(
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "cc::GpuImageDecodeCache", base::ThreadTaskRunnerHandle::Get());
   }
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  memory_pressure_listener_.reset(
+      new base::MemoryPressureListener(base::BindRepeating(
+          &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
 }
 
 GpuImageDecodeCache::~GpuImageDecodeCache() {
@@ -708,12 +699,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
-
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &GpuImageDecodeCache::OnMemoryPressure, base::Unretained(this))));
 
   // TODO(vmpstr): If we don't have a client name, it may cause problems in
   // unittests, since most tests don't set the name but some do. The UMA system
@@ -1425,13 +1410,8 @@ bool GpuImageDecodeCache::ExceedsPreferredCount() const {
   size_t items_limit;
   if (aggressively_freeing_resources_) {
     items_limit = kSuspendedMaxItemsInCacheForGpu;
-  } else if (memory_state_ == base::MemoryState::NORMAL) {
-    items_limit = kNormalMaxItemsInCacheForGpu;
-  } else if (memory_state_ == base::MemoryState::THROTTLED) {
-    items_limit = kThrottledMaxItemsInCacheForGpu;
   } else {
-    DCHECK_EQ(base::MemoryState::SUSPENDED, memory_state_);
-    items_limit = kSuspendedMaxItemsInCacheForGpu;
+    items_limit = kNormalMaxItemsInCacheForGpu;
   }
 
   return persistent_cache_.size() > items_limit;
@@ -1958,26 +1938,16 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   return image_data->decode.ImageForTesting();
 }
 
-void GpuImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
-  memory_state_ = state;
-}
-
-void GpuImageDecodeCache::OnPurgeMemory() {
-  base::AutoLock lock(lock_);
-  // Temporary changes |memory_state_| to free up cache as much as possible.
-  base::AutoReset<base::MemoryState> reset(&memory_state_,
-                                           base::MemoryState::SUSPENDED);
-  EnsureCapacity(0);
-}
-
 void GpuImageDecodeCache::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
+  base::AutoLock lock(lock_);
   switch (level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      OnPurgeMemory();
+      base::AutoReset<bool> reset(&aggressively_freeing_resources_, true);
+      EnsureCapacity(0);
       break;
   }
 }

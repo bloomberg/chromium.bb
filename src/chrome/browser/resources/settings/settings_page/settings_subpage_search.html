@@ -23,12 +23,12 @@
       }
 
       cr-input {
+        --cr-input-background-color: white;
         --cr-input-container: {
           border-radius: 0;
         }
         --cr-input-error-display: none;
         --cr-input-input: {
-          background-color: white;
           border-bottom: 1px solid var(--google-grey-900);
         }
         --cr-input-padding-end: 0;
@@ -70,7 +70,7 @@
       }
     </style>
     <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
-    <cr-input id="searchInput" on-search="onSearchTermSearch" incremental
+    <cr-input id="searchInput" on-search="onSearchTermSearch"
         on-input="onSearchTermInput" aria-label$="[[label]]" type="search"
         autofocus="[[autofocus]]" placeholder="[[label]]" spellcheck="false">
       <paper-icon-button-light id="clearSearchContainer" class="icon-cancel"

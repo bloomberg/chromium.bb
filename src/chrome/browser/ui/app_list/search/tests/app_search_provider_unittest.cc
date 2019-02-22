@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
@@ -137,7 +138,7 @@ class AppSearchProviderTest : public AppListTestBase {
                     const std::string& name,
                     extensions::Manifest::Location location,
                     int extra_flags) {
-    scoped_refptr<extensions::Extension> extension =
+    scoped_refptr<const extensions::Extension> extension =
         extensions::ExtensionBuilder()
             .SetManifest(
                 extensions::DictionaryBuilder()
@@ -335,9 +336,7 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
 TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitWithFeatures(
-      {features::kEnableSearchResultRankerTrain,
-       features::kEnableSearchResultRankerInfer},
-      {});
+      {app_list_features::kEnableAppSearchResultRanker}, {});
   CreateSearch();
 
   extensions::ExtensionPrefs* prefs =
@@ -359,8 +358,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
 TEST_F(AppSearchProviderTest, RankerIsDisabledWithFlag) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitWithFeatures(
-      {features::kEnableSearchResultRankerTrain},
-      {features::kEnableSearchResultRankerInfer});
+      {}, {app_list_features::kEnableAppSearchResultRanker});
   CreateSearch();
 
   extensions::ExtensionPrefs* prefs =
@@ -529,7 +527,9 @@ class AppSearchProviderWithArcAppInstallType
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderWithArcAppInstallType);
 };
 
-TEST_P(AppSearchProviderWithArcAppInstallType, InstallInernallyRanking) {
+// TODO (879413): Enable this after resolving flakiness.
+TEST_P(AppSearchProviderWithArcAppInstallType,
+       DISABLED_InstallInernallyRanking) {
   const bool default_app =
       GetParam() == TestArcAppInstallType::INSTALLED_BY_DEFAULT;
   if (default_app) {

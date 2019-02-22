@@ -28,9 +28,8 @@ class CBC_OnedCode39Writer final : public CBC_OneDimWriter {
   bool CheckContentValidity(const WideStringView& contents) override;
   WideString FilterContents(const WideStringView& contents) override;
   WideString RenderTextContents(const WideStringView& contents) override;
-
-  virtual bool SetTextLocation(BC_TEXT_LOC loction);
-  virtual bool SetWideNarrowRatio(int8_t ratio);
+  bool SetTextLocation(BC_TEXT_LOC location) override;
+  bool SetWideNarrowRatio(int8_t ratio) override;
 
   bool encodedContents(const WideStringView& contents, WideString* result);
 
@@ -38,7 +37,7 @@ class CBC_OnedCode39Writer final : public CBC_OneDimWriter {
   void ToIntArray(int16_t a, int8_t* toReturn);
   char CalcCheckSum(const ByteString& contents);
 
-  int8_t m_iWideNarrRatio;
+  int8_t m_iWideNarrRatio = 3;
 };
 
 #endif  // FXBARCODE_ONED_BC_ONEDCODE39WRITER_H_

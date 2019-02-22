@@ -27,7 +27,7 @@ constexpr base::char16 kLogFileExtension[] = L"log";
 
 }  // namespace
 
-int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
+int main(int, char**) {
   // This must be executed as soon as possible to reduce the number of dlls that
   // the code might try to load before we can lock things down.
   chrome_cleaner::EnableSecureDllLoading();

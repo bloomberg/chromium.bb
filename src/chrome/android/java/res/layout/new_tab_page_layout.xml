@@ -36,18 +36,15 @@
         android:layout_marginBottom="1dp"
         android:gravity="center_vertical"
         android:addStatesFromChildren="true"
-        android:background="@drawable/card_single"
+        android:background="@drawable/ntp_search_box"
         android:orientation="horizontal"
-        android:paddingStart="2dp"
-        android:paddingEnd="2dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp" >
+        android:paddingStart="@dimen/location_bar_lateral_padding"
+        android:paddingEnd="@dimen/location_bar_lateral_padding" >
         <EditText
             style="@style/TextAppearance.NewTabPageSearchBoxText"
             android:id="@+id/search_box_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
             android:layout_weight="1"
             android:background="@null"
@@ -57,14 +54,13 @@
             android:gravity="center_vertical"
             android:inputType="text"
             android:singleLine="true" />
-        <org.chromium.chrome.browser.widget.TintedImageView
+        <android.support.v7.widget.AppCompatImageView
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
             android:contentDescription="@string/accessibility_toolbar_btn_mic"
             android:src="@drawable/btn_mic"
-            app:chrometint="@color/dark_mode_tint" />
+            app:tint="@color/dark_mode_tint" />
     </view>
 
     <ViewStub
@@ -89,7 +85,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inflatedId="@+id/explore_sites"
-        android:layout="@layout/experimental_explore_sites_section" />
+        android:layout_marginBottom="16dp"
+        android:layout="@layout/explore_sites_section" />
 
     <!-- Site suggestion tile grid placeholder -->
     <ViewStub

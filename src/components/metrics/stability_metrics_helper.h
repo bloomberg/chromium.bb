@@ -61,6 +61,12 @@ class StabilityMetricsHelper {
   // Increments the RendererCrash pref.
   void IncreaseRendererCrashCount();
 
+  // Increments the GpuCrash pref.
+  // Note: This is currently only used on Android. If you want to call this on
+  // another platform, server-side processing code needs to be updated for that
+  // platform to use the new data. Server-side currently assumes Android-only.
+  void IncreaseGpuCrashCount();
+
  private:
   // Increments an Integer pref value specified by |path|.
   void IncrementPrefValue(const char* path);

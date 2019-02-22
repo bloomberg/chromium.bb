@@ -10,8 +10,8 @@
 #include "extensions/common/api/manifest_features.h"
 #include "extensions/common/api/permission_features.h"
 #include "extensions/common/common_manifest_handlers.h"
-#include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/permissions/extensions_api_permissions.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/grit/extensions_resources.h"
 
@@ -51,10 +51,11 @@ base::StringPiece CoreExtensionsAPIProvider::GetAPISchema(
   return api::GeneratedSchemas::Get(name);
 }
 
-void CoreExtensionsAPIProvider::AddPermissionsProviders(
+void CoreExtensionsAPIProvider::RegisterPermissions(
     PermissionsInfo* permissions_info) {
-  permissions_info->AddProvider(api_permissions_,
-                                GetExtensionsPermissionAliases());
+  permissions_info->RegisterPermissions(
+      api_permissions::GetPermissionInfos(),
+      api_permissions::GetPermissionAliases());
 }
 
 void CoreExtensionsAPIProvider::RegisterManifestHandlers() {

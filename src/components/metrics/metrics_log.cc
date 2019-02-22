@@ -150,7 +150,9 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   system_profile->set_channel(client->GetChannel());
   system_profile->set_application_locale(client->GetApplicationLocale());
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
+  // Set if a build is instrumented (e.g. built with ASAN, or with DCHECKs).
+  // TODO(889105): Field will be renamed to is_instrumented_build up-stream.
   system_profile->set_is_asan_build(true);
 #endif
 

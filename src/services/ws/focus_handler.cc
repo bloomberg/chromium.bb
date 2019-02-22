@@ -12,6 +12,7 @@
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ws {
 
@@ -72,9 +73,31 @@ bool FocusHandler::SetFocus(aura::Window* window) {
 
   ClientChange change(window_tree_->property_change_tracker_.get(), window,
                       ClientChangeType::kFocus);
+
+  // FocusController has a special API to reset focus inside the active window,
+  // which happens when a view requests focus (e.g. the find bar).
+  // https://crbug.com/880533
+  wm::ActivationClient* activation_client =
+      wm::GetActivationClient(window->GetRootWindow());
+  if (activation_client) {
+    aura::Window* active_window = activation_client->GetActiveWindow();
+    if (active_window && active_window->Contains(window)) {
+      focus_client->ResetFocusWithinActiveWindow(window);
+      if (focus_client->GetFocusedWindow() != window) {
+        DVLOG(1) << "SetFocus failed (FocusClient::ResetFocusWithinActiveWindow"
+                 << " failed for " << window->GetName() << ")";
+        return false;
+      }
+      if (server_window)
+        server_window->set_focus_owner(window_tree_);
+      return true;
+    }
+  }
+
   focus_client->FocusWindow(window);
   if (focus_client->GetFocusedWindow() != window) {
-    DVLOG(1) << "SetFocus failed (FocusClient::FocusWindow call failed)";
+    DVLOG(1) << "SetFocus failed (FocusClient::FocusWindow call failed for "
+             << window->GetName() << ")";
     return false;
   }
 

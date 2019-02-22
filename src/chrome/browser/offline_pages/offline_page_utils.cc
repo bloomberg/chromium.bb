@@ -59,15 +59,17 @@ class OfflinePageComparer {
 void OnGetPagesByURLDone(
     const GURL& url,
     int tab_id,
-    const std::vector<std::string>& namespaces_to_show_in_original_tab,
+    const std::vector<std::string>& namespaces_restricted_to_tab_from_client_id,
     base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback,
     const MultipleOfflinePageItemResult& pages) {
   std::vector<OfflinePageItem> selected_pages;
   std::string tab_id_str = base::IntToString(tab_id);
 
   // Exclude pages whose tab id does not match.
+  // Note: For this restriction to work offline pages saved to tab-bound
+  // namespaces must have the assigned tab id set to their ClientId::id field.
   for (const auto& page : pages) {
-    if (base::ContainsValue(namespaces_to_show_in_original_tab,
+    if (base::ContainsValue(namespaces_restricted_to_tab_from_client_id,
                             page.client_id.name_space) &&
         page.client_id.id != tab_id_str) {
       continue;
@@ -215,7 +217,7 @@ void OfflinePageUtils::SelectPagesForURL(
   offline_page_model->GetPagesByURL(
       url, base::BindOnce(&OnGetPagesByURLDone, url, tab_id,
                           offline_page_model->GetPolicyController()
-                              ->GetNamespacesRestrictedToOriginalTab(),
+                              ->GetNamespacesRestrictedToTabFromClientId(),
                           std::move(callback)));
 }
 

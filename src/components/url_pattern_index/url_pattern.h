@@ -8,8 +8,10 @@
 #include <iosfwd>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
+#include "url/third_party/mozilla/url_parse.h"
 
 class GURL;
 
@@ -23,21 +25,50 @@ struct UrlRule;  // The FlatBuffers version of UrlRule.
 // of the UrlRule that owns it, and to match it against URLs.
 class UrlPattern {
  public:
+  enum class MatchCase {
+    kTrue,
+    kFalse,
+  };
+
+  // A wrapper over a GURL to reduce redundant computation.
+  class UrlInfo {
+   public:
+    // The |url| must outlive this instance.
+    UrlInfo(const GURL& url);
+    ~UrlInfo();
+
+    base::StringPiece spec() const { return spec_; }
+    base::StringPiece GetLowerCaseSpec() const;
+    url::Component host() const { return host_; }
+
+   private:
+    // The url spec.
+    const base::StringPiece spec_;
+    // String to hold the lazily computed lower cased spec.
+    mutable std::string lower_case_spec_owner_;
+    // Reference to the lower case spec. Computed lazily.
+    mutable base::Optional<base::StringPiece> lower_case_spec_cached_;
+
+    // The url host component.
+    const url::Component host_;
+
+    DISALLOW_COPY_AND_ASSIGN(UrlInfo);
+  };
+
   UrlPattern();
 
-  // Creates a |url_pattern| of a certain |type|.
+  // Creates a |url_pattern| of a certain |type| and case-sensitivity.
   UrlPattern(base::StringPiece url_pattern,
-             proto::UrlPatternType type = proto::URL_PATTERN_TYPE_WILDCARDED);
+             proto::UrlPatternType type = proto::URL_PATTERN_TYPE_WILDCARDED,
+             MatchCase match_case = MatchCase::kFalse);
 
   // Creates a WILDCARDED |url_pattern| with the specified anchors.
   UrlPattern(base::StringPiece url_pattern,
              proto::AnchorType anchor_left,
              proto::AnchorType anchor_right);
 
-  // The following constructors create UrlPattern from one of the UrlRule
-  // representations. The passed in |rule| must outlive the created instance.
+  // The passed in |rule| must outlive the created instance.
   explicit UrlPattern(const flat::UrlRule& rule);
-  explicit UrlPattern(const proto::UrlRule& rule);
 
   ~UrlPattern();
 
@@ -45,7 +76,7 @@ class UrlPattern {
   base::StringPiece url_pattern() const { return url_pattern_; }
   proto::AnchorType anchor_left() const { return anchor_left_; }
   proto::AnchorType anchor_right() const { return anchor_right_; }
-  bool match_case() const { return match_case_; }
+  bool match_case() const { return match_case_ == MatchCase::kTrue; }
 
   // Returns whether the |url| matches the URL |pattern|. Requires the type of
   // |this| pattern to be either SUBSTRING or WILDCARDED.
@@ -54,7 +85,7 @@ class UrlPattern {
   // greedily finds each of them in the spec of the |url|. Respects anchors at
   // either end of the pattern, and '^' separator placeholders when comparing a
   // subpattern to a subtring of the spec.
-  bool MatchesUrl(const GURL& url) const;
+  bool MatchesUrl(const UrlInfo& url) const;
 
  private:
   // TODO(pkalinnikov): Store flat:: types instead of proto::, in order to avoid
@@ -65,8 +96,7 @@ class UrlPattern {
   proto::AnchorType anchor_left_ = proto::ANCHOR_TYPE_NONE;
   proto::AnchorType anchor_right_ = proto::ANCHOR_TYPE_NONE;
 
-  // TODO(pkalinnikov): Implement case-insensitive matching.
-  bool match_case_ = false;
+  MatchCase match_case_ = MatchCase::kTrue;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPattern);
 };

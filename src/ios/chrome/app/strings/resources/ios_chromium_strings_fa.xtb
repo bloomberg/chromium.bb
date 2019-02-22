@@ -18,6 +18,7 @@
 <translation id="2687023731466035790">‏هوشمندی‌های Google را در Chromium دریافت کنید</translation>
 <translation id="2730884209570016437">‏Chromium نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
 <translation id="2797210818057553964">‏هرزمان بخواهید، می‌توانید این گزینه را در «تنظیمات Chromium» سفارشی کنید</translation>
+<translation id="2915596697727466327">‏Chromium برای اطمینان از دسترسی مجاز به گذرواژه‌هایتان، از «شناسه تشخیص چهره» استفاده می‌کند.</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
 <translation id="3413120535237193088">‏برای اینکه نشانک‌ها را در همه دستگاه‌هایتان دریافت کنید، به سیستم Chromium وارد شوید.</translation>
 <translation id="3473048256428424907">‏اسکنر QR در Chromium را روشن کنید</translation>
@@ -52,7 +53,6 @@
 <translation id="786327964234957808">‏هم‌اکنون درحال تغییر حساب‌های همگام‌سازی از <ph name="USER_EMAIL1" /> به <ph name="USER_EMAIL2" /> هستید. داده‌های موجود Chromium شما توسط <ph name="DOMAIN" /> مدیریت می‌شوند. با این کار، داده‌هایتان از این دستگاه حذف می‌شود اما همچنان در <ph name="USER_EMAIL1" /> باقی می‌ماند.</translation>
 <translation id="8175055321229419309">‏نکته: <ph name="BEGIN_LINK" />Chromium را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏با استفاده از مکانتان در Chromium، تجربه بهتری از Google داشته باشید.</translation>
-<translation id="8353224596138547809">‏آیا می‌خواهید Chromium گذرواژه این سایت را ذخیره کند؟</translation>
 <translation id="8508544542427105412">‏هرزمان بخواهید می‌توانید <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> را سفارشی کنید. ممکن است Google از محتوای موجود در سایت‌هایی که بازدید می‌کنید و تعاملات و فعالیت مرورگر برای شخصی‌سازی Chromium و سرویس‌های Google (مانند «مترجم»، «جستجو» و آگهی‌ها) استفاده کند.</translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="8809780021347235332">‏برای ذخیره تصاویر، با ضربه زدن روی Settings (تنظیمات) به Chromium اجازه دهید از عکس‌هایتان استفاده کند</translation>

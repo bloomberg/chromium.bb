@@ -22,16 +22,10 @@ export interface ObjectById<Class extends{id: string}> { [id: string]: Class; }
 export interface TrackState {
   id: string;
   engineId: string;
-  maxDepth: number;
   kind: string;
   name: string;
-  // TODO: These need to be nested into track kind spesific state.
-  // cpu slice state:
-  cpu: number;
-  // chrome slice state:
-  upid?: number;
-  utid?: number;
   dataReq?: TrackDataRequest;
+  config: {};
 }
 
 export interface TrackDataRequest {
@@ -79,21 +73,29 @@ export interface State {
   traceTime: TraceTime;
   visibleTraceTime: TraceTime;
   tracks: ObjectById<TrackState>;
-  displayedTrackIds: string[];
+  scrollingTracks: string[];
+  pinnedTracks: string[];
   queries: ObjectById<QueryConfig>;
   permalink: PermalinkConfig;
   status: Status;
 }
+
+export const defaultTraceTime = {
+  startSec: 0,
+  endSec: 10,
+  lastUpdate: 0
+};
 
 export function createEmptyState(): State {
   return {
     route: null,
     nextId: 0,
     engines: {},
-    traceTime: {startSec: 0, endSec: 10, lastUpdate: 0},
-    visibleTraceTime: {startSec: 0, endSec: 10, lastUpdate: 0},
+    traceTime: {...defaultTraceTime},
+    visibleTraceTime: {...defaultTraceTime},
     tracks: {},
-    displayedTrackIds: [],
+    pinnedTracks: [],
+    scrollingTracks: [],
     queries: {},
     permalink: {},
     status: {msg: '', timestamp: 0},

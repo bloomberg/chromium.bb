@@ -14,10 +14,10 @@ namespace blink {
 
 NGLayoutResult::NGLayoutResult(
     scoped_refptr<const NGPhysicalFragment> physical_fragment,
-    Vector<NGOutOfFlowPositionedDescendant>& oof_positioned_descendants,
-    Vector<NGPositionedFloat>& positioned_floats,
+    Vector<NGOutOfFlowPositionedDescendant>&& oof_positioned_descendants,
+    Vector<NGPositionedFloat>&& positioned_floats,
     const NGUnpositionedListMarker& unpositioned_list_marker,
-    std::unique_ptr<const NGExclusionSpace> exclusion_space,
+    NGExclusionSpace&& exclusion_space,
     LayoutUnit bfc_line_offset,
     const base::Optional<LayoutUnit> bfc_block_offset,
     const NGMarginStrut end_margin_strut,
@@ -55,18 +55,13 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants(
       oof_positioned_descendants_);
   Vector<NGPositionedFloat> positioned_floats(positioned_floats_);
-  std::unique_ptr<const NGExclusionSpace> exclusion_space;
-  // TODO(layoutng) Replace this with DCHECK(exclusion_space_) when
-  // callers guarantee exclusion_space_ != null.
-  if (exclusion_space_) {
-    exclusion_space = std::make_unique<NGExclusionSpace>(*exclusion_space_);
-  }
   return base::AdoptRef(new NGLayoutResult(
-      PhysicalFragment(), oof_positioned_descendants, positioned_floats,
-      unpositioned_list_marker_, std::move(exclusion_space), bfc_line_offset_,
-      bfc_block_offset_, end_margin_strut_, intrinsic_block_size_,
-      minimal_space_shortage_, initial_break_before_, final_break_after_,
-      has_forced_break_, is_pushed_by_floats_, adjoining_floats_, Status()));
+      root_fragment_.fragment_, std::move(oof_positioned_descendants),
+      std::move(positioned_floats), unpositioned_list_marker_,
+      NGExclusionSpace(exclusion_space_), bfc_line_offset_, bfc_block_offset_,
+      end_margin_strut_, intrinsic_block_size_, minimal_space_shortage_,
+      initial_break_before_, final_break_after_, has_forced_break_,
+      is_pushed_by_floats_, adjoining_floats_, Status()));
 }
 
 }  // namespace blink

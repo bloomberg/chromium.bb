@@ -19,10 +19,13 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/ssladapter.h"
 #include "rtc_base/sslstreamadapter.h"
-#include "system_wrappers/include/field_trial_default.h"
-#include "system_wrappers/include/metrics_default.h"
+#include "system_wrappers/include/field_trial.h"
+#include "system_wrappers/include/metrics.h"
 #include "test/field_trial.h"
-#include "test/testsupport/fileutils.h"
+
+#if defined(WEBRTC_WIN)
+#include "rtc_base/win32socketinit.h"
+#endif
 
 #if defined(WEBRTC_IOS)
 #include "test/ios/test_support.h"
@@ -77,7 +80,6 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  webrtc::test::SetExecutablePath(argv[0]);
   webrtc::test::ValidateFieldTrialsStringOrDie(FLAG_force_fieldtrials);
   // InitFieldTrialsFromString stores the char*, so the char array must outlive
   // the application.
@@ -85,6 +87,8 @@ int main(int argc, char* argv[]) {
   webrtc::metrics::Enable();
 
 #if defined(WEBRTC_WIN)
+  rtc::WinsockInitializer winsock_init;
+
   if (!FLAG_default_error_handlers) {
     // Make sure any errors don't throw dialogs hanging the test run.
     _set_invalid_parameter_handler(TestInvalidParameterHandler);

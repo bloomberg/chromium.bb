@@ -102,7 +102,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3171922709365450819">Dit apparaat wordt niet ondersteund door deze klant, omdat hiervoor verificatie van derden is vereist.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3212472844831225214">• Ondersteuning toegevoegd voor Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Deze instructies e-mailen</translation>
 <translation id="3258789396564295715">Je kunt beveiligd toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="3286521253923406898">Controller voor Chromoting-host</translation>
@@ -331,6 +330,8 @@ Pc</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="8548209692293300397">Je bent eerder ingelogd als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN" />log je in bij Google Chrome<ph name="LINK_END" /> met dat account en installeer je Chrome Remote Desktop opnieuw.</translation>
 <translation id="8642984861538780905">Redelijk</translation>
+<translation id="8705151241155781642">• Ondersteuning toegevoegd voor Android 9.0 Pie.
+• Ondersteuning om de resolutie van het externe bureaublad aan te passen aan het scherm van je Android-apparaat.</translation>
 <translation id="8712909229180978490">Ik kan mijn opgeslagen bestanden niet online zien in Google Drive.</translation>
 <translation id="8743328882720071828">Wil je toestaan dat <ph name="CLIENT_USERNAME" /> je computer ziet en beheert?</translation>
 <translation id="8747048596626351634">De sessie is gecrasht of kan niet worden gestart. Als ~/.chrome-remote-desktop-session bestaat op de externe computer, moet je ervoor zorgen dat hiermee een langdurig voorgrondproces wordt gestart, zoals een bureaubladomgeving of vensterbeheer.</translation>

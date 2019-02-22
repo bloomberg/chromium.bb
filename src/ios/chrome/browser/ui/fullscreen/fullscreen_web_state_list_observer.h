@@ -24,9 +24,13 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
   // navigation events that require the toolbar to be visible.
   FullscreenWebStateListObserver(FullscreenController* controller,
                                  FullscreenModel* model,
-                                 WebStateList* web_state_list,
                                  FullscreenMediator* mediator);
   ~FullscreenWebStateListObserver() override;
+
+  // The WebStateList being observed.
+  void SetWebStateList(WebStateList* web_state_list);
+  const WebStateList* GetWebStateList() const;
+  WebStateList* GetWebStateList();
 
   // Stops observing the the WebStateList.
   void Disconnect();
@@ -58,11 +62,11 @@ class FullscreenWebStateListObserver : public WebStateListObserver {
   bool HasWebStateBeenActivated(web::WebState* web_state);
 
   // The controller passed on construction.
-  FullscreenController* controller_;
+  FullscreenController* controller_ = nullptr;
   // The model passed on construction.
-  FullscreenModel* model_;
+  FullscreenModel* model_ = nullptr;
   // The WebStateList passed on construction.
-  WebStateList* web_state_list_;
+  WebStateList* web_state_list_ = nullptr;
   // The observer for the active WebState.
   FullscreenWebStateObserver web_state_observer_;
   // The WebStates that have been activated in |web_state_list_|.

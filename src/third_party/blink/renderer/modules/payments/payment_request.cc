@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
@@ -40,7 +41,7 @@
 #include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
 #include "third_party/blink/renderer/modules/payments/basic_card_request.h"
 #include "third_party/blink/renderer/modules/payments/html_iframe_element_payments.h"
-#include "third_party/blink/renderer/modules/payments/payer_error_fields.h"
+#include "third_party/blink/renderer/modules/payments/payer_errors.h"
 #include "third_party/blink/renderer/modules/payments/payment_address.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_update.h"
@@ -52,10 +53,10 @@
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -64,8 +65,8 @@ namespace {
 using ::payments::mojom::blink::AddressErrors;
 using ::payments::mojom::blink::AddressErrorsPtr;
 using ::payments::mojom::blink::CanMakePaymentQueryResult;
-using ::payments::mojom::blink::PayerErrorFields;
-using ::payments::mojom::blink::PayerErrorFieldsPtr;
+using ::payments::mojom::blink::PayerErrors;
+using ::payments::mojom::blink::PayerErrorsPtr;
 using ::payments::mojom::blink::PaymentAddress;
 using ::payments::mojom::blink::PaymentAddressPtr;
 using ::payments::mojom::blink::PaymentCurrencyAmount;
@@ -149,9 +150,8 @@ struct TypeConverter<PaymentValidationErrorsPtr,
       const blink::PaymentValidationErrors& input) {
     PaymentValidationErrorsPtr output =
         payments::mojom::blink::PaymentValidationErrors::New();
-    output->payer = input.hasPayer()
-                        ? PayerErrorFields::From(input.payer())
-                        : PayerErrorFields::From(blink::PayerErrorFields());
+    output->payer = input.hasPayer() ? PayerErrors::From(input.payer())
+                                     : PayerErrors::From(blink::PayerErrors());
     output->shipping_address =
         input.hasShippingAddress()
             ? AddressErrors::From(input.shippingAddress())
@@ -161,10 +161,9 @@ struct TypeConverter<PaymentValidationErrorsPtr,
 };
 
 template <>
-struct TypeConverter<PayerErrorFieldsPtr, blink::PayerErrorFields> {
-  static PayerErrorFieldsPtr Convert(const blink::PayerErrorFields& input) {
-    PayerErrorFieldsPtr output =
-        payments::mojom::blink::PayerErrorFields::New();
+struct TypeConverter<PayerErrorsPtr, blink::PayerErrors> {
+  static PayerErrorsPtr Convert(const blink::PayerErrors& input) {
+    PayerErrorsPtr output = payments::mojom::blink::PayerErrors::New();
     output->email = input.hasEmail() ? input.email() : g_empty_string;
     output->name = input.hasName() ? input.name() : g_empty_string;
     output->phone = input.hasPhone() ? input.phone() : g_empty_string;
@@ -541,6 +540,10 @@ void CountPaymentRequestNetworkNameInSupportedMethod(
 bool IsValidMethodFormat(const String& identifier) {
   KURL url(NullURL(), identifier);
   if (url.IsValid()) {
+    // Allow localhost payment method for test.
+    if (SecurityOrigin::Create(url)->IsLocalhost())
+      return true;
+
     // URL PMI validation rules:
     // https://www.w3.org/TR/payment-method-id/#dfn-validate-a-url-based-payment-method-identifier
     return url.Protocol() == "https" && url.User().IsEmpty() &&
@@ -675,7 +678,7 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
       return;
   }
 
-  if (input.hasError() && !input.error().IsNull()) {
+  if (input.hasError()) {
     String error_message;
     if (!PaymentsValidators::IsValidErrorMsgFormat(input.error(),
                                                    &error_message)) {
@@ -683,8 +686,18 @@ void ValidateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
       return;
     }
     output->error = input.error();
-  } else {
-    output->error = "";
+  }
+
+  if (input.hasShippingAddressErrors()) {
+    String error_message;
+    if (!PaymentsValidators::IsValidAddressErrorsFormat(
+            input.shippingAddressErrors(), &error_message)) {
+      exception_state.ThrowTypeError(error_message);
+      return;
+    }
+    output->shipping_address_errors =
+        payments::mojom::blink::AddressErrors::From(
+            input.shippingAddressErrors());
   }
 }
 
@@ -731,17 +744,19 @@ void ValidateAndConvertPaymentMethodData(
   }
 }
 
-bool AllowedToUsePaymentRequest(const Frame* frame) {
+bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
   // To determine whether a Document object |document| is allowed to use the
   // feature indicated by attribute name |allowpaymentrequest|, run these steps:
 
+  // Note: PaymentRequest is only exposed to Window and not workers.
   // 1. If |document| has no browsing context, then return false.
-  if (!frame)
+  const Document* document = To<Document>(execution_context);
+  if (!document->GetFrame())
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment,
-                                 ReportOptions::kReportOnFailure);
+  return document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment,
+                                    ReportOptions::kReportOnFailure);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(
@@ -792,7 +807,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
 
   // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
   // without user activation.
-  bool is_user_gesture = Frame::HasTransientUserActivation(GetFrame());
+  bool is_user_gesture = LocalFrame::HasTransientUserActivation(GetFrame());
   if (!is_user_gesture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPaymentRequestShowWithoutGesture);
@@ -1048,7 +1063,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
           &PaymentRequest::OnCompleteTimeout) {
   DCHECK(GetExecutionContext()->IsSecureContext());
 
-  if (!AllowedToUsePaymentRequest(GetFrame())) {
+  if (!AllowedToUsePaymentRequest(execution_context)) {
     exception_state.ThrowSecurityError(
         "Must be in a top-level browsing context or an iframe needs to specify "
         "'allowpaymentrequest' explicitly");
@@ -1152,6 +1167,20 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   }
 }
 
+void PaymentRequest::OnPayerDetailChange(
+    payments::mojom::blink::PayerDetailPtr detail) {
+  DCHECK(payment_response_);
+  DCHECK(GetPendingAcceptPromiseResolver());
+  DCHECK(!complete_resolver_);
+
+  PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
+      GetExecutionContext(), EventTypeNames::payerdetailchange);
+  event->SetTarget(payment_response_);
+  event->SetPaymentDetailsUpdater(this);
+  payment_response_->UpdatePayerDetail(std::move(detail));
+  payment_response_->DispatchEvent(*event);
+}
+
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
@@ -1184,12 +1213,13 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     }
   }
 
-  if ((options_.requestPayerName() && response->payer_name.IsEmpty()) ||
-      (options_.requestPayerEmail() && response->payer_email.IsEmpty()) ||
-      (options_.requestPayerPhone() && response->payer_phone.IsEmpty()) ||
-      (!options_.requestPayerName() && !response->payer_name.IsNull()) ||
-      (!options_.requestPayerEmail() && !response->payer_email.IsNull()) ||
-      (!options_.requestPayerPhone() && !response->payer_phone.IsNull())) {
+  DCHECK(response->payer);
+  if ((options_.requestPayerName() && response->payer->name.IsEmpty()) ||
+      (options_.requestPayerEmail() && response->payer->email.IsEmpty()) ||
+      (options_.requestPayerPhone() && response->payer->phone.IsEmpty()) ||
+      (!options_.requestPayerName() && !response->payer->name.IsNull()) ||
+      (!options_.requestPayerEmail() && !response->payer->email.IsNull()) ||
+      (!options_.requestPayerPhone() && !response->payer->phone.IsNull())) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSyntaxError));
     ClearResolversAndCloseMojoConnection();
     return;
@@ -1199,7 +1229,8 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 
   if (retry_resolver_) {
     DCHECK(payment_response_);
-    payment_response_->Update(std::move(response), shipping_address_.Get());
+    payment_response_->Update(retry_resolver_->GetScriptState(),
+                              std::move(response), shipping_address_.Get());
     retry_resolver_->Resolve();
 
     // Do not close the mojo connection here. The merchant website should call
@@ -1207,7 +1238,8 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
     // connection to display a success or failure message to the user.
     retry_resolver_.Clear();
   } else if (accept_resolver_) {
-    payment_response_ = new PaymentResponse(std::move(response),
+    payment_response_ = new PaymentResponse(accept_resolver_->GetScriptState(),
+                                            std::move(response),
                                             shipping_address_.Get(), this, id_);
     accept_resolver_->Resolve(payment_response_);
 

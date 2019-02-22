@@ -43,6 +43,8 @@ using RetrievePolicyResponseType =
     SessionManagerClient::RetrievePolicyResponseType;
 
 constexpr char kEmptyAccountId[] = "";
+// The timeout used when starting the android container is 90 seconds
+constexpr int kStartArcTimeout = 90 * 1000;
 
 // Helper to get the enum type of RetrievePolicyResponseType based on error
 // name.
@@ -403,7 +405,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kStartArcTimeout,
         base::BindOnce(&SessionManagerClientImpl::OnStartArcMiniContainer,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }

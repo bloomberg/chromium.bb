@@ -29,9 +29,6 @@ extern const base::Feature kBillingInterstitial;
 
 extern const base::Feature kCheckByURLLoaderThrottle;
 
-// Controls the Password Protection for Enterprise V1 feature;
-extern const base::Feature kEnterprisePasswordProtectionV1;
-
 // Forces the chrome://reset-password page to be shown for review or testing
 // purpose.
 extern const base::Feature kForceEnableResetPasswordWebUI;
@@ -60,6 +57,9 @@ extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 // Having a single shared feature makes it impossible to run multiple trigger
 // trials simultaneously.
 extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
+
+// Controls whether Chrome on Android uses locally cached blacklists.
+extern const base::Feature kUseLocalBlacklistsV2;
 
 base::ListValue GetFeatureStatusList();
 

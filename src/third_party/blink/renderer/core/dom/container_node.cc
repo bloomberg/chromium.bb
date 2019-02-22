@@ -245,14 +245,14 @@ bool ContainerNode::EnsurePreInsertionValidity(
     return false;
   }
 
-  if (IsDocumentNode()) {
+  if (auto* document = DynamicTo<Document>(this)) {
     // Step 2 is unnecessary. No one can have a Document child.
     // Step 3:
     if (!CheckReferenceChildParent(*this, next, old_child, exception_state))
       return false;
     // Step 4-6.
-    return ToDocument(this)->CanAcceptChild(new_child, next, old_child,
-                                            exception_state);
+    return document->CanAcceptChild(new_child, next, old_child,
+                                    exception_state);
   }
 
   // 2. If node is a host-including inclusive ancestor of parent, throw a
@@ -293,13 +293,12 @@ bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
       // node.  Firefox and Edge don't throw in this case.
       return false;
     }
-    if (IsDocumentNode()) {
+    if (auto* document = DynamicTo<Document>(this)) {
       // For Document, no need to check host-including inclusive ancestor
       // because a Document node can't be a child of other nodes.
       // However, status of existing doctype or root element might be changed
       // and we need to check it again.
-      if (!ToDocument(this)->CanAcceptChild(*child, next, nullptr,
-                                            exception_state))
+      if (!document->CanAcceptChild(*child, next, nullptr, exception_state))
         return false;
     } else {
       if (IsHostIncludingInclusiveAncestorOfThis(*child, exception_state))
@@ -474,12 +473,13 @@ void ContainerNode::AppendChildCommon(Node& child) {
 }
 
 bool ContainerNode::CheckParserAcceptChild(const Node& new_child) const {
-  if (!IsDocumentNode())
+  auto* document = DynamicTo<Document>(this);
+  if (!document)
     return true;
   // TODO(esprehn): Are there other conditions where the parser can create
   // invalid trees?
-  return ToDocument(*this).CanAcceptChild(new_child, nullptr, nullptr,
-                                          IGNORE_EXCEPTION_FOR_TESTING);
+  return document->CanAcceptChild(new_child, nullptr, nullptr,
+                                  IGNORE_EXCEPTION_FOR_TESTING);
 }
 
 void ContainerNode::ParserInsertBefore(Node* new_child, Node& next_child) {
@@ -706,6 +706,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
     Node* next = child->nextSibling();
     {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
+      StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
       RemoveBetween(prev, next, *child);
       NotifyNodeRemoved(*child);
     }
@@ -768,9 +769,11 @@ void ContainerNode::ParserRemoveChild(Node& old_child) {
 
   Node* prev = old_child.previousSibling();
   Node* next = old_child.nextSibling();
-  RemoveBetween(prev, next, old_child);
-
-  NotifyNodeRemoved(old_child);
+  {
+    StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
+    RemoveBetween(prev, next, old_child);
+    NotifyNodeRemoved(old_child);
+  }
   ChildrenChanged(ChildrenChange::ForRemoval(old_child, prev, next,
                                              kChildrenChangeSourceParser));
 }
@@ -805,6 +808,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     TreeOrderedMap::RemoveScope tree_remove_scope;
     {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
+      StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
       EventDispatchForbiddenScope assert_no_event_dispatch;
       ScriptForbiddenScope forbid_script;
 
@@ -1005,10 +1009,11 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-  if (!ChildNeedsStyleRecalc() && change.IsChildInsertion() &&
-      change.sibling_changed->NeedsStyleRecalc()) {
-    SetChildNeedsStyleRecalc();
-    MarkAncestorsWithChildNeedsStyleRecalc();
+  if (change.IsChildInsertion()) {
+    if (change.sibling_changed->NeedsStyleRecalc())
+      MarkAncestorsWithChildNeedsStyleRecalc(change.sibling_changed);
+  } else if (change.IsChildRemoval() || change.type == kAllChildrenRemoved) {
+    GetDocument().GetStyleEngine().ChildrenRemoved(*this);
   }
 }
 
@@ -1389,7 +1394,7 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(change >= kUpdatePseudoElements || ChildNeedsStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
 
-  for (Node* child = lastChild(); child; child = child->previousSibling()) {
+  for (Node* child = firstChild(); child; child = child->nextSibling()) {
     if (child->IsTextNode()) {
       ToText(child)->RecalcTextStyle(change);
     } else if (child->IsElementNode()) {

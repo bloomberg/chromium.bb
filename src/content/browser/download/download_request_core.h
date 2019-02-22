@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
@@ -27,6 +28,7 @@ struct DownloadCreateInfo;
 namespace net {
 class HttpResponseHeaders;
 class URLRequest;
+class URLRequestContextGetter;
 class URLRequestStatus;
 }  // namespace net
 
@@ -71,7 +73,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // redirect to be followed if the return value is true.
   bool OnRequestRedirected();
 
-  // Starts a read cycle. Creates a new IOBuffer which can be passed into
+  // Starts a read cycle. Creates an IOBuffer which can be passed into
   // URLRequest::Read(). Call OnReadCompleted() when the Read operation
   // completes.
   bool OnWillRead(scoped_refptr<net::IOBuffer>* buf,
@@ -110,7 +112,8 @@ class CONTENT_EXPORT DownloadRequestCore
 
   static std::unique_ptr<net::URLRequest> CreateRequestOnIOThread(
       bool is_new_download,
-      download::DownloadUrlParameters* params);
+      download::DownloadUrlParameters* params,
+      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
 
   // Size of the buffer used between the DownloadRequestCore and the
   // downstream receiver of its output.

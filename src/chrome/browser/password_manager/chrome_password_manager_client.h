@@ -21,7 +21,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
-#include "components/password_manager/sync/browser/sync_credentials_filter.h"
+#include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_binding_set.h"
@@ -112,6 +112,7 @@ class ChromePasswordManagerClient
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
   void UpdateFormManagers() override;
+  bool IsUnderAdvancedProtection() const override;
 
   // autofill::mojom::PasswordManagerClient overrides.
   void AutomaticGenerationStatusChanged(
@@ -164,10 +165,6 @@ class ChromePasswordManagerClient
   // on this |url|.
   static bool CanShowBubbleOnURL(const GURL& url);
 
-  // Informs the embedder that the user has manually requested to save the
-  // password in the focused password field.
-  void ForceSavePassword();
-
 #if defined(UNIT_TEST)
   bool was_store_ever_called() const { return was_store_ever_called_; }
   bool has_binding_for_credential_manager() const {
@@ -198,8 +195,7 @@ class ChromePasswordManagerClient
   void HideManualFallbackForSaving() override;
   void SameDocumentNavigation(
       const autofill::PasswordForm& password_form) override;
-  void ShowPasswordSuggestions(int key,
-                               base::i18n::TextDirection text_direction,
+  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                const base::string16& typed_username,
                                int options,
                                const gfx::RectF& bounds) override;

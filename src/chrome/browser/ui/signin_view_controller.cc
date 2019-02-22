@@ -111,10 +111,10 @@ bool SigninViewController::ShouldShowSigninForMode(
          mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
 }
 
-void SigninViewController::ShowSignin(
-    profiles::BubbleViewMode mode,
-    Browser* browser,
-    signin_metrics::AccessPoint access_point) {
+void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
+                                      Browser* browser,
+                                      signin_metrics::AccessPoint access_point,
+                                      const GURL& redirect_url) {
   DCHECK(ShouldShowSigninForMode(mode));
 
 #if defined(OS_CHROMEOS)
@@ -135,7 +135,8 @@ void SigninViewController::ShowSignin(
     signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
         AccountTrackerServiceFactory::GetForProfile(profile),
         account_consistency);
-    ShowDiceSigninTab(mode, browser, access_point, promo_action, email);
+    ShowDiceSigninTab(mode, browser, access_point, promo_action, email,
+                      redirect_url);
   } else {
     ShowModalSigninDialog(mode, browser, access_point);
   }
@@ -219,7 +220,8 @@ void SigninViewController::ShowDiceSigninTab(
     Browser* browser,
     signin_metrics::AccessPoint access_point,
     signin_metrics::PromoAction promo_action,
-    const std::string& email) {
+    const std::string& email,
+    const GURL& redirect_url) {
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
   GURL signin_url = signin::GetSigninURLForDice(browser->profile(), email);
   content::WebContents* active_contents = nullptr;
@@ -253,7 +255,7 @@ void SigninViewController::ShowDiceSigninTab(
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
   tab_helper->InitializeSigninFlow(signin_url, access_point, signin_reason,
-                                   promo_action);
+                                   promo_action, redirect_url);
 }
 #endif  // !defined(OS_CHROMEOS)
 

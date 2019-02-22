@@ -402,8 +402,8 @@ if sys.platform == 'win32':
         # Killing is asynchronous.
         os.kill(pid, 9)
         sys.stderr.write('- %d killed\n' % pid)
-      except OSError:
-        sys.stderr.write('- failed to kill %s\n' % pid)
+      except OSError as e:
+        sys.stderr.write('- failed to kill %s, error %s\n' % (pid, e))
     return True
 
 
@@ -537,7 +537,7 @@ elif sys.platform == 'darwin':
     resolved = _native_case(path)
     if path.lower() in (resolved.lower(), resolved.lower() + './'):
       # This code path is incredibly faster.
-      logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
+      #logging.debug('get_native_path_case(%s) = %s' % (path, resolved))
       return resolved
 
     # There was a symlink, process it.
@@ -561,7 +561,7 @@ elif sys.platform == 'darwin':
       assert len(base) > len(prev), (prev, base, symlink)
     # Make sure no symlink was resolved.
     assert base.lower() == path.lower(), (base, path)
-    logging.debug('get_native_path_case(%s) = %s' % (path, base))
+    #logging.debug('get_native_path_case(%s) = %s' % (path, base))
     return base
 
 
@@ -780,11 +780,11 @@ def path_starts_with(prefix, path):
   initial components of |path| (or all of the components of |path|). The paths
   must be absolute.
   """
-  assert os.path.isabs(prefix) and os.path.isabs(path)
+  #assert os.path.isabs(prefix) and os.path.isabs(path)
   prefix = os.path.normpath(prefix)
   path = os.path.normpath(path)
-  assert prefix == get_native_path_case(prefix), prefix
-  assert path == get_native_path_case(path), path
+  #assert prefix == get_native_path_case(prefix), prefix
+  #assert path == get_native_path_case(path), path
   prefix = prefix.rstrip(os.path.sep) + os.path.sep
   path = path.rstrip(os.path.sep) + os.path.sep
   return path.startswith(prefix)
@@ -888,7 +888,8 @@ def set_read_only(path, read_only):
 
   Zaps out access to 'group' and 'others'.
   """
-  mode = fs.lstat(path).st_mode
+  orig_mode = fs.lstat(path).st_mode
+  mode = orig_mode
   # TODO(maruel): Stop removing GO bits.
   if read_only:
     mode &= stat.S_IRUSR|stat.S_IXUSR # 0500
@@ -899,7 +900,7 @@ def set_read_only(path, read_only):
   if hasattr(os, 'lchmod'):
     fs.lchmod(path, mode)  # pylint: disable=E1101
   else:
-    if stat.S_ISLNK(mode):
+    if stat.S_ISLNK(orig_mode):
       # Skip symlink without lchmod() support.
       return
 

@@ -8,6 +8,7 @@ include_rules = [
   "+components/contextual_search/content/renderer",
   "+components/crash/core/common/crash_key.h",
   "+components/crx_file",
+  "+components/data_reduction_proxy/content/common",
   "+components/data_reduction_proxy/content/renderer",
   "+components/data_reduction_proxy/core/common",
   "+components/dom_distiller/content/common",
@@ -31,7 +32,8 @@ include_rules = [
   "+components/safe_browsing/common",
   "+components/safe_browsing/features.h",
   "+components/safe_browsing/renderer",
-  "+components/spellcheck",
+  "+components/spellcheck/renderer",
+  "+components/spellcheck/spellcheck_buildflags.h",
   "+components/startup_metric_utils/common",
   "+components/strings/grit",
   "+components/subresource_filter/content/common",
@@ -47,22 +49,20 @@ include_rules = [
   "+components/web_cache/renderer",
   "+content/app/strings/grit",
   "+content/public/child",
-  "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/buildflags",
   "+extensions/renderer",
   "+gin",
   "+media/base",
-  "+ppapi/c",
   "+ppapi/shared_impl",
   "+services/network/public/cpp",
   "+skia",
   "+storage/common",
   "+third_party/blink/public/mojom",
   "+third_party/metrics_proto",
+  "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
-  "-components/spellcheck/browser",  # Allow all spellcheck but browser.
 ]
 
 specific_include_rules = {
@@ -70,5 +70,6 @@ specific_include_rules = {
     "+chrome/browser/profiles/profile_io_data.h",
     "+chrome/browser/ui",
     "+chrome/browser/ui/tabs",
+    "+content/public/browser/browser_task_traits.h",
   ],
 }

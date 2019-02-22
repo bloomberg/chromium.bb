@@ -53,7 +53,7 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
     const SVGPathByteStream& byte_stream,
     CoordinateConversion coordinateConversion) {
   SVGPathByteStreamSource path_source(byte_stream);
-  size_t length = 0;
+  wtf_size_t length = 0;
   PathCoordinates current_coordinates;
   Vector<std::unique_ptr<InterpolableValue>> interpolable_path_segs;
   Vector<SVGPathSegType> path_seg_types;
@@ -72,7 +72,7 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
 
   std::unique_ptr<InterpolableList> path_args =
       InterpolableList::Create(length);
-  for (size_t i = 0; i < interpolable_path_segs.size(); i++)
+  for (wtf_size_t i = 0; i < interpolable_path_segs.size(); i++)
     path_args->Set(i, std::move(interpolable_path_segs[i]));
 
   std::unique_ptr<InterpolableList> result =
@@ -143,7 +143,7 @@ static bool PathSegTypesMatch(const Vector<SVGPathSegType>& a,
   if (a.size() != b.size())
     return false;
 
-  for (size_t i = 0; i < a.size(); i++) {
+  for (wtf_size_t i = 0; i < a.size(); i++) {
     if (ToAbsolutePathSegType(a[i]) != ToAbsolutePathSegType(b[i]))
       return false;
   }

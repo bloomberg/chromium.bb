@@ -55,7 +55,7 @@ static const size_t kRenderQuantumFrames = 128;
 class AudioWorkletGlobalScopeTest : public PageTestBase {
  public:
   void SetUp() override {
-    AudioWorkletThread::CreateSharedBackingThreadForTest();
+    AudioWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     Document* document = &GetDocument();
     document->SetURL(KURL("https://example.com/"));

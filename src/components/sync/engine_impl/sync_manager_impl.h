@@ -33,7 +33,7 @@
 #include "components/sync/syncable/change_reorder_buffer.h"
 #include "components/sync/syncable/directory_change_delegate.h"
 #include "components/sync/syncable/user_share.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace syncer {
 
@@ -51,7 +51,7 @@ class TypeDebugInfoObserver;
 // same thread.
 class SyncManagerImpl
     : public SyncManager,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public JsBackend,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
@@ -60,7 +60,10 @@ class SyncManagerImpl
       public NudgeHandler {
  public:
   // Create an uninitialized SyncManager.  Callers must Init() before using.
-  explicit SyncManagerImpl(const std::string& name);
+  // |network_connection_tracker| must not be null and must outlive this object.
+  SyncManagerImpl(
+      const std::string& name,
+      network::NetworkConnectionTracker* network_connection_tracker);
   ~SyncManagerImpl() override;
 
   // SyncManager implementation.
@@ -164,9 +167,8 @@ class SyncManagerImpl
   // Handle explicit requests to fetch updates for the given types.
   void RefreshTypes(ModelTypeSet types) override;
 
-  // NetworkChangeNotifier::NetworkChangeObserver implementation.
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // NetworkConnectionTracker::NetworkConnectionObserver implementation.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // NudgeHandler implementation.
   void NudgeForInitialDownload(ModelType type) override;
@@ -239,6 +241,8 @@ class SyncManagerImpl
   base::FilePath database_path_;
 
   const std::string name_;
+
+  network::NetworkConnectionTracker* network_connection_tracker_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

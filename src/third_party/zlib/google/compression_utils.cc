@@ -123,7 +123,7 @@ int GzipUncompressHelper(Bytef* dest,
 
 namespace compression {
 
-bool GzipCompress(const std::string& input, std::string* output) {
+bool GzipCompress(base::StringPiece input, std::string* output) {
   const uLongf input_size = static_cast<uLongf>(input.size());
   std::vector<Bytef> compressed_data(kGzipZlibHeaderDifferenceBytes +
                                      compressBound(input_size));

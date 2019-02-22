@@ -39,6 +39,9 @@
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
+#include "ios/web/public/web_state/web_frame.h"
+#include "ios/web/public/web_state/web_frame_util.h"
+#import "ios/web/public/web_state/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -727,10 +730,10 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     ExecuteJavaScript(kClearInputFieldsScript);
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(form_data, data.origin, data.action,
-                            data.username_field, data.username_value,
-                            data.password_field, data.password_value, nullptr,
-                            nullptr, false);
+    SetPasswordFormFillData(data.origin, data.action, data.username_field,
+                            data.username_value, data.password_field,
+                            data.password_value, nullptr, nullptr, false,
+                            &form_data);
 
     __block BOOL block_was_called = NO;
     [passwordController_ fillPasswordForm:form_data
@@ -810,8 +813,8 @@ BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "un0", "test_user",
-                          "pw0", "test_password", nullptr, nullptr, false);
+  SetPasswordFormFillData(base_url, base_url, "un0", "test_user", "pw0",
+                          "test_password", nullptr, nullptr, false, &form_data);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -938,8 +941,8 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   // we can test with an initially-empty username field. Testing with a
   // username field that contains input is performed by a specific test below.
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "un", "user0", "pw",
-                          "password0", "abc", "def", true);
+  SetPasswordFormFillData(base_url, base_url, "un", "user0", "pw", "password0",
+                          "abc", "def", true, &form_data);
   form_data.name = base::ASCIIToUTF16(FormName(0));
 
   __block BOOL block_was_called = NO;
@@ -1035,9 +1038,9 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     const auto& test_data = kTestData[form_i];
 
     PasswordFormFillData form_data;
-    SetPasswordFormFillData(
-        form_data, base_url, base_url, test_data.username_element, "user0",
-        test_data.password_element, "password0", "abc", "def", true);
+    SetPasswordFormFillData(base_url, base_url, test_data.username_element,
+                            "user0", test_data.password_element, "password0",
+                            "abc", "def", true, &form_data);
     form_data.name = base::ASCIIToUTF16(test_data.form_name);
 
     __block BOOL block_was_called = NO;
@@ -1071,6 +1074,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     EXPECT_NSEQ(@"[]=, onkeyup=false, onchange=false",
                 ExecuteJavaScript(kUsernamePasswordVerificationScript));
 
+    std::string mainFrameID = web::GetMainWebFrameId(web_state());
     // Emulate that the user clicks on the username field in the first form.
     // That's required in order that PasswordController can identify which form
     // should be filled.
@@ -1082,6 +1086,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                          fieldType:@"text"
                               type:@"focus"
                         typedValue:@""
+                           frameID:base::SysUTF8ToNSString(mainFrameID)
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
                                      id<FormSuggestionProvider> provider) {
@@ -1116,6 +1121,7 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                   fieldName:@"u"
             fieldIdentifier:@"u"
                        form:base::SysUTF8ToNSString(FormName(0))
+                    frameID:base::SysUTF8ToNSString(mainFrameID)
           completionHandler:completion];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
@@ -1370,20 +1376,22 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
       EXPECT_CALL(*store_, GetLogins(_, _))
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
-    [passwordController_ checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                                                  fieldName:@"username"
-                                            fieldIdentifier:@"username"
-                                                  fieldType:@"text"
-                                                       type:@"focus"
-                                                 typedValue:@""
-                                                isMainFrame:YES
-                                             hasUserGesture:YES
-                                                   webState:web_state()
-                                          completionHandler:^(BOOL success) {
-                                            completion_handler_success =
-                                                success;
-                                            completion_handler_called = YES;
-                                          }];
+    std::string mainFrameID = web::GetMainWebFrameId(web_state());
+    [passwordController_
+        checkIfSuggestionsAvailableForForm:@"dynamic_form"
+                                 fieldName:@"username"
+                           fieldIdentifier:@"username"
+                                 fieldType:@"text"
+                                      type:@"focus"
+                                typedValue:@""
+                                   frameID:base::SysUTF8ToNSString(mainFrameID)
+                               isMainFrame:YES
+                            hasUserGesture:YES
+                                  webState:web_state()
+                         completionHandler:^(BOOL success) {
+                           completion_handler_success = success;
+                           completion_handler_called = YES;
+                         }];
     // Wait until the expected handler is called.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return completion_handler_called;
@@ -1407,19 +1415,22 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillOnce(WithArg<1>(InvokeConsumer(form)));
-  [passwordController_ checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                                                fieldName:@"address"
-                                          fieldIdentifier:@"address"
-                                                fieldType:@"text"
-                                                     type:@"focus"
-                                               typedValue:@""
-                                              isMainFrame:YES
-                                           hasUserGesture:YES
-                                                 webState:web_state()
-                                        completionHandler:^(BOOL success) {
-                                          completion_handler_success = success;
-                                          completion_handler_called = YES;
-                                        }];
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+  [passwordController_
+      checkIfSuggestionsAvailableForForm:@"dynamic_form"
+                               fieldName:@"address"
+                         fieldIdentifier:@"address"
+                               fieldType:@"text"
+                                    type:@"focus"
+                              typedValue:@""
+                                 frameID:base::SysUTF8ToNSString(mainFrameID)
+                             isMainFrame:YES
+                          hasUserGesture:YES
+                                webState:web_state()
+                       completionHandler:^(BOOL success) {
+                         completion_handler_success = success;
+                         completion_handler_called = YES;
+                       }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;
@@ -1437,19 +1448,22 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
   __block BOOL completion_handler_called = NO;
 
   EXPECT_CALL(*store_, GetLogins(_, _)).Times(0);
-  [passwordController_ checkIfSuggestionsAvailableForForm:@"form"
-                                                fieldName:@"address"
-                                          fieldIdentifier:@"address"
-                                                fieldType:@"text"
-                                                     type:@"focus"
-                                               typedValue:@""
-                                              isMainFrame:YES
-                                           hasUserGesture:YES
-                                                 webState:web_state()
-                                        completionHandler:^(BOOL success) {
-                                          completion_handler_success = success;
-                                          completion_handler_called = YES;
-                                        }];
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+  [passwordController_
+      checkIfSuggestionsAvailableForForm:@"form"
+                               fieldName:@"address"
+                         fieldIdentifier:@"address"
+                               fieldType:@"text"
+                                    type:@"focus"
+                              typedValue:@""
+                                 frameID:base::SysUTF8ToNSString(mainFrameID)
+                             isMainFrame:YES
+                          hasUserGesture:YES
+                                webState:web_state()
+                       completionHandler:^(BOOL success) {
+                         completion_handler_success = success;
+                         completion_handler_called = YES;
+                       }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;

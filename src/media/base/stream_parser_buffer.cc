@@ -89,18 +89,7 @@ void StreamParserBuffer::SetConfigId(int config_id) {
 }
 
 const char* StreamParserBuffer::GetTypeName() const {
-  switch (type()) {
-    case DemuxerStream::AUDIO:
-      return "audio";
-    case DemuxerStream::VIDEO:
-      return "video";
-    case DemuxerStream::TEXT:
-      return "text";
-    case DemuxerStream::UNKNOWN:
-      return "unknown";
-  }
-  NOTREACHED();
-  return "";
+  return DemuxerStream::GetTypeName(type());
 }
 
 void StreamParserBuffer::SetPrerollBuffer(

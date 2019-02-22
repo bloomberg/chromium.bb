@@ -44,7 +44,8 @@ class CAPTURE_EXPORT CameraClientObserver {
 // For general documentation about the CameraHalDispater Mojo interface see the
 // comments in mojo/cros_camera_service.mojom.
 class CAPTURE_EXPORT CameraHalDispatcherImpl final
-    : public cros::mojom::CameraHalDispatcher {
+    : public cros::mojom::CameraHalDispatcher,
+      public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   static CameraHalDispatcherImpl* GetInstance();
 
@@ -62,6 +63,10 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
       media::mojom::JpegDecodeAcceleratorRequest jda_request) final;
   void GetJpegEncodeAccelerator(
       media::mojom::JpegEncodeAcceleratorRequest jea_request) final;
+
+  // base::trace_event::TraceLog::EnabledStateObserver implementation.
+  void OnTraceLogEnabled() final;
+  void OnTraceLogDisabled() final;
 
  private:
   friend struct base::DefaultSingletonTraits<CameraHalDispatcherImpl>;
@@ -94,6 +99,9 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void OnCameraHalClientConnectionError(CameraClientObserver* client);
 
   void StopOnProxyThread();
+
+  void OnTraceLogEnabledOnProxyThread();
+  void OnTraceLogDisabledOnProxyThread();
 
   base::ScopedFD proxy_fd_;
   base::ScopedFD cancel_pipe_;

@@ -200,8 +200,8 @@ HeadlessContentBrowserClient::CreateQuotaPermissionContext() {
 void HeadlessContentBrowserClient::GetQuotaSettings(
     content::BrowserContext* context,
     content::StoragePartition* partition,
-    storage::OptionalQuotaSettingsCallback callback) {
-  storage::GetNominalDynamicSettings(
+    ::storage::OptionalQuotaSettingsCallback callback) {
+  ::storage::GetNominalDynamicSettings(
       partition->GetPath(), context->IsOffTheRecord(), std::move(callback));
 }
 
@@ -336,6 +336,15 @@ bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // production cases like screenshot or pdf generation) based on //headless
   // will use a mode that is actually shipping in Chrome.
   return false;
+}
+
+::network::mojom::NetworkContextPtr
+HeadlessContentBrowserClient::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  return HeadlessBrowserContextImpl::From(context)->CreateNetworkContext(
+      in_memory, relative_partition_path);
 }
 
 }  // namespace headless

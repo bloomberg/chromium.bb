@@ -15,11 +15,8 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "ui/gl/gl_version_info.h"
-
-#if defined(USE_EGL)
-#include "ui/gl/angle_platform_impl.h"
-#endif  // defined(USE_EGL)
 
 namespace gpu {
 namespace gles2 {
@@ -102,6 +99,29 @@ void RunCallbacks(std::vector<base::OnceClosure> callbacks) {
 
 }  // anonymous namespace
 
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    GLenum target,
+    GLuint unit,
+    base::WeakPtr<TexturePassthrough> texture)
+    : target(target), unit(unit), texture(std::move(texture)) {}
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    const TexturePendingBinding& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::TexturePendingBinding(
+    TexturePendingBinding&& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding::~TexturePendingBinding() =
+    default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding&
+GLES2DecoderPassthroughImpl::TexturePendingBinding::operator=(
+    const TexturePendingBinding& other) = default;
+
+GLES2DecoderPassthroughImpl::TexturePendingBinding&
+GLES2DecoderPassthroughImpl::TexturePendingBinding::operator=(
+    TexturePendingBinding&& other) = default;
+
 PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
 PassthroughResources::~PassthroughResources() = default;
 
@@ -123,13 +143,12 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
   bool have_context = !!api;
   // Only delete textures that are not referenced by a TexturePassthrough
   // object, they handle their own deletion once all references are lost
-  DeleteServiceObjects(
-      &texture_id_map, have_context,
-      [this, api](GLuint client_id, GLuint texture) {
-        if (!texture_object_map.GetServiceID(client_id, nullptr)) {
-          api->glDeleteTexturesFn(1, &texture);
-        }
-      });
+  DeleteServiceObjects(&texture_id_map, have_context,
+                       [this, api](GLuint client_id, GLuint texture) {
+                         if (!texture_object_map.HasClientID(client_id)) {
+                           api->glDeleteTexturesFn(1, &texture);
+                         }
+                       });
   DeleteServiceObjects(&buffer_id_map, have_context,
                        [api](GLuint client_id, GLuint buffer) {
                          api->glDeleteBuffersARBFn(1, &buffer);
@@ -682,6 +701,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_texture_sRGB_decode",
           "GL_EXT_texture_storage",
           "GL_EXT_unpack_subimage",
+          "GL_KHR_parallel_shader_compile",
           "GL_KHR_texture_compression_astc_hdr",
           "GL_KHR_texture_compression_astc_ldr",
           "GL_NV_pack_subimage",
@@ -982,12 +1002,9 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
   surface_ = nullptr;
 
   if (group_) {
-#if defined(USE_EGL)
-    // Clear the program binary caching callback.
     if (group_->has_program_cache()) {
-      angle::ResetCacheProgramCallback();
+      group_->get_program_cache()->ResetCacheProgramCallback();
     }
-#endif  // defined(USE_EGL)
 
     group_->Destroy(this, have_context);
     group_ = nullptr;
@@ -1153,14 +1170,12 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
     return false;
   }
 
-#if defined(USE_EGL)
   // Establish the program binary caching callback.
   if (group_->has_program_cache()) {
     auto program_callback = base::BindRepeating(&DecoderClient::CacheShader,
                                                 base::Unretained(client_));
-    angle::SetCacheProgramCallback(program_callback);
+    group_->get_program_cache()->SetCacheProgramCallback(program_callback);
   }
-#endif  // defined(USE_EGL)
 
   ProcessReadPixels(false);
   ProcessQueries(false);
@@ -1595,8 +1610,8 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
 }
 
 void GLES2DecoderPassthroughImpl::BindPendingImagesForSamplers() {
-  for (auto iter : textures_pending_binding_)
-    BindOnePendingImage(iter.first.first /* target */, iter.second.get());
+  for (TexturePendingBinding& pending : textures_pending_binding_)
+    BindOnePendingImage(pending.target, pending.texture.get());
 
   // Note that we clear the texures even if they fail.  We could keep
   // them around.
@@ -1909,8 +1924,8 @@ bool GLES2DecoderPassthroughImpl::IsRobustnessSupported() {
 }
 
 bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
-  // GL_COMMANDS_COMPLETED_CHROMIUM is implemented in ANGLE
   switch (target) {
+    case GL_COMMANDS_COMPLETED_CHROMIUM:
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
@@ -1929,6 +1944,12 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
+      case GL_COMMANDS_COMPLETED_CHROMIUM:
+        DCHECK(query.commands_completed_fence != nullptr);
+        result_available = query.commands_completed_fence->HasCompleted();
+        result = result_available;
+        break;
+
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = GL_TRUE;
@@ -2209,7 +2230,7 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
 
   // If there was any GLImage bound to |target| on this texture unit, then
   // forget it.
-  textures_pending_binding_.erase(TargetUnitPair(target, active_texture_unit_));
+  RemovePendingBindingTexture(target, active_texture_unit_);
 
   return error::kNoError;
 }

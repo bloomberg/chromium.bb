@@ -7,21 +7,9 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-
-namespace base {
-class TaskRunner;
-}  // namespace base
-
 namespace syncer {
 
-// Invokes |done_callback| with the session name, a UTF-8 string.
-void GetSessionName(
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    const base::Callback<void(const std::string&)>& done_callback);
-
-std::string GetSessionNameSynchronouslyForTesting();
+std::string GetSessionNameBlocking();
 
 }  // namespace syncer
 

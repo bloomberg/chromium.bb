@@ -91,7 +91,6 @@ void TtsPlatformImplAndroid::GetVoices(
         Java_TtsPlatformImpl_getVoiceName(env, java_ref_, i));
     data.lang = base::android::ConvertJavaStringToUTF8(
         Java_TtsPlatformImpl_getVoiceLanguage(env, java_ref_, i));
-    data.gender = TTS_GENDER_NONE;
     data.events.insert(TTS_EVENT_START);
     data.events.insert(TTS_EVENT_END);
     data.events.insert(TTS_EVENT_ERROR);

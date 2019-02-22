@@ -16,9 +16,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/app_modal/javascript_app_modal_dialog.h"
+#include "components/app_modal/native_app_modal_dialog.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -32,6 +35,9 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace {
 // The maximum amount of time to wait for Chrome to finish autofilling a form.
@@ -44,7 +50,6 @@ const base::TimeDelta kAutofillActionWaitForVisualUpdateTimeout =
 // Automation Framework will retry an autofill action a couple times before
 // concluding that Chrome Autofill does not work.
 const int kAutofillActionNumRetries = 5;
-
 }  // namespace
 
 namespace captured_sites_test_utils {
@@ -81,7 +86,7 @@ void PageActivityObserver::WaitTillPageIsIdle(
         web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
     if (page_is_loading) {
       finished_load_time = base::TimeTicks::Now();
-    } else if (base::TimeTicks::Now() - finished_load_time >
+    } else if ((base::TimeTicks::Now() - finished_load_time) >
                continuous_paint_timeout) {
       // |continuous_paint_timeout| has expired since Chrome loaded the page.
       // During this period of time, Chrome has been continuously painting
@@ -91,6 +96,20 @@ void PageActivityObserver::WaitTillPageIsIdle(
       break;
     }
   } while (page_is_loading || paint_occurred_during_last_loop_);
+}
+
+bool PageActivityObserver::WaitForVisualUpdate(base::TimeDelta timeout) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  while (!paint_occurred_during_last_loop_) {
+    base::RunLoop heart_beat;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, heart_beat.QuitClosure(), kPaintEventCheckInterval);
+    heart_beat.Run();
+    if ((base::TimeTicks::Now() - start_time) > timeout) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void PageActivityObserver::DidCommitAndDrawCompositorFrame() {
@@ -178,6 +197,38 @@ void IFrameWaiter::RenderFrameCreated(
   }
 }
 
+void IFrameWaiter::DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                                 const GURL& validated_url) {
+  if (!run_loop_.running())
+    return;
+  switch (query_type_) {
+    case ORIGIN:
+      if (validated_url.GetOrigin() == origin_)
+        run_loop_.Quit();
+      break;
+    case URL:
+      if (FrameHasSourceUrl(validated_url, render_frame_host))
+        run_loop_.Quit();
+      break;
+    default:
+      break;
+  }
+}
+
+void IFrameWaiter::FrameNameChanged(content::RenderFrameHost* render_frame_host,
+                                    const std::string& name) {
+  if (!run_loop_.running())
+    return;
+  switch (query_type_) {
+    case NAME:
+      if (FrameMatchesName(name, render_frame_host))
+        run_loop_.Quit();
+      break;
+    default:
+      break;
+  }
+}
+
 bool IFrameWaiter::FrameHasOrigin(const GURL& origin,
                                   content::RenderFrameHost* frame) {
   GURL url = frame->GetLastCommittedURL();
@@ -190,14 +241,14 @@ TestRecipeReplayer::TestRecipeReplayer(
     TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor)
     : browser_(browser), feature_action_executor_(feature_action_executor) {}
 
-TestRecipeReplayer::~TestRecipeReplayer(){};
+TestRecipeReplayer::~TestRecipeReplayer() {}
 
 bool TestRecipeReplayer::ReplayTest(const base::FilePath capture_file_path,
                                     const base::FilePath recipe_file_path) {
-  if (StartWebPageReplayServer(capture_file_path)) {
-    return ReplayRecordedActions(recipe_file_path);
-  }
-  return false;
+  if (!StartWebPageReplayServer(capture_file_path))
+    return false;
+
+  return ReplayRecordedActions(recipe_file_path);
 }
 
 // static
@@ -208,8 +259,9 @@ void TestRecipeReplayer::SetUpCommandLine(base::CommandLine* command_line) {
       base::StringPrintf(
           "MAP *:80 127.0.0.1:%d,"
           "MAP *:443 127.0.0.1:%d,"
+
           // Uncomment to use the live autofill prediction server.
-          //"EXCLUDE clients1.google.com,"
+          // "EXCLUDE clients1.google.com,"
           "EXCLUDE localhost",
           kHostHttpPort, kHostHttpsPort));
 }
@@ -219,6 +271,10 @@ void TestRecipeReplayer::Setup() {
       << "Cannot install the root certificate "
       << "for the local web page replay server.";
   CleanupSiteData();
+
+  // Bypass permission dialogs.
+  PermissionRequestManager::FromWebContents(GetWebContents())
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
 }
 
 void TestRecipeReplayer::Cleanup() {
@@ -235,6 +291,10 @@ void TestRecipeReplayer::Cleanup() {
 TestRecipeReplayChromeFeatureActionExecutor*
 TestRecipeReplayer::feature_action_executor() {
   return feature_action_executor_;
+}
+
+Browser* TestRecipeReplayer::browser() {
+  return browser_;
 }
 
 content::WebContents* TestRecipeReplayer::GetWebContents() {
@@ -261,8 +321,10 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
     const base::FilePath& capture_file_path) {
   std::vector<std::string> args;
   base::FilePath src_dir;
-  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+    ADD_FAILURE() << "Failed to extract the Chromium source directory!";
     return false;
+  }
 
   args.push_back(base::StringPrintf("--http_port=%d", kHostHttpPort));
   args.push_back(base::StringPrintf("--https_port=%d", kHostHttpsPort));
@@ -295,12 +357,22 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
       base::TimeDelta::FromSeconds(20));
   wpr_launch_waiter.Run();
 
-  return web_page_replay_server_.IsValid();
+  if (!web_page_replay_server_.IsValid()) {
+    ADD_FAILURE() << "Failed to start the WPR replay server!";
+    return false;
+  }
+
+  return true;
 }
 
 bool TestRecipeReplayer::StopWebPageReplayServer() {
-  if (web_page_replay_server_.IsValid())
-    return web_page_replay_server_.Terminate(0, true);
+  if (web_page_replay_server_.IsValid()) {
+    if (!web_page_replay_server_.Terminate(0, true)) {
+      ADD_FAILURE() << "Failed to terminate the WPR replay server!";
+      return false;
+    }
+  }
+
   // The test server hasn't started, no op.
   return true;
 }
@@ -320,13 +392,14 @@ bool TestRecipeReplayer::RunWebPageReplayCmdAndWaitForExit(
     const std::vector<std::string>& args,
     const base::TimeDelta& timeout) {
   base::Process process;
-  if (!RunWebPageReplayCmd(cmd, args, &process))
-    return false;
-  if (process.IsValid()) {
-    int exit_code;
-    if (process.WaitForExitWithTimeout(timeout, &exit_code))
-      return (exit_code == 0);
+  int exit_code;
+
+  if (RunWebPageReplayCmd(cmd, args, &process) && process.IsValid() &&
+      process.WaitForExitWithTimeout(timeout, &exit_code) && exit_code == 0) {
+    return true;
   }
+
+  ADD_FAILURE() << "Failed to run WPR command: '" << cmd << "'!";
   return false;
 }
 
@@ -336,8 +409,10 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
     base::Process* process) {
   base::LaunchOptions options = base::LaunchOptionsForTest();
   base::FilePath exe_dir;
-  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &exe_dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &exe_dir)) {
+    ADD_FAILURE() << "Failed to extract the Chromium source directory!";
     return false;
+  }
 
   base::FilePath web_page_replay_binary_dir = exe_dir.AppendASCII(
       "third_party/catapult/telemetry/telemetry/internal/bin");
@@ -363,8 +438,10 @@ bool TestRecipeReplayer::RunWebPageReplayCmd(
   // The custom cert and key files are different from those of the offical
   // WPR releases. The custom files are made to work on iOS.
   base::FilePath src_dir;
-  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+  if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
+    ADD_FAILURE() << "Failed to extract the Chromium source directory!";
     return false;
+  }
 
   base::FilePath web_page_replay_support_file_dir = src_dir.AppendASCII(
       "components/test/data/autofill/web_page_replay_support_files");
@@ -391,8 +468,10 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   // Read the text of the recipe file.
   base::ThreadRestrictions::SetIOAllowed(true);
   std::string json_text;
-  if (!base::ReadFileToString(recipe_file_path, &json_text))
+  if (!base::ReadFileToString(recipe_file_path, &json_text)) {
+    ADD_FAILURE() << "Failed to read recipe file '" << recipe_file_path << "'!";
     return false;
+  }
 
   // Convert the file text into a json object.
   std::unique_ptr<base::DictionaryValue> recipe =
@@ -407,23 +486,36 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 
   // Iterate through and execute each action in the recipe.
   base::Value* action_list_container = recipe->FindKey("actions");
-  if (!action_list_container)
+  if (!action_list_container) {
+    ADD_FAILURE() << "Failed to extract action list from the recipe!";
     return false;
-  if (base::Value::Type::LIST != action_list_container->type())
+  }
+
+  if (base::Value::Type::LIST != action_list_container->type()) {
+    ADD_FAILURE() << "The recipe's actions object is not a list!";
     return false;
+  }
+
   base::Value::ListStorage& action_list = action_list_container->GetList();
 
-  for (base::ListValue::iterator it_action = action_list.begin();
-       it_action != action_list.end(); ++it_action) {
+  for (auto it_action = action_list.begin(); it_action != action_list.end();
+       ++it_action) {
     base::DictionaryValue* action;
-    if (!it_action->GetAsDictionary(&action))
+    if (!it_action->GetAsDictionary(&action)) {
+      ADD_FAILURE()
+          << "Failed to extract an individual action from the recipe!";
       return false;
+    }
 
     base::Value* type_container = action->FindKey("type");
-    if (!type_container)
+    if (!type_container) {
+      ADD_FAILURE() << "Failed to extract action type from the recipe!";
       return false;
-    if (base::Value::Type::STRING != type_container->type())
+    }
+    if (base::Value::Type::STRING != type_container->type()) {
+      ADD_FAILURE() << "Action type is not a string!";
       return false;
+    }
     std::string type = type_container->GetString();
 
     if (base::CompareCaseInsensitiveASCII(type, "autofill") == 0) {
@@ -432,14 +524,38 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(type, "click") == 0) {
       if (!ExecuteClickAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "executeScript") == 0) {
+      if (!ExecuteRunCommandAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "hover") == 0) {
+      if (!ExecuteHoverAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "loadPage") == 0) {
+      // Load page is an no-op action.
+    } else if (base::CompareCaseInsensitiveASCII(type, "pressEnter") == 0) {
+      if (!ExecutePressEnterAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "savePassword") == 0) {
+      if (!ExecuteSavePasswordAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "select") == 0) {
       if (!ExecuteSelectDropdownAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "type") == 0) {
       if (!ExecuteTypeAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "typePassword") == 0) {
+      if (!ExecuteTypePasswordAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(type, "updatePassword") == 0) {
+      if (!ExecuteUpdatePasswordAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "validateField") == 0) {
       if (!ExecuteValidateFieldValueAction(*action))
+        return false;
+    } else if (base::CompareCaseInsensitiveASCII(
+                   type, "validateNoSavePasswordPrompt") == 0) {
+      if (!ExecuteValidateNoSavePasswordPromptAction(*action))
         return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "waitFor") == 0) {
       if (!ExecuteWaitForStateAction(*action))
@@ -448,6 +564,13 @@ bool TestRecipeReplayer::ReplayRecordedActions(
       ADD_FAILURE() << "Unrecognized action type: " << type;
     }
   }  // end foreach action
+
+  // Dismiss the beforeUnloadDialog if the last page of the test has a
+  // beforeUnload function.
+  if (recipe->FindKey("dismissBeforeUnload")) {
+    NavigateAwayAndDismissBeforeUnloadDialog();
+  }
+
   return true;
 }
 
@@ -455,20 +578,45 @@ bool TestRecipeReplayer::ReplayRecordedActions(
 // JSON object.
 bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     std::unique_ptr<base::DictionaryValue>& recipe) {
+  // Setup any saved address and credit card at the start of the test.
+  const base::Value* autofill_profile_container =
+      recipe->FindKey("autofillProfile");
+
+  if (autofill_profile_container &&
+      !SetupSavedAutofillProfile(*autofill_profile_container))
+    return false;
+
+  // Setup any saved passwords at the start of the test.
+  const base::Value* saved_password_container =
+      recipe->FindKey("passwordManagerProfiles");
+
+  if (saved_password_container &&
+      !SetupSavedPasswords(*saved_password_container))
+    return false;
+
   // Extract the starting URL from the test recipe.
   base::Value* starting_url_container = recipe->FindKey("startingURL");
-  if (!starting_url_container)
+  if (!starting_url_container) {
+    ADD_FAILURE() << "Failed to extract the starting url from the recipe!";
     return false;
-  if (base::Value::Type::STRING != starting_url_container->type())
+  }
+
+  if (base::Value::Type::STRING != starting_url_container->type()) {
+    ADD_FAILURE() << "Starting url is not a string!";
     return false;
+  }
+
+  std::string starting_url = starting_url_container->GetString();
 
   // Navigate to the starting URL, wait for the page to complete loading.
   PageActivityObserver page_activity_observer(GetWebContents());
-  if (!content::ExecuteScript(
-          GetWebContents(),
-          base::StringPrintf("window.location.href = '%s';",
-                             starting_url_container->GetString().c_str())))
+  if (!content::ExecuteScript(GetWebContents(),
+                              base::StringPrintf("window.location.href = '%s';",
+                                                 starting_url.c_str()))) {
+    ADD_FAILURE() << "Failed to navigate Chrome to '" << starting_url << "'!";
     return false;
+  }
+
   page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
@@ -478,9 +626,11 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
   std::string xpath;
   if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
     return false;
+
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   if (!WaitForElementToBeReady(frame, xpath))
     return false;
 
@@ -493,8 +643,12 @@ bool TestRecipeReplayer::ExecuteAutofillAction(
   // signing in, the site fills the form with the user's profile
   // information.
   if (!ExecuteJavaScriptOnElementByXpath(
-          frame, xpath, "automation_helper.setInputElementValue(target, ``);"))
+          frame, xpath,
+          "automation_helper.setInputElementValue(target, ``);")) {
+    ADD_FAILURE() << "Failed to clear the input field value!";
     return false;
+  }
+
   if (!feature_action_executor()->AutofillForm(frame, xpath,
                                                kAutofillActionNumRetries))
     return false;
@@ -508,35 +662,178 @@ bool TestRecipeReplayer::ExecuteClickAction(
   std::string xpath;
   if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
     return false;
+
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   if (!WaitForElementToBeReady(frame, xpath))
     return false;
 
   VLOG(1) << "Left mouse clicking `" << xpath << "`.";
   PageActivityObserver page_activity_observer(frame);
-  if (!ExecuteJavaScriptOnElementByXpath(frame, xpath, "target.click();"))
+  if (!ExecuteJavaScriptOnElementByXpath(frame, xpath, "target.click();")) {
+    ADD_FAILURE() << "Failed to left click element with JavaScript!";
     return false;
+  }
+
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteHoverAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  VLOG(1) << "Hovering over `" << xpath << "`.";
+  PageActivityObserver page_activity_observer(frame);
+
+  int x, y;
+  if (!GetCenterCoordinateOfTargetElement(frame, xpath, x, y))
+    return false;
+
+  if (!SimulateMouseHoverAt(frame, gfx::Point(x, y)))
+    return false;
+
+  if (!page_activity_observer.WaitForVisualUpdate()) {
+    ADD_FAILURE() << "The page did not respond to a mouse hover action!";
+    return false;
+  }
+
+  return true;
+}
+
+bool TestRecipeReplayer::ExecutePressEnterAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  VLOG(1) << "Press 'Enter' on `" << xpath << "`.";
+  PageActivityObserver page_activity_observer(frame);
+  if (!PlaceFocusOnElement(frame, xpath))
+    return false;
+
+  ui::DomKey key = ui::DomKey::ENTER;
+  ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+  ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+  SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key, code,
+                   key_code, false, false, false, false);
+  page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteRunCommandAction(
+    const base::DictionaryValue& action) {
+  // Extract the list of JavaScript commands into a vector.
+  std::vector<std::string> commands;
+
+  const base::Value* commands_list_container = action.FindKey("commands");
+  if (!commands_list_container) {
+    ADD_FAILURE()
+        << "Failed to extract the list of commands from the run command "
+        << "action!";
+    return false;
+  }
+
+  if (base::Value::Type::LIST != commands_list_container->type()) {
+    ADD_FAILURE() << "commands is not an array!";
+    return false;
+  }
+
+  const base::Value::ListStorage& commands_list =
+      commands_list_container->GetList();
+  for (auto it_command = commands_list.begin();
+       it_command != commands_list.end(); ++it_command) {
+    if (base::Value::Type::STRING != it_command->type()) {
+      ADD_FAILURE() << "command is not a string!";
+      return false;
+    }
+    commands.push_back(it_command->GetString());
+  }
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame)) {
+    return false;
+  }
+
+  VLOG(1) << "Running JavaScript commands on the page.";
+
+  // Execute the commands.
+  PageActivityObserver page_activity_observer(frame);
+  for (const std::string& command : commands) {
+    if (!content::ExecuteScript(frame, command)) {
+      ADD_FAILURE() << "Failed to execute JavaScript command `" << command
+                    << "`!";
+      return false;
+    }
+    // Wait in case the JavaScript command triggers page load or layout
+    // changes.
+    page_activity_observer.WaitTillPageIsIdle();
+  }
+
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteSavePasswordAction(
+    const base::DictionaryValue& action) {
+  VLOG(1) << "Save password.";
+
+  if (!feature_action_executor()->SavePassword())
+    return false;
+
+  bool stored_cred;
+  if (!HasChromeStoredCredential(action, &stored_cred))
+    return false;
+
+  if (!stored_cred) {
+    ADD_FAILURE() << "Chrome did not save the credential!";
+    return false;
+  }
+
   return true;
 }
 
 bool TestRecipeReplayer::ExecuteSelectDropdownAction(
     const base::DictionaryValue& action) {
   const base::Value* index_container = action.FindKey("index");
-  if (!index_container)
+  if (!index_container) {
+    ADD_FAILURE()
+        << "Failed to extract selection index from the select action!";
     return false;
-  if (base::Value::Type::INTEGER != index_container->type())
+  }
+
+  if (base::Value::Type::INTEGER != index_container->type()) {
+    ADD_FAILURE() << "Selection index is not an integer!";
     return false;
+  }
+
   int index = index_container->GetInt();
 
   std::string xpath;
   if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
     return false;
+
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   if (!WaitForElementToBeReady(frame, xpath))
     return false;
 
@@ -547,8 +844,11 @@ bool TestRecipeReplayer::ExecuteSelectDropdownAction(
           base::StringPrintf(
               "automation_helper"
               "  .selectOptionFromDropDownElementByIndex(target, %d);",
-              index_container->GetInt())))
+              index_container->GetInt()))) {
+    ADD_FAILURE() << "Failed to select drop down option with JavaScript!";
     return false;
+  }
+
   page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
@@ -556,18 +856,26 @@ bool TestRecipeReplayer::ExecuteSelectDropdownAction(
 bool TestRecipeReplayer::ExecuteTypeAction(
     const base::DictionaryValue& action) {
   const base::Value* value_container = action.FindKey("value");
-  if (!value_container)
+  if (!value_container) {
+    ADD_FAILURE() << "Failed to extract value from the type action!";
     return false;
-  if (base::Value::Type::STRING != value_container->type())
+  }
+
+  if (base::Value::Type::STRING != value_container->type()) {
+    ADD_FAILURE() << "Value is not a string!";
     return false;
+  }
+
   std::string value = value_container->GetString();
 
   std::string xpath;
   if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
     return false;
+
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   if (!WaitForElementToBeReady(frame, xpath))
     return false;
 
@@ -577,9 +885,83 @@ bool TestRecipeReplayer::ExecuteTypeAction(
           frame, xpath,
           base::StringPrintf(
               "automation_helper.setInputElementValue(target, `%s`);",
-              value.c_str())))
+              value.c_str()))) {
+    ADD_FAILURE() << "Failed to type inside input element with JavaScript!";
     return false;
+  }
+
   page_activity_observer.WaitTillPageIsIdle();
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteTypePasswordAction(
+    const base::DictionaryValue& action) {
+  std::string xpath;
+  if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
+    return false;
+
+  content::RenderFrameHost* frame;
+  if (!GetTargetFrameFromAction(action, &frame))
+    return false;
+
+  if (!WaitForElementToBeReady(frame, xpath))
+    return false;
+
+  const base::Value* value_container = action.FindKey("value");
+  if (!value_container) {
+    ADD_FAILURE() << "Failed to extract the value from the type password"
+                  << " action!";
+    return false;
+  }
+
+  if (base::Value::Type::STRING != value_container->type()) {
+    ADD_FAILURE() << "Value is not a string!";
+    return false;
+  }
+
+  std::string value = value_container->GetString();
+
+  // Clear the password field first, in case a previous value is there.
+  if (!ExecuteJavaScriptOnElementByXpath(
+          frame, xpath,
+          "automation_helper.setInputElementValue(target, ``);")) {
+    ADD_FAILURE() << "Failed to execute JavaScript to clear the input value!";
+    return false;
+  }
+
+  if (!PlaceFocusOnElement(frame, xpath))
+    return false;
+
+  VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
+
+  const char* c_array = value.c_str();
+  for (size_t index = 0; index < value.size(); index++) {
+    ui::DomKey key = ui::DomKey::FromCharacter(c_array[index]);
+    ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
+    ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
+    SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key,
+                     code, key_code, false, false, false, false);
+  }
+
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteUpdatePasswordAction(
+    const base::DictionaryValue& action) {
+  VLOG(1) << "Update password.";
+
+  if (!feature_action_executor()->UpdatePassword())
+    return false;
+
+  bool stored_cred;
+  if (!HasChromeStoredCredential(action, &stored_cred))
+    return false;
+
+  if (!stored_cred) {
+    ADD_FAILURE() << "Chrome did not update the credential!";
+    return false;
+  }
+
   return true;
 }
 
@@ -588,17 +970,22 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
   std::string xpath;
   if (!GetTargetHTMLElementXpathFromAction(action, &xpath))
     return false;
+
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   if (!WaitForElementToBeReady(frame, xpath))
     return false;
 
   const base::Value* autofill_prediction_container =
       action.FindKey("expectedAutofillType");
   if (autofill_prediction_container) {
-    if (base::Value::Type::STRING != autofill_prediction_container->type())
+    if (base::Value::Type::STRING != autofill_prediction_container->type()) {
+      ADD_FAILURE() << "Autofill prediction is not a string!";
       return false;
+    }
+
     std::string expected_autofill_prediction_type =
         autofill_prediction_container->GetString();
     VLOG(1) << "Checking the field `" << xpath << "` has the autofill type '"
@@ -610,10 +997,17 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
   }
 
   const base::Value* expected_value_container = action.FindKey("expectedValue");
-  if (!expected_value_container)
+  if (!expected_value_container) {
+    ADD_FAILURE() << "Failed to extract the expected value field from the "
+                     "validate field value action!";
     return false;
-  if (base::Value::Type::STRING != expected_value_container->type())
+  }
+
+  if (base::Value::Type::STRING != expected_value_container->type()) {
+    ADD_FAILURE() << "Expected value is not a string!";
     return false;
+  }
+
   std::string expected_value = expected_value_container->GetString();
 
   VLOG(1) << "Checking the field `" << xpath << "`.";
@@ -622,26 +1016,44 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
   return true;
 }
 
+bool TestRecipeReplayer::ExecuteValidateNoSavePasswordPromptAction(
+    const base::DictionaryValue& action) {
+  VLOG(1) << "Verify that the page hasn't shown a save password prompt.";
+  EXPECT_FALSE(feature_action_executor()->HasChromeShownSavePasswordPrompt());
+  return true;
+}
+
 bool TestRecipeReplayer::ExecuteWaitForStateAction(
     const base::DictionaryValue& action) {
   // Extract the list of JavaScript assertions into a vector.
   std::vector<std::string> state_assertions;
   const base::Value* assertions_list_container = action.FindKey("assertions");
-  if (!assertions_list_container)
+  if (!assertions_list_container) {
+    ADD_FAILURE()
+        << "Failed to extract assertions from the wait for state action!";
     return false;
-  if (base::Value::Type::LIST != assertions_list_container->type())
+  }
+
+  if (base::Value::Type::LIST != assertions_list_container->type()) {
+    ADD_FAILURE() << "Assertions is not a list!";
     return false;
+  }
+
   const base::Value::ListStorage& assertions_list =
       assertions_list_container->GetList();
   for (const base::Value& assertion : assertions_list) {
-    if (base::Value::Type::STRING != assertion.type())
+    if (base::Value::Type::STRING != assertion.type()) {
+      ADD_FAILURE() << "Assertion is not a string!";
       return false;
+    }
+
     state_assertions.push_back(assertion.GetString());
   }
 
   content::RenderFrameHost* frame;
   if (!GetTargetFrameFromAction(action, &frame))
     return false;
+
   VLOG(1) << "Waiting for page to reach a state.";
 
   // Wait for all of the assertions to become true on the current page.
@@ -653,10 +1065,16 @@ bool TestRecipeReplayer::GetTargetHTMLElementXpathFromAction(
     std::string* xpath) {
   xpath->clear();
   const base::Value* xpath_container = action.FindKey("selector");
-  if (!xpath_container)
+  if (!xpath_container) {
+    ADD_FAILURE() << "Failed to extract the xpath selector from action!";
     return false;
-  if (base::Value::Type::STRING != xpath_container->type())
+  }
+
+  if (base::Value::Type::STRING != xpath_container->type()) {
+    ADD_FAILURE() << "Xpath selector is not a string!";
     return false;
+  }
+
   *xpath = xpath_container->GetString();
   return true;
 }
@@ -665,17 +1083,28 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
     const base::DictionaryValue& action,
     content::RenderFrameHost** frame) {
   const base::Value* iframe_container = action.FindKey("context");
-  if (!iframe_container)
+  if (!iframe_container) {
+    ADD_FAILURE() << "Failed to extract the iframe context from action!";
     return false;
+  }
+
   const base::DictionaryValue* iframe;
-  if (!iframe_container->GetAsDictionary(&iframe))
+  if (!iframe_container->GetAsDictionary(&iframe)) {
+    ADD_FAILURE() << "Failed to extract the iframe context object!";
     return false;
+  }
 
   const base::Value* is_iframe_container = iframe->FindKey("isIframe");
-  if (!is_iframe_container)
+  if (!is_iframe_container) {
+    ADD_FAILURE()
+        << "Failed to extract the isIframe field from the iframe context!";
     return false;
-  if (base::Value::Type::BOOLEAN != is_iframe_container->type())
+  }
+
+  if (base::Value::Type::BOOLEAN != is_iframe_container->type()) {
+    ADD_FAILURE() << "isIframe is not a boolean value!";
     return false;
+  }
 
   if (!is_iframe_container->GetBool()) {
     *frame = GetWebContents()->GetMainFrame();
@@ -684,35 +1113,49 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
 
   const base::Value* frame_name_container =
       iframe->FindPath({"browserTest", "name"});
-  const base::Value* frame_scheme_host_container =
+  const base::Value* frame_origin_container =
       iframe->FindPath({"browserTest", "origin"});
   const base::Value* frame_url_container =
       iframe->FindPath({"browserTest", "url"});
   IFrameWaiter iframe_waiter(GetWebContents());
 
+  if (frame_name_container != nullptr &&
+      base::Value::Type::STRING != frame_name_container->type()) {
+    ADD_FAILURE() << "Iframe name is not a string!";
+    return false;
+  }
+
+  if (frame_origin_container != nullptr &&
+      base::Value::Type::STRING != frame_origin_container->type()) {
+    ADD_FAILURE() << "Iframe origin is not a string!";
+    return false;
+  }
+
+  if (frame_url_container != nullptr &&
+      base::Value::Type::STRING != frame_url_container->type()) {
+    ADD_FAILURE() << "Iframe url is not a string!";
+    return false;
+  }
+
   if (frame_name_container != nullptr) {
-    if (base::Value::Type::STRING != frame_name_container->type())
-      return false;
-    *frame = iframe_waiter.WaitForFrameMatchingName(
-        frame_name_container->GetString());
-    return frame != nullptr;
-  } else if (frame_scheme_host_container != nullptr) {
-    if (base::Value::Type::STRING != frame_scheme_host_container->type())
-      return false;
-    *frame = iframe_waiter.WaitForFrameMatchingOrigin(
-        GURL(frame_scheme_host_container->GetString()));
-    return frame != nullptr;
+    std::string frame_name = frame_name_container->GetString();
+    *frame = iframe_waiter.WaitForFrameMatchingName(frame_name);
+  } else if (frame_origin_container != nullptr) {
+    std::string frame_origin = frame_origin_container->GetString();
+    *frame = iframe_waiter.WaitForFrameMatchingOrigin(GURL(frame_origin));
   } else if (frame_url_container != nullptr) {
-    if (base::Value::Type::STRING != frame_url_container->type())
-      return false;
-    *frame = iframe_waiter.WaitForFrameMatchingUrl(
-        GURL(frame_url_container->GetString()));
-    return frame != nullptr;
+    std::string frame_url = frame_url_container->GetString();
+    *frame = iframe_waiter.WaitForFrameMatchingUrl(GURL(frame_url));
   } else {
     ADD_FAILURE() << "The recipe does not specify a way to find the iframe!";
   }
 
-  return false;
+  if (frame == nullptr) {
+    ADD_FAILURE() << "Failed to find iframe!";
+    return false;
+  }
+
+  return true;
 }
 
 bool TestRecipeReplayer::WaitForElementToBeReady(
@@ -812,7 +1255,9 @@ bool TestRecipeReplayer::ExpectElementPropertyEquals(
     }
     return true;
   }
-  VLOG(1) << element_xpath << ", " << get_property_function_body;
+
+  ADD_FAILURE() << "Failed to extract element property! " << element_xpath
+                << ", " << get_property_function_body;
   return false;
 }
 
@@ -825,7 +1270,8 @@ bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
       "    window.domAutomationController.send(true);"
       "  }"
       "  const element = automation_helper.getElementByXpath(`%s`);"
-      "  element.scrollIntoView();"
+      "  element.scrollIntoView({"
+      "    block: 'center', inline: 'center'});"
       "  if (document.activeElement === element) {"
       "    window.domAutomationController.send(true);"
       "  } else {"
@@ -842,14 +1288,79 @@ bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
       element_xpath.c_str()));
 
   bool focused = false;
-  if (!ExecuteScriptAndExtractBool(frame, focus_on_target_field_js, &focused))
+  if (!ExecuteScriptAndExtractBool(frame, focus_on_target_field_js, &focused)) {
+    ADD_FAILURE() << "Failed to place focus on the element with JavaScript!";
     return false;
-  return focused;
+  }
+
+  if (focused) {
+    return true;
+  } else {
+    ADD_FAILURE() << "Failed to place focus on the element: " << element_xpath
+                  << "!";
+    return false;
+  }
+}
+
+bool TestRecipeReplayer::GetCenterCoordinateOfTargetElement(
+    content::RenderFrameHost* frame,
+    const std::string& target_element_xpath,
+    int& x,
+    int& y) {
+  const std::string get_target_field_x_js(base::StringPrintf(
+      "window.domAutomationController.send("
+      "    (function() {"
+      "       try {"
+      "         const element = automation_helper.getElementByXpath(`%s`);"
+      "         const rect = element.getBoundingClientRect();"
+      "         return Math.floor(rect.left + rect.width / 2);"
+      "       } catch(ex) {}"
+      "       return -1;"
+      "    })());",
+      target_element_xpath.c_str()));
+  const std::string get_target_field_y_js(base::StringPrintf(
+      "window.domAutomationController.send("
+      "    (function() {"
+      "       try {"
+      "         const element = automation_helper.getElementByXpath(`%s`);"
+      "         const rect = element.getBoundingClientRect();"
+      "         return Math.floor(rect.top + rect.height / 2);"
+      "       } catch(ex) {}"
+      "       return -1;"
+      "    })());",
+      target_element_xpath.c_str()));
+  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_x_js, &x)) {
+    ADD_FAILURE()
+        << "Failed to run script to extract target element's x coordinate!";
+    return false;
+  }
+
+  if (x == -1) {
+    ADD_FAILURE() << "Failed to extract target element's x coordinate!";
+    return false;
+  }
+
+  if (!content::ExecuteScriptAndExtractInt(frame, get_target_field_y_js, &y)) {
+    ADD_FAILURE()
+        << "Failed to run script to extract target element's y coordinate!";
+    return false;
+  }
+
+  if (y == -1) {
+    ADD_FAILURE() << "Failed to extract target element's y coordinate!";
+    return false;
+  }
+
+  return true;
 }
 
 bool TestRecipeReplayer::SimulateLeftMouseClickAt(
     content::RenderFrameHost* render_frame_host,
     const gfx::Point& point) {
+  content::RenderWidgetHostView* view = render_frame_host->GetView();
+  if (!SimulateMouseHoverAt(render_frame_host, point))
+    return false;
+
   blink::WebMouseEvent mouse_event(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
@@ -863,18 +1374,167 @@ bool TestRecipeReplayer::SimulateLeftMouseClickAt(
   mouse_event.SetPositionInScreen(point.x() + offset.x(),
                                   point.y() + offset.y());
   mouse_event.click_count = 1;
-  content::RenderWidgetHost* widget =
-      render_frame_host->GetView()->GetRenderWidgetHost();
-
-  gfx::Point reset_mouse(offset.origin());
-  reset_mouse =
-      gfx::Point(reset_mouse.x() + point.x(), reset_mouse.y() + point.y());
-  if (!ui_test_utils::SendMouseMoveSync(reset_mouse))
-    return false;
+  content::RenderWidgetHost* widget = view->GetRenderWidgetHost();
 
   widget->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::kMouseUp);
   widget->ForwardMouseEvent(mouse_event);
+  return true;
+}
+
+bool TestRecipeReplayer::SimulateMouseHoverAt(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Point& point) {
+  gfx::Rect offset =
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetContainerBounds();
+  gfx::Point reset_mouse =
+      gfx::Point(offset.x() + point.x(), offset.y() + point.y());
+  if (!ui_test_utils::SendMouseMoveSync(reset_mouse)) {
+    ADD_FAILURE() << "Failed to position the mouse!";
+    return false;
+  }
+  return true;
+}
+
+void TestRecipeReplayer::NavigateAwayAndDismissBeforeUnloadDialog() {
+  content::PrepContentsForBeforeUnloadTest(GetWebContents());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  app_modal::JavaScriptAppModalDialog* alert =
+      ui_test_utils::WaitForAppModalDialog();
+  alert->native_dialog()->AcceptAppModalDialog();
+}
+
+bool TestRecipeReplayer::HasChromeStoredCredential(
+    const base::DictionaryValue& action,
+    bool* stored_cred) {
+  const base::Value* orgin_container = action.FindKey("origin");
+
+  if (!orgin_container) {
+    ADD_FAILURE() << "Failed to extract the origin from the action!";
+    return false;
+  }
+
+  if (base::Value::Type::STRING != orgin_container->type()) {
+    ADD_FAILURE() << "Origin is not a string!";
+    return false;
+  }
+
+  const base::Value* user_name_container = action.FindKey("userName");
+
+  if (!user_name_container) {
+    ADD_FAILURE() << "Failed to extract the user name from the action!";
+    return false;
+  }
+
+  if (base::Value::Type::STRING != user_name_container->type()) {
+    ADD_FAILURE() << "User name is not a string!";
+    return false;
+  }
+
+  const base::Value* password_container = action.FindKey("password");
+
+  if (!password_container) {
+    ADD_FAILURE() << "Failed to extract the password from the action!";
+    return false;
+  }
+
+  if (base::Value::Type::STRING != password_container->type()) {
+    ADD_FAILURE() << "Password is not a string!";
+    return false;
+  }
+
+  *stored_cred = feature_action_executor()->HasChromeStoredCredential(
+      orgin_container->GetString(), user_name_container->GetString(),
+      password_container->GetString());
+
+  return true;
+}
+
+bool TestRecipeReplayer::SetupSavedAutofillProfile(
+    const base::Value& saved_autofill_profile_container) {
+  if (base::Value::Type::LIST != saved_autofill_profile_container.type()) {
+    ADD_FAILURE() << "Save Autofill Profile is not a list!";
+    return false;
+  }
+
+  const base::Value::ListStorage& profile_entries_list =
+      saved_autofill_profile_container.GetList();
+  for (auto it_entry = profile_entries_list.begin();
+       it_entry != profile_entries_list.end(); ++it_entry) {
+    const base::DictionaryValue* entry;
+    if (!it_entry->GetAsDictionary(&entry)) {
+      ADD_FAILURE() << "Failed to extract an entry!";
+      return false;
+    }
+
+    const base::Value* type_container = entry->FindKey("type");
+    if (base::Value::Type::STRING != type_container->type()) {
+      ADD_FAILURE() << "Type is not a string!";
+      return false;
+    }
+    const std::string type = type_container->GetString();
+
+    const base::Value* value_container = entry->FindKey("value");
+    if (base::Value::Type::STRING != value_container->type()) {
+      ADD_FAILURE() << "Value is not a string!";
+      return false;
+    }
+    const std::string value = value_container->GetString();
+
+    if (!feature_action_executor()->AddAutofillProfileInfo(type, value)) {
+      return false;
+    }
+  }
+
+  return feature_action_executor()->SetupAutofillProfile();
+}
+
+bool TestRecipeReplayer::SetupSavedPasswords(
+    const base::Value& saved_password_list_container) {
+  if (base::Value::Type::LIST != saved_password_list_container.type()) {
+    ADD_FAILURE() << "Saved Password List is not a list!";
+    return false;
+  }
+
+  const base::Value::ListStorage& saved_password_list =
+      saved_password_list_container.GetList();
+  for (auto it_password = saved_password_list.begin();
+       it_password != saved_password_list.end(); ++it_password) {
+    const base::DictionaryValue* cred;
+    if (!it_password->GetAsDictionary(&cred)) {
+      ADD_FAILURE() << "Failed to extract a saved password!";
+      return false;
+    }
+
+    const base::Value* origin_container = cred->FindKey("website");
+    if (base::Value::Type::STRING != origin_container->type()) {
+      ADD_FAILURE() << "Website is not a string!";
+      return false;
+    }
+    const std::string origin = origin_container->GetString();
+
+    const base::Value* username_container = cred->FindKey("username");
+    if (base::Value::Type::STRING != username_container->type()) {
+      ADD_FAILURE() << "User name is not a string!";
+      return false;
+    }
+    const std::string username = username_container->GetString();
+
+    const base::Value* password_container = cred->FindKey("password");
+    if (base::Value::Type::STRING != password_container->type()) {
+      ADD_FAILURE() << "User name is not a string!";
+      return false;
+    }
+    const std::string password = password_container->GetString();
+
+    if (!feature_action_executor()->AddCredential(origin, username, password)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -888,6 +1548,59 @@ bool TestRecipeReplayChromeFeatureActionExecutor::AutofillForm(
     content::RenderFrameHost* frame,
     const std::string& focus_element_css_selector,
     const int attempts) {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AutofillForm "
+                   "is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::AddAutofillProfileInfo(
+    const std::string& field_type,
+    const std::string& field_value) {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::AddAutofillProfileInfo is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::SetupAutofillProfile() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::SetupAutofillProfile is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::AddCredential(
+    const std::string& origin,
+    const std::string& username,
+    const std::string& password) {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::AddCredential"
+                   " is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::SavePassword() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor::SavePassword"
+                   " is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::UpdatePassword() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::UpdatePassword is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::
+    HasChromeShownSavePasswordPrompt() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::HasChromeShownSavePasswordPrompt is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::HasChromeStoredCredential(
+    const std::string& origin,
+    const std::string& username,
+    const std::string& password) {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::HasChromeStoredCredential is not implemented!";
   return false;
 }
 

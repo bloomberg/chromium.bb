@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 cast_source_set("le") {
   sources = [
@@ -92,5 +93,14 @@ cast_source_set("unittests") {
     "//chromecast/public",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+fuzzer_test("le_scan_result_fuzzer") {
+  sources = [
+    "le_scan_result_fuzzer.cc",
+  ]
+  deps = [
+    ":le",
   ]
 }

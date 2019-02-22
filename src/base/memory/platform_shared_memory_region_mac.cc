@@ -8,7 +8,8 @@
 
 #include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_vm.h"
-#include "base/numerics/checked_math.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)
@@ -17,6 +18,17 @@
 
 namespace base {
 namespace subtle {
+
+namespace {
+
+void LogCreateError(PlatformSharedMemoryRegion::CreateError error,
+                    kern_return_t mac_error) {
+  UMA_HISTOGRAM_ENUMERATION("SharedMemory.CreateError", error);
+  if (mac_error != KERN_SUCCESS)
+    UmaHistogramSparse("SharedMemory.CreateMacError", mac_error);
+}
+
+}  // namespace
 
 // static
 PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
@@ -138,18 +150,10 @@ bool PlatformSharedMemoryRegion::ConvertToUnsafe() {
   return true;
 }
 
-bool PlatformSharedMemoryRegion::MapAt(off_t offset,
-                                       size_t size,
-                                       void** memory,
-                                       size_t* mapped_size) const {
-  if (!IsValid())
-    return false;
-
-  size_t end_byte;
-  if (!CheckAdd(offset, size).AssignIfValid(&end_byte) || end_byte > size_) {
-    return false;
-  }
-
+bool PlatformSharedMemoryRegion::MapAtInternal(off_t offset,
+                                               size_t size,
+                                               void** memory,
+                                               size_t* mapped_size) const {
   bool write_allowed = mode_ != Mode::kReadOnly;
   vm_prot_t vm_prot_write = write_allowed ? VM_PROT_WRITE : 0;
   kern_return_t kr = mach_vm_map(
@@ -168,19 +172,21 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
   }
 
   *mapped_size = size;
-  DCHECK_EQ(0U,
-            reinterpret_cast<uintptr_t>(*memory) & (kMapMinimumAlignment - 1));
   return true;
 }
 
 // static
 PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
                                                               size_t size) {
-  if (size == 0)
+  if (size == 0) {
+    LogCreateError(CreateError::SIZE_ZERO, KERN_SUCCESS);
     return {};
+  }
 
-  if (size > static_cast<size_t>(std::numeric_limits<int>::max()))
+  if (size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+    LogCreateError(CreateError::SIZE_TOO_LARGE, KERN_SUCCESS);
     return {};
+  }
 
   CHECK_NE(mode, Mode::kReadOnly) << "Creating a region in read-only mode will "
                                      "lead to this region being non-modifiable";
@@ -193,12 +199,14 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
       MAP_MEM_NAMED_CREATE | VM_PROT_READ | VM_PROT_WRITE,
       named_right.receive(),
       MACH_PORT_NULL);  // Parent handle.
-  if (kr != KERN_SUCCESS) {
-    MACH_DLOG(ERROR, kr) << "mach_make_memory_entry_64";
-    return {};
-  }
+  if (kr != KERN_SUCCESS)
+    LogCreateError(CreateError::CREATE_FILE_MAPPING_FAILURE, kr);
+  // Crash as soon as shm allocation fails to debug the issue
+  // https://crbug.com/872237.
+  MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_make_memory_entry_64";
   DCHECK_GE(vm_size, size);
 
+  LogCreateError(CreateError::SUCCESS, KERN_SUCCESS);
   return PlatformSharedMemoryRegion(std::move(named_right), mode, size,
                                     UnguessableToken::Create());
 }

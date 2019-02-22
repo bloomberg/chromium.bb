@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
@@ -33,9 +34,7 @@ class X509Certificate;
 namespace x509_util {
 
 // Supported digest algorithms for signing certificates.
-enum DigestAlgorithm {
-  DIGEST_SHA256
-};
+enum DigestAlgorithm { DIGEST_SHA256 };
 
 // Generate a 'tls-server-end-point' channel binding based on the specified
 // certificate. Channel bindings are based on RFC 5929.
@@ -68,15 +67,29 @@ NET_EXPORT bool CreateKeyAndSelfSignedCert(
     std::unique_ptr<crypto::RSAPrivateKey>* key,
     std::string* der_cert);
 
+struct NET_EXPORT Extension {
+  Extension(base::span<const uint8_t> oid,
+            bool critical,
+            base::span<const uint8_t> contents);
+  ~Extension();
+  Extension(const Extension&);
+
+  base::span<const uint8_t> oid;
+  bool critical;
+  base::span<const uint8_t> contents;
+};
+
 // Creates a self-signed certificate from a provided key, using the specified
 // hash algorithm.
-NET_EXPORT bool CreateSelfSignedCert(EVP_PKEY* key,
-                                     DigestAlgorithm alg,
-                                     const std::string& subject,
-                                     uint32_t serial_number,
-                                     base::Time not_valid_before,
-                                     base::Time not_valid_after,
-                                     std::string* der_cert);
+NET_EXPORT bool CreateSelfSignedCert(
+    EVP_PKEY* key,
+    DigestAlgorithm alg,
+    const std::string& subject,
+    uint32_t serial_number,
+    base::Time not_valid_before,
+    base::Time not_valid_after,
+    const std::vector<Extension>& extension_specs,
+    std::string* der_cert);
 
 // Returns a CRYPTO_BUFFER_POOL for deduplicating certificates.
 NET_EXPORT CRYPTO_BUFFER_POOL* GetBufferPool();
@@ -105,7 +118,7 @@ NET_EXPORT base::StringPiece CryptoBufferAsStringPiece(
 
 // Creates a new X509Certificate from the chain in |buffers|, which must have at
 // least one element.
-scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
+NET_EXPORT scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
     const STACK_OF(CRYPTO_BUFFER) * buffers);
 
 // Returns the default ParseCertificateOptions for the net stack.
@@ -126,8 +139,8 @@ NET_EXPORT bool SignatureVerifierInitWithCertificate(
     base::span<const uint8_t> signature,
     const CRYPTO_BUFFER* certificate);
 
-} // namespace x509_util
+}  // namespace x509_util
 
-} // namespace net
+}  // namespace net
 
 #endif  // NET_CERT_X509_UTIL_H_

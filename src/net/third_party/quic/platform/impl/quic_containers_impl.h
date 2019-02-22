@@ -63,6 +63,10 @@ using QuicQueueImpl = base::queue<T>;
 template <typename T>
 using QuicDequeImpl = base::circular_deque<T>;
 
+// TODO(wub): Switch to absl::InlinedVector once it is allowed.
+template <typename T, size_t N, typename A = std::allocator<T>>
+using QuicInlinedVectorImpl = std::vector<T, A>;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_CONTAINERS_IMPL_H_

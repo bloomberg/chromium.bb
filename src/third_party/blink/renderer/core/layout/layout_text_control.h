@@ -39,6 +39,12 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   TextControlElement* GetTextControlElement() const;
   const char* GetName() const override { return "LayoutTextControl"; }
 
+  bool CreatesNewFormattingContext() const final {
+    // INPUT and other replaced elements rendered by Blink itself should be
+    // completely contained.
+    return true;
+  }
+
  protected:
   LayoutTextControl(TextControlElement*);
 
@@ -94,7 +100,7 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
+                       NGOutlineType) const final;
 
   bool CanBeProgramaticallyScrolled() const final { return true; }
 };

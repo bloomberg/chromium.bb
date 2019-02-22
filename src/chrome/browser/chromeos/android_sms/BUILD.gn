@@ -12,6 +12,7 @@ source_set("android_sms_urls") {
 
   deps = [
     "//base",
+    "//chromeos:chromeos",
     "//url",
   ]
 }

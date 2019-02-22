@@ -82,9 +82,9 @@ struct D3DUniform : private angle::NonCopyable
     std::vector<GLint> mSamplerData;
 };
 
-struct D3DUniformBlock
+struct D3DInterfaceBlock
 {
-    D3DUniformBlock() { mShaderRegisterIndexes.fill(GL_INVALID_INDEX); }
+    D3DInterfaceBlock() { mShaderRegisterIndexes.fill(GL_INVALID_INDEX); }
 
     bool activeInShader(gl::ShaderType shaderType) const
     {
@@ -178,21 +178,22 @@ class ProgramD3D : public ProgramImpl
     bool usesGeometryShaderForPointSpriteEmulation() const;
     bool usesInstancedPointSpriteEmulation() const;
 
-    gl::LinkResult load(const gl::Context *context,
-                        gl::InfoLog &infoLog,
-                        gl::BinaryInputStream *stream) override;
+    angle::Result load(const gl::Context *context,
+                       gl::InfoLog &infoLog,
+                       gl::BinaryInputStream *stream) override;
     void save(const gl::Context *context, gl::BinaryOutputStream *stream) override;
     void setBinaryRetrievableHint(bool retrievable) override;
     void setSeparable(bool separable) override;
 
-    angle::Result getVertexExecutableForCachedInputLayout(const gl::Context *context,
+    angle::Result getVertexExecutableForCachedInputLayout(d3d::Context *context,
                                                           ShaderExecutableD3D **outExectuable,
                                                           gl::InfoLog *infoLog);
-    angle::Result getGeometryExecutableForPrimitiveType(const gl::Context *context,
+    angle::Result getGeometryExecutableForPrimitiveType(d3d::Context *context,
+                                                        const gl::Caps &caps,
                                                         gl::PrimitiveMode drawMode,
                                                         ShaderExecutableD3D **outExecutable,
                                                         gl::InfoLog *infoLog);
-    angle::Result getPixelExecutableForCachedOutputLayout(const gl::Context *context,
+    angle::Result getPixelExecutableForCachedOutputLayout(d3d::Context *context,
                                                           ShaderExecutableD3D **outExectuable,
                                                           gl::InfoLog *infoLog);
     angle::Result getComputeExecutable(ShaderExecutableD3D **outExecutable);
@@ -208,6 +209,9 @@ class ProgramD3D : public ProgramImpl
 
     void updateUniformBufferCache(const gl::Caps &caps,
                                   const gl::ShaderMap<unsigned int> &reservedShaderRegisterIndexes);
+
+    unsigned int getShaderStorageBufferRegisterIndex(GLuint blockIndex,
+                                                     gl::ShaderType shaderType) const;
     const std::vector<GLint> &getShaderUniformBufferCache(gl::ShaderType shaderType) const;
 
     void dirtyAllUniforms();
@@ -452,7 +456,7 @@ class ProgramD3D : public ProgramImpl
 
     std::unique_ptr<LinkEvent> compileProgramExecutables(const gl::Context *context,
                                                          gl::InfoLog &infoLog);
-    gl::LinkResult compileComputeExecutable(const gl::Context *context, gl::InfoLog &infoLog);
+    angle::Result compileComputeExecutable(d3d::Context *context, gl::InfoLog &infoLog);
 
     void gatherTransformFeedbackVaryings(const gl::VaryingPacking &varyings,
                                          const BuiltinInfo &builtins);
@@ -464,6 +468,7 @@ class ProgramD3D : public ProgramImpl
 
     void reset();
     void initializeUniformBlocks();
+    void initializeShaderStorageBlocks();
 
     void updateCachedInputLayoutFromShader();
     void updateCachedOutputLayoutFromShader();
@@ -524,7 +529,8 @@ class ProgramD3D : public ProgramImpl
     std::vector<D3DVarying> mStreamOutVaryings;
     std::vector<D3DUniform *> mD3DUniforms;
     std::map<std::string, int> mImageBindingMap;
-    std::vector<D3DUniformBlock> mD3DUniformBlocks;
+    std::vector<D3DInterfaceBlock> mD3DUniformBlocks;
+    std::vector<D3DInterfaceBlock> mD3DShaderStorageBlocks;
 
     gl::ShaderBitSet mShaderUniformsDirty;
 

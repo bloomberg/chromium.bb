@@ -11,6 +11,7 @@ body {
   grid-template-areas: "appbar options" "symbols options";
   color: #3c4043;
   font-family: "Roboto", sans-serif;
+  overflow: scroll;
 }
 
 .appbar {
@@ -63,6 +64,7 @@ body {
 .symbols {
   grid-area: symbols;
   padding: 0 48px;
+  margin-bottom: 240px;
 }
 .tree-container {
   margin: 0 auto;

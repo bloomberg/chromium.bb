@@ -72,7 +72,7 @@ namespace blink {
 
 struct SameSizeAsLayoutBlock : public LayoutBox {
   LayoutObjectChildList children;
-  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
+  std::unique_ptr<NGConstraintSpace> cached_constraint_space_;
   uint32_t bitfields;
 };
 
@@ -450,7 +450,7 @@ void LayoutBlock::UpdateLayout() {
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
-  cached_constraint_space_ = nullptr;
+  cached_constraint_space_.reset();
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {
@@ -486,20 +486,48 @@ void LayoutBlock::UpdateBlockLayout(bool) {
   ClearNeedsLayout();
 }
 
-void LayoutBlock::AddOverflowFromChildren() {
+void LayoutBlock::AddVisualOverflowFromChildren() {
   if (ChildrenInline())
-    ToLayoutBlockFlow(this)->AddOverflowFromInlineChildren();
+    ToLayoutBlockFlow(this)->AddVisualOverflowFromInlineChildren();
   else
-    AddOverflowFromBlockChildren();
+    AddVisualOverflowFromBlockChildren();
+}
+
+void LayoutBlock::AddLayoutOverflowFromChildren() {
+  if (ChildrenInline())
+    ToLayoutBlockFlow(this)->AddLayoutOverflowFromInlineChildren();
+  else
+    AddLayoutOverflowFromBlockChildren();
+}
+
+void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge,
+                                  bool recompute_floats) {
+  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
+  overflow_.reset();
+  ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
+  ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
+}
+
+void LayoutBlock::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool) {
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 DISABLE_CFI_PERF
-void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
-  LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-  overflow_.reset();
-
-  AddOverflowFromChildren();
-  AddOverflowFromPositionedObjects();
+void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                                        bool) {
+  AddLayoutOverflowFromChildren();
+  AddLayoutOverflowFromPositionedObjects();
 
   if (HasOverflowClip()) {
     // When we have overflow clip, propagate the original spillout since it will
@@ -521,15 +549,9 @@ void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge, bool) {
     if (HasOverflowModel())
       overflow_->SetLayoutClientAfterEdge(old_client_after_edge);
   }
-
-  AddVisualEffectOverflow();
-  AddVisualOverflowFromTheme();
-
-  if (Layer() && VisualOverflowRect() != previous_visual_overflow_rect)
-    Layer()->SetNeedsCompositingInputsUpdate();
 }
 
-void LayoutBlock::AddOverflowFromBlockChildren() {
+void LayoutBlock::AddVisualOverflowFromBlockChildren() {
   for (LayoutBox* child = FirstChildBox(); child;
        child = child->NextSiblingBox()) {
     if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
@@ -542,23 +564,45 @@ void LayoutBlock::AddOverflowFromBlockChildren() {
     // the outline which may enclose continuations.
     if (child->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
-      ToLayoutBlockFlow(child)->AddOverflowFromInlineChildren();
+      ToLayoutBlockFlow(child)->AddVisualOverflowFromInlineChildren();
 
-    AddOverflowFromChild(*child);
+    AddVisualOverflowFromChild(*child);
   }
 }
 
-void LayoutBlock::AddOverflowFromPositionedObjects() {
+void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
+  for (LayoutBox* child = FirstChildBox(); child;
+       child = child->NextSiblingBox()) {
+    if (child->IsFloatingOrOutOfFlowPositioned() || child->IsColumnSpanAll())
+      continue;
+
+    // If the child contains inline with outline and continuation, its
+    // visual overflow computed during its layout might be inaccurate because
+    // the layout of continuations might not be up-to-date at that time.
+    // Re-add overflow from inline children to ensure its overflow covers
+    // the outline which may enclose continuations.
+    if (child->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(child)->ContainsInlineWithOutlineAndContinuation())
+      ToLayoutBlockFlow(child)->AddLayoutOverflowFromInlineChildren();
+
+    AddLayoutOverflowFromChild(*child);
+  }
+}
+
+void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
   if (!positioned_descendants)
     return;
 
   for (auto* positioned_object : *positioned_descendants) {
-    // Fixed positioned elements don't contribute to layout overflow, since they
-    // don't scroll with the content.
-    if (positioned_object->StyleRef().GetPosition() != EPosition::kFixed)
-      AddOverflowFromChild(*positioned_object,
-                           ToLayoutSize(positioned_object->Location()));
+    // Fixed positioned elements whose containing block is the LayoutView
+    // don't contribute to layout overflow, since they don't scroll with the
+    // content.
+    if (!IsLayoutView() ||
+        positioned_object->StyleRef().GetPosition() != EPosition::kFixed) {
+      AddLayoutOverflowFromChild(*positioned_object,
+                                 ToLayoutSize(positioned_object->Location()));
+    }
   }
 }
 
@@ -963,6 +1007,12 @@ void LayoutBlock::RemovePositionedObject(LayoutBox* o) {
     parent->MarkContainerNeedsCollectInlines();
 }
 
+bool LayoutBlock::IsAnonymousNGFieldsetContentWrapper() const {
+  if (!RuntimeEnabledFeatures::LayoutNGFieldsetEnabled() || !Parent())
+    return false;
+  return Parent()->IsLayoutNGFieldset();
+}
+
 void LayoutBlock::InvalidatePaint(
     const PaintInvalidatorContext& context) const {
   BlockPaintInvalidator(*this).InvalidatePaint(context);
@@ -1127,6 +1177,12 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
                                   const HitTestLocation& location_in_container,
                                   const LayoutPoint& accumulated_offset,
                                   HitTestAction hit_test_action) {
+  // We may use legacy code to hit-test the anonymous fieldset content wrapper
+  // child. The layout object for the rendered legend will be a child of that
+  // one, and has to be skipped here, since its fragment is actually laid out on
+  // the outside and is a sibling of the anonymous wrapper.
+  bool may_contain_rendered_legend = IsAnonymousNGFieldsetContentWrapper();
+
   DCHECK(!ChildrenInline());
   LayoutPoint scrolled_offset(HasOverflowClip()
                                   ? accumulated_offset - ScrolledContentOffset()
@@ -1136,12 +1192,26 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
     child_hit_test = kHitTestChildBlockBackground;
   for (LayoutBox* child = LastChildBox(); child;
        child = child->PreviousSiblingBox()) {
+    if (child->HasSelfPaintingLayer() || child->IsColumnSpanAll() ||
+        (may_contain_rendered_legend && child->IsRenderedLegend()))
+      continue;
+
     LayoutPoint child_point =
         FlipForWritingModeForChild(child, scrolled_offset);
-    if (!child->HasSelfPaintingLayer() && !child->IsFloating() &&
-        !child->IsColumnSpanAll() &&
-        child->NodeAtPoint(result, location_in_container, child_point,
-                           child_hit_test)) {
+
+    bool did_hit;
+    if (child->IsFloating()) {
+      if (hit_test_action != kHitTestFloat || !IsLayoutNGObject())
+        continue;
+      // Hit-test the floats in regular tree order if this is LayoutNG. Only
+      // legacy layout uses the FloatingObjects list.
+      did_hit =
+          child->HitTestAllPhases(result, location_in_container, child_point);
+    } else {
+      did_hit = child->NodeAtPoint(result, location_in_container, child_point,
+                                   child_hit_test);
+    }
+    if (did_hit) {
       UpdateHitTestResult(
           result, FlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
@@ -1336,9 +1406,14 @@ void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
+  int scrollbar_width = ScrollbarLogicalWidth();
+
   // Size-contained elements don't consider their contents for preferred sizing.
-  if (ShouldApplySizeContainment())
+  if (ShouldApplySizeContainment()) {
+    max_logical_width = LayoutUnit(scrollbar_width);
+    min_logical_width = LayoutUnit(scrollbar_width);
     return;
+  }
 
   if (ChildrenInline()) {
     // FIXME: Remove this const_cast.
@@ -1363,7 +1438,6 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
                                        LayoutUnit(table_cell_width.Value())));
   }
 
-  int scrollbar_width = ScrollbarLogicalWidth();
   max_logical_width += scrollbar_width;
   min_logical_width += scrollbar_width;
 }
@@ -1731,7 +1805,7 @@ bool LayoutBlock::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   // ancestors or siblings.
   return (!StyleRef().IsOverflowVisible() &&
           !ShouldIgnoreOverflowPropertyForInlineBlockBaseline()) ||
-         ShouldApplySizeContainment();
+         ShouldApplyLayoutContainment();
 }
 
 LayoutUnit LayoutBlock::InlineBlockBaseline(
@@ -1846,14 +1920,13 @@ LayoutRect LayoutBlock::LocalCaretRect(
   return caret_rect;
 }
 
-void LayoutBlock::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+void LayoutBlock::AddOutlineRects(Vector<LayoutRect>& rects,
+                                  const LayoutPoint& additional_offset,
+                                  NGOutlineType include_block_overflows) const {
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
     rects.push_back(LayoutRect(additional_offset, Size()));
 
-  if (include_block_overflows == kIncludeBlockVisualOverflow &&
+  if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {
     AddOutlineRectsForNormalChildren(rects, additional_offset,
                                      include_block_overflows);
@@ -1994,27 +2067,28 @@ const NGConstraintSpace* LayoutBlock::CachedConstraintSpace() const {
 }
 
 void LayoutBlock::SetCachedConstraintSpace(const NGConstraintSpace& space) {
-  cached_constraint_space_ = &space;
+  cached_constraint_space_.reset(new NGConstraintSpace(space));
 }
 
 bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(
     LayoutObject* layout_object) {
   if (layout_object->IsOutOfFlowPositioned())
     return false;
-  return layout_object->RecalcOverflowAfterStyleChange();
+  return layout_object->RecalcOverflow();
 }
 
-bool LayoutBlock::RecalcChildOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcChildOverflow() {
   DCHECK(!IsTable());
-  DCHECK(ChildNeedsOverflowRecalcAfterStyleChange());
-  ClearChildNeedsOverflowRecalcAfterStyleChange();
+  DCHECK(ChildNeedsOverflowRecalc());
+  ClearChildNeedsLayoutOverflowRecalc();
+  ClearChildNeedsVisualOverflowRecalc();
 
   bool children_overflow_changed = false;
 
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
     children_overflow_changed =
-        ToLayoutBlockFlow(this)->RecalcInlineChildrenOverflowAfterStyleChange();
+        ToLayoutBlockFlow(this)->RecalcInlineChildrenOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
       if (RecalcNormalFlowChildOverflowIfNeeded(box))
@@ -2022,11 +2096,10 @@ bool LayoutBlock::RecalcChildOverflowAfterStyleChange() {
     }
   }
 
-  return RecalcPositionedDescendantsOverflowAfterStyleChange() ||
-         children_overflow_changed;
+  return RecalcPositionedDescendantsOverflow() || children_overflow_changed;
 }
 
-bool LayoutBlock::RecalcPositionedDescendantsOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcPositionedDescendantsOverflow() {
   bool children_overflow_changed = false;
 
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
@@ -2034,27 +2107,28 @@ bool LayoutBlock::RecalcPositionedDescendantsOverflowAfterStyleChange() {
     return children_overflow_changed;
 
   for (auto* box : *positioned_descendants) {
-    if (box->RecalcOverflowAfterStyleChange())
+    if (box->RecalcOverflow())
       children_overflow_changed = true;
   }
   return children_overflow_changed;
 }
 
-bool LayoutBlock::RecalcOverflowAfterStyleChange() {
+bool LayoutBlock::RecalcOverflow() {
   bool children_overflow_changed = false;
-  if (ChildNeedsOverflowRecalcAfterStyleChange())
-    children_overflow_changed = RecalcChildOverflowAfterStyleChange();
+  if (ChildNeedsOverflowRecalc())
+    children_overflow_changed = RecalcChildOverflow();
 
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalcAfterStyleChange();
+  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
   if (!self_needs_overflow_recalc && !children_overflow_changed)
     return false;
 
-  return RecalcSelfOverflowAfterStyleChange();
+  return RecalcSelfOverflow();
 }
 
-bool LayoutBlock::RecalcSelfOverflowAfterStyleChange() {
-  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalcAfterStyleChange();
-  ClearSelfNeedsOverflowRecalcAfterStyleChange();
+bool LayoutBlock::RecalcSelfOverflow() {
+  bool self_needs_overflow_recalc = SelfNeedsOverflowRecalc();
+  ClearSelfNeedsLayoutOverflowRecalc();
+  ClearSelfNeedsVisualOverflowRecalc();
   // If the current block needs layout, overflow will be recalculated during
   // layout time anyway. We can safely exit here.
   if (NeedsLayout())

@@ -5,18 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIE_NOTIFIER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_COOKIE_NOTIFIER_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class Profile;
-
-namespace net {
-class CanonicalCookie;
-}
 
 // Sends cookie-change notifications on the UI thread via
 // chrome::NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS for all cookie
@@ -27,6 +20,9 @@ class ExtensionCookieNotifier : public network::mojom::CookieChangeListener {
   ~ExtensionCookieNotifier() override;
 
  private:
+  void StartListening();
+  void OnConnectionError();
+
   // network::mojom::CookieChangeListener implementation.
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       network::mojom::CookieChangeCause cause) override;

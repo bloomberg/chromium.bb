@@ -200,10 +200,10 @@ TEST_F(ImageMacTest, MultiResolutionPNGToNSImage) {
   // Convert to ImageSkia to check pixel contents of NSImageReps.
   gfx::ImageSkia image_skia = gfx::ImageSkiaFromNSImage(ns_image);
   EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(
-      bytes1x, image_skia.GetRepresentation(1.0f).sk_bitmap(),
+      bytes1x, image_skia.GetRepresentation(1.0f).GetBitmap(),
       gt::MaxColorSpaceConversionColorShift()));
-  EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(bytes2x,
-      image_skia.GetRepresentation(2.0f).sk_bitmap(),
+  EXPECT_TRUE(gt::ArePNGBytesCloseToBitmap(
+      bytes2x, image_skia.GetRepresentation(2.0f).GetBitmap(),
       gt::MaxColorSpaceConversionColorShift()));
 }
 

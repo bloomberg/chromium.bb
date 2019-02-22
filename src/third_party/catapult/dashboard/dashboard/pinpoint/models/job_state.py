@@ -4,8 +4,8 @@
 
 import collections
 import logging
-import math
 
+from dashboard.common import math_utils
 from dashboard.pinpoint.models import attempt as attempt_module
 from dashboard.pinpoint.models import change as change_module
 from dashboard.pinpoint.models import compare
@@ -59,8 +59,10 @@ class JobState(object):
     self._attempts = {}
 
   @property
-  def comparison_mode(self):
-    return self._comparison_mode
+  def metric(self):
+    if self._comparison_mode == 'functional':
+      return 'Failure rate'
+    return self._quests[-1].metric if self._quests else ''
 
   def AddAttempts(self, change):
     if not hasattr(self, '_pin'):
@@ -163,17 +165,16 @@ class JobState(object):
     statistically different results, this method yields the latter one (which is
     assumed to have caused the difference).
 
-    Yields:
-      Tuples of (Change_before, Change_after,
-                 result_values_before, result_values_after).
+    Returns:
+      A list of tuples: [(Change_before, Change_after), ...]
     """
+    differences = []
     for index in xrange(1, len(self._changes)):
       change_a = self._changes[index - 1]
       change_b = self._changes[index]
       if self._Compare(change_a, change_b) == compare.DIFFERENT:
-        values_a = self._ResultValues(change_a)
-        values_b = self._ResultValues(change_b)
-        yield change_a, change_b, values_a, values_b
+        differences.append((change_a, change_b))
+    return differences
 
   def AsDict(self):
     state = []
@@ -182,7 +183,7 @@ class JobState(object):
           'attempts': [attempt.AsDict() for attempt in self._attempts[change]],
           'change': change.AsDict(),
           'comparisons': {},
-          'result_values': self._ResultValues(change),
+          'result_values': self.ResultValues(change),
       })
 
     for index in xrange(1, len(self._changes)):
@@ -255,15 +256,15 @@ class JobState(object):
       values_b = tuple(_Mean(execution.result_values)
                        for execution in executions_b if execution.result_values)
       if values_a and values_b:
-        max_iqr = max(_IQR(values_a), _IQR(values_b))
-        if max_iqr == 0:
-          comparison_magnitude = 1000  # Something very large.
-        else:
-          if (hasattr(self, '_comparison_magnitude') and
-              self._comparison_magnitude):
+        if (hasattr(self, '_comparison_magnitude') and
+            self._comparison_magnitude):
+          max_iqr = max(math_utils.Iqr(values_a), math_utils.Iqr(values_b))
+          if max_iqr:
             comparison_magnitude = abs(self._comparison_magnitude / max_iqr)
           else:
-            comparison_magnitude = 1.0
+            comparison_magnitude = 1000  # Something very large.
+        else:
+          comparison_magnitude = 1.0
         comparison = compare.Compare(values_a, values_b, attempt_count,
                                      PERFORMANCE, comparison_magnitude)
         if comparison == compare.DIFFERENT:
@@ -276,7 +277,7 @@ class JobState(object):
 
     return compare.SAME
 
-  def _ResultValues(self, change):
+  def ResultValues(self, change):
     quest_index = len(self._quests) - 1
     result_values = []
 
@@ -304,20 +305,5 @@ def _ExecutionsPerQuest(attempts):
   return executions
 
 
-def _IQR(values):
-  values = sorted(values)
-  return _Percentile(values, 0.75) - _Percentile(values, 0.25)
-
-
 def _Mean(values):
   return float(sum(values)) / len(values)
-
-
-def _Percentile(values, percentile):
-  """Returns a percentile of a sorted list of values."""
-  index = (len(values) - 1) * percentile
-  floor = math.floor(index)
-  ceil = math.ceil(index)
-  low = values[int(floor)] * (ceil - index)
-  high = values[int(ceil)] * (index - floor)
-  return low + high

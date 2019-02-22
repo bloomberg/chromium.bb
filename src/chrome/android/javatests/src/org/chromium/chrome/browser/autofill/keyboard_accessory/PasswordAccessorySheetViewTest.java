@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.ViewGroup;
@@ -31,8 +30,9 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,22 +58,19 @@ public class PasswordAccessorySheetViewTest {
      */
     private void openLayoutInAccessorySheet(
             @LayoutRes int layout, KeyboardAccessoryData.Tab.Listener listener) {
-        AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
-                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub),
-                () -> new ViewPager.OnPageChangeListener() {
-                    @Override
-                    public void onPageScrolled(int i, float v, int i1) {}
-                    @Override
-                    public void onPageSelected(int i) {}
-                    @Override
-                    public void onPageScrollStateChanged(int i) {}
-                });
-        accessorySheet.addTab(
-                new KeyboardAccessoryData.Tab(null, null, layout, AccessoryTabType.ALL, listener));
-        accessorySheet.setHeight(
-                mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                        R.dimen.keyboard_accessory_sheet_height));
-        ThreadUtils.runOnUiThreadBlocking(accessorySheet::show);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
+                    new DeferredViewStubInflationProvider<>(
+                            mActivityTestRule.getActivity().findViewById(
+                                    R.id.keyboard_accessory_sheet_stub)));
+            accessorySheet.addTab(
+                    new KeyboardAccessoryData.Tab(null, null, layout, AccessoryTabType.ALL,
+                            listener));
+            accessorySheet.setHeight(
+                    mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                            R.dimen.keyboard_accessory_sheet_height));
+            accessorySheet.show();
+        });
     }
 
     @Before
@@ -84,7 +81,7 @@ public class PasswordAccessorySheetViewTest {
                 R.layout.password_accessory_sheet, new KeyboardAccessoryData.Tab.Listener() {
                     @Override
                     public void onTabCreated(ViewGroup view) {
-                        mView.set((RecyclerView) view);
+                        mView.set(view.findViewById(R.id.password_items));
                         // Reuse coordinator code to create and wire the adapter. No mediator
                         // involved.
                         PasswordAccessorySheetViewBinder.initializeView(mView.get(),

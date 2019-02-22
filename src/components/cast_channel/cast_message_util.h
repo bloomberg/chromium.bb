@@ -51,11 +51,6 @@ enum class CastMessageType {
 // Checks if the contents of |message_proto| are valid.
 bool IsCastMessageValid(const CastMessage& message_proto);
 
-// Parses and returns the UTF-8 payload from |message|. Returns nullptr
-// if the UTF-8 payload doesn't exist, or if it is not a dictionary.
-std::unique_ptr<base::DictionaryValue> GetDictionaryFromCastMessage(
-    const CastMessage& message);
-
 // Returns true if |message_namespace| is a namespace reserved for internal
 // messages.
 bool IsCastInternalNamespace(const std::string& message_namespace);
@@ -143,6 +138,10 @@ CastMessage CreateLaunchRequest(const std::string& source_id,
                                 int request_id,
                                 const std::string& app_id,
                                 const std::string& locale);
+
+CastMessage CreateStopRequest(const std::string& source_id,
+                              int request_id,
+                              const std::string& session_id);
 
 CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,

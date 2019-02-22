@@ -111,7 +111,9 @@ bool QuicSimpleServerPacketWriter::IsBatchMode() const {
   return false;
 }
 
-char* QuicSimpleServerPacketWriter::GetNextWriteLocation() const {
+char* QuicSimpleServerPacketWriter::GetNextWriteLocation(
+    const quic::QuicIpAddress& self_address,
+    const quic::QuicSocketAddress& peer_address) {
   return nullptr;
 }
 

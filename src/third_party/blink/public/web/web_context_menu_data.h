@@ -112,6 +112,7 @@ struct WebContextMenuData {
     kMediaCanRotate = 0x200,
     kMediaCanPictureInPicture = 0x400,
     kMediaPictureInPicture = 0x800,
+    kMediaCanLoop = 0x1000,
   };
 
   // Extra attributes describing media elements.

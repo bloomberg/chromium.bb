@@ -14,7 +14,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
@@ -74,16 +74,18 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
 
   static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
       content::BrowserContext* context) {
-    GaiaCookieManagerService* cookie_service =
-        GaiaCookieManagerServiceFactory::GetForProfile(
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(
             Profile::FromBrowserContext(context));
     return std::make_unique<OneGoogleBarService>(
-        cookie_service, std::make_unique<FakeOneGoogleBarLoader>());
+        identity_manager, std::make_unique<FakeOneGoogleBarLoader>());
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     OneGoogleBarServiceFactory::GetInstance()->SetTestingFactory(
-        context, &LocalNTPOneGoogleBarSmokeTest::CreateOneGoogleBarService);
+        context,
+        base::BindRepeating(
+            &LocalNTPOneGoogleBarSmokeTest::CreateOneGoogleBarService));
   }
 
   base::test::ScopedFeatureList feature_list_;

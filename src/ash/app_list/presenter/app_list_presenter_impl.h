@@ -43,7 +43,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // UpdateYPositionAndOpacityForHomeLauncher so different callers can do
   // similar animations with different settings.
   using UpdateHomeLauncherAnimationSettingsCallback =
-      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings)>;
+      base::RepeatingCallback<void(ui::ScopedLayerAnimationSettings* settings,
+                                   bool observe)>;
 
   explicit AppListPresenterImpl(
       std::unique_ptr<AppListPresenterDelegate> delegate);
@@ -86,7 +87,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
                                  float background_opacity);
 
   // Ends the drag of app list from shelf.
-  void EndDragFromShelf(app_list::AppListViewState app_list_state);
+  void EndDragFromShelf(AppListViewState app_list_state);
 
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(int y_scroll_offset);
@@ -128,6 +129,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // views::WidgetObserver overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
+  void OnWidgetDestroyed(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // PaginationModelObserver overrides:

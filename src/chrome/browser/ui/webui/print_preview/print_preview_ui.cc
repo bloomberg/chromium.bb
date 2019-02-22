@@ -201,6 +201,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
   source->AddLocalizedString("optionAllPages",
                              IDS_PRINT_PREVIEW_OPTION_ALL_PAGES);
+  source->AddLocalizedString("optionCustomPages",
+                             IDS_PRINT_PREVIEW_OPTION_CUSTOM_PAGES);
   source->AddLocalizedString("optionBw", IDS_PRINT_PREVIEW_OPTION_BW);
   source->AddLocalizedString("optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE);
   source->AddLocalizedString("optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR);
@@ -232,6 +234,9 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_BUTTON_SELECT);
   source->AddLocalizedString("goBackButton",
                              IDS_PRINT_PREVIEW_BUTTON_GO_BACK);
+  source->AddLocalizedString(
+      "resolveExtensionUSBDialogTitle",
+      IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_DIALOG_TITLE);
   source->AddLocalizedString(
       "resolveExtensionUSBPermissionMessage",
       IDS_PRINT_PREVIEW_RESOLVE_EXTENSION_USB_PERMISSION_MESSAGE);
@@ -347,6 +352,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_PRINT_PREVIEW_ADVANCED_OPTIONS_LABEL);
   source->AddLocalizedString("showAdvancedOptions",
                              IDS_PRINT_PREVIEW_SHOW_ADVANCED_OPTIONS);
+  source->AddLocalizedString("newShowAdvancedOptions",
+                             IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS);
 
   source->AddLocalizedString("accept", IDS_PRINT_PREVIEW_ACCEPT_INVITE);
   source->AddLocalizedString(
@@ -360,6 +367,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                              IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION);
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
   source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
+  source->AddLocalizedString("managedOption",
+                             IDS_PRINT_PREVIEW_MANAGED_OPTION_TEXT);
 #if defined(OS_CHROMEOS)
   source->AddLocalizedString("configuringInProgressText",
                              IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT);
@@ -630,6 +639,31 @@ void PrintPreviewUI::SetInitiatorTitle(
   initiator_title_ = job_title;
 }
 
+bool PrintPreviewUI::LastPageComposited(int page_number) const {
+  if (pages_to_render_.empty())
+    return false;
+
+  return page_number == pages_to_render_.back();
+}
+
+int PrintPreviewUI::GetPageToNupConvertIndex(int page_number) const {
+  for (size_t index = 0; index < pages_to_render_.size(); ++index) {
+    if (page_number == pages_to_render_[index])
+      return index;
+  }
+  return -1;
+}
+
+std::vector<base::ReadOnlySharedMemoryRegion>
+PrintPreviewUI::TakePagesForNupConvert() {
+  return std::move(pages_for_nup_convert_);
+}
+
+void PrintPreviewUI::AddPdfPageForNupConversion(
+    base::ReadOnlySharedMemoryRegion pdf_page) {
+  pages_for_nup_convert_.push_back(std::move(pdf_page));
+}
+
 // static
 void PrintPreviewUI::SetInitialParams(
     content::WebContents* print_preview_dialog,
@@ -697,6 +731,14 @@ void PrintPreviewUI::OnDidStartPreview(
     const PrintHostMsg_DidStartPreview_Params& params,
     int request_id) {
   DCHECK_GT(params.page_count, 0);
+  DCHECK(!params.pages_to_render.empty());
+
+  pages_to_render_ = params.pages_to_render;
+  pages_to_render_index_ = 0;
+  pages_per_sheet_ = params.pages_per_sheet;
+  page_size_ = params.page_size;
+  ClearAllPreviewData();
+
   if (g_testing_delegate)
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
   handler_->SendPageCountReady(params.page_count, params.fit_to_page_scaling,
@@ -715,6 +757,8 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
     NOTREACHED();
     return;
   }
+  // Save printable_area information for N-up conversion.
+  printable_area_ = printable_area;
 
   base::DictionaryValue layout;
   layout.SetDouble(printing::kSettingMarginTop, page_layout.margin_top);
@@ -732,29 +776,49 @@ void PrintPreviewUI::OnDidGetDefaultPageLayout(
   handler_->SendPageLayoutReady(layout, has_custom_page_size_style, request_id);
 }
 
-void PrintPreviewUI::OnDidPreviewPage(int page_number,
-                                      int preview_request_id) {
+bool PrintPreviewUI::OnPendingPreviewPage(int page_number) {
+  if (pages_to_render_index_ >= pages_to_render_.size())
+    return false;
+
+  bool matched = page_number == pages_to_render_[pages_to_render_index_];
+  ++pages_to_render_index_;
+  return matched;
+}
+
+void PrintPreviewUI::OnDidPreviewPage(
+    int page_number,
+    scoped_refptr<base::RefCountedMemory> data,
+    int preview_request_id) {
   DCHECK_GE(page_number, 0);
+
+  SetPrintPreviewDataForIndex(page_number, std::move(data));
+
   if (g_testing_delegate)
     g_testing_delegate->DidRenderPreviewPage(web_ui()->GetWebContents());
   handler_->SendPagePreviewReady(page_number, id_, preview_request_id);
 }
 
-void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
-                                              int preview_request_id) {
+void PrintPreviewUI::OnPreviewDataIsAvailable(
+    int expected_pages_count,
+    scoped_refptr<base::RefCountedMemory> data,
+    int preview_request_id) {
   VLOG(1) << "Print preview request finished with "
           << expected_pages_count << " pages";
 
   if (!initial_preview_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("PrintPreview.InitialDisplayTime",
                         base::TimeTicks::Now() - initial_preview_start_time_);
-    UMA_HISTOGRAM_COUNTS("PrintPreview.PageCount.Initial",
-                         expected_pages_count);
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M("PrintPreview.PageCount.Initial",
+                            expected_pages_count);
+    UMA_HISTOGRAM_COUNTS_1M(
         "PrintPreview.RegeneratePreviewRequest.BeforeFirstData",
         handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();
   }
+
+  SetPrintPreviewDataForIndex(printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
+                              std::move(data));
+
   handler_->OnPrintPreviewReady(id_, preview_request_id);
 }
 
@@ -827,4 +891,14 @@ void PrintPreviewUI::SendEnableManipulateSettingsForTest() {
 void PrintPreviewUI::SendManipulateSettingsForTest(
     const base::DictionaryValue& settings) {
   handler_->SendManipulateSettingsForTest(settings);
+}
+
+void PrintPreviewUI::SetPrintPreviewDataForIndexForTest(
+    int index,
+    scoped_refptr<base::RefCountedMemory> data) {
+  SetPrintPreviewDataForIndex(index, data);
+}
+
+void PrintPreviewUI::ClearAllPreviewDataForTest() {
+  ClearAllPreviewData();
 }

@@ -27,8 +27,8 @@
 #ifndef HB_DEBUG_HH
 #define HB_DEBUG_HH
 
-#include "hb-private.hh"
-#include "hb-atomic-private.hh"
+#include "hb.hh"
+#include "hb-atomic.hh"
 #include "hb-dsalgs.hh"
 
 
@@ -67,7 +67,10 @@ hb_options (void)
   u.i = _hb_options.get_relaxed ();
 
   if (unlikely (!u.i))
+  {
     _hb_options_init ();
+    u.i = _hb_options.get_relaxed ();
+  }
 
   return u.opts;
 }

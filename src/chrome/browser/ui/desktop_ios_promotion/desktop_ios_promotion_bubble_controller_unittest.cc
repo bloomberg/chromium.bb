@@ -4,21 +4,19 @@
 
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller.h"
 
+#include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/desktop_ios_promotion/desktop_ios_promotion_util.h"
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service.h"
 #include "chrome/browser/ui/desktop_ios_promotion/sms_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -65,7 +63,7 @@ class DesktopIOSPromotionBubbleControllerTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.SetPrefService(std::move(pref_service_));
     builder.AddTestingFactory(SMSServiceFactory::GetInstance(),
-                              BuildFakeSMSService);
+                              base::BindRepeating(&BuildFakeSMSService));
     profile_ = builder.Build();
     local_state_ = std::make_unique<TestingPrefServiceSimple>();
     TestingBrowserProcess::GetGlobal()->SetLocalState(local_state_.get());

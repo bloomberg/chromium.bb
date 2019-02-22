@@ -17,15 +17,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/file_chooser_params.h"
 #include "net/base/directory_lister.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class Profile;
 
 namespace content {
-struct FileChooserFileInfo;
-class RenderViewHost;
+class FileSelectListener;
 class WebContents;
 }
 
@@ -49,17 +48,21 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
                          private net::DirectoryLister::DirectoryListerDelegate {
  public:
   // Show the file chooser dialog.
-  static void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                             const content::FileChooserParams& params);
+  static void RunFileChooser(
+      content::RenderFrameHost* render_frame_host,
+      std::unique_ptr<content::FileSelectListener> listener,
+      const blink::mojom::FileChooserParams& params);
 
   // Enumerates all the files in directory.
-  static void EnumerateDirectory(content::WebContents* tab,
-                                 int request_id,
-                                 const base::FilePath& path);
+  static void EnumerateDirectory(
+      content::WebContents* tab,
+      std::unique_ptr<content::FileSelectListener> listener,
+      const base::FilePath& path);
 
  private:
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
   friend class base::DeleteHelper<FileSelectHelper>;
+  friend class FileSelectHelperContactsAndroid;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
 
@@ -71,23 +74,21 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   ~FileSelectHelper() override;
 
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
-                      std::unique_ptr<content::FileChooserParams> params);
-  void GetFileTypesInThreadPool(
-      std::unique_ptr<content::FileChooserParams> params);
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      blink::mojom::FileChooserParamsPtr params);
+  void GetFileTypesInThreadPool(blink::mojom::FileChooserParamsPtr params);
   void GetSanitizedFilenameOnUIThread(
-      std::unique_ptr<content::FileChooserParams> params);
+      blink::mojom::FileChooserParamsPtr params);
 #if defined(FULL_SAFE_BROWSING)
   void CheckDownloadRequestWithSafeBrowsing(
       const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params);
-  void ProceedWithSafeBrowsingVerdict(
-      const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params,
-      bool allowed_by_safe_browsing);
+      blink::mojom::FileChooserParamsPtr params);
+  void ProceedWithSafeBrowsingVerdict(const base::FilePath& default_path,
+                                      blink::mojom::FileChooserParamsPtr params,
+                                      bool allowed_by_safe_browsing);
 #endif
-  void RunFileChooserOnUIThread(
-      const base::FilePath& default_path,
-      std::unique_ptr<content::FileChooserParams> params);
+  void RunFileChooserOnUIThread(const base::FilePath& default_path,
+                                blink::mojom::FileChooserParamsPtr params);
 
   // Cleans up and releases this instance. This must be called after the last
   // callback is received from the file chooser dialog.
@@ -117,14 +118,11 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
 
-  void EnumerateDirectory(int request_id,
-                          content::RenderViewHost* render_view_host,
+  void EnumerateDirectory(std::unique_ptr<content::FileSelectListener> listener,
                           const base::FilePath& path);
 
   // Kicks off a new directory enumeration.
-  void StartNewEnumeration(const base::FilePath& path,
-                           int request_id,
-                           content::RenderViewHost* render_view_host);
+  void StartNewEnumeration(const base::FilePath& path);
 
   // net::DirectoryLister::DirectoryListerDelegate overrides.
   void OnListFile(
@@ -157,14 +155,16 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   static base::FilePath ZipPackage(const base::FilePath& path);
 #endif  // defined(OS_MACOSX)
 
-  // Utility method that passes |files| to the RenderFrameHost, and ends the
+  // Utility method that passes |files| to the FileSelectListener, and ends the
   // file chooser.
+  // TODO(tkent): Remove 'RenderFrameHost' from the name.
   void NotifyRenderFrameHostAndEnd(
       const std::vector<ui::SelectedFileInfo>& files);
 
-  // Sends the result to the render process, and call |RunFileChooserEnd|.
+  // Sends the result to the FileSelectListener, and call |RunFileChooserEnd|.
+  // TODO(tkent): Remove 'RenderFrameHost' from the name.
   void NotifyRenderFrameHostAndEndAfterConversion(
-      const std::vector<content::FileChooserFileInfo>& list);
+      std::vector<blink::mojom::FileChooserFileInfoPtr> list);
 
   // Schedules the deletion of the files in |temporary_files_| and clears the
   // vector.
@@ -213,23 +213,25 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   content::RenderFrameHost* render_frame_host_;
   content::WebContents* web_contents_;
 
+  // |listener_| receives the result of the FileSelectHelper.
+  std::unique_ptr<content::FileSelectListener> listener_;
+
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::unique_ptr<ui::SelectFileDialog::FileTypeInfo> select_file_types_;
 
-  // The type of file dialog last shown.
+  // The type of file dialog last shown. This is SELECT_NONE if an
+  // instance is created through the public EnumerateDirectory().
   ui::SelectFileDialog::Type dialog_type_;
 
   // The mode of file dialog last shown.
-  content::FileChooserParams::Mode dialog_mode_;
+  blink::mojom::FileChooserParams::Mode dialog_mode_;
 
   // Maintain an active directory enumeration.  These could come from the file
   // select dialog or from drag-and-drop of directories.  There could not be
   // more than one going on at a time.
   struct ActiveDirectoryEnumeration;
   std::unique_ptr<ActiveDirectoryEnumeration> directory_enumeration_;
-  // Keep |request_id| argument of EnumerateDirectory() to reply to RVH.
-  int request_id_;
 
   ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
       observer_;

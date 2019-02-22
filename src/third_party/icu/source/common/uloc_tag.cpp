@@ -1573,9 +1573,9 @@ _appendLDMLExtensionAsKeywords(const char* ldmlext, ExtensionListEntry** appendT
                     kwd->value = pType;
 
                     if (!_addExtensionToList(&kwdFirst, kwd, FALSE)) {
-                        *status = U_ILLEGAL_ARGUMENT_ERROR;
+                        // duplicate keyword is allowed, Only the first
+                        // is honored.
                         uprv_free(kwd);
-                        goto cleanup;
                     }
                 }
 
@@ -2014,7 +2014,9 @@ ultag_parse(const char* tag, int32_t tagLen, int32_t* parsedLen, UErrorCode* sta
                 t->language = T_CString_toLowerCase(pSubtag);
 
                 pLastGoodPosition = pSep;
-                next = EXTL | SCRT | REGN | VART | EXTS | PRIV;
+                next = SCRT | REGN | VART | EXTS | PRIV;
+                if (subtagLen <= 3)
+                  next |= EXTL;
                 continue;
             }
         }
@@ -2148,7 +2150,7 @@ ultag_parse(const char* tag, int32_t tagLen, int32_t* parsedLen, UErrorCode* sta
             }
         }
         if (next & PRIV) {
-            if (uprv_tolower(*pSubtag) == PRIVATEUSE) {
+            if (uprv_tolower(*pSubtag) == PRIVATEUSE && subtagLen == 1) {
                 char *pPrivuseVal;
 
                 if (pExtension != NULL) {

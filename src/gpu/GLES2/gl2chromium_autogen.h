@@ -301,8 +301,6 @@
 #define glPostSubBufferCHROMIUM GLES2_GET_FUN(PostSubBufferCHROMIUM)
 #define glCopyTextureCHROMIUM GLES2_GET_FUN(CopyTextureCHROMIUM)
 #define glCopySubTextureCHROMIUM GLES2_GET_FUN(CopySubTextureCHROMIUM)
-#define glCompressedCopyTextureCHROMIUM \
-  GLES2_GET_FUN(CompressedCopyTextureCHROMIUM)
 #define glDrawArraysInstancedANGLE GLES2_GET_FUN(DrawArraysInstancedANGLE)
 #define glDrawElementsInstancedANGLE GLES2_GET_FUN(DrawElementsInstancedANGLE)
 #define glVertexAttribDivisorANGLE GLES2_GET_FUN(VertexAttribDivisorANGLE)
@@ -410,5 +408,6 @@
   GLES2_GET_FUN(InvalidateReadbackBufferShadowDataCHROMIUM)
 #define glFramebufferTextureMultiviewLayeredANGLE \
   GLES2_GET_FUN(FramebufferTextureMultiviewLayeredANGLE)
+#define glMaxShaderCompilerThreadsKHR GLES2_GET_FUN(MaxShaderCompilerThreadsKHR)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

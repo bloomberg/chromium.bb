@@ -98,7 +98,8 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
     : views::Button(this),
       contents_view_(contents_view),
       app_list_view_(app_list_view),
-      is_new_style_launcher_enabled_(features::IsNewStyleLauncherEnabled()),
+      is_new_style_launcher_enabled_(
+          app_list_features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetPaintToLayer();

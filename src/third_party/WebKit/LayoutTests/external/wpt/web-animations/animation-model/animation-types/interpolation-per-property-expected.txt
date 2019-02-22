@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 700 tests; 632 PASS, 68 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 701 tests; 639 PASS, 62 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -179,13 +179,13 @@ PASS color supports animating as color of #RGBa
 PASS color supports animating as color of rgba()
 PASS color supports animating as color of hsla()
 PASS color-interpolation (type: discrete) has testInterpolation function
-FAIL color-interpolation uses discrete animation when animating between "linearRGB" and "auto" with linear easing assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
-FAIL color-interpolation uses discrete animation when animating between "linearRGB" and "auto" with effect easing assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
-FAIL color-interpolation uses discrete animation when animating between "linearRGB" and "auto" with keyframe easing assert_equals: The value should be linearrgb at 0ms expected "linearrgb" but got "linearRGB"
+PASS color-interpolation uses discrete animation when animating between "linearrgb" and "auto" with linear easing
+PASS color-interpolation uses discrete animation when animating between "linearrgb" and "auto" with effect easing
+PASS color-interpolation uses discrete animation when animating between "linearrgb" and "auto" with keyframe easing
 PASS color-interpolation-filters (type: discrete) has testInterpolation function
-FAIL color-interpolation-filters uses discrete animation when animating between "sRGB" and "linearRGB" with linear easing assert_equals: The value should be srgb at 0ms expected "srgb" but got "sRGB"
-FAIL color-interpolation-filters uses discrete animation when animating between "sRGB" and "linearRGB" with effect easing assert_equals: The value should be srgb at 0ms expected "srgb" but got "sRGB"
-FAIL color-interpolation-filters uses discrete animation when animating between "sRGB" and "linearRGB" with keyframe easing assert_equals: The value should be srgb at 0ms expected "srgb" but got "sRGB"
+PASS color-interpolation-filters uses discrete animation when animating between "srgb" and "linearrgb" with linear easing
+PASS color-interpolation-filters uses discrete animation when animating between "srgb" and "linearrgb" with effect easing
+PASS color-interpolation-filters uses discrete animation when animating between "srgb" and "linearrgb" with keyframe easing
 PASS column-count (type: positiveInteger) has testInterpolation function
 PASS column-count supports animating as a positive integer
 PASS column-count (type: discrete) has testInterpolation function
@@ -652,6 +652,7 @@ PASS transform: rotateY
 PASS transform: non-invertible matrices
 FAIL transform: non-invertible matrices in matched transform lists assert_approx_equals: expected matrix(0,-1,1,0,250,0) but got matrix(0.705995, -0.708217, 0.708217, 0.705995, 274.95, 0): The value should be matrix(0,-1,1,0,250,0) at 499ms but got matrix(0.705995, -0.708217, 0.708217, 0.705995, 274.95, 0) expected 0 +/- 0.0001 but got 0.705995
 PASS transform: non-invertible matrices in mismatched transform lists
+PASS transform: perspective
 PASS transform-box (type: discrete) has testInterpolation function
 FAIL transform-box uses discrete animation when animating between "fill-box" and "border-box" with linear easing assert_equals: The value should be border-box at 500ms expected "border-box" but got "view-box"
 FAIL transform-box uses discrete animation when animating between "fill-box" and "border-box" with effect easing assert_equals: The value should be border-box at 960ms expected "border-box" but got "view-box"

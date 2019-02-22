@@ -47,6 +47,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -652,7 +653,7 @@ class PictureInPictureLazyBackgroundPageApiTest
 // Tests that the lazy background page stays alive while a video is playing in
 // Picture-in-Picture mode.
 IN_PROC_BROWSER_TEST_F(PictureInPictureLazyBackgroundPageApiTest,
-                       DISABLED_PictureInPictureInBackgroundPage) {
+                       PictureInPictureInBackgroundPage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(LoadExtensionAndWait("browser_action_picture_in_picture"));
 
@@ -670,14 +671,16 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureLazyBackgroundPageApiTest,
   // that keep alive count is incremented.
   {
     ProcessManager* pm = ProcessManager::Get(browser()->profile());
-    int previous_keep_alive_count = pm->GetLazyKeepaliveCount(extension);
+    const auto pip_activity =
+        std::make_pair(Activity::MEDIA, Activity::kPictureInPicture);
+    EXPECT_THAT(pm->GetLazyKeepaliveActivities(extension),
+                testing::Not(testing::Contains(pip_activity)));
 
     ExtensionTestMessageListener entered_pip("entered_pip", false);
     BrowserActionTestUtil::Create(browser())->Press(0);
     EXPECT_TRUE(entered_pip.WaitUntilSatisfied());
-    content::RunAllTasksUntilIdle();
-    EXPECT_EQ(pm->GetLazyKeepaliveCount(extension),
-              previous_keep_alive_count + 1);
+    EXPECT_THAT(pm->GetLazyKeepaliveActivities(extension),
+                testing::Contains(pip_activity));
   }
 
   // Click on the browser action icon to exit Picture-in-Picture and the Lazy

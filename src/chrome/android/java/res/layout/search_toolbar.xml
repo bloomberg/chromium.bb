@@ -21,20 +21,19 @@
         android:imeOptions="flagNoExtractUi|actionSearch"
         android:inputType="text"
         android:singleLine="true"
-        android:textColor="@color/default_text_color"
-        android:textSize="16sp"
-        android:textColorHint="@color/search_box_hint" />
+        android:textAppearance="@style/BlackTitle1"
+        android:textColorHint="@color/search_box_hint"/>
 
-    <org.chromium.chrome.browser.widget.TintedImageButton
+    <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/clear_text_button"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:paddingStart="16dp"
-        android:paddingEnd="8dp"
+        android:paddingEnd="@dimen/clear_text_button_end_padding"
         android:src="@drawable/btn_delete_24dp"
         android:background="@null"
         android:scaleType="center"
         android:contentDescription="@string/accessibility_toolbar_btn_delete_url"
         android:visibility="invisible"
-        app:chrometint="@color/dark_mode_tint" />
+        app:tint="@color/dark_mode_tint" />
 </LinearLayout>

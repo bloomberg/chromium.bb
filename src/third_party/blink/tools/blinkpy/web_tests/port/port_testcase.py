@@ -254,13 +254,6 @@ class PortTestCase(LoggingTestCase):
             port.host.filesystem.join(port.layout_tests_dir(), 'SlowTests'),
         ])
 
-    def test_check_sys_deps(self):
-        port = self.make_port()
-        port._executive = MockExecutive(exit_code=0)  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.OK_EXIT_STATUS)
-        port._executive = MockExecutive(exit_code=1, output='testing output failure')  # pylint: disable=protected-access
-        self.assertEqual(port.check_sys_deps(needs_http=False), exit_codes.SYS_DEPS_EXIT_STATUS)
-
     def test_expectations_ordering(self):
         port = self.make_port()
         for path in port.expectations_files():

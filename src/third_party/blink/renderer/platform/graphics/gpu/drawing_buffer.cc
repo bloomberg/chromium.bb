@@ -57,7 +57,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
-#include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -1367,15 +1367,15 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
   }
 
   if (op == WebGLImageConversion::kAlphaDoPremultiply) {
-    std::unique_ptr<SkColorSpaceXform> xform =
-        SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
-                               SkColorSpace::MakeSRGBLinear().get());
-    SkColorSpaceXform::ColorFormat color_format =
-        SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+    auto color_type = kRGBA_8888_SkColorType;
     if (data_type != GL_UNSIGNED_BYTE)
-      color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
-    xform->apply(color_format, pixels, color_format, pixels, width * height,
-                 kPremul_SkAlphaType);
+      color_type = kRGBA_F16_SkColorType;
+    const auto src =
+        SkImageInfo::Make(width, height, color_type, kUnpremul_SkAlphaType);
+    const auto dst =
+        SkImageInfo::Make(width, height, color_type, kPremul_SkAlphaType);
+    SkPixmap{src, pixels, src.minRowBytes()}.readPixels(
+        SkPixmap{dst, pixels, dst.minRowBytes()});
   } else if (op != WebGLImageConversion::kAlphaDoNothing) {
     NOTREACHED();
   }

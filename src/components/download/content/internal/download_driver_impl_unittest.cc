@@ -116,7 +116,7 @@ TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
   // Download is not created yet in content layer.
   ON_CALL(mock_manager_, GetDownloadByGuid(kTestGuid))
       .WillByDefault(Return(nullptr));
-  driver_->Remove(kTestGuid);
+  driver_->Remove(kTestGuid, false);
   task_runner_->RunUntilIdle();
 
   // Download is created in content layer.

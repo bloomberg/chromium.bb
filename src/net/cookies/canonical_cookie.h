@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -105,6 +106,12 @@ class NET_EXPORT CanonicalCookie {
     // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
     return (name_ == ecc.Name() && domain_ == ecc.Domain()
             && path_ == ecc.Path());
+  }
+
+  // Returns a key such that two cookies with the same UniqueKey() are
+  // guaranteed to be equivalent in the sense of IsEquivalent().
+  std::tuple<std::string, std::string, std::string> UniqueKey() const {
+    return std::make_tuple(name_, domain_, path_);
   }
 
   // Checks a looser set of equivalency rules than 'IsEquivalent()' in order

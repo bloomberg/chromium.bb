@@ -38,6 +38,8 @@
 namespace blink {
 
 class FlexItem;
+class FlexItemVectorView;
+class FlexLayoutAlgorithm;
 class FlexLine;
 struct MinMaxSize;
 
@@ -62,8 +64,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
-  IntSize OriginAdjustmentForScrollbars() const final;
-  IntSize ScrolledContentOffset() const final;
   bool HasTopOverflow() const override;
   bool HasLeftOverflow() const override;
 
@@ -126,14 +126,13 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
                                            const Length& size) const;
-  LayoutUnit FlowAwareBorderStart() const;
-  LayoutUnit FlowAwareBorderEnd() const;
-  LayoutUnit FlowAwareBorderBefore() const;
-  LayoutUnit FlowAwareBorderAfter() const;
-  LayoutUnit FlowAwarePaddingStart() const;
-  LayoutUnit FlowAwarePaddingEnd() const;
-  LayoutUnit FlowAwarePaddingBefore() const;
-  LayoutUnit FlowAwarePaddingAfter() const;
+
+  LayoutUnit ContentInsetBottom() const;
+  LayoutUnit ContentInsetRight() const;
+  LayoutUnit FlowAwareContentInsetStart() const;
+  LayoutUnit FlowAwareContentInsetEnd() const;
+  LayoutUnit FlowAwareContentInsetBefore() const;
+  LayoutUnit FlowAwareContentInsetAfter() const;
 
   LayoutUnit CrossAxisScrollbarExtent() const;
   LayoutUnit CrossAxisScrollbarExtentForChild(const LayoutBox& child) const;
@@ -160,8 +159,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   bool CanAvoidLayoutForNGChild(const LayoutBox& child) const;
 
   void LayoutFlexItems(bool relayout_children, SubtreeLayoutScope&);
-  LayoutUnit AutoMarginOffsetInMainAxis(const Vector<FlexItem>&,
-                                        LayoutUnit& available_free_space);
   bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
   bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
                                     LayoutUnit available_alignment_space);
@@ -170,11 +167,14 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   LayoutUnit ComputeChildMarginValue(Length margin);
   void PrepareOrderIteratorAndMargins();
-  MinMaxSize ComputeMinAndMaxSizesForChild(const LayoutBox& child) const;
+  MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
+                                           const LayoutBox& child) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;
-  FlexItem ConstructFlexItem(LayoutBox& child, ChildLayoutType);
+  void ConstructAndAppendFlexItem(FlexLayoutAlgorithm* algorithm,
+                                  LayoutBox& child,
+                                  ChildLayoutType);
 
   bool ResolveFlexibleLengths(FlexLine*,
                               LayoutUnit initial_free_space,
@@ -185,13 +185,16 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void PrepareChildForPositionedLayout(LayoutBox& child);
   void LayoutLineItems(FlexLine*, bool relayout_children, SubtreeLayoutScope&);
   void ApplyLineItemsPosition(FlexLine*);
-  void LayoutColumnReverse(Vector<FlexItem>&,
+  void LayoutColumnReverse(FlexItemVectorView&,
                            LayoutUnit cross_axis_offset,
                            LayoutUnit available_free_space);
   void AlignFlexLines(Vector<FlexLine>&);
   void AlignChildren(Vector<FlexLine>&);
-  void ApplyStretchAlignmentToChild(FlexItem& child,
+  // Computes the cross-axis size that a stretched child should have and stores
+  // it in child.cross_axis_size.
+  void ComputeStretchedSizeForChild(FlexItem& child,
                                     LayoutUnit line_cross_axis_extent);
+  void ApplyStretchAlignmentToChild(FlexItem& child);
   void FlipForRightToLeftColumn(const Vector<FlexLine>& line_contexts);
   void FlipForWrapReverse(const Vector<FlexLine>&,
                           LayoutUnit cross_axis_start_edge);

@@ -19,7 +19,7 @@ namespace policy {
 // |LegacyPoliciesDeprecatingPolicyHandler| instead.
 class POLICY_EXPORT ExtensionPolicyMigrator {
  public:
-  virtual ~ExtensionPolicyMigrator();
+  virtual ~ExtensionPolicyMigrator() {}
 
   // If there are deprecated policies in |bundle|, set the value of the new
   // policies accordingly.
@@ -33,14 +33,6 @@ class POLICY_EXPORT ExtensionPolicyMigrator {
     // New name for the policy, in the Chrome domain.
     const char* new_name;
   };
-
- protected:
-  // Helper function intended for implementers who want to rename policies and
-  // copy them from an extension domain to the Chrome domain. If one of the
-  // Chrome domain policies is already set, it is not overridden.
-  void CopyPoliciesIfUnset(PolicyBundle* bundle,
-                           const std::string& extension_id,
-                           base::span<const Migration> migrations);
 };
 
 }  // namespace policy

@@ -159,7 +159,7 @@ void LayoutFlowThread::AbsoluteQuadsForDescendant(const LayoutBox& descendant,
 void LayoutFlowThread::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   Vector<LayoutRect> rects_in_flowthread;
   LayoutBlockFlow::AddOutlineRects(rects_in_flowthread, additional_offset,
                                    include_block_overflows);

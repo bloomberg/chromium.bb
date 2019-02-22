@@ -85,7 +85,7 @@
    * messages during execution.
    */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttgxvar
+#define FT_COMPONENT  ttgxvar
 
 
   /*************************************************************************/
@@ -1531,27 +1531,54 @@
 
     if ( gvar_head.flags & 1 )
     {
+      FT_ULong  limit = gvar_start + table_len;
+
+
       /* long offsets (one more offset than glyphs, to mark size of last) */
       if ( FT_FRAME_ENTER( ( blend->gv_glyphcnt + 1 ) * 4L ) )
         goto Exit;
 
       for ( i = 0; i <= blend->gv_glyphcnt; i++ )
+      {
         blend->glyphoffsets[i] = offsetToData + FT_GET_ULONG();
-
-      FT_FRAME_EXIT();
+        /* use `>', not `>=' */
+        if ( blend->glyphoffsets[i] > limit )
+        {
+          FT_TRACE2(( "ft_var_load_gvar:"
+                      " invalid glyph variation data offset for index %d\n",
+                      i ));
+          error = FT_THROW( Invalid_Table );
+          break;
+        }
+      }
     }
     else
     {
+      FT_ULong  limit = gvar_start + table_len;
+
+
       /* short offsets (one more offset than glyphs, to mark size of last) */
       if ( FT_FRAME_ENTER( ( blend->gv_glyphcnt + 1 ) * 2L ) )
         goto Exit;
 
       for ( i = 0; i <= blend->gv_glyphcnt; i++ )
+      {
         blend->glyphoffsets[i] = offsetToData + FT_GET_USHORT() * 2;
-                                               /* XXX: Undocumented: `*2'! */
-
-      FT_FRAME_EXIT();
+        /* use `>', not `>=' */
+        if ( blend->glyphoffsets[i] > limit )
+        {
+          FT_TRACE2(( "ft_var_load_gvar:"
+                      " invalid glyph variation data offset for index %d\n",
+                      i ));
+          error = FT_THROW( Invalid_Table );
+          break;
+        }
+      }
     }
+
+    FT_FRAME_EXIT();
+    if ( error )
+      goto Exit;
 
     if ( blend->tuplecount != 0 )
     {
@@ -3236,13 +3263,24 @@
                     " invalid tuple index\n" ));
 
         error = FT_THROW( Invalid_Table );
-        goto Exit;
+        goto FExit;
       }
       else
+      {
+        if ( !blend->tuplecoords )
+        {
+          FT_TRACE2(( "tt_face_vary_cvt:"
+                      " no valid tuple coordinates available\n" ));
+
+          error = FT_THROW( Invalid_Table );
+          goto FExit;
+        }
+
         FT_MEM_COPY(
           tuple_coords,
           &blend->tuplecoords[( tupleIndex & 0xFFF ) * blend->num_axis],
           blend->num_axis * sizeof ( FT_Fixed ) );
+      }
 
       if ( tupleIndex & GX_TI_INTERMEDIATE_TUPLE )
       {
@@ -3645,6 +3683,7 @@
 
     FT_UInt   tupleCount;
     FT_ULong  offsetToData;
+    FT_ULong  dataSize;
 
     FT_ULong  here;
     FT_UInt   i, j;
@@ -3685,9 +3724,11 @@
          FT_NEW_ARRAY( has_delta, n_points )  )
       goto Fail1;
 
-    if ( FT_STREAM_SEEK( blend->glyphoffsets[glyph_index] )   ||
-         FT_FRAME_ENTER( blend->glyphoffsets[glyph_index + 1] -
-                           blend->glyphoffsets[glyph_index] ) )
+    dataSize = blend->glyphoffsets[glyph_index + 1] -
+                 blend->glyphoffsets[glyph_index];
+
+    if ( FT_STREAM_SEEK( blend->glyphoffsets[glyph_index] ) ||
+         FT_FRAME_ENTER( dataSize )                         )
       goto Fail1;
 
     glyph_start = FT_Stream_FTell( stream );
@@ -3703,8 +3744,8 @@
     offsetToData = FT_GET_USHORT();
 
     /* rough sanity test */
-    if ( offsetToData + ( tupleCount & GX_TC_TUPLE_COUNT_MASK ) * 4 >
-           blend->gvar_size )
+    if ( offsetToData > dataSize                                ||
+         ( tupleCount & GX_TC_TUPLE_COUNT_MASK ) * 4 > dataSize )
     {
       FT_TRACE2(( "TT_Vary_Apply_Glyph_Deltas:"
                   " invalid glyph variation array header\n" ));

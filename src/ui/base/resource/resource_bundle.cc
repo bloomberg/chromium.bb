@@ -242,22 +242,11 @@ void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
 }
 
 #if !defined(OS_ANDROID)
+// static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale, true).empty();
 }
 #endif  // !defined(OS_ANDROID)
-
-void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
-#if DCHECK_IS_ON()
-  data_pack->CheckForDuplicateResources(data_packs_);
-#endif
-
-  if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
-      GetScaleForScaleFactor(max_scale_factor_))
-    max_scale_factor_ = data_pack->GetScaleFactor();
-
-  data_packs_.push_back(std::move(data_pack));
-}
 
 void ResourceBundle::AddDataPackFromPath(const base::FilePath& path,
                                          ScaleFactor scale_factor) {
@@ -300,6 +289,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
 }
 
 #if !defined(OS_MACOSX)
+// static
 base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
                                                  bool test_file_exists) {
   if (app_locale.empty())
@@ -328,9 +318,14 @@ base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,
 #endif
   }
 
-  if (delegate_) {
-    locale_file_path =
-        delegate_->GetPathForLocalePack(locale_file_path, app_locale);
+  // Note: The delegate GetPathForLocalePack() override is currently only used
+  // by CastResourceDelegate, which does not call this function prior to
+  // initializing the ResourceBundle. This called earlier than that by the
+  // variations code which also has a CHECK that an inconsistent value does not
+  // get returned via VariationsService::EnsureLocaleEquals().
+  if (HasSharedInstance() && GetSharedInstance().delegate_) {
+    locale_file_path = GetSharedInstance().delegate_->GetPathForLocalePack(
+        locale_file_path, app_locale);
   }
 
   // Don't try to load empty values or values that are not absolute paths.
@@ -402,9 +397,9 @@ void ResourceBundle::OverrideLocalePakForTest(const base::FilePath& pak_path) {
 }
 
 void ResourceBundle::OverrideLocaleStringResource(
-    int message_id,
+    int resource_id,
     const base::string16& string) {
-  overridden_locale_strings_[message_id] = string;
+  overridden_locale_strings_[resource_id] = string;
 }
 
 const base::FilePath& ResourceBundle::GetOverriddenPakPath() {
@@ -556,62 +551,16 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
-base::string16 ResourceBundle::GetLocalizedString(int message_id) {
-  base::string16 string;
-  if (delegate_ && delegate_->GetLocalizedString(message_id, &string))
-    return MaybeMangleLocalizedString(string);
-
-  // Ensure that ReloadLocaleResources() doesn't drop the resources while
-  // we're using them.
-  base::AutoLock lock_scope(*locale_resources_data_lock_);
-
-  IdToStringMap::const_iterator it =
-      overridden_locale_strings_.find(message_id);
-  if (it != overridden_locale_strings_.end())
-    return MaybeMangleLocalizedString(it->second);
-
-  // If for some reason we were unable to load the resources , return an empty
-  // string (better than crashing).
-  if (!locale_resources_data_.get()) {
-    LOG(WARNING) << "locale resources are not loaded";
-    return base::string16();
+base::string16 ResourceBundle::GetLocalizedString(int resource_id) {
+#if DCHECK_IS_ON()
+  {
+    base::AutoLock lock_scope(*locale_resources_data_lock_);
+    // Overriding locale strings isn't supported if the first string resource
+    // has already been queried.
+    can_override_locale_string_resources_ = false;
   }
-
-  base::StringPiece data;
-  ResourceHandle::TextEncodingType encoding =
-      locale_resources_data_->GetTextEncodingType();
-  if (!locale_resources_data_->GetStringPiece(static_cast<uint16_t>(message_id),
-                                              &data)) {
-    if (secondary_locale_resources_data_.get() &&
-        secondary_locale_resources_data_->GetStringPiece(
-            static_cast<uint16_t>(message_id), &data)) {
-      // Fall back on the secondary locale pak if it exists.
-      encoding = secondary_locale_resources_data_->GetTextEncodingType();
-    } else {
-      // Fall back on the main data pack (shouldn't be any strings here except
-      // in unittests).
-      data = GetRawDataResource(message_id);
-      if (data.empty()) {
-        LOG(WARNING) << "unable to find resource: " << message_id;
-        NOTREACHED();
-        return base::string16();
-      }
-    }
-  }
-
-  // Strings should not be loaded from a data pack that contains binary data.
-  DCHECK(encoding == ResourceHandle::UTF16 || encoding == ResourceHandle::UTF8)
-      << "requested localized string from binary pack file";
-
-  // Data pack encodes strings as either UTF8 or UTF16.
-  base::string16 msg;
-  if (encoding == ResourceHandle::UTF16) {
-    msg = base::string16(reinterpret_cast<const base::char16*>(data.data()),
-                         data.length() / 2);
-  } else if (encoding == ResourceHandle::UTF8) {
-    msg = base::UTF8ToUTF16(data);
-  }
-  return MaybeMangleLocalizedString(msg);
+#endif
+  return GetLocalizedStringImpl(resource_id);
 }
 
 base::RefCountedMemory* ResourceBundle::LoadLocalizedResourceBytes(
@@ -733,6 +682,13 @@ bool ResourceBundle::IsScaleFactorSupported(ScaleFactor scale_factor) {
   return base::ContainsValue(supported_scale_factors, scale_factor);
 }
 
+void ResourceBundle::CheckCanOverrideStringResources() {
+#if DCHECK_IS_ON()
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+  DCHECK(can_override_locale_string_resources_);
+#endif
+}
+
 ResourceBundle::ResourceBundle(Delegate* delegate)
     : delegate_(delegate),
       locale_resources_data_lock_(new base::Lock),
@@ -750,7 +706,7 @@ ResourceBundle::~ResourceBundle() {
 void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(delegate);
-  static std::vector<ScaleFactor> supported_scale_factors;
+  std::vector<ScaleFactor> supported_scale_factors;
 #if defined(OS_IOS)
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.device_scale_factor() > 2.0) {
@@ -817,10 +773,26 @@ void ResourceBundle::AddDataPackFromPathInternal(
   }
 }
 
+void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
+#if DCHECK_IS_ON()
+  data_pack->CheckForDuplicateResources(data_packs_);
+#endif
+
+  if (GetScaleForScaleFactor(data_pack->GetScaleFactor()) >
+      GetScaleForScaleFactor(max_scale_factor_))
+    max_scale_factor_ = data_pack->GetScaleFactor();
+
+  data_packs_.push_back(std::move(data_pack));
+}
+
 void ResourceBundle::InitDefaultFontList() {
 #if defined(OS_CHROMEOS)
-  std::string font_family = base::UTF16ToUTF8(
-      GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
+  // InitDefaultFontList() is called earlier than overriding the locale strings.
+  // So we call the |GetLocalizedStringImpl()| which doesn't set the flag
+  // |can_override_locale_string_resources_| to false. This is okay, because the
+  // font list doesn't need to be overridden by variations.
+  std::string font_family =
+      base::UTF16ToUTF8(GetLocalizedStringImpl(IDS_UI_FONT_FAMILY_CROS));
   gfx::FontList::SetDefaultFontDescription(font_family);
 
   // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
@@ -905,6 +877,64 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
     empty_image_ = gfx::Image::CreateFrom1xBitmap(bitmap);
   }
   return empty_image_;
+}
+
+base::string16 ResourceBundle::GetLocalizedStringImpl(int resource_id) {
+  base::string16 string;
+  if (delegate_ && delegate_->GetLocalizedString(resource_id, &string))
+    return MaybeMangleLocalizedString(string);
+
+  // Ensure that ReloadLocaleResources() doesn't drop the resources while
+  // we're using them.
+  base::AutoLock lock_scope(*locale_resources_data_lock_);
+
+  IdToStringMap::const_iterator it =
+      overridden_locale_strings_.find(resource_id);
+  if (it != overridden_locale_strings_.end())
+    return MaybeMangleLocalizedString(it->second);
+
+  // If for some reason we were unable to load the resources , return an empty
+  // string (better than crashing).
+  if (!locale_resources_data_.get()) {
+    LOG(WARNING) << "locale resources are not loaded";
+    return base::string16();
+  }
+
+  base::StringPiece data;
+  ResourceHandle::TextEncodingType encoding =
+      locale_resources_data_->GetTextEncodingType();
+  if (!locale_resources_data_->GetStringPiece(
+          static_cast<uint16_t>(resource_id), &data)) {
+    if (secondary_locale_resources_data_.get() &&
+        secondary_locale_resources_data_->GetStringPiece(
+            static_cast<uint16_t>(resource_id), &data)) {
+      // Fall back on the secondary locale pak if it exists.
+      encoding = secondary_locale_resources_data_->GetTextEncodingType();
+    } else {
+      // Fall back on the main data pack (shouldn't be any strings here except
+      // in unittests).
+      data = GetRawDataResource(resource_id);
+      if (data.empty()) {
+        LOG(WARNING) << "unable to find resource: " << resource_id;
+        NOTREACHED();
+        return base::string16();
+      }
+    }
+  }
+
+  // Strings should not be loaded from a data pack that contains binary data.
+  DCHECK(encoding == ResourceHandle::UTF16 || encoding == ResourceHandle::UTF8)
+      << "requested localized string from binary pack file";
+
+  // Data pack encodes strings as either UTF8 or UTF16.
+  base::string16 msg;
+  if (encoding == ResourceHandle::UTF16) {
+    msg = base::string16(reinterpret_cast<const base::char16*>(data.data()),
+                         data.length() / 2);
+  } else if (encoding == ResourceHandle::UTF8) {
+    msg = base::UTF8ToUTF16(data);
+  }
+  return MaybeMangleLocalizedString(msg);
 }
 
 // static

@@ -14,16 +14,16 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "base/version.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+class SharedURLLoaderFactoryInfo;
+class SimpleURLLoader;
+}  // namespace network
 
 struct UpgradeRecommendedDetails;
 
@@ -31,15 +31,16 @@ struct UpgradeRecommendedDetails;
 // handles all the scheduling necessary to contact the server regularly.
 // All methods, but the constructor, |GetInstance| and |Start| methods, must be
 // called from the IO thread.
-class OmahaService : public net::URLFetcherDelegate {
+class OmahaService {
  public:
   // Called when an upgrade is recommended.
   using UpgradeRecommendedCallback =
       base::Callback<void(const UpgradeRecommendedDetails&)>;
 
-  // Starts the service. Also set the |URLRequestContextGetter| necessary to
+  // Starts the service. Also set the |URLLoaderFactory| necessary to
   // access the Omaha server. This method should only be called once.
-  static void Start(net::URLRequestContextGetter* request_context_getter,
+  static void Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+                        url_loader_factory_info,
                     const UpgradeRecommendedCallback& callback);
 
   // Returns debug information about the omaha service.
@@ -78,8 +79,7 @@ class OmahaService : public net::URLFetcherDelegate {
   // Initialize the timer. Used on startup.
   void Initialize();
 
-  // net::URLFetcherDelegate
-  void OnURLFetchComplete(const net::URLFetcher* fetcher) override;
+  void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Raw GetInstance method. Necessary for using singletons.
   static OmahaService* GetInstance();
@@ -88,7 +88,7 @@ class OmahaService : public net::URLFetcherDelegate {
   OmahaService();
   // Private constructor, only used for tests.
   explicit OmahaService(bool schedule);
-  ~OmahaService() override;
+  ~OmahaService();
 
   // Returns the time to wait before next attempt.
   static base::TimeDelta GetBackOff(uint8_t number_of_tries);
@@ -146,12 +146,17 @@ class OmahaService : public net::URLFetcherDelegate {
   // called after a successful installation/update ping.
   void ClearInstallRetryRequestId();
 
+  // Initialize the URLLoaderFactory instance (mostly needed for tests).
+  void InitializeURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+
   // Clears the all persistent state. Should only be used for testing.
   static void ClearPersistentStateForTests();
 
   // To communicate with the Omaha server.
-  std::unique_ptr<net::URLFetcher> fetcher_;
-  net::URLRequestContextGetter* request_context_getter_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The timer that call this object back when needed.
   base::OneShotTimer timer_;

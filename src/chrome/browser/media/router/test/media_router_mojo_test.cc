@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "extensions/common/extension_builder.h"
@@ -87,15 +88,6 @@ void MockMediaRouteProvider::TerminateRouteSuccess(
   std::move(cb).Run(std::string(), RouteRequestResult::OK);
 }
 
-void MockMediaRouteProvider::SendRouteMessageSuccess(
-    SendRouteMessageCallback& cb) const {
-  std::move(cb).Run(true);
-}
-void MockMediaRouteProvider::SendRouteBinaryMessageSuccess(
-    SendRouteBinaryMessageCallback& cb) const {
-  std::move(cb).Run(true);
-}
-
 void MockMediaRouteProvider::SearchSinksSuccess(SearchSinksCallback& cb) const {
   std::string sink_id = route_ ? route_->media_sink_id() : std::string();
   std::move(cb).Run(sink_id);
@@ -174,7 +166,8 @@ MockMediaRouteControllerObserver::~MockMediaRouteControllerObserver() {}
 MediaRouterMojoTest::MediaRouterMojoTest() {
   request_manager_ = static_cast<MockEventPageRequestManager*>(
       EventPageRequestManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), &MockEventPageRequestManager::Create));
+          profile(),
+          base::BindRepeating(&MockEventPageRequestManager::Create)));
   request_manager_->set_mojo_connections_ready_for_test(true);
   ON_CALL(*request_manager_, RunOrDeferInternal(_, _))
       .WillByDefault(Invoke([](base::OnceClosure& request,
@@ -358,19 +351,8 @@ void MediaRouterMojoTest::TestTerminateRoute() {
 
 void MediaRouterMojoTest::TestSendRouteMessage() {
   ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
-  EXPECT_CALL(mock_extension_provider_,
-              SendRouteMessageInternal(kRouteId, kMessage, _))
-      .WillOnce(
-          Invoke([](const MediaRoute::Id& route_id, const std::string& message,
-                    mojom::MediaRouteProvider::SendRouteMessageCallback& cb) {
-            std::move(cb).Run(true);
-          }));
-
-  SendMessageCallbackHandler handler;
-  EXPECT_CALL(handler, Invoke(true));
-  router()->SendRouteMessage(kRouteId, kMessage,
-                             base::BindOnce(&SendMessageCallbackHandler::Invoke,
-                                            base::Unretained(&handler)));
+  EXPECT_CALL(mock_extension_provider_, SendRouteMessage(kRouteId, kMessage));
+  router()->SendRouteMessage(kRouteId, kMessage);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -378,22 +360,14 @@ void MediaRouterMojoTest::TestSendRouteBinaryMessage() {
   ProvideTestRoute(MediaRouteProviderId::EXTENSION, kRouteId);
   auto expected_binary_data = std::make_unique<std::vector<uint8_t>>(
       kBinaryMessage, kBinaryMessage + arraysize(kBinaryMessage));
-  EXPECT_CALL(mock_extension_provider_,
-              SendRouteBinaryMessageInternal(kRouteId, _, _))
-      .WillOnce(Invoke(
-          [](const MediaRoute::Id& route_id, const std::vector<uint8_t>& data,
-             mojom::MediaRouteProvider::SendRouteMessageCallback& cb) {
+  EXPECT_CALL(mock_extension_provider_, SendRouteBinaryMessage(kRouteId, _))
+      .WillOnce(
+          [](const MediaRoute::Id& route_id, const std::vector<uint8_t>& data) {
             EXPECT_EQ(0, memcmp(kBinaryMessage, &(data[0]),
                                 arraysize(kBinaryMessage)));
-            std::move(cb).Run(true);
-          }));
+          });
 
-  SendMessageCallbackHandler handler;
-  EXPECT_CALL(handler, Invoke(true));
-  router()->SendRouteBinaryMessage(
-      kRouteId, std::move(expected_binary_data),
-      base::BindOnce(&SendMessageCallbackHandler::Invoke,
-                     base::Unretained(&handler)));
+  router()->SendRouteBinaryMessage(kRouteId, std::move(expected_binary_data));
   base::RunLoop().RunUntilIdle();
 }
 

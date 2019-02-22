@@ -27,13 +27,15 @@
 
 import sys
 import os
+import shutil
+import ssl
 import subprocess
 import urllib.request
 import zipfile
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.join(SCRIPTS_DIR, '..')
-GLSLANG_URL = "https://github.com/KhronosGroup/glslang/releases/download/master-tot"
+GLSLANG_URL = "https://github.com/KhronosGroup/glslang/releases/download/7.9.2888"
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -60,7 +62,8 @@ if __name__ == '__main__':
     sys.stdout.flush()
 
     # Download release zip file from glslang github releases site
-    urllib.request.urlretrieve(GLSLANG_COMPLETE_URL, GLSLANG_OUTFILENAME)
+    with urllib.request.urlopen(GLSLANG_COMPLETE_URL, context=ssl._create_unverified_context()) as response, open(GLSLANG_OUTFILENAME, 'wb') as out_file:
+        shutil.copyfileobj(response, out_file)
     # Unzip the glslang binary archive
     zipped_file = zipfile.ZipFile(GLSLANG_OUTFILENAME, 'r')
     namelist = zipped_file.namelist()

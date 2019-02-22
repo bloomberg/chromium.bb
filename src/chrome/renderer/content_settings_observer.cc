@@ -55,7 +55,6 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebView;
 using content::DocumentState;
-using content::NavigationState;
 
 namespace {
 
@@ -66,7 +65,7 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   // TODO(alexmos): This is broken for --site-per-process, since top() can be a
   // WebRemoteFrame which does not have a document(), and the WebRemoteFrame's
   // URL is not replicated.  See https://crbug.com/628759.
-  if (top_origin.unique() && frame->Top()->IsWebLocalFrame())
+  if (top_origin.opaque() && frame->Top()->IsWebLocalFrame())
     return frame->Top()->ToWebLocalFrame()->GetDocument().Url();
   return top_origin.GetURL();
 }
@@ -110,19 +109,11 @@ bool IsUniqueFrame(WebFrame* frame) {
 
 ContentSettingsObserver::ContentSettingsObserver(
     content::RenderFrame* render_frame,
-    extensions::Dispatcher* extension_dispatcher,
     bool should_whitelist,
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      extension_dispatcher_(extension_dispatcher),
-#endif
-      allow_running_insecure_content_(false),
-      content_setting_rules_(nullptr),
-      is_interstitial_page_(false),
-      current_request_id_(0),
       should_whitelist_(should_whitelist) {
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->SetContentSettingsClient(this);
@@ -149,11 +140,20 @@ ContentSettingsObserver::ContentSettingsObserver(
 ContentSettingsObserver::~ContentSettingsObserver() {
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void ContentSettingsObserver::SetExtensionDispatcher(
+    extensions::Dispatcher* extension_dispatcher) {
+  DCHECK(!extension_dispatcher_)
+      << "SetExtensionDispatcher() should only be called once.";
+  extension_dispatcher_ = extension_dispatcher;
+}
+#endif
+
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {
   content_setting_rules_ = content_setting_rules;
-  UMA_HISTOGRAM_COUNTS("ClientHints.CountRulesReceived",
-                       content_setting_rules_->client_hints_rules.size());
+  UMA_HISTOGRAM_COUNTS_1M("ClientHints.CountRulesReceived",
+                          content_setting_rules_->client_hints_rules.size());
 }
 
 const RendererContentSettingRules*
@@ -205,8 +205,8 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ContentSettingsObserver::DidCommitProvisionalLoad(
-    bool is_new_navigation,
-    bool is_same_document_navigation) {
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.

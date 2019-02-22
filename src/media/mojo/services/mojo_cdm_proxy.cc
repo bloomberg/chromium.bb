@@ -62,6 +62,18 @@ CdmProxy::Function ToMediaFunction(cdm::CdmProxy::Function function) {
   return CdmProxy::Function::kIntelNegotiateCryptoSessionKeyExchange;
 }
 
+CdmProxy::KeyType ToMediaKeyType(cdm::CdmProxy::KeyType key_type) {
+  switch (key_type) {
+    case cdm::CdmProxy::KeyType::kDecryptOnly:
+      return CdmProxy::KeyType::kDecryptOnly;
+    case cdm::CdmProxy::KeyType::kDecryptAndDecode:
+      return CdmProxy::KeyType::kDecryptAndDecode;
+  }
+
+  NOTREACHED() << "Unexpected key type: " << static_cast<int32_t>(key_type);
+  return CdmProxy::KeyType::kDecryptOnly;
+}
+
 }  // namespace
 
 MojoCdmProxy::MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr,
@@ -127,14 +139,21 @@ void MojoCdmProxy::CreateMediaCryptoSession(const uint8_t* input_data,
 void MojoCdmProxy::SetKey(uint32_t crypto_session_id,
                           const uint8_t* key_id,
                           uint32_t key_id_size,
+                          KeyType key_type,
                           const uint8_t* key_blob,
                           uint32_t key_blob_size) {
   DVLOG(3) << __func__;
   CHECK(client_) << "Initialize not called.";
 
+  auto callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(&MojoCdmProxy::OnKeySet, weak_factory_.GetWeakPtr()),
+      media::CdmProxy::Status::kFail);
+
   cdm_proxy_ptr_->SetKey(
       crypto_session_id, std::vector<uint8_t>(key_id, key_id + key_id_size),
-      std::vector<uint8_t>(key_blob, key_blob + key_blob_size));
+      ToMediaKeyType(key_type),
+      std::vector<uint8_t>(key_blob, key_blob + key_blob_size),
+      std::move(callback));
 }
 
 void MojoCdmProxy::RemoveKey(uint32_t crypto_session_id,
@@ -143,8 +162,13 @@ void MojoCdmProxy::RemoveKey(uint32_t crypto_session_id,
   DVLOG(3) << __func__;
   CHECK(client_) << "Initialize not called.";
 
+  auto callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(&MojoCdmProxy::OnKeyRemoved, weak_factory_.GetWeakPtr()),
+      media::CdmProxy::Status::kFail);
+
   cdm_proxy_ptr_->RemoveKey(crypto_session_id,
-                            std::vector<uint8_t>(key_id, key_id + key_id_size));
+                            std::vector<uint8_t>(key_id, key_id + key_id_size),
+                            std::move(callback));
 }
 
 void MojoCdmProxy::NotifyHardwareReset() {
@@ -182,6 +206,16 @@ void MojoCdmProxy::OnMediaCryptoSessionCreated(media::CdmProxy::Status status,
            << ", crypto_session_id = " << crypto_session_id;
   client_->OnMediaCryptoSessionCreated(ToCdmStatus(status), crypto_session_id,
                                        output_data);
+}
+
+void MojoCdmProxy::OnKeySet(media::CdmProxy::Status status) {
+  DVLOG(3) << __func__ << ": status = " << status;
+  client_->OnKeySet(ToCdmStatus(status));
+}
+
+void MojoCdmProxy::OnKeyRemoved(media::CdmProxy::Status status) {
+  DVLOG(3) << __func__ << ": status = " << status;
+  client_->OnKeyRemoved(ToCdmStatus(status));
 }
 
 }  // namespace media

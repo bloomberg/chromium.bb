@@ -23,19 +23,7 @@ void TestFullscreenControllerObserver::FullscreenEnabledStateChanged(
   enabled_ = enabled;
 }
 
-void TestFullscreenControllerObserver::FullscreenScrollEventEnded(
-    FullscreenController* controller,
-    FullscreenAnimator* animator) {
-  animator_ = animator;
-}
-
-void TestFullscreenControllerObserver::FullscreenWillEnterForeground(
-    FullscreenController* controller,
-    FullscreenAnimator* animator) {
-  animator_ = animator;
-}
-
-void TestFullscreenControllerObserver::FullscreenModelWasReset(
+void TestFullscreenControllerObserver::FullscreenWillAnimate(
     FullscreenController* controller,
     FullscreenAnimator* animator) {
   animator_ = animator;

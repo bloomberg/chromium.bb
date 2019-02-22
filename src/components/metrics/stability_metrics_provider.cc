@@ -66,8 +66,11 @@ void StabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityVersionMismatchCount, 0);
 #if defined(OS_ANDROID)
   registry->RegisterStringPref(prefs::kStabilityGmsCoreVersion, "");
-  registry->RegisterIntegerPref(prefs::kStabilityCrashCountWithoutGmsCoreUpdate,
+  registry->RegisterIntegerPref(prefs::kStabilityCrashCountDueToGmsCoreUpdate,
                                 0);
+  // Obsolete. See MigrateObsoleteBrowserPrefs().
+  registry->RegisterIntegerPref(
+      prefs::kStabilityCrashCountWithoutGmsCoreUpdateObsolete, 0);
 #endif
 #if defined(OS_WIN)
   registry->RegisterIntegerPref(prefs::kStabilitySystemCrashCount, 0);
@@ -114,9 +117,9 @@ void StabilityMetricsProvider::ProvideStabilityMetrics(
     stability->set_crash_count(pref_value);
 
 #if defined(OS_ANDROID)
-  if (GetPrefValue(prefs::kStabilityCrashCountWithoutGmsCoreUpdate,
+  if (GetPrefValue(prefs::kStabilityCrashCountDueToGmsCoreUpdate,
                    &pref_value)) {
-    stability->set_crash_count_without_gms_core_update(pref_value);
+    stability->set_crash_count_due_to_gms_core_update(pref_value);
   }
 #endif
 
@@ -188,14 +191,18 @@ void StabilityMetricsProvider::MarkSessionEndCompleted(bool end_completed) {
 }
 
 void StabilityMetricsProvider::LogCrash(base::Time last_live_timestamp) {
-  IncrementPrefValue(prefs::kStabilityCrashCount);
-
 #if defined(OS_ANDROID)
-  // On Android, if there is an update for GMS core when Chrome is running,
-  // Chrome will be killed and restart. This is expected and we should only
-  // report crash if the GMS core version has not been changed.
-  if (!HasGmsCoreVersionChanged(local_state_))
-    IncrementPrefValue(prefs::kStabilityCrashCountWithoutGmsCoreUpdate);
+  // On Android, if there is an update for GMS Core when Chrome is running,
+  // Chrome will be killed, counting as a crash. This is expected and should not
+  // be counted in stability crash counts. Thus these crashes are added to a
+  // specific bucket for crashes caused by GMS Core updates.
+  if (HasGmsCoreVersionChanged(local_state_)) {
+    IncrementPrefValue(prefs::kStabilityCrashCountDueToGmsCoreUpdate);
+  } else {
+    IncrementPrefValue(prefs::kStabilityCrashCount);
+  }
+#else
+  IncrementPrefValue(prefs::kStabilityCrashCount);
 #endif
 
 #if defined(OS_WIN)

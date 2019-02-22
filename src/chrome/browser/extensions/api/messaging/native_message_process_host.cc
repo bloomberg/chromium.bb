@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
@@ -58,8 +59,8 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::IO);
+  task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::IO});
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
@@ -164,7 +165,8 @@ void NativeMessageProcessHost::OnMessage(const std::string& json) {
 
   // Allocate new buffer for the message.
   scoped_refptr<net::IOBufferWithSize> buffer =
-      new net::IOBufferWithSize(json.size() + kMessageHeaderSize);
+      base::MakeRefCounted<net::IOBufferWithSize>(json.size() +
+                                                  kMessageHeaderSize);
 
   // Copy size and content of the message to the buffer.
   static_assert(sizeof(uint32_t) == kMessageHeaderSize,
@@ -223,7 +225,7 @@ void NativeMessageProcessHost::DoRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   while (!closed_ && !read_pending_) {
-    read_buffer_ = new net::IOBuffer(kReadBufferSize);
+    read_buffer_ = base::MakeRefCounted<net::IOBuffer>(kReadBufferSize);
     int result =
         read_stream_->Read(read_buffer_.get(), kReadBufferSize,
                            base::BindOnce(&NativeMessageProcessHost::OnRead,

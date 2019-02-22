@@ -37,6 +37,7 @@ namespace policy {
 
 class DeviceManagementRequestJobImpl;
 class DeviceManagementService;
+class DMAuth;
 
 // DeviceManagementRequestJob describes a request to send to the device
 // management service. Jobs are created by DeviceManagementService. They can be
@@ -80,11 +81,9 @@ class POLICY_EXPORT DeviceManagementRequestJob {
 
   // Functions for configuring the job. These should only be called before
   // Start()ing the job, but never afterwards.
-  void SetGaiaToken(const std::string& gaia_token);
-  void SetOAuthToken(const std::string& oauth_token);
-  void SetDMToken(const std::string& dm_token);
   void SetClientID(const std::string& client_id);
-  void SetEnrollmentToken(const std::string& token);
+  void SetAuthData(std::unique_ptr<DMAuth> auth);
+
   // Sets the critical request parameter, which is used to differentiate regular
   // DMServer requests (like scheduled policy fetches) from time-sensitive ones
   // (like policy fetch during device enrollment). Should only be called before
@@ -118,9 +117,8 @@ class POLICY_EXPORT DeviceManagementRequestJob {
 
   JobType type_;
   ParameterMap query_params_;
-  std::string gaia_token_;
-  std::string dm_token_;
-  std::string enrollment_token_;
+
+  std::unique_ptr<DMAuth> auth_data_;
   enterprise_management::DeviceManagementRequest request_;
   RetryCallback retry_callback_;
 

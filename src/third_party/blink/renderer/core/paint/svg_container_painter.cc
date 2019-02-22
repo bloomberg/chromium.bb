@@ -12,9 +12,9 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {
@@ -50,7 +50,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
         layout_svg_container_.LocalToSVGParentTransform());
   }
 
-  SVGTransformContext transform_context(
+  ScopedSVGTransformState transform_state(
       paint_info_before_filtering, layout_svg_container_,
       layout_svg_container_.LocalToSVGParentTransform());
   {
@@ -73,20 +73,20 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
         }
     }
 
-    SVGPaintContext paint_context(layout_svg_container_,
-                                  paint_info_before_filtering);
+    ScopedSVGPaintState paint_state(layout_svg_container_,
+                                    paint_info_before_filtering);
     bool continue_rendering = true;
-    if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground)
-      continue_rendering = paint_context.ApplyClipMaskAndFilterIfNecessary();
+    if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground)
+      continue_rendering = paint_state.ApplyClipMaskAndFilterIfNecessary();
 
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
            child = child->NextSibling()) {
         if (child->IsSVGForeignObject()) {
           SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
-              .PaintLayer(paint_context.GetPaintInfo());
+              .PaintLayer(paint_state.GetPaintInfo());
         } else {
-          child->Paint(paint_context.GetPaintInfo());
+          child->Paint(paint_state.GetPaintInfo());
         }
       }
     }

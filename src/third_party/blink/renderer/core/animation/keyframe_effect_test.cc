@@ -196,7 +196,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
   KeyframeEffect* animation =
       CreateAnimation(script_state, element.Get(), js_keyframes, duration);
 
-  EXPECT_EQ(duration / 1000, animation->SpecifiedTiming().iteration_duration);
+  EXPECT_EQ(duration / 1000,
+            animation->SpecifiedTiming().iteration_duration->InSecondsF());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration) {
@@ -205,7 +206,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration) {
   ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
   KeyframeEffect* animation =
       CreateAnimation(script_state, element.Get(), js_keyframes);
-  EXPECT_TRUE(std::isnan(animation->SpecifiedTiming().iteration_duration));
+  EXPECT_FALSE(animation->SpecifiedTiming().iteration_duration);
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
@@ -328,7 +329,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
 
 TEST_F(KeyframeEffectTest, TimeToEffectChange) {
   Timing timing;
-  timing.iteration_duration = 100;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(100);
   timing.start_delay = 100;
   timing.end_delay = 100;
   timing.fill_mode = Timing::FillMode::NONE;

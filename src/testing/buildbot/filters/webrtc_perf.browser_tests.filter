@@ -1,4 +1,3 @@
-WebRtcAudioQualityBrowserTest.*
 WebRtcInternalsPerfBrowserTest.*
 WebRtcStatsPerfBrowserTest.*
 WebRtcVideoDisplayPerfBrowserTests*

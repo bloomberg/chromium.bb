@@ -85,12 +85,14 @@ class AutofillAgent : public content::RenderFrameObserver,
   void PreviewPasswordSuggestion(const base::string16& username,
                                  const base::string16& password) override;
   void ShowInitialPasswordAccountSuggestions(
-      int32_t key,
       const PasswordFormFillData& form_data) override;
   void SetUserGestureRequired(bool required) override;
   void SetSecureContextRequired(bool required) override;
   void SetFocusRequiresScroll(bool require) override;
   void SetQueryPasswordSuggestion(bool required) override;
+  void GetElementFormAndFieldData(
+      const std::vector<std::string>& selectors,
+      GetElementFormAndFieldDataCallback callback) override;
 
   void FormControlElementClicked(const blink::WebFormControlElement& element,
                                  bool was_focused);
@@ -160,8 +162,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   };
 
   // content::RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
   void DidFinishDocumentLoad() override;
   void DidChangeScrollOffset() override;
   void FocusedNodeChanged(const blink::WebNode& node) override;
@@ -288,6 +290,12 @@ class AutofillAgent : public content::RenderFrameObserver,
   // properties of the form (name, number of fields), or fields (name, id,
   // label, visibility, control type) have changed after an autofill.
   void TriggerRefillIfNeeded(const FormData& form);
+
+  // Find the unique element given by |selectors| in the associated web frame.
+  // Empty blink::WebElement is returned if there is no matching element or
+  // there are multiple matching elements.
+  blink::WebElement FindUniqueWebElement(
+      const std::vector<std::string>& selectors);
 
   // Formerly cached forms for all frames, now only caches forms for the current
   // frame.

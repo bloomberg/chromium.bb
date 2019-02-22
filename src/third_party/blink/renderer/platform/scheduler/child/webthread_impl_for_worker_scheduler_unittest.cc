@@ -32,7 +32,7 @@ class MockIdleTask {
   MOCK_METHOD1(Run, void(double deadline));
 };
 
-class TestObserver : public blink::WebThread::TaskObserver {
+class TestObserver : public Thread::TaskObserver {
  public:
   explicit TestObserver(std::string* calls) : calls_(calls) {}
 
@@ -72,7 +72,7 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 
   void SetUp() override {
     thread_.reset(new WebThreadImplForWorkerScheduler(
-        WebThreadCreationParams(WebThreadType::kTestThread)));
+        ThreadCreationParams(WebThreadType::kTestThread)));
     thread_->Init();
   }
 

@@ -39,9 +39,6 @@ const base::Feature kCheckByURLLoaderThrottle{
     "S13nSafeBrowsingCheckByURLLoaderThrottle",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnterprisePasswordProtectionV1{
-    "EnterprisePasswordProtectionV1", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -58,6 +55,9 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
     "SafeBrowsingTriggerThrottlerDailyQuota",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -69,13 +69,14 @@ constexpr struct {
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
     {&kAdvancedProtectionStatusFeature, true},
-    {&kBillingInterstitial, false},
+    {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kForceEnableResetPasswordWebUI, true},
     {&kInspectDownloadedRarFiles, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
+    {&kUseLocalBlacklistsV2, true},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

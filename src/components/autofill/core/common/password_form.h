@@ -18,6 +18,8 @@
 
 namespace autofill {
 
+enum class SubmissionSource;
+
 // Pair of a value and the name of the element that contained this value.
 using ValueElementPair = std::pair<base::string16, base::string16>;
 
@@ -70,21 +72,6 @@ struct PasswordForm {
     SCHEME_LAST = SCHEME_USERNAME_ONLY
   } scheme;
 
-  // During form parsing, Chrome tries to partly understand the type of the form
-  // based on the layout of its fields. The result of this analysis helps to
-  // treat the form correctly once the low-level information is lost by
-  // converting the web form into a PasswordForm. It is only used for observed
-  // HTML forms, not for stored credentials.
-  enum class Layout {
-    // Forms which either do not need to be classified, or cannot be classified
-    // meaningfully.
-    LAYOUT_OTHER,
-    // Login and signup forms combined in one <form>, to distinguish them from,
-    // e.g., change-password forms.
-    LAYOUT_LOGIN_AND_SIGNUP,
-    LAYOUT_LAST = LAYOUT_LOGIN_AND_SIGNUP
-  };
-
   // Events observed by the Password Manager that indicate either that a form is
   // potentially being submitted, or that a form has already been successfully
   // submitted. Recorded into a UMA histogram, so order of enumerators should
@@ -95,11 +82,12 @@ struct PasswordForm {
     SAME_DOCUMENT_NAVIGATION,
     XHR_SUCCEEDED,
     FRAME_DETACHED,
-    MANUAL_SAVE,
+    DEPRECATED_MANUAL_SAVE,  // obsolete
     DOM_MUTATION_AFTER_XHR,
     PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD,
     DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD,            // unused
     DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD,  // unused
+    PROBABLE_FORM_SUBMISSION,
     SUBMISSION_INDICATOR_EVENT_COUNT
   };
 
@@ -317,9 +305,6 @@ struct PasswordForm {
   // Once user selects this credential the flag is reseted.
   bool skip_zero_click;
 
-  // The layout as determined during parsing. Default value is LAYOUT_OTHER.
-  Layout layout;
-
   // If true, this form was parsed using Autofill predictions.
   bool was_parsed_using_autofill_predictions;
 
@@ -379,8 +364,10 @@ struct LessThanUniqueKey {
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
 
+PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
+    SubmissionSource source);
+
 // For testing.
-std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
 std::ostream& operator<<(std::ostream& os, PasswordForm* form);
 std::ostream& operator<<(

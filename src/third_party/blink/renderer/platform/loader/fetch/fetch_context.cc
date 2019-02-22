@@ -30,16 +30,20 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
-#include "third_party/blink/renderer/platform/PlatformProbeSink.h"
+#include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
 namespace blink {
 
-FetchContext& FetchContext::NullInstance() {
-  return *(new FetchContext);
+FetchContext& FetchContext::NullInstance(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return *(new FetchContext(std::move(task_runner)));
 }
 
-FetchContext::FetchContext() : platform_probe_sink_(new PlatformProbeSink) {
+FetchContext::FetchContext(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : platform_probe_sink_(new PlatformProbeSink),
+      task_runner_(std::move(task_runner)) {
   platform_probe_sink_->addPlatformTraceEvents(new PlatformTraceEventsAgent);
 }
 
@@ -56,7 +60,7 @@ void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&,
 
 mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
     const ResourceRequest&,
-    Resource::Type,
+    ResourceType,
     FetchParameters::DeferOption defer) const {
   return mojom::FetchCacheMode::kDefault;
 }
@@ -66,7 +70,7 @@ void FetchContext::PrepareRequest(ResourceRequest&, RedirectType) {}
 void FetchContext::DispatchWillSendRequest(unsigned long,
                                            ResourceRequest&,
                                            const ResourceResponse&,
-                                           Resource::Type,
+                                           ResourceType,
                                            const FetchInitiatorInfo&) {}
 
 void FetchContext::DispatchDidLoadResourceFromMemoryCache(
@@ -78,7 +82,7 @@ void FetchContext::DispatchDidReceiveResponse(
     unsigned long,
     const ResourceResponse&,
     network::mojom::RequestContextFrameType FrameType,
-    WebURLRequest::RequestContext,
+    mojom::RequestContextType,
     Resource*,
     ResourceResponseType) {}
 
@@ -103,7 +107,7 @@ void FetchContext::DispatchDidFail(const KURL&,
 
 void FetchContext::RecordLoadingActivity(
     const ResourceRequest&,
-    Resource::Type,
+    ResourceType,
     const AtomicString& fetch_initiator_name) {}
 
 void FetchContext::DidLoadResource(Resource*) {}
@@ -117,7 +121,7 @@ void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
 
 void FetchContext::PopulateResourceRequest(
-    Resource::Type,
+    ResourceType,
     const ClientHintsPreferences&,
     const FetchParameters::ResourceWidth&,
     ResourceRequest&) {}

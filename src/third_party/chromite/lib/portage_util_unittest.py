@@ -11,8 +11,9 @@ import cStringIO
 import os
 
 from chromite.lib import constants
-from chromite.lib import failures_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import failures_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -102,7 +103,7 @@ inherit cros-workon superpower
 
   def _MakeFakeEbuild(self, fake_ebuild_path, fake_ebuild_content=''):
     osutils.WriteFile(fake_ebuild_path, fake_ebuild_content, makedirs=True)
-    fake_ebuild = portage_util.EBuild(fake_ebuild_path)
+    fake_ebuild = portage_util.EBuild(fake_ebuild_path, False)
     return fake_ebuild
 
   def testParseEBuildPath(self):
@@ -193,7 +194,7 @@ inherit cros-workon superpower
         ebuild = os.path.join(temp, 'overlay', 'app-misc',
                               'foo-0.0.1-r1.ebuild')
         osutils.WriteFile(ebuild, content, makedirs=True)
-        self.assertEqual(expected, portage_util.EBuild(ebuild).has_test)
+        self.assertEqual(expected, portage_util.EBuild(ebuild, False).has_test)
 
     run_case(self._MULTILINE_WITH_TEST, True)
     run_case(self._MULTILINE_NO_TEST, False)
@@ -290,7 +291,7 @@ class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
                                'package', 'package-9999.ebuild')
     osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
 
-    ebuild = portage_util.EBuild(ebuild_path)
+    ebuild = portage_util.EBuild(ebuild_path, False)
     return ebuild.GetSourceInfo(self.tempdir, MANIFEST)
 
   def testParseLegacyWorkonVariables(self):
@@ -387,8 +388,8 @@ CROS_WORKON_SUBTREE="%s"
 class StubEBuild(portage_util.EBuild):
   """Test helper to StubEBuild."""
 
-  def __init__(self, path):
-    super(StubEBuild, self).__init__(path)
+  def __init__(self, path, subdir_support):
+    super(StubEBuild, self).__init__(path, subdir_support)
     self.is_workon = True
     self.is_stable = True
 
@@ -455,7 +456,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     package_name = os.path.join(self.overlay,
                                 'category/test_package/test_package-0.0.1')
     ebuild_path = package_name + '-r1.ebuild'
-    self.m_ebuild = StubEBuild(ebuild_path)
+    self.m_ebuild = StubEBuild(ebuild_path, False)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
     self._m_file = cStringIO.StringIO()
     self.git_files_changed = []
@@ -505,11 +506,13 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
       source_mock.return_value = portage_util.SourceInfo(
           projects=['fake_project1', 'fake_project2'],
           srcdirs=['p1_path1', 'p1_path2'],
+          subdirs=['files', None],
           subtrees=['p1_path1/a', 'p1_path1/b', 'p1_path2'])
     else:
       source_mock.return_value = portage_util.SourceInfo(
           projects=['fake_project1'],
           srcdirs=['p1_path1'],
+          subdirs=['files', None],
           subtrees=['p1_path1/a', 'p1_path1/b'])
 
     self.PatchObject(portage_util.EBuild, 'GetTreeId', side_effect=_GetTreeId)
@@ -703,7 +706,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='1122')
     self.assertEqual('1122', self.m_ebuild.GetVersion(None, None, '1234'))
     # Sanity check.
@@ -714,7 +717,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     run = self.PatchObject(portage_util.EBuild, '_RunCommand')
 
     # Reject no output.
@@ -735,7 +738,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='999999')
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
@@ -746,7 +749,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     exists = self.PatchObject(os.path, 'exists', return_value=True)
     self.PatchObject(portage_util.EBuild, 'GetSourceInfo',
                      return_value=portage_util.SourceInfo(
-                         projects=None, srcdirs=[], subtrees=[]))
+                         projects=None, srcdirs=[], subdirs=[], subtrees=[]))
     self.PatchObject(portage_util.EBuild, '_RunCommand', return_value='abcd')
     self.assertRaises(ValueError, self.m_ebuild.GetVersion, None, None, '1234')
     # Sanity check.
@@ -774,7 +777,7 @@ class ListOverlaysTest(cros_test_lib.TempDirTestCase):
 
   def testMissingOverlays(self):
     """Tests that exceptions are raised when an overlay is missing."""
-    self.assertRaises(portage_util.MissingOverlayException,
+    self.assertRaises(portage_util.MissingOverlayError,
                       portage_util._ListOverlays,
                       board='foo', buildroot=self.tempdir)
 
@@ -867,7 +870,7 @@ class FindOverlaysTest(cros_test_lib.MockTempDirTestCase):
       for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
         try:
           d[o] = portage_util.FindOverlays(o, b, self.tempdir)
-        except portage_util.MissingOverlayException:
+        except portage_util.MissingOverlayError:
           d[o] = []
     self._no_overlays = not bool(any(d.values()))
 
@@ -1040,7 +1043,7 @@ class GetOverlayEBuildsTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(package_path, content, makedirs=True)
 
   @staticmethod
-  def _FindUprevCandidateMock(files, allow_blacklisted=False):
+  def _FindUprevCandidateMock(files, allow_blacklisted, _subdir_support):
     """Mock for the FindUprevCandidateMock function.
 
     Simplified implementation of FindUprevCandidate: consider an ebuild worthy
@@ -1128,13 +1131,71 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testSplitCPV(self):
     """Test splitting CPV into components."""
+    # Test 1: Valid input.
     cpv = 'foo/bar-4.5.6_alpha-r6'
+    cp, ver, rev = cpv.split('-')
     cat, pv = cpv.split('/', 1)
+
     split_pv = portage_util.SplitPV(pv)
     split_cpv = portage_util.SplitCPV(cpv)
+
     self.assertEquals(split_cpv.category, cat)
+    self.assertEqual(cp, split_cpv.cp)
+    self.assertEqual('%s-%s' % (cp, ver), split_cpv.cpv)
+    self.assertEqual('%s-%s-%s' % (cp, ver, rev), split_cpv.cpf)
     for k, v in split_pv._asdict().iteritems():
       self.assertEquals(getattr(split_cpv, k), v)
+
+    # Test 2: No category, valid pvr.
+    cpv = 'bar-pkg-1.2.3_rc4-r5'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNotNone(portage_util.SplitPV(cpv, strict=True))
+    # All category references should be None when not strict.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertIsNone(split_cpv_ns.category)
+    self.assertIsNone(split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
+
+    # Test 3: No version or revision, valid cp.
+    cpv = 'cat-foo/bar-pkg'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNone(portage_util.SplitPV(cpv, strict=True))
+    # Category should get parsed out, and the rest assigned to package.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertEqual('cat-foo', split_cpv_ns.category)
+    self.assertEqual('bar-pkg', split_cpv_ns.package)
+    # The cp should just have category/package. In this case it's valid.
+    self.assertEqual('cat-foo/bar-pkg', split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
+
+    # Test 4: No version - skipped to valid revision.
+    cpv = 'cat-foo/bar-pkg-r5'
+    split_cpv_ns = portage_util.SplitCPV(cpv, strict=False)
+
+    # Make sure strict parses correctly.
+    self.assertIsNone(portage_util.SplitCPV(cpv, strict=True))
+    self.assertIsNone(portage_util.SplitPV(cpv, strict=True))
+    # Category should get parsed out, and the rest assigned to package.
+    self.assertIsNotNone(split_cpv_ns)
+    self.assertEqual('cat-foo', split_cpv_ns.category)
+    self.assertEqual('bar-pkg-r5', split_cpv_ns.package)
+    # The cp should just have category/package. Invalid in this case, but
+    # meeting expectations.
+    self.assertEqual('cat-foo/bar-pkg-r5', split_cpv_ns.cp)
+    self.assertIsNone(split_cpv_ns.cpv)
+    self.assertIsNone(split_cpv_ns.cpf)
+
+    cpv = 'invalid/format/package'
+    with self.assertRaises(ValueError):
+      portage_util.SplitCPV(cpv)
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
@@ -1272,9 +1333,134 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     """Tests an incomplete or otherwise invalid package raises an exception."""
     # No package name is provided.
     os.unlink(os.path.join(self.tempdir, 'PF'))
-    self.assertRaises(portage_util.PortageDBException,
+    self.assertRaises(portage_util.PortageDBError,
                       portage_util.InstalledPackage, None, self.tempdir)
 
     # Check that doesn't fail when the package name is provided.
     pkg = portage_util.InstalledPackage(None, self.tempdir, pf='package-1')
     self.assertEquals('package-1', pkg.pf)
+
+
+class PortageqBestVisibleTest(cros_test_lib.MockTestCase):
+  """PortageqBestVisible tests."""
+
+  def testValidPackage(self):
+    """Test valid outputs."""
+    result = cros_build_lib.CommandResult(output='cat/pkg-1.0', returncode=0)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    self.assertIsInstance(portage_util.PortageqBestVisible('cat/pkg'),
+                          portage_util.CPV)
+
+
+class PortageqEnvvarTest(cros_test_lib.MockTestCase):
+  """PortageqEnvvar[s] tests."""
+
+  def testValidEnvvar(self):
+    """Test valid variables."""
+    result = cros_build_lib.CommandResult(output='TEST=value\n', returncode=0)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    envvar1 = portage_util.PortageqEnvvar('TEST')
+    envvars1 = portage_util.PortageqEnvvars(['TEST'])
+
+    self.assertEqual('value', envvar1)
+    self.assertEqual(envvar1, envvars1['TEST'])
+
+  def testUndefinedEnvvars(self):
+    """Test undefined variable handling."""
+    # The variable exists in the command output even when not actually defined.
+    result = cros_build_lib.CommandResult(output='DOES_NOT_EXIST=\n',
+                                          returncode=1)
+    success_error = cros_build_lib.RunCommandError('', result)
+    self.PatchObject(portage_util, '_Portageq', side_effect=success_error)
+
+    # Test ignoring error when just from undefined variable.
+    envv = portage_util.PortageqEnvvar('DOES_NOT_EXIST', allow_undefined=True)
+    envvs = portage_util.PortageqEnvvars(['DOES_NOT_EXIST'],
+                                         allow_undefined=True)
+    self.assertEqual('', envv)
+    self.assertEqual(envv, envvs['DOES_NOT_EXIST'])
+
+    # Test raising the error when just from undefined variable.
+    with self.assertRaises(portage_util.PortageqError):
+      portage_util.PortageqEnvvar('DOES_NOT_EXIST')
+    with self.assertRaises(portage_util.PortageqError):
+      portage_util.PortageqEnvvars(['DOES_NOT_EXIST'])
+
+    run_error = cros_build_lib.CommandResult(output='\n', returncode=2)
+    failure_error = cros_build_lib.RunCommandError('', run_error)
+    self.PatchObject(portage_util, '_Portageq', side_effect=failure_error)
+
+    # Test re-raising the error when the command did not run successfully.
+    with self.assertRaises(cros_build_lib.RunCommandError):
+      portage_util.PortageqEnvvar('DOES_NOT_EXIST')
+    with self.assertRaises(cros_build_lib.RunCommandError):
+      portage_util.PortageqEnvvars(['DOES_NOT_EXIST'])
+
+  def testInvalidEnvvars(self):
+    """Test invalid variables handling."""
+    # Envvar tests.
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvar([])
+    with self.assertRaises(ValueError):
+      portage_util.PortageqEnvvar('')
+
+    # Envvars tests.
+    self.assertEqual({}, portage_util.PortageqEnvvars([]))
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvars('')
+
+    # Raised when extending the command list. This is currently expected, and
+    # ints should not be accepted, but more formal handling can be added.
+    with self.assertRaises(TypeError):
+      portage_util.PortageqEnvvars(1)
+
+
+class PortageqHasVersionTest(cros_test_lib.MockTestCase):
+  """PortageqHasVersion tests."""
+
+  def testPortageqHasVersion(self):
+    """Test HasVersion."""
+    result_true = cros_build_lib.CommandResult(returncode=0)
+    result_false = cros_build_lib.CommandResult(returncode=1)
+    result_error = cros_build_lib.CommandResult(returncode=2)
+
+    # Test has version.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_true)
+    self.assertTrue(portage_util.PortageqHasVersion('cat/pkg'))
+
+    # Test not has version.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_false)
+    self.assertFalse(portage_util.PortageqHasVersion('cat/pkg'))
+
+    # Test run error.
+    self.PatchObject(portage_util, '_Portageq', return_value=result_error)
+    self.assertFalse(portage_util.PortageqHasVersion('cat/pkg'))
+
+
+class PortageqMatchTest(cros_test_lib.MockTestCase):
+  """PortageqMatch tests."""
+
+  def testMultiError(self):
+    """Test unspecific query results in error.
+
+    The method currently isn't setup to support multiple values in the output.
+    It is instead interpreted as a cpv format error by SplitCPV. This isn't
+    a hard requirement, just the current expected behavior.
+    """
+    output_str = "cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n"
+    result = cros_build_lib.CommandResult(returncode=0,
+                                          output=output_str)
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    with self.assertRaises(ValueError):
+      portage_util.PortageqMatch('*/*')
+
+  def testValidPackage(self):
+    """Test valid package produces a CPV."""
+    result = cros_build_lib.CommandResult(returncode=0, output='cat/pkg-1.0-r1')
+    self.PatchObject(portage_util, '_Portageq', return_value=result)
+
+    self.assertIsInstance(portage_util.PortageqMatch('cat/pkg'),
+                          portage_util.CPV)

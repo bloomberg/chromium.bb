@@ -11,6 +11,7 @@ new Anomaly entities.
 
 import logging
 
+from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 
 from dashboard import email_sheriff
@@ -59,39 +60,57 @@ def _ProcessTest(test_key):
 
   config = yield anomaly_config.GetAnomalyConfigDictAsync(test)
   max_num_rows = config.get('max_window_size', DEFAULT_NUM_POINTS)
-  rows = yield GetRowsToAnalyzeAsync(test, max_num_rows)
+  rows_by_stat = yield GetRowsToAnalyzeAsync(test, max_num_rows)
+
+  ref_rows_by_stat = {}
+  ref_test = yield _CorrespondingRefTest(test_key)
+  if ref_test:
+    ref_rows_by_stat = yield GetRowsToAnalyzeAsync(ref_test, max_num_rows)
+
+  for s, rows in rows_by_stat.iteritems():
+    if rows:
+      yield _ProcesssTestStat(
+          config, sheriff, test, s, rows, ref_rows_by_stat.get(s))
+
+
+def _EmailSheriff(sheriff_key, test_key, anomaly_key):
+  sheriff_entity = sheriff_key.get()
+  test_entity = test_key.get()
+  anomaly_entity = anomaly_key.get()
+
+  email_sheriff.EmailSheriff(sheriff_entity, test_entity, anomaly_entity)
+
+
+@ndb.tasklet
+def _ProcesssTestStat(config, sheriff, test, stat, rows, ref_rows):
+  test_key = test.key
+
   # If there were no rows fetched, then there's nothing to analyze.
   if not rows:
-    # In some cases (e.g. if some points are deleted) it might be possible
-    # that last_alerted_revision is incorrect. In this case, reset it.
-    highest_rev = yield _HighestRevision(test_key)
-    if test.last_alerted_revision > highest_rev:
-      logging.error('last_alerted_revision %d is higher than highest rev %d '
-                    'for test %s; setting last_alerted_revision to None.',
-                    test.last_alerted_revision, highest_rev, test.test_path)
-      test.last_alerted_revision = None
-      yield test.put_async()
     logging.error('No rows fetched for %s', test.test_path)
     raise ndb.Return(None)
 
   # Get anomalies and check if they happen in ref build also.
   change_points = FindChangePointsForTest(rows, config)
-  change_points = yield _FilterAnomaliesFoundInRef(
-      change_points, test_key, len(rows))
 
-  anomalies = yield [_MakeAnomalyEntity(c, test, rows) for c in change_points]
+  if ref_rows:
+    ref_change_points = FindChangePointsForTest(ref_rows, config)
+
+    # Filter using any jumps in ref
+    change_points = _FilterAnomaliesFoundInRef(
+        change_points, ref_change_points, test_key)
+
+  anomalies = yield [
+      _MakeAnomalyEntity(c, test, stat, rows) for c in change_points]
 
   # If no new anomalies were found, then we're done.
   if not anomalies:
-    return
+    raise ndb.Return(None)
 
   logging.info('Created %d anomalies', len(anomalies))
   logging.info(' Test: %s', test_key.id())
+  logging.info(' Stat: %s', stat)
   logging.info(' Sheriff: %s', test.sheriff.id())
-
-  # Update the last_alerted_revision property of the test.
-  test.last_alerted_revision = anomalies[-1].end_revision
-  yield test.put_async()
 
   yield ndb.put_multi_async(anomalies)
 
@@ -102,7 +121,26 @@ def _ProcessTest(test_key):
     if (anomaly_entity.bug_id is None and
         not anomaly_entity.is_improvement and
         not sheriff.summarize):
-      email_sheriff.EmailSheriff(sheriff, test, anomaly_entity)
+      deferred.defer(_EmailSheriff, sheriff.key, test.key, anomaly_entity.key)
+
+
+@ndb.tasklet
+def _FindLatestAlert(test, stat):
+  query = anomaly.Anomaly.query()
+  query = query.filter(anomaly.Anomaly.test == test.key)
+  query = query.filter(anomaly.Anomaly.statistic == stat)
+  query = query.order(-anomaly.Anomaly.end_revision)
+  results = yield query.get_async()
+  if not results:
+    raise ndb.Return(None)
+  raise ndb.Return(results)
+
+
+@ndb.tasklet
+def _FindMonitoredStatsForTest(test):
+  del test
+  # TODO: This will get filled out after refactor.
+  raise ndb.Return(['avg'])
 
 
 @ndb.synctasklet
@@ -124,75 +162,62 @@ def GetRowsToAnalyze(test, max_num_rows):
 
 @ndb.tasklet
 def GetRowsToAnalyzeAsync(test, max_num_rows):
-  query = graph_data.Row.query(projection=['revision', 'value'])
+  # If this is a histogram based test, there may be multiple statistics we want
+  # to analyze
+  alerted_stats = yield _FindMonitoredStatsForTest(test)
+
+  latest_alert_by_stat = dict(
+      (s, _FindLatestAlert(test, s)) for s in alerted_stats)
+
+  results = {}
+  for s in alerted_stats:
+    results[s] = _FetchRowsByStat(
+        test.key, s, latest_alert_by_stat[s], max_num_rows)
+
+  for s in results.iterkeys():
+    results[s] = yield results[s]
+
+  raise ndb.Return(results)
+
+
+@ndb.tasklet
+def _FetchRowsByStat(test_key, stat, last_alert_future, max_num_rows):
+  # If stats are specified, we only want to alert on those, otherwise alert on
+  # everything.
+  if stat == 'avg':
+    query = graph_data.Row.query(projection=['revision', 'value'])
+  else:
+    query = graph_data.Row.query()
+
   query = query.filter(
-      graph_data.Row.parent_test == utils.OldStyleTestKey(test.key))
+      graph_data.Row.parent_test == utils.OldStyleTestKey(test_key))
 
   # The query is ordered in descending order by revision because we want
   # to get the newest points.
-  query = query.filter(graph_data.Row.revision > test.last_alerted_revision)
+  if last_alert_future:
+    last_alert = yield last_alert_future
+    if last_alert:
+      query = query.filter(graph_data.Row.revision > last_alert.end_revision)
   query = query.order(-graph_data.Row.revision)
 
   # However, we want to analyze them in ascending order.
   rows = yield query.fetch_async(limit=max_num_rows)
-  raise ndb.Return(list(reversed(rows)))
+
+  vals = []
+  for r in list(reversed(rows)):
+    if stat == 'avg':
+      vals.append((r.revision, r, r.value))
+    elif stat == 'std':
+      vals.append((r.revision, r, r.error))
+    else:
+      vals.append((r.revision, r, getattr(r, 'd_%s' % stat)))
+
+  raise ndb.Return(vals)
 
 
-@ndb.tasklet
-def _HighestRevision(test_key):
-  """Gets the revision number of the Row with the highest ID for a test."""
-  query = graph_data.Row.query(
-      graph_data.Row.parent_test == utils.OldStyleTestKey(test_key))
-  query = query.order(-graph_data.Row.revision)
-  highest_row_key = yield query.get_async(keys_only=True)
-  if highest_row_key:
-    raise ndb.Return(highest_row_key.id())
-  raise ndb.Return(None)
-
-
-@ndb.tasklet
-def _FilterAnomaliesFoundInRef(change_points, test_key, num_rows):
-  """Filters out the anomalies that match the anomalies in ref build.
-
-  Background about ref build tests: Variation in test results can be caused
-  by changes in Chrome or changes in the test-running environment. The ref
-  build results are results from a reference (stable) version of Chrome run
-  in the same environment. If an anomaly happens in the ref build results at
-  the same time as an anomaly happened in the test build, that suggests that
-  the variation was caused by a change in the test-running environment, and
-  can be ignored.
-
-  Args:
-    change_points: ChangePoint objects returned by FindChangePoints.
-    test_key: ndb.Key of monitored TestMetadata.
-    num_rows: Number of Rows that were analyzed from the test. When fetching
-        the ref build Rows, we need not fetch more than |num_rows| rows.
-
-  Returns:
-    A copy of |change_points| possibly with some entries filtered out.
-    Any entries in |change_points| whose end revision matches that of
-    an anomaly found in the corresponding ref test will be filtered out.
-  """
-  # Get anomalies for ref build.
-  ref_test = yield _CorrespondingRefTest(test_key)
-  if not ref_test:
-    raise ndb.Return(change_points[:])
-
-  ref_config = anomaly_config.GetAnomalyConfigDict(ref_test)
-  ref_rows = yield GetRowsToAnalyzeAsync(ref_test, num_rows)
-  ref_change_points = FindChangePointsForTest(ref_rows, ref_config)
-  if not ref_change_points:
-    raise ndb.Return(change_points[:])
-
-  # We need to still alert on benchmark_duration, even if the ref moves since
-  # that can signal some blow-up in cycle time. If we decide to expand this
-  # to a greater set of metrics, we should move this to something more
-  # generic like stored_object.
-  test_path = utils.TestPath(test_key)
-  if test_path.split('/')[-1] == 'benchmark_duration':
-    raise ndb.Return(change_points[:])
-
+def _FilterAnomaliesFoundInRef(change_points, ref_change_points, test):
   change_points_filtered = []
+  test_path = utils.TestPath(test)
   for c in change_points:
     # Log information about what anomaly got filtered and what did not.
     if not _IsAnomalyInRef(c, ref_change_points):
@@ -202,7 +227,7 @@ def _FilterAnomaliesFoundInRef(change_points, test_key, num_rows):
     else:
       logging.info('Filtering out anomaly for test %s, and revision %s',
                    test_path, c.x_value)
-  raise ndb.Return(change_points_filtered)
+  return change_points_filtered
 
 
 @ndb.tasklet
@@ -253,9 +278,9 @@ def _GetImmediatelyPreviousRevisionNumber(later_revision, rows):
   Returns:
     The revision number just before the given one.
   """
-  for row in reversed(rows):
-    if row.revision < later_revision:
-      return row.revision
+  for (revision, _, _) in reversed(rows):
+    if revision < later_revision:
+      return revision
   assert False, 'No matching revision found in |rows|.'
 
 
@@ -290,11 +315,11 @@ def _GetDisplayRange(old_end, rows):
     A end_rev, start_rev tuple with the correct revision.
   """
   start_rev = end_rev = 0
-  for row in reversed(rows):
-    if (row.revision == old_end and
+  for (revision, row, _) in reversed(rows):
+    if (revision == old_end and
         hasattr(row, 'r_commit_pos')):
       end_rev = row.r_commit_pos
-    elif (row.revision < old_end and
+    elif (revision < old_end and
           hasattr(row, 'r_commit_pos')):
       start_rev = row.r_commit_pos + 1
       break
@@ -304,12 +329,13 @@ def _GetDisplayRange(old_end, rows):
 
 
 @ndb.tasklet
-def _MakeAnomalyEntity(change_point, test, rows):
+def _MakeAnomalyEntity(change_point, test, stat, rows):
   """Creates an Anomaly entity.
 
   Args:
     change_point: A find_change_points.ChangePoint object.
     test: The TestMetadata entity that the anomalies were found on.
+    stat: The TestMetadata stat that the anomaly was found on.
     rows: List of Row entities that the anomalies were found on.
 
   Returns:
@@ -355,6 +381,7 @@ def _MakeAnomalyEntity(change_point, test, rows):
       is_improvement=_IsImprovement(test, median_before, median_after),
       ref_test=_GetRefBuildKeyForTest(test),
       test=test.key,
+      statistic=stat,
       sheriff=test.sheriff,
       internal_only=test.internal_only,
       units=test.units,
@@ -373,7 +400,7 @@ def FindChangePointsForTest(rows, config_dict):
   Returns:
     A list of find_change_points.ChangePoint objects.
   """
-  data_series = [(row.revision, row.value) for row in rows]
+  data_series = [(revision, value) for (revision, _, value) in rows]
   return find_change_points.FindChangePoints(data_series, **config_dict)
 
 

@@ -138,6 +138,7 @@ void VpxVideoDecoder::Initialize(
     const InitCB& init_cb,
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(config.IsValidConfig());
 
@@ -161,7 +162,7 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer);
-  DCHECK(!decode_cb.is_null());
+  DCHECK(decode_cb);
   DCHECK_NE(state_, kUninitialized)
       << "Called Decode() before successful Initialize()";
 
@@ -366,14 +367,19 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
 
   // Default to the color space from the config, but if the bistream specifies
   // one, prefer that instead.
-  ColorSpace color_space = config_.color_space();
-  if (vpx_image->cs == VPX_CS_BT_709)
-    color_space = COLOR_SPACE_HD_REC709;
-  else if (vpx_image->cs == VPX_CS_BT_601 || vpx_image->cs == VPX_CS_SMPTE_170)
-    color_space = COLOR_SPACE_SD_REC601;
-  (*video_frame)
-      ->metadata()
-      ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
+  switch (config_.color_space()) {
+    case COLOR_SPACE_UNSPECIFIED:
+      break;
+    case COLOR_SPACE_HD_REC709:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateREC709());
+      break;
+    case COLOR_SPACE_SD_REC601:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateREC601());
+      break;
+    case COLOR_SPACE_JPEG:
+      (*video_frame)->set_color_space(gfx::ColorSpace::CreateJpeg());
+      break;
+  }
 
   if (config_.color_space_info().IsSpecified()) {
     // config_.color_space_info() comes from the color tag which is
@@ -503,6 +509,10 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   switch (vpx_image->fmt) {
     case VPX_IMG_FMT_I420:
       codec_format = vpx_image_alpha ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_I420;
+      break;
+
+    case VPX_IMG_FMT_I422:
+      codec_format = PIXEL_FORMAT_I422;
       break;
 
     case VPX_IMG_FMT_I444:

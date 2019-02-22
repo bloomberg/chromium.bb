@@ -102,7 +102,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3171922709365450819">Cet appareil n'est pas accepté par ce client, car il requiert une authentification tierce.</translation>
 <translation id="3194245623920924351">Bureau à distance Chrome</translation>
 <translation id="3197730452537982411">Bureau à distance</translation>
-<translation id="3212472844831225214">• Désormais compatible avec Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Envoyer ces instructions par e-mail</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="3286521253923406898">Contrôleur de l'hôte Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="8548209692293300397">Vous vous êtes auparavant connecté avec le nom d'utilisateur "<ph name="USER_NAME" />" (<ph name="USER_EMAIL" />). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN" />connectez-vous à Google Chrome<ph name="LINK_END" /> avec ce compte, puis réinstallez le Bureau à distance Chrome.</translation>
 <translation id="8642984861538780905">Correcte</translation>
+<translation id="8705151241155781642">• Désormais compatible avec Android 9.0 Pie.
+• Possibilité d'adapter la résolution du bureau à distance à l'écran de votre appareil Android.</translation>
 <translation id="8712909229180978490">Je ne vois pas mes fichiers enregistrés en ligne sur Google Drive.</translation>
 <translation id="8743328882720071828">Souhaitez-vous autoriser <ph name="CLIENT_USERNAME" /> à voir et contrôler votre ordinateur ?</translation>
 <translation id="8747048596626351634">La session a planté ou n'a pas réussi à démarrer. Si ~/.chrome-remote-desktop-session est présent sur l'ordinateur à distance, assurez-vous qu'il lance un processus long au premier plan, tel qu'un environnement de bureau ou un gestionnaire de fenêtres.</translation>

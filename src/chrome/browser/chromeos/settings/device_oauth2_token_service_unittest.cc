@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -67,10 +67,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
-    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
-        test_shared_loader_factory_);
-  }
+                &test_url_loader_factory_)) {}
 
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
@@ -113,26 +110,19 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
     SystemSaltGetter::Initialize();
 
-    DeviceSettingsService::Initialize();
     scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_(
         new ownership::MockOwnerKeyUtil());
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
     DeviceSettingsService::Get()->SetSessionManager(&session_manager_client_,
                                                     owner_key_util_);
-
-    CrosSettings::Initialize();
   }
 
   void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(nullptr);
     oauth2_service_.reset();
     test_shared_loader_factory_->Detach();
-    CrosSettings::Shutdown();
-    TestingBrowserProcess::GetGlobal()->ShutdownBrowserPolicyConnector();
     base::TaskScheduler::GetInstance()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
-    DeviceSettingsService::Shutdown();
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
     base::RunLoop().RunUntilIdle();
@@ -211,7 +201,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   };
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  ScopedStubInstallAttributes test_install_attributes_;
+  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   ScopedTestingLocalState scoped_testing_local_state_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>

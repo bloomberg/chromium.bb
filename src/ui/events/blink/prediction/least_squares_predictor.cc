@@ -10,12 +10,12 @@ namespace ui {
 
 namespace {
 
-constexpr double kEpsilon = std::numeric_limits<double>::epsilon();
-
 // Solve XB = y.
 static bool SolveLeastSquares(const gfx::Matrix3F& x,
                               const std::deque<double>& y,
                               gfx::Vector3dF& result) {
+  constexpr double kEpsilon = std::numeric_limits<double>::epsilon();
+
   // return last point if y didn't change.
   if (std::abs(y[0] - y[1]) < kEpsilon && std::abs(y[1] - y[2]) < kEpsilon) {
     result = gfx::Vector3dF(y[2], 0, 0);

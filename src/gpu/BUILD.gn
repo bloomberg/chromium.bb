@@ -2,29 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
+import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
-import("//build/config/ui.gni")
 import("//ui/gl/features.gni")
 
 config("gpu_implementation") {
   defines = [ "GPU_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 config("gpu_gles2_implementation") {
   defines = [ "GPU_GLES2_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 config("gpu_util_implementation") {
   defines = [ "GPU_UTIL_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 config("raster_implementation") {
   defines = [ "RASTER_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 config("webgpu_implementation") {
   defines = [ "WEBGPU_IMPLEMENTATION" ]
+  configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 component("gpu") {
@@ -140,7 +146,7 @@ if (!use_static_angle) {
   }
 }  # if (!use_static_angle)
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
   sources = [
     "command_buffer/client/client_test_helper.cc",
@@ -186,6 +192,7 @@ static_library("test_support") {
 
 test("gl_tests") {
   sources = [
+    "command_buffer/service/shared_image_backing_factory_gl_texture_unittest.cc",
     "command_buffer/service/shared_image_factory_unittest.cc",
     "command_buffer/tests/compressed_texture_test.cc",
     "command_buffer/tests/es3_misc_functions_unittest.cc",
@@ -196,7 +203,6 @@ test("gl_tests") {
     "command_buffer/tests/gl_chromium_framebuffer_multisample_unittest.cc",
     "command_buffer/tests/gl_chromium_path_rendering_unittest.cc",
     "command_buffer/tests/gl_clear_framebuffer_unittest.cc",
-    "command_buffer/tests/gl_compressed_copy_texture_CHROMIUM_unittest.cc",
     "command_buffer/tests/gl_copy_tex_image_2d_workaround_unittest.cc",
     "command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc",
     "command_buffer/tests/gl_cube_map_texture_unittest.cc",
@@ -379,6 +385,7 @@ test("gpu_unittests") {
     "command_buffer/service/memory_program_cache_unittest.cc",
     "command_buffer/service/mocks.cc",
     "command_buffer/service/mocks.h",
+    "command_buffer/service/passthrough_program_cache_unittest.cc",
     "command_buffer/service/path_manager_unittest.cc",
     "command_buffer/service/program_cache_unittest.cc",
     "command_buffer/service/program_manager_unittest.cc",

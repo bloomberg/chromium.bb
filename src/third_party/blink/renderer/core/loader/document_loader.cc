@@ -76,7 +76,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -134,7 +136,8 @@ DocumentLoader::DocumentLoader(
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
-      user_activated_(false),
+      had_sticky_activation_(false),
+      had_transient_activation_(false),
       use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
                        : UseCounter::kDefaultContext) {
@@ -209,41 +212,34 @@ const KURL& DocumentLoader::Url() const {
   return request_.Url();
 }
 
-Resource* DocumentLoader::StartPreload(Resource::Type type,
+Resource* DocumentLoader::StartPreload(ResourceType type,
                                        FetchParameters& params) {
   Resource* resource = nullptr;
   switch (type) {
-    case Resource::kImage:
-      if (frame_) {
-        if (frame_->IsClientLoFiAllowed(params.GetResourceRequest())) {
-          params.SetClientLoFiPlaceholder();
-        } else if (frame_->IsLazyLoadingImageAllowed()) {
-          params.SetAllowImagePlaceholder();
-        }
-      }
+    case ResourceType::kImage:
       resource = ImageResource::Fetch(params, Fetcher());
       break;
-    case Resource::kScript:
-      params.SetRequestContext(WebURLRequest::kRequestContextScript);
+    case ResourceType::kScript:
+      params.SetRequestContext(mojom::RequestContextType::SCRIPT);
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kCSSStyleSheet:
+    case ResourceType::kCSSStyleSheet:
       resource = CSSStyleSheetResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kFont:
+    case ResourceType::kFont:
       resource = FontResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kAudio:
-    case Resource::kVideo:
+    case ResourceType::kAudio:
+    case ResourceType::kVideo:
       resource = RawResource::FetchMedia(params, Fetcher(), nullptr);
       break;
-    case Resource::kTextTrack:
+    case ResourceType::kTextTrack:
       resource = RawResource::FetchTextTrack(params, Fetcher(), nullptr);
       break;
-    case Resource::kImportResource:
+    case ResourceType::kImportResource:
       resource = RawResource::FetchImport(params, Fetcher(), nullptr);
       break;
-    case Resource::kRaw:
+    case ResourceType::kRaw:
       resource = RawResource::Fetch(params, Fetcher(), nullptr);
       break;
     default:
@@ -357,6 +353,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kWebHistoryInertCommit, type == WebFrameLoadType::kReload,
       frame_->IsLocalRoot());
+
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
   probe::didNavigateWithinDocument(frame_);
@@ -441,12 +438,12 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
   WebHistoryCommitType history_commit_type = LoadTypeToCommitType(load_type_);
   switch (state_) {
     case kNotStarted:
-      probe::frameClearedScheduledClientNavigation(frame_);
       FALLTHROUGH;
     case kProvisional:
       state_ = kSentDidFinishLoad;
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
+      probe::didFailProvisionalLoad(frame_);
       if (frame_)
         GetFrameLoader().DetachProvisionalDocumentLoader(this);
       break;
@@ -465,7 +462,11 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 }
 
 void DocumentLoader::SetUserActivated() {
-  user_activated_ = true;
+  had_sticky_activation_ = true;
+}
+
+void DocumentLoader::SetHadTransientUserActivation() {
+  had_transient_activation_ = true;
 }
 
 const AtomicString& DocumentLoader::RequiredCSP() {
@@ -592,7 +593,8 @@ void DocumentLoader::CancelLoadAfterCSPDenied(
   request_.SetURL(blocked_url);
   redirect_chain_.pop_back();
   AppendRedirect(blocked_url);
-  response_ = ResourceResponse(blocked_url, "text/html");
+  response_ = ResourceResponse(blocked_url);
+  response_.SetMimeType("text/html");
   FinishedLoading(CurrentTimeTicks());
 
   return;
@@ -839,10 +841,25 @@ void DocumentLoader::StopLoading() {
     LoadFailed(ResourceError::CancelledError(Url()));
 }
 
-void DocumentLoader::DetachFromFrame() {
+void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   DCHECK(frame_);
   StopLoading();
   fetcher_->ClearContext();
+  if (flush_microtask_queue) {
+    // Flush microtask queue so that they all run on pre-navigation context.
+    // TODO(dcheng): This is a temporary hack that should be removed. This is
+    // only here because it's currently not possible to drop the microtasks
+    // queued for a Document when the Document is navigated away; instead, the
+    // entire microtask queue needs to be flushed. Unfortunately, running the
+    // microtasks any later results in violating internal invariants, since
+    // Blink does not expect the DocumentLoader for a not-yet-detached Document
+    // to be null. It is also not possible to flush microtasks any earlier,
+    // since flushing microtasks can only be done after any other JS (which can
+    // queue additional microtasks) has run. Once it is possible to associate
+    // microtasks with a v8::Context, remove this hack.
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  }
+  ScriptForbiddenScope forbid_scripts;
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
@@ -894,7 +911,8 @@ bool DocumentLoader::MaybeLoadEmpty() {
   if (request_.Url().IsEmpty() &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     request_.SetURL(BlankURL());
-  response_ = ResourceResponse(request_.Url(), "text/html");
+  response_ = ResourceResponse(request_.Url());
+  response_.SetMimeType("text/html");
   response_.SetTextEncodingName("utf-8");
   FinishedLoading(CurrentTimeTicks());
   return true;
@@ -926,10 +944,13 @@ void DocumentLoader::StartLoading() {
                                         : fetch_params.GetResourceRequest();
 }
 
-void DocumentLoader::DidInstallNewDocument(Document* document) {
+void DocumentLoader::DidInstallNewDocument(
+    Document* document,
+    const ContentSecurityPolicy* previous_csp) {
   document->SetReadyState(Document::kLoading);
   if (content_security_policy_) {
-    document->InitContentSecurityPolicy(content_security_policy_.Release());
+    document->InitContentSecurityPolicy(content_security_policy_.Release(),
+                                        nullptr, previous_csp);
   }
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
@@ -967,6 +988,9 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     UseCounter::Count(*document, WebFeature::kReferrerPolicyHeader);
     document->ParseAndSetReferrerPolicy(referrer_policy_header);
   }
+
+  if (response_.IsSignedExchangeInnerResponse())
+    UseCounter::Count(*document, WebFeature::kSignedExchangeInnerResponse);
 
   GetLocalFrameClient().DidCreateNewDocument();
 }
@@ -1080,8 +1104,11 @@ void DocumentLoader::InstallNewDocument(
   }
 
   const SecurityOrigin* previous_security_origin = nullptr;
-  if (frame_->GetDocument())
+  const ContentSecurityPolicy* previous_csp = nullptr;
+  if (frame_->GetDocument()) {
     previous_security_origin = frame_->GetDocument()->GetSecurityOrigin();
+    previous_csp = frame_->GetDocument()->GetContentSecurityPolicy();
+  }
 
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
@@ -1103,7 +1130,8 @@ void DocumentLoader::InstallNewDocument(
           .WithDocumentLoader(this)
           .WithURL(url)
           .WithOwnerDocument(owner_document)
-          .WithNewRegistrationContext(),
+          .WithNewRegistrationContext()
+          .WithPreviousDocumentCSP(previous_csp),
       false);
 
   // Clear the user activation state.
@@ -1114,10 +1142,12 @@ void DocumentLoader::InstallNewDocument(
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on
   // the new value.
-  if (frame_->HasReceivedUserGestureBeforeNavigation() != user_activated_) {
-    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(user_activated_);
+  if (frame_->HasReceivedUserGestureBeforeNavigation() !=
+      had_sticky_activation_) {
+    frame_->SetDocumentHasReceivedUserGestureBeforeNavigation(
+        had_sticky_activation_);
     GetLocalFrameClient().SetHasReceivedUserGestureBeforeNavigation(
-        user_activated_);
+        had_sticky_activation_);
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {
@@ -1131,7 +1161,7 @@ void DocumentLoader::InstallNewDocument(
 
   if (!overriding_url.IsEmpty())
     document->SetBaseURLOverride(overriding_url);
-  DidInstallNewDocument(document);
+  DidInstallNewDocument(document, previous_csp);
 
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.

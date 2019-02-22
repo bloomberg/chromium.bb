@@ -7,20 +7,24 @@ a {
 }
 
 body {
-  --google-blue-600: #1A73E8;
-  --google-blue-700: #1967D2;
+  --google-blue-600: rgb(26, 115, 232);
+  --google-blue-700: rgb(25, 103, 210);
+  --google-gray-50: rgb(248, 249, 250);
+  --google-gray-500: rgb(154, 160, 166);
+  --google-gray-600: rgb(128, 134, 139);
+  --google-gray-700: rgb(95, 99, 105);
   background-color: #fff;
-  color: rgb(100, 100, 100);
+  color: var(--google-gray-700);
   word-wrap: break-word;
 }
 
-#details-button {
-  background: inherit;
-  border: 0;
+.nav-wrapper .secondary-button {
+  background: #fff;
+  border: 1px solid var(--google-gray-500);
+  color: var(--google-gray-700);
   float: none;
   margin: 0;
-  padding: 10px 0;
-  text-transform: uppercase;
+  padding: 8px 16px;
 }
 
 .hidden {

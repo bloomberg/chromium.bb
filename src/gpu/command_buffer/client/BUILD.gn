@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
+
 # The files here go into the "gpu" component in a component build (with
 # "command_buffer_client" and "gles2_cmd_helper" just forwarding) and goes into
 # separate static libraries in non-component build.
@@ -53,7 +55,7 @@ group("webgpu") {
   }
 }
 
-source_set("client_sources") {
+jumbo_source_set("client_sources") {
   # External code should depend on this via //gpu/client above rather than
   # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
@@ -103,7 +105,10 @@ source_set("gles2_cmd_helper_sources") {
     "gles2_cmd_helper_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_gles2_implementation" ]
+  configs += [
+    "//build/config/compiler:no_shorten_64_warnings",
+    "//gpu:gpu_gles2_implementation",
+  ]
 
   deps = [
     ":client",
@@ -194,7 +199,7 @@ source_set("webgpu_interface") {
 }
 
 # Library emulates GLES2 using command_buffers.
-component("gles2_implementation") {
+jumbo_component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
@@ -281,7 +286,7 @@ source_set("webgpu_sources") {
 }
 
 # Library emulates GLES2 using command_buffers.
-component("gles2_implementation_no_check") {
+jumbo_component("gles2_implementation_no_check") {
   sources = gles2_implementation_source_files
 
   defines = [
@@ -324,7 +329,7 @@ component("gles2_c_lib") {
 
 # Same as gles2_c_lib except with no parameter checking. Required for
 # OpenGL ES 2.0 conformance tests.
-component("gles2_c_lib_nocheck") {
+jumbo_component("gles2_c_lib_nocheck") {
   sources = gles2_c_lib_source_files
 
   defines = [

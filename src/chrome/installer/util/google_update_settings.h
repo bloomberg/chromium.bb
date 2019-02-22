@@ -23,9 +23,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/metrics/client_info.h"
 
-class AppRegistrationData;
-class BrowserDistribution;
-
 namespace installer {
 class ChannelInfo;
 class InstallationState;
@@ -98,19 +95,8 @@ class GoogleUpdateSettings {
 
 #if defined(OS_WIN)
   // Returns whether the user has given consent to collect UMA data and send
-  // crash dumps to Google. This information is collected by the web server
-  // used to download the chrome installer.
-  static bool GetCollectStatsConsentAtLevel(bool system_install);
-
-  // Returns the consent value for an app or TRISTATE_NONE if none is found.
-  static google_update::Tristate GetCollectStatsConsentForApp(
-      bool system_install,
-      const AppRegistrationData& reg_data);
-
-  // Sets the user consent to send UMA and crash dumps to Google. Returns
-  // false if the setting could not be recorded.
-  static bool SetCollectStatsConsentAtLevel(bool system_install,
-                                            bool consented);
+  // crash dumps to Google for the deprecated Chrome binaries.
+  static google_update::Tristate GetCollectStatsConsentForBinaries();
 
   // Returns the default (original) state of the "send usage stats" checkbox
   // shown to the user when they downloaded Chrome. The value is returned via
@@ -133,8 +119,7 @@ class GoogleUpdateSettings {
 
   // Sets the machine-wide EULA consented flag required on OEM installs.
   // Returns false if the setting could not be recorded.
-  static bool SetEULAConsent(const installer::InstallationState& machine_state,
-                             BrowserDistribution* dist,
+  static bool SetEulaConsent(const installer::InstallationState& machine_state,
                              bool consented);
 
   // Returns the last time chrome was run in days. It uses a recorded value
@@ -269,9 +254,6 @@ class GoogleUpdateSettings {
   // protocol.
   static base::string16 GetDownloadPreference();
 
-  // Records UMA stats about Chrome's update policy.
-  static void RecordChromeUpdatePolicyHistograms();
-
   // Returns Google Update's uninstall command line, or an empty string if none
   // is found.
   static base::string16 GetUninstallCommandLine(bool system_install);
@@ -300,26 +282,23 @@ class GoogleUpdateSettings {
   static bool GetUpdateDetailForGoogleUpdate(ProductData* data);
 
   // Returns product data for the current product. (Equivalent to calling
-  // GetUpdateDetailForApp with the app guid stored in BrowserDistribution.)
+  // GetUpdateDetailForApp with the current install mode's app guid.)
   static bool GetUpdateDetail(ProductData* data);
 
   // Sets |experiment_labels| as the Google Update experiment_labels value in
   // the ClientState key for this Chrome product, if appropriate. If
   // |experiment_labels| is empty, this will delete the value instead. This will
   // return true if the label was successfully set (or deleted), false otherwise
-  // (even if the label does not need to be set for this particular distribution
-  // type).
-  static bool SetExperimentLabels(bool system_install,
-                                  const base::string16& experiment_labels);
+  // (even if the label does not need to be set for this particular brand).
+  static bool SetExperimentLabels(const base::string16& experiment_labels);
 
   // Reads the Google Update experiment_labels value in the ClientState key for
   // this Chrome product and writes it into |experiment_labels|. If the key or
   // value does not exist, |experiment_labels| will be set to the empty string.
-  // If this distribution of Chrome does not set the experiment_labels value,
-  // this will do nothing to |experiment_labels|. This will return true if the
-  // label did not exist, or was successfully read.
-  static bool ReadExperimentLabels(bool system_install,
-                                   base::string16* experiment_labels);
+  // If this brand does not set the experiment_labels value, this will do
+  // nothing to |experiment_labels|. This will return true if the label did not
+  // exist, or was successfully read.
+  static bool ReadExperimentLabels(base::string16* experiment_labels);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);

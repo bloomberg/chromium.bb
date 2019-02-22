@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "net/android/cert_verify_result_android.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/mime_util.h"
@@ -27,8 +28,8 @@ namespace android {
 // certificate listed first.
 // |auth_type| is as per the Java X509Certificate.checkServerTrusted method.
 void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
-                         const std::string& auth_type,
-                         const std::string& host,
+                         base::StringPiece auth_type,
+                         base::StringPiece host,
                          CertVerifyStatusAndroid* status,
                          bool* is_issued_by_known_root,
                          std::vector<std::string>* verified_chain);

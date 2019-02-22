@@ -41,9 +41,9 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/CoreProbeSink.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
+#include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/child_frame_disconnector.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -58,11 +58,11 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
-#include "third_party/blink/renderer/core/frame/feature_policy_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -100,8 +100,8 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -149,6 +149,60 @@ bool ShouldUseClientLoFiForRequest(
     return request.Url().ProtocolIs("https");
 
   return true;
+}
+
+WeakPersistent<LocalFrame>& UserActivationNotifierFrame() {
+  DEFINE_STATIC_LOCAL(WeakPersistent<LocalFrame>,
+                      user_activation_notifier_frame, (nullptr));
+  return user_activation_notifier_frame;
+}
+
+enum class UserActivationFrameResultEnum : int {
+  kNullFailure = 0,
+  kNullSuccess = 1,
+  kSelfFailure = 2,
+  kSelfSuccess = 3,
+  kAncestorFailure = 4,
+  kAncestorSuccess = 5,
+  kDescendantFailure = 6,
+  kDescendantSuccess = 7,
+  kOtherFailure = 8,
+  kOtherSuccess = 9,
+  kNonMainThreadFailure = 10,
+  kNonMainThreadSuccess = 11,
+  kMaxValue = kNonMainThreadSuccess
+};
+
+UserActivationFrameResultEnum DetermineActivationResultEnum(
+    const LocalFrame* const caller_frame,
+    const bool call_succeeded,
+    const bool off_main_thread) {
+  if (off_main_thread) {
+    return call_succeeded
+               ? UserActivationFrameResultEnum::kNonMainThreadSuccess
+               : UserActivationFrameResultEnum::kNonMainThreadFailure;
+  }
+
+  LocalFrame* user_activation_notifier_frame = UserActivationNotifierFrame();
+
+  if (!caller_frame || !user_activation_notifier_frame) {
+    return call_succeeded ? UserActivationFrameResultEnum::kNullSuccess
+                          : UserActivationFrameResultEnum::kNullFailure;
+  }
+  if (caller_frame == user_activation_notifier_frame) {
+    return call_succeeded ? UserActivationFrameResultEnum::kSelfSuccess
+                          : UserActivationFrameResultEnum::kSelfFailure;
+  }
+  if (user_activation_notifier_frame->Tree().IsDescendantOf(caller_frame)) {
+    return call_succeeded ? UserActivationFrameResultEnum::kAncestorSuccess
+                          : UserActivationFrameResultEnum::kAncestorFailure;
+  }
+  if (caller_frame->Tree().IsDescendantOf(user_activation_notifier_frame)) {
+    return call_succeeded ? UserActivationFrameResultEnum::kDescendantSuccess
+                          : UserActivationFrameResultEnum::kDescendantFailure;
+  }
+  return call_succeeded ? UserActivationFrameResultEnum::kOtherSuccess
+                        : UserActivationFrameResultEnum::kOtherFailure;
 }
 
 }  // namespace
@@ -273,26 +327,26 @@ bool LocalFrame::IsLocalRoot() const {
 
 void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
-                                    bool replace_current_item,
+                                    WebFrameLoadType frame_load_type,
                                     UserGestureStatus user_gesture_status) {
   navigation_scheduler_->ScheduleFrameNavigation(&origin_document, url,
-                                                 replace_current_item);
+                                                 frame_load_type);
 }
 
-void LocalFrame::Navigate(const FrameLoadRequest& request) {
-  loader_.StartNavigation(request);
+void LocalFrame::Navigate(const FrameLoadRequest& request,
+                          WebFrameLoadType frame_load_type) {
+  loader_.StartNavigation(request, frame_load_type);
 }
 
-void LocalFrame::Detach(FrameDetachType type) {
+void LocalFrame::DetachImpl(FrameDetachType type) {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // BEGIN RE-ENTRANCY SAFE BLOCK
   // Starting here, the code must be safe against re-entrancy. Dispatching
   // events, et cetera can run Javascript, which can reenter Detach().
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  // Detach() can be re-entered, this can't simply DCHECK(IsAttached()).
-  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
-  lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
+  if (this == UserActivationNotifierFrame())
+    UserActivationNotifierFrame().Clear();
 
   if (IsLocalRoot()) {
     performance_monitor_->Shutdown();
@@ -353,7 +407,7 @@ void LocalFrame::Detach(FrameDetachType type) {
   // re-entered, then check for a non-null Client() above should have already
   // returned.
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  DCHECK_NE(lifecycle_.GetState(), FrameLifecycle::kDetached);
+  DCHECK(!IsDetached());
 
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!view_->IsAttached());
@@ -378,7 +432,6 @@ void LocalFrame::Detach(FrameDetachType type) {
   supplements_.clear();
   frame_scheduler_.reset();
   WeakIdentifierMap<LocalFrame>::NotifyObjectDestroyed(this);
-  Frame::Detach(type);
 }
 
 bool LocalFrame::PrepareForCommit() {
@@ -464,6 +517,9 @@ void LocalFrame::Reload(WebFrameLoadType load_type,
         nullptr,
         loader_.ResourceRequestForReload(load_type, client_redirect_policy));
     request.SetClientRedirect(client_redirect_policy);
+    if (const WebInputEvent* input_event = CurrentInputEvent::Get()) {
+      request.SetInputStartTime(input_event->TimeStamp());
+    }
     loader_.StartNavigation(request, load_type);
   } else {
     DCHECK_EQ(WebFrameLoadType::kReload, load_type);
@@ -510,10 +566,23 @@ void LocalFrame::DidChangeVisibilityState() {
 void LocalFrame::DidFreeze() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
+    auto* frame_resource_coordinator = GetFrameResourceCoordinator();
+    if (frame_resource_coordinator) {
+      // Determine if there is a beforeunload handler by dispatching a
+      // beforeunload that will *not* launch a user dialog. If
+      // |proceed| is false then there is a non-empty beforeunload
+      // handler indicating potentially unsaved user state.
+      bool unused_did_allow_navigation = false;
+      bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
+          *View()->GetChromeClient(), false /* is_reload */,
+          true /* auto_cancel */, unused_did_allow_navigation);
+      frame_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+    }
+
     GetDocument()->DispatchFreezeEvent();
     // TODO(fmeawad): Move the following logic to the page once we have a
     // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (auto* frame_resource_coordinator = GetFrameResourceCoordinator()) {
+    if (frame_resource_coordinator) {
       frame_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }
@@ -650,7 +719,10 @@ void LocalFrame::SetPrinting(bool printing,
     }
   }
 
-  View()->SetSubtreeNeedsPaintPropertyUpdate();
+  if (auto* layout_view = View()->GetLayoutView()) {
+    layout_view->AddSubtreePaintPropertyUpdateReason(
+        SubtreePaintPropertyUpdateReason::kPrinting);
+  }
 
   if (!printing)
     GetDocument()->SetPrinting(Document::kNotPrinting);
@@ -956,13 +1028,17 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       !GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
       target_frame == Tree().Top()) {
     DEFINE_STATIC_LOCAL(EnumerationHistogram, framebust_histogram,
-                        ("WebCore.Framebust", 4));
+                        ("WebCore.Framebust2", 8));
     const unsigned kUserGestureBit = 0x1;
     const unsigned kAllowedBit = 0x2;
+    const unsigned kAdBit = 0x4;
     unsigned framebust_params = 0;
 
     if (has_user_gesture)
       framebust_params |= kUserGestureBit;
+
+    if (is_ad_subframe_)
+      framebust_params |= kAdBit;
 
     UseCounter::Count(this, WebFeature::kTopNavigationFromSubFrame);
     if (sandboxed) {  // Sandboxed with 'allow-top-navigation'.
@@ -976,6 +1052,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (is_allowed_navigation)
       framebust_params |= kAllowedBit;
     framebust_histogram.Count(framebust_params);
+
     if (has_user_gesture || is_allowed_navigation ||
         target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
             SecurityOrigin::Create(destination_url).get())) {
@@ -1038,7 +1115,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   // Navigating window.opener cross origin, without user activation. See
   // crbug.com/813643.
   if (Client()->Opener() == target_frame &&
-      !HasTransientUserActivation(this, false /* checkIfMainThread */) &&
+      !HasTransientUserActivation(this, false /* check_if_main_thread */) &&
       !target_frame.GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           SecurityOrigin::Create(destination_url).get())) {
     UseCounter::Count(this, WebFeature::kOpenerNavigationWithoutGesture);
@@ -1119,7 +1196,7 @@ bool LocalFrame::CanNavigateWithoutFramebusting(const Frame& target_frame,
       if (GetSecurityContext()->IsSandboxed(kSandboxTopNavigation) &&
           !GetSecurityContext()->IsSandboxed(
               kSandboxTopNavigationByUserActivation) &&
-          !Frame::HasTransientUserActivation(this)) {
+          !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.
         reason =
@@ -1206,14 +1283,12 @@ ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
 }
 
 FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
-  if (!BlinkResourceCoordinatorBase::IsEnabled())
-    return nullptr;
   if (!frame_resource_coordinator_) {
     auto* local_frame_client = Client();
     if (!local_frame_client)
       return nullptr;
-    frame_resource_coordinator_.reset(FrameResourceCoordinator::Create(
-        local_frame_client->GetInterfaceProvider()));
+    frame_resource_coordinator_ = FrameResourceCoordinator::Create(
+        local_frame_client->GetInterfaceProvider());
   }
   return frame_resource_coordinator_.get();
 }
@@ -1314,7 +1389,7 @@ void LocalFrame::SetViewportIntersectionFromParent(
     remote_viewport_intersection_ = viewport_intersection;
     occluded_or_obscured_by_ancestor_ = occluded_or_obscured;
     if (View()) {
-      View()->SetNeedsIntersectionObservation(LocalFrameView::kRequired);
+      View()->SetIntersectionObservationState(LocalFrameView::kRequired);
       View()->ScheduleAnimation();
     }
   }
@@ -1353,7 +1428,7 @@ void LocalFrame::ForceSynchronousDocumentInstall(
 bool LocalFrame::IsProvisional() const {
   // Calling this after the frame is marked as completely detached is a bug, as
   // this state can no longer be accurately calculated.
-  CHECK_NE(FrameLifecycle::kDetached, lifecycle_.GetState());
+  CHECK(!IsDetached());
 
   if (IsMainFrame()) {
     return GetPage()->MainFrame() != this;
@@ -1441,27 +1516,95 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
   return reporting_service_;
 }
 
-void LocalFrame::ReportFeaturePolicyViolation(
+void LocalFrame::DeprecatedReportFeaturePolicyViolation(
     mojom::FeaturePolicyFeature feature) const {
-  if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
-    return;
-  const String& feature_name = GetNameForFeature(feature);
-  FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
-      feature_name, "Feature policy violation", SourceLocation::Capture());
-  Report* report =
-      new Report("feature-policy", GetDocument()->Url().GetString(), body);
-  ReportingContext::From(GetDocument())->QueueReport(report);
+  GetSecurityContext()->ReportFeaturePolicyViolation(feature);
+}
 
-  bool is_null;
-  int line_number = body->lineNumber(is_null);
-  line_number = is_null ? 0 : line_number;
-  int column_number = body->columnNumber(is_null);
-  column_number = is_null ? 0 : column_number;
+// static
+std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
+    LocalFrame* frame,
+    UserGestureToken::Status status) {
+  if (frame) {
+    UserActivationNotifierFrame() = frame;
+    frame->NotifyUserActivation();
+  }
+  return std::make_unique<UserGestureIndicator>(status);
+}
 
-  // Send the feature policy violation report to the Reporting API.
-  GetReportingService()->QueueFeaturePolicyViolationReport(
-      GetDocument()->Url(), feature_name, "Feature policy violation",
-      body->sourceFile(), line_number, column_number);
+// static
+std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
+    LocalFrame* frame,
+    UserGestureToken* token) {
+  DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
+  if (frame) {
+    UserActivationNotifierFrame() = frame;
+    frame->NotifyUserActivation();
+  }
+  return std::make_unique<UserGestureIndicator>(token);
+}
+
+// static
+bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
+                                            bool check_if_main_thread) {
+  bool available;
+
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    available = frame ? frame->HasTransientUserActivation() : false;
+  } else {
+    available = check_if_main_thread
+                    ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+                    : UserGestureIndicator::ProcessingUserGesture();
+  }
+
+  const bool off_main_thread = check_if_main_thread && !IsMainThread();
+  UMA_HISTOGRAM_ENUMERATION(
+      "UserActivation.AvailabilityCheck.FrameResult",
+      DetermineActivationResultEnum(frame, available, off_main_thread));
+
+  return available;
+}
+
+// static
+bool LocalFrame::ConsumeTransientUserActivation(
+    LocalFrame* frame,
+    bool check_if_main_thread,
+    UserActivationUpdateSource update_source) {
+  bool consumed;
+
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    consumed =
+        frame ? frame->ConsumeTransientUserActivation(update_source) : false;
+  } else {
+    consumed = check_if_main_thread
+                   ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+                   : UserGestureIndicator::ConsumeUserGesture();
+  }
+
+  const bool off_main_thread = check_if_main_thread && !IsMainThread();
+  UMA_HISTOGRAM_ENUMERATION(
+      "UserActivation.Consumption.FrameResult",
+      DetermineActivationResultEnum(frame, consumed, off_main_thread));
+  if (!off_main_thread)
+    UserActivationNotifierFrame().Clear();
+
+  return consumed;
+}
+
+void LocalFrame::NotifyUserActivation() {
+  Client()->NotifyUserActivation();
+  NotifyUserActivationInLocalTree();
+}
+
+bool LocalFrame::HasTransientUserActivation() {
+  return user_activation_state_.IsActive();
+}
+
+bool LocalFrame::ConsumeTransientUserActivation(
+    UserActivationUpdateSource update_source) {
+  if (update_source == UserActivationUpdateSource::kRenderer)
+    Client()->ConsumeUserActivation();
+  return ConsumeTransientUserActivationInLocalTree();
 }
 
 }  // namespace blink

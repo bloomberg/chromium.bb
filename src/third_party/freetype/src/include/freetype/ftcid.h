@@ -50,7 +50,7 @@ FT_BEGIN_HEADER
    */
 
 
-  /**********************************************************************
+  /**************************************************************************
    *
    * @function:
    *    FT_Get_CID_Registry_Ordering_Supplement
@@ -90,15 +90,15 @@ FT_BEGIN_HEADER
                                            FT_Int       *supplement );
 
 
-  /**********************************************************************
+  /**************************************************************************
    *
    * @function:
    *    FT_Get_CID_Is_Internally_CID_Keyed
    *
    * @description:
-   *    Retrieve the type of the input face, CID keyed or not.  In
-   *    contrast to the @FT_IS_CID_KEYED macro this function returns
-   *    successfully also for CID-keyed fonts in an SFNT wrapper.
+   *    Retrieve the type of the input face, CID keyed or not.  In contrast
+   *    to the @FT_IS_CID_KEYED macro this function returns successfully also
+   *    for CID-keyed fonts in an SFNT wrapper.
    *
    * @input:
    *    face ::
@@ -112,8 +112,8 @@ FT_BEGIN_HEADER
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    This function only works with CID faces and OpenType fonts,
-   *    returning an error otherwise.
+   *    This function only works with CID faces and OpenType fonts, returning
+   *    an error otherwise.
    *
    * @since:
    *    2.3.9
@@ -123,7 +123,7 @@ FT_BEGIN_HEADER
                                       FT_Bool  *is_cid );
 
 
-  /**********************************************************************
+  /**************************************************************************
    *
    * @function:
    *    FT_Get_CID_From_Glyph_Index
@@ -146,8 +146,8 @@ FT_BEGIN_HEADER
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    This function only works with CID faces and OpenType fonts,
-   *    returning an error otherwise.
+   *    This function only works with CID faces and OpenType fonts, returning
+   *    an error otherwise.
    *
    * @since:
    *    2.3.9

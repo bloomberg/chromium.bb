@@ -232,6 +232,12 @@ DrawImage CreateDiscardableDrawImage(gfx::Size size) {
                    PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
 }
 
+DrawImage CreateBitmapDrawImage(gfx::Size size) {
+  return DrawImage(
+      CreateBitmapImage(size), SkIRect::MakeWH(size.width(), size.height()),
+      kNone_SkFilterQuality, SkMatrix::I(), PaintImage::kDefaultFrameIndex);
+}
+
 class ImageControllerTest : public testing::Test {
  public:
   ImageControllerTest()
@@ -322,16 +328,7 @@ TEST_F(ImageControllerTest, QueueImageDecodeNonLazy) {
   base::RunLoop run_loop;
   DecodeClient decode_client;
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(1, 1);
-  DrawImage image =
-      DrawImage(PaintImageBuilder::WithDefault()
-                    .set_id(PaintImage::GetNextId())
-                    .set_image(SkImage::MakeFromBitmap(bitmap),
-                               PaintImage::GetNextContentId())
-                    .TakePaintImage(),
-                SkIRect::MakeWH(1, 1), kNone_SkFilterQuality, SkMatrix::I(),
-                PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
+  DrawImage image = CreateBitmapDrawImage(gfx::Size(1, 1));
 
   ImageController::ImageDecodeRequestId expected_id =
       controller()->QueueImageDecode(
@@ -604,6 +601,93 @@ TEST_F(ImageControllerTest, DispatchesDecodeCallbacksAfterCacheChanged) {
   // Reset the controller since the order of destruction is wrong in this test
   // (|other_cache| should outlive the controller. This is normally done via
   // SetImageDecodeCache(nullptr) or it can be done in the dtor of the cache.)
+  ResetController();
+}
+
+TEST_F(ImageControllerTest, QueueImageDecodeLazyCancelImmediately) {
+  DecodeClient decode_client1;
+  DecodeClient decode_client2;
+
+  // Create two images so that there is always one that is queued up and
+  // not run yet.  This prevents raciness in this test.
+  DrawImage image1 = CreateDiscardableDrawImage(gfx::Size(1, 1));
+  DrawImage image2 = CreateDiscardableDrawImage(gfx::Size(1, 1));
+
+  ImageController::ImageDecodeRequestId expected_id1 =
+      controller()->QueueImageDecode(
+          image(),
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client1),
+                     base::Bind([]() {})));
+
+  ImageController::ImageDecodeRequestId expected_id2 =
+      controller()->QueueImageDecode(
+          image(),
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client2),
+                     base::Bind([]() {})));
+
+  // This needs a ref because it is lazy.
+  EXPECT_EQ(2, cache()->number_of_refs());
+
+  // Instead of running, immediately cancel everything.
+  controller()->SetImageDecodeCache(nullptr);
+
+  // This should not crash, and nothing should have run.
+  EXPECT_NE(expected_id1, decode_client1.id());
+  EXPECT_NE(expected_id2, decode_client2.id());
+  EXPECT_EQ(0u, decode_client1.id());
+  EXPECT_EQ(0u, decode_client2.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client1.result());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client2.result());
+
+  // Refs should still be cleaned up.
+  EXPECT_EQ(0, cache()->number_of_refs());
+
+  // Explicitly reset the controller so that orphaned task callbacks run
+  // while the decode clients still exist.
+  ResetController();
+}
+
+TEST_F(ImageControllerTest, QueueImageDecodeNonLazyCancelImmediately) {
+  DecodeClient decode_client1;
+  DecodeClient decode_client2;
+
+  // Create two images so that there is always one that is queued up and
+  // not run yet.  This prevents raciness in this test.
+  DrawImage image1 = CreateBitmapDrawImage(gfx::Size(1, 1));
+  DrawImage image2 = CreateBitmapDrawImage(gfx::Size(1, 1));
+
+  ImageController::ImageDecodeRequestId expected_id1 =
+      controller()->QueueImageDecode(
+          image1,
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client1),
+                     base::Bind([]() {})));
+  ImageController::ImageDecodeRequestId expected_id2 =
+      controller()->QueueImageDecode(
+          image2,
+          base::Bind(&DecodeClient::Callback, base::Unretained(&decode_client2),
+                     base::Bind([]() {})));
+
+  // No ref needed here, because it is non-lazy.
+  EXPECT_EQ(0, cache()->number_of_refs());
+
+  // Instead of running, immediately cancel everything.
+  controller()->SetImageDecodeCache(nullptr);
+
+  // This should not crash, and nothing should have run.
+  EXPECT_NE(expected_id1, decode_client1.id());
+  EXPECT_NE(expected_id2, decode_client2.id());
+  EXPECT_EQ(0u, decode_client1.id());
+  EXPECT_EQ(0u, decode_client2.id());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client1.result());
+  EXPECT_EQ(ImageController::ImageDecodeResult::FAILURE,
+            decode_client2.result());
+  EXPECT_EQ(0, cache()->number_of_refs());
+
+  // Explicitly reset the controller so that orphaned task callbacks run
+  // while the decode clients still exist.
   ResetController();
 }
 

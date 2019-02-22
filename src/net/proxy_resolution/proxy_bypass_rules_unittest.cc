@@ -13,6 +13,23 @@ namespace net {
 
 namespace {
 
+// Calls |MatchesImplicitRules()| for each name in |hosts| (for various URL
+// schemes), and checks that the result is |bypasses|.
+template <size_t N>
+void ExpectMatchesImplicitRules(const char* (&hosts)[N], bool bypasses) {
+  // The scheme of the URL shouldn't matter.
+  const char* kUrlSchemes[] = {"http://", "https://", "ftp://"};
+
+  for (auto* scheme : kUrlSchemes) {
+    for (size_t i = 0; i < N; ++i) {
+      const char* host = hosts[i];
+      std::string url = std::string(scheme) + std::string(host);
+      EXPECT_EQ(bypasses, ProxyBypassRules::MatchesImplicitRules(GURL(url)))
+          << url;
+    }
+  }
+}
+
 TEST(ProxyBypassRulesTest, ParseAndMatchBasicHost) {
   ProxyBypassRules rules;
   rules.ParseFromString("wWw.gOogle.com");
@@ -317,6 +334,34 @@ TEST(ProxyBypassRulesTest, ParseAndMatchCIDR_IPv6) {
   EXPECT_TRUE(rules.Matches(GURL("http://[A:b:C:9::]")));
   EXPECT_FALSE(rules.Matches(GURL("http://foobar.com")));
   EXPECT_FALSE(rules.Matches(GURL("http://192.169.1.1")));
+}
+
+// Check that ProxyBypassRules::MatchesImplicitRules() matches all localhost
+// names, and link-local IPs, but nothing else.
+TEST(ProxyBypassRulesTest, MatchesImplicitRules) {
+  const char* kLocalhosts[] = {
+      "localhost",
+      "localhost.",
+      "foo.localhost",
+      "localhost6",
+      "localhost6.localdomain6",
+      "127.0.0.1",
+      "127.100.0.2",
+      "[::1]",
+  };
+
+  const char* kLinkLocalHosts[] = {
+      "169.254.3.2", "169.254.100.1", "[FE80::8]", "[fe91::1]",
+  };
+
+  const char* kOtherHosts[] = {
+      "192.168.0.1", "170.254.0.0", "128.0.0.1",        "[::2]",
+      "[FD80::1]",   "foo",         "www.example3.com", "loopback",
+  };
+
+  ExpectMatchesImplicitRules(kLocalhosts, true);
+  ExpectMatchesImplicitRules(kLinkLocalHosts, true);
+  ExpectMatchesImplicitRules(kOtherHosts, false);
 }
 
 }  // namespace

@@ -62,20 +62,29 @@
             </div>
           </div>
         </div>
-        <div id="offline-content-list" hidden></div>
+        <div id="offline-content-list" hidden>
+          <div class="offline-content-list-title" jsselect="offlineContentList"
+              jscontent="title"></div>
+          <div id="offline-content-suggestions"></div>
+          <div class="offline-content-list-action">
+            <a class="link-button" onclick="launchDownloadsPage()"
+                jsselect="offlineContentList" jscontent="actionText">
+            </a>
+          </div>
+        </div>
         <div id="offline-content-summary" onclick="launchDownloadsPage()" hidden>
           <div class="offline-content-summary-images">
             <div class="offline-content-summary-image-truncate">
-              <img id="earth" src="offline_content/earth.svg">
+              <img id="earth" src="images/generic-globe.svg">
             </div>
             <div class="offline-content-summary-image-truncate">
-              <img id="music-note" src="offline_content/music-note.svg">
+              <img id="music-note" src="images/music-note.svg">
             </div>
             <div class="offline-content-summary-image-truncate">
-              <img id="video" src="offline_content/video.svg">
+              <img id="video" src="images/video.svg">
             </div>
             <div>
-              <img id="image" src="offline_content/image.svg">
+              <img id="image" src="images/image.svg">
             </div>
           </div>
           <div class="offline-content-summary-description"
@@ -109,7 +118,7 @@
             jscontent="msg" jsvalues=".disabledText:disabledMsg">
         </button>
       </div>
-      <button id="details-button" class="text-button small-link"
+      <button id="details-button" class="secondary-button text-button small-link"
          onclick="detailsButtonClick(); toggleHelpBox()" jscontent="details"
          jsdisplay="(suggestionsDetails && suggestionsDetails.length > 0) || diagnose"
          jsvalues=".detailsText:details; .hideDetailsText:hideDetails;"></button>
@@ -130,10 +139,8 @@
   </div>
 
   <div id="offline-resources">
-    <img id="offline-resources-1x" src="default_100_percent/offline/100-offline-sprite.png">
-    <img id="offline-resources-2x" src="default_200_percent/offline/200-offline-sprite.png">
-    <img id="offline-resources-bday-1x" src="default_100_percent/offline/100-offline-sprite-bday.png">
-    <img id="offline-resources-bday-2x" src="default_200_percent/offline/200-offline-sprite-bday.png">
+    <img id="offline-resources-1x" src="images/default_100_percent/offline/100-offline-sprite.png">
+    <img id="offline-resources-2x" src="images/default_200_percent/offline/200-offline-sprite.png">
     <template id="audio-resources">
       <audio id="offline-sound-press" src="sounds/button-press.mp3"></audio>
       <audio id="offline-sound-hit" src="sounds/hit.mp3"></audio>

@@ -29,6 +29,11 @@ namespace draw_property_utils {
 
 namespace {
 
+static gfx::Rect ToEnclosingClipRect(const gfx::RectF& clip_rect) {
+  constexpr float kClipError = 0.00001f;
+  return gfx::ToEnclosingRectIgnoringError(clip_rect, kClipError);
+}
+
 static bool IsRootLayer(const Layer* layer) {
   return !layer->parent();
 }
@@ -129,10 +134,11 @@ static ConditionalClip ComputeCurrentClip(const ClipNode* clip_node,
                                           const PropertyTrees* property_trees,
                                           int target_transform_id,
                                           int target_effect_id) {
-  if (clip_node->transform_id != target_transform_id)
+  if (clip_node->transform_id != target_transform_id) {
     return ComputeLocalRectInTargetSpace(clip_node->clip, property_trees,
                                          clip_node->transform_id,
                                          target_transform_id, target_effect_id);
+  }
 
   const EffectTree& effect_tree = property_trees->effect_tree;
   gfx::RectF current_clip = clip_node->clip;
@@ -183,7 +189,7 @@ static bool ApplyClipNodeToAccumulatedClip(const PropertyTrees* property_trees,
       // Do the expansion.
       gfx::RectF expanded_clip_in_expanding_space =
           gfx::RectF(clip_node->clip_expander->MapRectReverse(
-              gfx::ToEnclosingRect(accumulated_clip_rect_in_expanding_space),
+              ToEnclosingClipRect(accumulated_clip_rect_in_expanding_space),
               property_trees));
 
       // Put the expanded clip back into the original target space.
@@ -557,13 +563,13 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
   bool include_expanding_clips = false;
   if (render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId) {
     render_surface->SetClipRect(
-        gfx::ToEnclosingRect(clip_tree.Node(effect_node->clip_id)->clip));
+        ToEnclosingClipRect(clip_tree.Node(effect_node->clip_id)->clip));
   } else {
     ConditionalClip accumulated_clip_rect =
         ComputeAccumulatedClip(property_trees, include_expanding_clips,
                                effect_node->clip_id, target_node->id);
     render_surface->SetClipRect(
-        gfx::ToEnclosingRect(accumulated_clip_rect.clip_rect));
+        ToEnclosingClipRect(accumulated_clip_rect.clip_rect));
   }
 }
 
@@ -641,7 +647,7 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   gfx::RectF clip_in_layer_space = accumulated_clip_in_layer_space.clip_rect;
   clip_in_layer_space.Offset(-layer->offset_to_transform_parent());
 
-  gfx::Rect visible_rect = gfx::ToEnclosingRect(clip_in_layer_space);
+  gfx::Rect visible_rect = ToEnclosingClipRect(clip_in_layer_space);
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;
 }
@@ -916,7 +922,7 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
     // is_clipped should be set before visible rect computation as it is used
     // there.
     layer->draw_properties().is_clipped = clip.is_clipped;
-    layer->draw_properties().clip_rect = gfx::ToEnclosingRect(clip.clip_rect);
+    layer->draw_properties().clip_rect = ToEnclosingClipRect(clip.clip_rect);
     layer->draw_properties().visible_layer_rect =
         LayerVisibleRect(property_trees, layer);
   }
@@ -949,8 +955,7 @@ void ComputeMaskDrawProperties(LayerImpl* mask_layer,
   // is_clipped should be set before visible rect computation as it is used
   // there.
   mask_layer->draw_properties().is_clipped = clip.is_clipped;
-  mask_layer->draw_properties().clip_rect =
-      gfx::ToEnclosingRect(clip.clip_rect);
+  mask_layer->draw_properties().clip_rect = ToEnclosingClipRect(clip.clip_rect);
   // Calculate actual visible layer rect for mask layers, since we could have
   // tiled mask layers and the tile manager would need this info for rastering.
   mask_layer->draw_properties().visible_layer_rect =

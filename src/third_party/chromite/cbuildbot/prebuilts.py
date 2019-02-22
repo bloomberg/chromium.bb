@@ -54,7 +54,7 @@ def _AddPackagesForPrebuilt(filename):
           logging.warning('Could not split atom %r (line: %r)', atom, line)
           continue
         if cpv:
-          cmd.extend(['--packages=%s/%s' % (cpv.category, cpv.package)])
+          cmd.extend(['--packages=%s' % cpv.cp])
     return cmd
   except IOError as e:
     logging.warning('Problem with package file %s', filename)

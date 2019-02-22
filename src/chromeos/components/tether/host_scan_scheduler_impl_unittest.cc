@@ -57,6 +57,18 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
+  }
+
+  void TearDown() override {
+    host_scan_scheduler_.reset();
+
+    ShutdownNetworkState();
+    NetworkStateTest::TearDown();
+    DBusThreadManager::Shutdown();
+  }
+
+  void InitializeTest(bool multidevice_flags_enabled) {
+    SetMultiDeviceApi(multidevice_flags_enabled);
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
@@ -83,16 +95,16 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         test_task_runner_);
   }
 
-  void TearDown() override {
-    host_scan_scheduler_.reset();
+  void SetMultiDeviceApi(bool enabled) {
+    static const std::vector<base::Feature> kFeatures{
+        chromeos::features::kMultiDeviceApi,
+        chromeos::features::kEnableUnifiedMultiDeviceSetup};
 
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-  }
-
-  void SetMultiDeviceApiEnabled() {
-    scoped_feature_list_.InitAndEnableFeature(features::kMultiDeviceApi);
+    scoped_feature_list_.InitWithFeatures(
+        (enabled ? kFeatures
+                 : std::vector<base::Feature>() /* enable_features */),
+        (enabled ? std::vector<base::Feature>()
+                 : kFeatures /* disable_features */));
   }
 
   void RequestScan(const NetworkTypePattern& type) {
@@ -190,8 +202,6 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     if (is_online)
       InitializeEthernet();
 
-    SetMultiDeviceApiEnabled();
-
     // Lock the screen. This should never trigger a scan.
     SetScreenLockedState(true /* is_locked */);
     EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
@@ -235,6 +245,7 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
 };
 
 TEST_F(HostScanSchedulerImplTest, AttemptScanIfOffline) {
+  InitializeTest(false /* multidevice_flags_enabled */);
   host_scan_scheduler_->AttemptScanIfOffline();
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
@@ -252,24 +263,30 @@ TEST_F(HostScanSchedulerImplTest, AttemptScanIfOffline) {
 }
 
 TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock_Offline) {
+  InitializeTest(false /* multidevice_flags_enabled */);
   TestDeviceLockAndUnlock(false /* is_online */);
 }
 
 TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock_Online) {
+  InitializeTest(false /* multidevice_flags_enabled */);
   TestDeviceLockAndUnlock(true /* is_online */);
 }
 
 TEST_F(HostScanSchedulerImplTest,
        TestDeviceLockAndUnlock_MultiDeviceApiEnabled_Offline) {
+  InitializeTest(true /* multidevice_flags_enabled */);
   TestDeviceLockAndUnlock_MultiDeviceApiEnabled(false /* is_online */);
 }
 
 TEST_F(HostScanSchedulerImplTest,
        TestDeviceLockAndUnlock_MultiDeviceApiEnabled_Online) {
+  InitializeTest(true /* multidevice_flags_enabled */);
   TestDeviceLockAndUnlock_MultiDeviceApiEnabled(true /* is_online */);
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested) {
+  InitializeTest(false /* multidevice_flags_enabled */);
+
   // Begin scanning.
   RequestScan(NetworkTypePattern::Tether());
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
@@ -298,6 +315,7 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested) {
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested_NonMatchingNetworkTypePattern) {
+  InitializeTest(false /* multidevice_flags_enabled */);
   RequestScan(NetworkTypePattern::WiFi());
   EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
@@ -305,6 +323,8 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested_NonMatchingNetworkTypePattern) {
 }
 
 TEST_F(HostScanSchedulerImplTest, HostScanSchedulerDestroyed) {
+  InitializeTest(false /* multidevice_flags_enabled */);
+
   host_scan_scheduler_->AttemptScanIfOffline();
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
@@ -319,6 +339,8 @@ TEST_F(HostScanSchedulerImplTest, HostScanSchedulerDestroyed) {
 }
 
 TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
+  InitializeTest(false /* multidevice_flags_enabled */);
+
   // The first scan takes 5 seconds. After stopping, the timer should be
   // running.
   host_scan_scheduler_->AttemptScanIfOffline();
@@ -379,6 +401,7 @@ TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
 }
 
 TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
+  InitializeTest(false /* multidevice_flags_enabled */);
   InitializeEthernet();
 
   // When no Tether network is present, a scan should start when the default

@@ -145,12 +145,8 @@
       slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
     }
 
-    ft_glyphslot_preset_bitmap( slot, mode, origin );
-
-    if ( bitmap->width > 0x7FFF || bitmap->rows > 0x7FFF )
+    if ( ft_glyphslot_preset_bitmap( slot, mode, origin ) )
     {
-      FT_ERROR(( "ft_smooth_render_generic: glyph is too large: %u x %u\n",
-                 bitmap->width, bitmap->rows ));
       error = FT_THROW( Raster_Overflow );
       goto Exit;
     }
@@ -264,27 +260,33 @@
       /* Render 3 separate monochrome bitmaps, shifting the outline.  */
       width /= 3;
 
-      FT_Outline_Translate( outline,           -sub[0].x,           -sub[0].y );
+      FT_Outline_Translate( outline,
+                            -sub[0].x,
+                            -sub[0].y );
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
       bitmap->buffer += width;
-      FT_Outline_Translate( outline, sub[0].x - sub[1].x, sub[0].y - sub[1].y );
+      FT_Outline_Translate( outline,
+                            sub[0].x - sub[1].x,
+                            sub[0].y - sub[1].y );
       error = render->raster_render( render->raster, &params );
       bitmap->buffer -= width;
       if ( error )
         goto Exit;
 
       bitmap->buffer += 2 * width;
-      FT_Outline_Translate( outline, sub[1].x - sub[2].x, sub[1].y - sub[2].y );
+      FT_Outline_Translate( outline,
+                            sub[1].x - sub[2].x,
+                            sub[1].y - sub[2].y );
       error = render->raster_render( render->raster, &params );
       bitmap->buffer -= 2 * width;
       if ( error )
         goto Exit;
 
-      x_shift        -= sub[2].x;
-      y_shift        -= sub[2].y;
+      x_shift -= sub[2].x;
+      y_shift -= sub[2].y;
 
       /* XXX: Rearrange the bytes according to FT_PIXEL_MODE_LCD.    */
       /* XXX: It is more efficient to render every third byte above. */
@@ -319,27 +321,33 @@
       bitmap->pitch *= 3;
       bitmap->rows  /= 3;
 
-      FT_Outline_Translate( outline,           -sub[0].y, sub[0].x            );
+      FT_Outline_Translate( outline,
+                            -sub[0].y,
+                            sub[0].x );
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
       bitmap->buffer += pitch;
-      FT_Outline_Translate( outline, sub[0].y - sub[1].y, sub[1].x - sub[0].x );
+      FT_Outline_Translate( outline,
+                            sub[0].y - sub[1].y,
+                            sub[1].x - sub[0].x );
       error = render->raster_render( render->raster, &params );
       bitmap->buffer -= pitch;
       if ( error )
         goto Exit;
 
       bitmap->buffer += 2 * pitch;
-      FT_Outline_Translate( outline, sub[1].y - sub[2].y, sub[2].x - sub[1].x );
+      FT_Outline_Translate( outline,
+                            sub[1].y - sub[2].y,
+                            sub[2].x - sub[1].x );
       error = render->raster_render( render->raster, &params );
       bitmap->buffer -= 2 * pitch;
       if ( error )
         goto Exit;
 
-      x_shift        -= sub[2].y;
-      y_shift        += sub[2].x;
+      x_shift -= sub[2].y;
+      y_shift += sub[2].x;
 
       bitmap->pitch /= 3;
       bitmap->rows  *= 3;

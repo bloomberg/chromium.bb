@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -18,6 +20,8 @@ class BrowserContext;
 namespace views {
 class Widget;
 }
+
+const char EXTENSION_PREFIX[] = "chrome-extension://";
 
 // Creates a panel onscreen on which an accessibility extension can draw a
 // custom UI.
@@ -44,6 +48,7 @@ class AccessibilityPanel : public views::WidgetDelegate,
  protected:
   // Returns the web contents, so subclasses can monitor for changes.
   content::WebContents* GetWebContents();
+  static ash::mojom::AccessibilityControllerPtr GetAccessibilityController();
 
  private:
   class AccessibilityPanelWebContentsObserver;

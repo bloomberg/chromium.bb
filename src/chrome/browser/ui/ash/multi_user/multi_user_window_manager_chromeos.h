@@ -9,10 +9,14 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -55,7 +59,8 @@ class MultiUserWindowManagerChromeOS
       public user_manager::UserManager::UserSessionStateObserver,
       public aura::WindowObserver,
       public content::NotificationObserver,
-      public wm::TransientWindowObserver {
+      public wm::TransientWindowObserver,
+      public TabletModeClientObserver {
  public:
   // The speed which should be used to perform animations.
   enum AnimationSpeed {
@@ -105,6 +110,9 @@ class MultiUserWindowManagerChromeOS
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // TabletModeClientObserver:
+  void OnTabletModeToggled(bool enabled) override;
 
   // Disable any animations for unit tests.
   void SetAnimationSpeedForTest(AnimationSpeed speed);
@@ -245,6 +253,12 @@ class MultiUserWindowManagerChromeOS
 
   // The animation between users.
   std::unique_ptr<UserSwitchAnimatorChromeOS> animation_;
+
+  // Only used in mash.
+  ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;
+
+  ScopedObserver<TabletModeClient, TabletModeClientObserver>
+      tablet_mode_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };

@@ -5,6 +5,8 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_QUERY_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_QUERY_VIEW_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
@@ -21,6 +23,7 @@ class AssistantQueryView : public views::View {
   ~AssistantQueryView() override;
 
   // views::View:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
   void ChildPreferredSizeChanged(views::View* child) override;

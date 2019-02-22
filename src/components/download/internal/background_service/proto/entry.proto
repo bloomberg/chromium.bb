@@ -68,4 +68,9 @@ message Entry {
 
   optional uint32 resumption_count = 14;
   optional bool has_upload_data = 15;
+
+  repeated string url_chain = 16;
+  optional string response_headers = 17;
+  optional bool did_received_response = 18;
+  optional bool require_response_headers = 19;
 }

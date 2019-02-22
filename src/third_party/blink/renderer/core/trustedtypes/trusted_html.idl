@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://github.com/wicg/trusted-types
+
 typedef (DOMString or TrustedHTML) HTMLString;
 
 [
-    Exposed=(Window,Worker),
+    Exposed=Window,
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedHTML {
-    [CallWith=ScriptState] static TrustedHTML escape(DOMString html);
-    [CallWith=ScriptState] static TrustedHTML unsafelyCreate(DOMString html);
-
-
     stringifier;
 };
 

@@ -4,6 +4,8 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+visibility = [ "//ui/file_manager/file_manager/foreground/*" ]
+
 js_type_check("closure_compile") {
   deps = [
     ":actions_submenu",
@@ -36,7 +38,6 @@ js_type_check("closure_compile") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
-    ":share_dialog",
     ":suggest_apps_dialog",
   ]
 }
@@ -44,7 +45,6 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
     "../../../../externs/app_window_common.js",
@@ -59,7 +59,6 @@ js_library("closure_compile_externs") {
     "../../../../externs/css_rule.js",
     "../../../../externs/drag_target.js",
     "../../../../externs/entries_changed_event.js",
-    "../../../../externs/entry_location.js",
     "../../../../externs/gallery_foreground.js",
     "../../../../externs/menu_item_update_event.js",
     "../../../../externs/paper_elements.js",
@@ -81,7 +80,6 @@ js_library("actions_submenu") {
 js_library("banners") {
   deps = [
     "..:directory_model",
-    "..:volume_manager_wrapper",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
     "//ui/webui/resources/js:assert",
@@ -128,7 +126,6 @@ js_library("directory_tree") {
   deps = [
     "..:directory_model",
     "..:navigation_list_model",
-    "..:volume_manager_wrapper",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
     "../metadata:metadata_model",
@@ -209,7 +206,6 @@ js_library("file_manager_ui") {
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
-    ":share_dialog",
     ":suggest_apps_dialog",
     "..:launch_param",
     "..:providers_model",
@@ -261,13 +257,17 @@ js_library("file_tap_handler") {
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_alert_dialog") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
 }
 
+# TODO(tapted): Move this into //ui/file_manager/base.
 js_library("files_confirm_dialog") {
+  visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
     "//ui/webui/resources/js/cr/ui:dialogs",
   ]
@@ -303,11 +303,11 @@ js_library("list_container") {
 
 js_library("location_line") {
   deps = [
-    "..:volume_manager_wrapper",
     "../../../common/js:files_app_entry_types",
     "../../../common/js:metrics",
     "../../../common/js:util",
     "../../../common/js:volume_manager_common",
+    "//ui/file_manager/externs:volume_manager",
   ]
 }
 
@@ -319,6 +319,9 @@ js_library("multi_profile_share_dialog") {
 }
 
 js_library("progress_center_panel") {
+  # The progress_center on the background page maintains a list of panels.
+  visibility += [ "//ui/file_manager/file_manager/background/*" ]
+
   deps = [
     "..:progress_center_item_group",
     "../../../common/js:progress_center_common",
@@ -346,15 +349,6 @@ js_library("search_box") {
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
     "//ui/webui/resources/js/cr/ui:autocomplete_list",
-  ]
-}
-
-js_library("share_dialog") {
-  deps = [
-    ":file_manager_dialog_base",
-    "..:share_client",
-    "../../../common/js:async_util",
-    "../../../common/js:util",
   ]
 }
 

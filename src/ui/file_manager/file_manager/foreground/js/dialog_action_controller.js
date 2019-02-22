@@ -10,7 +10,7 @@
  * @param {!DialogFooter} dialogFooter Dialog footer.
  * @param {!DirectoryModel} directoryModel Directory model.
  * @param {!MetadataModel} metadataModel Metadata cache.
- * @param {!VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!VolumeManager} volumeManager Volume manager.
  * @param {!FileFilter} fileFilter File filter model.
  * @param {!NamingController} namingController Naming controller.
  * @param {!FileSelectionHandler} fileSelectionHandler Initial file selection.
@@ -58,7 +58,7 @@ function DialogActionController(
   this.metadataModel_ = metadataModel;
 
   /**
-   * @type {!VolumeManagerWrapper}
+   * @type {!VolumeManager}
    * @const
    * @private
    */

@@ -48,7 +48,7 @@ syncer::SyncService::TransportState FakeSyncService::GetTransportState() const {
     return TransportState::DISABLED;
   }
   // From this point on, Sync can start in principle.
-  DCHECK(CanSyncStart());
+  DCHECK(CanSyncFeatureStart());
   if (!IsFirstSetupComplete()) {
     return TransportState::PENDING_DESIRED_CONFIGURATION;
   }
@@ -153,12 +153,9 @@ UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }
 
-const LocalDeviceInfoProvider* FakeSyncService::GetLocalDeviceInfoProvider()
-    const {
-  return nullptr;
-}
-
 void FakeSyncService::ReenableDatatype(ModelType type) {}
+
+void FakeSyncService::ReadyForStartChanged(ModelType type) {}
 
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
@@ -210,10 +207,6 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
-
-GlobalIdMapper* FakeSyncService::GetGlobalIdMapper() const {
-  return nullptr;
-}
 
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;

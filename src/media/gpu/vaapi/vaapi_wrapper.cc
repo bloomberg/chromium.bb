@@ -23,6 +23,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
@@ -31,6 +32,7 @@
 #include "media/gpu/vaapi/va_stubs.h"
 
 #include "media/gpu/vaapi/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_utils.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
@@ -159,12 +161,6 @@ static const struct {
      VaapiWrapper::CodecMode::kEncode,
      {VAProfileH264Baseline, VAProfileH264Main, VAProfileH264High,
       VAProfileH264ConstrainedBaseline}},
-    // TODO(hiroh): Remove once Chrome supports converting format.
-    // https://crbug.com/828119.
-    {"Mesa Gallium driver",
-     "AMD STONEY",
-     VaapiWrapper::CodecMode::kDecode,
-     {VAProfileJPEGBaseline}},
 };
 
 bool IsBlackListedDriver(const std::string& va_vendor_string,
@@ -892,13 +888,15 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
                                   std::vector<VASurfaceID>* va_surfaces) {
   base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
-
   DCHECK(va_surfaces->empty());
-  DCHECK(va_surface_ids_.empty());
-  DCHECK_EQ(va_surface_format_, 0u);
-  va_surface_ids_.resize(num_surfaces);
+
+  if (!va_surface_ids_.empty() || va_surface_format_ != 0u) {
+    LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
+    return false;
+  }
 
   // Allocate surfaces in driver.
+  va_surface_ids_.resize(num_surfaces);
   VAStatus va_res =
       vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
                        &va_surface_ids_[0], va_surface_ids_.size(), NULL, 0);
@@ -1025,21 +1023,15 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
                                    size, 1, nullptr, &buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a VA buffer", false);
 
-  void* va_buffer_data = nullptr;
-  va_res = vaMapBuffer(va_display_, buffer_id, &va_buffer_data);
-  VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
-  if (va_res != VA_STATUS_SUCCESS) {
-    vaDestroyBuffer(va_display_, buffer_id);
+  ScopedVABufferMapping mapping(
+      va_lock_, va_display_, buffer_id,
+      base::BindOnce(base::IgnoreResult(&vaDestroyBuffer), va_display_));
+  if (!mapping.IsValid())
     return false;
-  }
 
-  DCHECK(va_buffer_data);
   // TODO(selcott): Investigate potentially faster alternatives to memcpy here
   // such as libyuv::CopyX and family.
-  memcpy(va_buffer_data, buffer, size);
-
-  va_res = vaUnmapBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
+  memcpy(mapping.data(), buffer, size);
 
   switch (va_buffer_type) {
     case VASliceParameterBufferType:
@@ -1068,22 +1060,15 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
       sizeof(VAEncMiscParameterBuffer) + size, 1, NULL, &buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a VA buffer", false);
 
-  void* data_ptr = NULL;
-  va_res = vaMapBuffer(va_display_, buffer_id, &data_ptr);
-  VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
-  if (va_res != VA_STATUS_SUCCESS) {
-    vaDestroyBuffer(va_display_, buffer_id);
+  ScopedVABufferMapping mapping(
+      va_lock_, va_display_, buffer_id,
+      base::BindOnce(base::IgnoreResult(&vaDestroyBuffer), va_display_));
+  if (!mapping.IsValid())
     return false;
-  }
 
-  DCHECK(data_ptr);
-
-  VAEncMiscParameterBuffer* misc_param =
-      reinterpret_cast<VAEncMiscParameterBuffer*>(data_ptr);
-  misc_param->type = misc_param_type;
-  memcpy(misc_param->data, buffer, size);
-  va_res = vaUnmapBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
+  auto* params = reinterpret_cast<VAEncMiscParameterBuffer*>(mapping.data());
+  params->type = misc_param_type;
+  memcpy(params->data, buffer, size);
 
   pending_va_bufs_.push_back(buffer_id);
   return true;
@@ -1133,47 +1118,18 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
 }
 #endif  // USE_X11
 
-bool VaapiWrapper::GetVaImage(VASurfaceID va_surface_id,
-                              VAImageFormat* format,
-                              const gfx::Size& size,
-                              VAImage* image,
-                              void** mem) {
+std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
+    VASurfaceID va_surface_id,
+    VAImageFormat* format,
+    const gfx::Size& size) {
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", nullptr);
 
-  va_res =
-      vaCreateImage(va_display_, format, size.width(), size.height(), image);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateImage failed", false);
-
-  va_res = vaGetImage(va_display_, va_surface_id, 0, 0, size.width(),
-                      size.height(), image->image_id);
-  VA_LOG_ON_ERROR(va_res, "vaGetImage failed");
-
-  if (va_res == VA_STATUS_SUCCESS) {
-    // Map the VAImage into memory
-    va_res = vaMapBuffer(va_display_, image->buf, mem);
-    VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
-  }
-
-  if (va_res != VA_STATUS_SUCCESS) {
-    va_res = vaDestroyImage(va_display_, image->image_id);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyImage failed");
-    return false;
-  }
-
-  return true;
-}
-
-void VaapiWrapper::ReturnVaImage(VAImage* image) {
-  base::AutoLock auto_lock(*va_lock_);
-
-  VAStatus va_res = vaUnmapBuffer(va_display_, image->buf);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
-  va_res = vaDestroyImage(va_display_, image->image_id);
-  VA_LOG_ON_ERROR(va_res, "vaDestroyImage failed");
+  auto scoped_image = std::make_unique<ScopedVAImage>(
+      va_lock_, va_display_, va_surface_id, format, size);
+  return scoped_image->IsValid() ? std::move(scoped_image) : nullptr;
 }
 
 bool VaapiWrapper::UploadVideoFrameToSurface(
@@ -1197,10 +1153,10 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
     return false;
   }
 
-  void* image_ptr = NULL;
-  va_res = vaMapBuffer(va_display_, image.buf, &image_ptr);
-  VA_SUCCESS_OR_RETURN(va_res, "vaMapBuffer failed", false);
-  DCHECK(image_ptr);
+  ScopedVABufferMapping mapping(va_lock_, va_display_, image.buf);
+  if (!mapping.IsValid())
+    return false;
+  uint8_t* image_ptr = static_cast<uint8_t*>(mapping.data());
 
   int ret = 0;
   {
@@ -1209,14 +1165,10 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
         frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
         frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
         frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        static_cast<uint8_t*>(image_ptr) + image.offsets[0], image.pitches[0],
-        static_cast<uint8_t*>(image_ptr) + image.offsets[1], image.pitches[1],
-        image.width, image.height);
+        image_ptr + image.offsets[0], image.pitches[0],
+        image_ptr + image.offsets[1], image.pitches[1], image.width,
+        image.height);
   }
-
-  va_res = vaUnmapBuffer(va_display_, image.buf);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-
   return ret == 0;
 }
 
@@ -1237,16 +1189,17 @@ bool VaapiWrapper::DownloadFromCodedBuffer(VABufferID buffer_id,
                                            uint8_t* target_ptr,
                                            size_t target_size,
                                            size_t* coded_data_size) {
+  DCHECK(target_ptr);
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
 
-  VACodedBufferSegment* buffer_segment = NULL;
-  va_res = vaMapBuffer(va_display_, buffer_id,
-                       reinterpret_cast<void**>(&buffer_segment));
-  VA_SUCCESS_OR_RETURN(va_res, "vaMapBuffer failed", false);
-  DCHECK(target_ptr);
+  ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
+  if (!mapping.IsValid())
+    return false;
+  auto* buffer_segment =
+      reinterpret_cast<VACodedBufferSegment*>(mapping.data());
 
   {
     base::AutoUnlock auto_unlock(*va_lock_);
@@ -1272,9 +1225,7 @@ bool VaapiWrapper::DownloadFromCodedBuffer(VABufferID buffer_id,
     }
   }
 
-  va_res = vaUnmapBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaUnmapBuffer failed");
-  return buffer_segment == NULL;
+  return buffer_segment == nullptr;
 }
 
 bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
@@ -1316,34 +1267,36 @@ bool VaapiWrapper::BlitSurface(
       return false;
   }
 
-  VAProcPipelineParameterBuffer* pipeline_param;
-  VA_SUCCESS_OR_RETURN(vaMapBuffer(va_display_, va_vpp_buffer_id_,
-                                   reinterpret_cast<void**>(&pipeline_param)),
-                       "Couldn't map vpp buffer", false);
+  {
+    ScopedVABufferMapping mapping(va_lock_, va_display_, va_vpp_buffer_id_);
+    if (!mapping.IsValid())
+      return false;
+    auto* pipeline_param =
+        reinterpret_cast<VAProcPipelineParameterBuffer*>(mapping.data());
 
-  memset(pipeline_param, 0, sizeof *pipeline_param);
-  const gfx::Size src_size = va_surface_src->size();
-  const gfx::Size dest_size = va_surface_dest->size();
+    memset(pipeline_param, 0, sizeof *pipeline_param);
+    const gfx::Size& src_size = va_surface_src->size();
+    const gfx::Size& dest_size = va_surface_dest->size();
 
-  VARectangle input_region;
-  input_region.x = input_region.y = 0;
-  input_region.width = src_size.width();
-  input_region.height = src_size.height();
-  pipeline_param->surface_region = &input_region;
-  pipeline_param->surface = va_surface_src->id();
-  pipeline_param->surface_color_standard = VAProcColorStandardNone;
+    VARectangle input_region;
+    input_region.x = input_region.y = 0;
+    input_region.width = src_size.width();
+    input_region.height = src_size.height();
+    pipeline_param->surface_region = &input_region;
+    pipeline_param->surface = va_surface_src->id();
+    pipeline_param->surface_color_standard = VAProcColorStandardNone;
 
-  VARectangle output_region;
-  output_region.x = output_region.y = 0;
-  output_region.width = dest_size.width();
-  output_region.height = dest_size.height();
-  pipeline_param->output_region = &output_region;
-  pipeline_param->output_background_color = 0xff000000;
-  pipeline_param->output_color_standard = VAProcColorStandardNone;
-  pipeline_param->filter_flags = VA_FILTER_SCALING_DEFAULT;
+    VARectangle output_region;
+    output_region.x = output_region.y = 0;
+    output_region.width = dest_size.width();
+    output_region.height = dest_size.height();
+    pipeline_param->output_region = &output_region;
+    pipeline_param->output_background_color = 0xff000000;
+    pipeline_param->output_color_standard = VAProcColorStandardNone;
+    pipeline_param->filter_flags = VA_FILTER_SCALING_DEFAULT;
 
-  VA_SUCCESS_OR_RETURN(vaUnmapBuffer(va_display_, va_vpp_buffer_id_),
-                       "Couldn't unmap vpp buffer", false);
+    VA_SUCCESS_OR_RETURN(mapping.Unmap(), "Couldn't unmap vpp buffer", false);
+  }
 
   VA_SUCCESS_OR_RETURN(
       vaBeginPicture(va_display_, va_vpp_context_id_, va_surface_dest->id()),
@@ -1526,6 +1479,7 @@ void VaapiWrapper::DeinitializeVpp() {
 }
 
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::Execute");
   base::AutoLock auto_lock(*va_lock_);
 
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();

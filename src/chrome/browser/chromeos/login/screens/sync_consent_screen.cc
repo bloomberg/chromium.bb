@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -27,6 +28,11 @@ constexpr const char kUserActionContinueWithSyncOnly[] =
 constexpr const char kUserActionContinueWithSyncAndPersonalization[] =
     "continue-with-sync-and-personalization";
 
+// Delay showing chrome sync settings by this amount of time to make them
+// show on top of the restored tabs and windows.
+constexpr base::TimeDelta kSyncConsentSettingsShowDelay =
+    base::TimeDelta::FromSeconds(3);
+
 browser_sync::ProfileSyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
     return ProfileSyncServiceFactory::GetForProfile(profile);
@@ -36,10 +42,21 @@ browser_sync::ProfileSyncService* GetSyncService(Profile* profile) {
 }  // namespace
 
 // static
-void SyncConsentScreen::MaybeLaunchSyncConstentSettings(Profile* profile) {
+void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
   if (profile->GetPrefs()->GetBoolean(prefs::kShowSyncSettingsOnSessionStart)) {
-    profile->GetPrefs()->ClearPref(prefs::kShowSyncSettingsOnSessionStart);
-    chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
+    // TODO (alemate): In a very special case when chrome is exiting at the very
+    // moment we show Settings, it might crash here because profile could be
+    // already destroyed. This needs to be fixed.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](Profile* profile) {
+              profile->GetPrefs()->ClearPref(
+                  prefs::kShowSyncSettingsOnSessionStart);
+              chrome::ShowSettingsSubPageForProfile(profile, "syncSetup");
+            },
+            base::Unretained(profile)),
+        kSyncConsentSettingsShowDelay);
   }
 }
 

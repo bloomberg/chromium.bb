@@ -16,8 +16,9 @@ namespace test {
 MockSchedulerWorkerObserver::MockSchedulerWorkerObserver() = default;
 MockSchedulerWorkerObserver::~MockSchedulerWorkerObserver() = default;
 
-scoped_refptr<Sequence> CreateSequenceWithTask(Task task) {
-  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
+scoped_refptr<Sequence> CreateSequenceWithTask(Task task,
+                                               const TaskTraits& traits) {
+  scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits);
   sequence->PushTask(std::move(task));
   return sequence;
 }

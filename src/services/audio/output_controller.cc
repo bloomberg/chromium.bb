@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -50,6 +51,31 @@ void LogStreamCreationResult(bool for_device_change,
     UMA_HISTOGRAM_ENUMERATION(
         "Media.AudioOutputController.ProxyStreamCreationResult", result,
         STREAM_CREATION_RESULT_MAX + 1);
+  }
+}
+
+void SanitizeAudioBus(media::AudioBus* bus) {
+  size_t channel_size = bus->frames();
+  for (int i = 0; i < bus->channels(); ++i) {
+    float* channel = bus->channel(i);
+    for (size_t j = 0; j < channel_size; ++j) {
+      // First check for all the invalid cases with a single conditional to
+      // optimize for the typical (data ok) case. Different cases are handled
+      // inside of the conditional. The condition is written like this to catch
+      // NaN. It cannot be simplified to "channel[j] < -1.f || channel[j] >
+      // 1.f", which isn't equivalent.
+      if (UNLIKELY(!(channel[j] >= -1.f && channel[j] <= 1.f))) {
+        // Don't just set all bad values to 0. If a value like 1.0001 is
+        // produced due to floating-point shenanigans, 1 will sound better than
+        // 0.
+        if (channel[j] < -1.f) {
+          channel[j] = -1.f;
+        } else {
+          // channel[j] > 1 or NaN.
+          channel[j] = 1.f;
+        }
+      }
+    }
   }
 }
 
@@ -101,6 +127,7 @@ OutputController::OutputController(
       params_(params),
       handler_(handler),
       task_runner_(audio_manager->GetTaskRunner()),
+      construction_time_(base::TimeTicks::Now()),
       output_device_id_(output_device_id),
       stream_(NULL),
       disable_local_output_(false),
@@ -127,6 +154,8 @@ OutputController::~OutputController() {
   DCHECK_EQ(nullptr, stream_);
   DCHECK(snoopers_.empty());
   DCHECK(should_duplicate_.IsZero());
+  UMA_HISTOGRAM_LONG_TIMES("Media.AudioOutputController.LifeTime",
+                           base::TimeTicks::Now() - construction_time_);
 }
 
 bool OutputController::Create(bool is_for_device_change) {
@@ -178,7 +207,7 @@ bool OutputController::Create(bool is_for_device_change) {
 
   LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OK);
 
-    audio_manager_->AddOutputDeviceChangeListener(this);
+  audio_manager_->AddOutputDeviceChangeListener(this);
 
   // We have successfully opened the stream. Set the initial volume.
   stream_->SetVolume(volume_);
@@ -190,10 +219,13 @@ bool OutputController::Create(bool is_for_device_change) {
     // Ensure new monitors know that we're active.
     stream_monitor_coordinator_->AddObserver(processing_id_, this);
     // Ensure existing monitors do as well.
-    for (StreamMonitor* monitor :
-         stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
-      monitor->OnStreamActive(this);
-    }
+    stream_monitor_coordinator_->ForEachMemberInGroup(
+        processing_id_,
+        base::BindRepeating(
+            [](OutputController* controller, StreamMonitor* monitor) {
+              monitor->OnStreamActive(controller);
+            },
+            this));
   }
 
   return true;
@@ -319,10 +351,13 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   const base::TimeTicks reference_time = delay_timestamp + delay;
 
-  {
+  if (!dest->is_bitstream_format()) {
     base::AutoLock lock(realtime_snooper_lock_);
-    for (Snooper* snooper : realtime_snoopers_) {
-      snooper->OnData(*dest, reference_time, volume_);
+    if (!realtime_snoopers_.empty()) {
+      SanitizeAudioBus(dest);
+      for (Snooper* snooper : realtime_snoopers_) {
+        snooper->OnData(*dest, reference_time, volume_);
+      }
     }
   }
 
@@ -333,7 +368,7 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
-  if (!should_duplicate_.IsZero()) {
+  if (!should_duplicate_.IsZero() && !dest->is_bitstream_format()) {
     std::unique_ptr<media::AudioBus> copy(media::AudioBus::Create(params_));
     dest->CopyTo(copy.get());
     task_runner_->PostTask(
@@ -412,10 +447,13 @@ void OutputController::StopCloseAndClearStream() {
       // Don't send out activation messages for now.
       stream_monitor_coordinator_->RemoveObserver(processing_id_, this);
       // Ensure everyone monitoring us knows we're no-longer active.
-      for (StreamMonitor* monitor :
-           stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
-        monitor->OnStreamInactive(this);
-      }
+      stream_monitor_coordinator_->ForEachMemberInGroup(
+          processing_id_,
+          base::BindRepeating(
+              [](OutputController* controller, StreamMonitor* monitor) {
+                monitor->OnStreamInactive(controller);
+              },
+              this));
     }
 
     StopStream();
@@ -562,7 +600,6 @@ void OutputController::OnDeviceChange() {
       NOTREACHED() << "Invalid original state.";
   }
 }
-
 
 std::pair<float, bool> OutputController::ReadCurrentPowerAndClip() {
   DCHECK(will_monitor_audio_levels());

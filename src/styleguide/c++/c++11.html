@@ -586,9 +586,13 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
-<td>Random Number Generators</td>
-<td><code>&lt;random&gt;</code></td>
-<td>Random number generation algorithms and utilities</td>
+<td>Random Number Distributions</td>
+<td>The random number distributions defined in <code>&lt;random&gt;</code> (see separate item for random number engines), e.g.:<br/>
+<code>uniform_int_distribution</code>, <code>uniform_real_distribution</code><br/>
+<code>poisson_distribution</code>, <code>gamma_distribution</code><br/>
+<code>normal_distribution</code>, <code>chi_squared_distribution</code><br/>
+</td>
+<td>Utilities for producing random distributions given a random bit generator.</td>
 <td><a href="http://en.cppreference.com/w/cpp/numeric/random">Pseudo-random number generation</a></td>
 <td>Because the standard does not define precisely how the <code><i>xxx</i>_distribution</code> objects generate output, the same object may produce different output for the same seed across platforms, or even across different versions of the STL. Do not use these objects in any scenario where behavioral consistency is required. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/MLgK9vCE4BA">Discussion thread</a></td>
 </tr>
@@ -862,6 +866,18 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td>Wraps a standard polymorphic function</td>
 <td><a href="http://en.cppreference.com/w/cpp/utility/functional/function">std::function</a></td>
 <td>Use <code>base::Callback</code> instead. Compared to <code>std::function</code>, <code>base::Callback</code> directly supports Chromium's refcounting classes and weak pointers and deals with additional thread safety concerns. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/SoEj7oIDNuA">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Random Number Engines</td>
+<td>The random number engines defined in <code>&lt;random&gt;</code> (see separate item for random number distributions), e.g.:<br/>
+<code>linear_congruential_engine</code>, <code>mersenne_twister_engine</code><br/>
+<code>minstd_rand0</code>, <code>mt19937</code>, <code>ranlinux48</code><br/>
+<code>random_device</code>
+</td>
+<td>Random number generation algorithms and utilities.</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/random">Pseudo-random number generation</a></td>
+<td>Do not use any random number engines from <code>&lt;random</code>. Instead, use <code>base::RandomBitGenerator</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/16Xmw05C-Y0">Discussion thread</a></td>
 </tr>
 
 <tr>

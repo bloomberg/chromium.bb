@@ -211,15 +211,18 @@ std::string BuildProtocolRequest(
     const std::string& os_long_name,
     const std::string& download_preference,
     const std::string& request_body,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
   std::string request = base::StringPrintf(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<request protocol=\"%s\" ",
       kProtocolVersion);
 
-  if (!additional_attributes.empty())
-    base::StringAppendF(&request, "%s ", additional_attributes.c_str());
+  if (!additional_attributes.empty()) {
+    for (const auto& attr : additional_attributes)
+      base::StringAppendF(&request, "%s=\"%s\" ", attr.first.c_str(),
+                          attr.second.c_str());
+  }
 
   // Constant information for this updater.
   base::StringAppendF(&request, "dedup=\"cr\" acceptformat=\"crx2,crx3\" ");
@@ -301,7 +304,7 @@ std::string BuildProtocolRequest(
   return request;
 }
 
-std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
+base::flat_map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
     scoped_refptr<Configurator> config,
     const std::vector<std::string>& ids,
     bool is_foreground) {
@@ -312,7 +315,7 @@ std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
           ? ids
           : std::vector<std::string>(ids.cbegin(),
                                      ids.cbegin() + maxExtensionCount);
-  return std::map<std::string, std::string>{
+  return {
       {"X-Goog-Update-Updater",
        base::StringPrintf("%s-%s", config->GetProdId().c_str(),
                           config->GetBrowserVersion().GetString().c_str())},
@@ -327,7 +330,7 @@ std::string BuildUpdateCheckRequest(
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     PersistedData* metadata,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     bool enabled_component_updates,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
   const std::string brand(SanitizeBrand(config.GetBrand()));
@@ -442,7 +445,7 @@ std::string BuildEventPingRequest(const Configurator& config,
                               config.GetBrowserVersion().GetString(),
                               config.GetChannel(), config.GetLang(),
                               config.GetOSLongName(),
-                              config.GetDownloadPreference(), app, "", nullptr);
+                              config.GetDownloadPreference(), app, {}, nullptr);
 }
 
 }  // namespace update_client

@@ -25,7 +25,8 @@ class PLATFORM_EXPORT PropertyTreeState {
                     const EffectPaintPropertyNode* effect)
       : transform_(transform), clip_(clip), effect_(effect) {}
 
-  bool HasDirectCompositingReasons() const;
+  // Returns an unaliased property tree state.
+  PropertyTreeState Unalias() const;
 
   const TransformPaintPropertyNode* Transform() const { return transform_; }
   void SetTransform(const TransformPaintPropertyNode* node) {

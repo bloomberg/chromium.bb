@@ -23,6 +23,7 @@
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 
@@ -309,40 +310,49 @@ void SuspendThreadAndRecordStack(
   uintptr_t bottom = 0u;
 
   {
-    ScopedSuspendThread suspend_thread(thread_handle);
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "SuspendThread");
+    {
+      ScopedSuspendThread suspend_thread(thread_handle);
 
-    if (!suspend_thread.was_successful())
-      return;
+      if (!suspend_thread.was_successful())
+        return;
 
-    if (!::GetThreadContext(thread_handle, &thread_context))
-      return;
+      if (!::GetThreadContext(thread_handle, &thread_context))
+        return;
+
 #if defined(_WIN64)
-    bottom = thread_context.Rsp;
+      bottom = thread_context.Rsp;
 #else
-    bottom = thread_context.Esp;
+      bottom = thread_context.Esp;
 #endif
 
-    if ((top - bottom) > stack_copy_buffer_size)
-      return;
+      if ((top - bottom) > stack_copy_buffer_size)
+        return;
 
-    // Dereferencing a pointer in the guard page in a thread that doesn't own
-    // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a crash.
-    // This occurs very rarely, but reliably over the population.
-    if (PointsToGuardPage(bottom))
-      return;
+      // Dereferencing a pointer in the guard page in a thread that doesn't own
+      // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a
+      // crash. This occurs very rarely, but reliably over the population.
+      if (PointsToGuardPage(bottom))
+        return;
 
-    profile_builder->RecordAnnotations();
+      profile_builder->RecordAnnotations();
 
-    CopyMemoryFromStack(stack_copy_buffer,
-                        reinterpret_cast<const void*>(bottom), top - bottom);
+      CopyMemoryFromStack(stack_copy_buffer,
+                          reinterpret_cast<const void*>(bottom), top - bottom);
+    }
   }
 
   if (test_delegate)
     test_delegate->OnPreStackWalk();
 
-  RewritePointersToStackMemory(top, bottom, &thread_context, stack_copy_buffer);
+  {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "RecordStack");
 
-  RecordStack(&thread_context, stack);
+    RewritePointersToStackMemory(top, bottom, &thread_context,
+                                 stack_copy_buffer);
+
+    RecordStack(&thread_context, stack);
+  }
 }
 
 }  // namespace
@@ -395,6 +405,8 @@ void NativeStackSamplerWin::ProfileRecordingStarting() {
 std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
     ProfileBuilder* profile_builder) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
   std::vector<RecordedFrame> stack;
@@ -407,6 +419,9 @@ std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
 
 std::vector<Frame> NativeStackSamplerWin::CreateFrames(
     const std::vector<RecordedFrame>& stack) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+               "NativeStackSamplerWin::CreateFrames");
+
   std::vector<Frame> frames;
   frames.reserve(stack.size());
 

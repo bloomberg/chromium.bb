@@ -51,7 +51,6 @@ class PictureInPictureWindowController {
   // window was requested to be closed and destroyed by the system.
   virtual void OnWindowDestroyed() = 0;
 
-  virtual void ClickCustomControl(const std::string& control_id) = 0;
   virtual void SetPictureInPictureCustomControls(
       const std::vector<blink::PictureInPictureControlInfo>&) = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
@@ -62,11 +61,15 @@ class PictureInPictureWindowController {
   virtual WebContents* GetInitiatorWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
+  virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
 
   // Commands.
   // Returns true if the player is active (i.e. currently playing) after this
   // call.
   virtual bool TogglePlayPause() = 0;
+
+  // Called when the user interacts with a custom control.
+  virtual void CustomControlPressed(const std::string& control_id) = 0;
 
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to

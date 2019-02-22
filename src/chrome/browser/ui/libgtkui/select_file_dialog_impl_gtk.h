@@ -5,11 +5,10 @@
 #ifndef CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK_H_
 #define CHROME_BROWSER_UI_LIBGTKUI_SELECT_FILE_DIALOG_IMPL_GTK_H_
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
+#include "ui/base/glib/glib_signal.h"
 
 namespace libgtkui {
 
@@ -40,20 +39,6 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
 
  private:
   friend class FilePicker;
-
-  struct WidgetData {
-    WidgetData();
-    ~WidgetData();
-
-    // User data that we pass back to |listener_| once the result of the select
-    // file/folder action is known.
-    void* params = nullptr;
-
-    aura::Window* parent = nullptr;
-
-    std::unique_ptr<base::OnceClosure> enable_event_listening;
-  };
-
   bool HasMultipleFileTypeChoicesImpl() override;
 
   // Overridden from aura::WindowObserver:
@@ -91,8 +76,9 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                 const base::FilePath& default_path,
                                 gfx::NativeWindow parent);
 
-  // Returns the |params| associated with |dialog|.
-  void* GetParamsForDialog(GtkWidget* dialog);
+  // Removes and returns the |params| associated with |dialog| from
+  // |params_map_|.
+  void* PopParamsForDialog(GtkWidget* dialog);
 
   // Check whether response_id corresponds to the user cancelling/closing the
   // dialog. Used as a helper for the below callbacks.
@@ -110,34 +96,49 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl,
                                   gfx::NativeWindow parent);
 
   // Callback for when the user responds to a Save As or Open File dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectSingleFileDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectSingleFileDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the user responds to a Select Folder dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectSingleFolderDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectSingleFolderDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the user responds to a Open Multiple Files dialog.
-  CHROMEGTK_CALLBACK_1(SelectFileDialogImplGTK,
-                       void,
-                       OnSelectMultiFileDialogResponse,
-                       int);
+  CHROMEG_CALLBACK_1(SelectFileDialogImplGTK,
+                     void,
+                     OnSelectMultiFileDialogResponse,
+                     GtkWidget*,
+                     int);
 
   // Callback for when the file chooser gets destroyed.
-  CHROMEGTK_CALLBACK_0(SelectFileDialogImplGTK, void, OnFileChooserDestroy);
+  CHROMEG_CALLBACK_0(SelectFileDialogImplGTK,
+                     void,
+                     OnFileChooserDestroy,
+                     GtkWidget*);
 
   // Callback for when we update the preview for the selection.
-  CHROMEGTK_CALLBACK_0(SelectFileDialogImplGTK, void, OnUpdatePreview);
+  CHROMEG_CALLBACK_0(SelectFileDialogImplGTK,
+                     void,
+                     OnUpdatePreview,
+                     GtkWidget*);
+
+  // A map from dialog windows to the |params| user data associated with them.
+  std::map<GtkWidget*, void*> params_map_;
 
   // The GtkImage widget for showing previews of selected images.
   GtkWidget* preview_;
 
   // All our dialogs.
-  base::flat_map<GtkWidget*, std::unique_ptr<WidgetData>> dialogs_;
+  std::set<GtkWidget*> dialogs_;
+
+  // The set of all parent windows for which we are currently running dialogs.
+  std::set<aura::Window*> parents_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImplGTK);
 };

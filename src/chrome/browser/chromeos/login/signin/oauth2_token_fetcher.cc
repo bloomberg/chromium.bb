@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -39,30 +41,6 @@ OAuth2TokenFetcher::OAuth2TokenFetcher(
 
 OAuth2TokenFetcher::~OAuth2TokenFetcher() {}
 
-void OAuth2TokenFetcher::StartExchangeFromCookies(
-    const std::string& session_index,
-    const std::string& signin_scoped_device_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  session_index_ = session_index;
-  signin_scoped_device_id_ = signin_scoped_device_id;
-  // Delay the verification if the network is not connected or on a captive
-  // portal.
-  const NetworkState* default_network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (!default_network || default_network->is_captive_portal()) {
-    // If network is offline, defer the token fetching until online.
-    VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&OAuth2TokenFetcher::StartExchangeFromCookies,
-                       AsWeakPtr(), session_index, signin_scoped_device_id),
-        base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
-    return;
-  }
-  auth_fetcher_.DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
-      session_index, signin_scoped_device_id);
-}
-
 void OAuth2TokenFetcher::StartExchangeFromAuthCode(
     const std::string& auth_code,
     const std::string& signin_scoped_device_id) {
@@ -84,15 +62,12 @@ void OAuth2TokenFetcher::OnClientOAuthSuccess(
 void OAuth2TokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RetryOnError(
-      error,
-      auth_code_.empty()
-          ? base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
-                       AsWeakPtr(), session_index_, signin_scoped_device_id_)
-          : base::Bind(&OAuth2TokenFetcher::StartExchangeFromAuthCode,
-                       AsWeakPtr(), auth_code_, signin_scoped_device_id_),
-      base::Bind(&Delegate::OnOAuth2TokensFetchFailed,
-                 base::Unretained(delegate_)));
+  DCHECK(!auth_code_.empty());
+  RetryOnError(error,
+               base::Bind(&OAuth2TokenFetcher::StartExchangeFromAuthCode,
+                          AsWeakPtr(), auth_code_, signin_scoped_device_id_),
+               base::Bind(&Delegate::OnOAuth2TokensFetchFailed,
+                          base::Unretained(delegate_)));
 }
 
 void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
@@ -101,8 +76,8 @@ void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error.IsTransientError() && retry_count_ < kMaxRequestAttemptCount) {
     retry_count_++;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE, task,
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI}, task,
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }

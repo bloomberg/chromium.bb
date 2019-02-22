@@ -7,6 +7,8 @@
 #include <numeric>
 #include <sstream>
 
+namespace media {
+
 namespace {
 
 template <class T>
@@ -14,8 +16,9 @@ std::string VectorToString(const std::vector<T>& vec) {
   std::ostringstream result;
   std::string delim;
   result << "[";
-  for (auto v : vec) {
-    result << delim << v;
+  for (auto& v : vec) {
+    result << delim;
+    result << v;
     if (delim.size() == 0)
       delim = ", ";
   }
@@ -23,9 +26,16 @@ std::string VectorToString(const std::vector<T>& vec) {
   return result.str();
 }
 
-}  // namespace
+std::vector<VideoFrameLayout::Plane> PlanesFromStrides(
+    const std::vector<int32_t> strides) {
+  std::vector<VideoFrameLayout::Plane> planes(strides.size());
+  for (size_t i = 0; i < strides.size(); i++) {
+    planes[i].stride = strides[i];
+  }
+  return planes;
+}
 
-namespace media {
+}  // namespace
 
 VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    const gfx::Size& coded_size,
@@ -33,14 +43,22 @@ VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    std::vector<size_t> buffer_sizes)
     : format_(format),
       coded_size_(coded_size),
-      strides_(std::move(strides)),
+      planes_(PlanesFromStrides(strides)),
+      buffer_sizes_(std::move(buffer_sizes)) {}
+
+VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
+                                   const gfx::Size& coded_size,
+                                   std::vector<Plane> planes,
+                                   std::vector<size_t> buffer_sizes)
+    : format_(format),
+      coded_size_(coded_size),
+      planes_(std::move(planes)),
       buffer_sizes_(std::move(buffer_sizes)) {}
 
 VideoFrameLayout::VideoFrameLayout()
     : format_(PIXEL_FORMAT_UNKNOWN),
-      coded_size_(),
-      strides_({0, 0, 0, 0}),
-      buffer_sizes_({0, 0, 0, 0}) {}
+      planes_(kDefaultPlaneCount),
+      buffer_sizes_(kDefaultBufferCount, 0) {}
 
 VideoFrameLayout::~VideoFrameLayout() = default;
 VideoFrameLayout::VideoFrameLayout(const VideoFrameLayout&) = default;
@@ -54,13 +72,19 @@ size_t VideoFrameLayout::GetTotalBufferSize() const {
 
 std::string VideoFrameLayout::ToString() const {
   std::ostringstream s;
-  s << "VideoFrameLayout format:" << VideoPixelFormatToString(format_)
-    << " coded_size:" << coded_size_.ToString()
-    << " num_buffers:" << num_buffers()
-    << " buffer_sizes:" << VectorToString(buffer_sizes_)
-    << " num_strides:" << num_strides()
-    << " strides:" << VectorToString(strides_);
+  s << "VideoFrameLayout format: " << VideoPixelFormatToString(format_)
+    << ", coded_size: " << coded_size_.ToString()
+    << ", num_buffers: " << num_buffers()
+    << ", buffer_sizes: " << VectorToString(buffer_sizes_)
+    << ", num_planes: " << num_planes()
+    << ", planes (stride, offset): " << VectorToString(planes_);
   return s.str();
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrameLayout::Plane& plane) {
+  ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  return ostream;
 }
 
 }  // namespace media

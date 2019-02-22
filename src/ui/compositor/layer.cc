@@ -113,6 +113,7 @@ Layer::Layer()
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
+      backdrop_filter_quality_(1.0f),
       trilinear_filtering_request_(0),
       weak_ptr_factory_(this) {
   CreateCcLayer();
@@ -141,6 +142,7 @@ Layer::Layer(LayerType type)
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
+      backdrop_filter_quality_(1.0f),
       trilinear_filtering_request_(0),
       weak_ptr_factory_(this) {
   CreateCcLayer();
@@ -187,16 +189,14 @@ std::unique_ptr<Layer> Layer::Clone() const {
 
   // cc::Layer state.
   if (surface_layer_) {
-    if (surface_layer_->primary_surface_id().is_valid()) {
-      clone->SetShowPrimarySurface(
-          surface_layer_->primary_surface_id(), frame_size_in_dip_,
-          surface_layer_->background_color(),
-          surface_layer_->deadline_in_frames()
-              ? cc::DeadlinePolicy::UseSpecifiedDeadline(
-                    *surface_layer_->deadline_in_frames())
-              : cc::DeadlinePolicy::UseDefaultDeadline(),
-          surface_layer_->stretch_content_to_fill_bounds());
-    }
+    clone->SetShowPrimarySurface(
+        surface_layer_->primary_surface_id(), frame_size_in_dip_,
+        surface_layer_->background_color(),
+        surface_layer_->deadline_in_frames()
+            ? cc::DeadlinePolicy::UseSpecifiedDeadline(
+                  *surface_layer_->deadline_in_frames())
+            : cc::DeadlinePolicy::UseDefaultDeadline(),
+        surface_layer_->stretch_content_to_fill_bounds());
     if (surface_layer_->fallback_surface_id())
       clone->SetFallbackSurfaceId(*surface_layer_->fallback_surface_id());
   } else if (type_ == LAYER_SOLID_COLOR) {
@@ -286,8 +286,7 @@ void Layer::Remove(Layer* child) {
   if (compositor)
     child->ResetCompositorForAnimatorsInTree(compositor);
 
-  std::vector<Layer*>::iterator i =
-      std::find(children_.begin(), children_.end(), child);
+  auto i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->parent_ = nullptr;
@@ -641,6 +640,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   cc_layer_->SetContentsOpaque(fills_bounds_opaquely_);
   cc_layer_->SetIsDrawable(type_ != LAYER_NOT_DRAWN);
   cc_layer_->SetHideLayerAndSubtree(!visible_);
+  cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
   cc_layer_->SetElementId(cc::ElementId(cc_layer_->id()));
 
   SetLayerFilters();
@@ -676,6 +676,10 @@ void Layer::RemoveCacheRenderSurfaceRequest() {
     cc_layer_->SetCacheRenderSurface(false);
 }
 
+void Layer::SetBackdropFilterQuality(const float quality) {
+  backdrop_filter_quality_ = quality / GetDeviceScaleFactor();
+  cc_layer_->SetBackdropFilterQuality(backdrop_filter_quality_);
+}
 void Layer::AddDeferredPaintRequest() {
   ++deferred_paint_requests_;
   TRACE_COUNTER_ID1("ui", "DeferredPaintRequests", this,
@@ -850,7 +854,7 @@ void Layer::UpdateNinePatchLayerImage(const gfx::ImageSkia& image) {
   // we don't need/want to, but we should address this in the future if it
   // becomes an issue.
   nine_patch_layer_->SetBitmap(
-      image.GetRepresentation(device_scale_factor_).sk_bitmap());
+      image.GetRepresentation(device_scale_factor_).GetBitmap());
 }
 
 void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {

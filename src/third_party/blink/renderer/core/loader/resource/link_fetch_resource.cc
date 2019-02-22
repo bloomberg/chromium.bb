@@ -10,17 +10,17 @@
 
 namespace blink {
 
-Resource* LinkFetchResource::Fetch(Resource::Type type,
+Resource* LinkFetchResource::Fetch(ResourceType type,
                                    FetchParameters& params,
                                    ResourceFetcher* fetcher) {
-  DCHECK_EQ(type, kLinkPrefetch);
+  DCHECK_EQ(type, ResourceType::kLinkPrefetch);
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
   return fetcher->RequestResource(params, LinkResourceFactory(type), nullptr);
 }
 
 LinkFetchResource::LinkFetchResource(const ResourceRequest& request,
-                                     Type type,
+                                     ResourceType type,
                                      const ResourceLoaderOptions& options)
     : Resource(request, type, options) {}
 

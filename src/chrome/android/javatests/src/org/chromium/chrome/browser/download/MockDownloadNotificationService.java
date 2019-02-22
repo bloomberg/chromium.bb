@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 
 import java.util.ArrayList;
@@ -21,10 +22,10 @@ import java.util.concurrent.Callable;
  */
 public class MockDownloadNotificationService extends DownloadNotificationService {
     private final List<Integer> mNotificationIds = new ArrayList<Integer>();
-    private boolean mPaused = false;
+    private boolean mPaused;
     private Context mContext;
     private int mLastNotificationId;
-    private boolean mIsForegroundRunning = false;
+    private boolean mIsForegroundRunning;
 
     void setContext(Context context) {
         mContext = context;
@@ -129,11 +130,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon) {
+    public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon,
+            @FailState int failState) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                MockDownloadNotificationService.super.notifyDownloadFailed(id, fileName, icon);
+                MockDownloadNotificationService.super.notifyDownloadFailed(
+                        id, fileName, icon, failState);
             }
         });
     }
@@ -148,4 +151,3 @@ public class MockDownloadNotificationService extends DownloadNotificationService
         });
     }
 }
-

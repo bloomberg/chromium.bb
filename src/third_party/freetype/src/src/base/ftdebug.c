@@ -87,9 +87,19 @@
             int          line,
             const char*  file )
   {
+#if 0
+    /* activating the code in this block makes FreeType very chatty */
+    fprintf( stderr,
+             "%s:%d: error 0x%02x: %s\n",
+             file,
+             line,
+             error,
+             FT_Error_String( error ) );
+#else
     FT_UNUSED( error );
     FT_UNUSED( line );
     FT_UNUSED( file );
+#endif
 
     return 0;
   }

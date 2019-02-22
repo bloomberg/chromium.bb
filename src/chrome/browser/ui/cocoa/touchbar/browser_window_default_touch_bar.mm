@@ -84,22 +84,19 @@ NSImage* CreateNSImageFromIcon(const gfx::VectorIcon& icon,
 }
 
 // Creates a NSButton for the touch bar.
+API_AVAILABLE(macos(10.12.2))
 NSButton* CreateTouchBarButton(const gfx::VectorIcon& icon,
                                BrowserWindowDefaultTouchBar* owner,
                                int command,
                                int tooltip_id,
                                SkColor color = kTouchBarDefaultIconColor) {
-  if (@available(macOS 10.12.2, *)) {
-    NSButton* button =
-        [NSButton buttonWithImage:CreateNSImageFromIcon(icon, color)
-                           target:owner
-                           action:@selector(executeCommand:)];
-    button.tag = command;
-    [button setAccessibilityLabel:l10n_util::GetNSString(tooltip_id)];
-    return button;
-  }
-
-  return nil;
+  NSButton* button =
+      [NSButton buttonWithImage:CreateNSImageFromIcon(icon, color)
+                         target:owner
+                         action:@selector(executeCommand:)];
+  button.tag = command;
+  [button setAccessibilityLabel:l10n_util::GetNSString(tooltip_id)];
+  return button;
 }
 
 ui::TouchBarAction TouchBarActionFromCommand(int command) {
@@ -128,9 +125,10 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 
 // A class registered for C++ notifications. This is used to detect changes in
 // the profile preferences and the back/forward commands.
-class TouchBarNotificationBridge : public CommandObserver,
-                                   public BookmarkTabHelperObserver,
-                                   public content::WebContentsObserver {
+class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
+    : public CommandObserver,
+      public BookmarkTabHelperObserver,
+      public content::WebContentsObserver {
  public:
   TouchBarNotificationBridge(BrowserWindowDefaultTouchBar* owner,
                              Browser* browser)
@@ -236,7 +234,7 @@ class TouchBarNotificationBridge : public CommandObserver,
 }
 
 // Creates and returns a touch bar for tab fullscreen mode.
-- (NSTouchBar*)createTabFullscreenTouchBar API_AVAILABLE(macos(10.12.2));
+- (NSTouchBar*)createTabFullscreenTouchBar;
 
 // Sets up the back and forward segmented control.
 - (void)setupBackForwardControl;
@@ -245,7 +243,7 @@ class TouchBarNotificationBridge : public CommandObserver,
 - (void)updateStarredButton;
 
 // Creates and returns the search button.
-- (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
+- (NSView*)searchTouchBarView;
 
 @end
 
@@ -326,8 +324,7 @@ class TouchBarNotificationBridge : public CommandObserver,
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
-    API_AVAILABLE(macos(10.12.2)) {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
   if (!touchBar)
     return nil;
 
@@ -365,13 +362,9 @@ class TouchBarNotificationBridge : public CommandObserver,
         setCustomizationLabel:l10n_util::GetNSString(
                                   IDS_TOUCH_BAR_BOOKMARK_CUSTOMIZATION_LABEL)];
   } else if ([identifier hasSuffix:kSearchTouchId]) {
-    if (@available(macOS 10.12, *)) {
-      [touchBarItem setView:[self searchTouchBarView]];
-      [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
-                                              IDS_TOUCH_BAR_GOOGLE_SEARCH)];
-    } else {
-      NOTREACHED();
-    }
+    [touchBarItem setView:[self searchTouchBarView]];
+    [touchBarItem setCustomizationLabel:l10n_util::GetNSString(
+                                            IDS_TOUCH_BAR_GOOGLE_SEARCH)];
   } else if ([identifier hasSuffix:kFullscreenOriginLabelTouchId]) {
     content::WebContents* contents =
         browser_->tab_strip_model()->GetActiveWebContents();
@@ -406,7 +399,7 @@ class TouchBarNotificationBridge : public CommandObserver,
   return touchBarItem.autorelease();
 }
 
-- (NSTouchBar*)createTabFullscreenTouchBar API_AVAILABLE(macos(10.12.2)) {
+- (NSTouchBar*)createTabFullscreenTouchBar {
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
   [touchBar setDelegate:self];
   [touchBar setDefaultItemIdentifiers:@[ ui::GetTouchBarItemId(
@@ -467,9 +460,7 @@ class TouchBarNotificationBridge : public CommandObserver,
   if (!backForwardControl_)
     [self setupBackForwardControl];
 
-  if (@available(macOS 10.10, *))
-    [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
-
+  [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
   [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
                        forSegment:kBackSegmentIndex];
   [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)

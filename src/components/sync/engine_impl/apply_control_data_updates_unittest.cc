@@ -81,8 +81,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
 
   // Nigori node updates should update the Cryptographer.
   Cryptographer other_cryptographer(cryptographer->encryptor());
-  KeyParams params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
+  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   other_cryptographer.AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
@@ -149,8 +148,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
         base::StringPrintf("Item %" PRIuS "", i), false, BOOKMARKS, nullptr);
   }
 
-  KeyParams params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
+  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   cryptographer->AddKey(params);
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -264,8 +262,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   // We encrypt with new keys, triggering the local cryptographer to be unready
   // and unable to decrypt data (once updated).
   Cryptographer other_cryptographer(cryptographer->encryptor());
-  KeyParams params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
+  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -313,10 +310,8 @@ TEST_F(ApplyControlDataUpdatesTest,
        NigoriConflictPendingKeysServerEncryptEverythingCustom) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams other_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
-  KeyParams local_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "local"};
+  KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
+  KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -392,10 +387,8 @@ TEST_F(ApplyControlDataUpdatesTest,
        NigoriConflictPendingKeysLocalEncryptEverythingCustom) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams other_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
-  KeyParams local_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "local"};
+  KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
+  KeyParams local_params = {KeyDerivationParams::CreateForPbkdf2(), "local"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -470,10 +463,8 @@ TEST_F(ApplyControlDataUpdatesTest,
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams old_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old"};
-  KeyParams new_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new"};
+  KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
+  KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -540,10 +531,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams old_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old"};
-  KeyParams new_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new"};
+  KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
+  KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -623,10 +612,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams old_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old"};
-  KeyParams new_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new"};
+  KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
+  KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -707,10 +694,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams old_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old"};
-  KeyParams new_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new"};
+  KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
+  KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -787,10 +772,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
 TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   Cryptographer* cryptographer;
   ModelTypeSet encrypted_types(SyncEncryptionHandler::SensitiveTypes());
-  KeyParams old_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "old"};
-  KeyParams new_params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "new"};
+  KeyParams old_params = {KeyDerivationParams::CreateForPbkdf2(), "old"};
+  KeyParams new_params = {KeyDerivationParams::CreateForPbkdf2(), "new"};
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
@@ -973,8 +956,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
     cryptographer = directory()->GetCryptographer(&trans);
   }
 
-  KeyParams params = {
-      KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"), "foobar"};
+  KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   cryptographer->AddKey(params);
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();

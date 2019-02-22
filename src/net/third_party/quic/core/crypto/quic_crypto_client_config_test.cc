@@ -239,9 +239,8 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCIDNoEXPY) {
   QuicString details;
   QuicWallTime now = QuicWallTime::FromUNIXSeconds(1);
   QuicWallTime expiry = QuicWallTime::FromUNIXSeconds(2);
-  state.SetServerConfig(
-      scfg.GetSerialized(Perspective::IS_CLIENT).AsStringPiece(), now, expiry,
-      &details);
+  state.SetServerConfig(scfg.GetSerialized().AsStringPiece(), now, expiry,
+                        &details);
 
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
@@ -266,10 +265,9 @@ TEST_F(QuicCryptoClientConfigTest, InchoateChloSecureWithSCID) {
   scfg.SetValue(kEXPY, future);
   scfg.SetStringPiece(kSCID, "12345678");
   QuicString details;
-  state.SetServerConfig(
-      scfg.GetSerialized(Perspective::IS_CLIENT).AsStringPiece(),
-      QuicWallTime::FromUNIXSeconds(1), QuicWallTime::FromUNIXSeconds(0),
-      &details);
+  state.SetServerConfig(scfg.GetSerialized().AsStringPiece(),
+                        QuicWallTime::FromUNIXSeconds(1),
+                        QuicWallTime::FromUNIXSeconds(0), &details);
 
   QuicCryptoClientConfig config(crypto_test_utils::ProofVerifierForTesting(),
                                 TlsClientHandshaker::CreateSslCtx());
@@ -415,10 +413,9 @@ TEST_F(QuicCryptoClientConfigTest, ClearCachedStates) {
       scfg.SetValue(kEXPY, future);
       scfg.SetStringPiece(kSCID, "12345678");
       QuicString details;
-      state->SetServerConfig(
-          scfg.GetSerialized(Perspective::IS_CLIENT).AsStringPiece(),
-          QuicWallTime::FromUNIXSeconds(0),
-          QuicWallTime::FromUNIXSeconds(future), &details);
+      state->SetServerConfig(scfg.GetSerialized().AsStringPiece(),
+                             QuicWallTime::FromUNIXSeconds(0),
+                             QuicWallTime::FromUNIXSeconds(future), &details);
 
       std::vector<QuicString> certs(1);
       certs[0] = "Hello Cert for " + host;

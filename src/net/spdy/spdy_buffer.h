@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE SpdyBuffer {
   // This is used with Socket::Write(), which takes an IOBuffer* that
   // may be written to even after the socket itself is destroyed. (See
   // http://crbug.com/249725 .)
-  IOBuffer* GetIOBufferForRemainingData();
+  scoped_refptr<IOBuffer> GetIOBufferForRemainingData();
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;

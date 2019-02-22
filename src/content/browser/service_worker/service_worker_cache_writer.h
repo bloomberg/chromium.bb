@@ -42,10 +42,16 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // The |compare_reader| may be null, in which case this instance will
   // unconditionally write back data supplied to |MaybeWriteHeaders| and
   // |MaybeWriteData|.
+  //
+  // When |pause_when_not_identical| is true and the cache writer detects a
+  // difference between bodies from the network and from the storage, the
+  // comparison stops immediately and the cache writer returns
+  // net::ERR_IO_PENDING, with nothing written to the storage.
   ServiceWorkerCacheWriter(
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
-      std::unique_ptr<ServiceWorkerResponseWriter> writer);
+      std::unique_ptr<ServiceWorkerResponseWriter> writer,
+      bool pause_when_not_identical);
 
   ~ServiceWorkerCacheWriter();
 
@@ -73,6 +79,13 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // Returns a count of bytes written back to the cache.
   size_t bytes_written() const { return bytes_written_; }
   bool did_replace() const { return did_replace_; }
+  bool is_pausing() const { return state_ == STATE_PAUSING; }
+
+  // Resumes a cache writer which were paused when a block of data from the
+  // network wasn't identical to the data in the storage. It is valid to call
+  // this method only when |pause_when_not_identical| is true in the constructor
+  // and |state_| is STATE_PAUSING.
+  net::Error Resume(OnWriteCompleteCallback callback);
 
  private:
   // States for the state machine.
@@ -101,6 +114,10 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
     STATE_READ_HEADERS_FOR_COMPARE_DONE,
     STATE_READ_DATA_FOR_COMPARE,
     STATE_READ_DATA_FOR_COMPARE_DONE,
+
+    // The cache writer is paused because the network data wasn't identical with
+    // the stored data, and |pause_when_not_identical| is true.
+    STATE_PAUSING,
 
     // Control flows linearly through these states, with each pass from
     // READ_DATA_FOR_COPY to WRITE_DATA_FOR_COPY_DONE copying one block of data
@@ -219,7 +236,12 @@ class CONTENT_EXPORT ServiceWorkerCacheWriter {
   // Count of bytes written back to |writer_|.
   size_t bytes_written_;
 
-  bool did_replace_;
+  bool did_replace_ = false;
+
+  // When the cache writer finds any differences between bodies from the network
+  // and from the storage, and the |pause_when_not_identical_| is true, the
+  // cache writer pauses immediately.
+  const bool pause_when_not_identical_;
 
   std::unique_ptr<ServiceWorkerResponseReader> compare_reader_;
   std::unique_ptr<ServiceWorkerResponseReader> copy_reader_;

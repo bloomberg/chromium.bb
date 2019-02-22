@@ -12,20 +12,91 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
+#include "components/signin/core/browser/signin_error_controller.h"
+#include "content/public/browser/network_service_instance.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
+#include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
+namespace {
+
+// Values used from |MutableProfileOAuth2TokenServiceDelegate|.
+const net::BackoffEntry::Policy kBackoffPolicy = {
+    0 /* int num_errors_to_ignore */,
+
+    1000 /* int initial_delay_ms */,
+
+    2.0 /* double multiply_factor */,
+
+    0.2 /* double jitter_factor */,
+
+    15 * 60 * 1000 /* int64_t maximum_backoff_ms */,
+
+    -1 /* int64_t entry_lifetime_ms */,
+
+    false /* bool always_use_initial_delay */,
+};
+
+}  // namespace
+
+class ChromeOSOAuth2TokenServiceDelegate::AccountErrorStatus
+    : public SigninErrorController::AuthStatusProvider {
+ public:
+  AccountErrorStatus(SigninErrorController* signin_error_controller,
+                     const std::string& account_id)
+      : signin_error_controller_(signin_error_controller),
+        account_id_(account_id) {
+    signin_error_controller_->AddProvider(this);
+  }
+
+  ~AccountErrorStatus() override {
+    signin_error_controller_->RemoveProvider(this);
+  }
+
+  // SigninErrorController::AuthStatusProvider overrides.
+  std::string GetAccountId() const override { return account_id_; }
+
+  GoogleServiceAuthError GetAuthStatus() const override {
+    return last_auth_error_;
+  }
+
+  void SetLastAuthError(const GoogleServiceAuthError& error) {
+    last_auth_error_ = error;
+    signin_error_controller_->AuthStatusChanged();
+  }
+
+ private:
+  // A non-owning pointer to |SigninErrorController|.
+  SigninErrorController* const signin_error_controller_;
+
+  // The account id being tracked by |this| instance of |AccountErrorStatus|.
+  const std::string account_id_;
+
+  // The last auth error seen for |account_id_|.
+  GoogleServiceAuthError last_auth_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccountErrorStatus);
+};
+
 ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
-    chromeos::AccountManager* account_manager)
+    chromeos::AccountManager* account_manager,
+    SigninErrorController* signin_error_controller)
     : account_mapper_util_(
           std::make_unique<AccountMapperUtil>(account_tracker_service)),
       account_manager_(account_manager),
-      weak_factory_(this) {}
+      signin_error_controller_(signin_error_controller),
+      backoff_entry_(&kBackoffPolicy),
+      backoff_error_(GoogleServiceAuthError::NONE),
+      weak_factory_(this) {
+  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+}
 
 ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
   account_manager_->RemoveObserver(this);
+  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
 }
 
 OAuth2AccessTokenFetcher*
@@ -34,9 +105,28 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   ValidateAccountId(account_id);
+
+  // Check if we need to reject the request.
+  // We will reject the request if we are facing a persistent error for this
+  // account.
+  auto it = errors_.find(account_id);
+  if (it != errors_.end() && it->second->GetAuthStatus().IsPersistentError()) {
+    VLOG(1) << "Request for token has been rejected due to persistent error #"
+            << it->second->GetAuthStatus().state();
+    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    return new OAuth2AccessTokenFetcherImmediateError(
+        consumer, it->second->GetAuthStatus());
+  }
+  // Or when we need to backoff.
+  if (backoff_entry_.ShouldRejectRequest()) {
+    VLOG(1) << "Request for token has been rejected due to backoff rules from"
+            << " previous error #" << backoff_error_.state();
+    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    return new OAuth2AccessTokenFetcherImmediateError(consumer, backoff_error_);
+  }
 
   const AccountManager::AccountKey& account_key =
       account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
@@ -49,7 +139,7 @@ ChromeOSOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
 
 bool ChromeOSOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const std::string& account_id) const {
-  if (load_credentials_state_ != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+  if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
   }
 
@@ -62,19 +152,30 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateAuthError(
     const GoogleServiceAuthError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(sinhak): Implement a backoff policy.
+  backoff_entry_.InformOfRequest(!error.IsTransientError());
+  ValidateAccountId(account_id);
   if (error.IsTransientError()) {
+    backoff_error_ = error;
     return;
   }
 
   auto it = errors_.find(account_id);
   if (error.state() == GoogleServiceAuthError::NONE) {
+    // If the error status is NONE, and we were not tracking any error anyways,
+    // just ignore the update.
+    // Otherwise, delete the error tracking for this account.
     if (it != errors_.end()) {
       errors_.erase(it);
       FireAuthErrorChanged(account_id, error);
     }
-  } else if ((it == errors_.end()) || (it->second != error)) {
-    errors_[account_id] = error;
+  } else if ((it == errors_.end()) || (it->second->GetAuthStatus() != error)) {
+    // Error status is not NONE. We need to start tracking the account / update
+    // the last seen error, if it is different.
+    if (it == errors_.end()) {
+      errors_.emplace(account_id, std::make_unique<AccountErrorStatus>(
+                                      signin_error_controller_, account_id));
+    }
+    errors_[account_id]->SetLastAuthError(error);
     FireAuthErrorChanged(account_id, error);
   }
 }
@@ -83,7 +184,7 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
     const std::string& account_id) const {
   auto it = errors_.find(account_id);
   if (it != errors_.end()) {
-    return it->second;
+    return it->second->GetAuthStatus();
   }
 
   return GoogleServiceAuthError::AuthErrorNone();
@@ -91,7 +192,7 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
 
 std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys_) {
@@ -109,11 +210,11 @@ void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (load_credentials_state_ != LOAD_CREDENTIALS_NOT_STARTED) {
+  if (load_credentials_state() != LOAD_CREDENTIALS_NOT_STARTED) {
     return;
   }
 
-  load_credentials_state_ = LOAD_CREDENTIALS_IN_PROGRESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
 
   DCHECK(account_manager_);
   account_manager_->AddObserver(this);
@@ -126,7 +227,7 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -145,21 +246,16 @@ ChromeOSOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return account_manager_->GetUrlLoaderFactory();
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-ChromeOSOAuth2TokenServiceDelegate::GetLoadCredentialsState() const {
-  return load_credentials_state_;
-}
-
 void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
     std::vector<AccountManager::AccountKey> account_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This callback should only be triggered during |LoadCredentials|, which
-  // implies that |load_credentials_state_| should in
+  // implies that |load_credentials_state())| should in
   // |LOAD_CREDENTIALS_IN_PROGRESS| state.
-  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
 
-  load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
 
   // The typical order of |OAuth2TokenService::Observer| callbacks is:
   // 1. OnStartBatchChanges
@@ -203,7 +299,7 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
 void ChromeOSOAuth2TokenServiceDelegate::OnAccountRemoved(
     const AccountManager::AccountKey& account_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state_);
+  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   auto it = account_keys_.find(account_key);
   if (it == account_keys_.end()) {
@@ -233,6 +329,16 @@ void ChromeOSOAuth2TokenServiceDelegate::RevokeCredentials(
 void ChromeOSOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   // Signing out of Chrome is not possible on Chrome OS.
   NOTREACHED();
+}
+
+const net::BackoffEntry* ChromeOSOAuth2TokenServiceDelegate::BackoffEntry()
+    const {
+  return &backoff_entry_;
+}
+
+void ChromeOSOAuth2TokenServiceDelegate::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  backoff_entry_.Reset();
 }
 
 }  // namespace chromeos

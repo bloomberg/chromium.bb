@@ -116,6 +116,7 @@ bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
 
 FFmpegVideoDecoder::FFmpegVideoDecoder(MediaLog* media_log)
     : media_log_(media_log), state_(kUninitialized), decode_nalus_(false) {
+  DVLOG(1) << __func__;
   thread_checker_.DetachFromThread();
 }
 
@@ -183,8 +184,19 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
                                                     codec_context->color_range);
   if (color_space == COLOR_SPACE_UNSPECIFIED)
     color_space = config_.color_space();
-  video_frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
-                                      color_space);
+  switch (color_space) {
+    case COLOR_SPACE_UNSPECIFIED:
+      break;
+    case COLOR_SPACE_HD_REC709:
+      video_frame->set_color_space(gfx::ColorSpace::CreateREC709());
+      break;
+    case COLOR_SPACE_SD_REC601:
+      video_frame->set_color_space(gfx::ColorSpace::CreateREC601());
+      break;
+    case COLOR_SPACE_JPEG:
+      video_frame->set_color_space(gfx::ColorSpace::CreateJpeg());
+      break;
+  }
 
   if (codec_context->codec_id == AV_CODEC_ID_VP8 &&
       codec_context->color_primaries == AVCOL_PRI_UNSPECIFIED &&
@@ -243,9 +255,10 @@ void FFmpegVideoDecoder::Initialize(
     const InitCB& init_cb,
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
-  DCHECK(!output_cb.is_null());
+  DCHECK(output_cb);
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
@@ -268,9 +281,10 @@ void FFmpegVideoDecoder::Initialize(
 
 void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                 const DecodeCB& decode_cb) {
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer.get());
-  DCHECK(!decode_cb.is_null());
+  DCHECK(decode_cb);
   CHECK_NE(state_, kUninitialized);
 
   DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);
@@ -320,6 +334,7 @@ void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   avcodec_flush_buffers(codec_context_.get());

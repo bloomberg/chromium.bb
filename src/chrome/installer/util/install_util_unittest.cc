@@ -24,9 +24,7 @@
 #include "base/win/registry.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/test_app_registration_data.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -101,12 +99,6 @@ void CreateDeleteOnlySecurity(ScopedSecurityData* sec_data,
 class MockRegistryValuePredicate : public InstallUtil::RegistryValuePredicate {
  public:
   MOCK_CONST_METHOD1(Evaluate, bool(const std::wstring&));
-};
-
-class TestBrowserDistribution : public BrowserDistribution {
- public:
-  TestBrowserDistribution()
-      : BrowserDistribution(std::make_unique<TestAppRegistrationData>()) {}
 };
 
 class InstallUtilTest : public testing::Test {

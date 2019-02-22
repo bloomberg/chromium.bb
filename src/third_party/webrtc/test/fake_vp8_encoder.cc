@@ -11,7 +11,7 @@
 #include "test/fake_vp8_encoder.h"
 
 #include "common_types.h"  // NOLINT(build/include)
-#include "modules/video_coding/codecs/vp8/temporal_layers.h"
+#include "modules/video_coding/codecs/vp8/include/vp8_temporal_layers.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/utility/simulcast_utility.h"
@@ -19,6 +19,26 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/random.h"
 #include "rtc_base/timeutils.h"
+
+namespace {
+
+// Write width and height to the payload the same way as the real encoder does.
+// It requires that |payload| has a size of at least kMinPayLoadHeaderLength.
+void WriteFakeVp8(unsigned char* payload,
+                  int width,
+                  int height,
+                  bool key_frame) {
+  payload[0] = key_frame ? 0 : 0x01;
+
+  if (key_frame) {
+    payload[9] = (height & 0x3F00) >> 8;
+    payload[8] = (height & 0x00FF);
+
+    payload[7] = (width & 0x3F00) >> 8;
+    payload[6] = (width & 0x00FF);
+  }
+}
+}  // namespace
 
 namespace webrtc {
 
@@ -47,15 +67,7 @@ int32_t FakeVP8Encoder::InitEncode(const VideoCodec* config,
     return result;
   }
 
-  int number_of_streams = SimulcastUtility::NumberOfSimulcastStreams(*config);
-  bool doing_simulcast = number_of_streams > 1;
-
-  int num_temporal_layers =
-      doing_simulcast ? config->simulcastStream[0].numberOfTemporalLayers
-                      : config->VP8().numberOfTemporalLayers;
-  RTC_DCHECK_GT(num_temporal_layers, 0);
-
-  SetupTemporalLayers(number_of_streams, num_temporal_layers, *config);
+  SetupTemporalLayers(*config);
 
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -66,33 +78,39 @@ int32_t FakeVP8Encoder::Release() {
   return result;
 }
 
-void FakeVP8Encoder::SetupTemporalLayers(int num_streams,
-                                         int num_temporal_layers,
-                                         const VideoCodec& codec) {
+void FakeVP8Encoder::SetupTemporalLayers(const VideoCodec& codec) {
   RTC_DCHECK_CALLED_SEQUENTIALLY(&sequence_checker_);
 
-  temporal_layers_.clear();
+  int num_streams = SimulcastUtility::NumberOfSimulcastStreams(codec);
   for (int i = 0; i < num_streams; ++i) {
+    TemporalLayersType type;
+    int num_temporal_layers =
+        SimulcastUtility::NumberOfTemporalLayers(codec, i);
+    if (SimulcastUtility::IsConferenceModeScreenshare(codec) && i == 0) {
+      type = TemporalLayersType::kBitrateDynamic;
+      // Legacy screenshare layers supports max 2 layers.
+      num_temporal_layers = std::max<int>(2, num_temporal_layers);
+    } else {
+      type = TemporalLayersType::kFixedPattern;
+    }
     temporal_layers_.emplace_back(
-        TemporalLayers::CreateTemporalLayers(codec, i));
+        TemporalLayers::CreateTemporalLayers(type, num_temporal_layers));
   }
 }
 
-void FakeVP8Encoder::PopulateCodecSpecific(
-    CodecSpecificInfo* codec_specific,
-    const TemporalLayers::FrameConfig& tl_config,
-    FrameType frame_type,
-    int stream_idx,
-    uint32_t timestamp) {
+void FakeVP8Encoder::PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
+                                           size_t size_bytes,
+                                           FrameType frame_type,
+                                           int stream_idx,
+                                           uint32_t timestamp) {
   RTC_DCHECK_CALLED_SEQUENTIALLY(&sequence_checker_);
   codec_specific->codecType = kVideoCodecVP8;
   codec_specific->codec_name = ImplementationName();
   CodecSpecificInfoVP8* vp8Info = &(codec_specific->codecSpecific.VP8);
-  vp8Info->simulcastIdx = stream_idx;
   vp8Info->keyIdx = kNoKeyIdx;
   vp8Info->nonReference = false;
-  temporal_layers_[stream_idx]->PopulateCodecSpecific(
-      frame_type == kVideoFrameKey, tl_config, vp8Info, timestamp);
+  temporal_layers_[stream_idx]->OnEncodeDone(
+      timestamp, size_bytes, frame_type == kVideoFrameKey, -1, vp8Info);
 }
 
 EncodedImageCallback::Result FakeVP8Encoder::OnEncodedImage(
@@ -100,16 +118,18 @@ EncodedImageCallback::Result FakeVP8Encoder::OnEncodedImage(
     const CodecSpecificInfo* codec_specific_info,
     const RTPFragmentationHeader* fragments) {
   RTC_DCHECK_CALLED_SEQUENTIALLY(&sequence_checker_);
-  uint8_t stream_idx = codec_specific_info->codecSpecific.generic.simulcast_idx;
+  uint8_t stream_idx = encoded_image.SpatialIndex().value_or(0);
   CodecSpecificInfo overrided_specific_info;
-  TemporalLayers::FrameConfig tl_config =
-      temporal_layers_[stream_idx]->UpdateLayerConfig(encoded_image._timeStamp);
-  PopulateCodecSpecific(&overrided_specific_info, tl_config,
+  temporal_layers_[stream_idx]->UpdateLayerConfig(encoded_image.Timestamp());
+  PopulateCodecSpecific(&overrided_specific_info, encoded_image._length,
                         encoded_image._frameType, stream_idx,
-                        encoded_image._timeStamp);
-  temporal_layers_[stream_idx]->FrameEncoded(encoded_image._timeStamp,
-                                             encoded_image._length, -1);
+                        encoded_image.Timestamp());
 
+  // Write width and height to the payload the same way as the real encoder
+  // does.
+  WriteFakeVp8(encoded_image._buffer, encoded_image._encodedWidth,
+               encoded_image._encodedHeight,
+               encoded_image._frameType == kVideoFrameKey);
   return callback_->OnEncodedImage(encoded_image, &overrided_specific_info,
                                    fragments);
 }

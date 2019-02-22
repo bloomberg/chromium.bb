@@ -122,6 +122,10 @@ cast_test_group("cast_tests") {
     cast_media_unittests_filter = {
       test_name = "cast_media_unittests"
 
+      # TODO(almasrymina) : Track this test as a separate bug
+      #   (internal : b/115400220)
+      gtest_excludes = [ "AudioVideoPipelineDeviceTest.Mp4Playback" ]
+
       # --test-launcher-jobs=1 => so internal code can bind to port
       args = [ "--test-launcher-jobs=1" ]
     }
@@ -463,6 +467,7 @@ if (is_fuchsia) {
   fuchsia_package("cast_shell_pkg") {
     binary = ":cast_shell"
     package_name_override = "cast_shell"
+    sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
 
     if (chromecast_branding != "public") {
       deps = [
@@ -586,6 +591,8 @@ buildflag_header("chromecast_buildflags") {
     "IS_SINGLE_VOLUME=$is_single_volume",
     "USE_ANDROID_USER_AGENT=$use_android_user_agent",
     "USE_CHROMECAST_CDMS=$use_chromecast_cdms",
+    "DEFAULT_COMMAND_LINE_FLAGS=\"$default_command_line_flags\"",
+    "DISABLE_SECURE_FLAC_OPUS_DECODING=$disable_secure_flac_and_opus_decoding",
   ]
 }
 

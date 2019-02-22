@@ -218,6 +218,24 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
+// Tests that the correct URL is displayed for a child window opened with the
+// script window.open('', '').location.replace('about:blank#hash').
+// This is a regression test for crbug.com/866142.
+- (void)testLocationReplaceInWindowOpenWithEmptyTarget {
+  GREYAssert(TapWebViewElementWithId(
+                 "webScenarioLocationReplaceInWindowOpenWithEmptyTarget"),
+             @"Failed to tap "
+             @"\"webScenarioLocationReplaceInWindowOpenWithEmptyTarget\"");
+  [ChromeEarlGrey waitForMainTabCount:2];
+  // WebKit doesn't parse 'about:blank#hash' as about:blank with URL fragment.
+  // Instead, it percent encodes '#hash' and considers 'blank%23hash' as the
+  // resource identifier. Nevertheless, the '#' is significant in triggering the
+  // edge case in the bug. TODO(crbug.com/885249): Change back to '#'.
+  const GURL URL("about:blank%23hash");
+  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank%23hash")]
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests a link with JavaScript in the href.
 + (void)testWindowOpenWithJavaScriptInHref {
   GREYAssert(
@@ -246,20 +264,6 @@ id<GREYMatcher> PopupBlocker() {
   chrome_test_util::CloseCurrentTab();
   const GURL URL = HttpServer::MakeUrl(kTestURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Tests opening a child window using the following link
-// <a href="data:text/html,<script>window.location='about:newtab';</script>"
-//    target="_blank">
-- (void)testWindowOpenWithAboutNewTabScript {
-  const char ID[] = "webScenarioWindowOpenWithAboutNewTabScript";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
-  [ChromeEarlGrey waitForMainTabCount:2];
-  [[EarlGrey selectElementWithMatcher:OmniboxText("about:newtab")]
       assertWithMatcher:grey_notNil()];
 }
 

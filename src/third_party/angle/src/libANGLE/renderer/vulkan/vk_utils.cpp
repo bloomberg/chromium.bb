@@ -94,17 +94,18 @@ bool HasValidationLayers(const std::vector<VkLayerProperties> &layerProps)
 
 angle::Result FindAndAllocateCompatibleMemory(vk::Context *context,
                                               const vk::MemoryProperties &memoryProperties,
-                                              VkMemoryPropertyFlags memoryPropertyFlags,
+                                              VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                              VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                               const VkMemoryRequirements &memoryRequirements,
                                               vk::DeviceMemory *deviceMemoryOut)
 {
     uint32_t memoryTypeIndex = 0;
     ANGLE_TRY(memoryProperties.findCompatibleMemoryIndex(context, memoryRequirements,
-                                                         memoryPropertyFlags, &memoryTypeIndex));
+                                                         requestedMemoryPropertyFlags,
+                                                         memoryPropertyFlagsOut, &memoryTypeIndex));
 
-    VkMemoryAllocateInfo allocInfo;
+    VkMemoryAllocateInfo allocInfo = {};
     allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.pNext           = nullptr;
     allocInfo.memoryTypeIndex = memoryTypeIndex;
     allocInfo.allocationSize  = memoryRequirements.size;
 
@@ -114,7 +115,8 @@ angle::Result FindAndAllocateCompatibleMemory(vk::Context *context,
 
 template <typename T>
 angle::Result AllocateBufferOrImageMemory(vk::Context *context,
-                                          VkMemoryPropertyFlags memoryPropertyFlags,
+                                          VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                          VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                           T *bufferOrImage,
                                           vk::DeviceMemory *deviceMemoryOut)
 {
@@ -124,7 +126,8 @@ angle::Result AllocateBufferOrImageMemory(vk::Context *context,
     VkMemoryRequirements memoryRequirements;
     bufferOrImage->getMemoryRequirements(context->getDevice(), &memoryRequirements);
 
-    ANGLE_TRY(FindAndAllocateCompatibleMemory(context, memoryProperties, memoryPropertyFlags,
+    ANGLE_TRY(FindAndAllocateCompatibleMemory(context, memoryProperties,
+                                              requestedMemoryPropertyFlags, memoryPropertyFlagsOut,
                                               memoryRequirements, deviceMemoryOut));
     ANGLE_TRY(bufferOrImage->bindMemory(context, *deviceMemoryOut));
 
@@ -135,7 +138,7 @@ uint32_t GetImageLayerCount(gl::TextureType textureType)
 {
     if (textureType == gl::TextureType::CubeMap)
     {
-        return gl::CUBE_FACE_COUNT;
+        return gl::kCubeFaceCount;
     }
     else
     {
@@ -371,24 +374,20 @@ angle::Result CommandBuffer::reset(Context *context)
     return angle::Result::Continue();
 }
 
-void CommandBuffer::singleImageBarrier(VkPipelineStageFlags srcStageMask,
-                                       VkPipelineStageFlags dstStageMask,
-                                       VkDependencyFlags dependencyFlags,
-                                       const VkImageMemoryBarrier &imageMemoryBarrier)
+void CommandBuffer::pipelineBarrier(VkPipelineStageFlags srcStageMask,
+                                    VkPipelineStageFlags dstStageMask,
+                                    VkDependencyFlags dependencyFlags,
+                                    uint32_t memoryBarrierCount,
+                                    const VkMemoryBarrier *memoryBarriers,
+                                    uint32_t bufferMemoryBarrierCount,
+                                    const VkBufferMemoryBarrier *bufferMemoryBarriers,
+                                    uint32_t imageMemoryBarrierCount,
+                                    const VkImageMemoryBarrier *imageMemoryBarriers)
 {
     ASSERT(valid());
-    vkCmdPipelineBarrier(mHandle, srcStageMask, dstStageMask, dependencyFlags, 0, nullptr, 0,
-                         nullptr, 1, &imageMemoryBarrier);
-}
-
-void CommandBuffer::singleBufferBarrier(VkPipelineStageFlags srcStageMask,
-                                        VkPipelineStageFlags dstStageMask,
-                                        VkDependencyFlags dependencyFlags,
-                                        const VkBufferMemoryBarrier &bufferBarrier)
-{
-    ASSERT(valid());
-    vkCmdPipelineBarrier(mHandle, srcStageMask, dstStageMask, dependencyFlags, 0, nullptr, 1,
-                         &bufferBarrier, 0, nullptr);
+    vkCmdPipelineBarrier(mHandle, srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount,
+                         memoryBarriers, bufferMemoryBarrierCount, bufferMemoryBarriers,
+                         imageMemoryBarrierCount, imageMemoryBarriers);
 }
 
 void CommandBuffer::destroy(VkDevice device)
@@ -507,25 +506,6 @@ void CommandBuffer::endRenderPass()
     vkCmdEndRenderPass(mHandle);
 }
 
-void CommandBuffer::draw(uint32_t vertexCount,
-                         uint32_t instanceCount,
-                         uint32_t firstVertex,
-                         uint32_t firstInstance)
-{
-    ASSERT(valid());
-    vkCmdDraw(mHandle, vertexCount, instanceCount, firstVertex, firstInstance);
-}
-
-void CommandBuffer::drawIndexed(uint32_t indexCount,
-                                uint32_t instanceCount,
-                                uint32_t firstIndex,
-                                int32_t vertexOffset,
-                                uint32_t firstInstance)
-{
-    ASSERT(valid());
-    vkCmdDrawIndexed(mHandle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
-}
-
 void CommandBuffer::bindPipeline(VkPipelineBindPoint pipelineBindPoint,
                                  const vk::Pipeline &pipeline)
 {
@@ -589,6 +569,24 @@ void CommandBuffer::pushConstants(const PipelineLayout &layout,
     vkCmdPushConstants(mHandle, layout.getHandle(), flag, offset, size, data);
 }
 
+void CommandBuffer::resetQueryPool(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount)
+{
+    ASSERT(valid());
+    vkCmdResetQueryPool(mHandle, queryPool, firstQuery, queryCount);
+}
+
+void CommandBuffer::beginQuery(VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags)
+{
+    ASSERT(valid());
+    vkCmdBeginQuery(mHandle, queryPool, query, flags);
+}
+
+void CommandBuffer::endQuery(VkQueryPool queryPool, uint32_t query)
+{
+    ASSERT(valid());
+    vkCmdEndQuery(mHandle, queryPool, query);
+}
+
 // Image implementation.
 Image::Image()
 {
@@ -640,7 +638,7 @@ void Image::getSubresourceLayout(VkDevice device,
                                  uint32_t arrayLayer,
                                  VkSubresourceLayout *outSubresourceLayout) const
 {
-    VkImageSubresource subresource;
+    VkImageSubresource subresource = {};
     subresource.aspectMask = aspectMask;
     subresource.mipLevel   = mipLevel;
     subresource.arrayLayer = arrayLayer;
@@ -686,9 +684,8 @@ angle::Result Semaphore::init(Context *context)
 {
     ASSERT(!valid());
 
-    VkSemaphoreCreateInfo semaphoreInfo;
+    VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreInfo.pNext = nullptr;
     semaphoreInfo.flags = 0;
 
     ANGLE_VK_TRY(context,
@@ -841,29 +838,6 @@ angle::Result ShaderModule::init(Context *context, const VkShaderModuleCreateInf
     return angle::Result::Continue();
 }
 
-// Pipeline implementation.
-Pipeline::Pipeline()
-{
-}
-
-void Pipeline::destroy(VkDevice device)
-{
-    if (valid())
-    {
-        vkDestroyPipeline(device, mHandle, nullptr);
-        mHandle = VK_NULL_HANDLE;
-    }
-}
-
-angle::Result Pipeline::initGraphics(Context *context,
-                                     const VkGraphicsPipelineCreateInfo &createInfo)
-{
-    ASSERT(!valid());
-    ANGLE_VK_TRY(context, vkCreateGraphicsPipelines(context->getDevice(), VK_NULL_HANDLE, 1,
-                                                    &createInfo, nullptr, &mHandle));
-    return angle::Result::Continue();
-}
-
 // PipelineLayout implementation.
 PipelineLayout::PipelineLayout()
 {
@@ -883,6 +857,73 @@ angle::Result PipelineLayout::init(Context *context, const VkPipelineLayoutCreat
     ASSERT(!valid());
     ANGLE_VK_TRY(context,
                  vkCreatePipelineLayout(context->getDevice(), &createInfo, nullptr, &mHandle));
+    return angle::Result::Continue();
+}
+
+// PipelineCache implementation.
+PipelineCache::PipelineCache()
+{
+}
+
+void PipelineCache::destroy(VkDevice device)
+{
+    if (valid())
+    {
+        vkDestroyPipelineCache(device, mHandle, nullptr);
+        mHandle = VK_NULL_HANDLE;
+    }
+}
+
+angle::Result PipelineCache::init(Context *context, const VkPipelineCacheCreateInfo &createInfo)
+{
+    ASSERT(!valid());
+    // Note: if we are concerned with memory usage of this cache, we should give it custom
+    // allocators.  Also, failure of this function is of little importance.
+    ANGLE_VK_TRY(context,
+                 vkCreatePipelineCache(context->getDevice(), &createInfo, nullptr, &mHandle));
+    return angle::Result::Continue();
+}
+
+angle::Result PipelineCache::getCacheData(Context *context, size_t *cacheSize, void *cacheData)
+{
+    ASSERT(valid());
+
+    // Note: vkGetPipelineCacheData can return VK_INCOMPLETE if cacheSize is smaller than actual
+    // size. There are two usages of this function.  One is with *cacheSize == 0 to query the size
+    // of the cache, and one is with an appropriate buffer to retrieve the cache contents.
+    // VK_INCOMPLETE in the first case is an expected output.  In the second case, VK_INCOMPLETE is
+    // also acceptable and the resulting buffer will contain valid value by spec.  Angle currently
+    // ensures *cacheSize to be either 0 or of enough size, therefore VK_INCOMPLETE is not expected.
+    angle::Result result = angle::Result::Stop();
+    ANGLE_VK_TRY_ALLOW_INCOMPLETE(
+        context, vkGetPipelineCacheData(context->getDevice(), mHandle, cacheSize, cacheData),
+        result);
+
+    return result;
+}
+
+// Pipeline implementation.
+Pipeline::Pipeline()
+{
+}
+
+void Pipeline::destroy(VkDevice device)
+{
+    if (valid())
+    {
+        vkDestroyPipeline(device, mHandle, nullptr);
+        mHandle = VK_NULL_HANDLE;
+    }
+}
+
+angle::Result Pipeline::initGraphics(Context *context,
+                                     const VkGraphicsPipelineCreateInfo &createInfo,
+                                     const PipelineCache &pipelineCacheVk)
+{
+    ASSERT(!valid());
+    ANGLE_VK_TRY(context,
+                 vkCreateGraphicsPipelines(context->getDevice(), pipelineCacheVk.getHandle(), 1,
+                                           &createInfo, nullptr, &mHandle));
     return angle::Result::Continue();
 }
 
@@ -1019,7 +1060,8 @@ void MemoryProperties::destroy()
 angle::Result MemoryProperties::findCompatibleMemoryIndex(
     Context *context,
     const VkMemoryRequirements &memoryRequirements,
-    VkMemoryPropertyFlags memoryPropertyFlags,
+    VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+    VkMemoryPropertyFlags *memoryPropertyFlagsOut,
     uint32_t *typeIndexOut) const
 {
     ASSERT(mMemoryProperties.memoryTypeCount > 0 && mMemoryProperties.memoryTypeCount <= 32);
@@ -1032,9 +1074,10 @@ angle::Result MemoryProperties::findCompatibleMemoryIndex(
     {
         ASSERT(memoryIndex < mMemoryProperties.memoryTypeCount);
 
-        if ((mMemoryProperties.memoryTypes[memoryIndex].propertyFlags & memoryPropertyFlags) ==
-            memoryPropertyFlags)
+        if ((mMemoryProperties.memoryTypes[memoryIndex].propertyFlags &
+             requestedMemoryPropertyFlags) == requestedMemoryPropertyFlags)
         {
+            *memoryPropertyFlagsOut = mMemoryProperties.memoryTypes[memoryIndex].propertyFlags;
             *typeIndexOut = static_cast<uint32_t>(memoryIndex);
             return angle::Result::Continue();
         }
@@ -1059,9 +1102,8 @@ void StagingBuffer::destroy(VkDevice device)
 
 angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUsage usage)
 {
-    VkBufferCreateInfo createInfo;
+    VkBufferCreateInfo createInfo    = {};
     createInfo.sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    createInfo.pNext                 = nullptr;
     createInfo.flags                 = 0;
     createInfo.size                  = size;
     createInfo.usage                 = GetStagingBufferUsageFlags(usage);
@@ -1073,7 +1115,8 @@ angle::Result StagingBuffer::init(Context *context, VkDeviceSize size, StagingUs
         (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     ANGLE_TRY(mBuffer.init(context, createInfo));
-    ANGLE_TRY(AllocateBufferMemory(context, flags, &mBuffer, &mDeviceMemory));
+    VkMemoryPropertyFlags flagsOut = 0;
+    ANGLE_TRY(AllocateBufferMemory(context, flags, &flagsOut, &mBuffer, &mDeviceMemory));
     mSize = static_cast<size_t>(size);
     return angle::Result::Continue();
 }
@@ -1084,12 +1127,52 @@ void StagingBuffer::dumpResources(Serial serial, std::vector<vk::GarbageObject> 
     mDeviceMemory.dumpResources(serial, garbageQueue);
 }
 
+// QueryPool implementation.
+QueryPool::QueryPool()
+{
+}
+
+void QueryPool::destroy(VkDevice device)
+{
+    if (valid())
+    {
+        vkDestroyQueryPool(device, mHandle, nullptr);
+        mHandle = VK_NULL_HANDLE;
+    }
+}
+
+angle::Result QueryPool::init(Context *context, const VkQueryPoolCreateInfo &createInfo)
+{
+    ASSERT(!valid());
+    ANGLE_VK_TRY(context, vkCreateQueryPool(context->getDevice(), &createInfo, nullptr, &mHandle));
+    return angle::Result::Continue();
+}
+
+angle::Result QueryPool::getResults(Context *context,
+                                    uint32_t firstQuery,
+                                    uint32_t queryCount,
+                                    size_t dataSize,
+                                    void *data,
+                                    VkDeviceSize stride,
+                                    VkQueryResultFlags flags) const
+{
+    angle::Result result = angle::Result::Stop();
+    ANGLE_VK_TRY_ALLOW_NOT_READY(context,
+                                 vkGetQueryPoolResults(context->getDevice(), mHandle, firstQuery,
+                                                       queryCount, dataSize, data, stride, flags),
+                                 result);
+
+    return result;
+}
+
 angle::Result AllocateBufferMemory(vk::Context *context,
-                                   VkMemoryPropertyFlags memoryPropertyFlags,
+                                   VkMemoryPropertyFlags requestedMemoryPropertyFlags,
+                                   VkMemoryPropertyFlags *memoryPropertyFlagsOut,
                                    Buffer *buffer,
                                    DeviceMemory *deviceMemoryOut)
 {
-    return AllocateBufferOrImageMemory(context, memoryPropertyFlags, buffer, deviceMemoryOut);
+    return AllocateBufferOrImageMemory(context, requestedMemoryPropertyFlags,
+                                       memoryPropertyFlagsOut, buffer, deviceMemoryOut);
 }
 
 angle::Result AllocateImageMemory(vk::Context *context,
@@ -1097,7 +1180,9 @@ angle::Result AllocateImageMemory(vk::Context *context,
                                   Image *image,
                                   DeviceMemory *deviceMemoryOut)
 {
-    return AllocateBufferOrImageMemory(context, memoryPropertyFlags, image, deviceMemoryOut);
+    VkMemoryPropertyFlags memoryPropertyFlagsOut = 0;
+    return AllocateBufferOrImageMemory(context, memoryPropertyFlags, &memoryPropertyFlagsOut, image,
+                                       deviceMemoryOut);
 }
 
 angle::Result InitShaderAndSerial(Context *context,
@@ -1105,9 +1190,8 @@ angle::Result InitShaderAndSerial(Context *context,
                                   const uint32_t *shaderCode,
                                   size_t shaderCodeSize)
 {
-    VkShaderModuleCreateInfo createInfo;
+    VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.pNext    = nullptr;
     createInfo.flags    = 0;
     createInfo.codeSize = shaderCodeSize;
     createInfo.pCode    = shaderCode;
@@ -1191,6 +1275,9 @@ void GarbageObject::destroy(VkDevice device)
             break;
         case HandleType::CommandPool:
             vkDestroyCommandPool(device, reinterpret_cast<VkCommandPool>(mHandle), nullptr);
+            break;
+        case HandleType::QueryPool:
+            vkDestroyQueryPool(device, reinterpret_cast<VkQueryPool>(mHandle), nullptr);
             break;
         default:
             UNREACHABLE();

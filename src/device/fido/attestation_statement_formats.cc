@@ -153,6 +153,14 @@ bool FidoAttestationStatement::
   return false;
 }
 
+base::Optional<base::span<const uint8_t>>
+FidoAttestationStatement::GetLeafCertificate() const {
+  if (x509_certificates_.empty()) {
+    return base::nullopt;
+  }
+  return x509_certificates_[0];
+}
+
 PackedAttestationStatement::PackedAttestationStatement(
     CoseAlgorithmIdentifier algorithm,
     std::vector<uint8_t> signature,
@@ -199,6 +207,14 @@ bool PackedAttestationStatement::
   }
 
   return false;
+}
+
+base::Optional<base::span<const uint8_t>>
+PackedAttestationStatement::GetLeafCertificate() const {
+  if (x509_certificates_.empty()) {
+    return base::nullopt;
+  }
+  return x509_certificates_[0];
 }
 
 }  // namespace device

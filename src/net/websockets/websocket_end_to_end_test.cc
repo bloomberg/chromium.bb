@@ -266,8 +266,9 @@ class WebSocketEndToEndTest : public TestWithScopedTaskEnvironment {
   // ConnectAndWait(). This method is for the use of tests that need the
   // URLRequestContext initialised before calling ConnectAndWait().
   void InitialiseContext() {
-    context_.set_proxy_delegate(proxy_delegate_.get());
     context_.Init();
+    context_.proxy_resolution_service()->SetProxyDelegate(
+        proxy_delegate_.get());
     initialised_context_ = true;
   }
 

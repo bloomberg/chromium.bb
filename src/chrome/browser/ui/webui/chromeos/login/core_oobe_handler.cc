@@ -16,6 +16,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/configuration_keys.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -103,14 +105,13 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
   TabletModeClient* tablet_mode_client = TabletModeClient::Get();
   tablet_mode_client->AddObserver(this);
 
-  OobeConfiguration::Get()->AddObserver(this);
-
   // |connector| may be null in tests.
   auto* connector = ash_util::GetServiceManagerConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);
   }
+  OobeConfiguration::Get()->AddAndFireObserver(this);
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -177,7 +178,6 @@ void CoreOobeHandler::Initialize() {
   UpdateDeviceRequisition();
   UpdateKeyboardState();
   UpdateClientAreaSize();
-  UpdateOobeConfiguration();
 }
 
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -226,6 +226,8 @@ void CoreOobeHandler::RegisterMessages() {
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
   AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
+  AddCallback("startDemoModeSetupForTesting",
+              &CoreOobeHandler::HandleStartDemoModeSetupForTesting);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -583,11 +585,9 @@ void CoreOobeHandler::UpdateKeyboardState() {
   // KeyboardController in the browser process under MASH.
   if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->enabled()) {
-      const bool is_keyboard_shown = keyboard_controller->IsKeyboardVisible();
-      ShowControlBar(!is_keyboard_shown);
-      SetVirtualKeyboardShown(is_keyboard_shown);
-    }
+    const bool is_keyboard_shown = keyboard_controller->IsKeyboardVisible();
+    ShowControlBar(!is_keyboard_shown);
+    SetVirtualKeyboardShown(is_keyboard_shown);
   }
 }
 
@@ -602,14 +602,12 @@ void CoreOobeHandler::UpdateClientAreaSize() {
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {
-  UpdateOobeConfiguration();
-}
-
-void CoreOobeHandler::UpdateOobeConfiguration() {
-  if (OobeConfiguration::Get()) {
-    CallJSOrDefer("updateOobeConfiguration",
-                  OobeConfiguration::Get()->GetConfiguration());
-  }
+  base::Value configuration(base::Value::Type::DICTIONARY);
+  chromeos::configuration::FilterConfiguration(
+      OobeConfiguration::Get()->GetConfiguration(),
+      chromeos::configuration::ConfigurationHandlerSide::HANDLER_JS,
+      configuration);
+  CallJSOrDefer("updateOobeConfiguration", configuration);
 }
 
 void CoreOobeHandler::OnAccessibilityStatusChanged(
@@ -683,6 +681,24 @@ void CoreOobeHandler::HandleSetupDemoMode() {
   WizardController* wizard_controller = WizardController::default_controller();
   if (wizard_controller && !wizard_controller->login_screen_started()) {
     wizard_controller->StartDemoModeSetup();
+  }
+}
+
+void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
+    const std::string& demo_config) {
+  DemoSession::DemoModeConfig config;
+  if (demo_config == "online") {
+    config = DemoSession::DemoModeConfig::kOnline;
+  } else if (demo_config == "offline") {
+    config = DemoSession::DemoModeConfig::kOffline;
+  } else {
+    NOTREACHED() << "Unknown demo config passed for tests";
+  }
+
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->SimulateDemoModeSetupForTesting(config);
+    wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
   }
 }
 

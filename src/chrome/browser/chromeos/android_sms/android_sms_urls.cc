@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
+#include "chromeos/chromeos_features.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -18,34 +19,37 @@ namespace android_sms {
 namespace {
 
 // NOTE: Using internal staging server until changes roll out to prod.
-const char kDefaultAndroidMessagesUrl[] =
+const char kAndroidMessagesSandboxUrl[] =
     "https://android-messages.sandbox.google.com/";
 
-// NOTE: Using experiment mods until changes roll out to prod.
-const char kExperimentUrlParams[] =
-    "?e=DittoServiceWorker,DittoPwa,DittoIndexedDb";
+const char kAndroidMessagesProdUrl[] = "https://messages.android.com/";
 
-GURL GetURLInternal(bool with_experiments) {
+const char kUrlParams[] = "?DefaultToPersistent=true";
+
+GURL GetURLInternal(bool with_params) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   std::string url_string =
       command_line->GetSwitchValueASCII(switches::kAlternateAndroidMessagesUrl);
 
+  bool use_prod_url = base::FeatureList::IsEnabled(
+      chromeos::features::kAndroidMessagesProdEndpoint);
   if (url_string.empty())
-    url_string = std::string(kDefaultAndroidMessagesUrl);
-  if (with_experiments)
-    url_string += std::string(kExperimentUrlParams);
+    url_string = std::string(use_prod_url ? kAndroidMessagesProdUrl
+                                          : kAndroidMessagesSandboxUrl);
+  if (with_params)
+    url_string += kUrlParams;
   return GURL(url_string);
 }
 
 }  // namespace
 
 GURL GetAndroidMessagesURL() {
-  return GetURLInternal(false /* with_experiments */);
+  return GetURLInternal(false /* with_params */);
 }
 
-GURL GetAndroidMessagesURLWithExperiments() {
-  return GetURLInternal(true /* with_experiments */);
+GURL GetAndroidMessagesURLWithParams() {
+  return GetURLInternal(true /* with_params */);
 }
 
 }  // namespace android_sms

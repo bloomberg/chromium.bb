@@ -139,7 +139,8 @@ void CrashMetricsReporter::CrashDumpProcessed(
                                 !has_valid_dump && !info.normal_termination;
   const bool renderer_visible = info.renderer_has_visible_clients;
   const bool renderer_subframe = info.renderer_was_subframe;
-  const bool renderer_virtual_oom = info.blink_oom_metrics.virtual_memory_oom;
+  const bool renderer_allocation_failed =
+      info.blink_oom_metrics.allocation_failed;
   const uint64_t private_footprint_kb =
       info.blink_oom_metrics.current_private_footprint_kb;
   const uint64_t swap_kb = info.blink_oom_metrics.current_swap_kb;
@@ -152,12 +153,13 @@ void CrashMetricsReporter::CrashDumpProcessed(
   }
 
   if (info.process_type == content::PROCESS_TYPE_RENDERER &&
-      !intentional_kill && !info.normal_termination && renderer_virtual_oom) {
-    ReportCrashCount(ProcessedCrashCounts::kRendererVirtualMemoryOomAll,
+      !intentional_kill && !info.normal_termination &&
+      renderer_allocation_failed) {
+    ReportCrashCount(ProcessedCrashCounts::kRendererAllocationFailureAll,
                      &reported_counts);
     if (app_foreground && renderer_visible)
       ReportCrashCount(
-          ProcessedCrashCounts::kRendererForegroundVisibleVirtualMemoryOom,
+          ProcessedCrashCounts::kRendererForegroundVisibleAllocationFailure,
           &reported_counts);
   }
 

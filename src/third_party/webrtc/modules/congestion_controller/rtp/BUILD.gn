@@ -36,6 +36,7 @@ rtc_static_library("congestion_controller") {
     "../:congestion_controller",
     "../..:module_api",
     "../../..:webrtc_common",
+    "../../../api/transport:goog_cc",
     "../../../api/transport:network_control",
     "../../../rtc_base:checks",
     "../../../rtc_base:rate_limiter",
@@ -44,13 +45,10 @@ rtc_static_library("congestion_controller") {
     "../../../rtc_base:sequenced_task_checker",
     "../../../rtc_base/experiments:congestion_controller_experiment",
     "../../../system_wrappers",
-    "../../../system_wrappers:field_trial_api",
-    "../../../system_wrappers:metrics_api",
-    "../../../system_wrappers:runtime_enabled_features_api",
+    "../../../system_wrappers:field_trial",
     "../../pacing",
     "../../remote_bitrate_estimator",
     "../../rtp_rtcp:rtp_rtcp_format",
-    "../goog_cc",
     "//third_party/abseil-cpp/absl/memory",
   ]
 
@@ -70,6 +68,7 @@ rtc_static_library("transport_feedback") {
 
   deps = [
     "../..:module_api",
+    "../../../api/transport:network_control",
     "../../../rtc_base:checks",
     "../../../rtc_base:rtc_base_approved",
     "../../../system_wrappers",

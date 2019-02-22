@@ -8,10 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
-
+#include "base/mac/scoped_cftyperef.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -20,12 +21,13 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "url/gurl.h"
@@ -38,8 +40,6 @@ namespace {
 // The path in the temp directory containing documents that are to be opened in
 // other applications.
 static NSString* const kDocumentsTempPath = @"OpenIn";
-
-static const int kHTTPResponseCodeSucceeded = 200;
 
 // Duration of the show/hide animation for the |openInToolbar_|.
 const NSTimeInterval kOpenInToolbarAnimationDuration = 0.2;
@@ -63,24 +63,43 @@ const CGFloat kOverlayedViewLabelWidthPercentage = 0.7;
 // Bottom margin for the label displayed on the |overlayedView_|.
 const CGFloat kOverlayedViewLabelBottomMargin = 60;
 
+// Logs the result of the download process after the user taps "open in" button.
+void LogOpenInDownloadResult(const OpenInDownloadResult result) {
+  UMA_HISTOGRAM_ENUMERATION("IOS.OpenIn.DownloadResult", result);
+}
+
+// Returns true if the file located at |url| is a valid PDF file.
+bool HasValidPdfAtUrl(NSURL* _Nullable url) {
+  if (!url)
+    return false;
+  base::ScopedCFTypeRef<CGPDFDocumentRef> document(
+      CGPDFDocumentCreateWithURL((__bridge CFURLRef)url));
+  return document;
+}
+
 }  // anonymous namespace
 
-@interface OpenInController () {
+@interface OpenInController ()<CRWWebViewScrollViewProxyObserver> {
   // AlertCoordinator for showing an alert if no applications were found to open
   // the current document.
   AlertCoordinator* _alertCoordinator;
 }
 
-// URLFetcher delegate method called when |fetcher_| completes a request.
-- (void)urlFetchDidComplete:(const net::URLFetcher*)source;
+// Property storing the Y content offset the scroll view the last time it was
+// updated. Used to know in which direction the scroll view is scrolling.
+@property(nonatomic, assign) CGFloat previousScrollViewOffset;
+
+// SimpleURLLoader completion callback, when |urlLoader_| completes a request.
+- (void)urlLoadDidComplete:(const base::FilePath&)file_path;
 // Ensures the destination directory is created and any contained obsolete files
 // are deleted. Returns YES if the directory is created successfully.
 + (BOOL)createDestinationDirectoryAndRemoveObsoleteFiles;
 // Starts downloading the file at path |kDocumentsTempPath| with the name
 // |suggestedFilename_|.
 - (void)startDownload;
-// Shows the overlayed toolbar |openInToolbar_|.
-- (void)showOpenInToolbar;
+// Shows the overlayed toolbar |openInToolbar_|. If |withTimer| is YES, it would
+// be hidden after a certain amount of time.
+- (void)showOpenInToolbarWithTimer:(BOOL)withTimer;
 // Hides the overlayed toolbar |openInToolbar_|.
 - (void)hideOpenInToolbar;
 // Called when there is a tap on the |webController_|'s view to display the
@@ -113,15 +132,9 @@ const CGFloat kOverlayedViewLabelBottomMargin = 60;
 
 // Bridge to deliver method calls from C++ to the |OpenInController| class.
 class OpenInControllerBridge
-    : public net::URLFetcherDelegate,
-      public base::RefCountedThreadSafe<OpenInControllerBridge> {
+    : public base::RefCountedThreadSafe<OpenInControllerBridge> {
  public:
   explicit OpenInControllerBridge(OpenInController* owner) : owner_(owner) {}
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    DCHECK(owner_);
-    [owner_ urlFetchDidComplete:source];
-  }
 
   BOOL CreateDestinationDirectoryAndRemoveObsoleteFiles(void) {
     return [OpenInController createDestinationDirectoryAndRemoveObsoleteFiles];
@@ -150,7 +163,7 @@ class OpenInControllerBridge
 
  protected:
   friend base::RefCountedThreadSafe<OpenInControllerBridge>;
-  ~OpenInControllerBridge() override {}
+  virtual ~OpenInControllerBridge() {}
 
  private:
   __weak OpenInController* owner_;
@@ -178,15 +191,15 @@ class OpenInControllerBridge
   // Suggested filename for the document.
   NSString* suggestedFilename_;
 
-  // Fetcher used to redownload the document and save it in the sandbox.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // Loader used to redownload the document and save it in the sandbox.
+  std::unique_ptr<network::SimpleURLLoader> urlLoader_;
 
   // CRWWebController used to check if the tap is not on a link and the
   // |openInToolbar_| should be displayed.
   CRWWebController* webController_;
 
-  // URLRequestContextGetter needed for the URLFetcher.
-  scoped_refptr<net::URLRequestContextGetter> requestContext_;
+  // URLLoaderFactory instance needed for URLLoader.
+  scoped_refptr<network::SharedURLLoaderFactory> urlLoaderFactory_;
 
   // Spinner view displayed while the file is downloading.
   UIView* overlayedView_;
@@ -208,12 +221,14 @@ class OpenInControllerBridge
 }
 
 @synthesize baseView = _baseView;
+@synthesize previousScrollViewOffset = _previousScrollViewOffset;
 
-- (id)initWithRequestContext:(net::URLRequestContextGetter*)requestContext
-               webController:(CRWWebController*)webController {
+- (id)initWithURLLoaderFactory:
+          (scoped_refptr<network::SharedURLLoaderFactory>)urlLoaderFactory
+                 webController:(CRWWebController*)webController {
   self = [super init];
   if (self) {
-    requestContext_ = requestContext;
+    urlLoaderFactory_ = std::move(urlLoaderFactory);
     webController_ = webController;
     tapRecognizer_ = [[UITapGestureRecognizer alloc]
         initWithTarget:self
@@ -222,6 +237,7 @@ class OpenInControllerBridge
     sequencedTaskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
     isOpenInMenuDisplayed_ = NO;
+    _previousScrollViewOffset = 0;
   }
   return self;
 }
@@ -233,8 +249,9 @@ class OpenInControllerBridge
   [webController_ addGestureRecognizerToWebView:tapRecognizer_];
   [self openInToolbar].alpha = 0.0f;
   [self.baseView addSubview:[self openInToolbar]];
+  [webController_.webViewProxy.scrollViewProxy addObserver:self];
 
-  [self showOpenInToolbar];
+  [self showOpenInToolbarWithTimer:NO];
 }
 
 - (void)disable {
@@ -244,12 +261,14 @@ class OpenInControllerBridge
     bridge_->OnOwnerDisabled();
   bridge_ = nil;
   [webController_ removeGestureRecognizerFromWebView:tapRecognizer_];
+  [webController_.webViewProxy.scrollViewProxy removeObserver:self];
+  self.previousScrollViewOffset = 0;
   [[self openInToolbar] removeFromSuperview];
   [documentController_ dismissMenuAnimated:NO];
   [documentController_ setDelegate:nil];
   documentURL_ = GURL();
   suggestedFilename_ = nil;
-  fetcher_.reset();
+  urlLoader_.reset();
 }
 
 - (void)detachFromWebController {
@@ -268,23 +287,30 @@ class OpenInControllerBridge
     if (isOpenInToolbarDisplayed_) {
       [self hideOpenInToolbar];
     } else {
-      [self showOpenInToolbar];
+      [self showOpenInToolbarWithTimer:YES];
     }
   }
 }
 
-- (void)showOpenInToolbar {
-  if ([openInTimer_ isValid]) {
-    [openInTimer_ setFireDate:([NSDate dateWithTimeIntervalSinceNow:
-                                           kOpenInToolbarDisplayDuration])];
+- (void)showOpenInToolbarWithTimer:(BOOL)withTimer {
+  if (withTimer) {
+    if ([openInTimer_ isValid]) {
+      [openInTimer_ setFireDate:([NSDate dateWithTimeIntervalSinceNow:
+                                             kOpenInToolbarDisplayDuration])];
+    } else {
+      openInTimer_ =
+          [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
+                                           target:self
+                                         selector:@selector(hideOpenInToolbar)
+                                         userInfo:nil
+                                          repeats:NO];
+    }
   } else {
-    openInTimer_ =
-        [NSTimer scheduledTimerWithTimeInterval:kOpenInToolbarDisplayDuration
-                                         target:self
-                                       selector:@selector(hideOpenInToolbar)
-                                       userInfo:nil
-                                        repeats:NO];
-    OpenInToolbar* openInToolbar = [self openInToolbar];
+    [openInTimer_ invalidate];
+  }
+
+  OpenInToolbar* openInToolbar = [self openInToolbar];
+  if (!isOpenInToolbarDisplayed_) {
     openInToolbar.bottomMarginConstraint.active = YES;
     [UIView animateWithDuration:kOpenInToolbarAnimationDuration
                      animations:^{
@@ -351,13 +377,17 @@ class OpenInControllerBridge
     bridge_ = new OpenInControllerBridge(self);
 
   // Download the document and save it at |filePath|.
-  fetcher_ = net::URLFetcher::Create(0, documentURL_, net::URLFetcher::GET,
-                                     bridge_.get());
-  fetcher_->SetRequestContext(requestContext_.get());
-  fetcher_->SetLoadFlags(net::LOAD_SKIP_CACHE_VALIDATION);
-  fetcher_->SaveResponseToFileAtPath(
-      base::FilePath(base::SysNSStringToUTF8(filePath)), sequencedTaskRunner_);
-  fetcher_->Start();
+  auto resourceRequest = std::make_unique<network::ResourceRequest>();
+  resourceRequest->url = documentURL_;
+  resourceRequest->load_flags = net::LOAD_SKIP_CACHE_VALIDATION;
+
+  urlLoader_ = network::SimpleURLLoader::Create(std::move(resourceRequest),
+                                                NO_TRAFFIC_ANNOTATION_YET);
+  urlLoader_->DownloadToFile(urlLoaderFactory_.get(),
+                             base::BindOnce(^(base::FilePath filePath) {
+                               [self urlLoadDidComplete:filePath];
+                             }),
+                             base::FilePath(base::SysNSStringToUTF8(filePath)));
 }
 
 - (void)handleTapOnOverlayedView:(UIGestureRecognizer*)gestureRecognizer {
@@ -405,9 +435,9 @@ class OpenInControllerBridge
   if (!webController_)
     return;
 
-  if (requestContext_.get()) {
-    // |requestContext_| is nil only if this is called from a unit test, in
-    // which case the |documentController_| was set already.
+  if (!documentController_) {
+    // If this is called from a unit test, |documentController_| was set
+    // already.
     documentController_ =
         [UIDocumentInteractionController interactionControllerWithURL:fileURL];
   }
@@ -420,25 +450,20 @@ class OpenInControllerBridge
       [documentController_ presentOpenInMenuFromRect:anchorLocation_
                                               inView:[webController_ view]
                                             animated:YES];
-  if (requestContext_.get()) {
-    [self removeOverlayedView];
-    if (!success) {
-      if (IsIPadIdiom())
-        [self hideOpenInToolbar];
-      NSString* errorMessage =
-          l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN_NO_APPS_REGISTERED);
-      [self showErrorWithMessage:errorMessage];
-    } else {
-      isOpenInMenuDisplayed_ = YES;
-    }
+  [self removeOverlayedView];
+  if (!success) {
+    if (IsIPadIdiom())
+      [self hideOpenInToolbar];
+    NSString* errorMessage =
+        l10n_util::GetNSStringWithFixup(IDS_IOS_OPEN_IN_NO_APPS_REGISTERED);
+    [self showErrorWithMessage:errorMessage];
+  } else {
+    isOpenInMenuDisplayed_ = YES;
   }
 }
 
 - (void)showDownloadOverlayView {
-  UIViewController* topViewController =
-      [[[UIApplication sharedApplication] keyWindow] rootViewController];
-  UIView* topView = topViewController.view;
-  overlayedView_ = [[UIView alloc] initWithFrame:[topView bounds]];
+  overlayedView_ = [[UIView alloc] initWithFrame:[self.baseView bounds]];
   [overlayedView_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleHeight)];
   UIView* grayBackgroundView =
@@ -487,9 +512,8 @@ class OpenInControllerBridge
               action:@selector(handleTapOnOverlayedView:)];
   [tapRecognizer setDelegate:self];
   [overlayedView_ addGestureRecognizer:tapRecognizer];
-
   [overlayedView_ setAlpha:0.0];
-  [topView addSubview:overlayedView_];
+  [self.baseView addSubview:overlayedView_];
   UIView* overlayedView = overlayedView_;
   [UIView animateWithDuration:kOverlayViewAnimationDuration
                    animations:^{
@@ -509,7 +533,9 @@ class OpenInControllerBridge
 #pragma mark -
 #pragma mark File management
 
-- (void)removeDocumentAtPath:(NSString*)path {
+- (void)removeDocumentAtPath:(nullable NSString*)path {
+  if (!path)
+    return;
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
@@ -570,33 +596,28 @@ class OpenInControllerBridge
   return YES;
 }
 
-#pragma mark -
-#pragma mark URLFetcher delegate method
-
-- (void)urlFetchDidComplete:(const net::URLFetcher*)fetcher {
-  DCHECK(fetcher);
-  if (requestContext_.get())
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  base::FilePath filePath;
-  if (fetcher->GetResponseCode() == kHTTPResponseCodeSucceeded &&
-      fetcher->GetResponseAsFilePath(true, &filePath)) {
-    NSURL* fileURL =
-        [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
-    if (downloadCanceled_) {
-      sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
-                                       [self
-                                           removeDocumentAtPath:[fileURL path]];
-                                     }));
-    } else {
-      [self presentOpenInMenuForFileAtURL:fileURL];
-    }
-  } else if (!downloadCanceled_) {
+- (void)urlLoadDidComplete:(const base::FilePath&)filePath {
+  NSURL* fileURL = nil;
+  if (!filePath.empty())
+    fileURL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(filePath.value())];
+  if (!downloadCanceled_ && HasValidPdfAtUrl(fileURL)) {
+    LogOpenInDownloadResult(OpenInDownloadResult::kSucceeded);
+    [self presentOpenInMenuForFileAtURL:fileURL];
+    return;
+  }
+  sequencedTaskRunner_->PostTask(FROM_HERE, base::BindOnce(^{
+                                   [self removeDocumentAtPath:fileURL.path];
+                                 }));
+  OpenInDownloadResult download_result = OpenInDownloadResult::kCanceled;
+  if (!downloadCanceled_) {
+    download_result = OpenInDownloadResult::kFailed;
     if (IsIPadIdiom())
       [self hideOpenInToolbar];
     [self removeOverlayedView];
     [self showErrorWithMessage:l10n_util::GetNSStringWithFixup(
                                    IDS_IOS_OPEN_IN_FILE_DOWNLOAD_FAILED)];
   }
+  LogOpenInDownloadResult(download_result);
 }
 
 #pragma mark -
@@ -648,6 +669,27 @@ class OpenInControllerBridge
 
   CGPoint location = [gestureRecognizer locationInView:[self openInToolbar]];
   return ![[self openInToolbar] pointInside:location withEvent:nil];
+}
+
+#pragma mark - CRWWebViewScrollViewProxyObserver
+
+- (void)webViewScrollViewDidScroll:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  // Store the values.
+  CGFloat previousScrollOffset = self.previousScrollViewOffset;
+  CGFloat currentScrollOffset = webViewScrollViewProxy.contentOffset.y;
+  self.previousScrollViewOffset = currentScrollOffset;
+
+  if (previousScrollOffset - currentScrollOffset > 0) {
+    if (!isOpenInToolbarDisplayed_ ||
+        (isOpenInToolbarDisplayed_ && [openInTimer_ isValid])) {
+      // Shows the OpenInToolbar only if it isn't displayed, or if it is
+      // displayed with a timer to have the timer reset.
+      [self showOpenInToolbarWithTimer:YES];
+    }
+  } else if (webViewScrollViewProxy.dragging) {
+    [self hideOpenInToolbar];
+  }
 }
 
 #pragma mark - TestingAditions

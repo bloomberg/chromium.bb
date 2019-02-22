@@ -364,20 +364,20 @@ void VertexArray::setElementArrayBuffer(const Context *context, Buffer *buffer)
     {
         mState.mElementArrayBuffer->onNonTFBindingChanged(context, -1);
     }
+    mState.mElementArrayBuffer.set(context, buffer);
     if (buffer)
     {
-        buffer->onNonTFBindingChanged(context, 1);
         mElementArrayBufferObserverBinding.bind(buffer->getImplementation());
+        buffer->onNonTFBindingChanged(context, 1);
     }
     else
     {
         mElementArrayBufferObserverBinding.bind(nullptr);
     }
-    mState.mElementArrayBuffer.set(context, buffer);
     mDirtyBits.set(DIRTY_BIT_ELEMENT_ARRAY_BUFFER);
 }
 
-gl::Error VertexArray::syncState(const Context *context)
+angle::Result VertexArray::syncState(const Context *context)
 {
     if (mDirtyBits.any())
     {
@@ -394,7 +394,7 @@ gl::Error VertexArray::syncState(const Context *context)
         memset(&mDirtyAttribBits, 0, sizeof(mDirtyAttribBits));
         memset(&mDirtyBindingBits, 0, sizeof(mDirtyBindingBits));
     }
-    return gl::NoError();
+    return angle::Result::Continue();
 }
 
 void VertexArray::onBindingChanged(const Context *context, int incr)
@@ -454,6 +454,7 @@ void VertexArray::onSubjectStateChange(const gl::Context *context,
             if (!IsElementArrayBufferSubjectIndex(index))
             {
                 updateCachedMappedArrayBuffers(&mState.mVertexBindings[index]);
+                onStateChange(context, angle::SubjectMessage::RESOURCE_MAPPED);
             }
             break;
 
@@ -463,6 +464,7 @@ void VertexArray::onSubjectStateChange(const gl::Context *context,
             if (!IsElementArrayBufferSubjectIndex(index))
             {
                 updateCachedMappedArrayBuffers(&mState.mVertexBindings[index]);
+                onStateChange(context, angle::SubjectMessage::RESOURCE_UNMAPPED);
             }
             break;
 

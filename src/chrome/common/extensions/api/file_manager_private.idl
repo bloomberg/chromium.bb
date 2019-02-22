@@ -736,10 +736,21 @@ callback GetDirectorySizeCallback = void(double size);
 // |entries| Recently modified entries.
 callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 
+// |entries| Entries shared with crostini container.
+callback GetCrostiniSharedPathsCallback =
+    void([instanceOf = Entry] object[] entries);
+
 // |status| Result of starting the install
 // |failure_reason| Reason for failure for a 'failed' status
 callback InstallLinuxPackageCallback = void(
     InstallLinuxPackageResponse response, DOMString failure_reason);
+
+// |result| String representing the detected coding system.
+callback DetectCharacterEncodingCallback = void(DOMString result);
+
+// |thumbnailDataUrl| A data URL for the thumbnail as a PNG; |thumbnailDataUrl|
+// is empty if no thumbnail was available.
+callback GetThumbnailCallback = void(DOMString thumbnailDataUrl);
 
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
@@ -1010,13 +1021,6 @@ interface Functions {
   static void requestWebStoreAccessToken(
       RequestWebStoreAccessTokenCallback callback);
 
-  // Requests a share dialog url for the specified file.
-  // |entry| The entry to share.
-  // |callback|
-  [nocompile]
-  static void getShareUrl([instanceof=Entry] object entry,
-                          GetUrlCallback callback);
-
   // Requests a download url to download the file contents.
   // |entry| The entry to download.
   // |callback|
@@ -1109,12 +1113,40 @@ interface Functions {
 
   // Starts and mounts crostini container.
   // |callback|
-  static void mountCrostiniContainer(SimpleCallback callback);
+  static void mountCrostini(SimpleCallback callback);
+
+  // Shares directory with crostini container.
+  // |entry| Entry of the directory to share.
+  // |callback|
+  [nocompile]
+  static void sharePathWithCrostini(
+      [instanceof=DirectoryEntry] object entry, SimpleCallback callback);
+
+  // Returns list of paths shared with crostini container.
+  [nocompile]
+  static void getCrostiniSharedPaths(GetCrostiniSharedPathsCallback callback);
 
   // Starts installation of a Linux package.
   [nocompile]
   static void installLinuxPackage([instanceof=Entry] object entry,
                                   InstallLinuxPackageCallback callback);
+
+  // For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
+  // returns a thumbnail appropriate for file list or grid views; otherwise,
+  // returns a thumbnail appropriate for quickview.
+  [nocompile]
+  static void getThumbnail([instanceOf=FileEntry] object entry,
+                           boolean cropToSquare,
+                           GetThumbnailCallback callback);
+
+  // Returns a guessed character encoding of a hex-encoded string. Every 2
+  // characters of |bytes| represent one byte by 2-digit hexadecimal number.
+  // The result is preferred MIME name of the detected character encoding
+  // system. It is slightly different from IANA name.
+  // See third_party/ced/src/util/encodings/encodings.cc
+  // Returns an empty string if failed.
+  static DOMString detectCharacterEncoding(DOMString bytes,
+    DetectCharacterEncodingCallback callback);
 };
 
 interface Events {

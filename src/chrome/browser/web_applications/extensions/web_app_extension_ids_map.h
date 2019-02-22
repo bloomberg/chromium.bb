@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 class GURL;
 class PrefService;
@@ -21,7 +22,8 @@ class PrefRegistrySyncable;
 
 namespace web_app {
 
-// A Prefs-backed map from web app URLs to Chrome extension IDs.
+// A Prefs-backed map from web app URLs to Chrome extension IDs and their
+// InstallSources.
 //
 // This lets us determine, given a web app's URL, whether that web app is
 // already installed.
@@ -29,16 +31,24 @@ class ExtensionIdsMap {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // TODO(nigeltao): delete this after M72 has branched.
+  //
+  // This is public only for testing.
+  static void UpgradeFromM70Format(PrefService* pref_service);
+
   static bool HasExtensionId(const PrefService* pref_service,
                              const std::string& extension_id);
 
-  // Returns the URLs of the apps that were installed as policy-installed apps.
-  static std::vector<GURL> GetPolicyInstalledAppUrls(Profile* profile);
+  // Returns the URLs of the apps that were installed from |install_source|.
+  static std::vector<GURL> GetInstalledAppUrls(Profile* profile,
+                                               InstallSource install_source);
 
   explicit ExtensionIdsMap(PrefService* pref_service);
 
-  void Insert(const GURL& url, const std::string& extension_id);
-  base::Optional<std::string> Lookup(const GURL& url);
+  void Insert(const GURL& url,
+              const std::string& extension_id,
+              InstallSource install_source);
+  base::Optional<std::string> LookupExtensionId(const GURL& url);
 
  private:
   PrefService* pref_service_;

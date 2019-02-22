@@ -6,12 +6,12 @@
 #define UI_BASE_IME_INFOLIST_ENTRY_H_
 
 #include "base/strings/string16.h"
-#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ime/ui_base_ime_types_export.h"
 
 namespace ui {
 
 // The data model of infolist window.
-struct UI_BASE_IME_EXPORT InfolistEntry {
+struct UI_BASE_IME_TYPES_EXPORT InfolistEntry {
   base::string16 title;
   base::string16 body;
   bool highlighted;

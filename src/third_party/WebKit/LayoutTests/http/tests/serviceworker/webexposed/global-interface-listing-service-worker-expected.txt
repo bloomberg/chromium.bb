@@ -40,7 +40,8 @@ interface BackgroundFetchRegistration : EventTarget
     getter failureReason
     getter id
     getter onprogress
-    getter state
+    getter recordsAvailable
+    getter result
     getter uploadTotal
     getter uploaded
     method abort
@@ -1187,6 +1188,14 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDecoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter fatal
+    getter ignoreBOM
+    getter readable
+    getter writable
+    method constructor
 interface TextDetector
     attribute @@toStringTag
     method constructor
@@ -1196,31 +1205,16 @@ interface TextEncoder
     getter encoding
     method constructor
     method encode
+interface TextEncoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter readable
+    getter writable
+    method constructor
 interface TransformStream
     getter readable
     getter writable
     method constructor
-interface TrustedHTML
-    static method escape
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedScript
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedScriptURL
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
-interface TrustedURL
-    static method create
-    static method unsafelyCreate
-    attribute @@toStringTag
-    method constructor
-    method toString
 interface URL
     attribute @@toStringTag
     getter hash
@@ -1236,6 +1230,7 @@ interface URL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
@@ -3376,10 +3371,6 @@ interface WebGLSync
     method constructor
 interface WebGLTexture
     attribute @@toStringTag
-    getter lastUploadedVideoFrameWasSkipped
-    getter lastUploadedVideoHeight
-    getter lastUploadedVideoTimestamp
-    getter lastUploadedVideoWidth
     method constructor
 interface WebGLTransformFeedback
     attribute @@toStringTag
@@ -3445,6 +3436,7 @@ interface WorkerGlobalScope : EventTarget
     method createImageBitmap
     method fetch
     method importScripts
+    method queueMicrotask
     method requestAnimationFrame
     method setInterval
     method setTimeout
@@ -3478,6 +3470,7 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
+    getter serial
     getter storage
     getter usb
     getter userAgent
@@ -3489,6 +3482,7 @@ interface WritableStream
     method getWriter
 [GLOBAL OBJECT]
     attribute console
+    attribute globalThis
     attribute internals
     getter clients
     getter cookieStore

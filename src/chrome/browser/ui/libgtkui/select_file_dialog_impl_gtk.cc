@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
 #include "ui/aura/window_observer.h"
@@ -45,9 +44,9 @@ const char kOpenLabel[] = "_Open";
 const char kSaveLabel[] = "_Save";
 #else
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
-const char* kCancelLabel = GTK_STOCK_CANCEL;
-const char* kOpenLabel = GTK_STOCK_OPEN;
-const char* kSaveLabel = GTK_STOCK_SAVE;
+const char* const kCancelLabel = GTK_STOCK_CANCEL;
+const char* const kOpenLabel = GTK_STOCK_OPEN;
+const char* const kSaveLabel = GTK_STOCK_SAVE;
 G_GNUC_END_IGNORE_DEPRECATIONS;
 #endif
 
@@ -61,6 +60,12 @@ gboolean FileFilterCaseInsensitive(const GtkFileFilterInfo* file_info,
 // Deletes |data| when gtk_file_filter_add_custom() is done with it.
 void OnFileFilterDataDestroyed(std::string* file_extension) {
   delete file_extension;
+}
+
+// Runs DesktopWindowTreeHostX11::EnableEventListening() when the file-picker
+// is closed.
+void OnFilePickerDestroy(base::Closure* callback) {
+  callback->Run();
 }
 
 }  // namespace
@@ -87,24 +92,17 @@ SelectFileDialogImplGTK::SelectFileDialogImplGTK(
     : SelectFileDialogImpl(listener, std::move(policy)), preview_(nullptr) {}
 
 SelectFileDialogImplGTK::~SelectFileDialogImplGTK() {
-  // gtk_widget_destroy() causes OnFileChooserDestroy() to run, which erases the
-  // dialog in |dialogs_|.  To prevent |dialogs_| from being modified while
-  // iterating over it, it is necessary to make a copy of its GtkWidgets.
-  std::vector<GtkWidget*> dialogs;
-  dialogs.reserve(dialogs_.size());
-  for (auto& pair : dialogs_)
-    dialogs.push_back(pair.first);
-  for (GtkWidget* dialog : dialogs)
-    gtk_widget_destroy(dialog);
-  DCHECK(dialogs_.empty());
+  for (std::set<aura::Window*>::iterator iter = parents_.begin();
+       iter != parents_.end(); ++iter) {
+    (*iter)->RemoveObserver(this);
+  }
+  while (dialogs_.begin() != dialogs_.end()) {
+    gtk_widget_destroy(*(dialogs_.begin()));
+  }
 }
 
 bool SelectFileDialogImplGTK::IsRunning(gfx::NativeWindow parent_window) const {
-  for (auto& pair : dialogs_) {
-    if (pair.second->parent == parent_window)
-      return true;
-  }
-  return false;
+  return parents_.find(parent_window) != parents_.end();
 }
 
 bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {
@@ -113,11 +111,17 @@ bool SelectFileDialogImplGTK::HasMultipleFileTypeChoicesImpl() {
 
 void SelectFileDialogImplGTK::OnWindowDestroying(aura::Window* window) {
   // Remove the |parent| property associated with the |dialog|.
-  for (auto& pair : dialogs_) {
-    if (pair.second->parent == window) {
-      pair.second->parent = nullptr;
-      window->RemoveObserver(this);
-    }
+  for (std::set<GtkWidget*>::iterator it = dialogs_.begin();
+       it != dialogs_.end(); ++it) {
+    aura::Window* parent = GetAuraTransientParent(*it);
+    if (parent == window)
+      ClearAuraTransientParent(*it);
+  }
+
+  std::set<aura::Window*>::iterator iter = parents_.find(window);
+  if (iter != parents_.end()) {
+    (*iter)->RemoveObserver(this);
+    parents_.erase(iter);
   }
 }
 
@@ -131,12 +135,10 @@ void SelectFileDialogImplGTK::SelectFileImpl(
     const base::FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
-  std::unique_ptr<WidgetData> widget_data = std::make_unique<WidgetData>();
-
   type_ = type;
   if (owning_window) {
     owning_window->AddObserver(this);
-    widget_data->parent = owning_window;
+    parents_.insert(owning_window);
   }
 
   std::string title_string = base::UTF16ToUTF8(title);
@@ -169,6 +171,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   }
   g_signal_connect(dialog, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), nullptr);
+  dialogs_.insert(dialog);
 
   preview_ = gtk_image_new();
   g_signal_connect(dialog, "destroy", G_CALLBACK(OnFileChooserDestroyThunk),
@@ -177,7 +180,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
                    this);
   gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(dialog), preview_);
 
-  widget_data->params = params;
+  params_map_[dialog] = params;
 
   // Disable input events handling in the host window to make this dialog modal.
   if (owning_window) {
@@ -187,15 +190,19 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       // been captured and by turning off event listening, it is never
       // released. So we manually ensure there is no current capture.
       host->ReleaseCapture();
-      widget_data->enable_event_listening =
+      std::unique_ptr<base::Closure> callback =
           views::DesktopWindowTreeHostX11::GetHostForXID(
               host->GetAcceleratedWidget())
               ->DisableEventListening();
+      // OnFilePickerDestroy() is called when |dialog| destroyed, which allows
+      // to invoke the callback function to re-enable event handling on the
+      // owning window.
+      g_object_set_data_full(
+          G_OBJECT(dialog), "callback", callback.release(),
+          reinterpret_cast<GDestroyNotify>(OnFilePickerDestroy));
       gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
     }
   }
-
-  dialogs_[dialog] = std::move(widget_data);
 
 #if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_show_all(dialog);
@@ -281,7 +288,7 @@ void SelectFileDialogImplGTK::FileSelected(GtkWidget* dialog,
     GSList* filters = gtk_file_chooser_list_filters(GTK_FILE_CHOOSER(dialog));
     int idx = g_slist_index(filters, selected_filter);
     g_slist_free(filters);
-    listener_->FileSelected(path, idx + 1, GetParamsForDialog(dialog));
+    listener_->FileSelected(path, idx + 1, PopParamsForDialog(dialog));
   }
   gtk_widget_destroy(dialog);
 }
@@ -292,12 +299,12 @@ void SelectFileDialogImplGTK::MultiFilesSelected(
   *last_opened_path_ = files[0].DirName();
 
   if (listener_)
-    listener_->MultiFilesSelected(files, GetParamsForDialog(dialog));
+    listener_->MultiFilesSelected(files, PopParamsForDialog(dialog));
   gtk_widget_destroy(dialog);
 }
 
 void SelectFileDialogImplGTK::FileNotSelected(GtkWidget* dialog) {
-  void* params = GetParamsForDialog(dialog);
+  void* params = PopParamsForDialog(dialog);
   if (listener_)
     listener_->FileSelectionCanceled(params);
   gtk_widget_destroy(dialog);
@@ -447,9 +454,12 @@ GtkWidget* SelectFileDialogImplGTK::CreateSaveAsDialog(
   return dialog;
 }
 
-void* SelectFileDialogImplGTK::GetParamsForDialog(GtkWidget* dialog) {
-  DCHECK(dialogs_.find(dialog) != dialogs_.end());
-  return dialogs_[dialog]->params;
+void* SelectFileDialogImplGTK::PopParamsForDialog(GtkWidget* dialog) {
+  std::map<GtkWidget*, void*>::iterator iter = params_map_.find(dialog);
+  DCHECK(iter != params_map_.end());
+  void* params = iter->second;
+  params_map_.erase(iter);
+  return params;
 }
 
 bool SelectFileDialogImplGTK::IsCancelResponse(gint response_id) {
@@ -533,18 +543,20 @@ void SelectFileDialogImplGTK::OnSelectMultiFileDialogResponse(GtkWidget* dialog,
 }
 
 void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
-  // There might be a case that |dialog| is already deleted
-  // in SelectFileDialogImplGTK::FileSelected.
-  // See https://crbug.com/880073.
-  if (!dialog)
-    return;
+  dialogs_.erase(dialog);
+
   // |parent| can be nullptr when closing the host window
   // while opening the file-picker.
-  aura::Window* parent = dialogs_[dialog]->parent;
-  if (parent)
-    parent->RemoveObserver(this);
-  std::move(*dialogs_[dialog]->enable_event_listening).Run();
-  dialogs_.erase(dialog);
+  aura::Window* parent = GetAuraTransientParent(dialog);
+  if (!parent)
+    return;
+  std::set<aura::Window*>::iterator iter = parents_.find(parent);
+  if (iter != parents_.end()) {
+    (*iter)->RemoveObserver(this);
+    parents_.erase(iter);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
@@ -577,9 +589,5 @@ void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
   gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(chooser),
                                              pixbuf ? TRUE : FALSE);
 }
-
-SelectFileDialogImplGTK::WidgetData::WidgetData() {}
-
-SelectFileDialogImplGTK::WidgetData::~WidgetData() {}
 
 }  // namespace libgtkui

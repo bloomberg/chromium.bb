@@ -248,7 +248,7 @@ void LengthListPropertyFunctions::SetLengthList(const CSSProperty& property,
       FillLayer* fill_layer = AccessFillLayerForPosition(property, style);
       FillLayer* prev = nullptr;
       FillLayerMethods fill_layer_methods(property);
-      for (size_t i = 0; i < length_list.size(); i++) {
+      for (wtf_size_t i = 0; i < length_list.size(); i++) {
         if (!fill_layer)
           fill_layer = prev->EnsureNext();
         (fill_layer->*fill_layer_methods.set_length)(length_list[i]);

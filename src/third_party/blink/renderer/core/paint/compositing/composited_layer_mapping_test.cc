@@ -1230,12 +1230,12 @@ TEST_F(CompositedLayerMappingTest,
   ASSERT_TRUE(scrolling_layer);
   ASSERT_TRUE(child_transform_layer);
 
-  EXPECT_FLOAT_EQ(30, main_graphics_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(40, main_graphics_layer->GetPosition().Y());
-  EXPECT_FLOAT_EQ(0, scrolling_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(0, scrolling_layer->GetPosition().Y());
-  EXPECT_FLOAT_EQ(20, child_transform_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(10, child_transform_layer->GetPosition().Y());
+  EXPECT_FLOAT_EQ(30, main_graphics_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(40, main_graphics_layer->GetPosition().y());
+  EXPECT_FLOAT_EQ(0, scrolling_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(0, scrolling_layer->GetPosition().y());
+  EXPECT_FLOAT_EQ(20, child_transform_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(10, child_transform_layer->GetPosition().y());
 
   // The non-perspective scroller should have no child transform and the
   // offset on the scroller layer directly.
@@ -1246,10 +1246,10 @@ TEST_F(CompositedLayerMappingTest,
   ASSERT_TRUE(scrolling_layer2);
   ASSERT_FALSE(mapping2->ChildTransformLayer());
 
-  EXPECT_FLOAT_EQ(30, main_graphics_layer2->GetPosition().X());
-  EXPECT_FLOAT_EQ(390, main_graphics_layer2->GetPosition().Y());
-  EXPECT_FLOAT_EQ(20, scrolling_layer2->GetPosition().X());
-  EXPECT_FLOAT_EQ(10, scrolling_layer2->GetPosition().Y());
+  EXPECT_FLOAT_EQ(30, main_graphics_layer2->GetPosition().x());
+  EXPECT_FLOAT_EQ(390, main_graphics_layer2->GetPosition().y());
+  EXPECT_FLOAT_EQ(20, scrolling_layer2->GetPosition().x());
+  EXPECT_FLOAT_EQ(10, scrolling_layer2->GetPosition().y());
 }
 
 TEST_F(CompositedLayerMappingTest, AncestorClippingMaskLayerUpdates) {
@@ -1698,8 +1698,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(120, layer_size.Width());
-  EXPECT_EQ(120, layer_size.Height());
+  EXPECT_EQ(120, layer_size.width());
+  EXPECT_EQ(120, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1779,8 +1779,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(120, layer_size.Width());
-  EXPECT_EQ(120, layer_size.Height());
+  EXPECT_EQ(120, layer_size.width());
+  EXPECT_EQ(120, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -1819,8 +1819,8 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
   auto layer_size = child_mapping->AncestorClippingMaskLayer()->Size();
-  EXPECT_EQ(160, layer_size.Width());
-  EXPECT_EQ(160, layer_size.Height());
+  EXPECT_EQ(160, layer_size.width());
+  EXPECT_EQ(160, layer_size.height());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -2285,13 +2285,13 @@ TEST_F(CompositedLayerMappingTest,
 
   // On the CompositedLayerMapping side however, the offset should have been
   // removed so that the compositor can take care of it.
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().Y());
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().y());
 
   // The child transform layer for the perspective shifting should also not be
   // moved by the sticky offset.
-  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().Y());
+  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(0, child_transform_layer->GetPosition().y());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -2325,8 +2325,8 @@ TEST_F(CompositedLayerMappingTest,
       FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().X());
-  EXPECT_FLOAT_EQ(100, main_graphics_layer->GetPosition().Y());
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().x());
+  EXPECT_FLOAT_EQ(100, main_graphics_layer->GetPosition().y());
 }
 
 TEST_F(CompositedLayerMappingTest,
@@ -2559,13 +2559,13 @@ TEST_F(CompositedLayerMappingTest, ForegroundLayerSizing) {
                       ->Layer()
                       ->GetCompositedLayerMapping();
   ASSERT_TRUE(mapping);
-  EXPECT_EQ(IntSize(120, 120), mapping->MainGraphicsLayer()->Size());
+  EXPECT_EQ(gfx::Size(120, 120), mapping->MainGraphicsLayer()->Size());
   ASSERT_TRUE(mapping->ClippingLayer());
-  EXPECT_EQ(FloatPoint(10, 10), mapping->ClippingLayer()->GetPosition());
-  EXPECT_EQ(IntSize(100, 100), mapping->ClippingLayer()->Size());
+  EXPECT_EQ(gfx::PointF(10, 10), mapping->ClippingLayer()->GetPosition());
+  EXPECT_EQ(gfx::Size(100, 100), mapping->ClippingLayer()->Size());
   ASSERT_TRUE(mapping->ForegroundLayer());
-  EXPECT_EQ(FloatPoint(0, 0), mapping->ForegroundLayer()->GetPosition());
-  EXPECT_EQ(IntSize(100, 100), mapping->ForegroundLayer()->Size());
+  EXPECT_EQ(gfx::PointF(0, 0), mapping->ForegroundLayer()->GetPosition());
+  EXPECT_EQ(gfx::Size(100, 100), mapping->ForegroundLayer()->Size());
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
@@ -2607,8 +2607,8 @@ TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
   ASSERT_TRUE(mapping);
   ASSERT_TRUE(mapping->ScrollingLayer());
   ASSERT_TRUE(mapping->ScrollingContentsLayer());
-  EXPECT_EQ(mapping->ScrollingLayer()->Size().Height(),
-            mapping->ScrollingContentsLayer()->Size().Height());
+  EXPECT_EQ(mapping->ScrollingLayer()->Size().height(),
+            mapping->ScrollingContentsLayer()->Size().height());
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScroll) {

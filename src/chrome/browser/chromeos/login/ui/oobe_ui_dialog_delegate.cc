@@ -22,7 +22,9 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -44,7 +46,7 @@ class OobeWebDialogView : public views::WebDialogView {
                     WebContentsHandler* handler)
       : views::WebDialogView(context, delegate, handler) {}
 
-  // views::WebDialogView:
+  // content::WebContentsDelegate:
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -60,6 +62,23 @@ class OobeWebDialogView : public views::WebDialogView {
     return MediaCaptureDevicesDispatcher::GetInstance()
         ->CheckMediaAccessPermission(render_frame_host, security_origin, type);
   }
+
+  bool TakeFocus(content::WebContents* source, bool reverse) override {
+    LoginScreenClient::Get()->login_screen()->FocusLoginShelf(reverse);
+    return true;
+  }
+
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override {
+    unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                          GetFocusManager());
+  }
+
+ private:
+  views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(OobeWebDialogView);
 };
 
 class CaptivePortalDialogDelegate
@@ -176,13 +195,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
-  // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsUsingWindowService()) {
-    keyboard_observer_.Add(keyboard::KeyboardController::Get());
-  } else {
-    NOTIMPLEMENTED();
-  }
+  keyboard_observer_.Add(ChromeKeyboardControllerClient::Get());
 
   accel_map_[ui::Accelerator(
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] = kAppLaunchBailout;
@@ -404,7 +417,7 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
   return true;
 }
 
-void OobeUIDialogDelegate::OnKeyboardVisibilityStateChanged(bool is_visible) {
+void OobeUIDialogDelegate::OnKeyboardVisibilityChanged(bool visible) {
   if (!dialog_widget_)
     return;
 

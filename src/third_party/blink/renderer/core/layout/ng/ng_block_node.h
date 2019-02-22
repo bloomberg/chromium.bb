@@ -29,11 +29,13 @@ struct NGLogicalOffset;
 class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   friend NGLayoutInputNode;
  public:
-  explicit NGBlockNode(LayoutBox*);
+  explicit NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
+
+  NGBlockNode(std::nullptr_t) : NGLayoutInputNode(nullptr) {}
 
   scoped_refptr<NGLayoutResult> Layout(
       const NGConstraintSpace& constraint_space,
-      NGBreakToken* break_token = nullptr);
+      const NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this node's border
@@ -63,6 +65,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGBoxStrut GetScrollbarSizes() const;
 
   NGLayoutInputNode FirstChild() const;
+
+  NGBlockNode GetRenderedLegend() const;
+  NGBlockNode GetFieldsetContent() const;
 
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
@@ -100,7 +105,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void PrepareForLayout();
 
   void FinishLayout(const NGConstraintSpace&,
-                    NGBreakToken*,
+                    const NGBreakToken*,
                     scoped_refptr<NGLayoutResult>);
 
   // After we run the layout algorithm, this function copies back the geometry
@@ -119,8 +124,8 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
                                  const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
       const NGPhysicalFragment& fragment,
-      const NGPhysicalOffset& fragment_offset,
-      const NGPhysicalOffset& additional_offset = NGPhysicalOffset());
+      const NGPhysicalOffset fragment_offset,
+      const NGPhysicalOffset additional_offset = NGPhysicalOffset());
 
   void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);
   LayoutUnit AtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,

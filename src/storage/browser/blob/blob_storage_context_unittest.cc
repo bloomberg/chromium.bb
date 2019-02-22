@@ -77,7 +77,8 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntry(disk_cache::Backend* cache,
     return nullptr;
   disk_cache::ScopedEntryPtr entry(temp_entry);
 
-  scoped_refptr<net::StringIOBuffer> iobuffer = new net::StringIOBuffer(data);
+  scoped_refptr<net::StringIOBuffer> iobuffer =
+      base::MakeRefCounted<net::StringIOBuffer>(data);
   rv = entry->WriteData(kTestDiskCacheStreamIndex, 0, iobuffer.get(),
                         iobuffer->size(), callback.callback(), false);
   EXPECT_EQ(static_cast<int>(data.size()), callback.GetResult(rv));
@@ -482,7 +483,7 @@ TEST_F(BlobStorageContextTest, AddFinishedBlob_LargeOffset) {
   ASSERT_TRUE(blob_data_handle2);
   std::unique_ptr<BlobDataSnapshot> data = blob_data_handle2->CreateSnapshot();
   ASSERT_EQ(1u, data->items().size());
-  const scoped_refptr<BlobDataItem> item = data->items()[0];
+  BlobDataItem* item = data->items()[0].get();
   EXPECT_EQ(kLargeSize - kBlobLength, item->offset());
   EXPECT_EQ(kBlobLength, item->length());
 

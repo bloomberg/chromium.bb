@@ -29,9 +29,19 @@ class PostProcessorFactory {
   // Checks if a library is a V1 or V2 post processor.
   static bool IsPostProcessorLibrary(const base::FilePath& library_path);
 
+  // Returns the preferred directory for 1P Post Processors.
+  static base::FilePath const GetPostProcessorDirectory();
+
+  // Returns the preferred directroy for 3P Post Processors.
+  static base::FilePath const GetOemPostProcessorDirectory();
+
   // Creates an instance of AudioPostProcessor2 or a wrapped AudioPostProcessor.
+  // By default, will attempt to find the library in
+  // /system/chrome/lib/processors/|library_name|. Will fall back to
+  // searching for /oem_cast_shlibs/processors/|library_name|, and finally
+  // searching for |library_name| in LD_LIBRARY_PATH.
   std::unique_ptr<AudioPostProcessor2> CreatePostProcessor(
-      const std::string& library_path,
+      const std::string& library_name,
       const std::string& config,
       int channels);
 

@@ -103,6 +103,20 @@ message StartVmRequest {
   string owner_id = 7;
 }
 
+enum VmStatus {
+  // Unknown status.
+  VM_STATUS_UNKNOWN = 0;
+
+  // The VM is already running.
+  VM_STATUS_RUNNING = 1;
+
+  // The VM is currently starting up.
+  VM_STATUS_STARTING = 2;
+
+  // The VM failed to startup.
+  VM_STATUS_FAILURE = 3;
+}
+
 // Information sent back by vm_concierge in response to a StartVm dbus message.
 message StartVmResponse {
   // If true, the VM was started successfully.  |vm_info| will have non-default
@@ -114,6 +128,10 @@ message StartVmResponse {
 
   // Information about the VM that was started, if successful.
   VmInfo vm_info = 3;
+
+  // Status of the VM. If VM_STATUS_RUNNING, it is not necessary to wait for a
+  // TremplinStartedSignal before starting a container in the VM.
+  VmStatus status = 4;
 }
 
 // Information that must be included with every StopVm dbus message.

@@ -17,11 +17,13 @@ config("webrunner_implementation") {
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
+  sandbox_policy = "app/sandbox_policy"
 }
 
 fuchsia_package_runner("webrunner") {
   package = ":webrunner_pkg"
   package_name_override = "web_runner"
+  install_only = true
   package_deps = [ [
         ":service_pkg",
         "chromium",
@@ -46,6 +48,7 @@ executable("webrunner_exe") {
 fuchsia_package("service_pkg") {
   binary = ":service_exe"
   package_name_override = "chromium"
+  sandbox_policy = "service/sandbox_policy"
 }
 
 executable("service_exe") {
@@ -64,6 +67,7 @@ executable("service_exe") {
 fuchsia_package_runner("service_runner") {
   package = ":service_pkg"
   package_name_override = "chromium"
+  install_only = true
 }
 
 component("service_lib") {
@@ -82,6 +86,7 @@ component("service_lib") {
     "//ui/ozone",
     "//ui/platform_window",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   data_deps = [
@@ -169,6 +174,9 @@ repack("service_pak") {
 test("webrunner_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
+    "browser/frame_impl_browsertest.cc",
+    "browser/test_common.cc",
+    "browser/test_common.h",
     "browser/webrunner_browser_test.cc",
     "browser/webrunner_browser_test.h",
     "browser/webrunner_test_launcher.cc",
@@ -206,20 +214,19 @@ test("webrunner_unittests") {
 fidl_library("fidl") {
   library_name = "web"
   namespace = "chromium"
-  namespace_path = "chromium"
 
   sources = [
     "fidl/context.fidl",
     "fidl/context_provider.fidl",
     "fidl/frame.fidl",
     "fidl/navigation_controller.fidl",
-    "fidl/navigation_state_change_observer.fidl",
+    "fidl/navigation_event_observer.fidl",
   ]
 
   public_deps = [
-    "//third_party/fuchsia-sdk:gfx",
-    "//third_party/fuchsia-sdk:sys",
-    "//third_party/fuchsia-sdk:viewsv1",
+    "//third_party/fuchsia-sdk/sdk:gfx",
+    "//third_party/fuchsia-sdk/sdk:sys",
+    "//third_party/fuchsia-sdk/sdk:viewsv1",
   ]
 }
 

@@ -163,14 +163,16 @@ TEST(FtraceConfigMuxerTest, TurnFtraceOnOff) {
       .Times(AnyNumber());
 
   EXPECT_CALL(ftrace, ReadOneCharFromFile("/root/tracing_on"))
-      .WillOnce(Return('0'));
+      .Times(2)
+      .WillRepeatedly(Return('0'));
   EXPECT_CALL(ftrace, WriteToFile("/root/buffer_size_kb", "512"));
   EXPECT_CALL(ftrace, WriteToFile("/root/trace_clock", "boot"));
   EXPECT_CALL(ftrace, WriteToFile("/root/tracing_on", "1"));
   EXPECT_CALL(ftrace,
               WriteToFile("/root/events/sched/sched_switch/enable", "1"));
-  FtraceConfigId id = model.RequestConfig(config);
+  FtraceConfigId id = model.SetupConfig(config);
   ASSERT_TRUE(id);
+  ASSERT_TRUE(model.ActivateConfig(id));
 
   const FtraceConfig* actual_config = model.GetConfig(id);
   EXPECT_TRUE(actual_config);
@@ -198,7 +200,7 @@ TEST(FtraceConfigMuxerTest, FtraceIsAlreadyOn) {
   // If someone is using ftrace already don't stomp on what they are doing.
   EXPECT_CALL(ftrace, ReadOneCharFromFile("/root/tracing_on"))
       .WillOnce(Return('1'));
-  FtraceConfigId id = model.RequestConfig(config);
+  FtraceConfigId id = model.SetupConfig(config);
   ASSERT_FALSE(id);
 }
 
@@ -219,12 +221,45 @@ TEST(FtraceConfigMuxerTest, Atrace) {
                   {"atrace", "--async_start", "--only_userspace", "sched"})))
       .WillOnce(Return(true));
 
-  FtraceConfigId id = model.RequestConfig(config);
+  FtraceConfigId id = model.SetupConfig(config);
   ASSERT_TRUE(id);
 
   const FtraceConfig* actual_config = model.GetConfig(id);
   EXPECT_TRUE(actual_config);
   EXPECT_THAT(actual_config->ftrace_events(), Contains("sched_switch"));
+  EXPECT_THAT(actual_config->ftrace_events(), Contains("print"));
+
+  EXPECT_CALL(atrace, RunAtrace(ElementsAreArray(
+                          {"atrace", "--async_stop", "--only_userspace"})))
+      .WillOnce(Return(true));
+  ASSERT_TRUE(model.RemoveConfig(id));
+}
+
+TEST(FtraceConfigMuxerTest, AtraceTwoApps) {
+  std::unique_ptr<ProtoTranslationTable> table = CreateFakeTable();
+  NiceMock<MockFtraceProcfs> ftrace;
+  MockRunAtrace atrace;
+
+  FtraceConfig config = CreateFtraceConfig({});
+  *config.add_atrace_apps() = "com.google.android.gms.persistent";
+  *config.add_atrace_apps() = "com.google.android.gms";
+
+  FtraceConfigMuxer model(&ftrace, table.get());
+
+  EXPECT_CALL(ftrace, ReadOneCharFromFile("/root/tracing_on"))
+      .WillOnce(Return('0'));
+  EXPECT_CALL(
+      atrace,
+      RunAtrace(ElementsAreArray(
+          {"atrace", "--async_start", "--only_userspace", "-a",
+           "com.google.android.gms.persistent,com.google.android.gms"})))
+      .WillOnce(Return(true));
+
+  FtraceConfigId id = model.SetupConfig(config);
+  ASSERT_TRUE(id);
+
+  const FtraceConfig* actual_config = model.GetConfig(id);
+  EXPECT_TRUE(actual_config);
   EXPECT_THAT(actual_config->ftrace_events(), Contains("print"));
 
   EXPECT_CALL(atrace, RunAtrace(ElementsAreArray(

@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/render_text.h"
@@ -285,10 +286,11 @@ hb_font_t* CreateHarfBuzzFont(sk_sp<SkTypeface> skia_face,
                               SkScalar text_size,
                               const FontRenderParams& params,
                               bool subpixel_rendering_suppressed) {
-  // TODO(ckocagil): This shouldn't grow indefinitely. Maybe use base::MRUCache?
-  static std::map<SkFontID, FaceCache> face_caches;
+  // TODO(https://crbug.com/890298): This shouldn't grow indefinitely.
+  // Maybe use base::MRUCache?
+  static base::NoDestructor<std::map<SkFontID, FaceCache>> face_caches;
 
-  FaceCache* face_cache = &face_caches[skia_face->uniqueID()];
+  FaceCache* face_cache = &(*face_caches)[skia_face->uniqueID()];
   if (face_cache->first.get() == NULL)
     face_cache->first.Init(skia_face.get());
 

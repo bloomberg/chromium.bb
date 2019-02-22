@@ -53,19 +53,16 @@ namespace blink {
 
 int GetRepetitionCountWithPolicyOverride(int actual_count,
                                          ImageAnimationPolicy policy) {
-  switch (policy) {
-    case kImageAnimationPolicyAllowed:
-      // Default policy, no count override.
-      return actual_count;
-    case kImageAnimationPolicyAnimateOnce:
-      // Only a single loop allowed.
-      return kAnimationLoopOnce;
-    case kImageAnimationPolicyNoAnimation:
-      // Dont animate.
-      return kAnimationNone;
+  if (actual_count == kAnimationNone ||
+      policy == kImageAnimationPolicyNoAnimation) {
+    return kAnimationNone;
   }
 
-  NOTREACHED();
+  if (actual_count == kAnimationLoopOnce ||
+      policy == kImageAnimationPolicyAnimateOnce) {
+    return kAnimationLoopOnce;
+  }
+
   return actual_count;
 }
 
@@ -89,8 +86,6 @@ bool BitmapImage::CurrentFrameHasSingleSecurityOrigin() const {
 
 void BitmapImage::DestroyDecodedData() {
   cached_frame_ = PaintImage();
-  if (decoder_)
-    decoder_->ClearCacheExceptFrame(kNotFound);
   NotifyMemoryChanged();
 }
 
@@ -128,6 +123,7 @@ PaintImage BitmapImage::CreatePaintImage() {
           .set_paint_image_generator(std::move(generator))
           .set_repetition_count(GetRepetitionCountWithPolicyOverride(
               RepetitionCount(), animation_policy_))
+          .set_is_high_bit_depth(decoder_->ImageIsHighBitDepth())
           .set_completion_state(completion_state)
           .set_reset_animation_sequence_id(reset_animation_sequence_id_);
 
@@ -208,8 +204,9 @@ Image::SizeAvailability BitmapImage::DataChanged(bool all_data_received) {
   // here as a sanity check.
   if (!all_data_received_ && all_data_received && decoder_ &&
       decoder_->Data() && decoder_->FilenameExtension() == "jpg" &&
-      IsSizeAvailable() && Size().Width() >= 100 && Size().Height() >= 100) {
+      IsSizeAvailable()) {
     BitmapImageMetrics::CountImageJpegDensity(
+        std::min(Size().Width(), Size().Height()),
         ImageDensityInCentiBpp(Size(), decoder_->Data()->size()));
   }
 

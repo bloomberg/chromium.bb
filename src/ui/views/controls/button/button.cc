@@ -170,6 +170,12 @@ void Button::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
   focus_painter_ = std::move(focus_painter);
 }
 
+void Button::SetHighlighted(bool bubble_visible) {
+  AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
+                                : views::InkDropState::DEACTIVATED,
+                 nullptr);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 

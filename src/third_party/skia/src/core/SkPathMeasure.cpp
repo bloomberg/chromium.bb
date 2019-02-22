@@ -536,6 +536,7 @@ SkScalar SkPathMeasure::getLength() {
     }
     if (SkScalarIsNaN(fLength)) {
         fLength = 0;
+        fSegments.reset(); // may contain inf or NaN, which will fail later
     }
     SkASSERT(fLength >= 0);
     return fLength;
@@ -671,9 +672,14 @@ bool SkPathMeasure::getSegment(SkScalar startD, SkScalar stopD, SkPath* dst,
     SkPoint  p;
     SkScalar startT, stopT;
     const Segment* seg = this->distanceToSegment(startD, &startT);
+    if (!SkScalarIsFinite(startT)) {
+        return false;
+    }
     const Segment* stopSeg = this->distanceToSegment(stopD, &stopT);
+    if (!SkScalarIsFinite(stopT)) {
+        return false;
+    }
     SkASSERT(seg <= stopSeg);
-
     if (startWithMoveTo) {
         compute_pos_tan(&fPts[seg->fPtIndex], seg->fType, startT, &p, nullptr);
         dst->moveTo(p);

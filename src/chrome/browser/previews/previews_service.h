@@ -16,6 +16,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace optimization_guide {
 class OptimizationGuideService;
 }
@@ -31,7 +35,7 @@ class PreviewsLitePageDecider;
 // on the UI thread.
 class PreviewsService : public KeyedService {
  public:
-  PreviewsService();
+  explicit PreviewsService(content::BrowserContext* browser_context);
   ~PreviewsService() override;
 
   // Initializes the UI Service. |previews_decider_impl| is the main previews IO
@@ -44,6 +48,10 @@ class PreviewsService : public KeyedService {
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const base::FilePath& profile_path);
+
+  // Allows the |previews_lite_page_decider_| to remove itself from observed
+  // classes.
+  void Shutdown() override;
 
   // The previews UI thread service.
   previews::PreviewsUIService* previews_ui_service() {

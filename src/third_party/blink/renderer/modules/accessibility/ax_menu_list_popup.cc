@@ -44,7 +44,7 @@ bool AXMenuListPopup::IsOffScreen() const {
   if (!parent_)
     return true;
 
-  return parent_->IsCollapsed();
+  return parent_->IsExpanded() == kExpandedCollapsed;
 }
 
 AXRestriction AXMenuListPopup::Restriction() const {
@@ -135,25 +135,24 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
       old_index < static_cast<int>(children_.size())) {
     AXObject* previous_child = children_[old_index].Get();
     cache.PostNotification(previous_child,
-                           AXObjectCacheImpl::kAXMenuListItemUnselected);
+                           ax::mojom::Event::kMenuListItemSelected);
   }
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
     AXObject* child = children_[option_index].Get();
-    cache.PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
-    cache.PostNotification(this, AXObjectCacheImpl::kAXActiveDescendantChanged);
-    cache.PostNotification(child, AXObjectCacheImpl::kAXMenuListItemSelected);
+    cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
+    cache.PostNotification(this, ax::mojom::Event::kActiveDescendantChanged);
+    cache.PostNotification(child, ax::mojom::Event::kMenuListItemSelected);
   }
 }
 
 void AXMenuListPopup::DidHide() {
   AXObjectCacheImpl& cache = AXObjectCache();
   AXObject* descendant = ActiveDescendant();
-  cache.PostNotification(this, AXObjectCacheImpl::kAXHide);
+  cache.PostNotification(this, ax::mojom::Event::kHide);
   if (descendant) {
-    cache.PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
-    cache.PostNotification(descendant,
-                           AXObjectCacheImpl::kAXMenuListItemUnselected);
+    cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
+    cache.PostNotification(descendant, ax::mojom::Event::kMenuListItemSelected);
   }
 }
 
@@ -162,14 +161,13 @@ void AXMenuListPopup::DidShow() {
     AddChildren();
 
   AXObjectCacheImpl& cache = AXObjectCache();
-  cache.PostNotification(this, AXObjectCacheImpl::kAXShow);
+  cache.PostNotification(this, ax::mojom::Event::kShow);
   int selected_index = GetSelectedIndex();
   if (selected_index >= 0 &&
       selected_index < static_cast<int>(children_.size())) {
     DidUpdateActiveOption(selected_index);
   } else {
-    cache.PostNotification(parent_,
-                           AXObjectCacheImpl::kAXFocusedUIElementChanged);
+    cache.PostNotification(parent_, ax::mojom::Event::kFocus);
   }
 }
 

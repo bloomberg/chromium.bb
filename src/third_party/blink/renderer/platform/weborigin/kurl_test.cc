@@ -776,11 +776,43 @@ TEST(KURLTest, LastPathComponent) {
 }
 
 TEST(KURLTest, IsHierarchical) {
-  const KURL url1("http://host/path/to/file.txt");
-  EXPECT_TRUE(url1.IsHierarchical());
+  // Note that it's debatable whether "filesystem" URLs are or hierarchical.
+  // They're currently registered in the url lib as standard; but the parsed
+  // url never has a valid hostname (the inner URL does)."
+  const char* standard_urls[] = {
+      "http://host/path/to/file.txt",
+      "ftp://andrew.cmu.edu/foo",
+      "file:///path/to/resource",
+      "file://hostname/etc/"
+      "filesystem:http://www.google.com/type/",
+      "filesystem:http://user:pass@google.com:21/blah#baz",
+  };
 
-  const KURL invalid_utf8("http://a@9%aa%:/path/to/file.txt");
-  EXPECT_FALSE(invalid_utf8.IsHierarchical());
+  for (const char* input : standard_urls) {
+    SCOPED_TRACE(input);
+    KURL url(input);
+    EXPECT_TRUE(url.IsHierarchical());
+    EXPECT_TRUE(url.CanSetHostOrPort());
+    EXPECT_TRUE(url.CanSetPathname());
+  }
+
+  const char* nonstandard_urls[] = {
+      "blob:null/guid-goes-here",
+      "blob:http://example.com/guid-goes-here",
+      "http://a@9%aa%:/path/to/file.txt",
+      "about:blank://hostname",
+      "about:blank",
+      "javascript:void(0);",
+      "data:text/html,greetings",
+  };
+
+  for (const char* input : nonstandard_urls) {
+    SCOPED_TRACE(input);
+    KURL url(input);
+    EXPECT_FALSE(url.IsHierarchical());
+    EXPECT_FALSE(url.CanSetHostOrPort());
+    EXPECT_FALSE(url.CanSetPathname());
+  }
 }
 
 TEST(KURLTest, PathAfterLastSlash) {

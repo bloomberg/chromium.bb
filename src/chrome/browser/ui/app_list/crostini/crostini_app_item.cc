@@ -34,11 +34,11 @@ CrostiniAppItem::CrostiniAppItem(
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
   } else {
-    SetDefaultPositionIfApplicable();
+    SetDefaultPositionIfApplicable(model_updater);
 
     // Crostini app is created from scratch. Move it to default folder.
     DCHECK(folder_id().empty());
-    SetChromeFolderId(kCrostiniFolderId);
+    SetChromeFolderId(crostini::kCrostiniFolderId);
   }
 
   // Set model updater last to avoid being called during construction.

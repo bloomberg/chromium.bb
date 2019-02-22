@@ -26,9 +26,10 @@ class ScopedCallingGLFromSkia {
 };
 
 template <typename R, typename... Args>
-GrGLFunction<R (*)(Args...)> gles_bind(R (GLES2Interface::*func)(Args...),
-                                       GLES2Interface* gles2_interface,
-                                       ContextSupport* context_support) {
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> gles_bind(
+    R (GLES2Interface::*func)(Args...),
+    GLES2Interface* gles2_interface,
+    ContextSupport* context_support) {
   if (context_support->HasGrContextSupport()) {
     return [func, context_support, gles2_interface](Args... args) {
       ScopedCallingGLFromSkia guard(context_support);

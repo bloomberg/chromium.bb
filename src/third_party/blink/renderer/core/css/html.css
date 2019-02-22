@@ -992,8 +992,7 @@ nobr {
     outline: auto 5px -webkit-focus-ring-color
 }
 
-/* Read-only text fields do not show a focus ring but do still receive focus */
-html:focus, body:focus, input[readonly]:focus {
+html:focus, body:focus {
     outline: none
 }
 

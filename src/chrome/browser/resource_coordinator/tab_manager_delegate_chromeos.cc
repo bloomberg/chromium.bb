@@ -31,6 +31,7 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -248,12 +249,8 @@ int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
 }
 
 int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
-    base::ProcessHandle pid) {
-  std::unique_ptr<base::ProcessMetrics> process_metrics(
-      base::ProcessMetrics::CreateProcessMetrics(pid));
-  base::ProcessMetrics::TotalsSummary summary =
-      process_metrics->GetTotalsSummary();
-  return summary.private_clean_kb + summary.private_dirty_kb + summary.swap_kb;
+    base::ProcessHandle handle) {
+  return GetPrivateMemoryKB(handle);
 }
 
 TabManagerDelegate::TabManagerDelegate(
@@ -539,9 +536,6 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
 
 bool TabManagerDelegate::KillTab(LifecycleUnit* lifecycle_unit,
                                  ::mojom::LifecycleUnitDiscardReason reason) {
-  DecisionDetails decision_details;
-  if (!lifecycle_unit->CanDiscard(reason, &decision_details))
-    return false;
   bool did_discard = lifecycle_unit->Discard(reason);
   return did_discard;
 }

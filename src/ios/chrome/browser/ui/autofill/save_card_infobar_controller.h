@@ -19,10 +19,8 @@ class AutofillSaveCardInfoBarDelegateMobile;
 @interface SaveCardInfoBarController : InfoBarController
 
 - (instancetype)initWithInfoBarDelegate:
-    (autofill::AutofillSaveCardInfoBarDelegateMobile*)delegate
+    (autofill::AutofillSaveCardInfoBarDelegateMobile*)infoBarDelegate
     NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

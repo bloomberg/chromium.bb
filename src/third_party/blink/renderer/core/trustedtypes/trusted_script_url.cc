@@ -4,18 +4,11 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 TrustedScriptURL::TrustedScriptURL(const KURL& url) : url_(url) {}
-
-TrustedScriptURL* TrustedScriptURL::unsafelyCreate(ScriptState* script_state,
-                                                   const String& url) {
-  return TrustedScriptURL::Create(
-      ExecutionContext::From(script_state)->CompleteURL(url));
-}
 
 String TrustedScriptURL::toString() const {
   return url_.GetString();

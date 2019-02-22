@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 
@@ -268,24 +269,12 @@ TEST_P(PaintPropertyTreeUpdateTest,
                    ->ScrollTranslation()
                    ->ScrollNode()
                    ->HasBackgroundAttachmentFixedDescendants());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
-                                                   ->FirstFragment()
-                                                   .PaintProperties()
-                                                   ->ScrollTranslation()
-                                                   ->ScrollNode()
-                                                   ->Parent());
-  } else {
-    // Pre-BGPT we don't create the visual viewport property nodes.
-    EXPECT_TRUE(overflow_b->GetLayoutObject()
-                    ->FirstFragment()
-                    .PaintProperties()
-                    ->ScrollTranslation()
-                    ->ScrollNode()
-                    ->Parent()
-                    ->IsRoot());
-  }
+  EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
+                                                 ->FirstFragment()
+                                                 .PaintProperties()
+                                                 ->ScrollTranslation()
+                                                 ->ScrollNode()
+                                                 ->Parent());
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflow_b->removeAttribute("class");
@@ -789,7 +778,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                           ->ScrollTranslation()
                           ->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(200, 200), scroll_node->ContentsSize());
 
   GetDocument().getElementById("content")->setAttribute(
       HTMLNames::styleAttr, "width: 200px; height: 300px");
@@ -799,20 +788,16 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
                              ->ScrollTranslation()
                              ->ScrollNode());
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 200, 300), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(200, 300), scroll_node->ContentsSize());
 }
 
 // The scrollbars are attached to the visual viewport but created by (and have
-// space saved by) the frame view. So we need to exclude them from the container
-// rect but also from the contents rect because we don't want to be able to
-// scroll into the region saved for scrollbars.
+// space saved by) the frame view. Conceptually, the scrollbars are part of the
+// scrollable content so they must be included in the contents rect. They must
+// also not be excluded from the container rect since they don't take away space
+// from the viewport's viewable area.
 TEST_P(PaintPropertyTreeUpdateTest,
-       ViewportContentsAndContainerRectsDoNotIncludeScrollbar) {
-  // Pre-BGPT we don't create the visual viewport property nodes.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-
+       ViewportContentsAndContainerRectsIncludeScrollbar) {
   SetBodyInnerHTML(R"HTML(
     <style>
       ::-webkit-scrollbar {width: 20px; height: 20px}
@@ -823,14 +808,9 @@ TEST_P(PaintPropertyTreeUpdateTest,
   VisualViewport& visual_viewport =
       GetDocument().GetPage()->GetVisualViewport();
 
-  // TODO(bokan): Viewport property node generation has been disabled
-  // temporarily with the flag off to diagnose https://crbug.com/868927.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(IntRect(0, 0, 780, 580),
-              visual_viewport.GetScrollNode()->ContainerRect());
-    EXPECT_EQ(IntRect(0, 0, 780, 580),
-              visual_viewport.GetScrollNode()->ContentsRect());
-  }
+  EXPECT_EQ(IntRect(0, 0, 800, 600),
+            visual_viewport.GetScrollNode()->ContainerRect());
+  EXPECT_EQ(IntSize(800, 600), visual_viewport.GetScrollNode()->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
@@ -1331,7 +1311,7 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   GetDocument().View()->Resize(300, 300);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  auto doc_snap_container_data = DocScroll()->SnapContainerData();
+  auto doc_snap_container_data = DocScroll()->GetSnapContainerData();
   ASSERT_TRUE(doc_snap_container_data);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().axis, SnapAxis::kBoth);
   EXPECT_EQ(doc_snap_container_data->scroll_snap_type().strictness,
@@ -1340,6 +1320,85 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   EXPECT_EQ(doc_snap_container_data->size(), 1u);
   EXPECT_EQ(doc_snap_container_data->at(0).rect,
             gfx::RectF(100, 700, 200, 200));
+}
+
+TEST_P(PaintPropertyTreeUpdateTest,
+       EffectAndClipWithNonContainedOutOfFlowDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="clip" style="overflow: hidden; width: 100px; height: 100px">
+      <div id="effect" style="opacity: 0.5">
+        <div id="descendant" style="position: fixed">Fixed</div>
+      </div>
+    </div>
+  )HTML");
+
+  const auto* clip_properties = PaintPropertiesForElement("clip");
+  EXPECT_NE(nullptr, clip_properties->OverflowClip());
+  const auto* effect_properties = PaintPropertiesForElement("effect");
+  ASSERT_NE(nullptr, effect_properties->Effect());
+  // The effect's OutputClip is nullptr because of the fixed descendant.
+  EXPECT_EQ(nullptr, effect_properties->Effect()->OutputClip());
+
+  auto* descendant = GetDocument().getElementById("descendant");
+  descendant->setAttribute(HTMLNames::styleAttr, "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(clip_properties->OverflowClip(),
+            effect_properties->Effect()->OutputClip());
+
+  descendant->setAttribute(HTMLNames::styleAttr, "position: absolute");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  // The effect's OutputClip is nullptr because of the absolute descendant.
+  EXPECT_EQ(nullptr, effect_properties->Effect()->OutputClip());
+}
+
+TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg1" filter="url(#filter)">
+      <filter id="filter">
+        <feImage id="image" href="#rect"/>
+      </filter>
+    </svg>
+    <svg id="svg2" style="perspective: 10px">
+      <rect id="rect" width="100" height="100" transform="translate(1)"/>
+    </svg>
+  )HTML");
+
+  const auto* svg2_properties = PaintPropertiesForElement("svg2");
+  EXPECT_NE(nullptr, svg2_properties->PaintOffsetTranslation());
+  EXPECT_EQ(nullptr, svg2_properties->Transform());
+  EXPECT_NE(nullptr, svg2_properties->Perspective());
+  EXPECT_EQ(svg2_properties->PaintOffsetTranslation(),
+            svg2_properties->Perspective()->Parent());
+
+  const auto* rect_properties = PaintPropertiesForElement("rect");
+  ASSERT_NE(nullptr, rect_properties->Transform());
+  EXPECT_EQ(svg2_properties->Perspective(),
+            rect_properties->Transform()->Parent());
+  EXPECT_EQ(TransformationMatrix().Translate(1, 0),
+            GeometryMapper::SourceToDestinationProjection(
+                rect_properties->Transform(),
+                svg2_properties->PaintOffsetTranslation()));
+
+  // Change filter which forward references rect, and insert a transform
+  // node above rect's transform.
+  GetDocument().getElementById("filter")->setAttribute("width", "20");
+  GetDocument().getElementById("svg2")->setAttribute("transform",
+                                                     "translate(2)");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_NE(nullptr, svg2_properties->Transform());
+  EXPECT_EQ(svg2_properties->PaintOffsetTranslation(),
+            svg2_properties->Transform()->Parent());
+  EXPECT_EQ(svg2_properties->Transform(),
+            svg2_properties->Perspective()->Parent());
+  EXPECT_EQ(svg2_properties->Perspective(),
+            rect_properties->Transform()->Parent());
+
+  // Ensure that GeometryMapper's cache is properly invalidated and updated.
+  EXPECT_EQ(TransformationMatrix().Translate(3, 0),
+            GeometryMapper::SourceToDestinationProjection(
+                rect_properties->Transform(),
+                svg2_properties->PaintOffsetTranslation()));
 }
 
 }  // namespace blink

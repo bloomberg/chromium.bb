@@ -30,6 +30,7 @@ class SuppressionGain {
                   int sample_rate_hz);
   ~SuppressionGain();
   void GetGain(
+      const std::array<float, kFftLengthBy2Plus1>& suppressor_input_spectrum,
       const std::array<float, kFftLengthBy2Plus1>& nearend_spectrum,
       const std::array<float, kFftLengthBy2Plus1>& echo_spectrum,
       const std::array<float, kFftLengthBy2Plus1>& residual_echo_spectrum,
@@ -63,12 +64,22 @@ class SuppressionGain {
       const std::array<float, kFftLengthBy2Plus1>& max_gain,
       std::array<float, kFftLengthBy2Plus1>* gain) const;
 
-  void LowerBandGain(bool stationary_with_low_power,
-                     const AecState& aec_state,
-                     const std::array<float, kFftLengthBy2Plus1>& nearend,
-                     const std::array<float, kFftLengthBy2Plus1>& echo,
-                     const std::array<float, kFftLengthBy2Plus1>& comfort_noise,
-                     std::array<float, kFftLengthBy2Plus1>* gain);
+  void LowerBandGain(
+      bool stationary_with_low_power,
+      const AecState& aec_state,
+      const std::array<float, kFftLengthBy2Plus1>& suppressor_input,
+      const std::array<float, kFftLengthBy2Plus1>& nearend,
+      const std::array<float, kFftLengthBy2Plus1>& residual_echo,
+      const std::array<float, kFftLengthBy2Plus1>& comfort_noise,
+      std::array<float, kFftLengthBy2Plus1>* gain);
+
+  void GetMinGain(rtc::ArrayView<const float> suppressor_input,
+                  rtc::ArrayView<const float> weighted_residual_echo,
+                  bool low_noise_render,
+                  bool saturated_echo,
+                  rtc::ArrayView<float> min_gain) const;
+
+  void GetMaxGain(rtc::ArrayView<float> max_gain) const;
 
   class LowNoiseRenderDetector {
    public:
@@ -91,13 +102,16 @@ class SuppressionGain {
     // Updates the state selection based on latest spectral estimates.
     void Update(rtc::ArrayView<const float> nearend_spectrum,
                 rtc::ArrayView<const float> residual_echo_spectrum,
-                rtc::ArrayView<const float> comfort_noise_spectrum);
+                rtc::ArrayView<const float> comfort_noise_spectrum,
+                bool initial_state);
 
    private:
     const float enr_threshold_;
+    const float enr_exit_threshold_;
     const float snr_threshold_;
     const int hold_duration_;
     const int trigger_threshold_;
+    const bool use_during_initial_phase_;
 
     bool nearend_state_ = false;
     int trigger_counter_ = 0;

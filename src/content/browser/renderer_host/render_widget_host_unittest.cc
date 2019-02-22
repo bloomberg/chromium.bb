@@ -40,6 +40,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -955,7 +956,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // The zoom has changed so host should send out a sync message
   process_->sink().ClearMessages();
@@ -965,7 +966,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_NEAR(new_zoom_level, host_->old_visual_properties_->zoom_level, 0.01);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
@@ -974,7 +975,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // No visual properties ACK if the physical backing gets set, but the view
   // bounds are zero.
@@ -992,7 +993,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
@@ -1002,7 +1003,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id = base::nullopt;
@@ -1024,7 +1025,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Send a update that's a visual properties ACK, but for the original_size we
   // sent. Since this isn't the second_size, the message handler should
@@ -1036,7 +1037,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Send the visual properties ACK for the latest size.
   process_->sink().ClearMessages();
@@ -1046,7 +1047,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a visual properties ACK (since the renderer won't ack empty sizes).
@@ -1058,7 +1059,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Send a rect that has no area but has either width or height set.
   process_->sink().ClearMessages();
@@ -1067,7 +1068,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
@@ -1075,7 +1076,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // A different size should be sent again, however.
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
@@ -1083,7 +1084,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // An invalid LocalSurfaceId should result in no change to the
   // |visual_properties_ack_pending_| bit.
@@ -1094,7 +1095,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(25, 25), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 }
 
 // Test that a resize event is sent if SynchronizeVisualProperties() is called
@@ -1111,7 +1112,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   screen_info.orientation_angle = 180;
@@ -1121,7 +1122,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   screen_info.device_scale_factor = 2.f;
@@ -1130,7 +1131,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   process_->sink().ClearMessages();
 
   // No screen change.
@@ -1138,7 +1139,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 }
 
 // Test for crbug.com/25097.  If a renderer crashes between a resize and the
@@ -1155,7 +1156,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
 
   // Simulate a renderer crash before the update message.  Ensure all the
   // visual properties ACK logic is cleared.  Must clear the view first so it
@@ -1192,10 +1193,10 @@ TEST_F(RenderWidgetHostTest, Background) {
 
   const IPC::Message* set_background =
       process_->sink().GetUniqueMessageMatching(
-          ViewMsg_SetBackgroundOpaque::ID);
+          WidgetMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
   std::tuple<bool> sent_background;
-  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  WidgetMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_FALSE(std::get<0>(sent_background));
 
   host_->SetView(nullptr);
@@ -1203,14 +1204,15 @@ TEST_F(RenderWidgetHostTest, Background) {
 }
 #endif
 
-// Test that we don't paint when we're hidden, but we still send the ACK. Most
-// of the rest of the painting is tested in the GetBackingStore* ones.
-TEST_F(RenderWidgetHostTest, HiddenPaint) {
+// Test that the RenderWidgetHost tells the renderer when it is hidden and
+// shown, and can accept a racey update from the renderer after hiding.
+TEST_F(RenderWidgetHostTest, HideShowMessages) {
   // Hide the widget, it should have sent out a message to the renderer.
   EXPECT_FALSE(host_->is_hidden_);
   host_->WasHidden();
   EXPECT_TRUE(host_->is_hidden_);
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_WasHidden::ID));
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(WidgetMsg_WasHidden::ID));
 
   // Send it an update as from the renderer.
   process_->sink().ClearMessages();
@@ -1224,13 +1226,9 @@ TEST_F(RenderWidgetHostTest, HiddenPaint) {
   host_->WasShown(false /* record_presentation_time */);
   EXPECT_FALSE(host_->is_hidden_);
 
-  // It should have sent out a restored message with a request to paint.
-  const IPC::Message* restored = process_->sink().GetUniqueMessageMatching(
-      ViewMsg_WasShown::ID);
-  ASSERT_TRUE(restored);
-  std::tuple<bool, base::TimeTicks> needs_repaint;
-  ViewMsg_WasShown::Read(restored, &needs_repaint);
-  EXPECT_TRUE(std::get<0>(needs_repaint));
+  // It should have sent out a restored message.
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(WidgetMsg_WasShown::ID));
 }
 
 TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
@@ -1563,7 +1561,16 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 // Test that the rendering timeout for newly loaded content fires when enough
 // time passes without receiving a new compositor frame. This test assumes
 // Surface Synchronization is off.
-TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
+// Disabled due to flakiness on Android.  See https://crbug.com/892700.
+#if defined(OS_ANDROID)
+#define MAYBE_NewContentRenderingTimeoutWithoutSurfaceSync \
+  DISABLED_NewContentRenderingTimeoutWithoutSurfaceSync
+#else
+#define MAYBE_NewContentRenderingTimeoutWithoutSurfaceSync \
+  NewContentRenderingTimeoutWithoutSurfaceSync
+#endif
+TEST_F(RenderWidgetHostTest,
+       NewContentRenderingTimeoutWithoutSurfaceSync_MAYBE) {
   // If Surface Synchronization is on, we have a separate code path for
   // cancelling new content rendering timeout that is tested separately.
   if (features::IsSurfaceSynchronizationEnabled())
@@ -2000,7 +2007,7 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
   // size has actually changed).
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(initial_size_, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 }
@@ -2011,7 +2018,7 @@ TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
   process_->sink().ClearMessages();
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-      ViewMsg_SynchronizeVisualProperties::ID));
+      WidgetMsg_SynchronizeVisualProperties::ID));
   EXPECT_EQ(original_size, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
 
@@ -2052,7 +2059,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token, messages));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2090,7 +2097,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token, messages));
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
@@ -2111,12 +2118,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
   EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2177,12 +2184,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -2203,12 +2210,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
   EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2249,7 +2256,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   host_->SetView(nullptr);
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2275,7 +2282,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   host_->Init();
 
   host_->OnMessageReceived(
-      ViewHostMsg_FrameSwapMessages(0, frame_token3, messages3));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token3, messages3));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 

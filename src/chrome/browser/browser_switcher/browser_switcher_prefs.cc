@@ -9,6 +9,16 @@
 namespace browser_switcher {
 namespace prefs {
 
+// Path to the executable of the alternative browser, or one of "${chrome}",
+// "${ie}", "${firefox}", "${opera}", "${safari}".
+const char kAlternativeBrowserPath[] =
+    "browser_switcher.alternative_browser_path";
+
+// Arguments to pass to the alternative browser when invoking it via
+// |ShellExecute()|.
+const char kAlternativeBrowserParameters[] =
+    "browser_switcher.alternative_browser_parameters";
+
 // List of host domain names to be opened in an alternative browser.
 const char kUrlList[] = "browser_switcher.url_list";
 
@@ -16,6 +26,8 @@ const char kUrlList[] = "browser_switcher.url_list";
 const char kUrlGreylist[] = "browser_switcher.url_greylist";
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kAlternativeBrowserPath, "");
+  registry->RegisterListPref(prefs::kAlternativeBrowserParameters);
   registry->RegisterListPref(prefs::kUrlList);
   registry->RegisterListPref(prefs::kUrlGreylist);
 }

@@ -33,7 +33,7 @@
 <translation id="7087282848513945231">Amt/region</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7393381084163773901">Adresse</translation>
-<translation id="7602447984296396718">Dette postnummer ser ikke ud til at passe til resten af denne adresse.</translation>
+<translation id="7602447984296396718">Dette postnummer ser ikke ud til at passe til resten af adressen.</translation>
 <translation id="7738983109397305830">Dette postnummer stemmer tilsyneladende ikke overens med resten af adressen. Kender du ikke dit postnummer? Find det <ph name="BEGIN_LINK" />her<ph name="END_LINK" />.</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="7805765407568469194">Landsby/township</translation>
@@ -42,6 +42,6 @@
 <translation id="8446364922515257065">Do/Si</translation>
 <translation id="8449204988444194299">Postby</translation>
 <translation id="8471101563037901452">Dette postnummer stemmer tilsyneladende ikke overens med resten af adressen. Kender du ikke dit postnummer? Find det <ph name="BEGIN_LINK" />her<ph name="END_LINK" />.</translation>
-<translation id="9104066683700680171">Dette postnummer ser ikke ud til at passe til resten af ​​denne adresse.</translation>
+<translation id="9104066683700680171">Dette postnummer ser ikke ud til at passe til resten af adressen.</translation>
 <translation id="9207002871037636573">Du skal angive et postnummer, f.eks. <ph name="EXAMPLE" />.</translation>
 </translationbundle>

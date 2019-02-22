@@ -82,6 +82,7 @@ class UkmRecorderImpl : public UkmRecorder {
   }
 
   // UkmRecorder:
+  void AddEntry(mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void UpdateAppURL(SourceId source_id, const GURL& url) override;
   void RecordNavigation(
@@ -126,8 +127,6 @@ class UkmRecorderImpl : public UkmRecorder {
 
   void RecordSource(std::unique_ptr<UkmSource> source);
 
-  void AddEntry(mojom::UkmEntryPtr entry) override;
-
   // Load sampling configurations from field-trial information.
   void LoadExperimentSamplingInfo();
 
@@ -136,6 +135,9 @@ class UkmRecorderImpl : public UkmRecorder {
 
   // Indicates whether recording is enabled for extensions.
   bool extensions_enabled_ = false;
+
+  // Indicates whether recording continuity has been broken since last report.
+  bool recording_is_continuous_ = true;
 
   // Indicates if sampling has been enabled.
   bool sampling_enabled_ = true;

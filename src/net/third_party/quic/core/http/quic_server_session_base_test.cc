@@ -67,19 +67,25 @@ class TestServerSession : public QuicServerSessionBase {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }
-    QuicSpdyStream* stream =
-        new QuicSimpleServerStream(id, this, quic_simple_server_backend_);
+    QuicSpdyStream* stream = new QuicSimpleServerStream(
+        id, this, BIDIRECTIONAL, quic_simple_server_backend_);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
 
-  QuicSpdyStream* CreateOutgoingDynamicStream() override {
+  QuicSpdyStream* CreateOutgoingBidirectionalStream() override {
+    DCHECK(false);
+    return nullptr;
+  }
+
+  QuicSpdyStream* CreateOutgoingUnidirectionalStream() override {
     if (!ShouldCreateOutgoingDynamicStream()) {
       return nullptr;
     }
 
     QuicSpdyStream* stream = new QuicSimpleServerStream(
-        GetNextOutgoingStreamId(), this, quic_simple_server_backend_);
+        GetNextOutgoingStreamId(), this, WRITE_UNIDIRECTIONAL,
+        quic_simple_server_backend_);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -124,6 +130,7 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
     ParsedQuicVersionVector supported_versions = SupportedVersions(GetParam());
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
+    connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<TestServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
         &compressed_certs_cache_, &memory_cache_backend_);
@@ -596,8 +603,7 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   chlo.SetVector(kCOPT, QuicTagVector{kSREJ});
   std::vector<ParsedQuicVersion> packet_version_list = {version};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      1, 0, true, false, 1,
-      QuicString(chlo.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()),
+      1, 0, true, false, 1, QuicString(chlo.GetSerialized().AsStringPiece()),
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
       PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
 

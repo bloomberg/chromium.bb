@@ -165,9 +165,6 @@ class TestMetadata(internal_only_model.CreateHookInternalOnlyModel):
   # Units of the child Rows of this test, or None if there are no child Rows.
   units = ndb.StringProperty(indexed=False)
 
-  # The last alerted revision is used to avoid duplicate alerts.
-  last_alerted_revision = ndb.IntegerProperty(indexed=False)
-
   # Whether or not the test has child rows. Set by hook on Row class put.
   has_rows = ndb.BooleanProperty(default=False, indexed=True)
 
@@ -275,7 +272,12 @@ class TestMetadata(internal_only_model.CreateHookInternalOnlyModel):
     kwargs['description'] = description[:_MAX_STRING_LENGTH]
     super(TestMetadata, self).__init__(*args, **kwargs)
 
-  def _pre_put_hook(self):
+  @ndb.synctasklet
+  def UpdateSheriff(self):
+    yield self.UpdateSheriffAsync()
+
+  @ndb.tasklet
+  def UpdateSheriffAsync(self):
     """This method is called before a TestMetadata is put into the datastore.
 
     Here, we check the key to make sure it is valid and check the sheriffs and
@@ -290,8 +292,9 @@ class TestMetadata(internal_only_model.CreateHookInternalOnlyModel):
 
     # Set the sheriff to the first sheriff (alphabetically by sheriff name)
     # that has a test pattern that matches this test.
+    sheriffs = yield sheriff_module.Sheriff.query().fetch_async()
     self.sheriff = None
-    for sheriff_entity in sheriff_module.Sheriff.query().fetch():
+    for sheriff_entity in sheriffs:
       for pattern in sheriff_entity.patterns:
         if utils.TestMatchesPattern(self, pattern):
           self.sheriff = sheriff_entity.key
@@ -303,7 +306,7 @@ class TestMetadata(internal_only_model.CreateHookInternalOnlyModel):
     # that more specifically matches the test are given higher priority.
     # ie. */*/*/foo is chosen over */*/*/*
     self.overridden_anomaly_config = None
-    anomaly_configs = anomaly_config.AnomalyConfig.query().fetch()
+    anomaly_configs = yield anomaly_config.AnomalyConfig.query().fetch_async()
     anomaly_data_list = []
     for e in anomaly_configs:
       for p in e.patterns:
@@ -413,6 +416,7 @@ class Row(ndb.Expando):
 
     if not parent_test.has_rows:
       parent_test.has_rows = True
+      yield parent_test.UpdateSheriffAsync()
       yield parent_test.put_async(**ctx_options)
 
 

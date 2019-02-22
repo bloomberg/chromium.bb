@@ -7,7 +7,21 @@ source_set("resources") {
     "engine_resources.h",
   ]
 
+  deps = [
+    "//base",
+  ]
+
   public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+  ]
+}
+
+source_set("dummy_resources") {
+  sources = [
+    "dummy_engine_resources.cc",
+  ]
+
+  deps = [
+    ":resources",
   ]
 }

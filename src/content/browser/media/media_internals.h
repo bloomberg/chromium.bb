@@ -75,6 +75,9 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   // Replay all saved media events.
   void SendHistoricalMediaEvents();
 
+  // Sends general audio information to each registered UpdateCallback.
+  void SendGeneralAudioInformation();
+
   // Sends all audio cached data to each registered UpdateCallback.
   void SendAudioStreamData();
 
@@ -121,10 +124,20 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   MediaInternals();
 
   // AudioFocusObserver implementation.
-  void OnFocusGained(media_session::mojom::MediaSessionPtr media_session,
+  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr media_session,
                      media_session::mojom::AudioFocusType type) override;
   void OnFocusLost(
-      media_session::mojom::MediaSessionPtr media_session) override;
+      media_session::mojom::MediaSessionInfoPtr media_session) override;
+
+  // Called when we receive the list of audio focus requests to display.
+  void DidGetAudioFocusRequestList(
+      std::vector<media_session::mojom::AudioFocusRequestStatePtr>);
+
+  // Called when we receive audio focus debug info to display for a single
+  // audio focus request.
+  void DidGetAudioFocusDebugInfo(
+      const std::string& id,
+      media_session::mojom::MediaSessionDebugInfoPtr info);
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.
@@ -152,6 +165,10 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
                                                    int render_process_id,
                                                    int render_frame_id);
 
+  // Holds a pointer to the media session service and it's debug interface.
+  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  media_session::mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
+
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
 
@@ -162,6 +179,9 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
   base::ListValue video_capture_capabilities_cached_data_;
 
   NotificationRegistrar registrar_;
+
+  // Must only be accessed on the UI thread.
+  base::DictionaryValue audio_focus_data_;
 
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;

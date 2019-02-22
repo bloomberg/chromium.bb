@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -121,9 +122,12 @@ class DownloadProtectionService {
     return download_request_timeout_ms_;
   }
 
-  DownloadFeedbackService* feedback_service() {
-    return feedback_service_.get();
-  }
+  // Checks the user permissions, and submits the downloaded file if
+  // appropriate. Returns whether the submission was successful.
+  bool MaybeBeginFeedbackForDownload(
+      Profile* profile,
+      download::DownloadItem* download,
+      DownloadCommands::Command download_command);
 
   // Registers a callback that will be run when a ClientDownloadRequest has
   // been formed.

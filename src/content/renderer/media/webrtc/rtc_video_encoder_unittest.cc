@@ -16,6 +16,7 @@
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
+#include "third_party/webrtc/rtc_base/timeutils.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -188,7 +189,7 @@ class RTCVideoEncoderTest
                        const webrtc::CodecSpecificInfo* codec_specific_info,
                        const webrtc::RTPFragmentationHeader* fragmentation) {
     DVLOG(3) << __func__;
-    EXPECT_EQ(rtp_timestamp, encoded_image._timeStamp);
+    EXPECT_EQ(rtp_timestamp, encoded_image.Timestamp());
     EXPECT_EQ(capture_time_ms, encoded_image.capture_time_ms_);
   }
 

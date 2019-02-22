@@ -39,7 +39,7 @@ class CompoundBufferTest : public testing::Test {
 
   // Following 5 methods are used with IterateOverPieces().
   void Append(int pos, int size) {
-    target_.Append(data_.get(), data_->data() + pos, size);
+    target_.Append(data_, data_->data() + pos, size);
   }
 
   void AppendCopyOf(int pos, int size) {
@@ -47,7 +47,7 @@ class CompoundBufferTest : public testing::Test {
   }
 
   void Prepend(int pos, int size) {
-    target_.Prepend(data_.get(), data_->data() + kDataSize - pos - size, size);
+    target_.Prepend(data_, data_->data() + kDataSize - pos - size, size);
   }
 
   void PrependCopyOf(int pos, int size) {
@@ -78,7 +78,7 @@ class CompoundBufferTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    data_ = new IOBuffer(kDataSize);
+    data_ = base::MakeRefCounted<IOBuffer>(kDataSize);
     for (int i = 0; i < kDataSize; ++i) {
       data_->data()[i] = i;
     }
@@ -170,7 +170,7 @@ class CompoundBufferTest : public testing::Test {
     const char* data = kTestData.data();
     for (int i = 0; i < segments; ++i) {
       int size = i % 2 == 0 ? 1 : 2;
-      result->Append(new net::WrappedIOBuffer(data), size);
+      result->Append(base::MakeRefCounted<net::WrappedIOBuffer>(data), size);
       data += size;
     }
     result->Lock();

@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/mojom/message_port/message_port.mojom";
+import "third_party/blink/public/mojom/messaging/cloneable_message.mojom";
 import "url/mojom/origin.mojom";
 
 // A pair of BroadcastChannelClient interfaces is used to represent a connection

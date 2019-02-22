@@ -9,12 +9,14 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/task/post_task.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/webdata_services/web_data_service_wrapper.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -81,7 +83,7 @@ WebViewWebDataServiceWrapperFactory::BuildServiceInstanceFor(
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path,
       ApplicationContext::GetInstance()->GetApplicationLocale(),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       base::Callback<void(syncer::ModelType)>(), base::DoNothing());
 }
 

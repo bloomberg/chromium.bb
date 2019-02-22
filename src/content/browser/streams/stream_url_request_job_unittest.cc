@@ -4,8 +4,8 @@
 
 #include "content/browser/streams/stream_url_request_job.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_metadata.h"
@@ -55,7 +55,9 @@ class StreamURLRequestJobTest : public testing::Test {
     StreamRegistry* registry_;
   };
 
-  StreamURLRequestJobTest() {}
+  StreamURLRequestJobTest()
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     registry_.reset(new StreamRegistry());
@@ -107,7 +109,7 @@ class StreamURLRequestJobTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<StreamRegistry> registry_;
 
   net::URLRequestContext url_request_context_;
@@ -120,8 +122,8 @@ TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData1));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData1);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -139,8 +141,8 @@ TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
   for (int i = 0; i < kBufferSize * 5; ++i)
     large_data.append(1, static_cast<char>(i % 256));
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(large_data));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(large_data);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -166,8 +168,8 @@ TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
 
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData2));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData2);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);
@@ -183,8 +185,8 @@ TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
   scoped_refptr<Stream> stream(
       new Stream(registry_.get(), nullptr, kStreamURL));
   stream->OnResponseStarted(*BuildResponseInfo());
-  scoped_refptr<net::StringIOBuffer> buffer(
-      new net::StringIOBuffer(kTestData2));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(kTestData2);
 
   stream->AddData(buffer, buffer->size());
   stream->Finalize(net::OK);

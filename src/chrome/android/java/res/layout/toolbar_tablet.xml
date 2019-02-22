@@ -14,7 +14,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow"
     android:layout_marginTop="@dimen/tab_strip_height"
-    android:background="@color/default_primary_color"
+    android:background="@color/modern_primary_color"
     android:paddingStart="@dimen/tablet_toolbar_start_padding" >
 
     <LinearLayout
@@ -28,39 +28,38 @@
             android:src="@drawable/btn_toolbar_home"
             android:contentDescription="@string/accessibility_toolbar_btn_home"
             android:visibility="gone"
-            app:chrometint="@color/dark_mode_tint" />
+            app:tint="@color/dark_mode_tint" />
 
-        <org.chromium.chrome.browser.widget.TintedImageButton
+        <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
-            app:chrometint="@color/dark_mode_tint" />
+            app:tint="@color/dark_mode_tint" />
 
-        <org.chromium.chrome.browser.widget.TintedImageButton
+        <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
             android:contentDescription="@string/accessibility_toolbar_btn_forward"
-            app:chrometint="@color/dark_mode_tint" />
+            app:tint="@color/dark_mode_tint" />
 
-        <org.chromium.chrome.browser.widget.TintedImageButton
+        <!-- The src will be set in onFinishInflate. -->
+        <android.support.v7.widget.AppCompatImageButton
             android:id="@+id/refresh_button"
             style="@style/ToolbarButton"
-            android:src="@drawable/btn_reload_stop"
             android:contentDescription="@string/accessibility_btn_refresh"
-            app:chrometint="@color/dark_mode_tint" />
+            tools:tint="@color/dark_mode_tint"
+            tools:src="@drawable/btn_reload_stop" />
 
         <org.chromium.chrome.browser.omnibox.LocationBarTablet
             android:id="@+id/location_bar"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="5dp"
-            android:layout_marginTop="5dp"
+            android:layout_height="@dimen/modern_toolbar_background_size"
             android:layout_weight="1"
-            android:layout_gravity="top|center"
-            android:background="@drawable/card_single"
-            android:paddingEnd="1dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/modern_toolbar_background"
+            android:paddingEnd="@dimen/location_bar_lateral_padding"
             android:paddingStart="2dp" />
 
         <ImageButton
@@ -69,17 +68,18 @@
             android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default"
             android:visibility="gone" />
 
-        <FrameLayout
+        <org.chromium.chrome.browser.toolbar.MenuButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/menu_button_wrapper" >
 
-            <org.chromium.chrome.browser.widget.TintedImageButton
+            <android.support.v7.widget.AppCompatImageButton
                 android:id="@+id/menu_button"
                 style="@style/ToolbarMenuButtonTablet"
                 android:src="@drawable/ic_more_vert_black_24dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_menu"
-                app:chrometint="@color/dark_mode_tint" />
+                android:layout_gravity="center"
+                app:tint="@color/dark_mode_tint" />
 
             <ImageView
                 android:id="@+id/menu_badge"
@@ -87,8 +87,9 @@
                 android:src="@drawable/badge_update_dark"
                 tools:ignore="ContentDescription"
                 android:importantForAccessibility="no"
+                android:layout_gravity="center"
                 android:visibility="invisible" />
 
-        </FrameLayout>
+        </org.chromium.chrome.browser.toolbar.MenuButton>
     </LinearLayout>
 </org.chromium.chrome.browser.toolbar.ToolbarTablet>

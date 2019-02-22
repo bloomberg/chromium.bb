@@ -25,7 +25,6 @@ class ExecuteCodeFunction : public UIThreadExtensionFunction {
   ~ExecuteCodeFunction() override;
 
   // ExtensionFunction implementation.
-  bool HasPermission() override;
   ResponseAction Run() override;
 
   enum InitResult {

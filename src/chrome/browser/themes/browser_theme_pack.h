@@ -170,6 +170,12 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Generates any frame colors which have not already been set.
   void GenerateFrameColors();
 
+  // Generates background color information for the background of window control
+  // buttons.  This can be used when drawing the window control/caption buttons
+  // to determine what color to draw the symbol, ensuring that it contrasts
+  // sufficiently with the background of the button.
+  void GenerateWindowControlButtonColor(ImageCache* images);
+
   // Creates the semi-transparent tab background images, putting the results
   // in |images|.  Also sets colors corresponding to these images if no explicit
   // color has been specified.  Must be called after GenerateFrameImages().

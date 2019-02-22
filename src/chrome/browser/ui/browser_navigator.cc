@@ -210,7 +210,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
             extensions::TabHelper::FromWebContents(params.source_contents);
         if (extensions_tab_helper && extensions_tab_helper->is_app()) {
           app_name = web_app::GenerateApplicationNameFromAppId(
-              extensions_tab_helper->extension_app()->id());
+              extensions_tab_helper->GetAppId());
         }
       }
 #endif
@@ -325,6 +325,8 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.started_from_context_menu = params->started_from_context_menu;
   load_url_params.has_user_gesture = params->user_gesture;
   load_url_params.blob_url_loader_factory = params->blob_url_loader_factory;
+  load_url_params.input_start = params->input_start;
+  load_url_params.was_activated = params->was_activated;
 
   // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
   if (params->frame_tree_node_id ==

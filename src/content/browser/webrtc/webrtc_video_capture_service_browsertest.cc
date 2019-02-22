@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -55,13 +56,15 @@ class InvokeClosureOnDelete
 };
 
 static const char kVideoCaptureHtmlFile[] = "/media/video_capture_test.html";
-static const char kStartVideoCaptureAndVerifySize[] =
-    "startVideoCaptureFromDeviceNamedVirtualDeviceAndVerifySize()";
+static const char kStartVideoCaptureAndVerify[] =
+    "startVideoCaptureFromVirtualDeviceAndVerifyUniformColorVideoWithSize(%d, "
+    "%d)";
 
 static const char kVirtualDeviceId[] = "/virtual/device";
 static const char kVirtualDeviceName[] = "Virtual Device";
 
-static const gfx::Size kDummyFrameDimensions(320, 200);
+static const gfx::Size kDummyFrameCodedSize(320, 200);
+static const gfx::Rect kDummyFrameVisibleRect(94, 36, 178, 150);
 static const int kDummyFrameRate = 5;
 
 }  // namespace
@@ -76,6 +79,7 @@ class VirtualDeviceExerciser {
   virtual void RegisterVirtualDeviceAtFactory(
       video_capture::mojom::DeviceFactoryPtr* factory,
       const media::VideoCaptureDeviceInfo& info) = 0;
+  virtual gfx::Size GetVideoSize() = 0;
   virtual void PushNextFrame(base::TimeDelta timestamp) = 0;
   virtual void ShutDown() = 0;
 };
@@ -123,6 +127,8 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
     frame_being_consumed_[1] = false;
   }
 
+  gfx::Size GetVideoSize() override { return kDummyFrameCodedSize; }
+
   void PushNextFrame(base::TimeDelta timestamp) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (frame_being_consumed_[dummy_frame_index_]) {
@@ -145,9 +151,8 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
     info->timestamp = timestamp;
     info->pixel_format = media::PIXEL_FORMAT_ARGB;
-    info->coded_size = kDummyFrameDimensions;
-    info->visible_rect = gfx::Rect(kDummyFrameDimensions.width(),
-                                   kDummyFrameDimensions.height());
+    info->coded_size = kDummyFrameCodedSize;
+    info->visible_rect = gfx::Rect(kDummyFrameCodedSize);
     info->metadata = metadata.GetInternalValues().Clone();
 
     frame_being_consumed_[dummy_frame_index_] = true;
@@ -169,8 +174,8 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
                            uint8_t value_for_all_rgb_bytes,
                            std::vector<gpu::MailboxHolder>* target) {
     const int32_t kBytesPerRGBPixel = 3;
-    int32_t frame_size_in_bytes = kDummyFrameDimensions.width() *
-                                  kDummyFrameDimensions.height() *
+    int32_t frame_size_in_bytes = kDummyFrameCodedSize.width() *
+                                  kDummyFrameCodedSize.height() *
                                   kBytesPerRGBPixel;
     std::unique_ptr<uint8_t[]> dummy_frame_data(
         new uint8_t[frame_size_in_bytes]);
@@ -191,9 +196,9 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDummyFrameDimensions.width(),
-                     kDummyFrameDimensions.height(), 0, GL_RGB,
-                     GL_UNSIGNED_BYTE, dummy_frame_data.get());
+      gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, kDummyFrameCodedSize.width(),
+                     kDummyFrameCodedSize.height(), 0, GL_RGB, GL_UNSIGNED_BYTE,
+                     dummy_frame_data.get());
       gl->BindTexture(GL_TEXTURE_2D, 0);
 
       gpu::Mailbox mailbox;
@@ -225,12 +230,15 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
 // A VirtualDeviceExerciser for exercising
 // DeviceFactory.AddSharedMemoryVirtualDevice().
 // It generates (dummy) I420 frame data by setting all bytes equal to the
-// current frame count.
+// current frame count. Padding bytes are set to 0.
 class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
                                     public video_capture::mojom::Producer {
  public:
-  SharedMemoryDeviceExerciser()
-      : producer_binding_(this), weak_factory_(this) {}
+  explicit SharedMemoryDeviceExerciser(
+      media::mojom::PlaneStridesPtr strides = nullptr)
+      : strides_(std::move(strides)),
+        producer_binding_(this),
+        weak_factory_(this) {}
 
   // VirtualDeviceExerciser implementation.
   void Initialize() override {}
@@ -245,9 +253,14 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
         kSendBufferHandlesToProducerAsRawFileDescriptors,
         mojo::MakeRequest(&virtual_device_));
   }
+  gfx::Size GetVideoSize() override {
+    return gfx::Size(kDummyFrameVisibleRect.width(),
+                     kDummyFrameVisibleRect.height());
+  }
   void PushNextFrame(base::TimeDelta timestamp) override {
     virtual_device_->RequestFrameBuffer(
-        kDummyFrameDimensions, media::VideoPixelFormat::PIXEL_FORMAT_I420,
+        kDummyFrameCodedSize, media::VideoPixelFormat::PIXEL_FORMAT_I420,
+        strides_.Clone(),
         base::BindOnce(&SharedMemoryDeviceExerciser::OnFrameBufferReceived,
                        weak_factory_.GetWeakPtr(), timestamp));
   }
@@ -287,22 +300,91 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
     info->timestamp = timestamp;
     info->pixel_format = media::PIXEL_FORMAT_I420;
-    info->coded_size = kDummyFrameDimensions;
-    info->visible_rect = gfx::Rect(kDummyFrameDimensions.width(),
-                                   kDummyFrameDimensions.height());
+    info->coded_size = kDummyFrameCodedSize;
+    info->visible_rect = kDummyFrameVisibleRect;
     info->metadata = metadata.GetInternalValues().Clone();
+    info->strides = strides_.Clone();
 
     auto outgoing_buffer = outgoing_buffer_id_to_buffer_map_.at(buffer_id)
                                ->GetHandleForInProcessAccess();
 
     static int frame_count = 0;
     frame_count++;
-    memset(outgoing_buffer->data(), frame_count % 256,
-           outgoing_buffer->mapped_size());
+    const uint8_t dummy_value = frame_count % 256;
+
+    // Reset the whole buffer to 0
+    memset(outgoing_buffer->data(), 0, outgoing_buffer->mapped_size());
+
+    // Set all bytes affecting |info->visible_rect| to |dummy_value|.
+    const int kYStride = info->strides ? info->strides->stride_by_plane[0]
+                                       : info->coded_size.width();
+    const int kYColsToSkipAtStart = info->visible_rect.x();
+    const int kYVisibleColCount = info->visible_rect.width();
+    const int kYCodedRowCount = info->coded_size.height();
+    const int kYRowsToSkipAtStart = info->visible_rect.y();
+    const int kYVisibleRowCount = info->visible_rect.height();
+
+    const int kUStride = info->strides ? info->strides->stride_by_plane[1]
+                                       : info->coded_size.width() / 2;
+    const int kUColsToSkipAtStart =
+        cc::MathUtil::UncheckedRoundDown(info->visible_rect.x(), 2) / 2;
+    const int kUVisibleColCount =
+        (cc::MathUtil::UncheckedRoundUp(info->visible_rect.right(), 2) / 2) -
+        kUColsToSkipAtStart;
+    const int kUCodedRowCount = info->coded_size.height() / 2;
+    const int kURowsToSkipAtStart =
+        cc::MathUtil::UncheckedRoundDown(info->visible_rect.y(), 2) / 2;
+    const int kUVisibleRowCount =
+        (cc::MathUtil::UncheckedRoundUp(info->visible_rect.bottom(), 2) / 2) -
+        kURowsToSkipAtStart;
+
+    const int kVStride = info->strides ? info->strides->stride_by_plane[2]
+                                       : info->coded_size.width() / 2;
+
+    uint8_t* write_ptr = outgoing_buffer->data();
+    FillVisiblePortionOfPlane(&write_ptr, dummy_value, kYCodedRowCount,
+                              kYRowsToSkipAtStart, kYVisibleRowCount, kYStride,
+                              kYColsToSkipAtStart, kYVisibleColCount);
+    FillVisiblePortionOfPlane(&write_ptr, dummy_value, kUCodedRowCount,
+                              kURowsToSkipAtStart, kUVisibleRowCount, kUStride,
+                              kUColsToSkipAtStart, kUVisibleColCount);
+    FillVisiblePortionOfPlane(&write_ptr, dummy_value, kUCodedRowCount,
+                              kURowsToSkipAtStart, kUVisibleRowCount, kVStride,
+                              kUColsToSkipAtStart, kUVisibleColCount);
 
     virtual_device_->OnFrameReadyInBuffer(buffer_id, std::move(info));
   }
 
+  void FillVisiblePortionOfPlane(uint8_t** write_ptr,
+                                 uint8_t fill_value,
+                                 int row_count,
+                                 int rows_to_skip_at_start,
+                                 int visible_row_count,
+                                 int col_count,
+                                 int cols_to_skip_at_start,
+                                 int visible_col_count) {
+    const int kColsToSkipAtEnd =
+        col_count - visible_col_count - cols_to_skip_at_start;
+    const int kRowsToSkipAtEnd =
+        row_count - visible_row_count - rows_to_skip_at_start;
+
+    // Skip rows at start
+    (*write_ptr) += col_count * rows_to_skip_at_start;
+    // Fill rows
+    for (int i = 0; i < visible_row_count; i++) {
+      // Skip cols at start
+      (*write_ptr) += cols_to_skip_at_start;
+      // Fill visible bytes
+      memset(*write_ptr, fill_value, visible_col_count);
+      (*write_ptr) += visible_col_count;
+      // Skip cols at end
+      (*write_ptr) += kColsToSkipAtEnd;
+    }
+    // Skip rows at end
+    (*write_ptr) += col_count * kRowsToSkipAtEnd;
+  }
+
+  media::mojom::PlaneStridesPtr strides_;
   mojo::Binding<video_capture::mojom::Producer> producer_binding_;
   video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device_;
   std::map<int32_t /*buffer_id*/,
@@ -337,6 +419,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     info.descriptor.set_display_name(kVirtualDeviceName);
     info.descriptor.capture_api = media::VideoCaptureApi::VIRTUAL_DEVICE;
 
+    video_size_ = device_exerciser->GetVideoSize();
     device_exerciser->RegisterVirtualDeviceAtFactory(&factory_, info);
 
     main_task_runner_->PostTask(
@@ -384,10 +467,12 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     GURL url(embedded_test_server()->GetURL(kVideoCaptureHtmlFile));
     NavigateToURL(shell(), url);
 
+    std::string javascript_to_execute = base::StringPrintf(
+        kStartVideoCaptureAndVerify, video_size_.width(), video_size_.height());
     std::string result;
     // Start video capture and wait until it started rendering
-    ASSERT_TRUE(ExecuteScriptAndExtractString(
-        shell(), kStartVideoCaptureAndVerifySize, &result));
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractString(shell(), javascript_to_execute, &result));
     ASSERT_EQ("OK", result);
 
     std::move(finish_test_cb).Run();
@@ -433,6 +518,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   video_capture::mojom::DeviceFactoryProviderPtr provider_;
   video_capture::mojom::DeviceFactoryPtr factory_;
+  gfx::Size video_size_;
   base::TimeTicks first_frame_time_;
   base::WeakPtrFactory<WebRtcVideoCaptureServiceBrowserTest> weak_factory_;
 
@@ -461,6 +547,25 @@ IN_PROC_BROWSER_TEST_F(
     FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage) {
   Initialize();
   auto device_exerciser = std::make_unique<SharedMemoryDeviceExerciser>();
+  device_exerciser->Initialize();
+
+  base::RunLoop run_loop;
+  virtual_device_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebRtcVideoCaptureServiceBrowserTest::
+                         AddVirtualDeviceAndStartCapture,
+                     base::Unretained(this), device_exerciser.get(),
+                     media::BindToCurrentLoop(run_loop.QuitClosure())));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureServiceBrowserTest,
+    PaddedI420FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage) {
+  Initialize();
+  auto device_exerciser = std::make_unique<SharedMemoryDeviceExerciser>(
+      media::mojom::PlaneStrides::New(
+          std::vector<uint32_t>({1024u, 512u, 1024u, 0u})));
   device_exerciser->Initialize();
 
   base::RunLoop run_loop;

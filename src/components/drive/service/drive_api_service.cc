@@ -18,18 +18,12 @@
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_requests.h"
-#include "google_apis/drive/drive_switches.h"
 #include "google_apis/drive/files_list_request_runner.h"
 #include "google_apis/drive/request_sender.h"
-#include "google_apis/google_api_keys.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using google_apis::AboutResourceCallback;
-using google_apis::AppList;
-using google_apis::AppListCallback;
 using google_apis::AuthStatusCallback;
-using google_apis::AuthorizeAppCallback;
 using google_apis::CancelCallback;
 using google_apis::ChangeList;
 using google_apis::ChangeListCallback;
@@ -45,7 +39,6 @@ using google_apis::FileResourceCallback;
 using google_apis::FilesListCorpora;
 using google_apis::FilesListRequestRunner;
 using google_apis::GetContentCallback;
-using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::HTTP_SUCCESS;
 using google_apis::InitiateUploadCallback;
@@ -55,7 +48,6 @@ using google_apis::StartPageTokenCallback;
 using google_apis::TeamDriveListCallback;
 using google_apis::UploadRangeResponse;
 using google_apis::drive::AboutGetRequest;
-using google_apis::drive::AppsListRequest;
 using google_apis::drive::ChangesListNextPageRequest;
 using google_apis::drive::ChangesListRequest;
 using google_apis::drive::ChildrenDeleteRequest;
@@ -86,7 +78,6 @@ const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
-const char kDocsListScope[] = "https://docs.google.com/feeds/";
 
 // Mime type to create a directory.
 const char kFolderMimeType[] = "application/vnd.google-apps.folder";
@@ -116,10 +107,6 @@ const char kFileResourceFields[] =
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared,modifiedByMeDate";
-const char kFileResourceOpenWithLinksFields[] =
-    "kind,id,openWithLinks/*";
-const char kFileResourceShareLinkFields[] =
-    "kind,id,shareLink";
 const char kFileListFields[] =
     "kind,items(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
@@ -140,36 +127,6 @@ const char kChangeListFields[] =
     "largestChangeId,newStartPageToken";
 const char kTeamDrivesListFields[] =
     "nextPageToken,kind,items(kind,id,name,capabilities)";
-
-void ExtractOpenUrlAndRun(const std::string& app_id,
-                          const AuthorizeAppCallback& callback,
-                          DriveApiErrorCode error,
-                          std::unique_ptr<FileResource> value) {
-  DCHECK(!callback.is_null());
-
-  if (!value) {
-    callback.Run(error, GURL());
-    return;
-  }
-
-  const std::vector<FileResource::OpenWithLink>& open_with_links =
-      value->open_with_links();
-  for (size_t i = 0; i < open_with_links.size(); ++i) {
-    if (open_with_links[i].app_id == app_id) {
-      callback.Run(HTTP_SUCCESS, open_with_links[i].open_url);
-      return;
-    }
-  }
-
-  // Not found.
-  callback.Run(DRIVE_OTHER_ERROR, GURL());
-}
-
-void ExtractShareUrlAndRun(const GetShareUrlCallback& callback,
-                           DriveApiErrorCode error,
-                           std::unique_ptr<FileResource> value) {
-  callback.Run(error, value ? value->share_link() : GURL());
-}
 
 // Ignores the |entry|, and runs the |callback|.
 void EntryActionCallbackAdapter(const EntryActionCallback& callback,
@@ -267,7 +224,6 @@ void BatchRequestConfigurator::Commit() {
 
 DriveAPIService::DriveAPIService(
     OAuth2TokenService* oauth2_token_service,
-    net::URLRequestContextGetter* url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
@@ -275,12 +231,9 @@ DriveAPIService::DriveAPIService(
     const std::string& custom_user_agent,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : oauth2_token_service_(oauth2_token_service),
-      url_request_context_getter_(url_request_context_getter),
       url_loader_factory_(url_loader_factory),
       blocking_task_runner_(blocking_task_runner),
-      url_generator_(base_url,
-                     base_thumbnail_url,
-                     google_apis::GetTeamDrivesIntegrationSwitch()),
+      url_generator_(base_url, base_thumbnail_url),
       custom_user_agent_(custom_user_agent),
       traffic_annotation_(traffic_annotation) {}
 
@@ -298,16 +251,11 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   scopes.push_back(kDriveAppsReadonlyScope);
   scopes.push_back(kDriveAppsScope);
 
-  // Note: The following scope is used to support GetShareUrl on Drive API v2.
-  // Unfortunately, there is no support on Drive API v2, so we need to fall back
-  // to GData WAPI for the GetShareUrl.
-  scopes.push_back(kDocsListScope);
-
   sender_ = std::make_unique<RequestSender>(
-      new google_apis::AuthService(oauth2_token_service_, account_id,
-                                   url_loader_factory_, scopes),
-      url_request_context_getter_.get(), blocking_task_runner_.get(),
-      custom_user_agent_, traffic_annotation_);
+      std::make_unique<google_apis::AuthService>(
+          oauth2_token_service_, account_id, url_loader_factory_, scopes),
+      url_loader_factory_, blocking_task_runner_.get(), custom_user_agent_,
+      traffic_annotation_);
   sender_->auth_service()->AddObserver(this);
 
   files_list_request_runner_ =
@@ -376,11 +324,7 @@ CancelCallback DriveAPIService::GetFileListInDirectory(
   // TODO(yamaguchi): Use FileListScope::CreateForTeamDrive instead of
   // kAllTeamDrives for efficiency. It'll require to add a new parameter to tell
   // which team drive the directory resource belongs to.
-  FilesListCorpora corpora =
-      (google_apis::GetTeamDrivesIntegrationSwitch() ==
-       google_apis::TEAM_DRIVES_INTEGRATION_ENABLED)
-          ? google_apis::FilesListCorpora::ALL_TEAM_DRIVES
-          : google_apis::FilesListCorpora::DEFAULT;
+  FilesListCorpora corpora = google_apis::FilesListCorpora::ALL_TEAM_DRIVES;
 
   // Because children.list method on Drive API v2 returns only the list of
   // children's references, but we need all file resource list.
@@ -404,11 +348,7 @@ CancelCallback DriveAPIService::Search(
   DCHECK(!search_query.empty());
   DCHECK(!callback.is_null());
 
-  FilesListCorpora corpora =
-      (google_apis::GetTeamDrivesIntegrationSwitch() ==
-       google_apis::TEAM_DRIVES_INTEGRATION_ENABLED)
-          ? google_apis::FilesListCorpora::ALL_TEAM_DRIVES
-          : google_apis::FilesListCorpora::DEFAULT;
+  FilesListCorpora corpora = google_apis::FilesListCorpora::ALL_TEAM_DRIVES;
 
   std::string query = util::TranslateQuery(search_query);
   if (!query.empty())
@@ -530,31 +470,9 @@ CancelCallback DriveAPIService::GetFileResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
-      sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
-      callback);
+      sender_.get(), url_generator_, callback);
   request->set_file_id(resource_id);
   request->set_fields(kFileResourceFields);
-  return sender_->StartRequestWithAuthRetry(std::move(request));
-}
-
-CancelCallback DriveAPIService::GetShareUrl(
-    const std::string& resource_id,
-    const GURL& embed_origin,
-    const GetShareUrlCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  if (!google_apis::IsGoogleChromeAPIKeyUsed()) {
-    LOG(ERROR) << "Only the official build of Chrome OS can open share dialogs "
-               << "from the file manager.";
-  }
-
-  std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
-      sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
-      base::Bind(&ExtractShareUrlAndRun, callback));
-  request->set_file_id(resource_id);
-  request->set_fields(kFileResourceShareLinkFields);
-  request->set_embed_origin(embed_origin);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
@@ -580,15 +498,6 @@ CancelCallback DriveAPIService::GetStartPageToken(
                                               callback);
   request->set_team_drive_id(team_drive_id);
   return sender_->StartRequestWithAuthRetry(std::move(request));
-}
-
-CancelCallback DriveAPIService::GetAppList(const AppListCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithAuthRetry(std::make_unique<AppsListRequest>(
-      sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
-      callback));
 }
 
 CancelCallback DriveAPIService::DownloadFile(
@@ -859,52 +768,6 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
               options.modified_date, options.last_viewed_by_me_date,
               local_file_path, options.etag, options.properties, url_generator_,
               callback, progress_callback)));
-}
-
-CancelCallback DriveAPIService::AuthorizeApp(
-    const std::string& resource_id,
-    const std::string& app_id,
-    const AuthorizeAppCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  // Files.Authorize is only available for whitelisted clients like official
-  // Google Chrome. In other cases, we fall back to Files.Get that returns the
-  // same value as Files.Authorize without doing authorization. In that case,
-  // the app can open if it was authorized by other means (from whitelisted
-  // clients or drive.google.com web UI.)
-  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
-    std::unique_ptr<google_apis::drive::FilesAuthorizeRequest> request =
-        std::make_unique<google_apis::drive::FilesAuthorizeRequest>(
-            sender_.get(), url_generator_,
-            base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
-    request->set_app_id(app_id);
-    request->set_file_id(resource_id);
-    request->set_fields(kFileResourceOpenWithLinksFields);
-    return sender_->StartRequestWithAuthRetry(std::move(request));
-  } else {
-    std::unique_ptr<FilesGetRequest> request =
-        std::make_unique<FilesGetRequest>(
-            sender_.get(), url_generator_,
-            google_apis::IsGoogleChromeAPIKeyUsed(),
-            base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
-    request->set_file_id(resource_id);
-    request->set_fields(kFileResourceOpenWithLinksFields);
-    return sender_->StartRequestWithAuthRetry(std::move(request));
-  }
-}
-
-CancelCallback DriveAPIService::UninstallApp(
-    const std::string& app_id,
-    const google_apis::EntryActionCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
-
-  std::unique_ptr<google_apis::drive::AppsDeleteRequest> request =
-      std::make_unique<google_apis::drive::AppsDeleteRequest>(
-          sender_.get(), url_generator_, callback);
-  request->set_app_id(app_id);
-  return sender_->StartRequestWithAuthRetry(std::move(request));
 }
 
 google_apis::CancelCallback DriveAPIService::AddPermission(

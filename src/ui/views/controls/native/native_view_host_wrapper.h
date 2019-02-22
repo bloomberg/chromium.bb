@@ -78,6 +78,10 @@ class NativeViewHostWrapper {
   // Sets focus to the gfx::NativeView.
   virtual void SetFocus() = 0;
 
+  // Returns the container that contains the NativeViewHost's native view if
+  // any.
+  virtual gfx::NativeView GetNativeViewContainer() const = 0;
+
   // Return the native view accessible corresponding to the wrapped native
   // view.
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;

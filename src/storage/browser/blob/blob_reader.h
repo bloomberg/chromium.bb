@@ -65,7 +65,7 @@ class STORAGE_EXPORT BlobReader {
         const base::Time& expected_modification_time) = 0;
   };
   enum class Status { NET_ERROR, IO_PENDING, DONE };
-  typedef base::Callback<void(Status)> StatusCallback;
+  using StatusCallback = base::Callback<void(Status)>;
   virtual ~BlobReader();
 
   // This calculates the total size of the blob, and initializes the reading

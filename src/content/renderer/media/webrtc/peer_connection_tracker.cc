@@ -433,8 +433,9 @@ static std::unique_ptr<base::DictionaryValue> GetDictValue(
 
 class InternalStatsObserver : public webrtc::StatsObserver {
  public:
-  explicit InternalStatsObserver(int lid)
-      : lid_(lid), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
+  InternalStatsObserver(int lid,
+                        scoped_refptr<base::SingleThreadTaskRunner> main_thread)
+      : lid_(lid), main_thread_(std::move(main_thread)) {}
 
   void OnComplete(const StatsReports& reports) override {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
@@ -473,14 +474,19 @@ class InternalStatsObserver : public webrtc::StatsObserver {
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 };
 
-PeerConnectionTracker::PeerConnectionTracker()
-    : next_local_id_(1), send_target_for_test_(nullptr) {}
-
 PeerConnectionTracker::PeerConnectionTracker(
-    mojom::PeerConnectionTrackerHostAssociatedPtr host)
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : next_local_id_(1),
       send_target_for_test_(nullptr),
-      peer_connection_tracker_host_ptr_(std::move(host)) {}
+      main_thread_task_runner_(std::move(main_thread_task_runner)) {}
+
+PeerConnectionTracker::PeerConnectionTracker(
+    mojom::PeerConnectionTrackerHostAssociatedPtr host,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : next_local_id_(1),
+      send_target_for_test_(nullptr),
+      peer_connection_tracker_host_ptr_(std::move(host)),
+      main_thread_task_runner_(std::move(main_thread_task_runner)) {}
 
 PeerConnectionTracker::~PeerConnectionTracker() {
 }
@@ -505,10 +511,11 @@ void PeerConnectionTracker::OnGetAllStats() {
   DCHECK(main_thread_.CalledOnValidThread());
 
   const std::string empty_track_id;
-  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+  for (auto it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     rtc::scoped_refptr<InternalStatsObserver> observer(
-        new rtc::RefCountedObject<InternalStatsObserver>(it->second));
+        new rtc::RefCountedObject<InternalStatsObserver>(
+            it->second, main_thread_task_runner_));
 
     it->first->GetStats(observer,
                         webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
@@ -525,7 +532,7 @@ RenderThread* PeerConnectionTracker::SendTarget() {
 
 void PeerConnectionTracker::OnSuspend() {
   DCHECK(main_thread_.CalledOnValidThread());
-  for (PeerConnectionIdMap::iterator it = peer_connection_id_map_.begin();
+  for (auto it = peer_connection_id_map_.begin();
        it != peer_connection_id_map_.end(); ++it) {
     it->first->CloseClientPeerConnection();
   }
@@ -604,8 +611,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
   DCHECK(main_thread_.CalledOnValidThread());
   DVLOG(1) << "PeerConnectionTracker::UnregisterPeerConnection()";
 
-  std::map<RTCPeerConnectionHandler*, int>::iterator it =
-      peer_connection_id_map_.find(pc_handler);
+  auto it = peer_connection_id_map_.find(pc_handler);
 
   if (it == peer_connection_id_map_.end()) {
     // The PeerConnection might not have been registered if its initilization

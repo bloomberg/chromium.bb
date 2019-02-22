@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/version.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
@@ -41,7 +42,7 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
-  std::string ExtraRequestParams() const override;
+  base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
       const override;
@@ -123,7 +124,8 @@ std::string IOSConfigurator::GetOSLongName() const {
   return configurator_impl_.GetOSLongName();
 }
 
-std::string IOSConfigurator::ExtraRequestParams() const {
+base::flat_map<std::string, std::string> IOSConfigurator::ExtraRequestParams()
+    const {
   return configurator_impl_.ExtraRequestParams();
 }
 

@@ -36,4 +36,13 @@ cr.googleTranslate.resultCallback = function() {
       'translationTime': cr.googleTranslate.translationTime});
 }
 
+/**
+ * Sets a callback to inform host to download javascript.
+ */
+cr.googleTranslate.loadJavascriptCallback = function(url) {
+  __gCrWeb.message.invokeOnHost({
+      'command': 'translate.loadjavascript',
+      'url': url});
+}
+
 }  // installTranslateCallbacks

@@ -30,6 +30,7 @@
 #import "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/cookies/ns_http_system_cookie_store.h"
 #import "ios/net/cookies/system_cookie_store.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
@@ -134,8 +135,8 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
 
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {web::WebThread::IO},
       base::Bind(
           &ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread,
           base::Unretained(io_data_), time, completion));
@@ -352,7 +353,7 @@ void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
   transport_security_state()->DeleteAllDynamicDataSince(time);
   http_server_properties()->Clear(base::BindOnce(
       [](const base::Closure& completion) {
-        web::WebThread::PostTask(web::WebThread::UI, FROM_HERE, completion);
+        base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, completion);
       },
       completion));
 }

@@ -8,15 +8,16 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/device_conditions.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/core/background/request_notifier.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -92,6 +93,10 @@ class RequestQueueTest : public testing::Test {
 
   // Test overrides.
   void SetUp() override;
+  void TearDown() override {
+    store_->Close();
+    PumpLoop();
+  }
 
   void PumpLoop();
 
@@ -102,7 +107,7 @@ class RequestQueueTest : public testing::Test {
                        std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   void UpdateRequestDone(UpdateRequestResult result);
-  void UpdateRequestsDone(std::unique_ptr<UpdateRequestsResult> result);
+  void UpdateRequestsDone(UpdateRequestsResult result);
 
   void ClearResults();
 
@@ -139,7 +144,8 @@ class RequestQueueTest : public testing::Test {
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
 
   std::unique_ptr<RequestQueue> queue_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  TestRequestQueueStore* store_;  // Owned by queue_.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
@@ -147,14 +153,14 @@ RequestQueueTest::RequestQueueTest()
     : last_add_result_(AddRequestResult::STORE_FAILURE),
       last_update_result_(UpdateRequestResult::STORE_FAILURE),
       last_get_requests_result_(GetRequestsResult::STORE_FAILURE),
-      task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_) {}
 
 RequestQueueTest::~RequestQueueTest() {}
 
 void RequestQueueTest::SetUp() {
-  std::unique_ptr<RequestQueueInMemoryStore> store(
-      new RequestQueueInMemoryStore());
+  auto store = std::make_unique<TestRequestQueueStore>();
+  store_ = store.get();
   queue_.reset(new RequestQueue(std::move(store)));
 }
 
@@ -179,9 +185,9 @@ void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
   last_update_result_ = result;
 }
 
-void RequestQueueTest::UpdateRequestsDone(
-    std::unique_ptr<UpdateRequestsResult> result) {
-  update_requests_result_ = std::move(result);
+void RequestQueueTest::UpdateRequestsDone(UpdateRequestsResult result) {
+  update_requests_result_ =
+      std::make_unique<UpdateRequestsResult>(std::move(result));
 }
 
 void RequestQueueTest::ClearResults() {

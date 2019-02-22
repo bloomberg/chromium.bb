@@ -85,6 +85,9 @@ class AudioWorkletHandler final : public AudioHandler {
   bool RequiresTailProcessing() const override { return true; }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  // Used only if number of inputs and outputs are 1.
+  bool is_output_channel_count_given_ = false;
 };
 
 class AudioWorkletNode final : public AudioNode,

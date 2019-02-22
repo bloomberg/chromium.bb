@@ -26,6 +26,10 @@
 #error "This file requires ARC support."
 #endif
 
+// a11y identifier used to locate the autofill suggestion in automation
+NSString* const kFormSuggestionLabelAccessibilityIdentifier =
+    @"formSuggestionLabelAXID";
+
 namespace {
 
 // The button corner radius.
@@ -133,6 +137,8 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
                                         suggestion.displayDescription),
                                     base::IntToString16(index + 1),
                                     base::IntToString16(numSuggestions))];
+    [self
+        setAccessibilityIdentifier:kFormSuggestionLabelAccessibilityIdentifier];
   }
 
   return self;

@@ -48,17 +48,8 @@ gles2::GLES2Implementation* GLInProcessContext::GetImplementation() {
   return gles2_implementation_.get();
 }
 
-CommandBuffer* GLInProcessContext::GetCommandBuffer() {
-  return command_buffer_.get();
-}
-
 SharedImageInterface* GLInProcessContext::GetSharedImageInterface() {
   return command_buffer_->GetSharedImageInterface();
-}
-
-void GLInProcessContext::SetUpdateVSyncParametersCallback(
-    const InProcessCommandBuffer::UpdateVSyncParametersCallback& callback) {
-  command_buffer_->SetUpdateVSyncParametersCallback(callback);
 }
 
 ContextResult GLInProcessContext::Initialize(
@@ -70,7 +61,6 @@ ContextResult GLInProcessContext::Initialize(
     const SharedMemoryLimits& mem_limits,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory,
-    GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   // If a surface is provided, we are running in a webview and should not have
   // a task runner. We must have a task runner in all other cases.
@@ -87,8 +77,9 @@ ContextResult GLInProcessContext::Initialize(
 
   auto result = command_buffer_->Initialize(
       surface, is_offscreen, window, attribs, /*share_command_buffer=*/nullptr,
-      gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
-      std::move(task_runner), nullptr, nullptr);
+      gpu_memory_buffer_manager, image_factory,
+      /*gpu_channel_manager_delegate=*/nullptr, std::move(task_runner), nullptr,
+      nullptr);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;

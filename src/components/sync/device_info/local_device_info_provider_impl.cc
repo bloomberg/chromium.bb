@@ -5,9 +5,7 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/driver/sync_util.h"
 
 namespace syncer {
@@ -73,32 +71,14 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 
 void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
+    const std::string& session_name,
     const std::string& signin_scoped_device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
-  GetSessionName(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
-      base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
-                 weak_factory_.GetWeakPtr(), cache_guid,
-                 signin_scoped_device_id));
-}
-
-void LocalDeviceInfoProviderImpl::InitializeContinuation(
-    const std::string& guid,
-    const std::string& signin_scoped_device_id,
-    const std::string& session_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (guid != cache_guid_) {
-    // Clear() happened before this callback; abort.
-    return;
-  }
-
   local_device_info_ = std::make_unique<DeviceInfo>(
-      guid, session_name, version_, GetSyncUserAgent(),
+      cache_guid, session_name, version_, GetSyncUserAgent(),
       GetLocalDeviceType(is_tablet_), signin_scoped_device_id);
 
   // Notify observers.

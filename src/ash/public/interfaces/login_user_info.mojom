@@ -54,6 +54,10 @@ enum FingerprintUnlockState {
   // recognized.  There have been too many unlock attempts and fingerprint
   // is now disabled.
   AUTH_DISABLED,
+  // Fingerprint unlock is disabled because user is forced to use an
+  // authentication method that authenticates via cryptohome.
+  // I.e., password, cryptohome-based PIN, easy unlock.
+  AUTH_DISABLED_FROM_TIMEOUT,
 };
 
 // Information about the custom icon in the user pod.

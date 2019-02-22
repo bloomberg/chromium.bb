@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <set>
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
@@ -21,6 +22,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
@@ -30,6 +32,7 @@
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -394,6 +397,14 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   if (data_reduction_proxy_io_data_)
     lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
 
+  // The headers below were speculatively added for caching for HTTP requests
+  // when DRP is enabled. Before modifying them, make sure that this is a
+  // DRP-eligible request so that the below headers are not removed when they
+  // are included by other Chrome or Preview features, currently limited to
+  // HTTPS.
+  if (request->url().SchemeIsCryptographic())
+    return;
+
   if (!using_data_reduction_proxy) {
     if (lofi_decider) {
       // If not using the data reduction proxy, strip the
@@ -513,6 +524,14 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
   if (!original_response_headers ||
       original_response_headers->IsRedirect(nullptr))
     return;
+
+  if (request->was_cached() && request->url().SchemeIsHTTPOrHTTPS() &&
+      !request->url().SchemeIsCryptographic() &&
+      original_response_headers->HasHeader(chrome_proxy_header())) {
+    DataReductionProxyData* data =
+        DataReductionProxyData::GetDataAndCreateIfNecessary(request);
+    data->set_was_cached_data_reduction_proxy_response(true);
+  }
 
   switch (ParseResponseTransform(*original_response_headers)) {
     case TRANSFORM_LITE_PAGE:
@@ -666,6 +685,11 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
     const net::URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (base::FeatureList::IsEnabled(
+          features::kDataReductionProxyBrotliHoldback)) {
+    return;
+  }
+
   // This method should be called only when the resolved proxy was a data
   // saver proxy.
   DCHECK(data_reduction_proxy_config_->FindConfiguredDataReductionProxy(
@@ -700,17 +724,16 @@ void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
   request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
                              &header_value);
 
-  // Brotli should not be already present in the header since the URL is non-
-  // cryptographic. This is an approximate check, and would trigger even if the
-  // accept-encoding header contains an encoding that has prefix |kBrotli|.
-  DCHECK_EQ(std::string::npos, header_value.find(kBrotli));
-
-  request_headers->RemoveHeader(net::HttpRequestHeaders::kAcceptEncoding);
-  if (!header_value.empty())
-    header_value += ", ";
-  header_value += kBrotli;
-  request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
-                             header_value);
+  // Only add Brotli to the header if it is not already present.
+  std::set<std::string> header_entry_set;
+  if (net::HttpUtil::ParseAcceptEncoding(header_value, &header_entry_set) &&
+      header_entry_set.find(kBrotli) == header_entry_set.end()) {
+    if (!header_value.empty())
+      header_value += ", ";
+    header_value += kBrotli;
+    request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
+                               header_value);
+  }
 }
 
 void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(

@@ -2013,13 +2013,6 @@ void GLES2TraceImplementation::CopySubTextureCHROMIUM(
                               unpack_unmultiply_alpha);
 }
 
-void GLES2TraceImplementation::CompressedCopyTextureCHROMIUM(GLuint source_id,
-                                                             GLuint dest_id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::CompressedCopyTextureCHROMIUM");
-  gl_->CompressedCopyTextureCHROMIUM(source_id, dest_id);
-}
-
 void GLES2TraceImplementation::DrawArraysInstancedANGLE(GLenum mode,
                                                         GLint first,
                                                         GLsizei count,
@@ -2657,6 +2650,12 @@ void GLES2TraceImplementation::FramebufferTextureMultiviewLayeredANGLE(
       "gpu", "GLES2Trace::FramebufferTextureMultiviewLayeredANGLE");
   gl_->FramebufferTextureMultiviewLayeredANGLE(target, attachment, texture,
                                                level, baseViewIndex, numViews);
+}
+
+void GLES2TraceImplementation::MaxShaderCompilerThreadsKHR(GLuint count) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::MaxShaderCompilerThreadsKHR");
+  gl_->MaxShaderCompilerThreadsKHR(count);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -76,11 +76,11 @@ bool SkImage::scalePixels(const SkPixmap& dst, SkFilterQuality quality, CachingH
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 SkColorType SkImage::colorType() const {
-    return as_IB(this)->onColorType();
+    return as_IB(this)->onImageInfo().colorType();
 }
 
 SkAlphaType SkImage::alphaType() const {
-    return as_IB(this)->onAlphaType();
+    return as_IB(this)->onImageInfo().alphaType();
 }
 
 SkColorSpace* SkImage::colorSpace() const {
@@ -227,6 +227,10 @@ bool SkImage::asLegacyBitmap(SkBitmap* bitmap, LegacyBitmapMode ) const {
     return as_IB(this)->onAsLegacyBitmap(bitmap);
 }
 
+sk_sp<SkCachedData> SkImage_Base::getPlanes(SkYUVSizeInfo*, SkYUVColorSpace*,const void*[3]) {
+    return nullptr;
+}
+
 bool SkImage_Base::onAsLegacyBitmap(SkBitmap* bitmap) const {
     // As the base-class, all we can do is make a copy (regardless of mode).
     // Subclasses that want to be more optimal should override.
@@ -296,8 +300,7 @@ bool SkImage::isAlphaOnly() const {
 }
 
 sk_sp<SkImage> SkImage::makeColorSpace(sk_sp<SkColorSpace> target) const {
-    SkColorSpaceTransferFn fn;
-    if (!target || !target->isNumericalTransferFn(&fn)) {
+    if (!target) {
         return nullptr;
     }
 
@@ -309,11 +312,8 @@ sk_sp<SkImage> SkImage::makeColorSpace(sk_sp<SkColorSpace> target) const {
         return sk_ref_sp(const_cast<SkImage*>(this));
     }
 
-    // TODO: Re-visit this! Keep existing color type?
-    SkColorType targetColorType = kN32_SkColorType;
-
     // TODO: We might consider making this a deferred conversion?
-    return as_IB(this)->onMakeColorSpace(std::move(target), targetColorType);
+    return as_IB(this)->onMakeColorSpace(std::move(target));
 }
 
 sk_sp<SkImage> SkImage::makeNonTextureImage() const {
@@ -370,10 +370,39 @@ sk_sp<SkImage> SkImage::MakeFromAdoptedTexture(GrContext* ctx,
     return nullptr;
 }
 
+sk_sp<SkImage> SkImage::MakeFromYUVATexturesCopy(GrContext* context,
+                                                 SkYUVColorSpace yuvColorSpace,
+                                                 const GrBackendTexture yuvaTextures[],
+                                                 const SkYUVAIndex yuvaIndices[4],
+                                                 SkISize imageSize,
+                                                 GrSurfaceOrigin imageOrigin,
+                                                 sk_sp<SkColorSpace> imageColorSpace) {
+    return nullptr;
+}
+
+sk_sp<SkImage> SkImage::MakeFromYUVATexturesCopyWithExternalBackend(
+        GrContext* context,
+        SkYUVColorSpace yuvColorSpace,
+        const GrBackendTexture yuvaTextures[],
+        const SkYUVAIndex yuvaIndices[4],
+        SkISize imageSize,
+        GrSurfaceOrigin imageOrigin,
+        const GrBackendTexture& backendTexture,
+        sk_sp<SkColorSpace> imageColorSpace) {
+    return nullptr;
+}
+
 sk_sp<SkImage> SkImage::MakeFromYUVTexturesCopy(GrContext* ctx, SkYUVColorSpace space,
                                                 const GrBackendTexture[3],
                                                 GrSurfaceOrigin origin,
                                                 sk_sp<SkColorSpace> imageColorSpace) {
+    return nullptr;
+}
+
+sk_sp<SkImage> SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
+        GrContext* context, SkYUVColorSpace yuvColorSpace, const GrBackendTexture yuvTextures[3],
+        GrSurfaceOrigin surfaceOrigin, const GrBackendTexture& backendTexture,
+        sk_sp<SkColorSpace> colorSpace) {
     return nullptr;
 }
 
@@ -386,6 +415,15 @@ sk_sp<SkImage> SkImage::MakeFromNV12TexturesCopy(GrContext* ctx, SkYUVColorSpace
 
 sk_sp<SkImage> SkImage::makeTextureImage(GrContext*, SkColorSpace* dstColorSpace,
                                          GrMipMapped mipMapped) const {
+    return nullptr;
+}
+
+sk_sp<SkImage> MakeFromNV12TexturesCopyWithExternalBackend(GrContext* context,
+                                                           SkYUVColorSpace yuvColorSpace,
+                                                           const GrBackendTexture nv12Textures[2],
+                                                           GrSurfaceOrigin surfaceOrigin,
+                                                           const GrBackendTexture& backendTexture,
+                                                           sk_sp<SkColorSpace> colorSpace) {
     return nullptr;
 }
 

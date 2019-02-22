@@ -9,11 +9,7 @@
 #include "ui/base/default_style.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_features.h"
 #include "ui/gfx/platform_font.h"
-
-// Mac doesn't use LocationBarView (yet).
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
                                              int desired_font_size) {
@@ -43,8 +39,6 @@ int GetFontSizeDeltaBoundedByAvailableHeight(int available_height,
          user_or_locale_delta;
 }
 
-#endif  // OS_MACOSX || MAC_VIEWS_BROWSER
-
 void ApplyCommonFontStyles(int context,
                            int style,
                            int* size_delta,
@@ -54,19 +48,18 @@ void ApplyCommonFontStyles(int context,
       // TODO(pbos): Instead of fixing the toolbar button height this way
       // consider dynamically resizing all of the toolbar based on the actual
       // final item height.
-      static const int fixed_height =
+      const int fixed_height =
           ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 22 : 17;
       static const int toolbar_button_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(fixed_height, fixed_height);
       *size_delta = toolbar_button_delta;
       break;
     }
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
     case CONTEXT_OMNIBOX_PRIMARY:
     case CONTEXT_OMNIBOX_DEEMPHASIZED: {
       constexpr int kDesiredFontSizeRegular = 14;
       constexpr int kDesiredFontSizeTouchable = 15;
-      static const int omnibox_primary_delta =
+      const int omnibox_primary_delta =
           GetFontSizeDeltaBoundedByAvailableHeight(
               LocationBarView::GetAvailableTextHeight(),
               ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
@@ -92,7 +85,6 @@ void ApplyCommonFontStyles(int context,
       *size_delta = omnibox_decoration_delta;
       break;
     }
-#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
 #if defined(OS_WIN)
     case CONTEXT_WINDOWS10_NATIVE:
       // Adjusts default font size up to match Win10 modern UI.

@@ -37,6 +37,7 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
 
     if (is_same_skeleton) {
       *out_found = true;
+      result_ = search;
       return true;
     }
 
@@ -236,7 +237,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
   //   - U+1042 (၂) => j
-  //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ), U+10D5 (ვ), U+1012 (ဒ)} => 3
+  //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ), U+0909 (उ), U+0993 (ও),
+  //      U+1012 (ဒ), U+10D5 (ვ), U+10DE (პ)} => 3
   //   - {U+0E1A (บ), U+0E9A (ບ)} => u
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
@@ -247,7 +249,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
           "[ҫင] > c; ұ > y; [χҳӽӿ] > x;"
           "ԃ  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
-          "[зҙӡვဒ] > 3; [บບ] > u"),
+          "[зҙӡउওဒვპ] > 3; [บບ] > u"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "
@@ -485,6 +487,10 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   // Block {Single,double}-quotation-mark look-alikes.
   allowed_set.remove(0x2bbu);  // Modifier Letter Turned Comma
   allowed_set.remove(0x2bcu);  // Modifier Letter Apostrophe
+
+  // Block modifier letter voicing.
+  allowed_set.remove(0x2ecu);
+
   // No need to block U+144A (Canadian Syllabics West-Cree P) separately
   // because it's blocked from mixing with other scripts including Latin.
 

@@ -130,7 +130,7 @@ class CORE_EXPORT FilterOperation
 
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
-  static ReferenceFilterOperation* Create(const String& url,
+  static ReferenceFilterOperation* Create(const AtomicString& url,
                                           SVGResource* resource) {
     return new ReferenceFilterOperation(url, resource);
   }
@@ -139,7 +139,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   bool MovesPixels() const override { return true; }
   FloatRect MapRect(const FloatRect&) const override;
 
-  const String& Url() const { return url_; }
+  const AtomicString& Url() const { return url_; }
 
   Filter* GetFilter() const { return filter_.Get(); }
   void SetFilter(Filter* filter) { filter_ = filter; }
@@ -152,7 +152,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void Trace(blink::Visitor*) override;
 
  private:
-  ReferenceFilterOperation(const String& url, SVGResource*);
+  ReferenceFilterOperation(const AtomicString& url, SVGResource*);
 
   FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override {
@@ -162,7 +162,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
 
   bool operator==(const FilterOperation&) const override;
 
-  String url_;
+  AtomicString url_;
   Member<SVGResource> resource_;
   Member<Filter> filter_;
 };

@@ -434,12 +434,6 @@ TEST_F(TransportParametersTest, CryptoHandshakeMessageRoundtrip) {
   EXPECT_EQ(new_params.google_quic_params->GetUint32(1337, &test_value),
             QUIC_NO_ERROR);
   EXPECT_EQ(test_value, kTestValue);
-  LOG(ERROR) << "Original params:"
-             << orig_params.google_quic_params->DebugString(
-                    Perspective::IS_CLIENT);
-  LOG(ERROR) << "New params:"
-             << new_params.google_quic_params->DebugString(
-                    Perspective::IS_CLIENT);
 }
 
 }  // namespace test

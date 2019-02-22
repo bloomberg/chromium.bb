@@ -53,6 +53,10 @@
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/android_theme_resources.h"
+#endif
+
 namespace {
 using base::FeatureList;
 using metrics::TranslateEventProto;
@@ -192,10 +196,8 @@ void ChromeTranslateClient::GetTranslateLanguages(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
-  PrefService* prefs = original_profile->GetPrefs();
   std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      CreateTranslatePrefs(prefs);
+      CreateTranslatePrefs(profile->GetPrefs());
   if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
     std::string auto_translate_language =
         translate::TranslateManager::GetAutoTargetLanguage(
@@ -233,7 +235,9 @@ bool ChromeTranslateClient::ShowTranslateUI(
   if (error_type != translate::TranslateErrors::NONE)
     step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
 
-#if !defined(USE_AURA) && !BUILDFLAG(MAC_VIEWS_BROWSER)
+// Translate uses a bubble UI on desktop and an infobar on Android (here)
+// and iOS (in ios/chrome/browser/translate/chrome_ios_translate_client.mm).
+#if defined(OS_ANDROID)
   if (!TranslateService::IsTranslateBubbleEnabled()) {
     // Infobar UI.
     translate::TranslateInfoBarDelegate::Create(
@@ -271,15 +275,12 @@ PrefService* ChromeTranslateClient::GetPrefs() {
   DCHECK(web_contents());
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return profile->GetOriginalProfile()->GetPrefs();
+  return profile->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
 ChromeTranslateClient::GetTranslatePrefs() {
-  DCHECK(web_contents());
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return CreateTranslatePrefs(profile->GetPrefs());
+  return CreateTranslatePrefs(GetPrefs());
 }
 
 translate::TranslateAcceptLanguages*
@@ -288,14 +289,11 @@ ChromeTranslateClient::GetTranslateAcceptLanguages() {
   return GetTranslateAcceptLanguages(web_contents()->GetBrowserContext());
 }
 
+#if defined(OS_ANDROID)
 int ChromeTranslateClient::GetInfobarIconID() const {
-#if defined(USE_AURA)
-  NOTREACHED();
-  return 0;
-#else
-  return IDR_INFOBAR_TRANSLATE;
-#endif
+  return IDR_ANDROID_INFOBAR_TRANSLATE;
 }
+#endif
 
 void ChromeTranslateClient::RecordLanguageDetectionEvent(
     const translate::LanguageDetectionDetails& details) const {

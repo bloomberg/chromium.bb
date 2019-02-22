@@ -15,6 +15,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/socket/connection_attempts.h"
+#include "net/socket/socket_descriptor.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
 #include "net/socket/transport_client_socket.h"
@@ -43,6 +44,12 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
                   const IPEndPoint& peer_address);
 
+  // Creates a TCPClientSocket from a bound-but-not-connected socket.
+  static std::unique_ptr<TCPClientSocket> CreateFromBoundSocket(
+      std::unique_ptr<TCPSocket> bound_socket,
+      const AddressList& addresses,
+      const IPEndPoint& bound_address);
+
   ~TCPClientSocket() override;
 
   // TransportClientSocket implementation.
@@ -51,6 +58,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   bool SetNoDelay(bool no_delay) override;
 
   // StreamSocket implementation.
+  void SetBeforeConnectCallback(
+      const BeforeConnectCallback& before_connect_callback) override;
   int Connect(CompletionOnceCallback callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -86,6 +95,10 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
+  // Exposes the underlying socket descriptor for testing its state. Does not
+  // release ownership of the descriptor.
+  SocketDescriptor SocketDescriptorForTesting() const;
+
  private:
   // State machine for connecting the socket.
   enum ConnectState {
@@ -93,6 +106,15 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
     CONNECT_STATE_CONNECT_COMPLETE,
     CONNECT_STATE_NONE,
   };
+
+  // Main constructor. |socket| must be non-null. |current_address_index| is the
+  // address index in |addresses| of the server |socket| is connected to, or -1
+  // if not connected. |bind_address|, if present, is the address |socket| is
+  // bound to.
+  TCPClientSocket(std::unique_ptr<TCPSocket> socket,
+                  const AddressList& addresses,
+                  int current_address_index,
+                  std::unique_ptr<IPEndPoint> bind_address);
 
   // A helper method shared by Read() and ReadIfReady(). If |read_if_ready| is
   // set to true, ReadIfReady() will be used instead of Read().
@@ -121,13 +143,6 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
   // disconnected.
   void EmitTCPMetricsHistogramsOnDisconnect();
 
-  // Socket performance statistics (such as RTT) are reported to the
-  // |socket_performance_watcher_|. May be nullptr.
-  // |socket_performance_watcher_| is owned by |socket_|. If non-null,
-  // |socket_performance_watcher_| is guaranteed to be destroyed when |socket_|
-  // is destroyed.
-  SocketPerformanceWatcher* socket_performance_watcher_;
-
   std::unique_ptr<TCPSocket> socket_;
 
   // Local IP address and port we are bound to. Set to NULL if Bind()
@@ -154,6 +169,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
 
   // Total number of bytes received by the socket.
   int64_t total_received_bytes_;
+
+  BeforeConnectCallback before_connect_callback_;
 
   bool was_ever_used_;
 

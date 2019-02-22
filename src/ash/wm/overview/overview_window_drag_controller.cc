@@ -58,8 +58,10 @@ void OverviewWindowDragController::InitiateDrag(
   item_ = item;
   previous_event_location_ = location_in_screen;
   initial_event_location_ = location_in_screen;
-  started_in_snap_region_ =
-      GetSnapPosition(location_in_screen) != SplitViewController::NONE;
+  if (SplitViewController::ShouldAllowSplitView()) {
+    started_in_snap_region_ =
+        GetSnapPosition(location_in_screen) != SplitViewController::NONE;
+  }
   current_drag_behavior_ = DragBehavior::kUndefined;
 }
 
@@ -80,7 +82,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
       window_selector_->GetGridWithRootWindow(item_->root_window())
           ->StartNudge(item_);
       did_move_ = true;
-    } else {
+    } else if (SplitViewController::ShouldAllowSplitView()) {
       StartSplitViewDragMode(location_in_screen);
     }
   }
@@ -108,7 +110,8 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   // Update the split view divider bar status if necessary. If splitview is
   // active when dragging the overview window, the split divider bar should be
   // placed below the dragged window during dragging.
-  split_view_controller_->OnWindowDragStarted(item_->GetWindow());
+  if (SplitViewController::ShouldAllowSplitView())
+    split_view_controller_->OnWindowDragStarted(item_->GetWindow());
 
   // Update the dragged |item_|'s bounds accordingly.
   gfx::Rect bounds(item_->target_bounds());
@@ -124,8 +127,10 @@ void OverviewWindowDragController::CompleteDrag(
   // should be placed above the dragged window after drag ends. Note here the
   // passed paramters |snap_position_| and |location_in_screen| won't be used in
   // this function for this case, but they are passed in as placeholders.
-  split_view_controller_->OnWindowDragEnded(item_->GetWindow(), snap_position_,
-                                            location_in_screen);
+  if (SplitViewController::ShouldAllowSplitView()) {
+    split_view_controller_->OnWindowDragEnded(
+        item_->GetWindow(), snap_position_, location_in_screen);
+  }
 
   // Update window grid bounds and |snap_position_| in case the screen
   // orientation was changed.
@@ -150,8 +155,7 @@ void OverviewWindowDragController::CompleteDrag(
       item_->SetOpacity(original_opacity_);
       window_selector_->PositionWindows(/*animate=*/true);
     }
-  } else {
-    DCHECK_EQ(current_drag_behavior_, DragBehavior::kDragToSnap);
+  } else if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
     // If the window was dragged around but should not be snapped, move it back
     // to overview window grid.
     if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
@@ -169,6 +173,8 @@ void OverviewWindowDragController::CompleteDrag(
 
 void OverviewWindowDragController::StartSplitViewDragMode(
     const gfx::Point& location_in_screen) {
+  DCHECK(SplitViewController::ShouldAllowSplitView());
+
   item_->ScaleUpSelectedItem(
       OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS_IN_OVERVIEW);
 
@@ -214,7 +220,8 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
   // and the selected window cannot be snapped, exit splitview and activate
   // the selected window, and also exit the overview.
   SplitViewController::State split_state = split_view_controller_->state();
-  if (split_state == SplitViewController::NO_SNAP) {
+  if (!SplitViewController::ShouldAllowSplitView() ||
+      split_state == SplitViewController::NO_SNAP) {
     window_selector_->SelectWindow(item_);
   } else if (split_view_controller_->CanSnap(item_->GetWindow())) {
     SnapWindow(split_state == SplitViewController::LEFT_SNAPPED
@@ -230,8 +237,10 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
 
 void OverviewWindowDragController::ResetGesture() {
   window_selector_->PositionWindows(/*animate=*/true);
-  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
-      IndicatorState::kNone, gfx::Point());
+  if (SplitViewController::ShouldAllowSplitView()) {
+    window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+        IndicatorState::kNone, gfx::Point());
+  }
   // This function gets called after a long press release, which bypasses
   // CompleteDrag but stops dragging as well, so reset |item_|.
   item_ = nullptr;
@@ -244,6 +253,7 @@ void OverviewWindowDragController::ResetWindowSelector() {
 
 void OverviewWindowDragController::UpdateDragIndicatorsAndWindowGrid(
     const gfx::Point& location_in_screen) {
+  DCHECK(SplitViewController::ShouldAllowSplitView());
   if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
     return;
 
@@ -348,6 +358,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
 SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
   DCHECK(item_);
+  DCHECK(SplitViewController::ShouldAllowSplitView());
   gfx::Rect area(
       screen_util::GetDisplayWorkAreaBoundsInParent(item_->GetWindow()));
   ::wm::ConvertRectToScreen(item_->GetWindow()->GetRootWindow(), &area);

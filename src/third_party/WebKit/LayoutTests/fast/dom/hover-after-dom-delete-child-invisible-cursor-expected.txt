@@ -11,4 +11,3 @@ PASS blueText is "\"Hovered.\""
 PASS redText is "\"Hovered.\""
 Deleting red div.
 PASS blueText is "\"Hovered.\""
-

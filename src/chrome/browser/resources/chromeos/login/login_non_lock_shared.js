@@ -24,7 +24,6 @@
 // <include src="screen_error_message.js">
 // <include src="screen_gaia_signin.js">
 // <include src="screen_password_changed.js">
-// <include src="screen_supervised_user_creation.js">
 // <include src="screen_tpm_error.js">
 // <include src="screen_wrong_hwid.js">
 // <include src="screen_confirm_password.js">
@@ -40,6 +39,7 @@
 // <include src="screen_app_downloading.js">
 // <include src="screen_discover.js">
 // <include src="screen_marketing_opt_in.js">
+// <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
 

@@ -162,11 +162,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       [self setRightViewMode:UITextFieldViewModeAlways];
     }
 
-#if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
     if (@available(iOS 11.0, *)) {
       [self setSmartQuotesType:UITextSmartQuotesTypeNo];
     }
-#endif
 
     // Sanity check:
     DCHECK([self conformsToProtocol:@protocol(UITextInput)]);
@@ -352,8 +350,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   [animator addAnimations:^{
     self.clearButtonView.alpha = 0;
-    self.clearButtonView.frame = CGRectLayoutOffset(
-        self.clearButtonView.frame, kToolbarButtonAnimationOffset);
   }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     [self resetClearButton];
@@ -369,7 +365,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // default to a reasonable prefix string to give a plausible offset.
   NSString* prefixString = @"https://";
 
-  if ([self.text containsString:string]) {
+  if (string.length > 0 && [self.text containsString:string]) {
     NSRange range = [self.text rangeOfString:string];
     NSRange prefixRange = NSMakeRange(0, range.location);
     prefixString = [self.text substringWithRange:prefixRange];
@@ -1090,12 +1086,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (CGFloat)clearButtonAnimationOffset {
   DCHECK(!IsRefreshLocationBarEnabled());
-
-  if ([self isTextFieldLTR]) {
-    return kToolbarButtonAnimationOffset;
-  } else {
-    return -kToolbarButtonAnimationOffset;
-  }
+  return 0;
 }
 
 // Calculates editing rect from |bounds| rect by adjusting for in-bounds

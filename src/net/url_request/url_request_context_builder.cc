@@ -119,14 +119,16 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   }
 
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list) override {
-    return true;
+                       const CookieList& cookie_list,
+                       bool allowed_from_caller) override {
+    return allowed_from_caller;
   }
 
   bool OnCanSetCookie(const URLRequest& request,
                       const CanonicalCookie& cookie,
-                      CookieOptions* options) override {
-    return true;
+                      CookieOptions* options,
+                      bool allowed_from_caller) override {
+    return allowed_from_caller;
   }
 
   bool OnCanAccessFile(const URLRequest& request,
@@ -541,6 +543,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     proxy_resolution_service_->set_quick_check_enabled(pac_quick_check_enabled_);
     proxy_resolution_service_->set_sanitize_url_policy(pac_sanitize_url_policy_);
   }
+  ProxyResolutionService* proxy_resolution_service =
+      proxy_resolution_service_.get();
   storage->set_proxy_resolution_service(std::move(proxy_resolution_service_));
 
   HttpNetworkSession::Context network_session_context;
@@ -548,10 +552,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (proxy_delegate_) {
     DCHECK(!shared_proxy_delegate_);
-    network_session_context.proxy_delegate = proxy_delegate_.get();
+    proxy_resolution_service->AssertNoProxyDelegate();
+    proxy_resolution_service->SetProxyDelegate(proxy_delegate_.get());
     storage->set_proxy_delegate(std::move(proxy_delegate_));
   } else if (shared_proxy_delegate_) {
-    network_session_context.proxy_delegate = shared_proxy_delegate_;
+    proxy_resolution_service->AssertNoProxyDelegate();
+    proxy_resolution_service->SetProxyDelegate(shared_proxy_delegate_);
   }
 
   storage->set_http_network_session(std::make_unique<HttpNetworkSession>(
@@ -594,6 +600,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
+#if defined(OS_ANDROID)
+    http_cache_backend->SetAppStatusListener(
+        http_cache_params_.app_status_listener);
+#endif
 
     http_transaction_factory.reset(
         new HttpCache(std::move(http_transaction_factory),

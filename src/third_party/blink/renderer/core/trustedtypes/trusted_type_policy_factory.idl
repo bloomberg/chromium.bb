@@ -5,11 +5,15 @@
 // https://github.com/wicg/trusted-types
 
 [
-    Exposed=(Window),
+    Exposed=Window,
     RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedTypePolicyFactory {
     [RaisesException] TrustedTypePolicy createPolicy(DOMString policyName, TrustedTypePolicyOptions policyOptions, optional boolean exposed = false);
     TrustedTypePolicy getExposedPolicy(DOMString policyName);
     // All the policy object names that have been created
     [Affects=Nothing] sequence<DOMString> getPolicyNames();
+    [CallWith=ScriptState] boolean isHTML(object? checkedObject);
+    [CallWith=ScriptState] boolean isScript(object? checkedObject);
+    [CallWith=ScriptState] boolean isScriptURL(object? checkedObject);
+    [CallWith=ScriptState] boolean isURL(object? checkedObject);
 };

@@ -74,8 +74,9 @@ DEF_BENCH(return new PDFScalarBench("PDFScalar_random", next_any);)
 #ifdef SK_SUPPORT_PDF
 
 #include "SkPDFBitmap.h"
-#include "SkPDFDocument.h"
+#include "SkPDFDocumentPriv.h"
 #include "SkPDFShader.h"
+#include "SkPDFUtils.h"
 
 namespace {
 static void test_pdf_object_serialization(const sk_sp<SkPDFObject> object) {
@@ -83,7 +84,7 @@ static void test_pdf_object_serialization(const sk_sp<SkPDFObject> object) {
     SkNullWStream wStream;
     SkPDFObjNumMap objNumMap;
     objNumMap.addObjectRecursively(object.get());
-    for (int i = 0; i < objNumMap.objects().count(); ++i) {
+    for (size_t i = 0; i < objNumMap.objects().size(); ++i) {
         SkPDFObject* object = objNumMap.objects()[i].get();
         wStream.writeDecAsText(i + 1);
         wStream.writeText(" 0 obj\n");
@@ -231,7 +232,7 @@ struct PDFShaderBench : public Benchmark {
         SkASSERT(fShader);
         while (loops-- > 0) {
             SkNullWStream nullStream;
-            SkPDFDocument doc(&nullStream, SkDocument::PDFMetadata());
+            SkPDFDocument doc(&nullStream, SkPDF::Metadata());
             sk_sp<SkPDFObject> shader = SkPDFMakeShader(&doc, fShader.get(), SkMatrix::I(),
                                                         {0, 0, 400, 400}, SK_ColorBLACK);
         }
@@ -250,8 +251,8 @@ struct WritePDFTextBenchmark : public Benchmark {
         static const char kBinary[] = "\001\002\003\004\005\006";
         while (loops-- > 0) {
             for (int i = 1000; i-- > 0;) {
-                SkPDFUtils::WriteString(fWStream.get(), kHello, strlen(kHello));
-                SkPDFUtils::WriteString(fWStream.get(), kBinary, strlen(kBinary));
+                SkPDFWriteString(fWStream.get(), kHello, strlen(kHello));
+                SkPDFWriteString(fWStream.get(), kBinary, strlen(kBinary));
             }
         }
     }

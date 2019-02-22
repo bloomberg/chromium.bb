@@ -294,8 +294,8 @@ class ComputedStyle : public ComputedStyleBase,
   PseudoId StyleType() const { return static_cast<PseudoId>(StyleTypeInternal()); }
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
-  ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
+  const ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
+  const ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
   void RemoveCachedPseudoStyle(PseudoId);
 
   /**
@@ -380,6 +380,10 @@ class ComputedStyle : public ComputedStyleBase,
   EFillBox BackgroundClip() const {
     return static_cast<EFillBox>(BackgroundInternal().Clip());
   }
+
+  // Returns true if the Element should stick to the viewport bottom as the URL
+  // bar hides.
+  bool IsFixedToBottom() const { return !Bottom().IsAuto() && Top().IsAuto(); }
 
   // Border properties.
   // border-image-slice
@@ -895,31 +899,55 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Font properties.
-  CORE_EXPORT const Font& GetFont() const;
-  CORE_EXPORT void SetFont(const Font&);
-  CORE_EXPORT const FontDescription& GetFontDescription() const;
+  CORE_EXPORT const Font& GetFont() const { return FontInternal(); }
+  CORE_EXPORT void SetFont(const Font& font) { SetFontInternal(font); }
+  CORE_EXPORT const FontDescription& GetFontDescription() const {
+    return FontInternal().GetFontDescription();
+  }
   CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
 
   // font-size
-  int FontSize() const;
-  CORE_EXPORT float SpecifiedFontSize() const;
-  CORE_EXPORT float ComputedFontSize() const;
-  LayoutUnit ComputedFontSizeAsFixed() const;
+  int FontSize() const { return GetFontDescription().ComputedPixelSize(); }
+  CORE_EXPORT float SpecifiedFontSize() const {
+    return GetFontDescription().SpecifiedSize();
+  }
+  CORE_EXPORT float ComputedFontSize() const {
+    return GetFontDescription().ComputedSize();
+  }
+  LayoutUnit ComputedFontSizeAsFixed() const {
+    return LayoutUnit::FromFloatRound(GetFontDescription().ComputedSize());
+  }
 
   // font-size-adjust
-  float FontSizeAdjust() const;
-  bool HasFontSizeAdjust() const;
+  float FontSizeAdjust() const { return GetFontDescription().SizeAdjust(); }
+  bool HasFontSizeAdjust() const {
+    return GetFontDescription().HasSizeAdjust();
+  }
 
   // font-weight
-  CORE_EXPORT FontSelectionValue GetFontWeight() const;
+  CORE_EXPORT FontSelectionValue GetFontWeight() const {
+    return GetFontDescription().Weight();
+  }
 
   // font-stretch
-  FontSelectionValue GetFontStretch() const;
+  FontSelectionValue GetFontStretch() const {
+    return GetFontDescription().Stretch();
+  }
 
   // Child is aligned to the parent by matching the parent’s dominant baseline
   // to the same baseline in the child.
   FontBaseline GetFontBaseline() const;
+
+  // Compute FontOrientation from this style. It is derived from WritingMode and
+  // TextOrientation.
+  FontOrientation ComputeFontOrientation() const;
+
+  // Update FontOrientation in FontDescription if it is different. FontBuilder
+  // takes care of updating it, but if WritingMode or TextOrientation were
+  // changed after the style was constructed, this function synchronizes
+  // FontOrientation to match to this style.
+  void UpdateFontOrientation();
 
   // -webkit-locale
   const AtomicString& Locale() const {
@@ -929,7 +957,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // FIXME: Remove letter-spacing/word-spacing and replace them with respective
   // FontBuilder calls.  letter-spacing
-  float LetterSpacing() const;
+  float LetterSpacing() const { return GetFontDescription().LetterSpacing(); }
   void SetLetterSpacing(float);
 
   // tab-size
@@ -945,7 +973,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // word-spacing
-  float WordSpacing() const;
+  float WordSpacing() const { return GetFontDescription().WordSpacing(); }
   void SetWordSpacing(float);
 
   // orphans
@@ -1082,19 +1110,13 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT StyleInheritedVariables* InheritedVariables() const;
   CORE_EXPORT StyleNonInheritedVariables* NonInheritedVariables() const;
 
-  void SetUnresolvedInheritedVariable(const AtomicString&,
-                                      scoped_refptr<CSSVariableData>);
-  void SetUnresolvedNonInheritedVariable(const AtomicString&,
-                                         scoped_refptr<CSSVariableData>);
+  void SetVariable(const AtomicString&,
+                   scoped_refptr<CSSVariableData>,
+                   bool is_inherited_property);
 
-  void SetResolvedUnregisteredVariable(const AtomicString&,
-                                       scoped_refptr<CSSVariableData>);
-  void SetResolvedInheritedVariable(const AtomicString&,
-                                    scoped_refptr<CSSVariableData>,
-                                    const CSSValue*);
-  void SetResolvedNonInheritedVariable(const AtomicString&,
-                                       scoped_refptr<CSSVariableData>,
-                                       const CSSValue*);
+  void SetRegisteredVariable(const AtomicString&,
+                             const CSSValue*,
+                             bool is_inherited_property);
 
   void RemoveVariable(const AtomicString&, bool is_inherited_property);
 
@@ -1329,7 +1351,7 @@ class ComputedStyle : public ComputedStyleBase,
   void ApplyTextTransform(String*, UChar previous_character = ' ') const;
 
   // Line-height utility functions.
-  const Length& SpecifiedLineHeight() const;
+  const Length& SpecifiedLineHeight() const { return LineHeightInternal(); }
   int ComputedLineHeight() const;
   LayoutUnit ComputedLineHeightAsFixed() const;
 
@@ -1763,6 +1785,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasPerspective() const { return Perspective() > 0; }
 
   // Outline utility functions.
+  // HasOutline is insufficient to determine whether Node has an outline.
+  // Use NGOutlineUtils::HasPaintedOutline instead.
   bool HasOutline() const {
     return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }
@@ -2457,8 +2481,8 @@ class ComputedStyle : public ComputedStyleBase,
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
 
   Color StopColor() const { return SvgStyle().StopColor(); }
-  Color FloodColor() const { return SvgStyle().FloodColor(); }
-  Color LightingColor() const { return SvgStyle().LightingColor(); }
+  StyleColor FloodColor() const { return SvgStyle().FloodColor(); }
+  StyleColor LightingColor() const { return SvgStyle().LightingColor(); }
 
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
   void OverrideTextDecorationColors(Color propagated_color);

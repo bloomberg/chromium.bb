@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cache_storage_context.h"
 
@@ -31,8 +33,8 @@ void GetAllOriginsInfoForCacheStorageCallback(
     result.push_back(origin);
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, result));
 }
 
 }  // namespace
@@ -49,8 +51,8 @@ void BrowsingDataCacheStorageHelper::StartFetching(
     const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BrowsingDataCacheStorageHelper::FetchCacheStorageUsageInfoOnIOThread,
           this, callback));
@@ -58,8 +60,8 @@ void BrowsingDataCacheStorageHelper::StartFetching(
 
 void BrowsingDataCacheStorageHelper::DeleteCacheStorage(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BrowsingDataCacheStorageHelper::DeleteCacheStorageOnIOThread, this,
           origin));
@@ -141,14 +143,13 @@ void CannedBrowsingDataCacheStorageHelper::StartFetching(
     result.push_back(info);
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(callback, result));
 }
 
 void CannedBrowsingDataCacheStorageHelper::DeleteCacheStorage(
     const GURL& origin) {
-  for (std::set<PendingCacheStorageUsageInfo>::iterator it =
-           pending_cache_storage_info_.begin();
+  for (auto it = pending_cache_storage_info_.begin();
        it != pending_cache_storage_info_.end();) {
     if (it->origin == origin)
       pending_cache_storage_info_.erase(it++);

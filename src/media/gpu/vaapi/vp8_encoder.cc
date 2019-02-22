@@ -48,27 +48,36 @@ VP8Encoder::~VP8Encoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool VP8Encoder::Initialize(const gfx::Size& visible_size,
-                            VideoCodecProfile profile,
-                            uint32_t initial_bitrate,
-                            uint32_t initial_framerate) {
+bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX);
+  if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP8) {
+    DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);
+    return false;
+  }
 
-  DCHECK(!visible_size.IsEmpty());
+  if (config.input_visible_size.IsEmpty()) {
+    DVLOGF(1) << "Input visible size could not be empty";
+    return false;
+  }
   // 4:2:0 format has to be 2-aligned.
-  DCHECK_EQ(visible_size.width() % 2, 0);
-  DCHECK_EQ(visible_size.height() % 2, 0);
+  if ((config.input_visible_size.width() % 2 != 0) ||
+      (config.input_visible_size.height() % 2 != 0)) {
+    DVLOGF(1) << "The pixel sizes are not even: "
+              << config.input_visible_size.ToString();
+    return false;
+  }
 
-  visible_size_ = visible_size;
+  visible_size_ = config.input_visible_size;
   coded_size_ = gfx::Size(base::bits::Align(visible_size_.width(), 16),
                           base::bits::Align(visible_size_.height(), 16));
 
   Reset();
 
   VideoBitrateAllocation initial_bitrate_allocation;
-  initial_bitrate_allocation.SetBitrate(0, 0, initial_bitrate);
-  return UpdateRates(initial_bitrate_allocation, initial_framerate);
+  initial_bitrate_allocation.SetBitrate(0, 0, config.initial_bitrate);
+  return UpdateRates(initial_bitrate_allocation,
+                     config.initial_framerate.value_or(
+                         VideoEncodeAccelerator::kDefaultFramerate));
 }
 
 gfx::Size VP8Encoder::GetCodedSize() const {

@@ -22,7 +22,7 @@
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+n * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -38,9 +38,9 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -83,7 +83,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   base::Optional<ResourceRequestBlockedReason> CanRequest(
-      Resource::Type type,
+      ResourceType type,
       const ResourceRequest& resource_request,
       const KURL& url,
       const ResourceLoaderOptions& options,
@@ -91,7 +91,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       ResourceRequest::RedirectStatus redirect_status) const override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
-      Resource::Type,
+      ResourceType,
       FetchParameters::DeferOption) const override;
   void DispatchDidChangeResourcePriority(unsigned long identifier,
                                          ResourceLoadPriority,
@@ -101,7 +101,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       unsigned long identifier,
       ResourceRequest&,
       const ResourceResponse& redirect_response,
-      Resource::Type,
+      ResourceType,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
   void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
                                               const ResourceRequest&,
@@ -109,7 +109,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
                                   network::mojom::RequestContextFrameType,
-                                  WebURLRequest::RequestContext,
+                                  mojom::RequestContextType,
                                   Resource*,
                                   ResourceResponseType) override;
   void DispatchDidReceiveData(unsigned long identifier,
@@ -130,9 +130,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                        int64_t encoded_data_length,
                        bool is_internal_request) override;
 
-  bool ShouldLoadNewResource(Resource::Type) const override;
+  bool ShouldLoadNewResource(ResourceType) const override;
   void RecordLoadingActivity(const ResourceRequest&,
-                             Resource::Type,
+                             ResourceType,
                              const AtomicString& fetch_initiator_name) override;
   void DidLoadResource(Resource*) override;
 
@@ -150,7 +150,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   const SecurityOrigin* GetSecurityOrigin() const override;
 
-  void PopulateResourceRequest(Resource::Type,
+  void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
@@ -220,7 +220,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason,
-                               Resource::Type) const override;
+                               ResourceType) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -229,7 +229,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
       override;
   bool ShouldBlockFetchByMixedContentCheck(
-      WebURLRequest::RequestContext,
+      mojom::RequestContextType,
       network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
@@ -246,7 +246,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
-  scoped_refptr<const SecurityOrigin> GetRequestorOrigin();
   const ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,
@@ -256,7 +255,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // the |ContentSettingsClient| with the list of client hints and the
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
-  void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&);
+  void SetFirstPartyCookie(ResourceRequest&);
 
   // Returns true if execution of scripts from the url are allowed. Compared to
   // AllowScriptFromSource(), this method does not generate any

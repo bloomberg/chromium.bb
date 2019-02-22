@@ -366,20 +366,21 @@ void GCMStoreImpl::Backend::Load(StoreOpenMode open_mode,
   if (result->device_android_id != 0 && result->device_security_token != 0) {
     int64_t file_size = 0;
     if (base::GetFileSize(path_, &file_size)) {
-      UMA_HISTOGRAM_COUNTS("GCM.StoreSizeKB",
-                           static_cast<int>(file_size / 1024));
+      UMA_HISTOGRAM_COUNTS_1M("GCM.StoreSizeKB",
+                              static_cast<int>(file_size / 1024));
     }
 
-    UMA_HISTOGRAM_COUNTS("GCM.RestoredRegistrations", gcm_registration_count);
-    UMA_HISTOGRAM_COUNTS("GCM.RestoredOutgoingMessages",
-                         result->outgoing_messages.size());
-    UMA_HISTOGRAM_COUNTS("GCM.RestoredIncomingMessages",
-                         result->incoming_messages.size());
+    UMA_HISTOGRAM_COUNTS_1M("GCM.RestoredRegistrations",
+                            gcm_registration_count);
+    UMA_HISTOGRAM_COUNTS_1M("GCM.RestoredOutgoingMessages",
+                            result->outgoing_messages.size());
+    UMA_HISTOGRAM_COUNTS_1M("GCM.RestoredIncomingMessages",
+                            result->incoming_messages.size());
 
-    UMA_HISTOGRAM_COUNTS("InstanceID.RestoredTokenCount",
-                         instance_id_token_count);
-    UMA_HISTOGRAM_COUNTS("InstanceID.RestoredIDCount",
-                         result->instance_id_data.size());
+    UMA_HISTOGRAM_COUNTS_1M("InstanceID.RestoredTokenCount",
+                            instance_id_token_count);
+    UMA_HISTOGRAM_COUNTS_1M("InstanceID.RestoredIDCount",
+                            result->instance_id_data.size());
   }
 
   DVLOG(1) << "Succeeded in loading "
@@ -1440,7 +1441,7 @@ void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
     if (app_message_counts_[data_message->category()] == kMessagesPerAppLimit)
       num_throttled_apps++;
   }
-  UMA_HISTOGRAM_COUNTS("GCM.NumThrottledApps", num_throttled_apps);
+  UMA_HISTOGRAM_COUNTS_1M("GCM.NumThrottledApps", num_throttled_apps);
   callback.Run(std::move(result));
 }
 

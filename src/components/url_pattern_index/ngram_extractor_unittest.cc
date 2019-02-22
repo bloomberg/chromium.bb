@@ -26,39 +26,57 @@ bool IsSpecialChar(char c) {
 }
 
 template <typename IntType>
-IntType EncodeStringToInteger(const char* data, size_t size) {
-  EXPECT_LE(size, sizeof(IntType));
+IntType EncodeStringToInteger(const std::string& data) {
+  EXPECT_LE(data.size(), sizeof(IntType));
 
   IntType encoded_string = 0;
-  for (size_t i = 0; i < size; ++i) {
+  for (size_t i = 0; i < data.size(); ++i) {
     encoded_string = (encoded_string << 8) | static_cast<IntType>(data[i]);
   }
   return encoded_string;
+}
+
+template <typename IntType>
+std::vector<IntType> EncodeStringsToIntegers(
+    const std::vector<std::string>& ngrams) {
+  std::vector<IntType> int_grams;
+  for (const std::string& ngram : ngrams) {
+    int_grams.push_back(EncodeStringToInteger<IntType>(ngram));
+  }
+  return int_grams;
 }
 
 }  // namespace
 
 TEST(NGramExtractorTest, EmptyString) {
   const char* kString = "";
-  auto extractor = CreateNGramExtractor<3, uint32_t>(kString, IsSpecialChar);
+  auto extractor =
+      CreateNGramExtractor<3, uint32_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSpecialChar);
   EXPECT_EQ(extractor.begin(), extractor.end());
 }
 
 TEST(NGramExtractorTest, ShortString) {
   const char* kString = "abacab";
-  auto extractor = CreateNGramExtractor<7, uint64_t>(kString, IsSeparatorFalse);
+  auto extractor =
+      CreateNGramExtractor<7, uint64_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSeparatorFalse);
   EXPECT_EQ(extractor.begin(), extractor.end());
 }
 
 TEST(NGramExtractorTest, ShortPieces) {
   const char* kString = "1**abac*abc*abcd*00";
-  auto extractor = CreateNGramExtractor<6, uint64_t>(kString, IsSpecialChar);
+  auto extractor =
+      CreateNGramExtractor<6, uint64_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSpecialChar);
   EXPECT_EQ(extractor.begin(), extractor.end());
 }
 
 TEST(NGramExtractorTest, IsSeparatorAlwaysTrue) {
   const char* kString = "abacaba";
-  auto extractor = CreateNGramExtractor<3, uint32_t>(kString, IsSeparatorTrue);
+  auto extractor =
+      CreateNGramExtractor<3, uint32_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSeparatorTrue);
   EXPECT_EQ(extractor.begin(), extractor.end());
 }
 
@@ -66,13 +84,37 @@ TEST(NGramExtractorTest, IsSeparatorAlwaysFalse) {
   const std::string kString = "abacaba123";
   constexpr size_t N = 3;
 
-  std::vector<uint32_t> expected_ngrams;
-  for (size_t begin = 0; begin + N <= kString.size(); ++begin) {
-    expected_ngrams.push_back(
-        EncodeStringToInteger<uint32_t>(kString.data() + begin, N));
-  }
+  std::vector<uint32_t> expected_ngrams = EncodeStringsToIntegers<uint32_t>(
+      {"aba", "bac", "aca", "cab", "aba", "ba1", "a12", "123"});
+  auto extractor =
+      CreateNGramExtractor<N, uint32_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSeparatorFalse);
+  std::vector<uint32_t> actual_ngrams(extractor.begin(), extractor.end());
+  EXPECT_EQ(expected_ngrams, actual_ngrams);
+}
 
-  auto extractor = CreateNGramExtractor<N, uint32_t>(kString, IsSeparatorFalse);
+TEST(NGramExtractorTest, LowerCaseExtraction) {
+  const std::string kString = "aBcDEFG";
+  constexpr size_t N = 3;
+
+  std::vector<uint32_t> expected_ngrams =
+      EncodeStringsToIntegers<uint32_t>({"abc", "bcd", "cde", "def", "efg"});
+  auto extractor =
+      CreateNGramExtractor<N, uint32_t, NGramCaseExtraction::kLowerCase>(
+          kString, IsSeparatorFalse);
+  std::vector<uint32_t> actual_ngrams(extractor.begin(), extractor.end());
+  EXPECT_EQ(expected_ngrams, actual_ngrams);
+}
+
+TEST(NGramExtractorTest, CaseSensitiveExtraction) {
+  const std::string kString = "aBcDEFG";
+  constexpr size_t N = 3;
+
+  std::vector<uint32_t> expected_ngrams =
+      EncodeStringsToIntegers<uint32_t>({"aBc", "BcD", "cDE", "DEF", "EFG"});
+  auto extractor =
+      CreateNGramExtractor<N, uint32_t, NGramCaseExtraction::kCaseSensitive>(
+          kString, IsSeparatorFalse);
   std::vector<uint32_t> actual_ngrams(extractor.begin(), extractor.end());
   EXPECT_EQ(expected_ngrams, actual_ngrams);
 }
@@ -98,11 +140,13 @@ TEST(NGramExtractorTest, NGramsArePresent) {
       }
       if (is_valid_ngram) {
         expected_ngrams.push_back(
-            EncodeStringToInteger<uint64_t>(string.data() + begin, N));
+            EncodeStringToInteger<uint64_t>(string.substr(begin, N)));
       }
     }
 
-    auto extractor = CreateNGramExtractor<N, uint64_t>(string, IsSpecialChar);
+    auto extractor =
+        CreateNGramExtractor<N, uint64_t, NGramCaseExtraction::kLowerCase>(
+            string, IsSpecialChar);
     std::vector<uint64_t> actual_ngrams(extractor.begin(), extractor.end());
     EXPECT_EQ(expected_ngrams, actual_ngrams);
   }

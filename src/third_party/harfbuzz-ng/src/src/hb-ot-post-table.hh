@@ -27,8 +27,7 @@
 #ifndef HB_OT_POST_TABLE_HH
 #define HB_OT_POST_TABLE_HH
 
-#include "hb-open-type-private.hh"
-#include "hb-subset-plan.hh"
+#include "hb-open-type.hh"
 
 #define HB_STRING_ARRAY_NAME format1_names
 #define HB_STRING_ARRAY_LIST "hb-ot-post-macroman.hh"
@@ -56,10 +55,11 @@ struct postV2Tail
     return_trace (glyphNameIndex.sanitize (c));
   }
 
-  ArrayOf<HBUINT16>glyphNameIndex;	/* This is not an offset, but is the
+  ArrayOf<HBUINT16>	glyphNameIndex;	/* This is not an offset, but is the
 					 * ordinal number of the glyph in 'post'
 					 * string tables. */
-  HBUINT8		namesX[VAR];		/* Glyph names with length bytes [variable]
+  UnsizedArrayOf<HBUINT8>
+			namesX;		/* Glyph names with length bytes [variable]
 					 * (a Pascal string). */
 
   DEFINE_SIZE_ARRAY2 (2, glyphNameIndex, namesX);
@@ -131,6 +131,7 @@ struct post
     {
       index_to_offset.fini ();
       free (gids_sorted_by_name.get ());
+      hb_blob_destroy (blob);
     }
 
     inline bool get_glyph_name (hb_codepoint_t glyph,
@@ -143,7 +144,7 @@ struct post
 	return true;
       if (buf_len <= s.len) /* What to do with truncation? Returning false for now. */
         return false;
-      strncpy (buf, s.bytes, s.len);
+      strncpy (buf, s.arrayZ, s.len);
       buf[s.len] = '\0';
       return true;
     }
@@ -294,6 +295,8 @@ struct post
 /*postV2Tail	v2[VAR];*/
   DEFINE_SIZE_STATIC (32);
 };
+
+struct post_accelerator_t : post::accelerator_t {};
 
 } /* namespace OT */
 

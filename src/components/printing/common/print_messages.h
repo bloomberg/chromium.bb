@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
@@ -267,16 +267,12 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_PrintFrame_Params)
 IPC_STRUCT_TRAITS_END()
 
 // Holds the printed content information.
-// The printed content is in shared memory, and passed by its handle
-// and data size.
+// The printed content is in shared memory, and passed as a region.
 // A map on out-of-process subframe contents is also included so the printed
 // content can be composited as needed.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintContent_Params)
-  // A shared memory handle to metafile data.
-  IPC_STRUCT_MEMBER(base::SharedMemoryHandle, metafile_data_handle)
-
-  // Size of metafile data.
-  IPC_STRUCT_MEMBER(uint32_t, data_size)
+  // A shared memory region for the metafile data.
+  IPC_STRUCT_MEMBER(base::ReadOnlySharedMemoryRegion, metafile_data_region)
 
   // Content id to render frame proxy id mapping for out-of-process subframes.
   IPC_STRUCT_MEMBER(printing::ContentToProxyIdMap, subframe_content_info)
@@ -288,6 +284,15 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidStartPreview_Params)
   // Total page count for the rendered preview. (Not the number of pages the
   // user selected to print.)
   IPC_STRUCT_MEMBER(int, page_count)
+
+  // The list of 0-based page numbers that will be rendered.
+  IPC_STRUCT_MEMBER(std::vector<int>, pages_to_render)
+
+  // number of pages per sheet and should be greater or equal to 1.
+  IPC_STRUCT_MEMBER(int, pages_per_sheet)
+
+  // Physical size of the page, including non-printable margins.
+  IPC_STRUCT_MEMBER(gfx::Size, page_size)
 
   // Scaling % to fit to page
   IPC_STRUCT_MEMBER(int, fit_to_page_scaling)

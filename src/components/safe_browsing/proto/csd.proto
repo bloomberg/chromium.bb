@@ -298,6 +298,14 @@ message LoginReputationClientRequest {
 
   // The MIME type of the page, e.g. "application/pdf".
   optional string content_type = 8;
+
+  // Content area height in DIPs. This field should only be filled for extended
+  // reporting users.
+  optional int32 content_area_height = 9;
+
+  // Content area width in DIPs. This field should only be filled for extended
+  // reporting users.
+  optional int32 content_area_width = 10;
 }
 
 // The message is used for client response for login reputation requests.
@@ -475,7 +483,7 @@ message ClientDownloadRequest {
     INVALID_ZIP = 7;
     // A .dmg, .pkg, etc, that Chrome failed to unpack to the point of finding
     // Mach O's.
-    INVALID_MAC_ARCHIVE = 8;
+    MAC_ARCHIVE_FAILED_PARSING = 8;
     // A download request initiated via PPAPI. Typically the requestor is
     // a Flash applet.
     PPAPI_SAVE_REQUEST = 9;

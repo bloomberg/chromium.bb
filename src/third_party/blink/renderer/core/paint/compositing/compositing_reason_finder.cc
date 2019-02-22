@@ -103,9 +103,9 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (style.HasPerspective())
     reasons |= CompositingReason::kPerspectiveWith3DDescendants;
 
-  // If the implementation of createsGroup changes, we need to be aware of that
+  // If the implementation of CreatesGroup changes, we need to be aware of that
   // in this part of code.
-  DCHECK((layout_object.IsTransparent() || layout_object.HasMask() ||
+  DCHECK((style.HasOpacity() || layout_object.HasMask() ||
           layout_object.HasClipPath() ||
           layout_object.HasFilterInducingProperty() || style.HasBlendMode()) ==
          layout_object.CreatesGroup());
@@ -123,7 +123,7 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (layout_object.HasTransformRelatedProperty() && style.HasTransform())
     reasons |= CompositingReason::kTransformWithCompositedDescendants;
 
-  if (layout_object.IsTransparent())
+  if (style.HasOpacity())
     reasons |= CompositingReason::kOpacityWithCompositedDescendants;
 
   if (style.HasBlendMode())
@@ -217,10 +217,6 @@ CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
     reasons |= CompositingReason::kActiveFilterAnimation;
   if (RequiresCompositingForBackdropFilterAnimation(style))
     reasons |= CompositingReason::kActiveBackdropFilterAnimation;
-  // TODO(crbug.com/754471): remove the next two lines when the experiment is
-  // completed.
-  if (!style.ShouldCompositeForCurrentAnimations())
-    reasons = CompositingReason::kNone;
   return reasons;
 }
 

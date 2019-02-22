@@ -31,9 +31,10 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/accessibility/ax_modes.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
@@ -49,10 +50,6 @@ struct Manifest;
 
 namespace base {
 class TimeTicks;
-}
-
-namespace blink {
-struct WebFindOptions;
 }
 
 namespace device {
@@ -449,6 +446,7 @@ class WebContents : public PageNavigator,
   // parent to child.
   // When a navigation request is created, was_discarded is passed on to the
   // request and reset to false in FrameTreeNode.
+  virtual bool WasDiscarded() = 0;
   virtual void SetWasDiscarded(bool was_discarded) = 0;
 
   // Internal state ------------------------------------------------------------
@@ -522,7 +520,12 @@ class WebContents : public PageNavigator,
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.
-  virtual void DispatchBeforeUnload() = 0;
+  // If |auto_cancel| is true, and the beforeunload handler returns a non-empty
+  // string (indicating the page wants to present a confirmation dialog), then
+  // the beforeunload operation will automatically return with |proceed=false|
+  // and no dialog will be shown to the user. This is used to interrupt a
+  // potential discard without causing the dialog to appear.
+  virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
   // Attaches this inner WebContents to its container frame
   // |outer_contents_frame| in |outer_web_contents|.
@@ -814,7 +817,7 @@ class WebContents : public PageNavigator,
   // Finds text on a page. |search_text| should not be empty.
   virtual void Find(int request_id,
                     const base::string16& search_text,
-                    const blink::WebFindOptions& options) = 0;
+                    blink::mojom::FindOptionsPtr options) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).
@@ -909,13 +912,6 @@ class WebContents : public PageNavigator,
   // scoped to this WebContents. This provides access to interfaces implemented
   // in Java in the browser process to C++ code in the browser process.
   virtual service_manager::InterfaceProvider* GetJavaInterfaces() = 0;
-#elif defined(OS_MACOSX)
-  // Allowing other views disables optimizations which assume that only a single
-  // WebContents is present.
-  virtual void SetAllowOtherViews(bool allow) = 0;
-
-  // Returns true if other views are allowed, false otherwise.
-  virtual bool GetAllowOtherViews() = 0;
 #endif  // OS_ANDROID
 
   // Returns true if the WebContents has completed its first meaningful paint

@@ -142,33 +142,12 @@ enum PasswordProtectionTrigger {
   PASSWORD_PROTECTION_TRIGGER_MAX,
 };
 
-// Determines which opt-in text should be used based on the currently active
-// preference. Will return either |extended_reporting_pref| if the legacy
-// Extended Reporting pref is active, or |scout_pref| if the Scout pref is
-// active. Used for Android.
-std::string ChooseOptInTextPreference(
-    const PrefService& prefs,
-    const std::string& extended_reporting_pref,
-    const std::string& scout_pref);
-
-// Determines which opt-in text should be used based on the currently active
-// preference. Will return either |extended_reporting_resource| if the legacy
-// Extended Reporting pref is active, or |scout_resource| if the Scout pref is
-// active.
-int ChooseOptInTextResource(const PrefService& prefs,
-                            int extended_reporting_resource,
-                            int scout_resource);
-
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).
 bool ExtendedReportingPrefExists(const PrefService& prefs);
 
 // Returns the level of reporting available for the current user.
 ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs);
-
-// Returns the name of the Safe Browsing Extended Reporting pref that is
-// currently in effect. The specific pref in-use may change through experiments.
-const char* GetExtendedReportingPrefName(const PrefService& prefs);
 
 // Returns whether the user is able to modify the Safe Browsing Extended
 // Reporting opt-in.
@@ -182,9 +161,6 @@ bool IsExtendedReportingEnabled(const PrefService& prefs);
 // Returns whether the active Extended Reporting pref is currently managed by
 // enterprise policy, meaning the user can't change it.
 bool IsExtendedReportingPolicyManaged(const PrefService& prefs);
-
-// Returns whether the currently-active Extended Reporting pref is Scout.
-bool IsScout(const PrefService& prefs);
 
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);

@@ -18,11 +18,11 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.CountDownLatch;

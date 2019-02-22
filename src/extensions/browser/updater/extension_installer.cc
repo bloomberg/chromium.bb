@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -15,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/update_client_errors.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
@@ -41,8 +41,8 @@ void ExtensionInstaller::OnUpdateError(int error) {
 void ExtensionInstaller::Install(const base::FilePath& unpack_path,
                                  const std::string& public_key,
                                  UpdateClientCallback update_client_callback) {
-  auto ui_thread = content::BrowserThread::GetTaskRunnerForThread(
-      content::BrowserThread::UI);
+  auto ui_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::UI});
   DCHECK(ui_thread);
   DCHECK(!extension_installer_callback_.is_null());
   if (base::PathExists(unpack_path)) {

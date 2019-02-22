@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -393,7 +394,7 @@ TEST_F(SessionControllerClientTest,
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          user_profile, CreateTestPolicyCertService));
+          user_profile, base::BindRepeating(&CreateTestPolicyCertService)));
   policy::PolicyCertService* service =
       policy::PolicyCertServiceFactory::GetForProfile(user_profile);
   ASSERT_TRUE(service);

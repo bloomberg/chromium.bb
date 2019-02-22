@@ -43,8 +43,7 @@ ChannelIDStore::~ChannelIDStore() {
 }
 
 void ChannelIDStore::InitializeFrom(const ChannelIDList& list) {
-  for (ChannelIDList::const_iterator i = list.begin(); i != list.end();
-      ++i) {
+  for (auto i = list.begin(); i != list.end(); ++i) {
     SetChannelID(std::unique_ptr<ChannelID>(new ChannelID(*i)));
   }
 }

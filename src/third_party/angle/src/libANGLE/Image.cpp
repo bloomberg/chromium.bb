@@ -123,6 +123,14 @@ void ImageSibling::setSourceEGLImageInitState(gl::InitState initState) const
     mTargetOf->setInitState(initState);
 }
 
+bool ImageSibling::isRenderable(const gl::Context *context,
+                                GLenum binding,
+                                const gl::ImageIndex &imageIndex) const
+{
+    ASSERT(isEGLImageTarget());
+    return mTargetOf->isRenderable(context);
+}
+
 ImageState::ImageState(EGLenum target, ImageSibling *buffer, const AttributeMap &attribs)
     : label(nullptr),
       imageIndex(GetImageIndex(target, attribs)),
@@ -130,7 +138,8 @@ ImageState::ImageState(EGLenum target, ImageSibling *buffer, const AttributeMap 
       targets(),
       format(buffer->getAttachmentFormat(GL_NONE, imageIndex)),
       size(buffer->getAttachmentSize(imageIndex)),
-      samples(buffer->getAttachmentSamples(imageIndex))
+      samples(buffer->getAttachmentSamples(imageIndex)),
+      sourceType(target)
 {
 }
 
@@ -153,7 +162,7 @@ Image::Image(rx::EGLImplFactory *factory,
     mState.source->addImageSource(this);
 }
 
-Error Image::onDestroy(const Display *display)
+void Image::onDestroy(const Display *display)
 {
     // All targets should hold a ref to the egl image and it should not be deleted until there are
     // no siblings left.
@@ -165,8 +174,6 @@ Error Image::onDestroy(const Display *display)
         mState.source->removeImageSource(this);
         mState.source = nullptr;
     }
-
-    return NoError();
 }
 
 Image::~Image()
@@ -215,6 +222,39 @@ gl::Error Image::orphanSibling(const gl::Context *context, ImageSibling *sibling
 const gl::Format &Image::getFormat() const
 {
     return mState.format;
+}
+
+bool Image::isRenderable(const gl::Context *context) const
+{
+    if (IsTextureTarget(mState.sourceType))
+    {
+        return mState.format.info->textureAttachmentSupport(context->getClientVersion(),
+                                                            context->getExtensions());
+    }
+    if (IsRenderbufferTarget(mState.sourceType))
+    {
+        return mState.format.info->renderbufferSupport(context->getClientVersion(),
+                                                       context->getExtensions());
+    }
+
+    UNREACHABLE();
+    return false;
+}
+
+bool Image::isTexturable(const gl::Context *context) const
+{
+    if (IsTextureTarget(mState.sourceType))
+    {
+        return mState.format.info->textureSupport(context->getClientVersion(),
+                                                  context->getExtensions());
+    }
+    if (IsRenderbufferTarget(mState.sourceType))
+    {
+        return true;
+    }
+
+    UNREACHABLE();
+    return false;
 }
 
 size_t Image::getWidth() const

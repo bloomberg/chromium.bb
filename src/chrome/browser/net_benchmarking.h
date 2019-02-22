@@ -9,10 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 
-namespace chrome_browser_net {
-class Predictor;
-}
-
 namespace predictors {
 class LoadingPredictor;
 }
@@ -24,7 +20,6 @@ class LoadingPredictor;
 class NetBenchmarking : public chrome::mojom::NetBenchmarking {
  public:
   NetBenchmarking(base::WeakPtr<predictors::LoadingPredictor> loading_predictor,
-                  base::WeakPtr<chrome_browser_net::Predictor> predictor,
                   int render_process_id);
   ~NetBenchmarking() override;
 
@@ -32,7 +27,6 @@ class NetBenchmarking : public chrome::mojom::NetBenchmarking {
   // Callers should prefer this over using the constructor directly.
   static void Create(
       base::WeakPtr<predictors::LoadingPredictor> loading_predictor,
-      base::WeakPtr<chrome_browser_net::Predictor> predictor,
       int render_process_id,
       chrome::mojom::NetBenchmarkingRequest request);
 
@@ -49,7 +43,6 @@ class NetBenchmarking : public chrome::mojom::NetBenchmarking {
 
   // These weak pointers should be dereferenced only on the UI thread.
   base::WeakPtr<predictors::LoadingPredictor> loading_predictor_;
-  base::WeakPtr<chrome_browser_net::Predictor> predictor_;
   const int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetBenchmarking);

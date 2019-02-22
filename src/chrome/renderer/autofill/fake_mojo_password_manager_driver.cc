@@ -49,13 +49,11 @@ void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
 }
 
 void FakeMojoPasswordManagerDriver::ShowPasswordSuggestions(
-    int key,
     base::i18n::TextDirection text_direction,
     const base::string16& typed_username,
     int options,
     const gfx::RectF& bounds) {
   called_show_pw_suggestions_ = true;
-  show_pw_suggestions_key_ = key;
   show_pw_suggestions_username_ = typed_username;
   show_pw_suggestions_options_ = options;
 }

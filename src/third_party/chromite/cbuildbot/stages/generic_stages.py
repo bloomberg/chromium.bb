@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import contextlib
+import copy
 import fnmatch
 import json
 import os
@@ -123,8 +124,7 @@ class BuilderStage(object):
     self._portage_extra_env = {}
     useflags = self._run.config.useflags[:]
 
-    if self._run.options.clobber:
-      self._portage_extra_env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+    self._portage_extra_env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     if self._run.options.chrome_root:
       self._portage_extra_env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
@@ -240,19 +240,26 @@ class BuilderStage(object):
     metrics.CumulativeSecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds, fields=fields)
     metrics.Counter(constants.MON_STAGE_COMP_COUNT).increment(fields=fields)
+    common_metrics_fields = {
+        'branch_name': self.metrics_branch,
+        'build_config': self.build_config,
+        'tryjob': self.metrics_tryjob,
+    }
+    duration_metrics_fields = copy.deepcopy(common_metrics_fields)
+    duration_metrics_fields.update({'stage': self.name,
+                                    'status': status})
+    if self.metrics_branch is not None:
+      metrics.FloatMetric(constants.MON_STAGE_INSTANCE_DURATION).set(
+          elapsed_time_seconds, fields=duration_metrics_fields)
     if (isinstance(stage_result, BaseException) and
         self._build_stage_id is not None):
-      metrics_fields = {
-          'branch_name': self.metrics_branch,
-          'build_config': self.build_config,
-          'tryjob': self.metrics_tryjob,
-          'failed_stage': self.name,
-          'category': self.category,
-      }
+      failed_metrics_fields = copy.deepcopy(common_metrics_fields)
+      failed_metrics_fields.update({'failed_stage': self.name,
+                                    'category': self.category})
       _, db = self._run.GetCIDBHandle()
       if db:
         failures_lib.ReportStageFailure(db, self._build_stage_id, stage_result,
-                                        metrics_fields=metrics_fields)
+                                        metrics_fields=failed_metrics_fields)
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
@@ -358,8 +365,9 @@ class BuilderStage(object):
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
-    master_build_id = next(failure.master_build_id for
-                           failure in stage_failures)
+    master_build_id = None
+    if stage_failures:
+      master_build_id = stage_failures[0].master_build_id
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
         db, build_id, master_build_id)
 
@@ -440,15 +448,8 @@ class BuilderStage(object):
       The value of the environment variable, as a string. If no such variable
       can be found, return the empty string.
     """
-    cwd = os.path.join(self._build_root, 'src', 'scripts')
-    if board:
-      portageq = 'portageq-%s' % board
-    else:
-      portageq = 'portageq'
-    binhost = cros_build_lib.RunCommand(
-        [portageq, 'envvar', envvar], cwd=cwd, redirect_stdout=True,
-        enter_chroot=True, error_code_ok=True)
-    return binhost.output.rstrip('\n')
+    return portage_util.PortageqEnvvar(envvar, board=board,
+                                       allow_undefined=True)
 
   def _GetSlaveConfigs(self):
     """Get the slave configs for the current build config.

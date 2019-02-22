@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/core/background/request_queue_store.h"
+#include "components/offline_pages/core/background/request_queue_task_test_base.h"
+#include "components/offline_pages/core/background/test_request_queue_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -20,16 +22,12 @@ const GURL kUrl1("http://example.com");
 const GURL kUrl2("http://otherexample.com");
 const ClientId kClientId1("download", "1234");
 const ClientId kClientId2("download", "5678");
-}  // namespace
 
-class GetRequestsTaskTest : public testing::Test {
+class GetRequestsTaskTest : public RequestQueueTaskTestBase {
  public:
-  GetRequestsTaskTest();
-  ~GetRequestsTaskTest() override;
+  GetRequestsTaskTest() = default;
+  ~GetRequestsTaskTest() override = default;
 
-  void PumpLoop();
-
-  void InitializeStore(RequestQueueStore* store);
   void AddItemsToStore(RequestQueueStore* store);
   void GetRequestsCallback(
       bool success,
@@ -44,33 +42,12 @@ class GetRequestsTaskTest : public testing::Test {
   }
 
  private:
-  void InitializeStoreDone(bool success);
   void AddRequestDone(ItemActionStatus status);
 
-  bool callback_called_;
-  bool success_;
+  bool callback_called_ = false;
+  bool success_ = false;
   std::vector<std::unique_ptr<SavePageRequest>> requests_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
 };
-
-GetRequestsTaskTest::GetRequestsTaskTest()
-    : callback_called_(false),
-      success_(false),
-      task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
-
-GetRequestsTaskTest::~GetRequestsTaskTest() {}
-
-void GetRequestsTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
-
-void GetRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
-  store->Initialize(base::BindOnce(&GetRequestsTaskTest::InitializeStoreDone,
-                                   base::Unretained(this)));
-  PumpLoop();
-}
 
 void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
@@ -96,18 +73,13 @@ void GetRequestsTaskTest::GetRequestsCallback(
   requests_ = std::move(requests);
 }
 
-void GetRequestsTaskTest::InitializeStoreDone(bool success) {
-  ASSERT_TRUE(success);
-}
-
 void GetRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
   ASSERT_EQ(ItemActionStatus::SUCCESS, status);
 }
 
 TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  GetRequestsTask task(&store,
+  InitializeStore();
+  GetRequestsTask task(&store_,
                        base::BindOnce(&GetRequestsTaskTest::GetRequestsCallback,
                                       base::Unretained(this)));
   task.Run();
@@ -118,11 +90,10 @@ TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {
 }
 
 TEST_F(GetRequestsTaskTest, GetMultipleRequests) {
-  RequestQueueInMemoryStore store;
-  InitializeStore(&store);
-  AddItemsToStore(&store);
+  InitializeStore();
+  AddItemsToStore(&store_);
 
-  GetRequestsTask task(&store,
+  GetRequestsTask task(&store_,
                        base::BindOnce(&GetRequestsTaskTest::GetRequestsCallback,
                                       base::Unretained(this)));
   task.Run();
@@ -137,4 +108,5 @@ TEST_F(GetRequestsTaskTest, GetMultipleRequests) {
   EXPECT_EQ(kRequestId2, last_requests().at(id_2_index)->request_id());
 }
 
+}  // namespace
 }  // namespace offline_pages

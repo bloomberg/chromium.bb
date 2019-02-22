@@ -23,10 +23,9 @@ namespace test {
 class FolderHeaderViewTest;
 }
 
-// FolderHeaderView contains a back button and an editable folder name field.
+// FolderHeaderView contains an editable folder name field.
 class APP_LIST_EXPORT FolderHeaderView : public views::View,
                                          public views::TextfieldController,
-                                         public views::ButtonListener,
                                          public AppListItemObserver {
  public:
   explicit FolderHeaderView(FolderHeaderViewDelegate* delegate);
@@ -73,9 +72,6 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
                        const base::string16& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
-
-  // views::ButtonListener overrides:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AppListItemObserver overrides:
   void ItemNameChanged() override;

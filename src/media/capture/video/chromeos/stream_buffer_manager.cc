@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/posix/safe_strerror.h"
+#include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -80,7 +81,6 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     const cros::mojom::CameraMetadataPtr& static_metadata,
     std::vector<cros::mojom::Camera3StreamPtr> streams) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  DCHECK(!stream_context_[StreamType::kPreview]);
 
   // The partial result count metadata is optional; defaults to 1 in case it
   // is not set in the static metadata.
@@ -186,9 +186,14 @@ void StreamBufferManager::StartPreview(
   RegisterBuffer(StreamType::kPreview);
 }
 
-void StreamBufferManager::StopPreview() {
+void StreamBufferManager::StopPreview(
+    base::OnceCallback<void(int32_t)> callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   capturing_ = false;
+  repeating_request_settings_.reset();
+  if (callback) {
+    capture_interface_->Flush(std::move(callback));
+  }
 }
 
 cros::mojom::Camera3StreamPtr StreamBufferManager::GetStreamConfiguration(
@@ -220,6 +225,10 @@ void StreamBufferManager::TakePhoto(
 
   oneshot_request_settings_.push(std::move(settings));
   RegisterBuffer(StreamType::kStillCapture);
+}
+
+size_t StreamBufferManager::GetStreamNumber() {
+  return stream_context_.size();
 }
 
 void StreamBufferManager::AddResultMetadataObserver(
@@ -415,7 +424,6 @@ void StreamBufferManager::OnRegisteredBuffer(StreamType stream_type,
 void StreamBufferManager::ProcessCaptureRequest() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(stream_context_[StreamType::kPreview]);
-  DCHECK(stream_context_[StreamType::kStillCapture]);
 
   cros::mojom::Camera3CaptureRequestPtr request =
       cros::mojom::Camera3CaptureRequest::New();
@@ -438,7 +446,8 @@ void StreamBufferManager::ProcessCaptureRequest() {
     request->output_buffers.push_back(std::move(buffer));
   }
 
-  if (!stream_context_[StreamType::kStillCapture]->registered_buffers.empty()) {
+  if (stream_context_.count(StreamType::kStillCapture) &&
+      !stream_context_[StreamType::kStillCapture]->registered_buffers.empty()) {
     DCHECK(!still_capture_callbacks_currently_processing_.empty());
     cros::mojom::Camera3StreamBufferPtr buffer =
         cros::mojom::Camera3StreamBuffer::New();
@@ -580,6 +589,7 @@ void StreamBufferManager::ProcessCaptureResult(
   }
 
   for (const auto& iter : stream_context_) {
+    TRACE_EVENT1("camera", "Capture Result", "frame_number", frame_number);
     SubmitCaptureResultIfComplete(frame_number, iter.first);
   }
 }

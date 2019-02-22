@@ -14,7 +14,7 @@
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     DownloadItemView* download_item_view)
-    : DownloadShelfContextMenu(download_item_view->download()),
+    : DownloadShelfContextMenu(download_item_view->model()),
       download_item_view_(download_item_view) {}
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import contextlib
 import hashlib
 
@@ -14,6 +13,105 @@ class TryserverApi(recipe_api.RecipeApi):
     super(TryserverApi, self).__init__(*args, **kwargs)
     self._failure_reasons = []
 
+    self._gerrit_change = None  # self.m.buildbucket.common_pb2.GerritChange
+    self._gerrit_change_repo_url = None
+
+    self._gerrit_info_initialized = False
+    self._gerrit_change_target_ref = None
+    self._gerrit_change_fetch_ref = None
+
+  def initialize(self):
+    changes = self.m.buildbucket.build.input.gerrit_changes
+    if len(changes) == 1:
+      cl = changes[0]
+      self._gerrit_change = cl
+      git_host = cl.host
+      gs_suffix = '-review.googlesource.com'
+      if git_host.endswith(gs_suffix):
+        git_host = '%s.googlesource.com' % git_host[:-len(gs_suffix)]
+      self._gerrit_change_repo_url = 'https://%s/%s' % (git_host, cl.project)
+
+  @property
+  def gerrit_change(self):
+    """Returns current gerrit change, if there is exactly one.
+
+    Returns a self.m.buildbucket.common_pb2.GerritChange or None.
+    """
+    return self._gerrit_change
+
+  @property
+  def gerrit_change_repo_url(self):
+    """Returns canonical URL of the gitiles repo of the current Gerrit CL.
+
+    Populated iff gerrit_change is populated.
+    """
+    return self._gerrit_change_repo_url
+
+  def _ensure_gerrit_change_info(self):
+    """Initializes extra info about gerrit_change, fetched from Gerrit server.
+
+    Initializes _gerrit_change_target_ref and _gerrit_change_fetch_ref.
+
+    May emit a step when called for the first time.
+    """
+    cl = self.gerrit_change
+    if not cl:  # pragma: no cover
+      return
+
+    if self._gerrit_info_initialized:
+      return
+
+    td = self._test_data if self._test_data.enabled else {}
+    mock_res = [{
+      'branch': td.get('gerrit_change_target_ref', 'master'),
+      'revisions': {
+        '184ebe53805e102605d11f6b143486d15c23a09c': {
+          '_number': str(cl.patchset),
+          'ref': 'refs/changes/%02d/%d/%d' % (
+              cl.change % 100, cl.change, cl.patchset),
+        },
+      },
+    }]
+    res = self.m.gerrit.get_changes(
+        host='https://' + cl.host,
+        query_params=[('change', cl.change)],
+        # This list must remain static/hardcoded.
+        # If you need extra info, either change it here (hardcoded) or
+        # fetch separetely.
+        o_params=['ALL_REVISIONS', 'DOWNLOAD_COMMANDS'],
+        limit=1,
+        name='fetch current CL info',
+        step_test_data=lambda: self.m.json.test_api.output(mock_res))[0]
+
+    self._gerrit_change_target_ref = res['branch']
+    if not self._gerrit_change_target_ref.startswith('refs/'):
+      self._gerrit_change_target_ref = (
+          'refs/heads/' + self._gerrit_change_target_ref)
+
+    for rev in res['revisions'].itervalues():
+      if int(rev['_number']) == self.gerrit_change.patchset:
+        self._gerrit_change_fetch_ref = rev['ref']
+        break
+    self._gerrit_info_initialized = True
+
+  @property
+  def gerrit_change_fetch_ref(self):
+    """Returns gerrit patch ref, e.g. "refs/heads/45/12345/6, or None.
+
+    Populated iff gerrit_change is populated.
+    """
+    self._ensure_gerrit_change_info()
+    return self._gerrit_change_fetch_ref
+
+  @property
+  def gerrit_change_target_ref(self):
+    """Returns gerrit change destination ref, e.g. "refs/heads/master".
+
+    Populated iff gerrit_change is populated.
+    """
+    self._ensure_gerrit_change_info()
+    return self._gerrit_change_target_ref
+
   @property
   def is_tryserver(self):
     """Returns true iff we have a change to check out."""
@@ -22,7 +120,7 @@ class TryserverApi(recipe_api.RecipeApi):
   @property
   def is_gerrit_issue(self):
     """Returns true iff the properties exist to match a Gerrit issue."""
-    if self.m.properties.get('patch_storage') == 'gerrit':
+    if self.gerrit_change:
       return True
     # TODO(tandrii): remove this, once nobody is using buildbot Gerrit Poller.
     return ('event.patchSet.ref' in self.m.properties and
@@ -40,7 +138,7 @@ class TryserverApi(recipe_api.RecipeApi):
 
     Argument:
       patch_root: path relative to api.path['root'], usually obtained from
-        api.gclient.calculate_patch_root(patch_project)
+        api.gclient.get_gerrit_patch_root().
 
     Returned paths will be relative to to patch_root.
     """
@@ -148,10 +246,12 @@ class TryserverApi(recipe_api.RecipeApi):
     git-footers documentation for more information.
     """
     if patch_text is None:
-      patch_text = self.m.gerrit.get_change_description(
-          self.m.properties['patch_gerrit_url'],
-          self.m.properties['patch_issue'],
-          self.m.properties['patch_set'])
+      if self.gerrit_change:
+        # TODO: reuse _ensure_gerrit_change_info.
+        patch_text = self.m.gerrit.get_change_description(
+            'https://%s' % self.gerrit_change.host,
+            int(self.gerrit_change.change),
+            int(self.gerrit_change.patchset))
 
     result = self.m.python(
         'parse description', self.package_repo_resource('git_footers.py'),

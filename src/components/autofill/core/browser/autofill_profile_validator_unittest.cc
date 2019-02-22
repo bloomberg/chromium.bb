@@ -86,7 +86,8 @@ class AutofillProfileValidatorTest : public testing::Test {
     // Make sure the profile has the expected validity state.
     for (auto expectation : expected_validity_) {
       EXPECT_EQ(expectation.second,
-                profile->GetValidityState(expectation.first));
+                profile->GetValidityState(expectation.first,
+                                          AutofillProfile::CLIENT));
     }
   }
 

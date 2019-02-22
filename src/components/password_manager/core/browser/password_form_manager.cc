@@ -50,18 +50,9 @@ namespace password_manager {
 
 namespace {
 
-bool DoesStringContainOnlyDigits(const base::string16& s) {
-  for (auto c : s) {
-    if (!base::IsAsciiDigit(c))
-      return false;
-  }
-  return true;
-}
-
-// Heuristics to determine that a string is very unlikely to be a username.
-bool IsProbablyNotUsername(const base::string16& s) {
-  return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
-}
+// This namespace is for fixing Jumbo builds, because the same functions are
+// defined in new_password_form_manager.cc.
+namespace password_form_manager_helpers {
 
 // Returns true iff |best_matches| contain a preferred credential with a
 // username other than |preferred_username|.
@@ -95,6 +86,21 @@ void SanitizePossibleUsernames(PasswordForm* form) {
            autofill::IsValidCreditCardNumber(pair.first) ||
            autofill::IsSSN(pair.first);
   });
+}
+
+}  // namespace password_form_manager_helpers
+
+bool DoesStringContainOnlyDigits(const base::string16& s) {
+  for (auto c : s) {
+    if (!base::IsAsciiDigit(c))
+      return false;
+  }
+  return true;
+}
+
+// Heuristics to determine that a string is very unlikely to be a username.
+bool IsProbablyNotUsername(const base::string16& s) {
+  return !s.empty() && DoesStringContainOnlyDigits(s) && s.size() < 3;
 }
 
 // Copies field properties masks from the form |from| to the form |to|.
@@ -299,7 +305,8 @@ void PasswordFormManager::Save() {
       submitted_form_->submission_event);
 
   if ((user_action_ == UserAction::kNone) &&
-      DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
+      password_form_manager_helpers::DidPreferenceChange(
+          best_matches_, pending_credentials_.username_value)) {
     SetUserAction(UserAction::kChoose);
   }
   if (user_action_ == UserAction::kOverridePassword &&
@@ -311,7 +318,11 @@ void PasswordFormManager::Save() {
   }
 
   if (is_new_login_) {
-    SanitizePossibleUsernames(&pending_credentials_);
+    UMA_HISTOGRAM_BOOLEAN(
+        "PasswordManager.NewlySavedPasswordIsGenerated",
+        pending_credentials_.type == PasswordForm::TYPE_GENERATED);
+    password_form_manager_helpers::SanitizePossibleUsernames(
+        &pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_.form_data, *submitted_form_,
                                     best_matches_, &pending_credentials_);
@@ -324,9 +335,9 @@ void PasswordFormManager::Save() {
                         &credentials_to_update, nullptr);
   }
 
-  // This is not in ProcessUpdate() to catch PSL matched credentials.
   if (pending_credentials_.times_used == 1 &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+    // This also includes PSL matched credentials.
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
   }
@@ -465,9 +476,7 @@ void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
 
   PasswordFormMetricsRecorder::SubmittedFormType type =
       PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified;
-  if (form.layout == PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP) {
-    type = PasswordFormMetricsRecorder::kSubmittedFormTypeLoginAndSignup;
-  } else if (is_change_password_form) {
+  if (is_change_password_form) {
     type = PasswordFormMetricsRecorder::kSubmittedFormTypeChangePasswordEnabled;
   } else if (is_signup_form) {
     if (no_username)
@@ -512,7 +521,7 @@ void PasswordFormManager::ProcessMatches(
         return form->blacklisted_by_user && !form->is_public_suffix_match;
       });
 
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "PasswordManager.NumPasswordsNotShown",
       non_federated.size() + filtered_count - best_matches_.size());
 
@@ -580,7 +589,7 @@ void PasswordFormManager::ProcessLoginPrompt() {
 
 void PasswordFormManager::ProcessUpdate() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  DCHECK(preferred_match_ || !pending_credentials_.federation_origin.unique());
+  DCHECK(preferred_match_ || !pending_credentials_.federation_origin.opaque());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
   // username, or the user selected one of the non-preferred matches,
@@ -783,7 +792,7 @@ const PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
 
 const PasswordForm* PasswordFormManager::FindBestSavedMatch(
     const PasswordForm* submitted_form) const {
-  if (!submitted_form->federation_origin.unique())
+  if (!submitted_form->federation_origin.opaque())
     return nullptr;
 
   // Return form with matching |username_value|.
@@ -906,6 +915,15 @@ bool PasswordFormManager::IsPossibleChangePasswordFormWithoutUsername() const {
   return is_possible_change_password_form_without_username_;
 }
 
+std::vector<base::WeakPtr<PasswordManagerDriver>>
+PasswordFormManager::GetDrivers() const {
+  return drivers_;
+}
+
+const PasswordForm* PasswordFormManager::GetSubmittedForm() const {
+  return submitted_form_.get();
+}
+
 FormFetcher* PasswordFormManager::GetFormFetcher() {
   return form_fetcher_;
 }
@@ -1021,7 +1039,7 @@ void PasswordFormManager::SetUserAction(UserAction user_action) {
 
 std::vector<PasswordForm> PasswordFormManager::FindOtherCredentialsToUpdate() {
   std::vector<autofill::PasswordForm> credentials_to_update;
-  if (!pending_credentials_.federation_origin.unique())
+  if (!pending_credentials_.federation_origin.opaque())
     return credentials_to_update;
 
   auto updated_password_it =

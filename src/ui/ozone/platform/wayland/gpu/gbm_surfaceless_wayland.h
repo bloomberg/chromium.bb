@@ -68,6 +68,10 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
 
     bool ready = false;
     gfx::SwapResult swap_result = gfx::SwapResult::SWAP_FAILED;
+    // A region of the updated content in a corresponding frame. It's used to
+    // advice Wayland which part of a buffer is going to be updated. Passing {0,
+    // 0, 0, 0} results in a whole buffer update on the Wayland compositor side.
+    gfx::Rect damage_region_ = gfx::Rect();
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
@@ -78,6 +82,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(PendingFrame* frame);
 
+  void OnScheduleBufferSwapDone(gfx::SwapResult result,
+                                const gfx::PresentationFeedback& feedback);
   void OnSubmission(gfx::SwapResult result,
                     std::unique_ptr<gfx::GpuFence> out_fence);
   void OnPresentation(const gfx::PresentationFeedback& feedback);

@@ -98,6 +98,7 @@ class VkRenderFramework : public VkTestFramework {
 
     void ShutdownFramework();
     void GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *features);
+    void GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props);
     void InitState(VkPhysicalDeviceFeatures *features = nullptr, VkPhysicalDeviceFeatures2 *features2 = nullptr,
                    const VkCommandPoolCreateFlags flags = 0);
 
@@ -397,6 +398,8 @@ class VkDescriptorSetObj : public vk_testing::DescriptorPool {
 class VkShaderObj : public vk_testing::ShaderModule {
    public:
     VkShaderObj(VkDeviceObj *device, const char *shaderText, VkShaderStageFlagBits stage, VkRenderFramework *framework,
+                char const *name = "main");
+    VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage, VkRenderFramework *framework,
                 char const *name = "main");
     VkPipelineShaderStageCreateInfo const &GetStageCreateInfo() const;
 

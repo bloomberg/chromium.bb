@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/core/window_properties.h"
 #include "ui/wm/core/wm_core_export.h"
 
 namespace aura {
@@ -38,15 +39,6 @@ enum WindowVisibilityAnimationType {
 // visibility animations do.
 enum WindowAnimationType {
   WINDOW_ANIMATION_TYPE_BOUNCE = 0,  // Window scales up and down.
-};
-
-// Type of visibility change transition that a window should animate.
-// Default behavior is to animate both show and hide.
-enum WindowVisibilityAnimationTransition {
-  ANIMATE_SHOW = 0x1,
-  ANIMATE_HIDE = 0x2,
-  ANIMATE_BOTH = ANIMATE_SHOW | ANIMATE_HIDE,
-  ANIMATE_NONE = 0x4,
 };
 
 // These two methods use int for type rather than WindowVisibilityAnimationType

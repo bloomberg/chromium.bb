@@ -58,6 +58,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_LIVEREGIONCHANGED;
     case ax::mojom::Event::kLoadComplete:
       return api::automation::EVENT_TYPE_LOADCOMPLETE;
+    case ax::mojom::Event::kLoadStart:
+      return api::automation::EVENT_TYPE_LOADSTART;
     case ax::mojom::Event::kLocationChanged:
       return api::automation::EVENT_TYPE_LOCATIONCHANGED;
     case ax::mojom::Event::kMediaStartedPlaying:
@@ -146,6 +148,8 @@ api::automation::EventType ToAutomationEvent(
       return api::automation::EVENT_TYPE_LIVEREGIONCREATED;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       return api::automation::EVENT_TYPE_LOADCOMPLETE;
+    case ui::AXEventGenerator::Event::LOAD_START:
+      return api::automation::EVENT_TYPE_LOADSTART;
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
       return api::automation::EVENT_TYPE_MENULISTITEMSELECTED;
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
@@ -182,7 +186,7 @@ api::automation::EventType ToAutomationEvent(
 }  // namespace
 
 AutomationAXTreeWrapper::AutomationAXTreeWrapper(
-    int32_t tree_id,
+    ui::AXTreeID tree_id,
     AutomationInternalCustomBindings* owner)
     : tree_id_(tree_id), owner_(owner) {
   // We have to initialize AXEventGenerator here - we can't do it in the
@@ -339,6 +343,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ACTIVEDESCENDANTCHANGED:
     case api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED:
     case api::automation::EVENT_TYPE_CHECKEDSTATECHANGED:
+    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
     case api::automation::EVENT_TYPE_DOCUMENTTITLECHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
@@ -346,6 +351,10 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:
     case api::automation::EVENT_TYPE_LIVEREGIONCREATED:
     case api::automation::EVENT_TYPE_LOADCOMPLETE:
+    case api::automation::EVENT_TYPE_LOADSTART:
+    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
+    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
+    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SCROLLPOSITIONCHANGED:
     case api::automation::EVENT_TYPE_SELECTEDCHILDRENCHANGED:
       return true;
@@ -385,16 +394,12 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     // These events might need to be migrated to AXEventGenerator.
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
-    case api::automation::EVENT_TYPE_CHILDRENCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:
     case api::automation::EVENT_TYPE_MENUEND:
     case api::automation::EVENT_TYPE_MENULISTITEMSELECTED:
     case api::automation::EVENT_TYPE_MENUSTART:
-    case api::automation::EVENT_TYPE_ROWCOLLAPSED:
-    case api::automation::EVENT_TYPE_ROWCOUNTCHANGED:
-    case api::automation::EVENT_TYPE_ROWEXPANDED:
     case api::automation::EVENT_TYPE_SELECTION:
     case api::automation::EVENT_TYPE_TEXTCHANGED:
     case api::automation::EVENT_TYPE_TEXTSELECTIONCHANGED:

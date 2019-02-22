@@ -31,6 +31,12 @@ EditingTest.prototype = {
     return mockFeedback;
   },
 
+  press: function(keyCode, modifiers) {
+    return function() {
+      BackgroundKeyboardHandler.sendKeyPress(keyCode, modifiers);
+    };
+  },
+
 };
 
 var doc = function() {/*!
@@ -935,6 +941,66 @@ TEST_F('EditingTest', 'TelTrimsWhitespace', function() {
           // Deletion.
           .call(enterKey)
           .expectSpeech('1')
+          .replay();
+    });
+    input.focus();
+  });
+});
+
+TEST_F('EditingTest', 'BackwardWordDelete', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div
+        style='max-width: 5px; overflow-wrap: normal'
+        contenteditable
+        role="textbox">
+      this is a test
+    </div>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('test, deleted')
+          .expectBraille('a\u00a0', {startIndex: 2, endIndex: 2})
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('a , deleted')
+          .expectBraille('is\u00a0', {startIndex: 3, endIndex: 3})
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('is , deleted')
+          .expectBraille('this\u00a0mled', {startIndex: 5, endIndex: 5})
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('this , deleted')
+          .expectBraille(' ed mled', {startIndex: 0, endIndex: 0})
+          .replay();
+    });
+    input.focus();
+  });
+});
+
+TEST_F('EditingTest', 'BackwardWordDeleteAcrossParagraphs', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div
+        style='max-width: 5px; overflow-wrap: normal'
+        contenteditable
+        role="textbox">
+      <p>first line</p>
+      <p>second line</p>
+    </div>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+          .expectSpeech('line')
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('line, deleted')
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('second , deleted')
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('first\u00a0')
+          .call(this.press(8 /* backspace */, {ctrl: true}))
+          .expectSpeech('first , deleted')
           .replay();
     });
     input.focus();

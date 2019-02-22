@@ -16,14 +16,15 @@
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/previews/core/previews_user_data.h"
+#include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_handle.h"
@@ -43,6 +44,32 @@ namespace {
 std::string GetConstHistogramWithSuffix(const char* suffix) {
   return std::string(internal::kHistogramDataReductionProxyPrefix)
       .append(suffix);
+}
+
+PageloadMetrics_PageEndReason ConvertPLMPageEndReasonToProto(
+    page_load_metrics::PageEndReason reason) {
+  switch (reason) {
+    case page_load_metrics::END_NONE:
+      return PageloadMetrics_PageEndReason_END_NONE;
+    case page_load_metrics::END_RELOAD:
+      return PageloadMetrics_PageEndReason_END_RELOAD;
+    case page_load_metrics::END_FORWARD_BACK:
+      return PageloadMetrics_PageEndReason_END_FORWARD_BACK;
+    case page_load_metrics::END_CLIENT_REDIRECT:
+      return PageloadMetrics_PageEndReason_END_CLIENT_REDIRECT;
+    case page_load_metrics::END_NEW_NAVIGATION:
+      return PageloadMetrics_PageEndReason_END_NEW_NAVIGATION;
+    case page_load_metrics::END_STOP:
+      return PageloadMetrics_PageEndReason_END_STOP;
+    case page_load_metrics::END_CLOSE:
+      return PageloadMetrics_PageEndReason_END_CLOSE;
+    case page_load_metrics::END_PROVISIONAL_LOAD_FAILED:
+      return PageloadMetrics_PageEndReason_END_PROVISIONAL_LOAD_FAILED;
+    case page_load_metrics::END_RENDER_PROCESS_GONE:
+      return PageloadMetrics_PageEndReason_END_RENDER_PROCESS_GONE;
+    default:
+      return PageloadMetrics_PageEndReason_END_OTHER;
+  }
 }
 
 // A macro is needed because PAGE_LOAD_HISTOGRAM creates a static instance of
@@ -115,6 +142,8 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
       process_id_(base::kNullProcessId),
       renderer_memory_usage_kb_(0),
       render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
+      touch_count_(0),
+      scroll_count_(0),
       weak_ptr_factory_(this) {}
 
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
@@ -145,8 +174,10 @@ DataReductionProxyMetricsObserver::OnCommit(
     return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
-  if (!data || !data->used_data_reduction_proxy())
+  if (!data || !(data->used_data_reduction_proxy() ||
+                 data->was_cached_data_reduction_proxy_response())) {
     return STOP_OBSERVING;
+  }
   data_ = data->DeepCopy();
 
   previews::PreviewsUserData* previews_data =
@@ -319,6 +350,7 @@ void DataReductionProxyMetricsObserver::SendPingback(
   base::Optional<base::TimeDelta> first_input_delay;
   base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   base::Optional<base::TimeDelta> parse_stop;
+  base::Optional<base::TimeDelta> page_end_time;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
                                                       info)) {
     response_start = timing.response_start;
@@ -352,6 +384,13 @@ void DataReductionProxyMetricsObserver::SendPingback(
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.parse_timing->parse_stop, info)) {
     parse_stop = timing.parse_timing->parse_stop;
+  }
+  if (info.started_in_foreground && info.page_end_time.has_value()) {
+    // This should be reported even when the app goes into the background which
+    // is excluded in |WasStartedInForegroundOptionalEventInForeground|.
+    page_end_time = info.page_end_time;
+  } else if (info.started_in_foreground) {
+    page_end_time = base::TimeTicks::Now() - info.navigation_start;
   }
 
   // If a crash happens, report the host |render_process_host_id_| to the
@@ -393,9 +432,12 @@ void DataReductionProxyMetricsObserver::SendPingback(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
       experimental_first_meaningful_paint, first_input_delay,
-      parse_blocked_on_script_load_duration, parse_stop, network_bytes,
-      original_network_bytes, total_page_size_bytes, cached_fraction,
-      app_background_occurred, opted_out_, renderer_memory_usage_kb_, host_id);
+      parse_blocked_on_script_load_duration, parse_stop, page_end_time,
+      network_bytes, original_network_bytes, total_page_size_bytes,
+      cached_fraction, app_background_occurred, opted_out_,
+      renderer_memory_usage_kb_, host_id,
+      ConvertPLMPageEndReasonToProto(info.page_end_reason), touch_count_,
+      scroll_count_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
@@ -556,8 +598,22 @@ DataReductionProxyMetricsObserver::GetPingbackClient() const {
 void DataReductionProxyMetricsObserver::OnEventOccurred(
     const void* const event_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (event_key == PreviewsInfoBarDelegate::OptOutEventKey())
+  if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opted_out_ = true;
+}
+
+void DataReductionProxyMetricsObserver::OnUserInput(
+    const blink::WebInputEvent& event) {
+  if (event.GetType() == blink::WebInputEvent::kMouseDown ||
+      event.GetType() == blink::WebInputEvent::kGestureTap) {
+    touch_count_++;
+  }
+
+  if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+    scroll_count_++;
+  }
 }
 
 void DataReductionProxyMetricsObserver::ProcessMemoryDump(
@@ -586,7 +642,7 @@ void DataReductionProxyMetricsObserver::RequestProcessDump(
     memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
         callback) {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestPrivateMemoryFootprint(pid, callback);
+      ->RequestPrivateMemoryFootprint(pid, std::move(callback));
 }
 
 }  // namespace data_reduction_proxy

@@ -184,7 +184,7 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state) {
     return promise;
   }
 
-  if (!Frame::HasTransientUserActivation(media_element_->GetFrame())) {
+  if (!LocalFrame::HasTransientUserActivation(media_element_->GetFrame())) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kInvalidAccessError,
         "RemotePlayback::prompt() requires user gesture."));
@@ -227,8 +227,7 @@ bool RemotePlayback::HasPendingActivity() const {
 }
 
 void RemotePlayback::ContextDestroyed(ExecutionContext*) {
-  target_presentation_connection_.reset();
-  presentation_connection_binding_.Close();
+  CleanupConnections();
 }
 
 void RemotePlayback::PromptInternal() {
@@ -369,7 +368,9 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
               ->MediaRemotingStopped(
                   WebLocalizedString::kMediaRemotingStopNoText);
         }
+        CleanupConnections();
         presentation_id_ = "";
+        presentation_url_ = KURL();
         media_element_->FlingingStopped();
       }
       break;
@@ -465,6 +466,11 @@ void RemotePlayback::RemotePlaybackDisabled() {
   }
 }
 
+void RemotePlayback::CleanupConnections() {
+  target_presentation_connection_.reset();
+  presentation_connection_binding_.Close();
+}
+
 void RemotePlayback::AvailabilityChanged(
     mojom::blink::ScreenAvailability availability) {
   DCHECK(RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled());
@@ -511,7 +517,6 @@ void RemotePlayback::OnConnectionSuccess(
 
   StateChanged(WebRemotePlaybackState::kConnecting);
 
-  // TODO(imcheng): Reset binding when remote playback stops.
   DCHECK(!presentation_connection_binding_.is_bound());
   auto* presentation_controller =
       PresentationController::FromContext(GetExecutionContext());
@@ -548,10 +553,8 @@ void RemotePlayback::HandlePresentationResponse(
 }
 
 void RemotePlayback::OnMessage(
-    mojom::blink::PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
+    mojom::blink::PresentationConnectionMessagePtr message) {
   // Messages are ignored.
-  std::move(callback).Run(true);
 }
 
 void RemotePlayback::DidChangeState(
@@ -566,7 +569,8 @@ void RemotePlayback::DidChangeState(
   StateChanged(remote_playback_state);
 }
 
-void RemotePlayback::RequestClose() {
+void RemotePlayback::DidClose(
+    mojom::blink::PresentationConnectionCloseReason reason) {
   StateChanged(WebRemotePlaybackState::kDisconnected);
 }
 

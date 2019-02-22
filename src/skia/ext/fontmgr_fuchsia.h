@@ -19,8 +19,7 @@ namespace skia {
 
 class SK_API FuchsiaFontManager : public SkFontMgr {
  public:
-  explicit FuchsiaFontManager(
-      fuchsia::fonts::FontProviderSyncPtr font_provider);
+  explicit FuchsiaFontManager(fuchsia::fonts::ProviderSyncPtr font_provider);
 
   ~FuchsiaFontManager() override;
 
@@ -52,7 +51,7 @@ class SK_API FuchsiaFontManager : public SkFontMgr {
  private:
   class FontCache;
 
-  fuchsia::fonts::FontProviderSyncPtr font_provider_;
+  fuchsia::fonts::ProviderSyncPtr font_provider_;
 
   // Map applied to font family name before sending requests to the FontService.
   base::flat_map<std::string, std::string> font_map_;

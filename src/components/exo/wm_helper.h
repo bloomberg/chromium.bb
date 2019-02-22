@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_EXO_WM_HELPER_H_
 #define COMPONENTS_EXO_WM_HELPER_H_
 
+#include <vector>
+
 #include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -13,7 +15,9 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 
 namespace ash {
+class AccessibilityObserver;
 class TabletModeObserver;
+class VirtualKeyboardControllerObserver;
 }
 
 namespace aura {
@@ -36,7 +40,6 @@ class ManagedDisplayInfo;
 namespace ui {
 class EventHandler;
 class DropTargetEvent;
-class InputDeviceEventObserver;
 }  // namespace ui
 
 namespace wm {
@@ -68,14 +71,18 @@ class WMHelper : public aura::client::DragDropDelegate {
 
   aura::Env* env() { return env_; }
 
+  void AddAccessibilityObserver(ash::AccessibilityObserver* observer);
+  void RemoveAccessibilityObserver(ash::AccessibilityObserver* observer);
   void AddActivationObserver(wm::ActivationChangeObserver* observer);
   void RemoveActivationObserver(wm::ActivationChangeObserver* observer);
   void AddFocusObserver(aura::client::FocusChangeObserver* observer);
   void RemoveFocusObserver(aura::client::FocusChangeObserver* observer);
   void AddTabletModeObserver(ash::TabletModeObserver* observer);
   void RemoveTabletModeObserver(ash::TabletModeObserver* observer);
-  void AddInputDeviceEventObserver(ui::InputDeviceEventObserver* observer);
-  void RemoveInputDeviceEventObserver(ui::InputDeviceEventObserver* observer);
+  void AddVirtualKeyboardControllerObserver(
+      ash::VirtualKeyboardControllerObserver* observer);
+  void RemoveVirtualKeyboardControllerObserver(
+      ash::VirtualKeyboardControllerObserver* observer);
 
   void AddDisplayConfigurationObserver(
       ash::WindowTreeHostManager::Observer* observer);
@@ -89,6 +96,9 @@ class WMHelper : public aura::client::DragDropDelegate {
   void RemoveVSyncObserver(ui::CompositorVSyncManager::Observer* observer);
 
   const display::ManagedDisplayInfo& GetDisplayInfo(int64_t display_id) const;
+  const std::vector<uint8_t>& GetDisplayIdentificationData(
+      int64_t display_id) const;
+
   aura::Window* GetPrimaryDisplayContainer(int container_id);
   aura::Window* GetActiveWindow() const;
   aura::Window* GetFocusedWindow() const;
@@ -100,6 +110,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   void RemovePostTargetHandler(ui::EventHandler* handler);
   bool IsTabletModeWindowManagerEnabled() const;
   double GetDefaultDeviceScaleFactor() const;
+  bool IsAccessibilityKeyboardEnabled() const;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;

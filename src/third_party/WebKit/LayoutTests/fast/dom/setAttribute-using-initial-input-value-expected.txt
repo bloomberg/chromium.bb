@@ -3,19 +3,15 @@ This test checks that an attribute is not removed when set to the initial value 
 PASS elem.value is ''
 
 Before calling setAttribute("startval", elem.value):
-
 PASS elem.getAttribute('startval') is ''
 
 After calling setAttribute("startval", elem.value):
-
 PASS elem.getAttribute('startval') is ''
 
 Before calling setAttribute("style", elem.value):
-
 PASS elem.getAttribute('style') is ''
 
 After calling setAttribute("style", elem.value):
-
 PASS elem.getAttribute('style') is ''
 
 PASS successfullyParsed is true

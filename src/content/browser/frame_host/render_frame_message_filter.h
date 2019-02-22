@@ -35,7 +35,6 @@ class MessagePipeHandle;
 }
 
 namespace net {
-class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -170,11 +169,6 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                                            int32_t pp_instance,
                                            bool is_throttled);
 #endif  // ENABLE_PLUGINS
-
-  // Returns the correct net::URLRequestContext depending on what type of url is
-  // given.
-  // Only call on the IO thread.
-  net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginServiceImpl* plugin_service_;

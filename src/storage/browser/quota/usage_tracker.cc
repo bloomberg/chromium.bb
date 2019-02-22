@@ -18,10 +18,6 @@ namespace storage {
 
 namespace {
 
-using UsageAccumulator = base::RepeatingCallback<void(int64_t usage)>;
-using GlobalUsageAccumulator =
-    base::RepeatingCallback<void(int64_t usage, int64_t unlimited_usage)>;
-
 void DidGetGlobalUsageForLimitedGlobalUsage(UsageCallback callback,
                                             int64_t total_global_usage,
                                             int64_t global_unlimited_usage) {
@@ -37,7 +33,7 @@ void StripUsageWithBreakdownCallback(
 
 }  // namespace
 
-UsageTracker::UsageTracker(const QuotaClientList& clients,
+UsageTracker::UsageTracker(const std::vector<QuotaClient*>& clients,
                            blink::mojom::StorageType type,
                            SpecialStoragePolicy* special_storage_policy,
                            StorageMonitor* storage_monitor)
@@ -78,7 +74,7 @@ void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
   // To avoid this, we add one more pending client as a sentinel
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
-  UsageAccumulator accumulator =
+  auto accumulator =
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalLimitedUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
@@ -102,7 +98,7 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
   // To avoid this, we add one more pending client as a sentinel
   // and fire the sentinel callback at the end.
   info->pending_clients = client_tracker_map_.size() + 1;
-  GlobalUsageAccumulator accumulator =
+  auto accumulator =
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
@@ -142,7 +138,7 @@ void UsageTracker::GetHostUsageWithBreakdown(
 }
 
 void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
-                                    const GURL& origin,
+                                    const url::Origin& origin,
                                     int64_t delta) {
   ClientUsageTracker* client_tracker = GetClientTracker(client_id);
   DCHECK(client_tracker);
@@ -165,14 +161,14 @@ void UsageTracker::GetCachedHostsUsage(
 }
 
 void UsageTracker::GetCachedOriginsUsage(
-    std::map<GURL, int64_t>* origin_usage) const {
+    std::map<url::Origin, int64_t>* origin_usage) const {
   DCHECK(origin_usage);
   origin_usage->clear();
   for (const auto& client_id_and_tracker : client_tracker_map_)
     client_id_and_tracker.second->GetCachedOriginsUsage(origin_usage);
 }
 
-void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
+void UsageTracker::GetCachedOrigins(std::set<url::Origin>* origins) const {
   DCHECK(origins);
   origins->clear();
   for (const auto& client_id_and_tracker : client_tracker_map_)
@@ -180,7 +176,7 @@ void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
 }
 
 void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
-                                        const GURL& origin,
+                                        const url::Origin& origin,
                                         bool enabled) {
   ClientUsageTracker* client_tracker = GetClientTracker(client_id);
   DCHECK(client_tracker);

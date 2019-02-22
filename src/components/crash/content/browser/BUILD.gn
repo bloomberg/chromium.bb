@@ -53,7 +53,10 @@ source_set("browser") {
   }
 
   if (is_android) {
-    deps += [ "//components/crash/android:jni_headers" ]
+    deps += [
+      "//components/crash/android:jni_headers",
+      "//mojo/public/cpp/bindings",
+    ]
   }
 }
 

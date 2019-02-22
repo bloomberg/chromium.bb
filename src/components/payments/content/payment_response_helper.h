@@ -46,6 +46,8 @@ class PaymentResponseHelper
       const std::string& stringified_details) override;
   void OnInstrumentDetailsError() override {}
 
+  mojom::PayerDetailPtr GeneratePayerDetail() const;
+
  private:
   // Generates the Payment Response and sends it to the delegate.
   void GeneratePaymentResponse();

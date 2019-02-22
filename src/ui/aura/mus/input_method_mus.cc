@@ -19,6 +19,21 @@
 using ws::mojom::EventResult;
 
 namespace aura {
+namespace {
+
+void CallEventResultCallback(InputMethodMus::EventResultCallback ack_callback,
+                             bool handled) {
+  // |ack_callback| can be null if the standard form of DispatchKeyEvent() is
+  // called instead of the version which provides a callback. In mus+ash we
+  // use the version with callback, but some unittests use the standard form.
+  if (!ack_callback)
+    return;
+
+  std::move(ack_callback)
+      .Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMus, public:
@@ -34,7 +49,7 @@ InputMethodMus::~InputMethodMus() {
   // Mus won't dispatch the next key event until the existing one is acked. We
   // may have KeyEvents sent to IME and awaiting the result, we need to ack
   // them otherwise mus won't process the next event until it times out.
-  AckPendingCallbacksUnhandled();
+  AckPendingCallbacks();
 }
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
@@ -50,13 +65,9 @@ ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(
 
   // If no text input client, do nothing.
   if (!GetTextInputClient()) {
-    ui::EventDispatchDetails dispatch_details = DispatchKeyEventPostIME(event);
-    if (ack_callback) {
-      std::move(ack_callback)
-          .Run(event->handled() ? EventResult::HANDLED
-                                : EventResult::UNHANDLED);
-    }
-    return dispatch_details;
+    return DispatchKeyEventPostIME(
+        event,
+        base::BindOnce(&CallEventResultCallback, std::move(ack_callback)));
   }
 
   return SendKeyEventToInputMethod(*event, std::move(ack_callback));
@@ -136,7 +147,8 @@ ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
     // This code path is hit in tests that don't connect to the server.
     DCHECK(!ack_callback);
     std::unique_ptr<ui::Event> event_clone = ui::Event::Clone(event);
-    return DispatchKeyEventPostIME(event_clone->AsKeyEvent());
+    return DispatchKeyEventPostIME(event_clone->AsKeyEvent(),
+                                   base::NullCallback());
   }
 
   // IME driver will notify us whether it handled the event or not by calling
@@ -160,7 +172,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
   // We are about to close the pipe with pending callbacks. Closing the pipe
   // results in none of the callbacks being run. We have to run the callbacks
   // else mus won't process the next event immediately.
-  AckPendingCallbacksUnhandled();
+  AckPendingCallbacks();
 
   if (!focused) {
     input_method_ = nullptr;
@@ -200,10 +212,10 @@ void InputMethodMus::UpdateTextInputType() {
   }
 }
 
-void InputMethodMus::AckPendingCallbacksUnhandled() {
+void InputMethodMus::AckPendingCallbacks() {
   for (auto& callback : pending_callbacks_) {
     if (callback)
-      std::move(callback).Run(EventResult::UNHANDLED);
+      std::move(callback).Run(EventResult::HANDLED);
   }
   pending_callbacks_.clear();
 }
@@ -216,14 +228,7 @@ void InputMethodMus::ProcessKeyEventCallback(
   DCHECK(!pending_callbacks_.empty());
   EventResultCallback ack_callback = std::move(pending_callbacks_.front());
   pending_callbacks_.pop_front();
-
-  // |ack_callback| can be null if the standard form of DispatchKeyEvent() is
-  // called instead of the version which provides a callback. In mus+ash we
-  // use the version with callback, but some unittests use the standard form.
-  if (ack_callback) {
-    std::move(ack_callback)
-        .Run(handled ? EventResult::HANDLED : EventResult::UNHANDLED);
-  }
+  CallEventResultCallback(std::move(ack_callback), handled);
 }
 
 }  // namespace aura

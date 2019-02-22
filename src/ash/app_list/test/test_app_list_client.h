@@ -52,6 +52,7 @@ class TestAppListClient : public mojom::AppListClient {
   void OnItemUpdated(mojom::AppListItemMetadataPtr item) override {}
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override {}
+  void OnPageBreakItemDeleted(const std::string& id) override {}
 
   size_t voice_session_count() const { return voice_session_count_; }
 

@@ -5,21 +5,24 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ATTESTATION_ATTESTATION_CA_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_ATTESTATION_ATTESTATION_CA_CLIENT_H_
 
+#include <list>
 #include <map>
 #include <string>
 
 #include "base/macros.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/dbus/attestation_constants.h"
-#include "net/url_request/url_fetcher_delegate.h"
+
+namespace network {
+class SimpleURLLoader;
+}
 
 namespace chromeos {
 namespace attestation {
 
 // This class is a ServerProxy implementation for the Chrome OS attestation
 // flow.  It sends all requests to an Attestation CA via HTTPS.
-class AttestationCAClient : public ServerProxy,
-                            public net::URLFetcherDelegate {
+class AttestationCAClient : public ServerProxy {
  public:
   AttestationCAClient();
   ~AttestationCAClient() override;
@@ -30,15 +33,15 @@ class AttestationCAClient : public ServerProxy,
   void SendCertificateRequest(const std::string& request,
                               const DataCallback& on_response) override;
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoadComplete(
+      std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
+      const DataCallback& on_response,
+      std::unique_ptr<std::string> response_body);
 
   PrivacyCAType GetType() override;
 
  private:
   PrivacyCAType pca_type_;
-
-  typedef std::map<const net::URLFetcher*, DataCallback> FetcherCallbackMap;
 
   // POSTs |request| data to |url| and calls |on_response| with the response
   // data when the fetch is complete.
@@ -46,8 +49,8 @@ class AttestationCAClient : public ServerProxy,
                 const std::string& request,
                 const DataCallback& on_response);
 
-  // Tracks all URL requests we have started.
-  FetcherCallbackMap pending_requests_;
+  // Loaders used for the processing the requests. Invalidated after completion.
+  std::list<std::unique_ptr<network::SimpleURLLoader>> url_loaders_;
 
   DISALLOW_COPY_AND_ASSIGN(AttestationCAClient);
 };

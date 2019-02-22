@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/media_router/media_remoting_dialog_view.h"
 
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/toolbar/media_router_action_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -28,9 +30,9 @@ void MediaRemotingDialogView::GetPermission(content::WebContents* web_contents,
   DCHECK(callback);
 
   // Check whether user has set the permission.
-  PrefService* const pref_service =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext())
-          ->GetPrefs();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* const pref_service = profile->GetPrefs();
   DCHECK(pref_service);
   const PrefService::Preference* pref =
       pref_service->FindPreference(::prefs::kMediaRouterMediaRemotingEnabled);
@@ -47,8 +49,11 @@ void MediaRemotingDialogView::GetPermission(content::WebContents* web_contents,
   }
   views::View* icon_view =
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->cast_button();
-  instance_ =
-      new MediaRemotingDialogView(icon_view, pref_service, std::move(callback));
+  MediaRouterActionController* action_controller =
+      MediaRouterUIService::Get(profile)->action_controller();
+
+  instance_ = new MediaRemotingDialogView(
+      icon_view, pref_service, action_controller, std::move(callback));
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -111,20 +116,27 @@ gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-MediaRemotingDialogView::MediaRemotingDialogView(views::View* anchor_view,
-                                                 PrefService* pref_service,
-                                                 PermissionCallback callback)
+MediaRemotingDialogView::MediaRemotingDialogView(
+    views::View* anchor_view,
+    PrefService* pref_service,
+    MediaRouterActionController* action_controller,
+    PermissionCallback callback)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       permission_callback_(std::move(callback)),
       pref_service_(pref_service),
+      action_controller_(action_controller),
       dialog_title_(
           l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE)) {
   DCHECK(pref_service_);
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  // Depress the Cast toolbar icon.
+  action_controller_->OnDialogShown();
 }
 
-MediaRemotingDialogView::~MediaRemotingDialogView() = default;
+MediaRemotingDialogView::~MediaRemotingDialogView() {
+  action_controller_->OnDialogHidden();
+}
 
 void MediaRemotingDialogView::Init() {
   views::Label* body_text = new views::Label(

@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task/post_task.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -66,6 +67,7 @@
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
@@ -838,7 +840,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // active sessions.
   CleanCertificatePolicyCache(
       &_clearPoliciesTaskTracker,
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
+      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
       web::BrowserState::GetCertificatePolicyCache(_browserState),
       _webStateList.get());
 

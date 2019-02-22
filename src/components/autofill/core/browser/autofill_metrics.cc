@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/submission_source.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
@@ -660,6 +661,14 @@ void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
 }
 
 // static
+void AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
+    SaveTypeMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes",
+      metric);
+}
+
+// static
 void AutofillMetrics::LogUploadDisallowedForNetworkMetric(
     const std::string& network) {
   UploadDisallowedForNetworkMetric metric;
@@ -702,8 +711,11 @@ void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
 }
 
 // static
-void AutofillMetrics::LogPaymentsCustomerDataBillingIdIsValid(bool valid) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.PaymentsCustomerDataBillingIdIsValid", valid);
+void AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
+    BillingIdStatus status) {
+  DCHECK_LE(status, BillingIdStatus::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.PaymentsCustomerDataBillingIdStatus",
+                            status);
 }
 
 // static
@@ -848,6 +860,45 @@ void AutofillMetrics::LogLocalCardMigrationBubbleUserInteractionMetric(
 }
 
 // static
+void AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
+    LocalCardMigrationDialogOfferMetric metric) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS);
+  std::string histogram_name = "Autofill.LocalCardMigrationDialogOffer";
+  base::UmaHistogramEnumeration(histogram_name, metric,
+                                NUM_LOCAL_CARD_MIGRATION_DIALOG_OFFER_METRICS);
+}
+
+// static
+void AutofillMetrics::LogLocalCardMigrationDialogUserInteractionMetric(
+    const base::TimeDelta& duration,
+    const int selected,
+    const int total,
+    LocalCardMigrationDialogUserInteractionMetric metric) {
+  DCHECK_LT(metric, NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS);
+  base::UmaHistogramEnumeration(
+      "Autofill.LocalCardMigrationDialogUserInteraction", metric,
+      NUM_LOCAL_CARD_MIGRATION_DIALOG_USER_INTERACTION_METRICS);
+  std::string suffix;
+  switch (metric) {
+    case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED:
+      suffix = "Accepted";
+      break;
+    case LOCAL_CARD_MIGRATION_DIALOG_CLOSED_CANCEL_BUTTON_CLICKED:
+      suffix = "Denied";
+      break;
+    default:
+      return;
+  }
+  base::UmaHistogramLongTimes("Autofill.LocalCardMigrationDialogActiveDuration",
+                              duration);
+  base::UmaHistogramLongTimes(
+      "Autofill.LocalCardMigrationDialogActiveDuration." + suffix, duration);
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Autofill.LocalCardMigrationDialogUserSelectionPercentage",
+      100 * selected / total);
+}
+
+// static
 void AutofillMetrics::LogLocalCardMigrationPromptMetric(
     LocalCardMigrationOrigin local_card_migration_origin,
     LocalCardMigrationPromptMetric metric) {
@@ -882,6 +933,13 @@ void AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(bool is_local) {
 // static
 void AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(bool is_local) {
   std::string histogram_name = "Autofill.SaveCardWithFirstAndLastNameComplete.";
+  histogram_name += is_local ? "Local" : "Server";
+  base::UmaHistogramBoolean(histogram_name, true);
+}
+
+// static
+void AutofillMetrics::LogSaveCardReachedPersonalDataManager(bool is_local) {
+  std::string histogram_name = "Autofill.SaveCardReachedPersonalDataManager.";
   histogram_name += is_local ? "Local" : "Server";
   base::UmaHistogramBoolean(histogram_name, true);
 }
@@ -1191,7 +1249,7 @@ void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) {
 
 // static
 void AutofillMetrics::LogStoredProfileCount(size_t num_profiles) {
-  UMA_HISTOGRAM_COUNTS("Autofill.StoredProfileCount", num_profiles);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredProfileCount", num_profiles);
 }
 
 // static
@@ -1316,7 +1374,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
   //     AutofillMetricsTest.StoredServerCreditCardCount_Unmasked
   // TODO(crbug/762131): Delete these in 2018/Q2 once enough UMA history is
   // established for the new names.
-  UMA_HISTOGRAM_COUNTS("Autofill.StoredLocalCreditCardCount", num_local_cards);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredLocalCreditCardCount",
+                          num_local_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
                             num_masked_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
@@ -1344,7 +1403,7 @@ void AutofillMetrics::LogHiddenOrPresentationalSelectFieldsFilled() {
 // static
 void AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
     size_t num_profiles) {
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Autofill.StoredProfileCountAtAutofillableFormSubmission", num_profiles);
 }
 
@@ -1370,7 +1429,7 @@ void AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(
 
 // static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
-  UMA_HISTOGRAM_COUNTS("Autofill.AddressSuggestionsCount", num_suggestions);
+  UMA_HISTOGRAM_COUNTS_1M("Autofill.AddressSuggestionsCount", num_suggestions);
 }
 
 // static
@@ -1509,6 +1568,47 @@ void AutofillMetrics::LogShowedHttpNotSecureExplanation() {
 }
 
 // static
+void AutofillMetrics::LogAutocompleteQuery(bool created) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteQuery", created);
+}
+
+// static
+void AutofillMetrics::LogAutocompleteSuggestions(bool has_suggestions) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteSuggestions", has_suggestions);
+}
+
+// static
+const char* AutofillMetrics::SubmissionSourceToUploadEventMetric(
+    SubmissionSource source) {
+  switch (source) {
+    case SubmissionSource::NONE:
+      return "Autofill.UploadEvent.None";
+    case SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+      return "Autofill.UploadEvent.SameDocumentNavigation";
+    case SubmissionSource::XHR_SUCCEEDED:
+      return "Autofill.UploadEvent.XhrSucceeded";
+    case SubmissionSource::FRAME_DETACHED:
+      return "Autofill.UploadEvent.FrameDetached";
+    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
+      return "Autofill.UploadEvent.DomMutationAfterXhr";
+    case SubmissionSource::PROBABLY_FORM_SUBMITTED:
+      return "Autofill.UploadEvent.ProbablyFormSubmitted";
+    case SubmissionSource::FORM_SUBMISSION:
+      return "Autofill.UploadEvent.FormSubmission";
+  }
+  // Unittests exercise this path, so do not put NOTREACHED() here.
+  return "Autofill.UploadEvent.Unknown";
+}
+
+// static
+void AutofillMetrics::LogUploadEvent(SubmissionSource submission_source,
+                                     bool was_sent) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.UploadEvent", was_sent);
+  LogUMAHistogramEnumeration(
+      SubmissionSourceToUploadEventMetric(submission_source), was_sent, 2);
+}
+
+// static
 void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
                                                 ukm::SourceId source_id,
                                                 const GURL& url,
@@ -1547,8 +1647,10 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
 
 AutofillMetrics::FormEventLogger::FormEventLogger(
     bool is_for_credit_card,
+    bool is_in_main_frame,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
     : is_for_credit_card_(is_for_credit_card),
+      is_in_main_frame_(is_in_main_frame),
       server_record_type_count_(0),
       local_record_type_count_(0),
       is_context_secure_(false),
@@ -1793,6 +1895,12 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
     name += "Address";
   base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
 
+  // Log again in a different histogram so that iframes can be analyzed on their
+  // own.
+  base::UmaHistogramEnumeration(
+      name + (is_in_main_frame_ ? ".IsInMainFrame" : ".IsInIFrame"), event,
+      NUM_FORM_EVENTS);
+
   // Log again in a different histogram for credit card forms on nonsecure
   // pages, so that form interactions on nonsecure pages can be analyzed on
   // their own.
@@ -1821,16 +1929,15 @@ void AutofillMetrics::FormEventLogger::Log(
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
-    ukm::UkmRecorder* ukm_recorder)
-    : ukm_recorder_(ukm_recorder) {}
+    ukm::UkmRecorder* ukm_recorder,
+    const ukm::SourceId source_id)
+    : ukm_recorder_(ukm_recorder), source_id_(source_id) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
-    const GURL& url,
     const ukm::SourceId source_id) {
   if (ukm_recorder_ == nullptr)
     return;
 
-  url_ = url;
   source_id_ = source_id;
 }
 
@@ -2039,7 +2146,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
 }
 
 bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
-  return ukm_recorder_ && url_.is_valid();
+  return ukm_recorder_ != nullptr;
 }
 
 int64_t AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed(

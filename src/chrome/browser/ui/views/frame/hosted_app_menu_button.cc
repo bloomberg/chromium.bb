@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/hit_test.h"
@@ -20,8 +22,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/window/hit_test_utils.h"
-
-constexpr int kMenuHighlightFadeDurationMs = 800;
 
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
     : AppMenuButton(this), browser_view_(browser_view) {
@@ -49,19 +49,21 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
 
 HostedAppMenuButton::~HostedAppMenuButton() {}
 
-void HostedAppMenuButton::SetIconColor(SkColor color) {
+void HostedAppMenuButton::SetColor(SkColor color) {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kBrowserToolsIcon, color));
+  ink_drop_color_ = color;
 }
 
-void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
-  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+void HostedAppMenuButton::StartHighlightAnimation() {
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(
+      HostedAppButtonContainer::kOriginFadeInDuration.InMilliseconds());
   GetInkDrop()->SetHovered(true);
   GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
 
   highlight_off_timer_.Start(FROM_HERE,
-                             duration - base::TimeDelta::FromMilliseconds(
-                                            kMenuHighlightFadeDurationMs),
+                             HostedAppButtonContainer::kOriginFadeInDuration +
+                                 HostedAppButtonContainer::kOriginPauseDuration,
                              this, &HostedAppMenuButton::FadeHighlightOff);
 }
 
@@ -73,11 +75,20 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
            browser, AppMenu::NO_FLAGS);
 
   menu()->RunMenu(this);
+
+  // Add UMA for how many times the hosted app menu button are clicked.
+  base::RecordAction(
+      base::UserMetricsAction("HostedAppMenuButtonButton_Clicked"));
+}
+
+SkColor HostedAppMenuButton::GetInkDropBaseColor() const {
+  return ink_drop_color_;
 }
 
 void HostedAppMenuButton::FadeHighlightOff() {
   if (!ShouldEnterHoveredState()) {
-    GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+    GetInkDrop()->SetHoverHighlightFadeDurationMs(
+        HostedAppButtonContainer::kOriginFadeOutDuration.InMilliseconds());
     GetInkDrop()->SetHovered(false);
     GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
   }

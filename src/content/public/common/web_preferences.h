@@ -229,9 +229,9 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool immersive_mode_enabled;
 
-  bool text_autosizing_enabled;
-
   bool double_tap_to_zoom_enabled;
+
+  bool text_autosizing_enabled;
 
 #if defined(OS_ANDROID)
   float font_scale_factor;
@@ -286,9 +286,6 @@ struct CONTENT_EXPORT WebPreferences {
   // Whether download UI should be hidden on this page.
   bool hide_download_ui;
 
-  // If enabled, disabled video track when the video is in the background.
-  bool background_video_track_optimization_enabled;
-
   // Whether it is a presentation receiver.
   bool presentation_receiver;
 
@@ -305,7 +302,7 @@ struct CONTENT_EXPORT WebPreferences {
   AutoplayPolicy autoplay_policy;
 
   // Network quality threshold below which resources from iframes are assigned
-  // lowest priority.
+  // either kVeryLow or kVeryLow Blink priority.
   net::EffectiveConnectionType low_priority_iframes_threshold;
 
   // Whether Picture-in-Picture is enabled.
@@ -315,6 +312,13 @@ struct CONTENT_EXPORT WebPreferences {
   // blink's hrefTranslate attribute existence relies on the result.
   // See https://github.com/dtapuska/html-translate
   bool translate_service_available;
+
+  // A value other than net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN implies that the
+  // network quality estimate related Web APIs are in the holdback mode. When
+  // the holdback is enabled, the related Web APIs return network quality
+  // estimate corresponding to |network_quality_estimator_web_holdback|
+  // regardless of the actual quality.
+  net::EffectiveConnectionType network_quality_estimator_web_holdback;
 
   // Specifies how close a lazily loaded iframe or image should be from the
   // viewport before it should start being loaded in, depending on the effective

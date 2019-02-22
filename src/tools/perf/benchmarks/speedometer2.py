@@ -120,7 +120,8 @@ class Speedometer2Measurement(legacy_page_test.LegacyPageTest):
               key=suite_name), important=False))
 
 
-@benchmark.Info(emails=['hablich@chromium.org'])
+@benchmark.Info(emails=['hablich@chromium.org'],
+                component='Blink')
 class Speedometer2(perf_benchmark.PerfBenchmark):
   """Speedometer2 Benchmark.
 
@@ -155,8 +156,7 @@ class Speedometer2(perf_benchmark.PerfBenchmark):
                                      self.enable_smoke_test_mode)
 
   def CreateStorySet(self, options):
-    ps = story.StorySet(base_dir=_SPEEDOMETER_DIR,
-        serving_dirs=[_SPEEDOMETER_DIR])
+    ps = story.StorySet(base_dir=_SPEEDOMETER_DIR)
     ps.AddStory(page_module.Page(
        'file://InteractiveRunner.html', ps, ps.base_dir, name='Speedometer2'))
     return ps
@@ -176,7 +176,8 @@ class Speedometer2(perf_benchmark.PerfBenchmark):
         raise parser.error('--suite: Invalid regex.')
 
 
-@benchmark.Info(emails=['hablich@chromium.org'])
+@benchmark.Info(emails=['hablich@chromium.org'],
+                component='Blink')
 class V8Speedometer2Future(Speedometer2):
   """Speedometer2 benchmark with the V8 flag --future.
 

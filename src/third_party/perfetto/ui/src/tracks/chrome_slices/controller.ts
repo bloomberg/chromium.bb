@@ -13,15 +13,14 @@
 // limitations under the License.
 
 import {fromNs} from '../../common/time';
-import {globals} from '../../controller/globals';
 import {
   TrackController,
   trackControllerRegistry
 } from '../../controller/track_controller';
 
-import {ChromeSliceTrackData, SLICE_TRACK_KIND} from './common';
+import {Config, Data, SLICE_TRACK_KIND} from './common';
 
-class ChromeSliceTrackController extends TrackController {
+class ChromeSliceTrackController extends TrackController<Config, Data> {
   static readonly kind = SLICE_TRACK_KIND;
   private busy = false;
 
@@ -34,7 +33,7 @@ class ChromeSliceTrackController extends TrackController {
     // any index. We need to introduce ts_lower_bound also for the slices table
     // (see sched table).
     const query = `select ts,dur,depth,cat,name from slices ` +
-        `where utid = ${this.trackState.utid} ` +
+        `where utid = ${this.config.utid} ` +
         `and ts >= ${Math.round(start * 1e9)} - dur ` +
         `and ts <= ${Math.round(end * 1e9)} ` +
         `and dur >= ${Math.round(resolution * 1e9)} ` +
@@ -42,8 +41,7 @@ class ChromeSliceTrackController extends TrackController {
         `limit ${LIMIT};`;
 
     this.busy = true;
-    console.log(query);
-    this.engine.rawQuery({'sqlQuery': query}).then(rawResult => {
+    this.engine.query(query).then(rawResult => {
       this.busy = false;
       if (rawResult.error) {
         throw new Error(`Query error "${query}": ${rawResult.error}`);
@@ -51,7 +49,7 @@ class ChromeSliceTrackController extends TrackController {
 
       const numRows = +rawResult.numRecords;
 
-      const slices: ChromeSliceTrackData = {
+      const slices: Data = {
         start,
         end,
         resolution,
@@ -85,9 +83,10 @@ class ChromeSliceTrackController extends TrackController {
       if (numRows === LIMIT) {
         slices.end = slices.ends[slices.ends.length - 1];
       }
-      globals.publish('TrackData', {id: this.trackId, data: slices});
+      this.publish(slices);
     });
   }
 }
+
 
 trackControllerRegistry.register(ChromeSliceTrackController);

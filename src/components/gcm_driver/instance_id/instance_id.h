@@ -95,10 +95,13 @@ class InstanceID {
   // |options|: allows including a small number of string key/value pairs that
   //            will be associated with the token and may be used in processing
   //            the request.
+  // |is_lazy|: Whether delivery of received messages should be deferred until
+  //            there is a visible activity. Only applicable for Android.
   // |callback|: to be called once the asynchronous operation is done.
   virtual void GetToken(const std::string& authorized_entity,
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
+                        bool is_lazy,
                         const GetTokenCallback& callback) = 0;
 
   // Checks that the provided |token| matches the stored token for (|app_id()|,

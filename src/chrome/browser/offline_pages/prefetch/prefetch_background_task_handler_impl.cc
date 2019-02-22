@@ -8,6 +8,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_scheduler.h"
 #include "chrome/common/pref_names.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/backoff_entry_serializer.h"
@@ -26,12 +27,6 @@ const net::BackoffEntry::Policy kPrefetchBackoffPolicy = {
     false              // Don't use initial delay unless the last was an error.
 };
 }  // namespace
-
-// static
-void PrefetchBackgroundTaskHandlerImpl::RegisterPrefs(
-    PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kOfflinePrefetchBackoff);
-}
 
 PrefetchBackgroundTaskHandlerImpl::PrefetchBackgroundTaskHandlerImpl(
     PrefService* prefs)
@@ -59,8 +54,7 @@ int PrefetchBackgroundTaskHandlerImpl::GetAdditionalBackoffSeconds() const {
 
 std::unique_ptr<net::BackoffEntry>
 PrefetchBackgroundTaskHandlerImpl::GetCurrentBackoff() const {
-  const base::ListValue* value =
-      prefs_->GetList(prefs::kOfflinePrefetchBackoff);
+  const base::ListValue* value = prefs_->GetList(prefetch_prefs::kBackoff);
   std::unique_ptr<net::BackoffEntry> result;
   if (value) {
     result = net::BackoffEntrySerializer::DeserializeFromValue(
@@ -123,7 +117,7 @@ void PrefetchBackgroundTaskHandlerImpl::UpdateBackoff(
   std::unique_ptr<base::Value> value =
       net::BackoffEntrySerializer::SerializeToValue(*backoff,
                                                     base::Time::Now());
-  prefs_->Set(prefs::kOfflinePrefetchBackoff, *value);
+  prefs_->Set(prefetch_prefs::kBackoff, *value);
 }
 
 }  // namespace offline_pages

@@ -141,6 +141,9 @@ class AvailabilityFinderTest(unittest.TestCase):
     # Testing API channel existence for _manifest_features.json.
     # Listed as 'master' on all channels.
     assertGet(ChannelInfo('master', 'master', 'master'), 'sync')
+    # Listed as 'trunk'. See crbug.com/883009.
+    assertGet(ChannelInfo('master', 'master', 'master'),
+              'declarativeNetRequest')
     # No records of API until |master|.
     assertGet(ChannelInfo('master', 'master', 'master'), 'history')
     # Listed as 'dev' on |dev|.

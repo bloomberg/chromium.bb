@@ -25,7 +25,7 @@ class TestInterfaceEmpty;
 class TestInterfaceImplementation;
 
 class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
  public:
   TestInterfaceOrTestInterfaceEmpty();
   bool IsNull() const { return type_ == SpecificType::kNone; }

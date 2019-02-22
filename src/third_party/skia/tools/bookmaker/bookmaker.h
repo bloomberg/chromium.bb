@@ -81,6 +81,7 @@ enum class KeyWord {
     kUintPtr_t,
     kUnion,
     kUnsigned,
+    kUsing,
     kVoid,
 };
 
@@ -144,6 +145,7 @@ enum class MarkType {
     kTopic,
     kTypedef,
     kUnion,
+    kUsing,
     kVolatile,
     kWidth,
 };
@@ -300,8 +302,11 @@ public:
     }
 
     bool contains(const char* match, const char* lineEnd, const char** loc) const {
-        *loc = this->strnstr(match, lineEnd);
-        return *loc;
+        const char* result = this->strnstr(match, lineEnd);
+        if (loc) {
+            *loc = result;
+        }
+        return result;
     }
 
     // either /n/n or /n# will stop parsing a typedef
@@ -406,6 +411,18 @@ public:
 
     void setForErrorReporting(const Definition* , const char* );
 
+    bool skipToBalancedEndBracket(char startB, char endB) {
+        SkASSERT(fChar < fEnd);
+        SkASSERT(startB == fChar[0]);
+        int startCount = 0;
+        do {
+            char test = this->next();
+            startCount += startB == test;
+            startCount -= endB  == test;
+        } while (startCount && fChar < fEnd);
+        return !startCount;
+    }
+
     bool skipToEndBracket(char endBracket, const char* end = nullptr) {
         if (nullptr == end) {
             end = fEnd;
@@ -446,10 +463,13 @@ public:
         }
     }
 
-    void skipToAlphaNum() {
+    // returns true if saw close brace
+    bool skipToAlphaNum() {
+        bool sawCloseBrace = false;
         while (fChar < fEnd && !isalnum(fChar[0])) {
-            fChar++;
+            sawCloseBrace |= '}' == *fChar++;
         }
+        return sawCloseBrace;
     }
 
     bool skipExact(const char* pattern) {
@@ -473,6 +493,15 @@ public:
         }
     }
 
+    int skipToLineBalance(char open, char close) {
+        int match = 0;
+        while (!this->eof() && '\n' != fChar[0]) {
+            match += open == this->peek();
+            match -= close == this->next();
+        }
+        return match;
+    }
+
     bool skipToLineStart() {
         if (!this->skipLine()) {
             return false;
@@ -481,6 +510,11 @@ public:
             return this->skipWhiteSpace();
         }
         return true;
+    }
+
+    void skipToLineStart(int* indent, bool* sawReturn) {
+        SkAssertResult(this->skipLine());
+        this->skipWhiteSpace(indent, sawReturn);
     }
 
     void skipLower() {
@@ -570,6 +604,18 @@ public:
         return true;
     }
 
+    void skipWhiteSpace(int* indent, bool* skippedReturn) {
+        while (' ' >= this->peek()) {
+            *indent = *skippedReturn ? *indent + 1 : 1;
+            if ('\n' == this->peek()) {
+                *skippedReturn |= true;
+                *indent = 0;
+            }
+            (void) this->next();
+            SkASSERT(fChar < fEnd);
+        }
+    }
+
     bool startsWith(const char* str) const {
         size_t len = strlen(str);
         ptrdiff_t lineLen = fEnd - fChar;
@@ -650,6 +696,19 @@ public:
         size_t max = (size_t) (this->lineLength());
         string line(fChar, max);
         size_t index = line.find(bracket);
+        SkASSERT(index < max);
+        while (index > 0 && ' ' >= fChar[index - 1]) {
+            --index;
+        }
+        return fChar + index;
+    }
+
+    const char* trimmedBracketNoEnd(const char bracket) const {
+        int max = (int) (fEnd - fChar);
+        int index = 0;
+        while (index < max && bracket != fChar[index]) {
+            ++index;
+        }
         SkASSERT(index < max);
         while (index > 0 && ' ' >= fChar[index - 1]) {
             --index;
@@ -972,11 +1031,14 @@ public:
         return nullptr;
     }
 
+    void trimEnd();
+
     string fText;  // if text is constructed instead of in a file, it's put here
     const char* fStart = nullptr;  // .. in original text file, or the start of fText
     const char* fContentStart;  // start past optional markup name
     string fName;
     string fFiddle;  // if its a constructor or operator, fiddle name goes here
+    string fCode;  // suitable for autogeneration of #Code blocks in bmh
     const char* fContentEnd = nullptr;  // the end of the contained text
     const char* fTerminator = nullptr;  // the end of the markup, normally ##\n or \n
     Definition* fParent = nullptr;
@@ -1008,17 +1070,17 @@ public:
 
 class SubtopicKeys {
 public:
-    static constexpr const char* kClasses = "Class";
-    static constexpr const char* kConstants = "Constant";
-    static constexpr const char* kConstructors = "Constructor";
-    static constexpr const char* kDefines = "Define";
-    static constexpr const char* kMemberFunctions = "Member_Function";
-    static constexpr const char* kMembers = "Member";
-    static constexpr const char* kOperators = "Operator";
+    static constexpr const char* kClasses = "Classes";
+    static constexpr const char* kConstants = "Constants";
+    static constexpr const char* kConstructors = "Constructors";
+    static constexpr const char* kDefines = "Defines";
+    static constexpr const char* kMemberFunctions = "Member_Functions";
+    static constexpr const char* kMembers = "Members";
+    static constexpr const char* kOperators = "Operators";
     static constexpr const char* kOverview = "Overview";
-    static constexpr const char* kRelatedFunctions = "Related_Function";
-    static constexpr const char* kStructs = "Struct";
-    static constexpr const char* kTypedefs = "Typedef";
+    static constexpr const char* kRelatedFunctions = "Related_Functions";
+    static constexpr const char* kStructs = "Structs";
+    static constexpr const char* kTypedefs = "Typedefs";
 
     static const char* kGeneratedSubtopics[];
 };
@@ -1150,6 +1212,7 @@ public:
         fParent = def;
     }
 
+    void checkLineLength(size_t len, const char* str);
     static void CopyToFile(string oldFile, string newFile);
 
     static char* FindDateTime(char* buffer, int size);
@@ -1169,6 +1232,7 @@ public:
     void indentToColumn(int column) {
         SkASSERT(column >= fColumn);
         SkASSERT(!fReturnOnWrite);
+        SkASSERT(column < 80);
         if (fDebugOut) {
             SkDebugf("%*s", column - fColumn, "");
         }
@@ -1229,6 +1293,7 @@ public:
     void resetCommon() {
         fLine = fChar = fStart;
         fLineCount = 0;
+        fLinesWritten = 1;
         fParent = nullptr;
         fIndent = 0;
         fOut = nullptr;
@@ -1236,6 +1301,8 @@ public:
         fPendingLF = 0;
         fPendingSpace = 0;
         fOutdentNext = false;
+        fWritingIncludes = false;
+        fDebugWriteCodeBlock = false;
         nl();
    }
 
@@ -1251,11 +1318,15 @@ public:
         fMaxLF = 1;
     }
 
+    void stringAppend(string& result, char ch) const;
+    void stringAppend(string& result, string str) const;
+    void stringAppend(string& result, const Definition* ) const;
+
     void writeBlock(int size, const char* data) {
         SkAssertResult(writeBlockTrim(size, data));
     }
 
-    bool writeBlockIndent(int size, const char* data);
+    bool writeBlockIndent(int size, const char* data, bool ignoreIndent);
 
     void writeBlockSeparator() {
             this->writeString(
@@ -1314,12 +1385,15 @@ public:
     int fColumn;       // current column; number of chars past last linefeed
     int fIndent;       // desired indention
     int fPendingSpace; // one or two spaces should preceed the next string or block
+    size_t fLinesWritten; // as opposed to fLineCount, number of lines read
     char fLastChar;    // last written
     bool fDebugOut;    // set true to write to std out
     bool fValidate;    // set true to check anchor defs and refs
     bool fOutdentNext; // set at end of embedded struct to prevent premature outdent
     bool fWroteSomething; // used to detect empty content; an alternative source is preferable
     bool fReturnOnWrite; // used to detect non-empty content; allowing early return
+    bool fWritingIncludes; // set true when writing includes to check >100 columns
+    mutable bool fDebugWriteCodeBlock;
 
 private:
     typedef TextParser INHERITED;
@@ -1329,6 +1403,7 @@ struct JsonStatus {
     const Json::Value& fObject;
     Json::Value::iterator fIter;
     string fName;
+    StatusFilter fStatusFilter;
 };
 
 class JsonCommon : public ParserCommon {
@@ -1352,7 +1427,7 @@ public:
     StatusIter(const char* statusFile, const char* suffix, StatusFilter);
     ~StatusIter() override {}
     string baseDir();
-    bool next(string* file);
+    bool next(string* file, StatusFilter* filter);
 private:
     const char* fSuffix;
     StatusFilter fFilter;
@@ -1369,7 +1444,8 @@ public:
         kNo,      // neither resolved nor output
         kYes,     // resolved, output
         kOut,     // mostly resolved, output (FIXME: is this really different from kYes?)
-        kFormula, // resolve methods as they are used, not as they are prototyped
+        kCode,    // resolve methods as they are used, not as they are prototyped
+        kFormula, // kCode, plus make most spaces non-breaking
         kLiteral, // output untouched
 		kClone,   // resolved, output, with references to clones as well
         kSimple,  // resolve simple words (used to resolve method declarations)
@@ -1441,6 +1517,7 @@ public:
     Definition* findExample(string name) const;
     MarkType getMarkType(MarkLookup lookup) const;
     bool hasEndToken() const;
+    static bool IsExemplary(const Definition* );
     string memberName();
     string methodName();
     const Definition* parentSpace() const;
@@ -1453,8 +1530,11 @@ public:
         return findDefinitions();
     }
 
-    bool popParentStack(Definition* definition);
-    void reportDuplicates(const Definition& def, string dup) const;
+    void parseHashAnchor(Definition* );
+    void parseHashFormula(Definition* );
+    void parseHashLine(Definition* );
+    bool popParentStack(Definition* );
+    void reportDuplicates(const Definition& , string dup) const;
     void resetExampleHashes();
 
     void reset() override {
@@ -1543,6 +1623,49 @@ public:
         kYes,
     };
 
+    enum class Elided {
+        kNo,
+        kYes,
+    };
+
+    struct CheckCode {
+        enum class State {
+            kNone,
+            kClassDeclaration,
+            kConstructor,
+            kForwardDeclaration,
+            kMethod,
+        };
+
+        void reset() {
+            fInDebugCode = nullptr;
+            fPrivateBrace = 0;
+            fBraceCount = 0;
+            fIndent = 0;
+            fDoubleReturn = 0;
+            fState = State::kNone;
+            fPrivateProtected = false;
+            fTypedefReturn = false;
+            fSkipAPI = false;
+            fSkipInline = false;
+            fSkipWarnUnused = false;
+            fWriteReturn = false;
+        }
+
+        const char* fInDebugCode;
+        int fPrivateBrace;
+        int fBraceCount;
+        int fIndent;
+        int fDoubleReturn;
+        State fState;
+        bool fPrivateProtected;
+        bool fTypedefReturn;
+        bool fSkipAPI;
+        bool fSkipInline;
+        bool fSkipWarnUnused;
+        bool fWriteReturn;
+    };
+
     IncludeParser() : ParserCommon()
         , fMaps {
           { &fIConstMap,    MarkType::kConst }
@@ -1571,11 +1694,35 @@ public:
         fIncludeWord = nullptr;
     }
 
+    bool advanceInclude(TextParser& i);
     bool inAlignAs() const;
     void checkForMissingParams(const vector<string>& methodParams,
                                const vector<string>& foundParams);
     bool checkForWord();
     string className() const;
+
+    string codeBlock(const Definition& def, bool inProgress) const {
+        return codeBlock(def.fMarkType, def.fName, inProgress);
+    }
+
+    string codeBlock(MarkType markType, string name, bool inProgress) const {
+        if (MarkType::kClass == markType || MarkType::kStruct == markType) {
+            auto map = fIClassMap.find(name);
+            SkASSERT(fIClassMap.end() != map || inProgress);
+            return fIClassMap.end() != map ? map->second.fCode : "";
+        }
+        if (MarkType::kEnum == markType || MarkType::kEnumClass == markType) {
+            auto map = fIEnumMap.find(name);
+            SkASSERT(fIEnumMap.end() != map);
+            return map->second->fCode;
+        }
+        SkASSERT(0);
+        return "";
+    }
+
+    void codeBlockAppend(string& result, char ch) const;
+    void codeBlockSpaces(string& result, int indent) const;
+
     bool crossCheck(BmhParser& );
     IClassDefinition* defineClass(const Definition& includeDef, string className);
     void dumpClassTokens(IClassDefinition& classDef);
@@ -1591,11 +1738,13 @@ public:
     bool dumpTokens(string skClassName, string globalFileName, long int* globalTell);
     void dumpTypedef(const Definition& , string className);
 
+    string elidedCodeBlock(const Definition& );
     bool findComments(const Definition& includeDef, Definition* markupDef);
     Definition* findIncludeObject(const Definition& includeDef, MarkType markType,
                                   string typeName);
     static KeyWord FindKey(const char* start, const char* end);
     Bracket grandParentBracket() const;
+    const Definition* include(string ) const;
     bool isClone(const Definition& token);
     bool isConstructor(const Definition& token, string className);
     bool isInternalName(const Definition& token);
@@ -1626,6 +1775,7 @@ public:
     bool parseObjects(Definition* parent, Definition* markupDef);
     bool parseTemplate(Definition* child, Definition* markupDef);
     bool parseTypedef(Definition* child, Definition* markupDef);
+    bool parseUsing();
     bool parseUnion();
 
     void popBracket() {
@@ -1699,6 +1849,9 @@ public:
     }
 
     void validate() const;
+    void writeCodeBlock(const BmhParser& );
+    string writeCodeBlock(const Definition&, MarkType );
+    string writeCodeBlock(TextParser& i, MarkType , int indent);
 
     void writeDefinition(const Definition& def) {
         if (def.length() > 1) {
@@ -1852,6 +2005,7 @@ protected:
     unordered_map<string, Definition*> fITemplateMap;
     unordered_map<string, Definition*> fITypedefMap;
     unordered_map<string, Definition*> fIUnionMap;
+    CheckCode fCheck;
     Definition* fRootTopic;
     Definition* fConstExpr;
     Definition* fInBrace;
@@ -1861,6 +2015,7 @@ protected:
     const Definition* fAttrDeprecated;
     int fPriorIndex;
     const char* fIncludeWord;
+    Elided fElided;
     char fPrev;
     bool fInChar;
     bool fInCharCommentString;
@@ -2057,7 +2212,8 @@ public:
         fPendingMethod = false;
         fFirstWrite = false;
         fStructEnded = false;
-    }
+        fWritingIncludes = true;
+   }
 
     string resolveAlias(const Definition* );
     string resolveMethod(const char* start, const char* end, bool first);
@@ -2225,18 +2381,20 @@ private:
 class MdOut : public ParserCommon {
 public:
     struct SubtopicDescriptions {
-        string fName;
+        string fSingular;
+        string fPlural;
         string fOneLiner;
         string fDetails;
     };
 
-    MdOut(BmhParser& bmh) : ParserCommon()
-        , fBmhParser(bmh) {
+    MdOut(BmhParser& bmh, IncludeParser& inc) : ParserCommon()
+        , fBmhParser(bmh)
+        , fIncludeParser(inc) {
         this->reset();
         this->addPopulators();
     }
 
-    bool buildReferences(const IncludeParser& , const char* docDir, const char* mdOutDirOrFile);
+    bool buildReferences(const char* docDir, const char* mdOutDirOrFile);
     bool buildStatus(const char* docDir, const char* mdOutDir);
     void checkAnchors();
 
@@ -2252,6 +2410,7 @@ private:
         MarkType fMarkType;
     };
 
+    void addCodeBlock(const Definition* def, string& str) const;
     void addPopulators();
     string addReferences(const char* start, const char* end, BmhParser::Resolvable );
     string anchorDef(string def, string name);
@@ -2301,6 +2460,8 @@ private:
         fResolveAndIndent = false;
         fLiteralAndIndent = false;
         fLastDef = nullptr;
+        fParamEnd = nullptr;
+        fInProgress = false;
     }
 
     BmhParser::Resolvable resolvable(const Definition* definition) const {
@@ -2320,10 +2481,14 @@ private:
     }
 
     void resolveOut(const char* start, const char* end, BmhParser::Resolvable );
+    void rowOut(string col1, const Definition* col2);
     void rowOut(const char * name, string description, bool literalName);
 
     void subtopicOut(string name);
     void subtopicsOut(Definition* def);
+    void subtopicOut(string key, const vector<Definition*>& data, const Definition* csParent,
+        const Definition* topicParent, bool showClones);
+    bool subtopicRowOut(string keyName, const Definition* entry);
     void summaryOut(const Definition* def, MarkType , string name);
     string tableDataCodeDef(const Definition* def);
     string tableDataCodeDef(string def, string name);
@@ -2331,14 +2496,16 @@ private:
     string tableDataCodeLocalRef(string ref, string name);
     string tableDataCodeRef(const Definition* ref);
     string tableDataCodeRef(string ref, string name);
+    void writeSubtopicTableHeader(string key);
 
     vector<const Definition*> fClassStack;
     unordered_map<string, vector<AnchorDef> > fAllAnchorDefs;
     unordered_map<string, vector<string> > fAllAnchorRefs;
 
     BmhParser& fBmhParser;
+    IncludeParser& fIncludeParser;
     const Definition* fEnumClass;
-     const Definition* fLastDef;
+    const Definition* fLastDef;
     Definition* fMethod;
     RootDefinition* fRoot;  // used in generating populated tables; always struct or class
     RootDefinition* fSubtopic; // used in resolving symbols
@@ -2346,6 +2513,7 @@ private:
     TableState fTableState;
     unordered_map<string, SubtopicDescriptions> fPopulators;
     unordered_map<string, string> fPhraseParams;
+    const char* fParamEnd;
     bool fAddRefFailed;
     bool fHasFiddle;
     bool fInDescription;   // FIXME: for now, ignore unfound camelCase in description since it may
@@ -2355,6 +2523,7 @@ private:
     bool fResolveAndIndent;
     bool fOddRow;
     bool fHasDetails;
+    bool fInProgress;
     typedef ParserCommon INHERITED;
 };
 
@@ -2366,41 +2535,62 @@ public:
             const char* start, const char* end, int lineCount)
         : TextParser(fileName, start, end, lineCount)
         , fClassName(className) {
+        size_t doubleColons = className.find_last_of("::");
+        if (string::npos != doubleColons) {
+            fLocalName = className.substr(doubleColons + 1);
+            SkASSERT(fLocalName.length() > 0);
+        }
     }
 
     ~MethodParser() override {}
 
-    void skipToMethodStart() {
-        if (!fClassName.length()) {
-            this->skipToAlphaNum();
-            return;
+    string localName() const {
+        return fLocalName;
+    }
+
+    void setLocalName(string name) {
+        if (name == fClassName) {
+            fLocalName = "";
+        } else {
+            fLocalName = name;
         }
+    }
+
+    // returns true if close brace was skipped
+    int skipToMethodStart() {
+        if (!fClassName.length()) {
+            return this->skipToAlphaNum();
+        }
+        int braceCount = 0;
         while (!this->eof() && !isalnum(this->peek()) && '~' != this->peek()) {
+            braceCount += '{' == this->peek();
+            braceCount -= '}' == this->peek();
             this->next();
         }
+        return braceCount;
     }
 
     void skipToMethodEnd(BmhParser::Resolvable resolvable) {
         if (this->eof()) {
             return;
         }
-        if (fClassName.length()) {
-            if ('~' == this->peek()) {
-                this->next();
-                if (!this->startsWith(fClassName.c_str())) {
-                    --fChar;
-                    return;
-                }
+        string name = fLocalName.length() ? fLocalName : fClassName;
+        if ('~' == this->peek()) {
+            this->next();
+            if (!this->startsWith(name.c_str())) {
+                --fChar;
+                return;
             }
-            if (BmhParser::Resolvable::kSimple != resolvable
-                    && (this->startsWith(fClassName.c_str()) || this->startsWith("operator"))) {
-                const char* ptr = this->anyOf("\n (");
-                if (ptr && '(' ==  *ptr) {
-                    this->skipToEndBracket(')');
-                    SkAssertResult(')' == this->next());
-                    this->skipExact("_const");
-                    return;
-                }
+        }
+        if (BmhParser::Resolvable::kSimple != resolvable
+                && (this->startsWith(name.c_str()) || this->startsWith("operator"))) {
+            const char* ptr = this->anyOf("\n (");
+            if (ptr && '(' ==  *ptr && strncmp(ptr, "(...", 4)) {
+                this->skipToEndBracket(')');
+                SkAssertResult(')' == this->next());
+                this->skipExact("_const") || (BmhParser::Resolvable::kCode == resolvable
+                        && this->skipExact(" const"));
+                return;
             }
         }
         if (this->startsWith("Sk") && this->wordEndsWith(".h")) {  // allow include refs
@@ -2432,6 +2622,7 @@ public:
 
 private:
     string fClassName;
+    string fLocalName;
     typedef TextParser INHERITED;
 };
 

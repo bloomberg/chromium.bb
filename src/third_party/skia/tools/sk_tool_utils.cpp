@@ -13,7 +13,6 @@
 #include "SkFloatingPoint.h"
 #include "SkImage.h"
 #include "SkMatrix.h"
-#include "SkPM4f.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkPixelRef.h"
@@ -287,181 +286,6 @@ void make_big_path(SkPath& path) {
     #include "BigPathBench.inc" // IWYU pragma: keep
 }
 
-static float gaussian2d_value(int x, int y, float sigma) {
-    // don't bother with the scale term since we're just going to normalize the
-    // kernel anyways
-    float temp = expf(-(x*x + y*y)/(2*sigma*sigma));
-    return temp;
-}
-
-static float* create_2d_kernel(float sigma, int* filterSize) {
-    // We will actually take 2*halfFilterSize+1 samples (i.e., our filter kernel
-    // sizes are always odd)
-    int halfFilterSize = SkScalarCeilToInt(6*sigma)/2;
-    int wh = *filterSize = 2*halfFilterSize + 1;
-
-    float* temp = new float[wh*wh];
-
-    float filterTot = 0.0f;
-    for (int yOff = 0; yOff < wh; ++yOff) {
-        for (int xOff = 0; xOff < wh; ++xOff) {
-            temp[yOff*wh+xOff] = gaussian2d_value(xOff-halfFilterSize, yOff-halfFilterSize, sigma);
-
-            filterTot += temp[yOff*wh+xOff];
-        }
-    }
-
-    // normalize the kernel
-    for (int yOff = 0; yOff < wh; ++yOff) {
-        for (int xOff = 0; xOff < wh; ++xOff) {
-            temp[yOff*wh+xOff] /= filterTot;
-        }
-    }
-
-    return temp;
-}
-
-static SkPMColor blur_pixel(const SkBitmap& bm, int x, int y, float* kernel, int wh) {
-    SkASSERT(wh & 0x1);
-
-    int halfFilterSize = (wh-1)/2;
-
-    float r = 0.0f, g = 0.0f, b = 0.0f;
-    for (int yOff = 0; yOff < wh; ++yOff) {
-        int ySamp = y + yOff - halfFilterSize;
-
-        if (ySamp < 0) {
-            ySamp = 0;
-        } else if (ySamp > bm.height()-1) {
-            ySamp = bm.height()-1;
-        }
-
-        for (int xOff = 0; xOff < wh; ++xOff) {
-            int xSamp = x + xOff - halfFilterSize;
-
-            if (xSamp < 0) {
-                xSamp = 0;
-            } else if (xSamp > bm.width()-1) {
-                xSamp = bm.width()-1;
-            }
-
-            float filter = kernel[yOff*wh + xOff];
-
-            SkPMColor c = *bm.getAddr32(xSamp, ySamp);
-
-            r += SkGetPackedR32(c) * filter;
-            g += SkGetPackedG32(c) * filter;
-            b += SkGetPackedB32(c) * filter;
-        }
-    }
-
-    U8CPU r8, g8, b8;
-
-    r8 = (U8CPU) (r+0.5f);
-    g8 = (U8CPU) (g+0.5f);
-    b8 = (U8CPU) (b+0.5f);
-
-    return SkPackARGB32(255, r8, g8, b8);
-}
-
-SkBitmap slow_blur(const SkBitmap& src, float sigma) {
-    SkBitmap dst;
-
-    dst.allocN32Pixels(src.width(), src.height(), true);
-
-    int wh;
-    std::unique_ptr<float[]> kernel(create_2d_kernel(sigma, &wh));
-
-    for (int y = 0; y < src.height(); ++y) {
-        for (int x = 0; x < src.width(); ++x) {
-            *dst.getAddr32(x, y) = blur_pixel(src, x, y, kernel.get(), wh);
-        }
-    }
-
-    return dst;
-}
-
-// compute the intersection point between the diagonal and the ellipse in the
-// lower right corner
-static SkPoint intersection(SkScalar w, SkScalar h) {
-    SkASSERT(w > 0.0f || h > 0.0f);
-
-    return SkPoint::Make(w / SK_ScalarSqrt2, h / SK_ScalarSqrt2);
-}
-
-// Use the intersection of the corners' diagonals with their ellipses to shrink
-// the bounding rect
-SkRect compute_central_occluder(const SkRRect& rr) {
-    const SkRect r = rr.getBounds();
-
-    SkScalar newL = r.fLeft, newT = r.fTop, newR = r.fRight, newB = r.fBottom;
-
-    SkVector radii = rr.radii(SkRRect::kUpperLeft_Corner);
-    if (!radii.isZero()) {
-        SkPoint p = intersection(radii.fX, radii.fY);
-
-        newL = SkTMax(newL, r.fLeft + radii.fX - p.fX);
-        newT = SkTMax(newT, r.fTop + radii.fY - p.fY);
-    }
-
-    radii = rr.radii(SkRRect::kUpperRight_Corner);
-    if (!radii.isZero()) {
-        SkPoint p = intersection(radii.fX, radii.fY);
-
-        newR = SkTMin(newR, r.fRight + p.fX - radii.fX);
-        newT = SkTMax(newT, r.fTop + radii.fY - p.fY);
-    }
-
-    radii = rr.radii(SkRRect::kLowerRight_Corner);
-    if (!radii.isZero()) {
-        SkPoint p = intersection(radii.fX, radii.fY);
-
-        newR = SkTMin(newR, r.fRight + p.fX - radii.fX);
-        newB = SkTMin(newB, r.fBottom - radii.fY + p.fY);
-    }
-
-    radii = rr.radii(SkRRect::kLowerLeft_Corner);
-    if (!radii.isZero()) {
-        SkPoint p = intersection(radii.fX, radii.fY);
-
-        newL = SkTMax(newL, r.fLeft + radii.fX - p.fX);
-        newB = SkTMin(newB, r.fBottom - radii.fY + p.fY);
-    }
-
-    return SkRect::MakeLTRB(newL, newT, newR, newB);
-}
-
-// The widest inset rect
-SkRect compute_widest_occluder(const SkRRect& rr) {
-    const SkRect& r = rr.getBounds();
-
-    const SkVector& ul = rr.radii(SkRRect::kUpperLeft_Corner);
-    const SkVector& ur = rr.radii(SkRRect::kUpperRight_Corner);
-    const SkVector& lr = rr.radii(SkRRect::kLowerRight_Corner);
-    const SkVector& ll = rr.radii(SkRRect::kLowerLeft_Corner);
-
-    SkScalar maxT = SkTMax(ul.fY, ur.fY);
-    SkScalar maxB = SkTMax(ll.fY, lr.fY);
-
-    return SkRect::MakeLTRB(r.fLeft, r.fTop + maxT, r.fRight, r.fBottom - maxB);
-
-}
-
-// The tallest inset rect
-SkRect compute_tallest_occluder(const SkRRect& rr) {
-    const SkRect& r = rr.getBounds();
-
-    const SkVector& ul = rr.radii(SkRRect::kUpperLeft_Corner);
-    const SkVector& ur = rr.radii(SkRRect::kUpperRight_Corner);
-    const SkVector& lr = rr.radii(SkRRect::kLowerRight_Corner);
-    const SkVector& ll = rr.radii(SkRRect::kLowerLeft_Corner);
-
-    SkScalar maxL = SkTMax(ul.fX, ll.fX);
-    SkScalar maxR = SkTMax(ur.fX, lr.fX);
-
-    return SkRect::MakeLTRB(r.fLeft + maxL, r.fTop, r.fRight - maxR, r.fBottom);
-}
-
 bool copy_to(SkBitmap* dst, SkColorType dstColorType, const SkBitmap& src) {
     SkPixmap srcPM;
     if (!src.peekPixels(&srcPM)) {
@@ -524,68 +348,10 @@ void copy_to_g8(SkBitmap* dst, const SkBitmap& src) {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    static int scale255(float x) {
-        return sk_float_round2int(x * 255);
-    }
-
-    static unsigned diff(const SkColorType ct, const void* a, const void* b) {
-        int dr = 0,
-            dg = 0,
-            db = 0,
-            da = 0;
-        switch (ct) {
-            case kRGBA_8888_SkColorType:
-            case kBGRA_8888_SkColorType: {
-                SkPMColor c0 = *(const SkPMColor*)a;
-                SkPMColor c1 = *(const SkPMColor*)b;
-                dr = SkGetPackedR32(c0) - SkGetPackedR32(c1);
-                dg = SkGetPackedG32(c0) - SkGetPackedG32(c1);
-                db = SkGetPackedB32(c0) - SkGetPackedB32(c1);
-                da = SkGetPackedA32(c0) - SkGetPackedA32(c1);
-            } break;
-            case kRGB_565_SkColorType: {
-                uint16_t c0 = *(const uint16_t*)a;
-                uint16_t c1 = *(const uint16_t*)b;
-                dr = SkGetPackedR16(c0) - SkGetPackedR16(c1);
-                dg = SkGetPackedG16(c0) - SkGetPackedG16(c1);
-                db = SkGetPackedB16(c0) - SkGetPackedB16(c1);
-            } break;
-            case kARGB_4444_SkColorType: {
-                uint16_t c0 = *(const uint16_t*)a;
-                uint16_t c1 = *(const uint16_t*)b;
-                dr = SkGetPackedR4444(c0) - SkGetPackedR4444(c1);
-                dg = SkGetPackedG4444(c0) - SkGetPackedG4444(c1);
-                db = SkGetPackedB4444(c0) - SkGetPackedB4444(c1);
-                da = SkGetPackedA4444(c0) - SkGetPackedA4444(c1);
-            } break;
-            case kAlpha_8_SkColorType:
-            case kGray_8_SkColorType:
-                da = (const uint8_t*)a - (const uint8_t*)b;
-                break;
-            case kRGBA_F16_SkColorType: {
-                const SkPM4f* c0 = (const SkPM4f*)a;
-                const SkPM4f* c1 = (const SkPM4f*)b;
-                dr = scale255(c0->r() - c1->r());
-                dg = scale255(c0->g() - c1->g());
-                db = scale255(c0->b() - c1->b());
-                da = scale255(c0->a() - c1->a());
-            } break;
-            default:
-                return 0;
-        }
-        dr = SkAbs32(dr);
-        dg = SkAbs32(dg);
-        db = SkAbs32(db);
-        da = SkAbs32(da);
-        return SkMax32(dr, SkMax32(dg, SkMax32(db, da)));
-    }
-
-    bool equal_pixels(const SkPixmap& a, const SkPixmap& b, unsigned maxDiff,
-                      bool respectColorSpace) {
+    bool equal_pixels(const SkPixmap& a, const SkPixmap& b) {
         if (a.width() != b.width() ||
             a.height() != b.height() ||
-            a.colorType() != b.colorType() ||
-            (respectColorSpace && (a.colorSpace() != b.colorSpace())))
+            a.colorType() != b.colorType())
         {
             return false;
         }
@@ -594,11 +360,7 @@ void copy_to_g8(SkBitmap* dst, const SkBitmap& src) {
             const char* aptr = (const char*)a.addr(0, y);
             const char* bptr = (const char*)b.addr(0, y);
             if (memcmp(aptr, bptr, a.width() * a.info().bytesPerPixel())) {
-                for (int x = 0; x < a.width(); ++x) {
-                    if (diff(a.colorType(), a.addr(x, y), b.addr(x, y)) > maxDiff) {
-                        return false;
-                    }
-                }
+                return false;
             }
             aptr += a.rowBytes();
             bptr += b.rowBytes();
@@ -606,24 +368,18 @@ void copy_to_g8(SkBitmap* dst, const SkBitmap& src) {
         return true;
     }
 
-    bool equal_pixels(const SkBitmap& bm0, const SkBitmap& bm1, unsigned maxDiff,
-                      bool respectColorSpaces) {
+    bool equal_pixels(const SkBitmap& bm0, const SkBitmap& bm1) {
         SkPixmap pm0, pm1;
-        return bm0.peekPixels(&pm0) && bm1.peekPixels(&pm1) &&
-               equal_pixels(pm0, pm1, maxDiff, respectColorSpaces);
+        return bm0.peekPixels(&pm0) && bm1.peekPixels(&pm1) && equal_pixels(pm0, pm1);
     }
 
-    bool equal_pixels(const SkImage* a, const SkImage* b, unsigned maxDiff,
-                      bool respectColorSpaces) {
+    bool equal_pixels(const SkImage* a, const SkImage* b) {
         // ensure that peekPixels will succeed
         auto imga = a->makeRasterImage();
         auto imgb = b->makeRasterImage();
-        a = imga.get();
-        b = imgb.get();
 
         SkPixmap pm0, pm1;
-        return a->peekPixels(&pm0) && b->peekPixels(&pm1) &&
-               equal_pixels(pm0, pm1, maxDiff, respectColorSpaces);
+        return imga->peekPixels(&pm0) && imgb->peekPixels(&pm1) && equal_pixels(pm0, pm1);
     }
 
     sk_sp<SkSurface> makeSurface(SkCanvas* canvas, const SkImageInfo& info,

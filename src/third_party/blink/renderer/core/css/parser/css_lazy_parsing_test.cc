@@ -23,7 +23,7 @@ class CSSLazyParsingTest : public testing::Test {
     return rule->HasParsedProperties();
   }
 
-  StyleRule* RuleAt(StyleSheetContents* sheet, size_t index) {
+  StyleRule* RuleAt(StyleSheetContents* sheet, wtf_size_t index) {
     return ToStyleRule(sheet->ChildRules()[index]);
   }
 
@@ -38,7 +38,7 @@ TEST_F(CSSLazyParsingTest, Simple) {
 
   String sheet_text = "body { background-color: red; }";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
+                        CSSDeferPropertyParsing::kYes);
   StyleRule* rule = RuleAt(style_sheet, 0);
   EXPECT_FALSE(HasParsedProperties(rule));
   rule->Properties();
@@ -55,7 +55,7 @@ TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
   String sheet_text =
       "p::before { content: 'foo' } p .class::after { content: 'bar' } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
+                        CSSDeferPropertyParsing::kYes);
 
   EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 0)));
   EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 1)));
@@ -72,7 +72,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
 
   String sheet_text = "p::first-letter { ,badness, } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
+                        CSSDeferPropertyParsing::kYes);
 
   StyleRule* rule = RuleAt(style_sheet, 0);
   EXPECT_FALSE(HasParsedProperties(rule));
@@ -97,7 +97,7 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
 
   String sheet_text = "p::before { ,badness, } ";
   CSSParser::ParseSheet(context, style_sheet, sheet_text,
-                        true /* lazy parse */);
+                        CSSDeferPropertyParsing::kYes);
 
   StyleRule* rule = RuleAt(style_sheet, 0);
   EXPECT_TRUE(HasParsedProperties(rule));
@@ -124,7 +124,7 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
 
     String sheet_text = "body { background-color: red; } p { color: orange;  }";
     CSSParser::ParseSheet(context, cached_contents_, sheet_text,
-                          true /* lazy parse */);
+                          CSSDeferPropertyParsing::kYes);
 
     // Parse the first property set with the first document as owner.
     StyleRule* rule = RuleAt(cached_contents_, 0);

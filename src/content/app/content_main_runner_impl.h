@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/public/app/content_main.h"
@@ -72,9 +73,13 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
   CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
   std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   std::unique_ptr<StartupDataImpl> startup_data_;
+
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

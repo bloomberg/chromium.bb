@@ -102,7 +102,6 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="3171922709365450819">Klient toto zařízení nepodporuje, protože vyžaduje ověření prostřednictvím třetí strany.</translation>
 <translation id="3194245623920924351">Vzdálená plocha Chrome</translation>
 <translation id="3197730452537982411">Vzdálená plocha</translation>
-<translation id="3212472844831225214">• Přidána podpora systému Android 9.0 Pie</translation>
 <translation id="324272851072175193">Zaslat tyto pokyny e-mailem</translation>
 <translation id="3258789396564295715">K tomuto počítači se můžete bezpečně připojit pomocí Vzdálené plochy Chrome.</translation>
 <translation id="3286521253923406898">Hostitelský kontroler funkce Chromoting</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="8548209692293300397">Dříve jste byli přihlášeni pomocí účtu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Chcete-li získat přístup k počítačům v tomto účtu, <ph name="LINK_BEGIN" />přihlaste se do prohlížeče Google Chrome<ph name="LINK_END" /> pomocí příslušného účtu a znovu nainstalujte Vzdálenou plochu Chrome.</translation>
 <translation id="8642984861538780905">Přijatelná</translation>
+<translation id="8705151241155781642">• Přidána podpora systému Android 9.0 Pie.
+• Podpora změny rozlišení vzdálené obrazovky, aby odpovídala obrazovce zařízení Android.</translation>
 <translation id="8712909229180978490">Soubory uložené online na Disku Google se nezobrazují.</translation>
 <translation id="8743328882720071828">Chcete uživateli <ph name="CLIENT_USERNAME" /> povolit zobrazit a ovládat váš počítač?</translation>
 <translation id="8747048596626351634">Relace selhala, nebo se ji nepodařilo spustit. Je-li ve vzdáleném počítači k dispozici relace ~/.chrome-remote-desktop-session, zkontrolujte, zda spouští dlouho běžící proces na popředí, například počítačovou plochu nebo správce oken.</translation>

@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_ENTRY_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_ENTRY_H_
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "components/download/public/background_service/client.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_params.h"
+#include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "url/gurl.h"
 
 namespace download {
 
@@ -103,6 +107,21 @@ struct Entry {
 
   // Traffic annotation for the network request.
   net::MutableNetworkTrafficAnnotationTag traffic_annotation;
+
+  // The url chain of the download. Download may encounter redirects, and
+  // fetches the content from the last url in the chain.
+  std::vector<GURL> url_chain;
+
+  // The response headers for the download request.
+  scoped_refptr<const net::HttpResponseHeaders> response_headers;
+
+  // If the response is received. |response_headers| may be null in the response
+  // for certain protocol, or without network connection.
+  bool did_received_response;
+
+  // If the download requires response headers to be persisted. False for older
+  // proto version.
+  bool require_response_headers;
 };
 
 }  // namespace download

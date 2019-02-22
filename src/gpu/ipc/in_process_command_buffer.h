@@ -330,7 +330,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   int32_t last_put_offset_ = -1;
   Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
-  int32_t  next_transfer_buffer_id_ = 1;
   uint64_t next_fence_sync_release_ = 1;
   uint64_t flushed_fence_sync_release_ = 0;
   std::vector<SyncToken> next_flush_sync_token_fences_;
@@ -362,8 +361,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
 
-  base::WeakPtr<InProcessCommandBuffer> client_thread_weak_ptr_;
-  base::WeakPtr<InProcessCommandBuffer> gpu_thread_weak_ptr_;
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
 

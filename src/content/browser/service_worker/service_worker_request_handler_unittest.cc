@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -14,7 +15,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/request_context_type.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -26,6 +27,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 namespace service_worker_request_handler_unittest {
@@ -63,8 +65,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   static std::unique_ptr<ServiceWorkerNavigationHandleCore>
   CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](ServiceWorkerContextWrapper* wrapper) {
               return std::make_unique<ServiceWorkerNavigationHandleCore>(
@@ -101,7 +103,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::mojom::RequestContextType::HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel, nullptr);
   }
 
@@ -155,7 +157,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeForNavigation(
         request.get(), navigation_handle_core.get(), &blob_storage_context_,
         false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
+        blink::mojom::RequestContextType::HYPERLINK,
         network::mojom::RequestContextFrameType::kTopLevel,
         true /* is_parent_frame_secure */, nullptr /* body */,
         base::RepeatingCallback<WebContents*(void)>());
@@ -167,15 +169,17 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
       bool expected_handler_created) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
         CreateNavigationHandleCore(helper_->context_wrapper());
+    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
         ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
             GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), &blob_storage_context_,
             false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-            REQUEST_CONTEXT_TYPE_HYPERLINK,
+            blink::mojom::RequestContextType::HYPERLINK,
             network::mojom::RequestContextFrameType::kTopLevel,
             true /* is_parent_frame_secure */, nullptr /* body */,
-            base::RepeatingCallback<WebContents*(void)>());
+            base::RepeatingCallback<WebContents*(void)>(),
+            &service_worker_provider_host);
     return !!interceptor.get();
   }
 

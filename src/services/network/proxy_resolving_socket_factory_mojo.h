@@ -12,15 +12,15 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#include "services/network/tls_socket_factory.h"
 
 namespace net {
 class URLRequestContext;
 }  // namespace net
 
 namespace network {
-
-class ProxyResolvingClientSocketFactory;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketFactoryMojo
     : public mojom::ProxyResolvingSocketFactory {
@@ -34,10 +34,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketFactoryMojo
       bool use_tls,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::ProxyResolvingSocketRequest request,
+      mojom::SocketObserverPtr observer,
       CreateProxyResolvingSocketCallback callback) override;
 
  private:
-  std::unique_ptr<ProxyResolvingClientSocketFactory> factory_impl_;
+  ProxyResolvingClientSocketFactory factory_impl_;
+  TLSSocketFactory tls_socket_factory_;
   mojo::StrongBindingSet<mojom::ProxyResolvingSocket>
       proxy_resolving_socket_bindings_;
 

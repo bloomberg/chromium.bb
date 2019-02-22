@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * Namespace for common types shared between VolumeManager and
- * VolumeManagerWrapper.
+ * Namespace for common types.
  */
 var VolumeManagerCommon = {};
 
@@ -100,9 +99,6 @@ VolumeManagerCommon.RootType = {
   // 'Offline'.
   DRIVE_FAKE_ROOT: 'drive_fake_root',
 
-  // 'Add new services' menu item.
-  ADD_NEW_SERVICES_MENU: 'add_new_services_menu',
-
   // Root for crostini 'Linux files'.
   CROSTINI: 'crostini',
 
@@ -111,6 +107,12 @@ VolumeManagerCommon.RootType = {
 
   // My Files root, which aggregates DOWNLOADS, ANDROID_FILES and CROSTINI.
   MY_FILES: 'my_files',
+
+  // The grand root entry of My Computers in Drive volume.
+  COMPUTERS_GRAND_ROOT: 'computers_grand_root',
+
+  // Root directory of a Computer.
+  COMPUTER: 'computer',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -139,10 +141,11 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.MEDIA_VIEW,
   VolumeManagerCommon.RootType.RECENT,
   VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,
-  VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU,
   VolumeManagerCommon.RootType.CROSTINI,
   VolumeManagerCommon.RootType.ANDROID_FILES,
   VolumeManagerCommon.RootType.MY_FILES,
+  VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
+  VolumeManagerCommon.RootType.COMPUTER,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -276,6 +279,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
     case VolumeManagerCommon.RootType.DRIVE_RECENT:
+    case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:
+    case VolumeManagerCommon.RootType.COMPUTER:
       return VolumeManagerCommon.VolumeType.DRIVE;
     case VolumeManagerCommon.RootType.MTP:
       return VolumeManagerCommon.VolumeType.MTP;
@@ -332,22 +337,6 @@ VolumeManagerCommon.getRootTypeFromVolumeType = function(volumeType) {
 VolumeManagerCommon.DriveConnectionState;
 
 /**
- * Interface for classes providing access to {@code VolumeInfo}
- * for {@code Entry} instances.
- *
- * @interface
- */
-VolumeManagerCommon.VolumeInfoProvider = function() {};
-
-/**
- * Obtains a volume info containing the passed entry.
- * @param {!Entry|!FakeEntry|!FilesAppEntry} entry Entry on the volume to be
- *     returned. Can be fake.
- * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
- */
-VolumeManagerCommon.VolumeInfoProvider.prototype.getVolumeInfo;
-
-/**
  * List of media view root types.
  *
  * Keep this in sync with constants in arc_media_view_util.cc.
@@ -382,6 +371,15 @@ VolumeManagerCommon.VOLUME_ALREADY_MOUNTED = 'volume_already_mounted';
 VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME = 'team_drives';
 VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_PATH =
     '/' + VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME;
+
+/**
+ * This is the top level directory name for Computers in drive that are using
+ * the backup and sync feature.
+ * @const {string}
+ */
+VolumeManagerCommon.COMPUTERS_DIRECTORY_NAME = 'Computers';
+VolumeManagerCommon.COMPUTERS_DIRECTORY_PATH =
+    '/' + VolumeManagerCommon.COMPUTERS_DIRECTORY_NAME;
 
 /**
  * @const

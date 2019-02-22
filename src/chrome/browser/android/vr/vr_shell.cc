@@ -27,7 +27,6 @@
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
-#include "chrome/browser/android/vr/vr_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -38,15 +37,16 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/assets_loader.h"
+#include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
-#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/vr/vr_web_contents_observer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -220,9 +220,7 @@ void VrShell::SwapContents(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            const JavaParamRef<jobject>& tab) {
   content_id_++;
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::OnSwapContents,
-                                gl_thread_->GetRenderLoop(), content_id_));
+  gl_thread_->OnSwapContents(content_id_);
   TabAndroid* active_tab =
       tab.is_null()
           ? nullptr
@@ -252,7 +250,9 @@ void VrShell::SwapContents(JNIEnv* env,
   }
 
   vr_web_contents_observer_ = std::make_unique<VrWebContentsObserver>(
-      web_contents_, this, ui_, toolbar_.get());
+      web_contents_, ui_, toolbar_.get(),
+      base::BindOnce(&VrShell::ContentWebContentsDestroyed,
+                     base::Unretained(this)));
 
   // TODO(https://crbug.com/684661): Make SessionMetricsHelper tab-aware and
   // able to track multiple tabs.
@@ -492,13 +492,13 @@ void VrShell::OnTriggerEvent(JNIEnv* env,
   }
 
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::OnTriggerEvent,
-                                gl_thread_->GetRenderLoop(), touched));
+                 base::BindOnce(&BrowserRenderer::OnTriggerEvent,
+                                gl_thread_->GetBrowserRenderer(), touched));
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::OnPause,
-                                           gl_thread_->GetRenderLoop()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::OnPause,
+                                           gl_thread_->GetBrowserRenderer()));
 
   // exit vr session
   SessionMetricsHelper* metrics_helper =
@@ -511,15 +511,15 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  // Calling WaitForAssets before RenderLoop::OnResume so that the UI won't
+  // Calling WaitForAssets before BrowserRenderer::OnResume so that the UI won't
   // accidentally produce an initial frame with UI.
   if (can_load_new_assets_) {
     ui_->WaitForAssets();
     LoadAssets();
   }
 
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::OnResume,
-                                           gl_thread_->GetRenderLoop()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::OnResume,
+                                           gl_thread_->GetBrowserRenderer()));
 
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
@@ -550,8 +550,8 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   if (metrics_helper)
     metrics_helper->SetWebVREnabled(enabled);
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::SetWebXrMode,
-                                gl_thread_->GetRenderLoop(), enabled));
+                 base::BindOnce(&BrowserRenderer::SetWebXrMode,
+                                gl_thread_->GetBrowserRenderer(), enabled));
   // We create and dispose a page info in order to get notifed of page
   // permissions.
   CreatePageInfo();
@@ -563,10 +563,6 @@ void VrShell::SetWebVrMode(JNIEnv* env,
     AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
         Mode::kWebXrVrPresentation);
   }
-}
-
-void VrShell::OnFullscreenChanged(bool enabled) {
-  ui_->SetFullscreen(enabled);
 }
 
 bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -637,16 +633,16 @@ void VrShell::SetAlertDialog(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              float width,
                              float height) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::EnableAlertDialog,
-                                           gl_thread_->GetRenderLoop(),
+  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::EnableAlertDialog,
+                                           gl_thread_->GetBrowserRenderer(),
                                            gl_thread_.get(), width, height));
 }
 
 void VrShell::CloseAlertDialog(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::DisableAlertDialog,
-                                           gl_thread_->GetRenderLoop()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::DisableAlertDialog,
+                                           gl_thread_->GetBrowserRenderer()));
   // This will refresh our permissions after an alert is closed which should
   // ensure that long press on the app button gives accurate results.
   CreatePageInfo();
@@ -666,25 +662,22 @@ void VrShell::SetAlertDialogSize(
     const base::android::JavaParamRef<jobject>& obj,
     float width,
     float height) {
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::SetAlertDialogSize,
-                                gl_thread_->GetRenderLoop(), width, height));
+  PostToGlThread(FROM_HERE, base::BindOnce(&BrowserRenderer::SetAlertDialogSize,
+                                           gl_thread_->GetBrowserRenderer(),
+                                           width, height));
 }
 
 void VrShell::SetDialogLocation(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 float x,
                                 float y) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::SetDialogLocation,
-                                           gl_thread_->GetRenderLoop(), x, y));
+  gl_thread_->SetDialogLocation(x, y);
 }
 
 void VrShell::SetDialogFloating(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 bool floating) {
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::SetDialogFloating,
-                                gl_thread_->GetRenderLoop(), floating));
+  gl_thread_->SetDialogFloating(floating);
 }
 
 void VrShell::ShowToast(JNIEnv* env,
@@ -692,22 +685,20 @@ void VrShell::ShowToast(JNIEnv* env,
                         jstring jtext) {
   base::string16 text;
   base::android::ConvertJavaStringToUTF16(env, jtext, &text);
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::ShowToast,
-                                           gl_thread_->GetRenderLoop(), text));
+  gl_thread_->ShowPlatformToast(text);
 }
 
 void VrShell::CancelToast(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::CancelToast,
-                                           gl_thread_->GetRenderLoop()));
+  gl_thread_->CancelPlatformToast();
 }
 
 void VrShell::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRRuntimeSessionOptionsPtr options) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::ConnectPresentingService,
-                                gl_thread_->GetRenderLoop(),
+                 base::BindOnce(&BrowserRenderer::ConnectPresentingService,
+                                gl_thread_->GetBrowserRenderer(),
                                 std::move(display_info), std::move(options)));
 }
 
@@ -772,16 +763,17 @@ void VrShell::BufferBoundsChanged(JNIEnv* env,
                                                    overlay_height);
   }
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::BufferBoundsChanged,
-                                gl_thread_->GetRenderLoop(),
+                 base::BindOnce(&BrowserRenderer::BufferBoundsChanged,
+                                gl_thread_->GetBrowserRenderer(),
                                 gfx::Size(content_width, content_height),
                                 gfx::Size(overlay_width, overlay_height)));
 }
 
 void VrShell::ResumeContentRendering(JNIEnv* env,
                                      const JavaParamRef<jobject>& object) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::ResumeContentRendering,
-                                           gl_thread_->GetRenderLoop()));
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&BrowserRenderer::ResumeContentRendering,
+                                gl_thread_->GetBrowserRenderer()));
 }
 
 void VrShell::OnOverlayTextureEmptyChanged(JNIEnv* env,
@@ -951,10 +943,7 @@ void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
   Java_VrShell_setContentCssSize(env, j_vr_shell_, window_size.width(),
                                  window_size.height(), dpr);
 
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::ContentBoundsChanged,
-                                gl_thread_->GetRenderLoop(),
-                                window_size.width(), window_size.height()));
+  gl_thread_->OnContentBoundsChanged(window_size.width(), window_size.height());
 }
 
 void VrShell::SetVoiceSearchActive(bool active) {
@@ -1249,8 +1238,8 @@ void VrShell::AcceptDoffPromptForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::AcceptDoffPromptForTesting,
-                                gl_thread_->GetRenderLoop()));
+                 base::BindOnce(&BrowserRenderer::AcceptDoffPromptForTesting,
+                                gl_thread_->GetBrowserRenderer()));
 }
 
 void VrShell::SetUiExpectingActivityForTesting(
@@ -1259,15 +1248,46 @@ void VrShell::SetUiExpectingActivityForTesting(
     jint quiescence_timeout_ms) {
   UiTestActivityExpectation ui_expectation;
   ui_expectation.quiescence_timeout_ms = quiescence_timeout_ms;
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::SetUiExpectingActivityForTesting,
-                                gl_thread_->GetRenderLoop(), ui_expectation));
+  PostToGlThread(
+      FROM_HERE,
+      base::BindOnce(&BrowserRenderer::SetUiExpectingActivityForTesting,
+                     gl_thread_->GetBrowserRenderer(), ui_expectation));
 }
 
-void VrShell::ReportUiActivityResultForTesting(VrUiTestActivityResult result) {
+void VrShell::SaveNextFrameBufferToDiskForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jstring filepath_base) {
+  PostToGlThread(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserRenderer::SaveNextFrameBufferToDiskForTesting,
+          gl_thread_->GetBrowserRenderer(),
+          base::android::ConvertJavaStringToUTF8(env, filepath_base)));
+}
+
+void VrShell::WatchElementForVisibilityChangeForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint element_name,
+    jint timeout_ms) {
+  VisibilityChangeExpectation visibility_expectation;
+  visibility_expectation.element_name =
+      static_cast<UserFriendlyElementName>(element_name);
+  visibility_expectation.timeout_ms = timeout_ms;
+  PostToGlThread(
+      FROM_HERE,
+      base::BindOnce(
+          &BrowserRenderer::WatchElementForVisibilityChangeForTesting,
+          gl_thread_->GetBrowserRenderer(), visibility_expectation));
+}
+
+void VrShell::ReportUiOperationResultForTesting(UiTestOperationType action_type,
+                                                UiTestOperationResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_reportUiActivityResultForTesting(env, j_vr_shell_,
-                                                static_cast<int>(result));
+  Java_VrShell_reportUiOperationResultForTesting(env, j_vr_shell_,
+                                                 static_cast<int>(action_type),
+                                                 static_cast<int>(result));
 }
 
 void VrShell::PerformControllerActionForTesting(
@@ -1282,9 +1302,22 @@ void VrShell::PerformControllerActionForTesting(
       static_cast<UserFriendlyElementName>(element_name);
   controller_input.action = static_cast<VrControllerTestAction>(action_type);
   controller_input.position = gfx::PointF(x, y);
-  PostToGlThread(FROM_HERE,
-                 base::BindOnce(&RenderLoop::PerformControllerActionForTesting,
-                                gl_thread_->GetRenderLoop(), controller_input));
+  PostToGlThread(
+      FROM_HERE,
+      base::BindOnce(&BrowserRenderer::PerformControllerActionForTesting,
+                     gl_thread_->GetBrowserRenderer(), controller_input));
+}
+
+void VrShell::PerformKeyboardInputForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint input_type,
+    jstring input_string) {
+  KeyboardTestInput keyboard_input;
+  keyboard_input.action = static_cast<KeyboardTestAction>(input_type);
+  keyboard_input.input_text =
+      base::android::ConvertJavaStringToUTF8(env, input_string);
+  ui_->PerformKeyboardInputForTesting(keyboard_input);
 }
 
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {

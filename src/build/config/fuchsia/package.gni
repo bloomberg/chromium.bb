@@ -12,7 +12,9 @@ import("//build/config/sysroot.gni")
 #     if different than |target_name|.
 # binary: The executable target which should be launched.
 # sandbox_policy: A path to the sandbox_policy that will be used.
-#     Defaults to //build/config/fuchsia/sandbox_policy.
+#     "testonly" targets default to using
+#     //build/config/fuchsia/testing_sandbox_policy by default.
+#     Non-test targets must explicitly specify a |sandbox_policy|.
 # deps: Additional targets to build and include in the package (optional).
 template("fuchsia_package") {
   pkg = {
@@ -25,7 +27,8 @@ template("fuchsia_package") {
     }
 
     if (!defined(sandbox_policy)) {
-      sandbox_policy = "//build/config/fuchsia/sandbox_policy"
+      assert(testonly == true)
+      sandbox_policy = "//build/config/fuchsia/testing_sandbox_policy"
     }
   }
   assert(defined(pkg.binary))

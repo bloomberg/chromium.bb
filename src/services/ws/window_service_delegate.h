@@ -30,6 +30,10 @@ namespace gfx {
 class Point;
 }
 
+namespace mojo {
+class ScopedInterfaceEndpointHandle;
+}
+
 namespace ui {
 class KeyEvent;
 class OSExchangeData;
@@ -37,6 +41,9 @@ class SystemInputInjector;
 }  // namespace ui
 
 namespace ws {
+
+class WindowManagerInterface;
+class WindowTree;
 
 // A delegate used by the WindowService for context-specific operations.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
@@ -123,6 +130,21 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
       const gfx::Point& location_in_screen,
       const std::set<aura::Window*>& ignore,
       aura::Window** real_topmost);
+
+  // Creates and binds a request for an interface provided by the local
+  // environment. The interface request originated from the client associated
+  // with |tree|. |name| is the name of the requested interface. The return
+  // value is owned by |tree|. Return null if |name| is not the name of a known
+  // interface.
+  // The following shows how to bind |handle|:
+  // TestWmInterface* wm_interface_impl = ...;
+  // mojo::AssociatedBindingTestWmInterface> binding(
+  //   wm_interface_impl,
+  //   mojo::AssociatedInterfaceRequest<TestWmInterface>(std::move(handle)));
+  virtual std::unique_ptr<WindowManagerInterface> CreateWindowManagerInterface(
+      WindowTree* tree,
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle);
 
  protected:
   virtual ~WindowServiceDelegate() = default;

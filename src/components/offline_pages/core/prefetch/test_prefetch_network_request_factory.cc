@@ -9,6 +9,7 @@
 
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 
 namespace offline_pages {
 namespace {
@@ -17,15 +18,13 @@ const char kUserAgent[] = "Chrome/57.0.2987.133";
 }  // namespace
 
 TestPrefetchNetworkRequestFactory::TestPrefetchNetworkRequestFactory()
-    : TestPrefetchNetworkRequestFactory(new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get())) {}
+    : TestPrefetchNetworkRequestFactory(
+          new network::TestSharedURLLoaderFactory) {}
 
 TestPrefetchNetworkRequestFactory::TestPrefetchNetworkRequestFactory(
-    net::TestURLRequestContextGetter* request_context_getter)
-    : PrefetchNetworkRequestFactoryImpl(request_context_getter,
-                                        kChannel,
-                                        kUserAgent) {
-  request_context = request_context_getter;
+    scoped_refptr<network::SharedURLLoaderFactory> loader)
+    : PrefetchNetworkRequestFactoryImpl(loader, kChannel, kUserAgent) {
+  url_loader_factory = loader;
 }
 
 TestPrefetchNetworkRequestFactory::~TestPrefetchNetworkRequestFactory() =

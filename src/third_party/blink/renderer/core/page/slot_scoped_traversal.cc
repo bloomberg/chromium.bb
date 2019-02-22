@@ -80,7 +80,7 @@ Element* SlotScopedTraversal::Next(const Element& current) {
       nearest_inclusive_ancestor_assigned_to_slot->AssignedSlot();
   DCHECK(slot);
   const HeapVector<Member<Node>>& assigned_nodes = slot->AssignedNodes();
-  size_t current_index =
+  wtf_size_t current_index =
       assigned_nodes.Find(*nearest_inclusive_ancestor_assigned_to_slot);
   DCHECK_NE(current_index, kNotFound);
   for (++current_index; current_index < assigned_nodes.size();
@@ -108,7 +108,7 @@ Element* SlotScopedTraversal::Previous(const Element& current) {
   const HeapVector<Member<Node>>& assigned_nodes =
       nearest_inclusive_ancestor_assigned_to_slot->AssignedSlot()
           ->AssignedNodes();
-  size_t current_index =
+  wtf_size_t current_index =
       assigned_nodes.ReverseFind(*nearest_inclusive_ancestor_assigned_to_slot);
   DCHECK_NE(current_index, kNotFound);
   for (; current_index > 0; --current_index) {

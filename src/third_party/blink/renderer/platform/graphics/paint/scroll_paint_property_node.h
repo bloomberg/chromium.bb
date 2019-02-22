@@ -39,7 +39,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // a struct with default values is used to represent the state.
   struct State {
     IntRect container_rect;
-    IntRect contents_rect;
+    IntSize contents_size;
     bool user_scrollable_horizontal = false;
     bool user_scrollable_vertical = false;
     bool scrolls_inner_viewport = false;
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
     bool operator==(const State& o) const {
       return container_rect == o.container_rect &&
-             contents_rect == o.contents_rect &&
+             contents_size == o.contents_size &&
              user_scrollable_horizontal == o.user_scrollable_horizontal &&
              user_scrollable_vertical == o.user_scrollable_vertical &&
              scrolls_inner_viewport == o.scrolls_inner_viewport &&
@@ -79,15 +79,21 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return base::AdoptRef(
         new ScrollPaintPropertyNode(&parent, std::move(state)));
   }
+  static scoped_refptr<ScrollPaintPropertyNode> CreateAlias(
+      const ScrollPaintPropertyNode&) {
+    // ScrollPaintPropertyNodes cannot be aliases.
+    NOTREACHED();
+    return nullptr;
+  }
 
   bool Update(const ScrollPaintPropertyNode& parent, State&& state) {
     bool parent_changed = SetParent(&parent);
     if (state == state_)
       return parent_changed;
 
-    SetChanged();
     state_ = std::move(state);
     Validate();
+    SetChanged();
     return true;
   }
 
@@ -99,7 +105,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return state_.overscroll_behavior.y;
   }
 
-  base::Optional<SnapContainerData> SnapContainerData() const {
+  base::Optional<SnapContainerData> GetSnapContainerData() const {
     return state_.snap_container_data;
   }
 
@@ -109,9 +115,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // the rect.
   const IntRect& ContainerRect() const { return state_.container_rect; }
 
-  // Rect of the contents that is scrolled within the container rect, in the
-  // space of the associated transform node (ScrollTranslation).
-  const IntRect& ContentsRect() const { return state_.contents_rect; }
+  // Size of the contents that is scrolled within the container rect.
+  const IntSize& ContentsSize() const { return state_.contents_size; }
 
   bool UserScrollableHorizontal() const {
     return state_.user_scrollable_horizontal;
@@ -145,20 +150,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   const CompositorElementId& GetCompositorElementId() const {
     return state_.compositor_element_id;
   }
-
-#if DCHECK_IS_ON()
-  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
-  // a scroll node before it has been updated, to later detect changes.
-  scoped_refptr<ScrollPaintPropertyNode> Clone() const {
-    return base::AdoptRef(new ScrollPaintPropertyNode(Parent(), State(state_)));
-  }
-
-  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
-  // if a scroll node has changed.
-  bool operator==(const ScrollPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && state_ == o.state_;
-  }
-#endif
 
   std::unique_ptr<JSONObject> ToJSON() const;
 

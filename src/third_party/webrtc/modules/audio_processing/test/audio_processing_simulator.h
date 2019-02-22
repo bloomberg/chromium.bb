@@ -68,12 +68,12 @@ struct SimulationSettings {
   absl::optional<bool> use_experimental_agc;
   absl::optional<bool> use_experimental_agc_agc2_level_estimator;
   absl::optional<bool> experimental_agc_disable_digital_adaptive;
-  absl::optional<int> aecm_routing_mode;
-  absl::optional<bool> use_aecm_comfort_noise;
+  absl::optional<bool> experimental_agc_analyze_before_aec;
   absl::optional<int> agc_mode;
   absl::optional<int> agc_target_level;
   absl::optional<bool> use_agc_limiter;
   absl::optional<int> agc_compression_gain;
+  absl::optional<bool> agc2_use_adaptive_gain;
   float agc2_fixed_gain_db;
   float pre_amplifier_gain_factor;
   absl::optional<int> vad_likelihood;
@@ -91,6 +91,7 @@ struct SimulationSettings {
   absl::optional<std::string> aec_dump_output_filename;
   bool fixed_interface = false;
   bool store_intermediate_output = false;
+  bool print_aec3_parameter_values = false;
   absl::optional<std::string> custom_call_order_filename;
   absl::optional<std::string> aec3_settings_filename;
 };

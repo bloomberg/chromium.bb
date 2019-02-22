@@ -14,9 +14,11 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -69,7 +71,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToThread(
-        web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
+        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
   }
 }
 
@@ -90,25 +92,27 @@ void IOSChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
 
 bool IOSChromeNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    bool allowed_from_caller) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
-    return true;
+    return allowed_from_caller;
 
-  return cookie_settings_->IsCookieAccessAllowed(request.url(),
-                                                 request.site_for_cookies());
+  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
+                                    request.url(), request.site_for_cookies());
 }
 
 bool IOSChromeNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options) {
+    net::CookieOptions* options,
+    bool allowed_from_caller) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)
-    return true;
+    return allowed_from_caller;
 
-  return cookie_settings_->IsCookieAccessAllowed(request.url(),
-                                                 request.site_for_cookies());
+  return allowed_from_caller && cookie_settings_->IsCookieAccessAllowed(
+                                    request.url(), request.site_for_cookies());
 }
 
 bool IOSChromeNetworkDelegate::OnCanAccessFile(

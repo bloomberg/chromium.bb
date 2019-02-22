@@ -17,10 +17,10 @@ TestActivationStateCallbackReceiver::TestActivationStateCallbackReceiver() =
 TestActivationStateCallbackReceiver::~TestActivationStateCallbackReceiver() =
     default;
 
-base::Callback<void(ActivationState)>
+base::OnceCallback<void(mojom::ActivationState)>
 TestActivationStateCallbackReceiver::GetCallback() {
-  return base::Bind(&TestActivationStateCallbackReceiver::Callback,
-                    base::Unretained(this));
+  return base::BindOnce(&TestActivationStateCallbackReceiver::Callback,
+                        base::Unretained(this));
 }
 
 void TestActivationStateCallbackReceiver::WaitForActivationDecision() {
@@ -31,13 +31,13 @@ void TestActivationStateCallbackReceiver::WaitForActivationDecision() {
 }
 
 void TestActivationStateCallbackReceiver::ExpectReceivedOnce(
-    const ActivationState& expected_state) const {
+    const mojom::ActivationState& expected_state) const {
   ASSERT_EQ(1, callback_count_);
-  EXPECT_EQ(expected_state, last_activation_state_);
+  EXPECT_TRUE(expected_state.Equals(last_activation_state_));
 }
 
 void TestActivationStateCallbackReceiver::Callback(
-    ActivationState activation_state) {
+    mojom::ActivationState activation_state) {
   ++callback_count_;
   last_activation_state_ = activation_state;
   if (quit_closure_)

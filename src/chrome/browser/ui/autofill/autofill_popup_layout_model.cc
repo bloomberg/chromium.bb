@@ -201,7 +201,7 @@ ui::NativeTheme::ColorId AutofillPopupLayoutModel::GetValueFontColorIDForRow(
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
   switch (suggestions[index].frontend_id) {
     case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-      return ui::NativeTheme::kColorId_ResultsTableNormalDimmedText;
+      return ui::NativeTheme::kColorId_ResultsTableDimmedText;
     default:
       return ui::NativeTheme::kColorId_ResultsTableNormalText;
   }

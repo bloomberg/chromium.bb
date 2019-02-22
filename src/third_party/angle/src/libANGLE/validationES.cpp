@@ -56,6 +56,10 @@ bool CompressedTextureFormatRequiresExactSize(GLenum internalFormat)
         case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
         case GL_COMPRESSED_RGBA8_LOSSY_DECODE_ETC2_EAC_ANGLE:
         case GL_COMPRESSED_SRGB8_ALPHA8_LOSSY_DECODE_ETC2_EAC_ANGLE:
+        case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
+        case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
+        case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
+        case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
             return true;
 
         default:
@@ -79,16 +83,10 @@ bool DifferenceCanOverflow(GLint a, GLint b)
     return !checkedA.IsValid();
 }
 
-bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex)
+bool ValidateDrawAttribsImpl(Context *context, GLint primcount, GLint maxVertex)
 {
     // If we're drawing zero vertices, we have enough data.
     ASSERT(primcount > 0);
-
-    if (maxVertex <= context->getStateCache().getNonInstancedVertexElementLimit() &&
-        (primcount - 1) <= context->getStateCache().getInstancedVertexElementLimit())
-    {
-        return true;
-    }
 
     // An overflow can happen when adding the offset. Check against a special constant.
     if (context->getStateCache().getNonInstancedVertexElementLimit() ==
@@ -104,6 +102,19 @@ bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex)
     // We can return INVALID_OPERATION if our buffer does not have enough backing data.
     ANGLE_VALIDATION_ERR(context, InvalidOperation(), InsufficientVertexBufferSize);
     return false;
+}
+
+ANGLE_INLINE bool ValidateDrawAttribs(Context *context, GLint primcount, GLint maxVertex)
+{
+    if (maxVertex <= context->getStateCache().getNonInstancedVertexElementLimit() &&
+        (primcount - 1) <= context->getStateCache().getInstancedVertexElementLimit())
+    {
+        return true;
+    }
+    else
+    {
+        return ValidateDrawAttribsImpl(context, primcount, maxVertex);
+    }
 }
 
 bool ValidReadPixelsTypeEnum(Context *context, GLenum type)
@@ -378,7 +389,7 @@ bool ValidateTextureMaxAnisotropyValue(Context *context, GLfloat paramValue)
 
 bool ValidateFragmentShaderColorBufferTypeMatch(Context *context)
 {
-    const Program *program         = context->getGLState().getProgram();
+    const Program *program         = context->getGLState().getLinkedProgram(context);
     const Framebuffer *framebuffer = context->getGLState().getDrawFramebuffer();
 
     return ComponentTypeMask::Validate(program->getDrawBufferTypeMask().to_ulong(),
@@ -390,7 +401,7 @@ bool ValidateFragmentShaderColorBufferTypeMatch(Context *context)
 bool ValidateVertexShaderAttributeTypeMatch(Context *context)
 {
     const auto &glState    = context->getGLState();
-    const Program *program = context->getGLState().getProgram();
+    const Program *program = context->getGLState().getLinkedProgram(context);
     const VertexArray *vao = context->getGLState().getVertexArray();
 
     unsigned long stateCurrentValuesTypeBits = glState.getCurrentValuesTypeMask().to_ulong();
@@ -501,7 +512,7 @@ bool ValidTextureTarget(const Context *context, TextureType type)
         case TextureType::_2DMultisample:
             return (context->getClientVersion() >= Version(3, 1));
         case TextureType::_2DMultisampleArray:
-            return context->getExtensions().textureMultisampleArray;
+            return context->getExtensions().textureStorageMultisample2DArray;
 
         default:
             return false;
@@ -648,7 +659,7 @@ bool ValidateDrawInstancedANGLE(Context *context)
     // Verify there is at least one active attribute with a divisor of zero
     const State &state = context->getGLState();
 
-    Program *program = state.getProgram();
+    Program *program = state.getLinkedProgram(context);
 
     const auto &attribs  = state.getVertexArray()->getVertexAttributes();
     const auto &bindings = state.getVertexArray()->getVertexBindings();
@@ -691,7 +702,7 @@ bool ValidTexLevelDestinationTarget(const Context *context, TextureType type)
         case TextureType::Rectangle:
             return context->getExtensions().textureRectangle;
         case TextureType::_2DMultisampleArray:
-            return context->getExtensions().textureMultisampleArray;
+            return context->getExtensions().textureStorageMultisample2DArray;
         default:
             return false;
     }
@@ -890,8 +901,8 @@ bool ValidImageDataSize(Context *context,
     const Extents size(width, height, depth);
     const auto &unpack = context->getGLState().getUnpackState();
 
-    bool targetIs3D   = texType == TextureType::_3D || texType == TextureType::_2DArray;
-    GLuint endByte    = 0;
+    bool targetIs3D = texType == TextureType::_3D || texType == TextureType::_2DArray;
+    GLuint endByte  = 0;
     if (!formatInfo.computePackUnpackEndByte(type, size, unpack, targetIs3D, &endByte))
     {
         ANGLE_VALIDATION_ERR(context, InvalidOperation(), IntegerOverflow);
@@ -1004,14 +1015,14 @@ bool ValidateWebGLVertexAttribPointer(Context *context,
     return true;
 }
 
-Program *GetValidProgram(Context *context, GLuint id)
+Program *GetValidProgramNoResolve(Context *context, GLuint id)
 {
     // ES3 spec (section 2.11.1) -- "Commands that accept shader or program object names will
     // generate the error INVALID_VALUE if the provided name is not the name of either a shader
     // or program object and INVALID_OPERATION if the provided name identifies an object
     // that is not the expected type."
 
-    Program *validProgram = context->getProgram(id);
+    Program *validProgram = context->getProgramNoResolveLink(id);
 
     if (!validProgram)
     {
@@ -1028,6 +1039,16 @@ Program *GetValidProgram(Context *context, GLuint id)
     return validProgram;
 }
 
+Program *GetValidProgram(Context *context, GLuint id)
+{
+    Program *program = GetValidProgramNoResolve(context, id);
+    if (program)
+    {
+        program->resolveLink(context);
+    }
+    return program;
+}
+
 Shader *GetValidShader(Context *context, GLuint id)
 {
     // See ValidProgram for spec details.
@@ -1036,7 +1057,7 @@ Shader *GetValidShader(Context *context, GLuint id)
 
     if (!validShader)
     {
-        if (context->getProgram(id))
+        if (context->getProgramNoResolveLink(id))
         {
             ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExpectedShaderName);
         }
@@ -1231,9 +1252,9 @@ bool ValidateBlitFramebufferParameters(Context *context,
         return false;
     }
 
-    const auto &glState              = context->getGLState();
-    Framebuffer *readFramebuffer     = glState.getReadFramebuffer();
-    Framebuffer *drawFramebuffer     = glState.getDrawFramebuffer();
+    const auto &glState          = context->getGLState();
+    Framebuffer *readFramebuffer = glState.getReadFramebuffer();
+    Framebuffer *drawFramebuffer = glState.getDrawFramebuffer();
 
     if (!readFramebuffer || !drawFramebuffer)
     {
@@ -1275,8 +1296,8 @@ bool ValidateBlitFramebufferParameters(Context *context,
 
     if (mask & GL_COLOR_BUFFER_BIT)
     {
-        const FramebufferAttachment *readColorBuffer     = readFramebuffer->getReadColorbuffer();
-        const Extensions &extensions                     = context->getExtensions();
+        const FramebufferAttachment *readColorBuffer = readFramebuffer->getReadColorbuffer();
+        const Extensions &extensions                 = context->getExtensions();
 
         if (readColorBuffer)
         {
@@ -2105,19 +2126,6 @@ bool ValidateUniform1ivValue(Context *context,
     return false;
 }
 
-bool ValidateUniformValue(Context *context, GLenum valueType, GLenum uniformType)
-{
-    // Check that the value type is compatible with uniform type.
-    // Do the cheaper test first, for a little extra speed.
-    if (valueType == uniformType || VariableBoolVectorType(valueType) == uniformType)
-    {
-        return true;
-    }
-
-    ANGLE_VALIDATION_ERR(context, InvalidOperation(), UniformSizeMismatch);
-    return false;
-}
-
 bool ValidateUniformMatrixValue(Context *context, GLenum valueType, GLenum uniformType)
 {
     // Check that the value type is compatible with uniform type.
@@ -2133,7 +2141,7 @@ bool ValidateUniformMatrixValue(Context *context, GLenum valueType, GLenum unifo
 bool ValidateUniform(Context *context, GLenum valueType, GLint location, GLsizei count)
 {
     const LinkedUniform *uniform = nullptr;
-    Program *programObject       = context->getGLState().getProgram();
+    Program *programObject       = context->getGLState().getLinkedProgram(context);
     return ValidateUniformCommonBase(context, programObject, location, count, &uniform) &&
            ValidateUniformValue(context, valueType, uniform->type);
 }
@@ -2141,7 +2149,7 @@ bool ValidateUniform(Context *context, GLenum valueType, GLint location, GLsizei
 bool ValidateUniform1iv(Context *context, GLint location, GLsizei count, const GLint *value)
 {
     const LinkedUniform *uniform = nullptr;
-    Program *programObject       = context->getGLState().getProgram();
+    Program *programObject       = context->getGLState().getLinkedProgram(context);
     return ValidateUniformCommonBase(context, programObject, location, count, &uniform) &&
            ValidateUniform1ivValue(context, uniform->type, count, value);
 }
@@ -2159,7 +2167,7 @@ bool ValidateUniformMatrix(Context *context,
     }
 
     const LinkedUniform *uniform = nullptr;
-    Program *programObject       = context->getGLState().getProgram();
+    Program *programObject       = context->getGLState().getLinkedProgram(context);
     return ValidateUniformCommonBase(context, programObject, location, count, &uniform) &&
            ValidateUniformMatrixValue(context, valueType, uniform->type);
 }
@@ -2194,7 +2202,7 @@ bool ValidateStateQuery(Context *context, GLenum pname, GLenum *nativeType, unsi
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE:
             break;
         case GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY:
-            if (!context->getExtensions().textureMultisampleArray)
+            if (!context->getExtensions().textureStorageMultisample2DArray)
             {
                 ANGLE_VALIDATION_ERR(context, InvalidEnum(), MultisampleArrayExtensionRequired);
                 return false;
@@ -2561,12 +2569,15 @@ bool ValidateCopyTexImageParametersBase(Context *context,
 const char *ValidateDrawStates(Context *context)
 {
     const Extensions &extensions = context->getExtensions();
-    const State &state = context->getGLState();
+    const State &state           = context->getGLState();
 
     // WebGL buffers cannot be mapped/unmapped because the MapBufferRange, FlushMappedBufferRange,
     // and UnmapBuffer entry points are removed from the WebGL 2.0 API.
     // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.14
-    if (!extensions.webglCompatibility && state.getVertexArray()->hasMappedEnabledArrayBuffer())
+    VertexArray *vertexArray = state.getVertexArray();
+    ASSERT(vertexArray);
+
+    if (!extensions.webglCompatibility && vertexArray->hasMappedEnabledArrayBuffer())
     {
         return kErrorBufferMapped;
     }
@@ -2574,6 +2585,8 @@ const char *ValidateDrawStates(Context *context)
     // Note: these separate values are not supported in WebGL, due to D3D's limitations. See
     // Section 6.10 of the WebGL 1.0 spec.
     Framebuffer *framebuffer = state.getDrawFramebuffer();
+    ASSERT(framebuffer);
+
     if (context->getLimitations().noSeparateStencilRefsAndMasks || extensions.webglCompatibility)
     {
         ASSERT(framebuffer);
@@ -2635,7 +2648,7 @@ const char *ValidateDrawStates(Context *context)
     // If we are running GLES1, there is no current program.
     if (context->getClientVersion() >= Version(2, 0))
     {
-        Program *program = state.getProgram();
+        Program *program = state.getLinkedProgram(context);
         if (!program)
         {
             return kErrorProgramNotBound;
@@ -2684,7 +2697,7 @@ const char *ValidateDrawStates(Context *context)
              uniformBlockIndex < program->getActiveUniformBlockCount(); uniformBlockIndex++)
         {
             const InterfaceBlock &uniformBlock = program->getUniformBlockByIndex(uniformBlockIndex);
-            GLuint blockBinding = program->getUniformBlockBinding(uniformBlockIndex);
+            GLuint blockBinding                = program->getUniformBlockBinding(uniformBlockIndex);
             const OffsetBindingPointer<Buffer> &uniformBuffer =
                 state.getIndexedUniformBuffer(blockBinding);
 
@@ -2747,7 +2760,7 @@ const char *ValidateDrawStates(Context *context)
     return nullptr;
 }
 
-bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
+bool ValidateDrawMode(Context *context, PrimitiveMode mode)
 {
     const Extensions &extensions = context->getExtensions();
 
@@ -2777,30 +2790,12 @@ bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
             return false;
     }
 
-    if (count < 0)
-    {
-        ANGLE_VALIDATION_ERR(context, InvalidValue(), NegativeCount);
-        return false;
-    }
-
-    const State &state = context->getGLState();
-
-    const char *errorMessage = ValidateDrawStates(context);
-    if (errorMessage)
-    {
-        // All errors from ValidateDrawStates should return INVALID_OPERATION except Framebuffer
-        // Incomplete.
-        GLenum errorCode =
-            (errorMessage == kErrorDrawFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION
-                                                             : GL_INVALID_OPERATION);
-        context->handleError(Error(errorCode, errorMessage));
-        return false;
-    }
-
     // If we are running GLES1, there is no current program.
     if (context->getClientVersion() >= Version(2, 0))
     {
-        Program *program = state.getProgram();
+        const State &state = context->getGLState();
+
+        Program *program = state.getLinkedProgram(context);
         ASSERT(program);
 
         // Do geometry shader specific validations
@@ -2819,6 +2814,36 @@ bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
     return true;
 }
 
+bool ValidateDrawBase(Context *context, PrimitiveMode mode, GLsizei count)
+{
+    if (!context->getStateCache().isValidDrawMode(mode))
+    {
+        return ValidateDrawMode(context, mode);
+    }
+
+    if (count < 0)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidValue(), NegativeCount);
+        return false;
+    }
+
+    intptr_t drawStatesError = context->getStateCache().getBasicDrawStatesError(context);
+    if (drawStatesError)
+    {
+        const char *errorMessage = reinterpret_cast<const char *>(drawStatesError);
+
+        // All errors from ValidateDrawStates should return INVALID_OPERATION except Framebuffer
+        // Incomplete.
+        GLenum errorCode =
+            (errorMessage == kErrorDrawFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION
+                                                             : GL_INVALID_OPERATION);
+        context->handleError(Error(errorCode, errorMessage));
+        return false;
+    }
+
+    return true;
+}
+
 bool ValidateDrawArraysCommon(Context *context,
                               PrimitiveMode mode,
                               GLint first,
@@ -2831,8 +2856,14 @@ bool ValidateDrawArraysCommon(Context *context,
         return false;
     }
 
-    const State &state                          = context->getGLState();
-    TransformFeedback *curTransformFeedback     = state.getCurrentTransformFeedback();
+    if (count < 0)
+    {
+        ANGLE_VALIDATION_ERR(context, InvalidValue(), NegativeCount);
+        return false;
+    }
+
+    const State &state                      = context->getGLState();
+    TransformFeedback *curTransformFeedback = state.getCurrentTransformFeedback();
     if (curTransformFeedback && curTransformFeedback->isActive() &&
         !curTransformFeedback->isPaused())
     {
@@ -2850,8 +2881,22 @@ bool ValidateDrawArraysCommon(Context *context,
         }
     }
 
-    if (!ValidateDrawBase(context, mode, count))
+    if (!context->getStateCache().isValidDrawMode(mode))
     {
+        return ValidateDrawMode(context, mode);
+    }
+
+    intptr_t drawStatesError = context->getStateCache().getBasicDrawStatesError(context);
+    if (drawStatesError)
+    {
+        const char *errorMessage = reinterpret_cast<const char *>(drawStatesError);
+
+        // All errors from ValidateDrawStates should return INVALID_OPERATION except Framebuffer
+        // Incomplete.
+        GLenum errorCode =
+            (errorMessage == kErrorDrawFramebufferIncomplete ? GL_INVALID_FRAMEBUFFER_OPERATION
+                                                             : GL_INVALID_OPERATION);
+        context->handleError(Error(errorCode, errorMessage));
         return false;
     }
 
@@ -3225,7 +3270,7 @@ static bool ValidateSizedGetUniform(Context *context,
         return false;
     }
 
-    Program *programObject = context->getProgram(program);
+    Program *programObject = context->getProgramResolveLink(program);
     ASSERT(programObject);
 
     // sized queries -- ensure the provided buffer is large enough
@@ -3536,9 +3581,7 @@ bool ValidateEGLImageTargetTexture2DOES(Context *context, TextureType type, GLeg
         return false;
     }
 
-    const TextureCaps &textureCaps =
-        context->getTextureCaps().get(imageObject->getFormat().info->sizedInternalFormat);
-    if (!textureCaps.texturable)
+    if (!imageObject->isTexturable(context))
     {
         context->handleError(InvalidOperation()
                              << "EGL image internal format is not supported as a texture.");
@@ -3577,9 +3620,7 @@ bool ValidateEGLImageTargetRenderbufferStorageOES(Context *context,
         return false;
     }
 
-    const TextureCaps &textureCaps =
-        context->getTextureCaps().get(imageObject->getFormat().info->sizedInternalFormat);
-    if (!textureCaps.renderbuffer)
+    if (!imageObject->isRenderable(context))
     {
         context->handleError(InvalidOperation()
                              << "EGL image internal format is not supported as a renderbuffer.");
@@ -4365,7 +4406,10 @@ bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GL
         *numParams = 1;
     }
 
-    Program *programObject = GetValidProgram(context, program);
+    // Special case for GL_COMPLETION_STATUS_KHR: don't resolve the link. Otherwise resolve it now.
+    Program *programObject = (pname == GL_COMPLETION_STATUS_KHR)
+                                 ? GetValidProgramNoResolve(context, program)
+                                 : GetValidProgram(context, program);
     if (!programObject)
     {
         return false;
@@ -4375,7 +4419,6 @@ bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GL
     {
         case GL_DELETE_STATUS:
         case GL_LINK_STATUS:
-        case GL_COMPLETION_STATUS_KHR:
         case GL_VALIDATE_STATUS:
         case GL_INFO_LOG_LENGTH:
         case GL_ATTACHED_SHADERS:
@@ -4463,6 +4506,14 @@ bool ValidateGetProgramivBase(Context *context, GLuint program, GLenum pname, GL
             if (!programObject->hasLinkedShaderStage(ShaderType::Geometry))
             {
                 ANGLE_VALIDATION_ERR(context, InvalidOperation(), NoActiveGeometryShaderStage);
+                return false;
+            }
+            break;
+
+        case GL_COMPLETION_STATUS_KHR:
+            if (!context->getExtensions().parallelShaderCompile)
+            {
+                ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
                 return false;
             }
             break;
@@ -5317,7 +5368,6 @@ bool ValidateGetShaderivBase(Context *context, GLuint shader, GLenum pname, GLsi
         case GL_SHADER_TYPE:
         case GL_DELETE_STATUS:
         case GL_COMPILE_STATUS:
-        case GL_COMPLETION_STATUS_KHR:
         case GL_INFO_LOG_LENGTH:
         case GL_SHADER_SOURCE_LENGTH:
             break;
@@ -5326,6 +5376,14 @@ bool ValidateGetShaderivBase(Context *context, GLuint shader, GLenum pname, GLsi
             if (!context->getExtensions().translatedShaderSource)
             {
                 ANGLE_VALIDATION_ERR(context, InvalidEnum(), ExtensionNotEnabled);
+                return false;
+            }
+            break;
+
+        case GL_COMPLETION_STATUS_KHR:
+            if (!context->getExtensions().parallelShaderCompile)
+            {
+                ANGLE_VALIDATION_ERR(context, InvalidOperation(), ExtensionNotEnabled);
                 return false;
             }
             break;
@@ -6335,8 +6393,8 @@ bool ValidateGetInternalFormativBase(Context *context,
                 return false;
             }
             break;
-        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_ANGLE:
-            if (!context->getExtensions().textureMultisampleArray)
+        case GL_TEXTURE_2D_MULTISAMPLE_ARRAY_OES:
+            if (!context->getExtensions().textureStorageMultisample2DArray)
             {
                 ANGLE_VALIDATION_ERR(context, InvalidEnum(), MultisampleArrayExtensionRequired);
                 return false;

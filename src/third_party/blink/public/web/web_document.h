@@ -39,12 +39,6 @@
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace v8 {
-class Value;
-template <class T>
-class Local;
-}
-
 namespace blink {
 
 class Document;
@@ -101,7 +95,13 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebElement Body() const;
   BLINK_EXPORT WebElement Head();
   BLINK_EXPORT WebString Title() const;
-  BLINK_EXPORT WebString ContentAsTextForTesting() const;
+
+  // |use_inner_text| controls which implementation to use for text dump,
+  // spec-conformant Element.innerText or legacy, to help progressive
+  // rebaseline of layout test text dumps.
+  // TODO(xiaochengh): Remove this flag when rebaseline is complete.
+  BLINK_EXPORT WebString ContentAsTextForTesting(bool use_inner_text) const;
+
   BLINK_EXPORT WebElementCollection All();
   BLINK_EXPORT void Forms(WebVector<WebFormElement>&) const;
   BLINK_EXPORT WebURL CompleteURL(const WebString&) const;
@@ -127,10 +127,6 @@ class WebDocument : public WebNode {
   BLINK_EXPORT void WatchCSSSelectors(const WebVector<WebString>& selectors);
 
   BLINK_EXPORT WebVector<WebDraggableRegion> DraggableRegions() const;
-
-  BLINK_EXPORT v8::Local<v8::Value> RegisterEmbedderCustomElement(
-      const WebString& name,
-      v8::Local<v8::Value> options);
 
   BLINK_EXPORT WebURL ManifestURL() const;
   BLINK_EXPORT bool ManifestUseCredentials() const;

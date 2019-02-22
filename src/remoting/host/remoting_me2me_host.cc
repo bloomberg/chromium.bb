@@ -112,7 +112,9 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "remoting/host/mac/permission_utils.h"
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
@@ -1425,7 +1427,7 @@ void HostProcess::InitializeSignaling() {
 
   // Create SignalingConnector.
   std::unique_ptr<DnsBlackholeChecker> dns_blackhole_checker(
-      new DnsBlackholeChecker(context_->url_request_context_getter(),
+      new DnsBlackholeChecker(context_->url_loader_factory(),
                               talkgadget_prefix_));
   std::unique_ptr<OAuthTokenGetter::OAuthAuthorizationCredentials>
       oauth_credentials(new OAuthTokenGetter::OAuthAuthorizationCredentials(
@@ -1442,8 +1444,8 @@ void HostProcess::InitializeSignaling() {
   // Create objects to manage GCD state.
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
   std::unique_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
-      service_urls->gcd_base_url(), host_id_,
-      context_->url_request_context_getter(), oauth_token_getter_.get()));
+      service_urls->gcd_base_url(), host_id_, context_->url_loader_factory(),
+      oauth_token_getter_.get()));
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
@@ -1568,6 +1570,19 @@ void HostProcess::StartHost() {
   host_event_logger_ =
       HostEventLogger::Create(host_->status_monitor(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
+
+#if defined(OS_MACOSX)
+  // Ensure we are not running as root (i.e. at the login screen).
+  DCHECK_NE(getuid(), 0U);
+
+  // MacOs 10.14+ requires an addition, runtime permission for injecting input
+  // using CGEventPost (we use this in our input injector for Mac).  This method
+  // will request that the user enable this permission for us if they are on an
+  // affected platform and the permission has not already been approved.
+  if (base::mac::IsAtLeastOS10_14()) {
+    mac::PromptUserToChangeTrustStateIfNeeded();
+  }
+#endif
 
   host_->Start(host_owner_email_);
 
@@ -1729,10 +1744,10 @@ int HostProcessMain() {
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
+  base::RunLoop run_loop;
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::Create(new AutoThreadTaskRunner(
-          message_loop.task_runner(),
-          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
+          message_loop.task_runner(), run_loop.QuitClosure()));
   if (!context)
     return kInitializationFailed;
 
@@ -1749,7 +1764,7 @@ int HostProcessMain() {
   new HostProcess(std::move(context), &exit_code, &shutdown_watchdog);
 
   // Run the main (also UI) message loop until the host no longer needs it.
-  base::RunLoop().Run();
+  run_loop.Run();
 
   // Block until tasks blocking shutdown have completed their execution.
   base::TaskScheduler::GetInstance()->Shutdown();

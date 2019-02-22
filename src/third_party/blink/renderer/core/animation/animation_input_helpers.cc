@@ -70,7 +70,7 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
     return CSSPropertyOffset;
 
   StringBuilder builder;
-  for (size_t i = 0; i < property.length(); ++i) {
+  for (wtf_size_t i = 0; i < property.length(); ++i) {
     // Disallow hyphenated properties.
     if (property[i] == '-')
       return CSSPropertyInvalid;

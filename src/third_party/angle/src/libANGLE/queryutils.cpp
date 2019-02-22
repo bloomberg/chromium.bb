@@ -170,10 +170,10 @@ void QueryTexParameterBase(const Texture *texture, GLenum pname, ParamType *para
             *params = CastFromGLintStateValue<ParamType>(pname, texture->getMaxLevel());
             break;
         case GL_TEXTURE_MIN_LOD:
-            *params = CastFromStateValue<ParamType>(pname, texture->getSamplerState().minLod);
+            *params = CastFromStateValue<ParamType>(pname, texture->getMinLod());
             break;
         case GL_TEXTURE_MAX_LOD:
-            *params = CastFromStateValue<ParamType>(pname, texture->getSamplerState().maxLod);
+            *params = CastFromStateValue<ParamType>(pname, texture->getMaxLod());
             break;
         case GL_TEXTURE_COMPARE_MODE:
             *params = CastFromGLintStateValue<ParamType>(pname, texture->getCompareMode());
@@ -333,7 +333,10 @@ void QuerySamplerParameterBase(const Sampler *sampler, GLenum pname, ParamType *
 }
 
 template <typename ParamType>
-void SetSamplerParameterBase(Sampler *sampler, GLenum pname, const ParamType *params)
+void SetSamplerParameterBase(Context *context,
+                             Sampler *sampler,
+                             GLenum pname,
+                             const ParamType *params)
 {
     switch (pname)
     {
@@ -374,6 +377,8 @@ void SetSamplerParameterBase(Sampler *sampler, GLenum pname, const ParamType *pa
             UNREACHABLE();
             break;
     }
+
+    sampler->onStateChange(context, angle::SubjectMessage::CONTENTS_CHANGED);
 }
 
 // Warning: you should ensure binding really matches attrib.bindingIndex before using this function.
@@ -523,6 +528,10 @@ GLint GetOutputResourceProperty(const Program *program, GLuint index, const GLen
 
         case GL_LOCATION:
             return program->getFragDataLocation(outputVariable.name);
+
+        case GL_LOCATION_INDEX_EXT:
+            // EXT_blend_func_extended
+            return program->getFragDataIndex(outputVariable.name);
 
         case GL_REFERENCED_BY_FRAGMENT_SHADER:
             return 1;
@@ -1167,9 +1176,7 @@ void QueryShaderiv(Shader *shader, GLenum pname, GLint *params)
             *params = shader->isCompiled() ? GL_TRUE : GL_FALSE;
             return;
         case GL_COMPLETION_STATUS_KHR:
-            // TODO(jie.a.chen@intel.com): Parallelize shader compilation.
-            // http://crbug.com/849576
-            *params = shader->isCompiled() ? GL_TRUE : GL_FALSE;
+            *params = shader->isCompleted() ? GL_TRUE : GL_FALSE;
             return;
         case GL_INFO_LOG_LENGTH:
             *params = shader->getInfoLogLength();
@@ -1406,24 +1413,24 @@ void SetTexParameteriv(Context *context, Texture *texture, GLenum pname, const G
     SetTexParameterBase(context, texture, pname, params);
 }
 
-void SetSamplerParameterf(Sampler *sampler, GLenum pname, GLfloat param)
+void SetSamplerParameterf(Context *context, Sampler *sampler, GLenum pname, GLfloat param)
 {
-    SetSamplerParameterBase(sampler, pname, &param);
+    SetSamplerParameterBase(context, sampler, pname, &param);
 }
 
-void SetSamplerParameterfv(Sampler *sampler, GLenum pname, const GLfloat *params)
+void SetSamplerParameterfv(Context *context, Sampler *sampler, GLenum pname, const GLfloat *params)
 {
-    SetSamplerParameterBase(sampler, pname, params);
+    SetSamplerParameterBase(context, sampler, pname, params);
 }
 
-void SetSamplerParameteri(Sampler *sampler, GLenum pname, GLint param)
+void SetSamplerParameteri(Context *context, Sampler *sampler, GLenum pname, GLint param)
 {
-    SetSamplerParameterBase(sampler, pname, &param);
+    SetSamplerParameterBase(context, sampler, pname, &param);
 }
 
-void SetSamplerParameteriv(Sampler *sampler, GLenum pname, const GLint *params)
+void SetSamplerParameteriv(Context *context, Sampler *sampler, GLenum pname, const GLint *params)
 {
-    SetSamplerParameterBase(sampler, pname, params);
+    SetSamplerParameterBase(context, sampler, pname, params);
 }
 
 void SetFramebufferParameteri(const Context *context,

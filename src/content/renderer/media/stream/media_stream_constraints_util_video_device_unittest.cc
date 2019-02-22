@@ -171,12 +171,6 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     };
     capabilities_.device_capabilities.push_back(std::move(device));
 
-    capabilities_.power_line_capabilities = {
-        media::PowerLineFrequency::FREQUENCY_DEFAULT,
-        media::PowerLineFrequency::FREQUENCY_50HZ,
-        media::PowerLineFrequency::FREQUENCY_60HZ,
-    };
-
     capabilities_.noise_reduction_capabilities = {
         base::Optional<bool>(), base::Optional<bool>(true),
         base::Optional<bool>(false),
@@ -222,8 +216,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, Unconstrained) {
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
   // Should select default settings for other constraints.
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   EXPECT_EQ(base::Optional<bool>(), result.noise_reduction());
 }
 
@@ -387,30 +379,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, OverconstrainedOnFrameRate) {
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
-       OverconstrainedOnPowerLineFrequency) {
-  constraint_factory_.Reset();
-  constraint_factory_.basic().goog_power_line_frequency.SetExact(123467890);
-  auto result = SelectSettings();
-  EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().goog_power_line_frequency.GetName(),
-            result.failed_constraint_name());
-
-  constraint_factory_.Reset();
-  constraint_factory_.basic().goog_power_line_frequency.SetMin(123467890);
-  result = SelectSettings();
-  EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().goog_power_line_frequency.GetName(),
-            result.failed_constraint_name());
-
-  constraint_factory_.Reset();
-  constraint_factory_.basic().goog_power_line_frequency.SetMax(-1);
-  result = SelectSettings();
-  EXPECT_FALSE(result.HasValue());
-  EXPECT_EQ(constraint_factory_.basic().goog_power_line_frequency.GetName(),
-            result.failed_constraint_name());
-}
-
-TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
        OverconstrainedOnNoiseReduction) {
   // Simulate a system that does not support noise reduction.
   // Manually adding device capabilities because VideoDeviceCaptureCapabilities
@@ -425,7 +393,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
                                 media::PIXEL_FORMAT_I420),
   };
   capabilities.device_capabilities.push_back(std::move(device));
-  capabilities.power_line_capabilities = capabilities_.power_line_capabilities;
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(false)};
 
   constraint_factory_.Reset();
@@ -447,8 +414,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().device_id.SetExact(
@@ -456,8 +421,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   result = SelectSettings();
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().device_id.SetExact(
@@ -465,8 +428,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryDeviceID) {
   result = SelectSettings();
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -478,8 +439,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_EQ(*default_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().group_id.SetExact(
@@ -487,8 +446,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
   result = SelectSettings();
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().group_id.SetExact(
@@ -496,8 +453,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryGroupID) {
   result = SelectSettings();
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -513,8 +468,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   EXPECT_EQ(media::MEDIA_VIDEO_FACING_ENVIRONMENT,
             low_res_device_->facing_mode);
   EXPECT_EQ(*low_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 
   constraint_factory_.basic().facing_mode.SetExact(
@@ -526,8 +479,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryFacingMode) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(media::MEDIA_VIDEO_FACING_USER, high_res_device_->facing_mode);
   EXPECT_EQ(*high_res_closest_format_, result.Format());
-  EXPECT_EQ(media::PowerLineFrequency::FREQUENCY_DEFAULT,
-            result.PowerLineFrequency());
   CheckTrackAdapterSettingsEqualsFormat(result);
 }
 
@@ -547,25 +498,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryVideoKind) {
   EXPECT_TRUE(result.HasValue());
   EXPECT_EQ(default_device_->device_id, result.device_id());
   CheckTrackAdapterSettingsEqualsFormat(result);
-}
-
-TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPowerLineFrequency) {
-  constraint_factory_.Reset();
-  const media::PowerLineFrequency kPowerLineFrequencies[] = {
-      media::PowerLineFrequency::FREQUENCY_50HZ,
-      media::PowerLineFrequency::FREQUENCY_60HZ};
-  for (auto power_line_frequency : kPowerLineFrequencies) {
-    constraint_factory_.basic().goog_power_line_frequency.SetExact(
-        static_cast<long>(power_line_frequency));
-    auto result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    EXPECT_EQ(power_line_frequency, result.PowerLineFrequency());
-    // The default device and settings closest to the default should be
-    // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id());
-    EXPECT_EQ(*default_closest_format_, result.Format());
-    CheckTrackAdapterSettingsEqualsFormat(result);
-  }
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryNoiseReduction) {
@@ -2273,39 +2205,6 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set.
   EXPECT_EQ(std::string(kDeviceID1), result.device_id());
   CheckTrackAdapterSettingsEqualsFormat(result);
-}
-
-TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
-       AdvancedContradictoryPowerLineFrequency) {
-  {
-    constraint_factory_.Reset();
-    blink::WebMediaTrackConstraintSet& advanced1 =
-        constraint_factory_.AddAdvanced();
-    advanced1.width.SetMin(640);
-    advanced1.height.SetMin(480);
-    advanced1.goog_power_line_frequency.SetExact(50);
-    blink::WebMediaTrackConstraintSet& advanced2 =
-        constraint_factory_.AddAdvanced();
-    advanced2.width.SetMin(1920);
-    advanced2.height.SetMin(1080);
-    advanced2.goog_power_line_frequency.SetExact(60);
-    auto result = SelectSettings();
-    EXPECT_TRUE(result.HasValue());
-    // The second advanced set cannot be satisfied because it contradicts the
-    // first set. The default device supports the first set and should be
-    // selected.
-    EXPECT_EQ(default_device_->device_id, result.device_id());
-    EXPECT_LE(640, result.Width());
-    EXPECT_LE(480, result.Height());
-    EXPECT_EQ(50, static_cast<int>(result.PowerLineFrequency()));
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().max_height);
-    EXPECT_EQ(640.0 / result.Height(),
-              result.track_adapter_settings().min_aspect_ratio);
-    EXPECT_EQ(result.Width() / 480.0,
-              result.track_adapter_settings().max_aspect_ratio);
-    CheckTrackAdapterSettingsEqualsFrameRate(result);
-  }
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,

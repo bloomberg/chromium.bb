@@ -77,15 +77,14 @@ class QuicCryptoStreamTest : public QuicTest {
     message_.set_tag(kSHLO);
     message_.SetStringPiece(1, "abc");
     message_.SetStringPiece(2, "def");
-    ConstructHandshakeMessage(Perspective::IS_SERVER);
+    ConstructHandshakeMessage();
   }
   QuicCryptoStreamTest(const QuicCryptoStreamTest&) = delete;
   QuicCryptoStreamTest& operator=(const QuicCryptoStreamTest&) = delete;
 
-  void ConstructHandshakeMessage(Perspective perspective) {
+  void ConstructHandshakeMessage() {
     CryptoFramer framer;
-    message_data_.reset(
-        framer.ConstructHandshakeMessage(message_, perspective));
+    message_data_.reset(framer.ConstructHandshakeMessage(message_));
   }
 
  protected:
@@ -244,6 +243,25 @@ TEST_F(QuicCryptoStreamTest, RetransmitStreamData) {
   EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(0);
   // Force to send an empty frame.
   EXPECT_TRUE(stream_->RetransmitStreamData(0, 0, false));
+}
+
+// Regression test for b/115926584.
+TEST_F(QuicCryptoStreamTest, HasUnackedCryptoData) {
+  QuicString data(1350, 'a');
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(testing::Return(QuicConsumedData(0, false)));
+  stream_->WriteOrBufferData(data, false, nullptr);
+  EXPECT_FALSE(stream_->IsWaitingForAcks());
+  // Although there is no outstanding data, verify session has pending crypto
+  // data.
+  EXPECT_EQ(GetQuicReloadableFlag(quic_fix_has_pending_crypto_data),
+            session_.HasUnackedCryptoData());
+
+  EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
+  stream_->OnCanWrite();
+  EXPECT_TRUE(stream_->IsWaitingForAcks());
+  EXPECT_TRUE(session_.HasUnackedCryptoData());
 }
 
 }  // namespace

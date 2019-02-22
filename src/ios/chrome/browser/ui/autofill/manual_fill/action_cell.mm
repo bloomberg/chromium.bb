@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,15 +21,45 @@ static const CGFloat sideMargins = 16;
 static const CGFloat iOS10MarginFontMultiplier = 1.18;
 // The base top margin, only used in iOS 10. Refer to
 // |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 24;
+static const CGFloat iOS10BaseTopMargin = 4;
 // The base bottom margin, only used in iOS 10. Refer to
 // |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 6;
+static const CGFloat iOS10BaseBottomMargin = 4;
 // The multiplier for the base system spacing at the top margin.
-static const CGFloat TopBaseSystemSpacingMultiplier = 1.78;
+static const CGFloat TopBaseSystemSpacingMultiplier = 1.1;
 // The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
+static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
 }  // namespace
+
+@interface ManualFillActionItem ()
+// The action block to be called when the user taps the title.
+@property(nonatomic, copy, readonly) void (^action)(void);
+// The title for the action.
+@property(nonatomic, copy, readonly) NSString* title;
+@end
+
+@implementation ManualFillActionItem
+
+- (instancetype)initWithTitle:(NSString*)title action:(void (^)(void))action {
+  self = [super initWithType:kItemTypeEnumZero];
+  if (self) {
+    _title = [title copy];
+    _action = [action copy];
+    self.cellClass = [ManualFillActionCell class];
+  }
+  return self;
+}
+
+- (void)configureCell:(ManualFillActionCell*)cell
+           withStyler:(ChromeTableViewStyler*)styler {
+  [super configureCell:cell withStyler:styler];
+  cell.accessibilityIdentifier = nil;
+  [cell setUpWithTitle:self.title
+       accessibilityID:self.accessibilityIdentifier
+                action:self.action];
+}
+
+@end
 
 @interface ManualFillActionCell ()
 // The action block to be called when the user taps the title button.
@@ -43,17 +74,23 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
 
 #pragma mark - Public
 
-- (void)setUpWithTitle:(NSString*)title action:(void (^)(void))action {
-  if (self.contentView.subviews.count == 0) {
-    [self createView];
-  }
-  [self.titleButton setTitle:title forState:UIControlStateNormal];
-  self.action = action;
-}
-
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.action = nil;
+  [self.titleButton setTitle:nil forState:UIControlStateNormal];
+  self.titleButton.accessibilityIdentifier = nil;
+}
+
+- (void)setUpWithTitle:(NSString*)title
+       accessibilityID:(NSString*)accessibilityID
+                action:(void (^)(void))action {
+  if (self.contentView.subviews.count == 0) {
+    [self createView];
+  }
+
+  [self.titleButton setTitle:title forState:UIControlStateNormal];
+  self.titleButton.accessibilityIdentifier = accessibilityID;
+  self.action = action;
 }
 
 #pragma mark - Private
@@ -61,7 +98,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 2.26;
 - (void)createView {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.titleButton = [[UIButton alloc] init];
+  self.titleButton = [UIButton buttonWithType:UIButtonTypeSystem];
   [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
                          forState:UIControlStateNormal];
   self.titleButton.translatesAutoresizingMaskIntoConstraints = NO;

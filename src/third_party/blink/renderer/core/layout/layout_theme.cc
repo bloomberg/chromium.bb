@@ -302,9 +302,16 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 String LayoutTheme::ExtraDefaultStyleSheet() {
   std::string color, background_color;
   GetAutofillPreviewColorsFromFieldTrial(&color, &background_color);
+  // TODO(crbug.com/880258): Use different styles for
+  // `-internal-autofill-previewed` and `-internal-autofill-selected`.
   constexpr char const format[] =
-      "input:-webkit-autofill, textarea:-webkit-autofill, "
-      "select:-webkit-autofill {"
+      "input:-internal-autofill-previewed,"
+      "input:-internal-autofill-selected,"
+      "textarea:-internal-autofill-previewed,"
+      "textarea:-internal-autofill-selected,"
+      "select:-internal-autofill-previewed,"
+      "select:-internal-autofill-selected "
+      "{"
       "  background-color: %s !important;"
       "  background-image:none !important;"
       "  color: %s !important;"

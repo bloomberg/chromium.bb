@@ -53,7 +53,7 @@ void AXRadioInput::RequestUpdateToNextNode(bool forward) {
 
   ToAXRadioInput(next_axobject)->UpdatePosAndSetSize(position);
   AXObjectCache().PostNotification(next_axobject,
-                                   AXObjectCacheImpl::kAXAriaAttributeChanged);
+                                   ax::mojom::Event::kAriaAttributeChanged);
   ToAXRadioInput(next_axobject)->RequestUpdateToNextNode(forward);
 }
 

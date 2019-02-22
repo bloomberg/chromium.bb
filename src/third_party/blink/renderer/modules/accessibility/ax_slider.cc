@@ -47,11 +47,11 @@ AXSlider* AXSlider::Create(LayoutObject* layout_object,
   return new AXSlider(layout_object, ax_object_cache);
 }
 
-AccessibilityRole AXSlider::DetermineAccessibilityRole() {
-  if ((aria_role_ = DetermineAriaRoleAttribute()) != kUnknownRole)
+ax::mojom::Role AXSlider::DetermineAccessibilityRole() {
+  if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
 
-  return kSliderRole;
+  return ax::mojom::Role::kSlider;
 }
 
 AccessibilityOrientation AXSlider::Orientation() const {
@@ -88,8 +88,8 @@ void AXSlider::AddChildren() {
 
   AXObjectCacheImpl& cache = AXObjectCache();
 
-  AXSliderThumb* thumb =
-      static_cast<AXSliderThumb*>(cache.GetOrCreate(kSliderThumbRole));
+  AXSliderThumb* thumb = static_cast<AXSliderThumb*>(
+      cache.GetOrCreate(ax::mojom::Role::kSliderThumb));
   thumb->SetParent(this);
 
   // Before actually adding the value indicator to the hierarchy,

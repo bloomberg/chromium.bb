@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 
-#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
@@ -22,8 +21,10 @@ WorkerSchedulerProxy::WorkerSchedulerProxy(FrameOrWorkerScheduler* scheduler) {
     initial_frame_status_ = GetFrameStatus(frame_scheduler);
     ukm_source_id_ = frame_scheduler->GetUkmSourceId();
     if (ukm_source_id_ != ukm::kInvalidSourceId) {
-      ukm_recorder_ =
-          ukm::MojoUkmRecorder::Create(Platform::Current()->GetConnector());
+      // The connector must be cloned because it belongs to the main thread,
+      // but we intend to acquire and use it from the worker thread. (It must
+      // be cloned on the original owning thread, not the destination thread.)
+      connector_ = Platform::Current()->GetConnector()->Clone();
     }
   }
 }
@@ -39,8 +40,9 @@ void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
   DCHECK(!worker_scheduler_) << "OnWorkerSchedulerCreated is called twice";
   DCHECK(worker_scheduler) << "WorkerScheduler is expected to exist";
   worker_scheduler_ = std::move(worker_scheduler);
-  worker_thread_task_runner_ =
-      worker_scheduler_->GetWorkerThreadScheduler()->ControlTaskQueue();
+  worker_thread_task_runner_ = worker_scheduler_->GetWorkerThreadScheduler()
+                                   ->ControlTaskQueue()
+                                   ->task_runner();
   initialized_ = true;
 }
 

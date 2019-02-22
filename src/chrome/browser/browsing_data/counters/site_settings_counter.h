@@ -12,13 +12,15 @@ namespace content {
 class HostZoomMap;
 }
 
+class PrefService;
 class ProtocolHandlerRegistry;
 
 class SiteSettingsCounter : public browsing_data::BrowsingDataCounter {
  public:
   explicit SiteSettingsCounter(HostContentSettingsMap* map,
                                content::HostZoomMap* zoom_map,
-                               ProtocolHandlerRegistry* handler_registry);
+                               ProtocolHandlerRegistry* handler_registry,
+                               PrefService* pref_service);
   ~SiteSettingsCounter() override;
 
   const char* GetPrefName() const override;
@@ -31,6 +33,7 @@ class SiteSettingsCounter : public browsing_data::BrowsingDataCounter {
   scoped_refptr<HostContentSettingsMap> map_;
   content::HostZoomMap* zoom_map_;
   ProtocolHandlerRegistry* handler_registry_;
+  PrefService* pref_service_;
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_COUNTERS_SITE_SETTINGS_COUNTER_H_

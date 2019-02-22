@@ -128,7 +128,7 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
     VideoSinkId id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
+  auto it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback is copied to heap and then deleted on the target thread.
@@ -318,8 +318,7 @@ void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  std::vector<MediaStreamVideoSink*>::iterator it =
-      std::find(sinks_.begin(), sinks_.end(), sink);
+  auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   DCHECK(it != sinks_.end());
   sinks_.erase(it);
   frame_deliverer_->RemoveCallback(sink);
@@ -389,6 +388,12 @@ void MediaStreamVideoTrack::GetSettings(
     settings.depth_far = calibration->depth_far;
     settings.focal_length_x = calibration->focal_length_x;
     settings.focal_length_y = calibration->focal_length_y;
+  }
+  if (source_->device().display_media_info.has_value()) {
+    const auto& info = source_->device().display_media_info.value();
+    settings.display_surface = ToWebDisplaySurface(info->display_surface);
+    settings.logical_surface = info->logical_surface;
+    settings.cursor = ToWebCursorCaptureType(info->cursor);
   }
 }
 

@@ -50,8 +50,8 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   void WhitelistContentOrigin(const url::Origin& content_origin);
 
   // RenderFrameObserver implementation.
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 

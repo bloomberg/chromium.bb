@@ -44,6 +44,9 @@ class HTMLTrackElement final : public HTMLElement,
  public:
   DECLARE_NODE_FACTORY(HTMLTrackElement);
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   const AtomicString& kind();
   void setKind(const AtomicString&);
 

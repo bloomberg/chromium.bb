@@ -6,10 +6,11 @@
 
 #include "core/fxcodec/codec/ccodec_bmpmodule.h"
 
+#include <utility>
+
 #include "core/fxcodec/bmp/cfx_bmpcontext.h"
 #include "core/fxcodec/codec/codec_int.h"
 #include "core/fxcodec/fx_codec.h"
-#include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/fx_dib.h"
 #include "third_party/base/ptr_util.h"
 
@@ -17,7 +18,7 @@ CCodec_BmpModule::CCodec_BmpModule() {}
 
 CCodec_BmpModule::~CCodec_BmpModule() {}
 
-std::unique_ptr<CCodec_BmpModule::Context> CCodec_BmpModule::Start(
+std::unique_ptr<CodecModuleIface::Context> CCodec_BmpModule::Start(
     Delegate* pDelegate) {
   auto p = pdfium::MakeUnique<CFX_BmpContext>(this, pDelegate);
   p->m_Bmp.context_ptr_ = p.get();
@@ -63,12 +64,14 @@ int32_t CCodec_BmpModule::LoadImage(Context* pContext) {
   return ctx->m_Bmp.DecodeImage();
 }
 
-FX_FILESIZE CCodec_BmpModule::GetAvailInput(Context* pContext,
-                                            uint8_t** avail_buf_ptr) {
-  auto* ctx = static_cast<CFX_BmpContext*>(pContext);
-  return ctx->m_Bmp.GetAvailInput(avail_buf_ptr);
+FX_FILESIZE CCodec_BmpModule::GetAvailInput(Context* pContext) const {
+  return static_cast<CFX_BmpContext*>(pContext)->m_Bmp.GetAvailInput();
 }
 
-void CCodec_BmpModule::Input(Context* pContext, pdfium::span<uint8_t> src_buf) {
-  static_cast<CFX_BmpContext*>(pContext)->m_Bmp.SetInputBuffer(src_buf);
+bool CCodec_BmpModule::Input(Context* pContext,
+                             RetainPtr<CFX_CodecMemory> codec_memory,
+                             CFX_DIBAttribute*) {
+  auto* ctx = static_cast<CFX_BmpContext*>(pContext);
+  ctx->m_Bmp.SetInputBuffer(std::move(codec_memory));
+  return true;
 }

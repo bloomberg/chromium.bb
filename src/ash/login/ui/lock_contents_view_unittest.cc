@@ -29,8 +29,11 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/power/backlights_forced_off_setter.h"
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -826,9 +829,9 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(
-      *client,
-      AuthenticateUser_(users()[0]->basic_user_info->account_id, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(
+                  users()[0]->basic_user_info->account_id, _, false, _));
 
   // Submit password.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -974,7 +977,8 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
   // after they authenticate - test for this.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(true);
-  EXPECT_CALL(*client, AuthenticateUser_(kFirstUserAccountId, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(kFirstUserAccountId,
+                                                          _, false, _));
 
   // Submit password.
   primary_test_api.password_view()->RequestFocus();
@@ -1036,7 +1040,8 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
   // user authentication.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(true);
-  EXPECT_CALL(*client, AuthenticateUser_(kSecondUserAccountId, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(kSecondUserAccountId,
+                                                          _, false, _));
 
   // Submit password.
   secondary_test_api.password_view()->RequestFocus();
@@ -1115,7 +1120,8 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   // Attempt and fail user auth - an auth error is expected to be shown.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
 
   // Submit password.
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
@@ -1174,7 +1180,8 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   // Detachable base error should not be hidden.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
 
   // Submit password.
   LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())
@@ -1285,8 +1292,8 @@ TEST_F(LockContentsViewKeyboardUnitTest, PinSubmitWithVirtualKeyboardShown) {
   // Require that AuthenticateUser is called with authenticated_by_pin set to
   // true.
   auto client = BindMockLoginScreenClient();
-  EXPECT_CALL(*client,
-              AuthenticateUser_(_, "1111", true /*authenticated_by_pin*/, _));
+  EXPECT_CALL(*client, AuthenticateUserWithPasswordOrPin_(
+                           _, "1111", true /*authenticated_by_pin*/, _));
 
   // Hide the PIN keyboard.
   LoginPinView* pin_view =
@@ -1996,7 +2003,8 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   // The warning banner should not be hidden.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
+  EXPECT_CALL(*client,
+              AuthenticateUserWithPasswordOrPin_(kUserAccountId, _, false, _));
 
   // Submit password.
   LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())
@@ -2044,6 +2052,60 @@ TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
   EXPECT_EQ(nullptr, test_api.opt_secondary_big_view());
   // Primary user has focus.
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.primary_big_view()));
+}
+
+// Verifies that setting fingerprint state makes sure the backlights are not
+// forced off.
+TEST_F(LockContentsViewUnitTest, BacklightIsNotForcedOffAfterFingerprint) {
+  // Enter tablet mode so the power button events force the backlight off.
+  Shell::Get()->power_button_controller()->OnTabletModeStarted();
+
+  // Show lock screen with one normal user.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  AddUsers(1);
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // Press and release the power button to force backlights off.
+  base::SimpleTestTickClock tick_clock;
+  auto dispatch_power_button_event_after_delay =
+      [&](const base::TimeDelta& delta, bool down) {
+        tick_clock.Advance(delta + base::TimeDelta::FromMilliseconds(1));
+        Shell::Get()->power_button_controller()->OnPowerButtonEvent(
+            down, tick_clock.NowTicks());
+        base::RunLoop().RunUntilIdle();
+      };
+  dispatch_power_button_event_after_delay(
+      PowerButtonController::kIgnorePowerButtonAfterResumeDelay, true /*down*/);
+  dispatch_power_button_event_after_delay(
+      PowerButtonController::kIgnoreRepeatedButtonUpDelay, false /*down*/);
+  EXPECT_TRUE(
+      Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
+
+  // Change fingerprint state, backlight should not be forced off.
+  data_dispatcher()->SetFingerprintUnlockState(
+      users()[0]->basic_user_info->account_id,
+      mojom::FingerprintUnlockState::AUTH_FAILED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      Shell::Get()->backlights_forced_off_setter()->backlights_forced_off());
+
+  Shell::Get()->power_button_controller()->OnTabletModeEnded();
+}
+
+TEST_F(LockContentsViewUnitTest, RightAndLeftAcceleratorsWithNoUser) {
+  // Show lock screen but do *not* initialize any users.
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // Nothing to validate except that there is no crash.
+  lock->AcceleratorPressed(ui::Accelerator(ui::VKEY_RIGHT, 0));
+  lock->AcceleratorPressed(ui::Accelerator(ui::VKEY_LEFT, 0));
 }
 
 }  // namespace ash

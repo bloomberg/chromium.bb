@@ -95,7 +95,7 @@ IncidentReportUploaderImpl::IncidentReportUploaderImpl(
       base::BindOnce(&IncidentReportUploaderImpl::OnURLLoaderComplete,
                      base::Unretained(this)));
   time_begin_ = base::TimeTicks::Now();
-  UMA_HISTOGRAM_COUNTS("SBIRS.ReportPayloadSize", post_data.size());
+  UMA_HISTOGRAM_COUNTS_1M("SBIRS.ReportPayloadSize", post_data.size());
 }
 
 // static

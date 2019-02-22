@@ -124,6 +124,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     base::RunLoop run_loop;
     service_->Fetch(
         service_worker_registration_id, developer_id, requests, options, icon,
+        blink::mojom::BackgroundFetchUkmData::New(),
         base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_registration));
@@ -154,7 +155,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     base::RunLoop run_loop;
     context_->data_manager_->CreateRegistration(
-        registration_id, requests, options, icon,
+        registration_id, requests, options, icon, /* start_paused = */ false,
         base::BindOnce(&BackgroundFetchServiceTest::DidStartFetch,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -179,10 +180,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     base::RunLoop run_loop;
     service_->Fetch(
         service_worker_registration_id, developer_id, requests, options, icon,
+        blink::mojom::BackgroundFetchUkmData::New(),
         base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_registration));
-    UnregisterServiceWorker();
+    UnregisterServiceWorker(service_worker_registration_id);
     run_loop.Run();
   }
 
@@ -213,7 +215,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->UpdateUI(service_worker_registration_id, unique_id, developer_id,
+    service_->UpdateUI(service_worker_registration_id, developer_id, unique_id,
                        title, SkBitmap(),
                        base::BindOnce(&BackgroundFetchServiceTest::DidGetError,
                                       base::Unretained(this),
@@ -237,10 +239,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     run_loop.Run();
 
+    // Allow all the DatabaseTasks resulting from Abort to complete.
+    thread_bundle_.RunUntilIdle();
+
     // We only delete the registration if we successfully abort.
     if (*out_error == blink::mojom::BackgroundFetchError::NONE) {
-      // TODO(crbug.com/850894): The Abort callback is being resolved early.
-      base::RunLoop().RunUntilIdle();
       // The error passed to the histogram counter is not related to this
       // |*out_error|, but the result of
       // BackgroundFetchDataManager::DeleteRegistration. For the purposes these
@@ -727,7 +730,7 @@ TEST_F(BackgroundFetchServiceTest, UpdateUI) {
 
   // Immediately update the title. This should succeed.
   UpdateUI(registration_id.service_worker_registration_id(),
-           registration_id.unique_id(), registration_id.developer_id(),
+           registration_id.developer_id(), registration_id.unique_id(),
            second_title, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
@@ -929,8 +932,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // title of the second registration only.
   std::string updated_second_registration_title = "Foo";
   UpdateUI(second_registration_id.service_worker_registration_id(),
-           second_registration_id.unique_id(),
            second_registration_id.developer_id(),
+           second_registration_id.unique_id(),
            updated_second_registration_title, &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::NONE, error);
 
@@ -939,8 +942,8 @@ TEST_F(BackgroundFetchServiceTest, UniqueId) {
   // backgroundfetchsuccess or backgroundfetchfail event, both of which should
   // work even though that registration is no longer active).
   UpdateUI(aborted_registration_id.service_worker_registration_id(),
-           aborted_registration_id.unique_id(),
-           aborted_registration_id.developer_id(), "Bar", &error);
+           aborted_registration_id.developer_id(),
+           aborted_registration_id.unique_id(), "Bar", &error);
   EXPECT_EQ(blink::mojom::BackgroundFetchError::INVALID_ID, error);
 
   // Verify that the second registration's title was indeed updated, and that it

@@ -69,7 +69,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "api/asyncresolverfactory.h"
@@ -79,9 +78,9 @@
 #include "api/audio_options.h"
 #include "api/call/callfactoryinterface.h"
 #include "api/datachannelinterface.h"
-#include "api/dtmfsenderinterface.h"
 #include "api/fec_controller.h"
 #include "api/jsep.h"
+#include "api/media_transport_interface.h"
 #include "api/mediastreaminterface.h"
 #include "api/rtcerror.h"
 #include "api/rtceventlogoutput.h"
@@ -94,7 +93,6 @@
 #include "api/transport/bitrate_settings.h"
 #include "api/transport/network_control.h"
 #include "api/turncustomizer.h"
-#include "api/umametrics.h"
 #include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "media/base/mediaconfig.h"
 // TODO(bugs.webrtc.org/6353): cricket::VideoCapturer is deprecated and should
@@ -562,6 +560,12 @@ class PeerConnectionInterface : public rtc::RefCountInterface {
     // WARNING: This would cause RTP/RTCP packets decryption failure if not used
     // correctly. This flag will be deprecated soon. Do not rely on it.
     bool active_reset_srtp_params = false;
+
+    // If MediaTransportFactory is provided in PeerConnectionFactory, this flag
+    // informs PeerConnection that it should use the MediaTransportInterface.
+    // It's invalid to set it to |true| if the MediaTransportFactory wasn't
+    // provided.
+    bool use_media_transport = false;
 
     //
     // Don't forget to update operator== if adding something.
@@ -1156,6 +1160,7 @@ struct PeerConnectionFactoryDependencies final {
   std::unique_ptr<RtcEventLogFactoryInterface> event_log_factory;
   std::unique_ptr<FecControllerFactoryInterface> fec_controller_factory;
   std::unique_ptr<NetworkControllerFactoryInterface> network_controller_factory;
+  std::unique_ptr<MediaTransportFactory> media_transport_factory;
 };
 
 // PeerConnectionFactoryInterface is the factory interface used for creating
@@ -1229,15 +1234,6 @@ class PeerConnectionFactoryInterface : public rtc::RefCountInterface {
   // more observer callbacks will be invoked.
   virtual rtc::scoped_refptr<PeerConnectionInterface> CreatePeerConnection(
       const PeerConnectionInterface::RTCConfiguration& configuration,
-      std::unique_ptr<cricket::PortAllocator> allocator,
-      std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
-      PeerConnectionObserver* observer);
-
-  // Deprecated; should use RTCConfiguration for everything that previously
-  // used constraints.
-  virtual rtc::scoped_refptr<PeerConnectionInterface> CreatePeerConnection(
-      const PeerConnectionInterface::RTCConfiguration& configuration,
-      const MediaConstraintsInterface* constraints,
       std::unique_ptr<cricket::PortAllocator> allocator,
       std::unique_ptr<rtc::RTCCertificateGeneratorInterface> cert_generator,
       PeerConnectionObserver* observer);

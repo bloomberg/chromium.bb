@@ -6,17 +6,15 @@
 
 #include <limits.h>
 
+#include <atomic>
+
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
-#include "base/base_export.h"
-#include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-
-#include <atomic>
 
 #if defined(OS_WIN)
 #include <windows.h>

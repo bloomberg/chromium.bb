@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -18,6 +19,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -52,6 +54,35 @@ class DurableStorageBrowserTest : public InProcessBrowserTest {
     Bookmark(browser());
   }
 
+  bool CheckPermission(content::RenderFrameHost* render_frame_host = nullptr) {
+    bool is_persistent = false;
+    if (!render_frame_host)
+      render_frame_host = GetRenderFrameHost();
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        render_frame_host, "checkPermission()", &is_persistent));
+    return is_persistent;
+  }
+
+  std::string CheckPermissionUsingPermissionApi(
+      content::RenderFrameHost* render_frame_host = nullptr) {
+    std::string state;
+    if (!render_frame_host)
+      render_frame_host = GetRenderFrameHost();
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        render_frame_host, "checkPermissionUsingPermissionApi()", &state));
+    return state;
+  }
+
+  bool RequestPermission(
+      content::RenderFrameHost* render_frame_host = nullptr) {
+    bool is_persistent = false;
+    if (!render_frame_host)
+      render_frame_host = GetRenderFrameHost();
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        render_frame_host, "requestPermission()", &is_persistent));
+    return is_persistent;
+  }
+
   GURL url_;
 
  private:
@@ -73,18 +104,13 @@ void DurableStorageBrowserTest::SetUpOnMainThread() {
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, QueryNonBookmarkedPage) {
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_FALSE(is_persistent);
+  EXPECT_FALSE(CheckPermission());
+  EXPECT_EQ("prompt", CheckPermissionUsingPermissionApi());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, RequestNonBookmarkedPage) {
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "requestPermission()", &is_persistent));
-  EXPECT_FALSE(is_persistent);
+  EXPECT_FALSE(RequestPermission());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, QueryBookmarkedPage) {
@@ -92,71 +118,53 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, QueryBookmarkedPage) {
   // hasn't requested the durable permission, even if it would be autogranted.
   Bookmark();
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_FALSE(is_persistent);
+  EXPECT_FALSE(CheckPermission());
+  EXPECT_EQ("prompt", CheckPermissionUsingPermissionApi());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, RequestBookmarkedPage) {
   Bookmark();
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "requestPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(RequestPermission());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, BookmarkThenUnbookmark) {
   Bookmark();
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "requestPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(RequestPermission());
+  EXPECT_TRUE(CheckPermission());
+  EXPECT_EQ("granted", CheckPermissionUsingPermissionApi());
 
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(browser()->profile());
   bookmarks::RemoveAllBookmarks(bookmark_model, url_);
 
   // Unbookmarking doesn't change the permission.
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(CheckPermission());
+  EXPECT_EQ("granted", CheckPermissionUsingPermissionApi());
   // Requesting after unbookmarking doesn't change the default box.
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "requestPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(RequestPermission());
   // Querying after requesting after unbookmarking still reports "granted".
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(CheckPermission());
+  EXPECT_EQ("granted", CheckPermissionUsingPermissionApi());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
   ui_test_utils::NavigateToURL(browser(), url_);
-  bool is_persistent = false;
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_FALSE(is_persistent);
+  EXPECT_FALSE(CheckPermission());
+  EXPECT_EQ("prompt", CheckPermissionUsingPermissionApi());
 
   chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), url_);
   Bookmark();
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "requestPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(RequestPermission());
 
   browser()->tab_strip_model()->ActivateTabAt(0, false);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(), "checkPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(CheckPermission());
+  EXPECT_EQ("granted", CheckPermissionUsingPermissionApi());
 }
 
 IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, Incognito) {
@@ -164,13 +172,20 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, Incognito) {
   ui_test_utils::NavigateToURL(browser, url_);
 
   Bookmark(browser);
-  bool is_persistent = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderFrameHost(browser),
-                                                   "requestPermission()",
-                                                   &is_persistent));
-  EXPECT_TRUE(is_persistent);
+  EXPECT_TRUE(RequestPermission(GetRenderFrameHost(browser)));
+  EXPECT_TRUE(CheckPermission(GetRenderFrameHost(browser)));
+  EXPECT_EQ("granted",
+            CheckPermissionUsingPermissionApi(GetRenderFrameHost(browser)));
+}
 
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderFrameHost(browser), "checkPermission()", &is_persistent));
-  EXPECT_TRUE(is_persistent);
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, SessionOnly) {
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+                                 CONTENT_SETTING_SESSION_ONLY);
+  Bookmark();
+  ui_test_utils::NavigateToURL(browser(), url_);
+
+  EXPECT_FALSE(RequestPermission());
+  EXPECT_FALSE(CheckPermission());
+  EXPECT_EQ("prompt", CheckPermissionUsingPermissionApi());
 }

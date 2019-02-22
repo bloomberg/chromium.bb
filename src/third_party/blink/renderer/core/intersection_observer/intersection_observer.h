@@ -50,6 +50,7 @@ class CORE_EXPORT IntersectionObserver final
                                       const Vector<float>& thresholds,
                                       Document*,
                                       EventCallback,
+                                      DOMHighResTimeStamp delay = 0,
                                       bool track_visbility = false,
                                       ExceptionState& = ASSERT_NO_EXCEPTION);
   static void ResumeSuspendedObservers();
@@ -64,33 +65,28 @@ class CORE_EXPORT IntersectionObserver final
   Element* root() const { return root_.Get(); }
   String rootMargin() const;
   const Vector<float>& thresholds() const { return thresholds_; }
+  DOMHighResTimeStamp delay() const { return delay_; }
   bool trackVisibility() const { return track_visibility_; }
 
   // An observer can either track intersections with an explicit root Element,
   // or with the the top-level frame's viewport (the "implicit root").  When
-  // tracking the implicit root, m_root will be null, but because m_root is a
+  // tracking the implicit root, root_ will be null, but because root_ is a
   // weak pointer, we cannot surmise that this observer tracks the implicit
-  // root just because m_root is null.  Hence m_rootIsImplicit.
+  // root just because root_ is null.  Hence root_is_implicit_.
   bool RootIsImplicit() const { return root_is_implicit_; }
 
-  // This is the document which is responsible for running
-  // computeIntersectionObservations at frame generation time.
-  // This can return nullptr when no tracking document is available.
-  Document* TrackingDocument() const;
-
+  DOMHighResTimeStamp GetTimeStamp() const;
+  DOMHighResTimeStamp GetEffectiveDelay() const;
   const Length& TopMargin() const { return top_margin_; }
   const Length& RightMargin() const { return right_margin_; }
   const Length& BottomMargin() const { return bottom_margin_; }
   const Length& LeftMargin() const { return left_margin_; }
-  void ComputeIntersectionObservations();
-  void EnqueueIntersectionObserverEntry(IntersectionObserverEntry&);
   unsigned FirstThresholdGreaterThan(float ratio) const;
   void Deliver();
-  bool HasEntries() const { return entries_.size(); }
-  const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& Observations()
-      const {
-    return observations_;
-  }
+
+  // Returns false if this observer has an explicit root element which has been
+  // deleted; true otherwise.
+  bool RootIsValid() const;
 
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
@@ -98,35 +94,27 @@ class CORE_EXPORT IntersectionObserver final
   void Trace(blink::Visitor*) override;
 
   // Enable/disable throttling of visibility checking, so we don't have to add
-  // 100ms sleep() calls to tests.
-  static void SetV2ThrottleDelayEnabledForTesting(bool);
+  // sleep() calls to tests to wait for notifications to show up.
+  static void SetThrottleDelayEnabledForTesting(bool);
 
  private:
   explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Element*,
                                 const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds,
+                                DOMHighResTimeStamp delay,
                                 bool track_visibility);
   void ClearWeakMembers(Visitor*);
-
-  // Returns false if this observer has an explicit root element which has been
-  // deleted; true otherwise.
-  bool RootIsValid() const;
-
-  // If trackVisibility is true, don't compute observations more frequently
-  // than this many milliseconds.
-  static const DOMHighResTimeStamp s_v2_throttle_delay_;
 
   const TraceWrapperMember<IntersectionObserverDelegate> delegate_;
   WeakMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
-  HeapVector<Member<IntersectionObserverEntry>> entries_;
   Vector<float> thresholds_;
+  DOMHighResTimeStamp delay_;
   Length top_margin_;
   Length right_margin_;
   Length bottom_margin_;
   Length left_margin_;
-  DOMHighResTimeStamp last_run_time_;
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
 };

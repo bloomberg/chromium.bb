@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 
@@ -78,9 +77,7 @@ class WebViewClient {
   }
 
   // Create a new popup WebWidget.
-  virtual WebWidget* CreatePopup(WebLocalFrame*, WebPopupType) {
-    return nullptr;
-  }
+  virtual WebWidget* CreatePopup(WebLocalFrame*) { return nullptr; }
 
   // Returns the session storage namespace id associated with this WebView.
   virtual base::StringPiece GetSessionStorageNamespaceId() {
@@ -176,8 +173,9 @@ class WebViewClient {
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session
-  // history).
-  virtual void NavigateBackForwardSoon(int offset) {}
+  // history). |has_user_gesture| tells whether or not this is the consequence
+  // of a user action.
+  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
 
   // Returns the number of history items before/after the current
   // history item.

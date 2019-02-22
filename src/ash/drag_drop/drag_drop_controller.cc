@@ -158,7 +158,7 @@ int DragDropController::StartDragAndDrop(
     const gfx::Point& screen_location,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  if (IsDragDropInProgress())
+  if (!enabled_ || IsDragDropInProgress())
     return 0;
 
   const ui::OSExchangeData::Provider* provider = &data.provider();
@@ -179,7 +179,7 @@ int DragDropController::StartDragAndDrop(
     // capture, it still gets a valid gesture state.
     Shell::Get()->aura_env()->gesture_recognizer()->TransferEventsTo(
         source_window, tracker->capture_window(),
-        ui::GestureRecognizer::ShouldCancelTouches::Cancel);
+        ui::TransferTouchesBehavior::kCancel);
     // We also send a gesture end to the source window so it can clear state.
     // TODO(varunjain): Remove this whole block when gesture sequence
     // transferring is properly done in the GR (http://crbug.com/160558)
@@ -257,6 +257,7 @@ int DragDropController::StartDragAndDrop(
 }
 
 void DragDropController::DragCancel() {
+  DCHECK(enabled_);
   DoDragCancel(kCancelAnimationDuration);
 }
 

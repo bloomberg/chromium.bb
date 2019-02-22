@@ -9,14 +9,27 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/test/stub_image.h"
 
 namespace blink {
 
-class LayoutBoxTest : public RenderingTest {};
+class LayoutBoxTest : public testing::WithParamInterface<bool>,
+                      private ScopedLayoutNGForTest,
+                      public RenderingTest {
+ public:
+  LayoutBoxTest() : ScopedLayoutNGForTest(GetParam()) {}
 
-TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
+ protected:
+  LayoutBox* GetLayoutBoxByElementId(const char* id) const {
+    return ToLayoutBox(GetLayoutObjectByElementId(id));
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(All, LayoutBoxTest, testing::Bool());
+
+TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
   SetBodyInnerHTML(R"HTML(
     <style>.column { width: 295.4px; padding-left: 10.4px; }
     .white-background { background: red; position: relative; overflow:
@@ -31,7 +44,7 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
   ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
 }
 
-TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
+TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -60,7 +73,7 @@ TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
-TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
+TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -99,7 +112,7 @@ TEST_F(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
-TEST_F(LayoutBoxTest, BackgroundRect) {
+TEST_P(LayoutBoxTest, BackgroundRect) {
   SetBodyInnerHTML(R"HTML(
     <style>div { position: absolute; width: 100px; height: 100px; padding:
     10px; border: 10px solid black; overflow: scroll; }
@@ -130,7 +143,7 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
 
   // #target1's opaque background color only fills the content box but its
   // translucent image extends to the borders.
-  LayoutBox* layout_box = ToLayoutBox(GetLayoutObjectByElementId("target1"));
+  LayoutBox* layout_box = GetLayoutBoxByElementId("target1");
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
             layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
@@ -138,21 +151,21 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
 
   // #target2's background color is opaque but only fills the padding-box
   // because it has local attachment. This eclipses the content-box image.
-  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target2"));
+  layout_box = GetLayoutBoxByElementId("target2");
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
             layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
             layout_box->PhysicalBackgroundRect(kBackgroundClipRect));
 
   // #target3's background color is not opaque so we only have a clip rect.
-  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target3"));
+  layout_box = GetLayoutBoxByElementId("target3");
   EXPECT_TRUE(
       layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect).IsEmpty());
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
             layout_box->PhysicalBackgroundRect(kBackgroundClipRect));
 
   // #target4's background color has a blend mode so it isn't opaque.
-  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target4"));
+  layout_box = GetLayoutBoxByElementId("target4");
   EXPECT_TRUE(
       layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect).IsEmpty());
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
@@ -160,7 +173,7 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
 
   // #target5's solid background only covers the content-box but it has a "none"
   // background covering the border box.
-  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target5"));
+  layout_box = GetLayoutBoxByElementId("target5");
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
             layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(0, 0, 140, 140),
@@ -169,14 +182,14 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
   // Because it can scroll due to local attachment, the opaque local background
   // in #target6 is treated as padding box for the clip rect, but remains the
   // content box for the known opaque rect.
-  layout_box = ToLayoutBox(GetLayoutObjectByElementId("target6"));
+  layout_box = GetLayoutBoxByElementId("target6");
   EXPECT_EQ(LayoutRect(20, 20, 100, 100),
             layout_box->PhysicalBackgroundRect(kBackgroundKnownOpaqueRect));
   EXPECT_EQ(LayoutRect(10, 10, 120, 120),
             layout_box->PhysicalBackgroundRect(kBackgroundClipRect));
 }
 
-TEST_F(LayoutBoxTest, LocationContainer) {
+TEST_P(LayoutBoxTest, LocationContainer) {
   SetBodyInnerHTML(R"HTML(
     <div id='div'>
       <b>Inline content<img id='img'></b>
@@ -191,12 +204,12 @@ TEST_F(LayoutBoxTest, LocationContainer) {
   )HTML");
 
   const LayoutBox* body = GetDocument().body()->GetLayoutBox();
-  const LayoutBox* div = ToLayoutBox(GetLayoutObjectByElementId("div"));
-  const LayoutBox* img = ToLayoutBox(GetLayoutObjectByElementId("img"));
-  const LayoutBox* table = ToLayoutBox(GetLayoutObjectByElementId("table"));
-  const LayoutBox* tbody = ToLayoutBox(GetLayoutObjectByElementId("tbody"));
-  const LayoutBox* row = ToLayoutBox(GetLayoutObjectByElementId("row"));
-  const LayoutBox* cell = ToLayoutBox(GetLayoutObjectByElementId("cell"));
+  const LayoutBox* div = GetLayoutBoxByElementId("div");
+  const LayoutBox* img = GetLayoutBoxByElementId("img");
+  const LayoutBox* table = GetLayoutBoxByElementId("table");
+  const LayoutBox* tbody = GetLayoutBoxByElementId("tbody");
+  const LayoutBox* row = GetLayoutBoxByElementId("row");
+  const LayoutBox* cell = GetLayoutBoxByElementId("cell");
 
   EXPECT_EQ(body, div->LocationContainer());
   EXPECT_EQ(div, img->LocationContainer());
@@ -206,7 +219,7 @@ TEST_F(LayoutBoxTest, LocationContainer) {
   EXPECT_EQ(tbody, cell->LocationContainer());
 }
 
-TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
+TEST_P(LayoutBoxTest, TopLeftLocationFlipped) {
   SetBodyInnerHTML(R"HTML(
     <div style='width: 600px; height: 200px; writing-mode: vertical-rl'>
       <div id='box1' style='width: 100px'></div>
@@ -214,16 +227,16 @@ TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
     </div>
   )HTML");
 
-  const LayoutBox* box1 = ToLayoutBox(GetLayoutObjectByElementId("box1"));
+  const LayoutBox* box1 = GetLayoutBoxByElementId("box1");
   EXPECT_EQ(LayoutPoint(0, 0), box1->Location());
   EXPECT_EQ(LayoutPoint(500, 0), box1->PhysicalLocation());
 
-  const LayoutBox* box2 = ToLayoutBox(GetLayoutObjectByElementId("box2"));
+  const LayoutBox* box2 = GetLayoutBoxByElementId("box2");
   EXPECT_EQ(LayoutPoint(100, 0), box2->Location());
   EXPECT_EQ(LayoutPoint(300, 0), box2->PhysicalLocation());
 }
 
-TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
+TEST_P(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   SetBodyInnerHTML(R"HTML(
     <div style='writing-mode: vertical-rl'>
@@ -244,24 +257,24 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
   // location and physicalLocation of a table row or a table cell should be
   // relative to the containing section.
 
-  const LayoutBox* row1 = ToLayoutBox(GetLayoutObjectByElementId("row1"));
+  const LayoutBox* row1 = GetLayoutBoxByElementId("row1");
   EXPECT_EQ(LayoutPoint(0, 0), row1->Location());
   EXPECT_EQ(LayoutPoint(300, 0), row1->PhysicalLocation());
 
-  const LayoutBox* cell1 = ToLayoutBox(GetLayoutObjectByElementId("cell1"));
+  const LayoutBox* cell1 = GetLayoutBoxByElementId("cell1");
   EXPECT_EQ(LayoutPoint(0, 0), cell1->Location());
   EXPECT_EQ(LayoutPoint(300, 0), cell1->PhysicalLocation());
 
-  const LayoutBox* row2 = ToLayoutBox(GetLayoutObjectByElementId("row2"));
+  const LayoutBox* row2 = GetLayoutBoxByElementId("row2");
   EXPECT_EQ(LayoutPoint(100, 0), row2->Location());
   EXPECT_EQ(LayoutPoint(0, 0), row2->PhysicalLocation());
 
-  const LayoutBox* cell2 = ToLayoutBox(GetLayoutObjectByElementId("cell2"));
+  const LayoutBox* cell2 = GetLayoutBoxByElementId("cell2");
   EXPECT_EQ(LayoutPoint(100, 0), cell2->Location());
   EXPECT_EQ(LayoutPoint(0, 0), cell2->PhysicalLocation());
 }
 
-TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
+TEST_P(LayoutBoxTest, LocationContainerOfSVG) {
   SetBodyInnerHTML(R"HTML(
     <svg id='svg' style='writing-mode:vertical-rl' width='500' height='500'>
       <foreignObject x='44' y='77' width='100' height='80' id='foreign'>
@@ -270,9 +283,9 @@ TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
       </foreignObject>
     </svg>
   )HTML");
-  const LayoutBox* svg_root = ToLayoutBox(GetLayoutObjectByElementId("svg"));
-  const LayoutBox* foreign = ToLayoutBox(GetLayoutObjectByElementId("foreign"));
-  const LayoutBox* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
+  const LayoutBox* svg_root = GetLayoutBoxByElementId("svg");
+  const LayoutBox* foreign = GetLayoutBoxByElementId("foreign");
+  const LayoutBox* child = GetLayoutBoxByElementId("child");
 
   EXPECT_EQ(GetDocument().body()->GetLayoutObject(),
             svg_root->LocationContainer());
@@ -291,7 +304,7 @@ TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
   EXPECT_TRUE(child->HasFlippedBlocksWritingMode());
 }
 
-TEST_F(LayoutBoxTest, ControlClip) {
+TEST_P(LayoutBoxTest, ControlClip) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -302,7 +315,7 @@ TEST_F(LayoutBoxTest, ControlClip) {
     </style>
     <input id='target' type='button' value='some text'/>
   )HTML");
-  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* target = GetLayoutBoxByElementId("target");
   EXPECT_TRUE(target->HasControlClip());
   EXPECT_TRUE(target->HasClipRelatedProperty());
   EXPECT_TRUE(target->ShouldClipOverflow());
@@ -313,7 +326,7 @@ TEST_F(LayoutBoxTest, ControlClip) {
 #endif
 }
 
-TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
+TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
@@ -324,13 +337,13 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
     </div>
   )HTML");
 
-  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* target = GetLayoutBoxByElementId("target");
   EXPECT_TRUE(target->HasMask());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->VisualOverflowRect());
 }
 
-TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
+TEST_P(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
@@ -341,14 +354,14 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
     </div>
   )HTML");
 
-  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* target = GetLayoutBoxByElementId("target");
   EXPECT_TRUE(target->HasMask());
   EXPECT_TRUE(target->HasOverflowClip());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->LocalVisualRect());
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), target->VisualOverflowRect());
 }
 
-TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
+TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
@@ -360,13 +373,13 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
     </div>
   )HTML");
 
-  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* target = GetLayoutBoxByElementId("target");
   EXPECT_TRUE(target->HasMask());
   EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->LocalVisualRect());
   EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->VisualOverflowRect());
 }
 
-TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
+TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
@@ -378,14 +391,14 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
     </div>
   )HTML");
 
-  LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
+  LayoutBox* target = GetLayoutBoxByElementId("target");
   EXPECT_TRUE(target->HasMask());
   EXPECT_TRUE(target->HasOverflowClip());
   EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->LocalVisualRect());
   EXPECT_EQ(LayoutRect(-20, -10, 140, 120), target->VisualOverflowRect());
 }
 
-TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
+TEST_P(LayoutBoxTest, ContentsVisualOverflowPropagation) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div { width: 100px; height: 100px }
@@ -406,14 +419,14 @@ TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
     </div>
   )HTML");
 
-  auto* c = ToLayoutBox(GetLayoutObjectByElementId("c"));
+  auto* c = GetLayoutBoxByElementId("c");
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), c->SelfVisualOverflowRect());
   EXPECT_EQ(LayoutRect(10, 20, 100, 100), c->ContentsVisualOverflowRect());
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), c->VisualOverflowRect());
   // C and its parent b have the same blocks direction.
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), c->VisualOverflowRectForPropagation());
 
-  auto* d = ToLayoutBox(GetLayoutObjectByElementId("d"));
+  auto* d = GetLayoutBoxByElementId("d");
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), d->SelfVisualOverflowRect());
   EXPECT_EQ(LayoutRect(10, 20, 100, 100), d->ContentsVisualOverflowRect());
   EXPECT_EQ(LayoutRect(0, 0, 110, 120), d->VisualOverflowRect());
@@ -421,7 +434,7 @@ TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
   EXPECT_EQ(LayoutRect(-10, 0, 110, 120),
             d->VisualOverflowRectForPropagation());
 
-  auto* b = ToLayoutBox(GetLayoutObjectByElementId("b"));
+  auto* b = GetLayoutBoxByElementId("b");
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), b->SelfVisualOverflowRect());
   // Union of VisualOverflowRectForPropagations offset by locations of c and d.
   EXPECT_EQ(LayoutRect(30, 40, 200, 120), b->ContentsVisualOverflowRect());
@@ -430,13 +443,13 @@ TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
   EXPECT_EQ(LayoutRect(-130, 0, 230, 160),
             b->VisualOverflowRectForPropagation());
 
-  auto* a = ToLayoutBox(GetLayoutObjectByElementId("a"));
+  auto* a = GetLayoutBoxByElementId("a");
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), a->SelfVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 50, 230, 160), a->ContentsVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 0, 230, 210), a->VisualOverflowRect());
 }
 
-TEST_F(LayoutBoxTest, HitTestContainPaint) {
+TEST_P(LayoutBoxTest, HitTestContainPaint) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='width: 100px; height: 200px; contain: paint'>
       <div id='child' style='width: 300px; height: 400px;'></div>
@@ -455,9 +468,9 @@ class AnimatedImage : public StubImage {
   bool MaybeAnimated() override { return true; }
 };
 
-TEST_F(LayoutBoxTest, DelayedInvalidation) {
+TEST_P(LayoutBoxTest, DelayedInvalidation) {
   SetBodyInnerHTML("<img id='image' style='width: 100px; height: 100px;'/>");
-  auto* obj = ToLayoutBox(GetLayoutObjectByElementId("image"));
+  auto* obj = GetLayoutBoxByElementId("image");
   ASSERT_TRUE(obj);
 
   // Inject an animated image since deferred invalidations are only done for
@@ -487,7 +500,11 @@ TEST_F(LayoutBoxTest, DelayedInvalidation) {
   EXPECT_FALSE(obj->ShouldDelayFullPaintInvalidation());
 }
 
-TEST_F(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
+TEST_P(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
+  // TODO(crbug.com/878025): The test fails in LayoutNG mode.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       html { font-size: 16px; }
@@ -502,6 +519,840 @@ TEST_F(LayoutBoxTest, MarkerContainerLayoutOverflowRect) {
   // Unit marker_container's frame_rect which y-pos starts from 0 and marker's
   // frame_rect.
   EXPECT_TRUE(marker_container->LayoutOverflowRect().Height() > LayoutUnit(50));
+}
+
+static String CommonStyleForGeometryWithScrollbarTests() {
+  return R"HTML(
+    <style>
+      ::-webkit-scrollbar { width: 15px; height: 16px; background: yellow; }
+      .rtl { direction: rtl; }
+      .htb { writing-mode: horizontal-tb; }
+      .vlr { writing-mode: vertical-lr; }
+      .vrl { writing-mode: vertical-rl; }
+      .container {
+        overflow: scroll;
+        width: 400px;
+        height: 300px;
+        padding: 10px 20px 30px 40px;
+        border-width: 20px 30px 40px 50px;
+        border-style: solid;
+      }
+      .child {
+        width: 50px;
+        height: 80px;
+        border: 40px solid blue;
+        padding: 10px;
+      }
+    </style>
+  )HTML";
+}
+
+TEST_P(LayoutBoxTest, LocationOfAbsoluteChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .container { position: relative; }
+      .child { position: absolute; top: 70px; left: 100px; }
+    </style>
+    <div class="container">
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  // In non-flipped writing mode, child's Location is the location of the
+  // top-left corner of its border box relative the top-left corner of its
+  // containing box's border box.
+  // 150 = absolute_left (100) + container_border_left (50)
+  // 90 = absolute_top (70) + container_border_top (20)
+  EXPECT_EQ(LayoutPoint(150, 90), normal->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), normal->PhysicalLocation());
+
+  // Same as "normal".
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(150, 90), vlr->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // In vrl writing mode, child's Location() is the location of the
+  // top-right corner of its border box relative the top-right corner of its
+  // containing box's border box.
+  // 240 = total_container_width (540) - physical_child_left (150) +
+  //       total_child_width (150)
+  EXPECT_EQ(LayoutPoint(240, 90), vrl->Location());
+  // The physical location is still about the top-left corners.
+  EXPECT_EQ(LayoutPoint(150, 90), vrl->PhysicalLocation());
+
+  // In horizontal rtl mode, there is scrollbar on the left, so the child is
+  // shifted to the right by the width of the scrollbar.
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_EQ(LayoutPoint(165, 90), rtl->Location());
+  EXPECT_EQ(LayoutPoint(165, 90), rtl->PhysicalLocation());
+
+  // Same as "vlr".
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  EXPECT_EQ(LayoutPoint(150, 90), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), rtl_vlr->PhysicalLocation());
+
+  // Same as "vrl".
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  EXPECT_EQ(LayoutPoint(240, 90), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest,
+       LocationOfAbsoluteChildWithContainerScrollbarsDifferentWritingModes) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .container { position: relative; }
+      .child { position: absolute; top: 70px; left: 100px; }
+    </style>
+    <div class="container">
+      <div id="vlr-in-htb" class="child vlr"></div>
+    </div>
+    <div class="container">
+      <div id="vrl-in-htb" class="child vrl"></div>
+    </div>
+    <div class="container vlr">
+      <div id="htb-in-vlr" class="child htb"></div>
+    </div>
+    <div class="container vlr">
+      <div id="vrl-in-vlr" class="child vrl"></div>
+    </div>
+    <div class="container vrl">
+      <div id="htb-in-vrl" class="child htb"></div>
+    </div>
+    <div class="container vrl">
+      <div id="vlr-in-vrl" class="child vlr"></div>
+    </div>
+  )HTML");
+
+  // The following expected values are just what the current system produces,
+  // and we haven't fully verified their correctness.
+
+  const auto* vlr_in_htb = GetLayoutBoxByElementId("vlr-in-htb");
+  EXPECT_EQ(LayoutPoint(150, 90), vlr_in_htb->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), vlr_in_htb->PhysicalLocation());
+
+  const auto* vrl_in_htb = GetLayoutBoxByElementId("vrl-in-htb");
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(150, 90), vrl_in_htb->Location());
+    EXPECT_EQ(LayoutPoint(150, 90), vrl_in_htb->PhysicalLocation());
+  } else {
+    EXPECT_EQ(LayoutPoint(250, 90), vrl_in_htb->Location());
+    EXPECT_EQ(LayoutPoint(250, 90), vrl_in_htb->PhysicalLocation());
+  }
+
+  const auto* htb_in_vlr = GetLayoutBoxByElementId("htb-in-vlr");
+  EXPECT_EQ(LayoutPoint(150, 90), htb_in_vlr->Location());
+  EXPECT_EQ(LayoutPoint(150, 90), htb_in_vlr->PhysicalLocation());
+
+  const auto* vrl_in_vlr = GetLayoutBoxByElementId("vrl-in-vlr");
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(150, 90), vrl_in_vlr->Location());
+    EXPECT_EQ(LayoutPoint(150, 90), vrl_in_vlr->PhysicalLocation());
+  } else {
+    EXPECT_EQ(LayoutPoint(250, 90), vrl_in_vlr->Location());
+    EXPECT_EQ(LayoutPoint(250, 90), vrl_in_vlr->PhysicalLocation());
+  }
+
+  const auto* htb_in_vrl = GetLayoutBoxByElementId("htb-in-vrl");
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(240, 90), htb_in_vrl->Location());
+    EXPECT_EQ(LayoutPoint(150, 90), htb_in_vrl->PhysicalLocation());
+  } else {
+    EXPECT_EQ(LayoutPoint(340, 90), htb_in_vrl->Location());
+    EXPECT_EQ(LayoutPoint(50, 90), htb_in_vrl->PhysicalLocation());
+  }
+
+  const auto* vlr_in_vrl = GetLayoutBoxByElementId("vlr-in-vrl");
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    EXPECT_EQ(LayoutPoint(240, 90), vlr_in_vrl->Location());
+    EXPECT_EQ(LayoutPoint(150, 90), vlr_in_vrl->PhysicalLocation());
+  } else {
+    EXPECT_EQ(LayoutPoint(340, 90), vlr_in_vrl->Location());
+    EXPECT_EQ(LayoutPoint(50, 90), vlr_in_vrl->PhysicalLocation());
+  }
+}
+
+TEST_P(LayoutBoxTest,
+       LocationOfAbsoluteAutoTopLeftChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .container { position: relative; }
+      .child { position: absolute; }
+    </style>
+    <div class="container">
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  // In non-flipped writing mode, child's Location is the location of the
+  // top-left corner of its border box relative the top-left corner of its
+  // containing box's border box.
+  // 90 = container_border_left (50) + container_padding_left (40)
+  // 30 = container_border_top (20) + container_padding_top (10)
+  EXPECT_EQ(LayoutPoint(90, 30), normal->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), normal->PhysicalLocation());
+
+  // Same as "normal".
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // In vrl writing mode, child's Location() is the location of the
+  // top-right corner of its border box relative the top-right corner of its
+  // containing box's border box.
+  // 65 = container_border_right (30) + container_padding_right (20) +
+  //      vertical_scrollbar_width (15)
+  EXPECT_EQ(LayoutPoint(65, 30), vrl->Location());
+  // The physical location is still about the top-left corners.
+  // 325 = total_container_width (540) - child_x (65) - total_child_width (150)
+  EXPECT_EQ(LayoutPoint(325, 30), vrl->PhysicalLocation());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  // 340 = total_container_width (540) - container_border_right (30) -
+  //       container_padding_right (20) - total_child_width (150)
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->Location());
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->PhysicalLocation());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  // 90 is the same as "vlr".
+  // 134 = total_container_height (400) - container_border_bottom (40) -
+  //       container_padding_bottom (30) - horizontal_scrollbar_height (16) -
+  //       total_child_height (150)
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->PhysicalLocation());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  // Horizontal is the same as "vrl".
+  // Vertical is the same as "rtl_vlr".
+  EXPECT_EQ(LayoutPoint(65, 134), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(325, 134), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest,
+       LocationOfAbsoluteAutoTopLeftGrandChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .container { position: relative; }
+      .intermediate { width: 200%; height: 200%; }
+      .child { position: absolute; }
+    </style>
+    <div class="container">
+      <div class="intermediate">
+        <div id="normal" class="child"></div>
+      </div>
+    </div>
+    <div class="container vlr">
+      <div class="intermediate">
+        <div id="vlr" class="child"></div>
+      </div>
+    </div>
+    <div class="container vrl">
+      <div class="intermediate">
+        <div id="vrl" class="child"></div>
+      </div>
+    </div>
+    <div class="container rtl">
+      <div class="intermediate">
+        <div id="rtl" class="child"></div>
+      </div>
+    </div>
+    <div class="container rtl vlr">
+      <div class="intermediate">
+        <div id="rtl-vlr" class="child"></div>
+      </div>
+    </div>
+    <div class="container rtl vrl">
+      <div class="intermediate">
+        <div id="rtl-vrl" class="child"></div>
+      </div>
+    </div>
+  )HTML");
+
+  // All locations are the same as
+  // LocationOfAbsoluteAutoTopLeftChildWithContainerScrollbars.
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  EXPECT_EQ(LayoutPoint(90, 30), normal->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), normal->PhysicalLocation());
+
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  EXPECT_EQ(LayoutPoint(65, 30), vrl->Location());
+  EXPECT_EQ(LayoutPoint(325, 30), vrl->PhysicalLocation());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->Location());
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->PhysicalLocation());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->PhysicalLocation());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  EXPECT_EQ(LayoutPoint(65, 134), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(325, 134), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest, LocationOfInFlowChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>.offset { width: 100px; height: 70px; }</style>
+    <div class="container">
+      <div class="offset"></div>
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div class="offset"></div>
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div class="offset"></div>
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div class="offset"></div>
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div class="offset"></div>
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div class="offset"></div>
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  // In non-flipped writing mode, child's Location is the location of the
+  // top-left corner of its border box relative the top-left corner of its
+  // containing box's border box.
+  // 90 = container_border_left (50) + container_padding_left (40)
+  // 100 = container_border_top (20) + container_padding_top (10) +
+  //      offset_height (70)
+  EXPECT_EQ(LayoutPoint(90, 100), normal->Location());
+  EXPECT_EQ(LayoutPoint(90, 100), normal->PhysicalLocation());
+
+  // 190 = container_border_left (50) + container_padding_left (40) +
+  //       offset_width (100)
+  // 30 = container_border_top (20) + container_padding_top (10)
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(190, 30), vlr->Location());
+  EXPECT_EQ(LayoutPoint(190, 30), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // In vrl writing mode, child's Location is the location of the
+  // top-right corner of its border box relative the top-right corner of its
+  // containing box's border box.
+  // 165 = container_border_right (30) + container_padding_right (20) +
+  //       vertical_scrollbar_width (15) + offset_width (100)
+  // 30 = container_border_top (20) + container_padding_left (10)
+  EXPECT_EQ(LayoutPoint(165, 30), vrl->Location());
+  // The physical location is still about the top-left corners.
+  // 225 = total_container_width (540) - total_child_width (150) - 165
+  EXPECT_EQ(LayoutPoint(225, 30), vrl->PhysicalLocation());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  // 340 = total_container_width (540) - total_child_width (150) -
+  //       container_border_right (30) - contaienr_padding_right (20)
+  // 100 is the same as "normal"
+  EXPECT_EQ(LayoutPoint(340, 100), rtl->Location());
+  EXPECT_EQ(LayoutPoint(340, 100), rtl->PhysicalLocation());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  // 190 is the same as "normal"
+  // 134 = total_container_height (400) - total_child_width (180) -
+  //       horizontal_scrollber_height (16) -
+  //       container_border_bottom (40) - contaienr_padding_bottom (30)
+  EXPECT_EQ(LayoutPoint(190, 134), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(190, 134), rtl_vlr->PhysicalLocation());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  // Horizontal is the same as "vrl"
+  // Vertical is the same as "rtl_vlr"
+  EXPECT_EQ(LayoutPoint(165, 134), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(225, 134), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest, LocationOfRelativeChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .offset { width: 100px; height: 70px; }
+      .child { position: relative; top: 77px; left: 88px; }
+    </style>
+    <div class="container">
+      <div class="offset"></div>
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div class="offset"></div>
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div class="offset"></div>
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div class="offset"></div>
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div class="offset"></div>
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div class="offset"></div>
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  // All locations are the same as LocationOfInFlowChildWithContainerScrollbars
+  // because relative offset doesn't contribute to box location.
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  EXPECT_EQ(LayoutPoint(90, 100), normal->Location());
+  EXPECT_EQ(LayoutPoint(90, 100), normal->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), normal->OffsetForInFlowPosition());
+
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(190, 30), vlr->Location());
+  EXPECT_EQ(LayoutPoint(190, 30), vlr->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), vlr->OffsetForInFlowPosition());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  EXPECT_EQ(LayoutPoint(165, 30), vrl->Location());
+  EXPECT_EQ(LayoutPoint(225, 30), vrl->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), vrl->OffsetForInFlowPosition());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_EQ(LayoutPoint(340, 100), rtl->Location());
+  EXPECT_EQ(LayoutPoint(340, 100), rtl->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), rtl->OffsetForInFlowPosition());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  EXPECT_EQ(LayoutPoint(190, 134), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(190, 134), rtl_vlr->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), rtl_vlr->OffsetForInFlowPosition());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  EXPECT_EQ(LayoutPoint(165, 134), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(225, 134), rtl_vrl->PhysicalLocation());
+  EXPECT_EQ(LayoutSize(88, 77), rtl_vrl->OffsetForInFlowPosition());
+}
+
+TEST_P(LayoutBoxTest, LocationOfFloatLeftChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>.child { float: left; }</style>
+    <div class="container">
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  // In non-flipped writing mode, child's Location is the location of the
+  // top-left corner of its border box relative the top-left corner of its
+  // containing box's border box.
+  // 90 = container_border_left (50) + container_padding_left (40)
+  // 30 = container_border_top (20) + container_padding_top (10)
+  EXPECT_EQ(LayoutPoint(90, 30), normal->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), normal->PhysicalLocation());
+
+  // Same as "normal".
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // In vrl writing mode, child's Location() is the location of the
+  // top-right corner of its border box relative the top-right corner of its
+  // containing box's border box.
+  // 65 = container_border_right (30) + container_padding_right (20) +
+  //      vertical_scrollbar_width (15)
+  EXPECT_EQ(LayoutPoint(65, 30), vrl->Location());
+  // The physical location is still about the top-left corners.
+  // 325 = total_container_width (540) - child_x (65) - total_child_width (150)
+  EXPECT_EQ(LayoutPoint(325, 30), vrl->PhysicalLocation());
+
+  // In horizontal rtl mode, there is scrollbar on the left, so the child is
+  // shifted to the right by the width of the scrollbar.
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_EQ(LayoutPoint(105, 30), rtl->Location());
+  EXPECT_EQ(LayoutPoint(105, 30), rtl->PhysicalLocation());
+
+  // Same as "vlr".
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  EXPECT_EQ(LayoutPoint(90, 30), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 30), rtl_vlr->PhysicalLocation());
+
+  // Same as "vrl".
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  EXPECT_EQ(LayoutPoint(65, 30), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(325, 30), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest, LocationOfFloatRightChildWithContainerScrollbars) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>.child { float: right; }</style>
+    <div class="container">
+      <div id="normal" class="child"></div>
+    </div>
+    <div class="container vlr">
+      <div id="vlr" class="child"></div>
+    </div>
+    <div class="container vrl">
+      <div id="vrl" class="child"></div>
+    </div>
+    <div class="container rtl">
+      <div id="rtl" class="child"></div>
+    </div>
+    <div class="container rtl vlr">
+      <div id="rtl-vlr" class="child"></div>
+    </div>
+    <div class="container rtl vrl">
+      <div id="rtl-vrl" class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  // In non-flipped writing mode, child's Location is the location of the
+  // top-left corner of its border box relative the top-left corner of its
+  // containing box's border box.
+  // 325 = total_container_width (540) - child_x (65) - total_child_width (150)
+  // 30 = container_border_top (20) + container_padding_top (10)
+  EXPECT_EQ(LayoutPoint(325, 30), normal->Location());
+  EXPECT_EQ(LayoutPoint(325, 30), normal->PhysicalLocation());
+
+  // Same as "normal".
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  // 90 = container_border_left (50) + container_padding_left (40)
+  // 134 = total_container_height (400) - total_child_width (180) -
+  //       horizontal_scrollber_height (16) -
+  //       container_border_bottom (40) - contaienr_padding_bottom (30)
+  EXPECT_EQ(LayoutPoint(90, 134), vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 134), vlr->PhysicalLocation());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // In vrl writing mode, child's Location() is the location of the
+  // top-right corner of its border box relative the top-right corner of its
+  // containing box's border box.
+  // 65 = container_border_right (30) + container_padding_right (20) +
+  //      vertical_scrollbar_width (15)
+  EXPECT_EQ(LayoutPoint(65, 134), vrl->Location());
+  // The physical location is still about the top-left corners.
+  // 325 = total_container_width (540) - child_x (65) - total_child_width (150)
+  EXPECT_EQ(LayoutPoint(325, 134), vrl->PhysicalLocation());
+
+  // In horizontal rtl mode, there is scrollbar on the left, so the child is
+  // shifted to the right by the width of the scrollbar.
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->Location());
+  EXPECT_EQ(LayoutPoint(340, 30), rtl->PhysicalLocation());
+
+  // Same as "vlr".
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->Location());
+  EXPECT_EQ(LayoutPoint(90, 134), rtl_vlr->PhysicalLocation());
+
+  // Same as "vrl".
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  EXPECT_EQ(LayoutPoint(65, 134), rtl_vrl->Location());
+  EXPECT_EQ(LayoutPoint(325, 134), rtl_vrl->PhysicalLocation());
+}
+
+TEST_P(LayoutBoxTest, GeometriesWithScrollbarsNonScrollable) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <div id="normal" class="container">
+      <div class="child"></div>
+    </div>
+    <div id="vlr" class="container vlr">
+      <div class="child"></div>
+    </div>
+    <div id="vrl" class="container vrl">
+      <div class="child"></div>
+    </div>
+    <div id="rtl" class="container rtl">
+      <div class="child"></div>
+    </div>
+    <div id="rtl-vlr" class="container rtl vlr">
+      <div class="child"></div>
+    </div>
+    <div id="rtl-vrl" class="container rtl vrl">
+      <div class="child"></div>
+    </div>
+  )HTML");
+
+#define EXPECT_ZERO_SCROLL(box)                                      \
+  do {                                                               \
+    EXPECT_EQ(IntSize(), box->ScrolledContentOffset());              \
+    const auto* scrollable_area = box->GetScrollableArea();          \
+    EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());        \
+    EXPECT_EQ(IntPoint(), scrollable_area->ScrollOrigin());          \
+    EXPECT_EQ(FloatPoint(), scrollable_area->ScrollPosition());      \
+    EXPECT_EQ(IntSize(), scrollable_area->MaximumScrollOffsetInt()); \
+    EXPECT_EQ(IntSize(), scrollable_area->MinimumScrollOffsetInt()); \
+  } while (false)
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  EXPECT_ZERO_SCROLL(normal);
+  EXPECT_EQ(IntSize(), normal->OriginAdjustmentForScrollbars());
+  // 540 = border_left + padding_left + width + padding_right + border_right
+  // 400 = border_top + padding_top + height + padding_bottom + border_bottom
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), normal->BorderBoxRect());
+  // 50 = border_left, 20 = border_top
+  // 445 = padding_left + (width - scrollbar_width) + padding_right
+  // 324 = padding_top + (height - scrollbar_height) + padding_bottom
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), normal->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), normal->PhysicalPaddingBoxRect());
+  // 90 = border_left + padding_left, 30 = border_top + padding_top
+  // 385 = width - scrollbar_width, 284 = height - scrollbar_height
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), normal->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), normal->LayoutOverflowRect());
+
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  // Same as "normal"
+  EXPECT_ZERO_SCROLL(vlr);
+  EXPECT_EQ(IntSize(), vlr->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), vlr->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vlr->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vlr->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), vlr->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vlr->LayoutOverflowRect());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  // Same as "normal" except that the PaddingBoxRect, ContentBoxRect and
+  // LayoutOverflowRect are flipped.
+  EXPECT_ZERO_SCROLL(vrl);
+  EXPECT_EQ(IntSize(), vrl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), vrl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), vrl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vrl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), vrl->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), vrl->LayoutOverflowRect());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  EXPECT_ZERO_SCROLL(rtl);
+  // The scrollbar is on the left, shifting padding box and content box to the
+  // right by 15px.
+  EXPECT_EQ(IntSize(15, 0), rtl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(65, 20, 445, 324), rtl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(65, 20, 445, 324), rtl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(105, 30, 385, 284), rtl->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(65, 20, 445, 324), rtl->LayoutOverflowRect());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  // Same as "vlr".
+  EXPECT_ZERO_SCROLL(rtl_vlr);
+  EXPECT_EQ(IntSize(), rtl_vlr->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl_vlr->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vlr->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vlr->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vlr->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vlr->LayoutOverflowRect());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  // Same as "vrl".
+  EXPECT_ZERO_SCROLL(rtl_vrl);
+  EXPECT_EQ(IntSize(), rtl_vrl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl_vrl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), rtl_vrl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vrl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vrl->PhysicalContentBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), rtl_vrl->LayoutOverflowRect());
+}
+
+TEST_P(LayoutBoxTest, GeometriesWithScrollbarsScrollable) {
+  SetBodyInnerHTML(CommonStyleForGeometryWithScrollbarTests() + R"HTML(
+    <style>
+      .child { width: 2000px; height: 1000px; box-sizing: border-box;}
+    </style>
+    <div id="normal" class="container">
+      <div class="child"></div>
+    </div>
+    <div id="vlr" class="container vlr">
+      <div class="child"></div>
+    </div>
+    <div id="vrl" class="container vrl">
+      <div class="child"></div>
+    </div>
+    <div id="rtl" class="container rtl">
+      <div class="child"></div>
+    </div>
+    <div id="rtl-vlr" class="container rtl vlr">
+      <div class="child"></div>
+    </div>
+    <div id="rtl-vrl" class="container rtl vrl">
+      <div class="child"></div>
+    </div>
+  )HTML");
+
+  const auto* normal = GetLayoutBoxByElementId("normal");
+  const auto* scrollable_area = normal->GetScrollableArea();
+  EXPECT_EQ(IntSize(), normal->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(), normal->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // 50 = border_left, 20 = border_top
+  // 2040 = child_width + padding_left (without padding_right which is in
+  //        inline-end direction)
+  // 1040 = child_height + padding_top + padding_bottom
+  EXPECT_EQ(LayoutRect(50, 20, 2040, 1040), normal->LayoutOverflowRect());
+  // 1595 = layout_overflow_width (2040) - client_width (445 -> see below).
+  // 716 = layout_overflow_height (1040) - client_height (324 -> see below).
+  EXPECT_EQ(IntSize(1595, 716), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(), scrollable_area->ScrollPosition());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), normal->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), normal->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), normal->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), normal->PhysicalContentBoxRect());
+
+  const auto* vlr = GetLayoutBoxByElementId("vlr");
+  scrollable_area = vlr->GetScrollableArea();
+  EXPECT_EQ(IntSize(), vlr->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(), vlr->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // 2060 = child_width + padding_left + padding_right
+  // 1010 = child_height + padding_top (without padding_bottom which is in
+  //        inline-end direction)
+  EXPECT_EQ(LayoutRect(50, 20, 2060, 1010), vlr->LayoutOverflowRect());
+  // 1615 = layout_overflow_width (2060) - client_width (445).
+  // 686 = layout_overflow_height (1010) - client_height (324).
+  EXPECT_EQ(IntSize(1615, 686), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(), scrollable_area->ScrollPosition());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), vlr->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vlr->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vlr->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), vlr->PhysicalContentBoxRect());
+
+  const auto* vrl = GetLayoutBoxByElementId("vrl");
+  scrollable_area = vrl->GetScrollableArea();
+  EXPECT_EQ(IntSize(), vrl->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(), vrl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // Same as "vlr" except for flipping.
+  EXPECT_EQ(LayoutRect(45, 20, 2060, 1010), vrl->LayoutOverflowRect());
+  EXPECT_EQ(IntSize(0, 686), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(-1615, 0), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(1615, 0), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(1615, 0), scrollable_area->ScrollPosition());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), vrl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), vrl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), vrl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), vrl->PhysicalContentBoxRect());
+
+  const auto* rtl = GetLayoutBoxByElementId("rtl");
+  scrollable_area = rtl->GetScrollableArea();
+  EXPECT_EQ(IntSize(), rtl->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(15, 0), rtl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // The contents overflow to the left.
+  // 2020 = child_width + padding_right (without padding_left which is in
+  //        inline-end direction)
+  // 1040 = child_height + padding_top + padding_bottom
+  EXPECT_EQ(LayoutRect(-1510, 20, 2020, 1040), rtl->LayoutOverflowRect());
+  EXPECT_EQ(IntSize(0, 716), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(-1575, 0), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(1575, 0), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(1575, 0), scrollable_area->ScrollPosition());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(65, 20, 445, 324), rtl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(65, 20, 445, 324), rtl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(105, 30, 385, 284), rtl->PhysicalContentBoxRect());
+
+  const auto* rtl_vlr = GetLayoutBoxByElementId("rtl-vlr");
+  scrollable_area = rtl_vlr->GetScrollableArea();
+  EXPECT_EQ(IntSize(), rtl_vlr->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(), rtl_vlr->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // 2060 = child_width + padding_left + padding_right
+  // 1030 = child_height + padding_bottom (without padding_top which is in
+  //        inline-end direction)
+  EXPECT_EQ(LayoutRect(50, -686, 2060, 1030), rtl_vlr->LayoutOverflowRect());
+  EXPECT_EQ(IntSize(1615, 0), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(0, -706), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(0, 706), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(0, 706), scrollable_area->ScrollPosition());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl_vlr->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vlr->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vlr->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vlr->PhysicalContentBoxRect());
+
+  const auto* rtl_vrl = GetLayoutBoxByElementId("rtl-vrl");
+  scrollable_area = rtl_vrl->GetScrollableArea();
+  EXPECT_EQ(IntSize(), rtl_vrl->ScrolledContentOffset());
+  EXPECT_EQ(IntSize(), rtl_vrl->OriginAdjustmentForScrollbars());
+  EXPECT_EQ(IntSize(), scrollable_area->ScrollOffsetInt());
+  // Same as "vlr" except for flipping.
+  EXPECT_EQ(LayoutRect(45, -686, 2060, 1030), rtl_vrl->LayoutOverflowRect());
+  EXPECT_EQ(IntSize(), scrollable_area->MaximumScrollOffsetInt());
+  EXPECT_EQ(IntSize(-1615, -706), scrollable_area->MinimumScrollOffsetInt());
+  EXPECT_EQ(IntPoint(1615, 706), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(FloatPoint(1615, 706), scrollable_area->ScrollPosition());
+  EXPECT_EQ(IntSize(), rtl_vrl->OriginAdjustmentForScrollbars());
+  // These are the same as in the NonScrollable test.
+  EXPECT_EQ(LayoutRect(0, 0, 540, 400), rtl_vrl->BorderBoxRect());
+  EXPECT_EQ(LayoutRect(45, 20, 445, 324), rtl_vrl->NoOverflowRect());
+  EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vrl->PhysicalPaddingBoxRect());
+  EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vrl->PhysicalContentBoxRect());
 }
 
 }  // namespace blink

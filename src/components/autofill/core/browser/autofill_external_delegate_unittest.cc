@@ -181,11 +181,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   auto element_ids = testing::ElementsAre(
-      kAutofillProfileId,
-#if !defined(OS_ANDROID)
-      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
-      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
+      kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
       ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), false, _));
@@ -221,9 +217,6 @@ TEST_F(AutofillExternalDelegateUnitTest,
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   auto element_ids =
       testing::ElementsAre(kAutofillProfileId,
-#if !defined(OS_ANDROID)
-                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
                            static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
 
   EXPECT_CALL(
@@ -308,11 +301,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
 #if !defined(OS_ANDROID)
       static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
 #endif
-      kAutofillProfileId,
-#if !defined(OS_ANDROID)
-      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
-      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
+      kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
       ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), false, _));
@@ -363,11 +352,7 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
 #if !defined(OS_ANDROID)
       static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
 #endif
-      kAutofillProfileId,
-#if !defined(OS_ANDROID)
-      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
-      static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
+      kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
       ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), false, _));
@@ -411,17 +396,13 @@ TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutofillDatalistValues) {
                                                data_list_items);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
-  auto element_ids =
-      testing::ElementsAre(static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
-                           static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+  auto element_ids = testing::ElementsAre(
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
+      static_cast<int>(POPUP_ITEM_ID_DATALIST_ENTRY),
 #if !defined(OS_ANDROID)
-                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
+      static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
 #endif
-                           kAutofillProfileId,
-#if !defined(OS_ANDROID)
-                           static_cast<int>(POPUP_ITEM_ID_SEPARATOR),
-#endif
-                           static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
+      kAutofillProfileId, static_cast<int>(POPUP_ITEM_ID_AUTOFILL_OPTIONS));
   EXPECT_CALL(
       autofill_client_,
       ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), false, _));
@@ -747,9 +728,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   IssueOnQuery(kQueryId);
 
   auto element_icons = testing::ElementsAre(
-#if !defined(OS_ANDROID)
-      base::string16(),
-#endif
       base::string16(), base::ASCIIToUTF16("googlePay"));
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
@@ -774,7 +752,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIconOniOS) {
 
   auto element_icons =
       testing::ElementsAre(base::ASCIIToUTF16("googlePay"), base::string16(),
-                           base::string16(), base::ASCIIToUTF16("googlePay"));
+                           base::ASCIIToUTF16("googlePay"));
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
                                 false, _));
@@ -797,7 +775,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(kQueryId);
 
   auto element_icons = testing::ElementsAre(
-      base::string16(), base::string16(),
+      base::string16(),
       base::string16() /* Autofill setting item does not have icon. */);
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
@@ -818,9 +796,6 @@ TEST_F(AutofillExternalDelegateUnitTest,
   IssueOnQuery(kQueryId);
 
   auto element_icons = testing::ElementsAre(
-#if !defined(OS_ANDROID)
-      base::string16(),
-#endif
       base::string16(),
       base::string16() /* Autofill setting item does not have icon. */);
   EXPECT_CALL(autofill_client_,
@@ -840,9 +815,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldUseNewSettingName) {
   IssueOnQuery(kQueryId);
 
   auto element_values = testing::ElementsAre(
-#if !defined(OS_ANDROID)
-      base::string16(),
-#endif
       base::string16(), l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE));
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorValuesAre(element_values),

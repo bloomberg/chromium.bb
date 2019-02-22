@@ -381,8 +381,8 @@ SMILTime SVGSMILElement::ParseClockValue(const String& data) {
 
   double result = 0;
   bool ok;
-  size_t double_point_one = parse.find(':');
-  size_t double_point_two = parse.find(':', double_point_one + 1);
+  wtf_size_t double_point_one = parse.find(':');
+  wtf_size_t double_point_two = parse.find(':', double_point_one + 1);
   if (double_point_one == 2 && double_point_two == 5 && parse.length() >= 8) {
     result += parse.Substring(0, 2).ToUIntStrict(&ok) * 60 * 60;
     if (!ok)
@@ -415,7 +415,7 @@ bool SVGSMILElement::ParseCondition(const String& value,
 
   double sign = 1.;
   bool ok;
-  size_t pos = parse_string.find('+');
+  wtf_size_t pos = parse_string.find('+');
   if (pos == kNotFound) {
     pos = parse_string.find('-');
     if (pos != kNotFound)
@@ -533,17 +533,14 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
     AnimationAttributeChanged();
   } else if (name == SVGNames::onbeginAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::beginEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::beginEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::onendAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::endEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::endEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::onrepeatAttr) {
-    SetAttributeEventListener(
-        EventTypeNames::repeatEvent,
-        CreateAttributeEventListener(this, name, value, EventParameterName()));
+    SetAttributeEventListener(EventTypeNames::repeatEvent,
+                              CreateAttributeEventListener(this, name, value));
   } else if (name == SVGNames::restartAttr) {
     if (value == "never")
       restart_ = kRestartNever;
@@ -743,7 +740,7 @@ SMILTime SVGSMILElement::FindInstanceTime(BeginOrEnd begin_or_end,
       minimum_time, SMILTimeWithOrigin::kParserOrigin);
   const SMILTimeWithOrigin* result = std::lower_bound(
       list.begin(), list.end(), dummy_time_with_origin, CompareTimes);
-  int index_of_result = result - list.begin();
+  int index_of_result = static_cast<int>(result - list.begin());
   if (index_of_result == size_of_list)
     return SMILTime::Unresolved();
   const SMILTime& current_time = list[index_of_result].Time();

@@ -98,7 +98,8 @@ class ImageFetchJsTest : public web::WebJsTest<web::WebTestWithWebState> {
   bool OnMessageFromJavaScript(const base::DictionaryValue& message,
                                const GURL& page_url,
                                bool has_user_gesture,
-                               bool form_in_main_frame) {
+                               bool form_in_main_frame,
+                               web::WebFrame* sender_frame) {
     message_received_ = true;
     message_ = message.Clone();
     return true;
@@ -145,6 +146,10 @@ TEST_F(ImageFetchJsTest, TestGetSameDomainImageData) {
       [UIImage imageWithData:[NSData dataWithBytes:decoded_data.c_str()
                                             length:decoded_data.size()]];
   EXPECT_TRUE(image);
+  const base::Value* from = message_.FindKey("from");
+  ASSERT_TRUE(from);
+  ASSERT_TRUE(from->is_string());
+  EXPECT_EQ("canvas", from->GetString());
 }
 
 // Tests that __gCrWeb.imageFetch.getImageData works when the image is
@@ -175,6 +180,10 @@ TEST_F(ImageFetchJsTest, TestGetCrossDomainImageData) {
   ASSERT_TRUE(data);
   ASSERT_TRUE(data->is_string());
   EXPECT_EQ(kImageBase64, data->GetString());
+  const base::Value* from = message_.FindKey("from");
+  ASSERT_TRUE(from);
+  ASSERT_TRUE(from->is_string());
+  EXPECT_EQ("xhr", from->GetString());
 }
 
 // Tests that __gCrWeb.imageFetch.getImageData fails for timeout when the image
@@ -200,4 +209,5 @@ TEST_F(ImageFetchJsTest, TestGetDelayedImageData) {
   ASSERT_TRUE(id_key->is_double());
   EXPECT_EQ(kCallJavaScriptId, static_cast<int>(id_key->GetDouble()));
   EXPECT_FALSE(message_.FindKey("data"));
+  EXPECT_FALSE(message_.FindKey("from"));
 }

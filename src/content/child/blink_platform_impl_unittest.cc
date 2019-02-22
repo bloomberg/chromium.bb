@@ -17,15 +17,16 @@ namespace content {
 
 void CheckCastedOriginsAlreadyNormalized(
     const blink::WebSecurityOrigin& origin) {
-  url::Origin checked_origin =
-      url::Origin::UnsafelyCreateOriginWithoutNormalization(
+  if (origin.IsOpaque())
+    return;
+
+  base::Optional<url::Origin> checked_origin =
+      url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
           origin.Protocol().Utf8(), origin.Host().Utf8(),
           origin.EffectivePort());
   url::Origin non_checked_origin = url::Origin::CreateFromNormalizedTuple(
       origin.Protocol().Utf8(), origin.Host().Utf8(), origin.EffectivePort());
-  EXPECT_EQ(checked_origin.scheme(), non_checked_origin.scheme());
-  EXPECT_EQ(checked_origin.host(), non_checked_origin.host());
-  EXPECT_EQ(checked_origin.port(), non_checked_origin.port());
+  EXPECT_EQ(checked_origin, non_checked_origin);
 }
 
 TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
@@ -116,7 +117,7 @@ TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
     EXPECT_TRUE(web_origin.IsUnique());
 
     url::Origin url_origin = web_origin;
-    EXPECT_TRUE(url_origin.unique());
+    EXPECT_TRUE(url_origin.opaque());
 
     web_origin = url::Origin::Create(GURL(""));
     EXPECT_TRUE(web_origin.IsUnique());

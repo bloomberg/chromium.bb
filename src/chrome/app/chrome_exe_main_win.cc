@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -128,9 +129,7 @@ bool RemoveAppCompatFlagsEntry() {
           L"WINSRV03SP1", L"WINSRV08SP1", L"WIN8RTM",
       };
       for (const wchar_t* compat_mode_token : kCompatModeTokens) {
-        tokens.erase(
-            std::remove(tokens.begin(), tokens.end(), compat_mode_token),
-            tokens.end());
+        base::Erase(tokens, compat_mode_token);
       }
       LONG result;
       if (tokens.empty()) {

@@ -11,18 +11,13 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/zoom/zoom_controller.h"
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/extension_builder.h"
-#include "ui/base/ui_features.h"
 #include "ui/views/test/test_widget_observer.h"
-
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
@@ -44,22 +39,15 @@ void ShowInActiveTab(Browser* browser) {
 
 }  // namespace
 
-class ZoomBubbleViewsBrowserTest : public ZoomBubbleBrowserTest {
- private:
-  test::ScopedMacViewsBrowserMode views_mode_{true};
-};
-
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
 #else
 #define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
 #endif
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // non-immersive fullscreen.
-IN_PROC_BROWSER_TEST_F(ZoomBubbleViewsBrowserTest,
-                       MAYBE_NonImmersiveFullscreen) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
@@ -102,7 +90,6 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleViewsBrowserTest,
     waiter->Wait();
   }
 }
-#endif  // !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
 #if defined(OS_CHROMEOS)
 // Test whether the zoom bubble is anchored and whether it is visible when in
@@ -353,4 +340,29 @@ class ZoomBubbleDialogTest : public DialogBrowserTest {
 // Test that calls ShowUi("default").
 IN_PROC_BROWSER_TEST_F(ZoomBubbleDialogTest, InvokeUi_default) {
   ShowAndVerifyUi();
+}
+
+// If a key event causes the zoom bubble to gain focus, it shouldn't close
+// automatically. This allows keyboard-only users to interact with the bubble.
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, FocusPreventsClose) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView* bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(bubble);
+  // |auto_close_timer_| is running so that the bubble is closed at the end.
+  EXPECT_TRUE(bubble->auto_close_timer_.IsRunning());
+
+  views::FocusManager* focus_manager = bubble->GetFocusManager();
+  // The bubble must have an associated Widget from which to get a FocusManager.
+  ASSERT_TRUE(focus_manager);
+
+  // Focus is usually gained via a key combination like alt+shift+a. The test
+  // simulates this by focusing the bubble and then sending an empty KeyEvent.
+  focus_manager->SetFocusedView(bubble->GetInitiallyFocusedView());
+  bubble->OnKeyEvent(nullptr);
+  // |auto_close_timer_| should not be running since focus should prevent the
+  // bubble from closing.
+  EXPECT_FALSE(bubble->auto_close_timer_.IsRunning());
 }

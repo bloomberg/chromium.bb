@@ -179,7 +179,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 // static
 RenderFrameProxy* RenderFrameProxy::FromRoutingID(int32_t routing_id) {
   RoutingIDProxyMap* proxies = g_routing_id_proxy_map.Pointer();
-  RoutingIDProxyMap::iterator it = proxies->find(routing_id);
+  auto it = proxies->find(routing_id);
   return it == proxies->end() ? NULL : it->second;
 }
 
@@ -188,7 +188,7 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(
     blink::WebRemoteFrame* web_frame) {
   // TODO(dcheng): Turn this into a DCHECK() if it doesn't crash on canary.
   CHECK(web_frame);
-  FrameProxyMap::iterator iter = g_frame_proxy_map.Get().find(web_frame);
+  auto iter = g_frame_proxy_map.Get().find(web_frame);
   if (iter != g_frame_proxy_map.Get().end()) {
     RenderFrameProxy* proxy = iter->second;
     DCHECK_EQ(web_frame, proxy->web_frame());
@@ -249,7 +249,7 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       render_widget_->GetOriginalScreenInfo();
 
 #if defined(USE_AURA)
-  if (features::IsUsingWindowService()) {
+  if (features::IsMultiProcessMash()) {
     RendererWindowTreeClient* renderer_window_tree_client =
         RendererWindowTreeClient::Get(render_widget_->routing_id());
     // It's possible a MusEmbeddedFrame has already been scheduled for creation
@@ -491,7 +491,7 @@ void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
   crashed_ = false;
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!features::IsUsingWindowService())
+  if (!features::IsMultiProcessMash())
     frame_sink_id_ = *params.frame_sink_id;
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
@@ -730,7 +730,7 @@ void RenderFrameProxy::FrameDetached(DetachType type) {
 
   // Remove the entry in the WebFrame->RenderFrameProxy map, as the |web_frame_|
   // is no longer valid.
-  FrameProxyMap::iterator it = g_frame_proxy_map.Get().find(web_frame_);
+  auto it = g_frame_proxy_map.Get().find(web_frame_);
   CHECK(it != g_frame_proxy_map.Get().end());
   CHECK_EQ(it->second, this);
   g_frame_proxy_map.Get().erase(it);
@@ -875,15 +875,10 @@ base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
 }
 
 #if defined(USE_AURA)
-void RenderFrameProxy::OnMusEmbeddedFrameSurfaceChanged(
-    const viz::SurfaceInfo& surface_info) {
-  OnFirstSurfaceActivation(surface_info);
-}
-
 void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.
-  DCHECK(features::IsUsingWindowService());
+  DCHECK(features::IsMultiProcessMash());
   frame_sink_id_ = frame_sink_id;
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
@@ -896,9 +891,12 @@ cc::Layer* RenderFrameProxy::GetLayer() {
 }
 
 void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
-                                bool prevent_contents_opaque_changes) {
-  if (web_frame())
-    web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes);
+                                bool prevent_contents_opaque_changes,
+                                bool is_surface_layer) {
+  if (web_frame()) {
+    web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes,
+                            is_surface_layer);
+  }
   embedded_layer_ = std::move(layer);
 }
 

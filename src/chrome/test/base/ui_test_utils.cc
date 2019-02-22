@@ -369,11 +369,12 @@ void DownloadURL(Browser* browser, const GURL& download_url) {
 }
 
 void SendToOmniboxAndSubmit(LocationBar* location_bar,
-                            const std::string& input) {
+                            const std::string& input,
+                            base::TimeTicks match_selection_timestamp) {
   OmniboxView* omnibox = location_bar->GetOmniboxView();
   omnibox->model()->OnSetFocus(false);
   omnibox->SetUserText(base::ASCIIToUTF16(input));
-  location_bar->AcceptInput();
+  location_bar->AcceptInput(match_selection_timestamp);
   while (!omnibox->model()->autocomplete_controller()->done()) {
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,

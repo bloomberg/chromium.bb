@@ -51,6 +51,9 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
       LatestLocalSurfaceIdLookupDelegate* delegate,
       const FrameSinkId& frame_sink_id) const;
 
+  int32_t GetActiveFrameIndex(const SurfaceId& id) const;
+  int64_t GetTraceId(const SurfaceId& id) const;
+
  private:
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,
                                  HitTestRegionList* hit_test_region_list);

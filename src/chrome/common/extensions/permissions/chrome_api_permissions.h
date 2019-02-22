@@ -5,20 +5,21 @@
 #ifndef CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_API_PERMISSIONS_H_
 #define CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_API_PERMISSIONS_H_
 
-#include <vector>
-
-#include "base/compiler_specific.h"
-#include "extensions/common/permissions/permissions_provider.h"
+#include "base/containers/span.h"
+#include "extensions/common/alias.h"
+#include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
+namespace chrome_api_permissions {
 
-// Registers the permissions used in Chrome with the PermissionsInfo global.
-class ChromeAPIPermissions : public PermissionsProvider {
- public:
-  std::vector<std::unique_ptr<APIPermissionInfo>> GetAllPermissions()
-      const override;
-};
+// Returns the information necessary to construct chrome-layer extension
+// APIPermissions.
+base::span<const APIPermissionInfo::InitInfo> GetPermissionInfos();
 
+// Returns the list of aliases for chrome-layer extension APIPermissions.
+base::span<const Alias> GetPermissionAliases();
+
+}  // namespace chrome_api_permissions
 }  // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_PERMISSIONS_CHROME_API_PERMISSIONS_H_

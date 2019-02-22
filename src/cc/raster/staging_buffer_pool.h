@@ -12,7 +12,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -22,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "gpu/command_buffer/common/gl2_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -51,17 +51,31 @@ struct StagingBuffer {
 
   const gfx::Size size;
   const viz::ResourceFormat format;
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
   base::TimeTicks last_usage;
-  unsigned texture_id;
-  unsigned image_id;
-  unsigned query_id;
-  uint64_t content_id;
+
+  // The following fields are initialized by OneCopyRasterBufferProvider.
+  // Storage for the staging buffer.  This can be a GPU native or shared memory
+  // GpuMemoryBuffer.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
+
+  // Id for image used to import the GpuMemoryBuffer to command buffer.
+  GLuint image_id = 0;
+
+  // Id for texture that's bound to the GpuMemoryBuffer image.
+  GLuint texture_id = 0;
+
+  // Id of command buffer query that tracks use of this staging buffer by the
+  // GPU.  In general, GPU synchronization is necessary for native
+  // GpuMemoryBuffers.
+  GLuint query_id = 0;
+
+  // Id of the content that's rastered into this staging buffer.  Used to
+  // retrieve staging buffer with known content for reuse for partial raster.
+  uint64_t content_id = 0;
 };
 
 class CC_EXPORT StagingBufferPool
-    : public base::trace_event::MemoryDumpProvider,
-      public base::MemoryCoordinatorClient {
+    : public base::trace_event::MemoryDumpProvider {
  public:
   ~StagingBufferPool() final;
 
@@ -98,11 +112,6 @@ class CC_EXPORT StagingBufferPool
   void StagingStateAsValueInto(
       base::trace_event::TracedValue* staging_state) const;
 
-  // Overriden from base::MemoryCoordinatorClient.
-  void OnPurgeMemory() override;
-
-  // TODO(gyuyoung): OnMemoryPressure is deprecated. So this should be removed
-  // when the memory coordinator is enabled by default.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level);
 

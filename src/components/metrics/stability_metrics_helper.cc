@@ -105,6 +105,12 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
     local_state_->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   }
 
+  count = local_state_->GetInteger(prefs::kStabilityGpuCrashCount);
+  if (count) {
+    stability_proto->set_gpu_crash_count(count);
+    local_state_->SetInteger(prefs::kStabilityGpuCrashCount, 0);
+  }
+
   count = local_state_->GetInteger(prefs::kStabilityRendererCrashCount);
   if (count) {
     stability_proto->set_renderer_crash_count(count);
@@ -160,6 +166,7 @@ void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityExtensionRendererFailedLaunchCount,
                            0);
   local_state_->SetInteger(prefs::kStabilityExtensionRendererLaunchCount, 0);
+  local_state_->SetInteger(prefs::kStabilityGpuCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityPageLoadCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
@@ -176,6 +183,7 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kStabilityExtensionRendererFailedLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererLaunchCount,
                                 0);
+  registry->RegisterIntegerPref(prefs::kStabilityGpuCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererFailedLaunchCount, 0);
@@ -187,6 +195,10 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
 
 void StabilityMetricsHelper::IncreaseRendererCrashCount() {
   IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+}
+
+void StabilityMetricsHelper::IncreaseGpuCrashCount() {
+  IncrementPrefValue(prefs::kStabilityGpuCrashCount);
 }
 
 void StabilityMetricsHelper::BrowserUtilityProcessLaunched(

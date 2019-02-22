@@ -27,22 +27,16 @@ class InstanceIDApiTest : public ExtensionApiTest {
  public:
   InstanceIDApiTest();
 
- protected:
-  void SetUpOnMainThread() override;
-
  private:
+  gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
+      scoped_testing_factory_installer_;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceIDApiTest);
 };
 
-InstanceIDApiTest::InstanceIDApiTest() {
-}
-
-void InstanceIDApiTest::SetUpOnMainThread() {
-  gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-      browser()->profile(), &gcm::FakeGCMProfileService::Build);
-
-  ExtensionApiTest::SetUpOnMainThread();
-}
+InstanceIDApiTest::InstanceIDApiTest()
+    : scoped_testing_factory_installer_(
+          base::BindRepeating(&gcm::FakeGCMProfileService::Build)) {}
 
 IN_PROC_BROWSER_TEST_F(InstanceIDApiTest, GetID) {
   ASSERT_TRUE(RunExtensionTest("instance_id/get_id"));

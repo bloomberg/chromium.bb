@@ -32,7 +32,7 @@
 
 namespace blink {
 
-namespace XPath {
+namespace xpath {
 
 class NodeSet final : public GarbageCollected<NodeSet> {
  public:
@@ -40,7 +40,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   static NodeSet* Create(const NodeSet&);
   void Trace(blink::Visitor* visitor) { visitor->Trace(nodes_); }
 
-  size_t size() const { return nodes_.size(); }
+  wtf_size_t size() const { return nodes_.size(); }
   bool IsEmpty() const { return !nodes_.size(); }
   Node* operator[](unsigned i) const { return nodes_.at(i).Get(); }
   HeapVector<Member<Node>>::iterator begin() { return nodes_.begin(); }
@@ -49,7 +49,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
     return nodes_.begin();
   }
   HeapVector<Member<Node>>::const_iterator end() const { return nodes_.end(); }
-  void ReserveCapacity(size_t new_capacity) {
+  void ReserveCapacity(wtf_size_t new_capacity) {
     nodes_.ReserveCapacity(new_capacity);
   }
   void clear() { nodes_.clear(); }
@@ -96,7 +96,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   HeapVector<Member<Node>> nodes_;
 };
 
-}  // namespace XPath
+}  // namespace xpath
 
 }  // namespace blink
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_NODE_SET_H_

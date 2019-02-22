@@ -44,9 +44,6 @@ enum NetworkConnectionType;
 struct WebCursor;
 
 [Native]
-enum WebPopupType;
-
-[Native]
 enum Button;
 
 [Native]

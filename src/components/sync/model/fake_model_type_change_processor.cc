@@ -56,6 +56,10 @@ bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {
   return true;
 }
 
+std::string FakeModelTypeChangeProcessor::TrackedAccountId() {
+  return "";
+}
+
 void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
   EXPECT_TRUE(expect_error_) << error.ToString();
   expect_error_ = false;

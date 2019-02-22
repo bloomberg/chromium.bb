@@ -14,8 +14,8 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_params.h"
+#include "components/metrics/legacy_call_stack_profile_builder.h"
 
 namespace service_manager {
 class Connector;

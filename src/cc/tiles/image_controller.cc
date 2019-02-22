@@ -117,7 +117,9 @@ void ImageController::StopWorkerTasks() {
         request.task->DidComplete();
       }
     }
-    cache_->UnrefImage(request.draw_image);
+
+    if (request.need_unref)
+      cache_->UnrefImage(request.draw_image);
 
     // Orphan the request so that we can still run it when a new cache is set.
     request.task = nullptr;

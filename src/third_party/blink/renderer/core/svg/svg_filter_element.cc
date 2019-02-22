@@ -32,20 +32,26 @@ namespace blink {
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document),
       SVGURIReference(this),
+      // Spec: If the x/y attribute is not specified, the effect is as if a
+      // value of "-10%" were specified.
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth))),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kPercentMinus10)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight))),
-      width_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::Create(SVGLengthMode::kWidth))),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight))),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kPercentMinus10)),
+      // Spec: If the width/height attribute is not specified, the effect is as
+      // if a value of "120%" were specified.
+      width_(SVGAnimatedLength::Create(this,
+                                       SVGNames::widthAttr,
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kPercent120)),
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kPercent120)),
       filter_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           SVGNames::filterUnitsAttr,
@@ -55,15 +61,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
               this,
               SVGNames::primitiveUnitsAttr,
               SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
-  // Spec: If the x/y attribute is not specified, the effect is as if a value of
-  // "-10%" were specified.
-  x_->SetDefaultValueAsString("-10%");
-  y_->SetDefaultValueAsString("-10%");
-  // Spec: If the width/height attribute is not specified, the effect is as if a
-  // value of "120%" were specified.
-  width_->SetDefaultValueAsString("120%");
-  height_->SetDefaultValueAsString("120%");
-
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);

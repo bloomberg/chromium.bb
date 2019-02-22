@@ -23,18 +23,9 @@
 // value of 1.0.
 - (void)updateForFullscreenEnabled:(BOOL)enabled;
 
-// Called when a fullscreen scroll event has finished.  UI elements that react
-// to fullscreen events can configure |animator| with animations.
-- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator;
-
-// Called when a scroll-to-top animation is triggered.  UI elements that react
-// to fullscreen events can configure |animator| with animations.
-- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator;
-
-// Called to show the toolbar.  This occurs when the app is foregrounded, or
-// when promped by FullscreenController::ResetModel().  UI elements that react
-// to fullscreen events can configure |animator| with aniamtions.
-- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator;
+// Called when fullscreen is about to initate an animation.  UI elements that
+// react to fullscreen events should configure |animator| with animations.
+- (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator;
 
 @end
 

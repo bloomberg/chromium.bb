@@ -27,14 +27,16 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_storage_area.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
+#include "third_party/blink/renderer/modules/storage/storage_controller.h"
 #include "third_party/blink/renderer/modules/storage/storage_event.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
-#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -166,12 +168,8 @@ bool StorageArea::CanAccessStorage() const {
 
   if (did_check_can_access_storage_)
     return can_access_storage_cached_result_;
-  StorageNamespaceController* controller =
-      StorageNamespaceController::From(frame->GetPage());
-  if (!controller)
-    return false;
   can_access_storage_cached_result_ =
-      controller->CanAccessStorageArea(frame, storage_type_);
+      StorageController::CanAccessStorageArea(frame, storage_type_);
   did_check_can_access_storage_ = true;
   return can_access_storage_cached_result_;
 }
@@ -179,14 +177,11 @@ bool StorageArea::CanAccessStorage() const {
 namespace {
 Page* FindPageWithSessionStorageNamespace(
     const WebStorageNamespace& session_namespace) {
-  // Iterate over all pages that have a StorageNamespaceController supplement.
+  // Iterate over all pages that have a StorageNamespace supplement.
+  String namespace_str = session_namespace.GetNamespaceId();
   for (Page* page : Page::OrdinaryPages()) {
-    const bool kDontCreateIfMissing = false;
-    StorageNamespace* storage_namespace =
-        StorageNamespaceController::From(page)->SessionStorage(
-            kDontCreateIfMissing);
-    if (storage_namespace &&
-        storage_namespace->IsSameNamespace(session_namespace))
+    StorageNamespace* storage_namespace = StorageNamespace::From(page);
+    if (storage_namespace && storage_namespace->namespace_id() == namespace_str)
       return page;
   }
   return nullptr;
@@ -206,7 +201,7 @@ void StorageArea::DispatchLocalStorageEvent(
     const SecurityOrigin* security_origin,
     const KURL& page_url,
     WebStorageArea* source_area_instance) {
-  // Iterate over all pages that have a StorageNamespaceController supplement.
+  // Iterate over all pages that have a LocalStorage area created.
   for (Page* page : Page::OrdinaryPages()) {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
@@ -229,12 +224,8 @@ void StorageArea::DispatchLocalStorageEvent(
             TaskType::kDOMManipulation);
       }
     }
-    if (InspectorDOMStorageAgent* agent =
-            StorageNamespaceController::From(page)->InspectorAgent()) {
-      agent->DidDispatchDOMStorageEvent(key, old_value, new_value,
-                                        StorageType::kLocalStorage,
-                                        security_origin);
-    }
+    StorageController::GetInstance()->DidDispatchLocalStorageEvent(
+        security_origin, key, old_value, new_value);
   }
 }
 
@@ -270,12 +261,8 @@ void StorageArea::DispatchSessionStorageEvent(
           TaskType::kDOMManipulation);
     }
   }
-  if (InspectorDOMStorageAgent* agent =
-          StorageNamespaceController::From(page)->InspectorAgent()) {
-    agent->DidDispatchDOMStorageEvent(key, old_value, new_value,
-                                      StorageType::kSessionStorage,
-                                      security_origin);
-  }
+  StorageNamespace::From(page)->DidDispatchStorageEvent(security_origin, key,
+                                                        old_value, new_value);
 }
 
 }  // namespace blink

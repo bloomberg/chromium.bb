@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -99,8 +100,8 @@ Clipboard::FormatType Clipboard::GetFormatType(
 
 // static
 const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSURLPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(NSURLPboardType);
+  return *type;
 }
 
 // static
@@ -110,8 +111,8 @@ const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSPasteboardTypeString));
-  return type;
+  static base::NoDestructor<FormatType> type(NSPasteboardTypeString);
+  return *type;
 }
 
 // static
@@ -121,8 +122,8 @@ const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSFilenamesPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(NSFilenamesPboardType);
+  return *type;
 }
 
 // static
@@ -132,38 +133,38 @@ const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSHTMLPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(NSHTMLPboardType);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSRTFPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(NSRTFPboardType);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSTIFFPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(NSTIFFPboardType);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebSmartPastePboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(kWebSmartPastePboardType);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kWebCustomDataPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(kWebCustomDataPboardType);
+  return *type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kPepperCustomDataPboardType));
-  return type;
+  static base::NoDestructor<FormatType> type(kPepperCustomDataPboardType);
+  return *type;
 }
 
 // Clipboard factory method.

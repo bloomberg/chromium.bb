@@ -31,23 +31,30 @@ namespace blink {
 inline SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(SVGNames::maskTag, document),
       SVGTests(this),
+      // Spec: If the x/y attribute is not specified, the effect is as if a
+      // value of "-10%" were specified.
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kPercentMinus10,
                                    CSSPropertyX)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kPercentMinus10,
                                    CSSPropertyY)),
+      // Spec: If the width/height attribute is not specified, the effect is as
+      // if a value of "120%" were specified.
       width_(SVGAnimatedLength::Create(this,
                                        SVGNames::widthAttr,
-                                       SVGLength::Create(SVGLengthMode::kWidth),
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kPercent120,
                                        CSSPropertyWidth)),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight),
-                                    CSSPropertyHeight)),
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kPercent120,
+                                        CSSPropertyHeight)),
       mask_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
           SVGNames::maskUnitsAttr,
@@ -57,16 +64,6 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
               this,
               SVGNames::maskContentUnitsAttr,
               SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
-  // Spec: If the x/y attribute is not specified, the effect is as if a value of
-  // "-10%" were specified.
-  x_->SetDefaultValueAsString("-10%");
-  y_->SetDefaultValueAsString("-10%");
-
-  // Spec: If the width/height attribute is not specified, the effect is as if a
-  // value of "120%" were specified.
-  width_->SetDefaultValueAsString("120%");
-  height_->SetDefaultValueAsString("120%");
-
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);

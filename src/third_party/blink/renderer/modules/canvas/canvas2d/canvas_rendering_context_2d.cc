@@ -356,7 +356,8 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
 
   // We first map canvas coordinates to layout coordinates.
   LayoutRect path_rect(bounding_rect);
-  IntRect canvas_rect = layout_box->AbsoluteContentBox();
+  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect();
+  canvas_rect.MoveBy(LayoutPoint(layout_box->LocalToAbsolute()));
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
   path_rect.SetY(
@@ -365,7 +366,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   path_rect.SetHeight((path_rect.Height() * canvas_rect.Height() / Height()));
 
   // Then we clip the bounding box to the canvas visible range.
-  path_rect.Intersect(LayoutRect(canvas_rect));
+  path_rect.Intersect(canvas_rect);
 
   bool is_horizontal_writing_mode =
       canvas()->EnsureComputedStyle()->IsHorizontalWritingMode();
@@ -841,7 +842,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
   FloatPoint location(clampTo<float>(x),
-                      clampTo<float>(y + GetFontBaseline(font_metrics)));
+                      clampTo<float>(y + GetFontBaseline(*font_data)));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);

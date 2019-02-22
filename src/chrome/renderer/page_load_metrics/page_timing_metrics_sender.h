@@ -53,6 +53,10 @@ class PageTimingMetricsSender {
 
   void Send(mojom::PageLoadTimingPtr timing);
 
+  void UpdateResourceMetadata(int resource_id,
+                              bool is_ad_resource,
+                              bool is_main_frame_resource);
+
  protected:
   base::OneShotTimer* timer() const { return timer_.get(); }
 
@@ -83,7 +87,7 @@ class PageTimingMetricsSender {
 
   // The page's resources that are currently loading,  or were completed after
   // the last timing update.
-  base::small_map<std::map<int, PageResourceDataUse>, 16>
+  base::small_map<std::map<int, std::unique_ptr<PageResourceDataUse>>, 16>
       page_resource_data_use_;
 
   // Set of all resources that have completed or received a transfer

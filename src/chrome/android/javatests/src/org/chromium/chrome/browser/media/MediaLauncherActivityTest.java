@@ -24,15 +24,15 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity0;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.TestContentProvider;
 import org.chromium.chrome.test.util.ActivityUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -122,10 +122,10 @@ public class MediaLauncherActivityTest {
 
     private void waitForCustomTabActivityToStart(Callable<Void> trigger, String expectedUrl)
             throws Exception {
-        SeparateTaskCustomTabActivity cta;
+        CustomTabActivity cta;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cta = ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
-                    SeparateTaskCustomTabActivity.class, trigger);
+            cta = ActivityUtils.waitForActivity(
+                    InstrumentationRegistry.getInstrumentation(), CustomTabActivity.class, trigger);
         } else {
             cta = ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
                     SeparateTaskCustomTabActivity0.class, trigger);

@@ -31,9 +31,9 @@ class ProgramGL : public ProgramImpl
               bool enablePathRendering);
     ~ProgramGL() override;
 
-    gl::LinkResult load(const gl::Context *contextImpl,
-                        gl::InfoLog &infoLog,
-                        gl::BinaryInputStream *stream) override;
+    angle::Result load(const gl::Context *context,
+                       gl::InfoLog &infoLog,
+                       gl::BinaryInputStream *stream) override;
     void save(const gl::Context *context, gl::BinaryOutputStream *stream) override;
     void setBinaryRetrievableHint(bool retrievable) override;
     void setSeparable(bool separable) override;
@@ -78,21 +78,21 @@ class ProgramGL : public ProgramImpl
                                     std::vector<gl::SamplerBinding> *samplerBindings,
                                     std::vector<gl::ImageBinding> *imageBindings) override;
 
-    GLuint getProgramID() const;
+    ANGLE_INLINE GLuint getProgramID() const { return mProgramID; }
 
     void enableSideBySideRenderingPath() const;
     void enableLayeredRenderingPath(int baseViewIndex) const;
 
-    gl::Error syncState(const gl::Context *context,
-                        const gl::Program::DirtyBits &dirtyBits) override;
+    angle::Result syncState(const gl::Context *context,
+                            const gl::Program::DirtyBits &dirtyBits) override;
 
   private:
     void preLink();
     bool checkLinkStatus(gl::InfoLog &infoLog);
     void postLink();
-    gl::LinkResult linkImpl(const gl::Context *contextImpl,
-                            const gl::ProgramLinkedResources &resources,
-                            gl::InfoLog &infoLog);
+    angle::Result linkImpl(const gl::Context *contextImpl,
+                           const gl::ProgramLinkedResources &resources,
+                           gl::InfoLog &infoLog);
 
     void reapplyUBOBindingsIfNeeded(const gl::Context *context);
 

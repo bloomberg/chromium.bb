@@ -69,7 +69,7 @@ struct NamedColor {
 PLATFORM_EXPORT const NamedColor* FindColor(const char* str, unsigned len);
 
 class PLATFORM_EXPORT Color {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  DISALLOW_NEW();
 
  public:
   Color() : color_(Color::kTransparent) {}

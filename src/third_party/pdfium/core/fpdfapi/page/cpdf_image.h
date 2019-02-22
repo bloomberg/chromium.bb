@@ -28,6 +28,9 @@ class CPDF_Image final : public Retainable {
   template <typename T, typename... Args>
   friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
 
+  static bool IsValidJpegComponent(int32_t comps);
+  static bool IsValidJpegBitsPerComponent(int32_t bpc);
+
   void ConvertStreamToIndirectObject();
 
   CPDF_Dictionary* GetDict() const;
@@ -48,7 +51,7 @@ class CPDF_Image final : public Retainable {
   void SetJpegImage(const RetainPtr<IFX_SeekableReadStream>& pFile);
   void SetJpegImageInline(const RetainPtr<IFX_SeekableReadStream>& pFile);
 
-  void ResetCache(CPDF_Page* pPage, const RetainPtr<CFX_DIBitmap>& pDIBitmap);
+  void ResetCache(CPDF_Page* pPage);
 
   // Returns whether to Continue() or not.
   bool StartLoadDIBBase(const CPDF_Dictionary* pFormResource,

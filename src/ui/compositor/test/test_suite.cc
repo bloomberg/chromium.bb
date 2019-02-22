@@ -5,7 +5,6 @@
 #include "ui/compositor/test/test_suite.h"
 
 #include "base/command_line.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -50,16 +49,6 @@ void CompositorTestSuite::Initialize() {
 #if defined(OS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);
 #endif
-
-  scoped_task_environment_ =
-      std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI);
-}
-
-void CompositorTestSuite::Shutdown() {
-  scoped_task_environment_.reset();
-
-  base::TestSuite::Shutdown();
 }
 
 }  // namespace test

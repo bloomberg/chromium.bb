@@ -55,9 +55,11 @@ bool PrintTabHelper::OnPrintCommand(web::WebState* web_state,
                                     const base::DictionaryValue& command,
                                     const GURL& page_url,
                                     bool interacting,
-                                    bool is_main_frame) {
-  if (!is_main_frame) {
-    // Print is only supported on main frame.
+                                    bool is_main_frame,
+                                    web::WebFrame* sender_frame) {
+  if (!is_main_frame && !interacting) {
+    // Ignore non user-initiated window.print() calls from iframes, to prevent
+    // abusive behavior from web sites.
     return false;
   }
   DCHECK(web_state);

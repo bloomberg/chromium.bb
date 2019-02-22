@@ -10,6 +10,7 @@
 
 #include "GrMtlBuffer.h"
 #include "GrMtlPipelineStateDataManager.h"
+#include "GrStencilSettings.h"
 #include "GrTypesPriv.h"
 #include "glsl/GrGLSLProgramBuilder.h"
 
@@ -53,6 +54,8 @@ public:
 
     void setBlendConstants(id<MTLRenderCommandEncoder>, GrPixelConfig, const GrXferProcessor&);
 
+    void setDepthStencilState(id<MTLRenderCommandEncoder> renderCmdEncoder);
+
 private:
     /**
     * We use the RT's size and origin to adjust from Skia device space to Metal normalized device
@@ -95,10 +98,8 @@ private:
     struct SamplerBindings {
         id<MTLSamplerState> fSampler;
         id<MTLTexture> fTexture;
-        GrShaderFlags fVisibility;
 
-        SamplerBindings(const GrSamplerState& state, GrTexture* texture, GrShaderFlags flags,
-                        GrMtlGpu*);
+        SamplerBindings(const GrSamplerState& state, GrTexture* texture, GrMtlGpu*);
     };
 
     GrMtlGpu* fGpu;
@@ -107,6 +108,8 @@ private:
 
     RenderTargetState fRenderTargetState;
     GrGLSLBuiltinUniformHandles fBuiltinUniformHandles;
+
+    GrStencilSettings fStencil;
 
     sk_sp<GrMtlBuffer> fGeometryUniformBuffer;
     sk_sp<GrMtlBuffer> fFragmentUniformBuffer;

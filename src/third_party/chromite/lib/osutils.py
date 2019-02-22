@@ -126,8 +126,7 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
       mv_target = path if not atomic else path + '.tmp'
       cros_build_lib.SudoRunCommand(['mv', write_path, mv_target],
                                     print_cmd=False, redirect_stderr=True)
-      cros_build_lib.SudoRunCommand(['chown', 'root:root', mv_target],
-                                    print_cmd=False, redirect_stderr=True)
+      Chown(mv_target, user='root', group='root')
       if atomic:
         cros_build_lib.SudoRunCommand(['mv', mv_target, path],
                                       print_cmd=False, redirect_stderr=True)
@@ -173,6 +172,30 @@ def Touch(path, makedirs=False, mode=None):
     os.chmod(path, mode)
   # Update timestamp to right now.
   os.utime(path, None)
+
+
+def Chown(path, user=None, group=None):
+  """Simple sudo chown path to the user.
+
+  Defaults to user running command. Does nothing if run as root user unless
+  a new owner is provided.
+
+  Args:
+    path: str - File/directory to chown.
+    user: str|int|None - User to chown the file to. Defaults to current user.
+    group: str|int|None - Group to assign the file to.
+  """
+  if user is None:
+    user = GetNonRootUser() or ''
+  else:
+    user = str(user)
+
+  group = '' if group is None else str(group)
+
+  if user or group:
+    owner = '%s:%s' % (user, group)
+    cros_build_lib.SudoRunCommand(['chown', owner, path], print_cmd=False,
+                                  redirect_stderr=True, redirect_stdout=True)
 
 
 def ReadFile(path, mode='r'):
@@ -292,11 +315,10 @@ def SafeMakedirsNonRoot(path, mode=0o775, user=None):
       created = should_chown = SafeMakedirs(path, mode=mode, sudo=True)
 
   if should_chown:
-    cros_build_lib.SudoRunCommand(['chown', user, path],
-                                  print_cmd=False,
-                                  redirect_stderr=True,
-                                  redirect_stdout=True)
+    Chown(path, user=user)
+
   return created
+
 
 class BadPathsException(Exception):
   """Raised by various osutils path manipulation functions on bad input."""
@@ -652,7 +674,6 @@ class TempDir(object):
       prefix: See tempfile.mkdtemp documentation.
       base_dir: The directory to place the temporary directory.
       set_global: Set this directory as the global temporary directory.
-      storage: The object that will have its 'tempdir' attribute set.
       delete: Whether the temporary dir should be deleted as part of cleanup.
           (default: True)
       sudo_rm: Whether the temporary dir will need root privileges to remove.
@@ -1367,10 +1388,11 @@ def IsMounted(path):
   return False
 
 
-def ResolveSymlink(file_name, root='/'):
+def ResolveSymlinkInRoot(file_name, root):
   """Resolve a symlink |file_name| relative to |root|.
 
-  For example:
+  This can be used to resolve absolute symlinks within an alternative root
+  path (i.e. chroot). For example:
 
     ROOT-A/absolute_symlink --> /an/abs/path
     ROOT-A/relative_symlink --> a/relative/path

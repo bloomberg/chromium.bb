@@ -25,6 +25,7 @@
 #include "rtc_base/gunit.h"
 #include "rtc_base/messagedigest.h"
 #include "rtc_base/ssladapter.h"
+#include "rtc_base/strings/string_builder.h"
 
 #define ASSERT_CRYPTO(cd, s, cs)      \
   ASSERT_EQ(s, cd->cryptos().size()); \
@@ -320,15 +321,15 @@ static void AttachSenderToMediaSection(
 static void DetachSenderFromMediaSection(const std::string& mid,
                                          const std::string& track_id,
                                          MediaSessionOptions* session_options) {
-  auto it = FindFirstMediaDescriptionByMid(mid, session_options);
-  auto sender_it = it->sender_options.begin();
-  for (; sender_it != it->sender_options.end(); ++sender_it) {
-    if (sender_it->track_id == track_id) {
-      it->sender_options.erase(sender_it);
-      return;
-    }
-  }
-  RTC_NOTREACHED();
+  std::vector<cricket::SenderOptions>& sender_options_list =
+      FindFirstMediaDescriptionByMid(mid, session_options)->sender_options;
+  auto sender_it =
+      std::find_if(sender_options_list.begin(), sender_options_list.end(),
+                   [track_id](const cricket::SenderOptions& sender_options) {
+                     return sender_options.track_id == track_id;
+                   });
+  RTC_DCHECK(sender_it != sender_options_list.end());
+  sender_options_list.erase(sender_it);
 }
 
 // Helper function used to create a default MediaSessionOptions for Plan B SDP.
@@ -1580,6 +1581,72 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   EXPECT_TRUE(dc->rejected);
 }
 
+TEST_F(MediaSessionDescriptionFactoryTest,
+       CreateAnswerSupportsMixedOneAndTwoByteHeaderExtensions) {
+  MediaSessionOptions opts;
+  std::unique_ptr<SessionDescription> offer(f1_.CreateOffer(opts, NULL));
+  // Offer without request of mixed one- and two-byte header extensions.
+  offer->set_mixed_one_two_byte_header_extensions_supported(false);
+  ASSERT_TRUE(offer.get() != NULL);
+  std::unique_ptr<SessionDescription> answer_no_support(
+      f2_.CreateAnswer(offer.get(), opts, NULL));
+  EXPECT_FALSE(
+      answer_no_support->mixed_one_two_byte_header_extensions_supported());
+
+  // Offer with request of mixed one- and two-byte header extensions.
+  offer->set_mixed_one_two_byte_header_extensions_supported(true);
+  ASSERT_TRUE(offer.get() != NULL);
+  std::unique_ptr<SessionDescription> answer_support(
+      f2_.CreateAnswer(offer.get(), opts, NULL));
+  EXPECT_TRUE(answer_support->mixed_one_two_byte_header_extensions_supported());
+}
+
+TEST_F(MediaSessionDescriptionFactoryTest,
+       CreateAnswerSupportsMixedOneAndTwoByteHeaderExtensionsOnMediaLevel) {
+  MediaSessionOptions opts;
+  AddAudioVideoSections(RtpTransceiverDirection::kSendRecv, &opts);
+  std::unique_ptr<SessionDescription> offer(f1_.CreateOffer(opts, NULL));
+  MediaContentDescription* video_offer =
+      offer->GetContentDescriptionByName("video");
+  ASSERT_TRUE(video_offer);
+  MediaContentDescription* audio_offer =
+      offer->GetContentDescriptionByName("audio");
+  ASSERT_TRUE(audio_offer);
+
+  // Explicit disable of mixed one-two byte header support in offer.
+  video_offer->set_mixed_one_two_byte_header_extensions_supported(
+      MediaContentDescription::kNo);
+  audio_offer->set_mixed_one_two_byte_header_extensions_supported(
+      MediaContentDescription::kNo);
+
+  ASSERT_TRUE(offer.get() != NULL);
+  std::unique_ptr<SessionDescription> answer_no_support(
+      f2_.CreateAnswer(offer.get(), opts, NULL));
+  MediaContentDescription* video_answer =
+      answer_no_support->GetContentDescriptionByName("video");
+  MediaContentDescription* audio_answer =
+      answer_no_support->GetContentDescriptionByName("audio");
+  EXPECT_EQ(MediaContentDescription::kNo,
+            video_answer->mixed_one_two_byte_header_extensions_supported());
+  EXPECT_EQ(MediaContentDescription::kNo,
+            audio_answer->mixed_one_two_byte_header_extensions_supported());
+
+  // Enable mixed one-two byte header support in offer.
+  video_offer->set_mixed_one_two_byte_header_extensions_supported(
+      MediaContentDescription::kMedia);
+  audio_offer->set_mixed_one_two_byte_header_extensions_supported(
+      MediaContentDescription::kMedia);
+  ASSERT_TRUE(offer.get() != NULL);
+  std::unique_ptr<SessionDescription> answer_support(
+      f2_.CreateAnswer(offer.get(), opts, NULL));
+  video_answer = answer_support->GetContentDescriptionByName("video");
+  audio_answer = answer_support->GetContentDescriptionByName("audio");
+  EXPECT_EQ(MediaContentDescription::kMedia,
+            video_answer->mixed_one_two_byte_header_extensions_supported());
+  EXPECT_EQ(MediaContentDescription::kMedia,
+            audio_answer->mixed_one_two_byte_header_extensions_supported());
+}
+
 // Create an audio and video offer with:
 // - one video track
 // - two audio tracks
@@ -2182,10 +2249,9 @@ TEST_F(MediaSessionDescriptionFactoryTest, RtxWithoutApt) {
   ASSERT_TRUE(media_desc);
   VideoContentDescription* desc = media_desc->as_video();
   std::vector<VideoCodec> codecs = desc->codecs();
-  for (std::vector<VideoCodec>::iterator iter = codecs.begin();
-       iter != codecs.end(); ++iter) {
-    if (iter->name.find(cricket::kRtxCodecName) == 0) {
-      iter->params.clear();
+  for (VideoCodec& codec : codecs) {
+    if (codec.name.find(cricket::kRtxCodecName) == 0) {
+      codec.params.clear();
     }
   }
   desc->set_codecs(codecs);
@@ -3703,7 +3769,7 @@ void TestAudioCodecsAnswer(RtpTransceiverDirection offer_direction,
     }
 
     auto format_codecs = [](const std::vector<AudioCodec>& codecs) {
-      std::stringstream os;
+      rtc::StringBuilder os;
       bool first = true;
       os << "{";
       for (const auto& c : codecs) {
@@ -3711,7 +3777,7 @@ void TestAudioCodecsAnswer(RtpTransceiverDirection offer_direction,
         first = false;
       }
       os << " }";
-      return os.str();
+      return os.Release();
     };
 
     EXPECT_TRUE(acd->codecs() == target_codecs)

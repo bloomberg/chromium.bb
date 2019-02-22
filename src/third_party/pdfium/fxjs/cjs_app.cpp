@@ -8,12 +8,13 @@
 
 #include <utility>
 
-#include "fpdfsdk/cpdfsdk_interform.h"
+#include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fxjs/cjs_document.h"
 #include "fxjs/cjs_timerobj.h"
 #include "fxjs/global_timer.h"
 #include "fxjs/ijs_event_context.h"
 #include "fxjs/js_resources.h"
+#include "third_party/base/ptr_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
@@ -127,7 +128,8 @@ CJS_Result CJS_App::get_calculate(CJS_Runtime* pRuntime) {
 CJS_Result CJS_App::set_calculate(CJS_Runtime* pRuntime,
                                   v8::Local<v8::Value> vp) {
   m_bCalculate = pRuntime->ToBoolean(vp);
-  pRuntime->GetFormFillEnv()->GetInterForm()->EnableCalculate(m_bCalculate);
+  pRuntime->GetFormFillEnv()->GetInteractiveForm()->EnableCalculate(
+      m_bCalculate);
   return CJS_Result::Success();
 }
 
@@ -405,12 +407,6 @@ void CJS_App::ClearTimerCommon(CJS_Runtime* pRuntime,
 CJS_Result CJS_App::execMenuItem(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-  if (params.size() > 0 && IsTypeKnown(params[0])) {
-    WideString item = pRuntime->ToWideString(params[0]);
-    if (item == L"SaveAs" && pRuntime->GetFormFillEnv())
-      pRuntime->GetFormFillEnv()->SaveCalled();
-  }
-
   return CJS_Result::Failure(JSMessage::kNotSupportedError);
 }
 

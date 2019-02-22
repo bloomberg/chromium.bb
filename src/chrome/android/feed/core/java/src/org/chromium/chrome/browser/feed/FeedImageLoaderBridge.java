@@ -10,8 +10,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
 
-import java.util.List;
-
 /**
  * Provides access to native implementations of image loader.
  */
@@ -45,17 +43,14 @@ public class FeedImageLoaderBridge {
      * Fetches images for feed. A {@code null} Bitmap is returned if no image is available. The
      * callback is never called synchronously.
      */
-    public void fetchImage(List<String> urls, Callback<Bitmap> callback) {
+    public void fetchImage(String url, int widthPx, int heightPx, Callback<Bitmap> callback) {
         assert mNativeFeedImageLoaderBridge != 0;
-
-        String[] urlsArray = urls.toArray(new String[urls.size()]);
-
-        nativeFetchImage(mNativeFeedImageLoaderBridge, urlsArray, callback);
+        nativeFetchImage(mNativeFeedImageLoaderBridge, url, widthPx, heightPx, callback);
     }
 
     // Native methods
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedImageLoaderBridge);
-    private native void nativeFetchImage(
-            long nativeFeedImageLoaderBridge, String[] urls, Callback<Bitmap> callback);
+    private native void nativeFetchImage(long nativeFeedImageLoaderBridge, String url, int widthPx,
+            int heightPx, Callback<Bitmap> callback);
 }

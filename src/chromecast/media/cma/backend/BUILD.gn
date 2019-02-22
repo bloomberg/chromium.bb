@@ -176,6 +176,19 @@ cast_source_set("post_processor_factory") {
   ]
 }
 
+cast_source_set("audio_resampler") {
+  sources = [
+    "audio_resampler.cc",
+    "audio_resampler.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/media/cma/base",
+    "//media",
+  ]
+}
+
 cast_source_set("for_mixer_audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
@@ -193,6 +206,8 @@ cast_source_set("for_mixer_audio") {
     "media_pipeline_backend_for_mixer.h",
     "mixer_input.cc",
     "mixer_input.h",
+    "mixer_pipeline.cc",
+    "mixer_pipeline.h",
     "post_processing_pipeline.h",
     "post_processing_pipeline_impl.cc",
     "post_processing_pipeline_impl.h",
@@ -208,6 +223,7 @@ cast_source_set("for_mixer_audio") {
   deps = [
     ":audio_buildflags",
     ":audio_helpers",
+    ":audio_resampler",
     ":cast_audio_json",
     ":post_processor_factory",
     ":public",
@@ -245,17 +261,21 @@ test("cast_audio_backend_unittests") {
     "mock_mixer_source.h",
     "mock_redirected_audio_output.cc",
     "mock_redirected_audio_output.h",
+    "stream_mixer_external_audio_pipeline_unittest.cc",
     "stream_mixer_unittest.cc",
+    "volume_map_unittest.cc",
   ]
 
   deps = [
     ":audio_helpers",
     ":av_sync_dummy",
+    ":cast_audio_json",
     ":for_mixer_audio",
     ":null_video",
     ":public",
     "//base",
     "//base/test:run_all_unittests",
+    "//chromecast/media/audio:fake_external_audio_pipeline",
     "//chromecast/media/cma/backend/post_processors:unittests",
     "//chromecast/public",
     "//chromecast/public/media",

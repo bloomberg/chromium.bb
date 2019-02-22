@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,47 +22,80 @@ namespace media {
 // A class to describes how physical buffer is allocated for video frame.
 // In stores format, coded size of the frame and size of physical buffers
 // which can be used to allocate buffer(s) hardware expected.
-// Also, it stores stride (bytes per line) per color plane to calculate each
-// color plane's size (note that a buffer may contains multiple color planes.)
+// It also stores stride (bytes per line) and offset per color plane as Plane.
+// stride is to calculate each color plane's size (note that a buffer may
+// contains multiple color planes.)
+// offset is to describe a start point of each plane from buffer's dmabuf fd.
 // Note that it is copyable.
 class MEDIA_EXPORT VideoFrameLayout {
  public:
+  struct Plane {
+    Plane() = default;
+    Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
+
+    bool operator==(const Plane& rhs) const {
+      return stride == rhs.stride && offset == rhs.offset;
+    }
+
+    // Strides of a plane, typically greater or equal to the
+    // width of the surface divided by the horizontal sampling period. Note that
+    // strides can be negative if the image layout is bottom-up.
+    int32_t stride = 0;
+
+    // Offset of a plane, which stands for the offset of a start point of a
+    // color plane from a buffer fd.
+    size_t offset = 0;
+  };
+
+  enum {
+    kDefaultPlaneCount = 4,
+    kDefaultBufferCount = 4,
+  };
+
   // Constructor with strides and buffers' size.
-  // If strides and buffer_sizes are not assigned, their default value are
-  // {0, 0, 0, 0} for compatibility with video_frame.cc's original behavior.
+  // If strides and buffer_sizes are not assigned, strides, offsets and
+  // buffer_sizes are {0, 0, 0, 0}.
   VideoFrameLayout(VideoPixelFormat format,
                    const gfx::Size& coded_size,
-                   std::vector<int32_t> strides = {0, 0, 0, 0},
-                   std::vector<size_t> buffer_sizes = {0, 0, 0, 0});
+                   std::vector<int32_t> strides =
+                       std::vector<int32_t>(kDefaultPlaneCount, 0),
+                   std::vector<size_t> buffer_sizes =
+                       std::vector<size_t>(kDefaultBufferCount, 0));
+
+  // Constructor with plane's stride/offset, and buffers' size.
+  // If buffer_sizes are not assigned, it is {0, 0, 0, 0}.
+  VideoFrameLayout(VideoPixelFormat format,
+                   const gfx::Size& coded_size,
+                   std::vector<Plane> planes,
+                   std::vector<size_t> buffer_sizes =
+                       std::vector<size_t>(kDefaultBufferCount, 0));
 
   VideoFrameLayout();
-  ~VideoFrameLayout();
   VideoFrameLayout(const VideoFrameLayout&);
   VideoFrameLayout(VideoFrameLayout&&);
   VideoFrameLayout& operator=(const VideoFrameLayout&);
+  ~VideoFrameLayout();
 
   VideoPixelFormat format() const { return format_; }
   const gfx::Size& coded_size() const { return coded_size_; }
 
-  // Return number of buffers. Note that num_strides >= num_buffers.
+  // Return number of buffers. Note that num_planes >= num_buffers.
   size_t num_buffers() const { return buffer_sizes_.size(); }
 
-  // Returns number of strides. Note that num_strides >= num_buffers.
-  size_t num_strides() const { return strides_.size(); }
+  // Returns number of planes. Note that num_planes >= num_buffers.
+  size_t num_planes() const { return planes_.size(); }
 
-  const std::vector<int32_t>& strides() const { return strides_; }
+  const std::vector<Plane>& planes() const { return planes_; }
   const std::vector<size_t>& buffer_sizes() const { return buffer_sizes_; }
-
-  // Sets strides.
-  void set_strides(std::vector<int32_t> strides) {
-    strides_ = std::move(strides);
-  }
 
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 
   // Composes VideoFrameLayout as human readable string.
   std::string ToString() const;
+
+  // Returns false if it is invalid.
+  bool IsValid() const { return format_ != PIXEL_FORMAT_UNKNOWN; }
 
  private:
   VideoPixelFormat format_;
@@ -73,15 +107,17 @@ class MEDIA_EXPORT VideoFrameLayout {
   // the pixel data provided for the odd pixels.
   gfx::Size coded_size_;
 
-  // Vector of strides for each buffer, typically greater or equal to the
-  // width of the surface divided by the horizontal sampling period. Note that
-  // strides can be negative if the image layout is bottom-up.
-  std::vector<int32_t> strides_;
+  // Layout property for each color planes, e.g. stride and buffer offset.
+  std::vector<Plane> planes_;
 
   // Vector of sizes for each buffer, typically greater or equal to the area of
   // |coded_size_|.
   std::vector<size_t> buffer_sizes_;
 };
+
+// Outputs VideoFrameLayout::Plane to stream.
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrameLayout::Plane& plane);
 
 }  // namespace media
 

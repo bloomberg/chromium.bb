@@ -34,8 +34,6 @@ cast_source_set("common") {
       "cast_extensions_client.h",
       "cast_redirect_manifest_handler.cc",
       "cast_redirect_manifest_handler.h",
-      "extensions_api/cast_aliases.cc",
-      "extensions_api/cast_aliases.h",
       "extensions_api/cast_api_permissions.cc",
       "extensions_api/cast_api_permissions.h",
       "extensions_api/cast_extension_messages.cc",

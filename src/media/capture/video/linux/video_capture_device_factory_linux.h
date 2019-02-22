@@ -9,6 +9,10 @@
 
 #include "media/capture/video/video_capture_device_factory.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "media/capture/video/linux/v4l2_capture_device.h"
@@ -60,11 +64,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryLinux
       VideoCaptureFormats* supported_formats) override;
 
  private:
+  // Simple wrapper to do HANDLE_EINTR(v4l2_->ioctl(fd, ...)).
+  int DoIoctl(int fd, int request, void* argp);
+
   bool HasUsableFormats(int fd, uint32_t capabilities);
-  std::list<float> GetFrameRateList(int fd,
-                                    uint32_t fourcc,
-                                    uint32_t width,
-                                    uint32_t height);
+  std::vector<float> GetFrameRateList(int fd,
+                                      uint32_t fourcc,
+                                      uint32_t width,
+                                      uint32_t height);
   void GetSupportedFormatsForV4L2BufferType(
       int fd,
       VideoCaptureFormats* supported_formats);

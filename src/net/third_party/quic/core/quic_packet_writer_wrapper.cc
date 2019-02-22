@@ -49,8 +49,10 @@ bool QuicPacketWriterWrapper::IsBatchMode() const {
   return writer_->IsBatchMode();
 }
 
-char* QuicPacketWriterWrapper::GetNextWriteLocation() const {
-  return writer_->GetNextWriteLocation();
+char* QuicPacketWriterWrapper::GetNextWriteLocation(
+    const QuicIpAddress& self_address,
+    const QuicSocketAddress& peer_address) {
+  return writer_->GetNextWriteLocation(self_address, peer_address);
 }
 
 WriteResult QuicPacketWriterWrapper::Flush() {

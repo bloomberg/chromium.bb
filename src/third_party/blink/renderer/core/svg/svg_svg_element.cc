@@ -66,27 +66,27 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
       SVGFitToViewBox(this),
       x_(SVGAnimatedLength::Create(this,
                                    SVGNames::xAttr,
-                                   SVGLength::Create(SVGLengthMode::kWidth),
+                                   SVGLengthMode::kWidth,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyX)),
       y_(SVGAnimatedLength::Create(this,
                                    SVGNames::yAttr,
-                                   SVGLength::Create(SVGLengthMode::kHeight),
+                                   SVGLengthMode::kHeight,
+                                   SVGLength::Initial::kUnitlessZero,
                                    CSSPropertyY)),
       width_(SVGAnimatedLength::Create(this,
                                        SVGNames::widthAttr,
-                                       SVGLength::Create(SVGLengthMode::kWidth),
+                                       SVGLengthMode::kWidth,
+                                       SVGLength::Initial::kPercent100,
                                        CSSPropertyWidth)),
-      height_(
-          SVGAnimatedLength::Create(this,
-                                    SVGNames::heightAttr,
-                                    SVGLength::Create(SVGLengthMode::kHeight),
-                                    CSSPropertyHeight)),
+      height_(SVGAnimatedLength::Create(this,
+                                        SVGNames::heightAttr,
+                                        SVGLengthMode::kHeight,
+                                        SVGLength::Initial::kPercent100,
+                                        CSSPropertyHeight)),
       time_container_(SMILTimeContainer::Create(*this)),
       translation_(SVGPoint::Create()),
       current_scale_(1) {
-  width_->SetDefaultValueAsString("100%");
-  height_->SetDefaultValueAsString("100%");
-
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
@@ -163,18 +163,15 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
     if (name == HTMLNames::onunloadAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::unload,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else if (name == HTMLNames::onresizeAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::resize,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else if (name == HTMLNames::onscrollAttr) {
       GetDocument().SetWindowAttributeEventListener(
           EventTypeNames::scroll,
-          CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                       EventParameterName()));
+          CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
     } else {
       set_listener = false;
     }
@@ -186,23 +183,14 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
   if (name == HTMLNames::onabortAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::abort,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(GetDocument().GetFrame(), name, value));
   } else if (name == HTMLNames::onerrorAttr) {
     GetDocument().SetWindowAttributeEventListener(
         EventTypeNames::error,
-        CreateAttributeEventListener(GetDocument().GetFrame(), name, value,
-                                     EventParameterName()));
+        CreateAttributeEventListener(
+            GetDocument().GetFrame(), name, value,
+            JSEventHandler::HandlerType::kOnErrorEventHandler));
   } else if (SVGZoomAndPan::ParseAttribute(name, value)) {
-  } else if (name == SVGNames::widthAttr || name == SVGNames::heightAttr) {
-    SVGAnimatedLength* property =
-        name == SVGNames::widthAttr ? width_ : height_;
-    SVGParsingError parse_error;
-    if (!value.IsNull())
-      parse_error = property->AttributeChanged(value);
-    if (parse_error != SVGParseStatus::kNoError || value.IsNull())
-      property->SetDefaultValueAsString("100%");
-    ReportAttributeParsingError(parse_error, name, value);
   } else {
     SVGElement::ParseAttribute(params);
   }

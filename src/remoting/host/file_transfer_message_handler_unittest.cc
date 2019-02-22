@@ -27,7 +27,8 @@ constexpr char kTestFilename[] = "test-file.txt";
 std::unique_ptr<remoting::CompoundBuffer> ToBuffer(const std::string& data) {
   std::unique_ptr<remoting::CompoundBuffer> buffer =
       std::make_unique<remoting::CompoundBuffer>();
-  buffer->Append(new net::WrappedIOBuffer(data.data()), data.size());
+  buffer->Append(base::MakeRefCounted<net::WrappedIOBuffer>(data.data()),
+                 data.size());
   return buffer;
 }
 

@@ -46,7 +46,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
    public:
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
-        ChangedVersionAttributesMask changed_mask,
+        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
         const ServiceWorkerRegistrationInfo& info) {}
     virtual void OnUpdateViaCacheChanged(
         ServiceWorkerRegistration* registation) {}
@@ -120,7 +120,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   virtual void RemoveListener(Listener* listener);
   void NotifyRegistrationFailed();
   void NotifyUpdateFound();
-  void NotifyVersionAttributesChanged(ChangedVersionAttributesMask mask);
+  void NotifyVersionAttributesChanged(
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr mask);
 
   ServiceWorkerRegistrationInfo GetInfo();
 
@@ -174,7 +175,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // registration from storage if there is no longer a stored version.
   void DeleteVersion(const scoped_refptr<ServiceWorkerVersion>& version);
 
-  void RegisterRegistrationFinishedCallback(const base::Closure& callback);
+  void RegisterRegistrationFinishedCallback(base::OnceClosure callback);
   void NotifyRegistrationFinished();
 
   void SetTaskRunnerForTest(
@@ -193,7 +194,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   void UnsetVersionInternal(
       ServiceWorkerVersion* version,
-      ChangedVersionAttributesMask* mask);
+      blink::mojom::ChangedServiceWorkerObjectsMask* mask);
 
   // ServiceWorkerVersion::Observer override.
   void OnNoControllees(ServiceWorkerVersion* version) override;
@@ -244,7 +245,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   scoped_refptr<ServiceWorkerVersion> installing_version_;
 
   base::ObserverList<Listener>::Unchecked listeners_;
-  std::vector<base::Closure> registration_finished_callbacks_;
+  std::vector<base::OnceClosure> registration_finished_callbacks_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

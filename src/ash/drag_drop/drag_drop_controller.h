@@ -48,6 +48,8 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
     should_block_during_drag_drop_ = should_block_during_drag_drop;
   }
 
+  void set_enabled(bool enabled) { enabled_ = enabled; }
+
   // Overridden from aura::client::DragDropClient:
   int StartDragAndDrop(const ui::OSExchangeData& data,
                        aura::Window* root_window,
@@ -87,6 +89,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
 
  private:
   friend class DragDropControllerTest;
+  friend class DragDropControllerTestApi;
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
@@ -105,6 +108,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Helper method to reset everything.
   void Cleanup();
 
+  bool enabled_ = false;
   std::unique_ptr<DragImageView> drag_image_;
   gfx::Vector2d drag_image_offset_;
   const ui::OSExchangeData* drag_data_;

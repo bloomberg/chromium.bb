@@ -12,11 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
-#include "components/subresource_filter/core/common/document_load_statistics.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 
 class GURL;
@@ -39,18 +37,22 @@ class DocumentSubresourceFilter {
   //     |document_origin|.
   //  -- Hold a reference to and use |ruleset| for its entire lifetime.
   DocumentSubresourceFilter(url::Origin document_origin,
-                            ActivationState activation_state,
+                            mojom::ActivationState activation_state,
                             scoped_refptr<const MemoryMappedRuleset> ruleset);
 
   ~DocumentSubresourceFilter();
 
-  const ActivationState& activation_state() const { return activation_state_; }
-  const DocumentLoadStatistics& statistics() const { return statistics_; }
+  const mojom::ActivationState& activation_state() const {
+    return activation_state_;
+  }
+  const mojom::DocumentLoadStatistics& statistics() const {
+    return statistics_;
+  }
 
   // WARNING: This is only to allow DocumentSubresourceFilter's wrappers to
   // modify the |statistics|.
   // TODO(pkalinnikov): Find a better way to achieve this.
-  DocumentLoadStatistics& statistics() { return statistics_; }
+  mojom::DocumentLoadStatistics& statistics() { return statistics_; }
 
   LoadPolicy GetLoadPolicy(
       const GURL& subresource_url,
@@ -64,19 +66,19 @@ class DocumentSubresourceFilter {
 
   // Called if the DocumentSubresourceFilter needs to change how it filters
   // subresources.
-  void set_activation_state(const ActivationState& state) {
+  void set_activation_state(const mojom::ActivationState& state) {
     activation_state_ = state;
   }
 
  private:
-  ActivationState activation_state_;
+  mojom::ActivationState activation_state_;
   const scoped_refptr<const MemoryMappedRuleset> ruleset_;
   const IndexedRulesetMatcher ruleset_matcher_;
 
   // Equals nullptr iff |activation_state_.filtering_disabled_for_document|.
   std::unique_ptr<FirstPartyOrigin> document_origin_;
 
-  DocumentLoadStatistics statistics_;
+  mojom::DocumentLoadStatistics statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSubresourceFilter);
 };

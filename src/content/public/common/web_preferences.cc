@@ -187,12 +187,15 @@ WebPreferences::WebPreferences()
       user_gesture_required_for_presentation(true),
       text_track_margin_percentage(0.0f),
       immersive_mode_enabled(false),
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+      double_tap_to_zoom_enabled(true),
+#else
+      double_tap_to_zoom_enabled(false),
+#endif
 #if !defined(OS_ANDROID)
       text_autosizing_enabled(false),
-      double_tap_to_zoom_enabled(false),
 #else
       text_autosizing_enabled(true),
-      double_tap_to_zoom_enabled(true),
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
       force_enable_zoom(false),
@@ -230,14 +233,15 @@ WebPreferences::WebPreferences()
       default_maximum_page_scale_factor(4.f),
 #endif
       hide_download_ui(false),
-      background_video_track_optimization_enabled(false),
       presentation_receiver(false),
       media_controls_enabled(true),
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       picture_in_picture_enabled(true),
-      translate_service_available(false) {
+      translate_service_available(false),
+      network_quality_estimator_web_holdback(
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

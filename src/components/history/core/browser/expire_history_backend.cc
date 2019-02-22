@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -192,8 +191,7 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
     return;
 
   DeleteEffects effects;
-  for (std::vector<GURL>::const_iterator url = urls.begin(); url != urls.end();
-       ++url) {
+  for (auto url = urls.begin(); url != urls.end(); ++url) {
     const bool is_bookmarked =
         backend_client_ && backend_client_->IsBookmarked(*url);
     URLRow url_row;
@@ -237,13 +235,11 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
   main_db_->GetAllVisitsInRange(begin_time, end_time, 0, &visits);
   if (!restrict_urls.empty()) {
     std::set<URLID> url_ids;
-    for (std::set<GURL>::const_iterator url = restrict_urls.begin();
-         url != restrict_urls.end(); ++url)
+    for (auto url = restrict_urls.begin(); url != restrict_urls.end(); ++url)
       url_ids.insert(main_db_->GetRowForURL(*url, nullptr));
     VisitVector all_visits;
     all_visits.swap(visits);
-    for (VisitVector::iterator visit = all_visits.begin();
-         visit != all_visits.end(); ++visit) {
+    for (auto visit = all_visits.begin(); visit != all_visits.end(); ++visit) {
       if (url_ids.find(visit->url_id) != url_ids.end())
         visits.push_back(*visit);
     }
@@ -363,8 +359,7 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
   if (!thumb_db_)
     return;
 
-  for (std::set<favicon_base::FaviconID>::const_iterator i =
-           effects->affected_favicons.begin();
+  for (auto i = effects->affected_favicons.begin();
        i != effects->affected_favicons.end(); ++i) {
     if (!thumb_db_->HasMappingFor(*i)) {
       GURL icon_url;
@@ -445,8 +440,7 @@ void ExpireHistoryBackend::DeleteIcons(const GURL& gurl,
   // Collect shared information.
   std::vector<IconMapping> icon_mappings;
   if (thumb_db_ && thumb_db_->GetIconMappingsForPageURL(gurl, &icon_mappings)) {
-    for (std::vector<IconMapping>::iterator m = icon_mappings.begin();
-         m != icon_mappings.end(); ++m) {
+    for (auto m = icon_mappings.begin(); m != icon_mappings.end(); ++m) {
       effects->affected_favicons.insert(m->icon_id);
     }
     // Delete the mapping entries for the url.

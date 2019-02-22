@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_PATH_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -46,6 +47,9 @@ bool MigratePathFromOldFormat(Profile* profile,
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 
+// The canonical mount point name for ARC "Play files" folder.
+const std::string GetAndroidFilesMountPointName();
+
 // The canonical mount point name for crostini "Linux files" folder.
 std::string GetCrostiniMountPointName(Profile* profile);
 
@@ -80,15 +84,17 @@ void ConvertToContentUrls(
     const std::vector<storage::FileSystemURL>& file_system_urls,
     ConvertToContentUrlsCallback callback);
 
-// Convert download location path into a string suitable for display.
+// Convert path into a string suitable for display in settings.
 // Replacements:
 // * /home/chronos/user/Downloads                => Downloads
 // * /home/chronos/u-<hash>/Downloads            => Downloads
 // * /special/drive-<hash>/root                  => Google Drive
+// * /special/drive-<hash>/team_drives           => Team Drives
 // * /run/arc/sdcard/write/emulated/0            => Play files
 // * /media/fuse/crostini_<hash>_termina_penguin => Linux files
 // * '/' with ' \u203a ' (angled quote sign) for display purposes.
-std::string GetDownloadLocationText(Profile* profile, const std::string& path);
+std::string GetPathDisplayTextForSettings(Profile* profile,
+                                          const std::string& path);
 
 }  // namespace util
 }  // namespace file_manager

@@ -48,13 +48,8 @@ TEST_F(BubbleViewTest, BubbleSizeShortText) {
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
   // Since the label is shorter than the minimum line width, expect the bubble
   // to be the minimum width and accommodate one line of text.
-  if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_NEAR(58.0f, bubbleSize.width, 1.0f);
-    EXPECT_NEAR(65.0f, bubbleSize.height, 1.0f);
-  } else {
-    EXPECT_NEAR(52.0f, bubbleSize.width, 1.0f);
-    EXPECT_NEAR(53.5f, bubbleSize.height, 1.0f);
-  }
+  EXPECT_NEAR(58.0f, bubbleSize.width, 1.0f);
+  EXPECT_NEAR(65.0f, bubbleSize.height, 1.0f);
 }
 
 // Test |sizeThatFits| given text that should wrap onto multiple lines.
@@ -65,19 +60,13 @@ TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
 
   // The bubble should fit the label, which contains two lines of text.
-  if (!IsUIRefreshPhase1Enabled()) {
-    EXPECT_NEAR(339.0f, bubbleSize.width, 1.0f);
-  } else if (base::ios::IsRunningOnIOS11OrLater()) {
+  if (base::ios::IsRunningOnIOS11OrLater()) {
     EXPECT_NEAR(329.0f, bubbleSize.width, 1.0f);
   } else {
     EXPECT_NEAR(402.0f, bubbleSize.width, 1.0f);
   }
 
-  if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_NEAR(83.0f, bubbleSize.height, 1.0f);
-  } else {
-    EXPECT_NEAR(72.5f, bubbleSize.height, 1.0f);
-  }
+  EXPECT_NEAR(83.0f, bubbleSize.height, 2.0f);
 }
 
 // Test that the accessibility label matches the display text.

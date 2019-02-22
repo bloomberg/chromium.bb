@@ -91,7 +91,7 @@ bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
     // with the NeedToFireBeforeUnload bit cleared.
-    contents->DispatchBeforeUnload();
+    contents->DispatchBeforeUnload(false /* auto_cancel */);
     return true;
   }
   return false;
@@ -208,8 +208,8 @@ void UnloadController::CancelWindowClose() {
   // Closing of window can be canceled from a beforeunload handler.
   DCHECK(is_attempting_to_close_browser_);
   tabs_needing_before_unload_fired_.clear();
-  for (UnloadListenerSet::iterator it = tabs_needing_unload_fired_.begin();
-      it != tabs_needing_unload_fired_.end(); ++it) {
+  for (auto it = tabs_needing_unload_fired_.begin();
+       it != tabs_needing_unload_fired_.end(); ++it) {
     DevToolsWindow::OnPageCloseCanceled(*it);
   }
   tabs_needing_unload_fired_.clear();
@@ -327,7 +327,7 @@ void UnloadController::ProcessPendingTabs(bool skip_beforeunload) {
       // and then call beforeunload handlers for |web_contents|.
       // See DevToolsWindow::InterceptPageBeforeUnload for details.
       if (!DevToolsWindow::InterceptPageBeforeUnload(web_contents))
-        web_contents->DispatchBeforeUnload();
+        web_contents->DispatchBeforeUnload(false /* auto_cancel */);
     } else {
       ClearUnloadState(web_contents, true);
     }
@@ -372,8 +372,7 @@ bool UnloadController::RemoveFromSet(UnloadListenerSet* set,
                                      content::WebContents* web_contents) {
   DCHECK(is_attempting_to_close_browser_);
 
-  UnloadListenerSet::iterator iter =
-      std::find(set->begin(), set->end(), web_contents);
+  auto iter = std::find(set->begin(), set->end(), web_contents);
   if (iter != set->end()) {
     set->erase(iter);
     return true;

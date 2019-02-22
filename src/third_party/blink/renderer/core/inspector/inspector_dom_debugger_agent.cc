@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
@@ -101,32 +102,31 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
   // Nodes and their Listeners for the concerned event types (order is top to
   // bottom).
   Vector<AtomicString> event_types = target->EventTypes();
-  for (size_t j = 0; j < event_types.size(); ++j) {
+  for (wtf_size_t j = 0; j < event_types.size(); ++j) {
     AtomicString& type = event_types[j];
     EventListenerVector* listeners = target->GetEventListeners(type);
     if (!listeners)
       continue;
-    for (size_t k = 0; k < listeners->size(); ++k) {
+    for (wtf_size_t k = 0; k < listeners->size(); ++k) {
       EventListener* event_listener = listeners->at(k).Callback();
-      if (event_listener->GetType() != EventListener::kJSEventListenerType)
+      JSBasedEventListener* v8_event_listener =
+          JSBasedEventListener::Cast(event_listener);
+      if (!v8_event_listener)
         continue;
-      // TODO(yukiy): Use a child class of blink::EventListener that is for v8
-      // event listeners here if it is implemented in redesigning
-      // EventListener/EventHandler: https://crbug.com/872138 .
       v8::Local<v8::Context> context = ToV8Context(
-          execution_context, *(event_listener->GetWorldForInspector()));
+          execution_context, v8_event_listener->GetWorldForInspector());
       // Optionally hide listeners from other contexts.
       if (!report_for_all_contexts && context != isolate->GetCurrentContext())
         continue;
-      // getListenerObject() may cause JS in the event attribute to get
-      // compiled, potentially unsuccessfully.  In that case, the function
-      // returns the empty handle without an exception.
-      v8::Local<v8::Object> handler =
-          event_listener->GetListenerObjectForInspector(execution_context);
-      if (handler.IsEmpty())
+      v8::Local<v8::Value> handler =
+          v8_event_listener->GetListenerObject(*target);
+      if (handler.IsEmpty() || !handler->IsObject())
         continue;
-      bool use_capture = listeners->at(k).Capture();
-      int backend_node_id = 0;
+      v8::Local<v8::Value> effective_function =
+          v8_event_listener->GetEffectiveFunction(*target);
+      if (!effective_function->IsFunction())
+        continue;
+      DOMNodeId backend_node_id = 0;
       if (target_node) {
         backend_node_id = DOMNodeIds::IdForNode(target_node);
         target_wrapper = NodeV8Value(
@@ -134,8 +134,9 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
             target_node);
       }
       event_information->push_back(V8EventListenerInfo(
-          type, use_capture, listeners->at(k).Passive(),
-          listeners->at(k).Once(), handler, backend_node_id));
+          type, listeners->at(k).Capture(), listeners->at(k).Passive(),
+          listeners->at(k).Once(), handler.As<v8::Object>(),
+          effective_function.As<v8::Function>(), backend_node_id));
     }
   }
 }
@@ -151,7 +152,7 @@ void InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
 
 static bool FilterNodesWithListeners(Node* node) {
   Vector<AtomicString> event_types = node->EventTypes();
-  for (size_t j = 0; j < event_types.size(); ++j) {
+  for (wtf_size_t j = 0; j < event_types.size(); ++j) {
     EventListenerVector* listeners = node->GetEventListeners(event_types[j]);
     if (listeners && listeners->size())
       return true;
@@ -453,26 +454,16 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
   if (info.handler.IsEmpty())
     return nullptr;
 
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::Local<v8::Function> function =
-      EventListenerEffectiveFunction(isolate, info.handler);
-  if (function.IsEmpty())
-    return nullptr;
-
-  String script_id;
-  int line_number;
-  int column_number;
-  GetFunctionLocation(function, script_id, line_number, column_number);
-
+  v8::Local<v8::Function> function = info.effective_function;
   std::unique_ptr<protocol::DOMDebugger::EventListener> value =
       protocol::DOMDebugger::EventListener::create()
           .setType(info.event_type)
           .setUseCapture(info.use_capture)
           .setPassive(info.passive)
           .setOnce(info.once)
-          .setScriptId(script_id)
-          .setLineNumber(line_number)
-          .setColumnNumber(column_number)
+          .setScriptId(String::Number(function->ScriptId()))
+          .setLineNumber(function->GetScriptLineNumber())
+          .setColumnNumber(function->GetScriptColumnNumber())
           .build();
   if (object_group_id.length()) {
     value->setHandler(v8_session_->wrapObject(
@@ -480,7 +471,7 @@ InspectorDOMDebuggerAgent::BuildObjectForEventListener(
     value->setOriginalHandler(v8_session_->wrapObject(
         context, info.handler, object_group_id, false /* generatePreview */));
     if (info.backend_node_id)
-      value->setBackendNodeId(info.backend_node_id);
+      value->setBackendNodeId(static_cast<int>(info.backend_node_id));
   }
   return value;
 }

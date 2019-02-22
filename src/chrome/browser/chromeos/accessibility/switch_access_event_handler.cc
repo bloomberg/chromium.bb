@@ -32,9 +32,6 @@ void SwitchAccessEventHandler::SetKeysToCapture(
 void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(event);
 
-  if (!event->HasNativeEvent())
-    return;
-
   ui::KeyboardCode key_code = event->key_code();
   if (captured_keys_.find(key_code) != captured_keys_.end()) {
     CancelEvent(event);

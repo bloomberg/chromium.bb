@@ -463,10 +463,8 @@ namespace {
 
 // Returns the index of |window| in its parent's children.
 int IndexInParent(const aura::Window* window) {
-  aura::Window::Windows::const_iterator i =
-      std::find(window->parent()->children().begin(),
-                window->parent()->children().end(),
-                window);
+  auto i = std::find(window->parent()->children().begin(),
+                     window->parent()->children().end(), window);
   return i == window->parent()->children().end() ? -1 :
       static_cast<int>(i - window->parent()->children().begin());
 }

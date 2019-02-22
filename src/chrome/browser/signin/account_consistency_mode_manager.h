@@ -75,6 +75,8 @@ class AccountConsistencyModeManager : public KeyedService {
                            MigrateAtCreation);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            SigninAllowedChangesDiceState);
+  FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
+                           DisallowSigninSwitch);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Schedules migration to happen at next startup. Exposed as a static function

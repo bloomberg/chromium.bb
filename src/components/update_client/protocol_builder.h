@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "components/update_client/component.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/updater_state.h"
@@ -22,7 +23,7 @@ class PersistedData;
 // Creates the values for the DDOS extra request headers sent with the update
 // check. These headers include "X-Goog-Update-Updater",
 // "X-Goog-Update-AppId", and  "X-Goog-Update-Interactivity".
-std::map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
+base::flat_map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
     scoped_refptr<Configurator> config,
     const std::vector<std::string>& ids_checked,
     bool is_foreground);
@@ -48,7 +49,7 @@ std::string BuildUpdateCheckRequest(
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     PersistedData* metadata,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     bool enabled_component_updates,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
 
@@ -120,7 +121,7 @@ std::string BuildProtocolRequest(
     const std::string& os_long_name,
     const std::string& download_preference,
     const std::string& request_body,
-    const std::string& additional_attributes,
+    const base::flat_map<std::string, std::string>& additional_attributes,
     const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
 
 }  // namespace update_client

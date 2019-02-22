@@ -38,6 +38,10 @@
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#endif
+
 namespace {
 
 // Creating a "spare" file for persistent metrics involves a lot of I/O and
@@ -83,17 +87,6 @@ void InstantiatePersistentHistograms() {
       metrics_dir, upload_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
       &upload_file, &active_file, &spare_file);
 
-  // The "active" file isn't used any longer. Metics are stored directly into
-  // the "upload" file and a run-time filter prevents its upload as long as the
-  // process that created it still lives.
-  // TODO(bcwhite): Remove this in M65 or later.
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                     std::move(active_file), /*recursive=*/false));
-
   // This is used to report results to an UMA histogram.
   enum InitResult {
     LOCAL_MEMORY_SUCCESS,
@@ -109,9 +102,9 @@ void InstantiatePersistentHistograms() {
 
   // Create persistent/shared memory and allow histograms to be stored in
   // it. Memory that is not actualy used won't be physically mapped by the
-  // system. BrowserMetrics usage, as reported in UMA, has the 99.9 percentile
-  // around 4MiB as of 2017-02-16.
-  const size_t kAllocSize = 8 << 20;     // 8 MiB
+  // system. BrowserMetrics usage, as reported in UMA, has the 99.99
+  // percentile around 3MiB as of 2018-10-22.
+  const size_t kAllocSize = 4 << 20;     // 4 MiB
   const uint32_t kAllocId = 0x935DDD43;  // SHA1(BrowserMetrics)
   std::string storage = variations::GetVariationParamValueByFeature(
       base::kPersistentHistogramsFeature, "storage");
@@ -130,6 +123,12 @@ void InstantiatePersistentHistograms() {
       storage = kLocalMemory;
   }
 #endif
+
+  // Don't use mapped-file memory by default on low-end devices, especially
+  // on Android. The extra disk consumption and/or extra disk access could
+  // have a significant performance impact. https://crbug.com/896394
+  if (storage.empty() && base::SysInfo::IsLowEndDevice())
+    storage = kLocalMemory;
 
   if (storage.empty() || storage == kMappedFile) {
     if (!base::PathExists(upload_dir)) {
@@ -243,6 +242,9 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
   if (!has_seed) {
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
+#if defined(OS_CHROMEOS)
+    chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
+#endif
   }
 }
 

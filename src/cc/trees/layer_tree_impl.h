@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
@@ -411,19 +412,23 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
   LayerImpl* LayerById(int id) const;
+  LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInLayerList(ElementId element_id) const;
-  void AddToElementLayerList(ElementId element_id);
+  void AddToElementLayerList(ElementId element_id, LayerImpl* layer);
   void RemoveFromElementLayerList(ElementId element_id);
+
+  void AddScrollableLayer(LayerImpl* layer);
 
   void SetSurfaceRanges(const base::flat_set<viz::SurfaceRange> surface_ranges);
   const base::flat_set<viz::SurfaceRange>& SurfaceRanges() const;
   void ClearSurfaceRanges();
 
   void AddLayerShouldPushProperties(LayerImpl* layer);
-  void RemoveLayerShouldPushProperties(LayerImpl* layer);
-  std::unordered_set<LayerImpl*>& LayersThatShouldPushProperties();
-  bool LayerNeedsPushPropertiesForTesting(LayerImpl* layer);
+  void ClearLayersThatShouldPushProperties();
+  const base::flat_set<LayerImpl*>& LayersThatShouldPushProperties() {
+    return layers_that_should_push_properties_;
+  }
 
   // These should be called by LayerImpl's ctor/dtor.
   void RegisterLayer(LayerImpl* layer);
@@ -497,7 +502,7 @@ class CC_EXPORT LayerTreeImpl {
   void UnregisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer);
   ScrollbarSet ScrollbarsFor(ElementId scroll_element_id) const;
 
-  LayerImpl* FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
+  LayerImpl* FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
       const gfx::PointF& screen_space_point);
 
   LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
@@ -559,6 +564,7 @@ class CC_EXPORT LayerTreeImpl {
   // SetScrollbarGeometriesNeedUpdate).
   void UpdateScrollbarGeometries();
 
+  // See LayerTreeHost.
   bool have_scroll_event_handlers() const {
     return have_scroll_event_handlers_;
   }
@@ -566,6 +572,7 @@ class CC_EXPORT LayerTreeImpl {
     have_scroll_event_handlers_ = have_event_handlers;
   }
 
+  // See LayerTreeHost.
   EventListenerProperties event_listener_properties(
       EventListenerClass event_class) const {
     return event_listener_properties_[static_cast<size_t>(event_class)];
@@ -653,7 +660,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerImplMap layer_id_map_;
   LayerImplList layer_list_;
   // Set of layers that need to push properties.
-  std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
+  base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 
   // Set of ElementIds which are present in the |layer_list_|.
   std::unordered_set<ElementId, ElementIdHash> elements_in_layer_list_;
@@ -664,6 +671,9 @@ class CC_EXPORT LayerTreeImpl {
       element_id_to_transform_animations_;
   std::unordered_map<ElementId, FilterOperations, ElementIdHash>
       element_id_to_filter_animations_;
+
+  std::unordered_map<ElementId, LayerImpl*, ElementIdHash>
+      element_id_to_scrollable_layer_;
 
   struct ScrollbarLayerIds {
     int horizontal = Layer::INVALID_ID;

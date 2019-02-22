@@ -15,7 +15,13 @@ std::string GetVersionString() {
 #if defined(ARCH_CPU_64_BITS)
   version += "-64";
 #endif  // defined(ARCH_CPU_64_BITS)
-  if (!version_info::IsOfficialBuild())
+
+#if defined(GOOGLE_CHROME_BUILD)
+  bool is_chrome_branded = true;
+#else
+  bool is_chrome_branded = false;
+#endif
+  if (!is_chrome_branded || !version_info::IsOfficialBuild())
     version.append("-devel");
   return version;
 }

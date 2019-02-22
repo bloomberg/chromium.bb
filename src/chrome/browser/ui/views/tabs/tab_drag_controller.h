@@ -492,6 +492,11 @@ class TabDragController : public views::WidgetObserver,
   // whenever the dragged tabs are attached to a new tabstrip.
   void SetTabDraggingInfo();
 
+  // Clears the flag to indicate that the tab dragging is happening in the
+  // tabstrip. This is separated from ClearTabDraggingInfo() since this needs
+  // to happen slightly before ClearTabDraggingInfo().
+  void ClearIsDraggingTabs();
+
   // Clears the tab dragging info for the current dragged tabstrip. This
   // function is supposed to be called whenever the dragged tabs are detached
   // from the old tabstrip or the tab dragging is ended.

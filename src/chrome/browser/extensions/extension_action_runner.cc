@@ -278,7 +278,7 @@ void ExtensionActionRunner::RunPendingScriptsForExtension(
   // callbacks adds more entries.
   permitted_extensions_.insert(extension->id());
 
-  PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
+  auto iter = pending_scripts_.find(extension->id());
   if (iter == pending_scripts_.end())
     return;
 
@@ -536,7 +536,7 @@ void ExtensionActionRunner::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
+  auto iter = pending_scripts_.find(extension->id());
   if (iter != pending_scripts_.end()) {
     pending_scripts_.erase(iter);
     ExtensionActionAPI::Get(browser_context_)

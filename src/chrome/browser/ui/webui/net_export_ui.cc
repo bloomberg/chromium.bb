@@ -4,13 +4,17 @@
 
 #include "chrome/browser/ui/webui/net_export_ui.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -20,13 +24,13 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/net_export_helper.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/net_log/net_export_ui_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,7 +42,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/log/net_log_capture_mode.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_ANDROID)
@@ -106,9 +109,6 @@ class NetExportMessageHandler
   void OnNewState(const base::DictionaryValue& state) override;
 
  private:
-  using URLRequestContextGetterList =
-      std::vector<scoped_refptr<net::URLRequestContextGetter>>;
-
   // Send NetLog data via email.
   static void SendEmail(const base::FilePath& file_to_send);
 
@@ -137,8 +137,7 @@ class NetExportMessageHandler
   // NetLog file.
   void ShowSelectFileDialog(const base::FilePath& default_path);
 
-  // Cache of g_browser_process->net_log()->net_export_file_writer(). This
-  // is owned by ChromeNetLog which is owned by BrowserProcessImpl.
+  // Cached pointer to SystemNetworkContextManager's NetExportFileWriter.
   net_log::NetExportFileWriter* file_writer_;
 
   ScopedObserver<net_log::NetExportFileWriter,
@@ -160,7 +159,8 @@ class NetExportMessageHandler
 };
 
 NetExportMessageHandler::NetExportMessageHandler()
-    : file_writer_(g_browser_process->net_log()->net_export_file_writer()),
+    : file_writer_(g_browser_process->system_network_context_manager()
+                       ->GetNetExportFileWriter()),
       state_observer_manager_(this),
       weak_ptr_factory_(this) {
   file_writer_->Initialize();

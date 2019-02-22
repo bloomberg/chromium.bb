@@ -107,6 +107,34 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   EXPECT_EQ(400, web_view->MainFrameImpl()->GetScrollOffset().height);
 }
 
+TEST_F(ProgrammaticScrollTest, SaveScrollStateClearsAnchor) {
+  RegisterMockedHttpURLLoad("long_scroll.html");
+
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
+  web_view->Resize(WebSize(1000, 1000));
+  web_view->UpdateAllLifecyclePhases();
+
+  FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
+  loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);
+
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 500));
+  loader.GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user =
+      true;
+  loader.SaveScrollState();
+  loader.SaveScrollAnchor();
+
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 0));
+  loader.SaveScrollState();
+  loader.GetDocumentLoader()->GetInitialScrollState().was_scrolled_by_user =
+      false;
+
+  loader.RestoreScrollPositionAndViewState();
+
+  EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().height);
+}
+
 class ProgrammaticScrollSimTest : public SimTest {};
 
 TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {

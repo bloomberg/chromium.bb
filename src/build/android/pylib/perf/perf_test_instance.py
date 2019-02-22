@@ -14,6 +14,7 @@ from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_instance
 from pylib.constants import host_paths
+from pylib.utils import test_filter
 
 
 _GIT_CR_POS_RE = re.compile(r'^Cr-Commit-Position: refs/heads/master@{#(\d+)}$')
@@ -77,7 +78,7 @@ class PerfTestInstance(test_instance.TestInstance):
     self._single_step = (
         ' '.join(args.single_step_command) if args.single_step else None)
     self._steps = args.steps
-    self._test_filter = args.test_filter
+    self._test_filter = test_filter.InitializeFilterFromArgs(args)
     self._write_buildbot_json = args.write_buildbot_json
 
   #override

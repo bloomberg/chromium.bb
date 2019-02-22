@@ -32,7 +32,6 @@ group("examples") {
     "//ppapi/examples/url_loader",
     "//ppapi/examples/video_capture",
     "//ppapi/examples/video_decode",
-    "//ppapi/examples/video_effects",
     "//ppapi/examples/video_encode",
   ]
 }

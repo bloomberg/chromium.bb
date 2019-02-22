@@ -7,34 +7,28 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chromeos/services/assistant/platform/audio_media_data_source.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {
 
 AudioStreamHandler::AudioStreamHandler(
-    service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : connector_(connector),
-      task_runner_(task_runner),
-      client_binding_(this),
-      weak_factory_(this) {}
+    : task_runner_(task_runner), client_binding_(this), weak_factory_(this) {}
 
 AudioStreamHandler::~AudioStreamHandler() = default;
 
 void AudioStreamHandler::StartAudioDecoder(
+    mojom::AssistantAudioDecoderFactory* audio_decoder_factory,
     assistant_client::AudioOutput::Delegate* delegate,
     InitCB on_inited) {
   mojom::AssistantAudioDecoderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
-  connector_->BindInterface(mojom::kAudioDecoderServiceName,
-                            mojo::MakeRequest(&audio_decoder_factory_ptr_));
 
   mojom::AssistantMediaDataSourcePtr data_source;
   media_data_source_ =
       std::make_unique<AudioMediaDataSource>(&data_source, task_runner_);
 
-  audio_decoder_factory_ptr_->CreateAssistantAudioDecoder(
+  audio_decoder_factory->CreateAssistantAudioDecoder(
       mojo::MakeRequest(&audio_decoder_), std::move(client),
       std::move(data_source));
 
@@ -43,17 +37,6 @@ void AudioStreamHandler::StartAudioDecoder(
   start_device_owner_on_main_thread_ = std::move(on_inited);
   audio_decoder_->OpenDecoder(base::BindOnce(
       &AudioStreamHandler::OnDecoderInitialized, weak_factory_.GetWeakPtr()));
-}
-
-void AudioStreamHandler::OnDecoderInitialized(bool success,
-                                              int bytes_per_sample,
-                                              int samples_per_second,
-                                              int channels) {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AudioStreamHandler::OnDecoderInitializedOnThread,
-                     weak_factory_.GetWeakPtr(), success, bytes_per_sample,
-                     samples_per_second, channels));
 }
 
 void AudioStreamHandler::OnNewBuffers(
@@ -94,17 +77,40 @@ void AudioStreamHandler::OnError(assistant_client::AudioOutput::Error error) {
 }
 
 void AudioStreamHandler::OnStopped() {
-  delegate_->OnStopped();
+  stopped_ = true;
+
+  // Do not provide more source data.
   media_data_source_->set_delegate(nullptr);
-  delegate_ = nullptr;
+
+  // Call |delegate_->OnStopped()| will delete |this|. Call |CloseDecoder| to
+  // clean up first.
+  audio_decoder_->CloseDecoder(base::BindOnce(&AudioStreamHandler::StopDelegate,
+                                              weak_factory_.GetWeakPtr()));
 }
 
-void AudioStreamHandler::OnDecoderInitializedOnThread(bool success,
-                                                      int bytes_per_sample,
-                                                      int samples_per_second,
-                                                      int channels) {
+void AudioStreamHandler::OnDecoderInitialized(bool success,
+                                              uint32_t bytes_per_sample,
+                                              uint32_t samples_per_second,
+                                              uint32_t channels) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AudioStreamHandler::OnDecoderInitializedOnThread,
+                     weak_factory_.GetWeakPtr(), success, bytes_per_sample,
+                     samples_per_second, channels));
+}
+
+void AudioStreamHandler::OnDecoderInitializedOnThread(
+    bool success,
+    uint32_t bytes_per_sample,
+    uint32_t samples_per_second,
+    uint32_t channels) {
   if (!success) {
-    OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
+    // In the case that both |OpenDecoder()| and |CloseDecoder()| were called,
+    // there is no need to call |OnError()|, since we are going to call
+    // |OnStopped()| soon.
+    if (!stopped_)
+      OnError(assistant_client::AudioOutput::Error::FATAL_ERROR);
+
     std::move(start_device_owner_on_main_thread_);
     return;
   }
@@ -120,6 +126,11 @@ void AudioStreamHandler::OnDecoderInitializedOnThread(bool success,
     DCHECK(!on_filled_);
     std::move(start_device_owner_on_main_thread_).Run(format);
   }
+}
+
+void AudioStreamHandler::StopDelegate() {
+  delegate_->OnStopped();
+  delegate_ = nullptr;
 }
 
 void AudioStreamHandler::FillDecodedBuffer(void* buffer, int buffer_size) {

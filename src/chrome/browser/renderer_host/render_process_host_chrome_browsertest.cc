@@ -92,22 +92,21 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
   ChromeRenderProcessHostTest() {}
 
   // Show a tab, activating the current one if there is one, and wait for
-  // the renderer process to be created or foregrounded, returning the process
-  // handle.
-  base::Process ShowSingletonTab(const GURL& page) {
+  // the renderer process to be created or foregrounded, returning the
+  // WebContents associated with the tab.
+  WebContents* ShowSingletonTab(const GURL& page) {
     ::ShowSingletonTab(browser(), page);
     WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return ProcessFromHandle(
-        wc->GetMainFrame()->GetProcess()->GetProcess().Handle());
+    return wc;
   }
 
-  // Loads the given url in a new background tab and returns the handle of its
-  // renderer.
-  base::Process OpenBackgroundTab(const GURL& page) {
+  // Loads the given url in a new background tab and returns the WebContents
+  // associated with the tab.
+  WebContents* OpenBackgroundTab(const GURL& page) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), page, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -119,8 +118,7 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
 
     WaitForLauncherThread();
     WaitForMessageProcessing(wc);
-    return ProcessFromHandle(
-        wc->GetMainFrame()->GetProcess()->GetProcess().Handle());
+    return wc;
   }
 
   // Ensures that the backgrounding / foregrounding gets a chance to run.
@@ -203,7 +201,8 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     else
       EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph2);
 
-    // Create another WebUI tab.  It should share the process with omnibox.
+    // Create another WebUI tab.  Each WebUI tab should get a separate process
+    // because of origin locking.
     // Note: intentionally create this tab after the normal tabs to exercise bug
     // 43448 where extension and WebUI tabs could get combined into normal
     // renderers.
@@ -213,11 +212,12 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     ::ShowSingletonTab(browser(), history);
     observer3.Wait();
     tab_count++;
+    host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
     EXPECT_EQ(tab2->GetURL(), GURL(history));
     EXPECT_EQ(host_count, RenderProcessHostCount());
-    EXPECT_EQ(tab2->GetMainFrame()->GetProcess(), rph1);
+    EXPECT_NE(tab2->GetMainFrame()->GetProcess(), rph1);
 
     // Create an extension tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
@@ -236,15 +236,25 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_NE(rph1, rph3);
     EXPECT_NE(rph2, rph3);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostTest);
 };
 
 class ChromeRenderProcessHostTestWithCommandLine
     : public ChromeRenderProcessHostTest {
+ public:
+  ChromeRenderProcessHostTestWithCommandLine() = default;
+  ~ChromeRenderProcessHostTestWithCommandLine() override = default;
+
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeRenderProcessHostTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostTestWithCommandLine);
 };
 
 // Disable on Windows and Mac due to ongoing flakiness. (crbug.com/442785)
@@ -317,99 +327,132 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, MAYBE_ProcessPerTab) {
 class ChromeRenderProcessHostBackgroundingTest
     : public ChromeRenderProcessHostTest {
  public:
+  ChromeRenderProcessHostBackgroundingTest() = default;
+  ~ChromeRenderProcessHostBackgroundingTest() override = default;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeRenderProcessHostTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitch(switches::kProcessPerTab);
   }
 
+  void VerifyProcessIsBackgrounded(WebContents* web_contents) {
+    constexpr bool kExpectedIsBackground = true;
+    VerifyProcessPriority(web_contents->GetMainFrame()->GetProcess(),
+                          kExpectedIsBackground);
+  }
+
+  void VerifyProcessIsForegrounded(WebContents* web_contents) {
+    constexpr bool kExpectedIsBackground = false;
+    VerifyProcessPriority(web_contents->GetMainFrame()->GetProcess(),
+                          kExpectedIsBackground);
+  }
+
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+ private:
+  void VerifyProcessPriority(content::RenderProcessHost* process,
+                             bool expected_is_backgrounded) {
+    EXPECT_TRUE(process->IsInitializedAndNotDead());
+    EXPECT_EQ(expected_is_backgrounded, process->IsProcessBackgrounded());
+
+    if (base::Process::CanBackgroundProcesses()) {
+      base::Process p = ProcessFromHandle(process->GetProcess().Handle());
+      ASSERT_TRUE(p.IsValid());
+#if defined(OS_MACOSX)
+      base::PortProvider* port_provider =
+          content::BrowserChildProcessHost::GetPortProvider();
+      EXPECT_EQ(expected_is_backgrounded,
+                p.IsProcessBackgrounded(port_provider));
+#else
+      EXPECT_EQ(expected_is_backgrounded, p.IsProcessBackgrounded());
+#endif
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostBackgroundingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest, MultipleTabs) {
-  // This test is invalid on platforms that can't background.
-  if (!base::Process::CanBackgroundProcesses())
-    return;
+#define EXPECT_PROCESS_IS_BACKGROUNDED(process_or_tab)                       \
+  do {                                                                       \
+    SCOPED_TRACE("Verifying that |" #process_or_tab "| is backgrounded..."); \
+    VerifyProcessIsBackgrounded(process_or_tab);                             \
+  } while (0);
 
+#define EXPECT_PROCESS_IS_FOREGROUNDED(process_or_tab)                       \
+  do {                                                                       \
+    SCOPED_TRACE("Verifying that |" #process_or_tab "| is foregrounded..."); \
+    VerifyProcessIsForegrounded(process_or_tab);                             \
+  } while (0);
+
+// Flaky on Mac: https://crbug.com/888308
 #if defined(OS_MACOSX)
-  base::PortProvider* port_provider =
-      content::BrowserChildProcessHost::GetPortProvider();
-#endif  //  defined(OS_MACOSX)
-
+#define MAYBE_MultipleTabs DISABLED_MultipleTabs
+#else
+#define MAYBE_MultipleTabs MultipleTabs
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
+                       MAYBE_MultipleTabs) {
   // Change the first tab to be the omnibox page (TYPE_WEBUI).
   GURL omnibox(chrome::kChromeUIOmniboxURL);
   ui_test_utils::NavigateToURL(browser(), omnibox);
 
   // Create a new tab. It should be foreground.
   GURL page1("data:text/html,hello world1");
-  base::Process process1 = ShowSingletonTab(page1);
-  ASSERT_TRUE(process1.IsValid());
-#if defined(OS_MACOSX)
-  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
-#else
-  EXPECT_FALSE(process1.IsProcessBackgrounded());
-#endif
+  WebContents* tab1 = ShowSingletonTab(page1);
+  {
+    SCOPED_TRACE("TEST STEP: Single tab");
+    EXPECT_PROCESS_IS_FOREGROUNDED(tab1);
+  }
 
   // Create another tab. It should be foreground, and the first tab should
   // now be background.
   GURL page2("data:text/html,hello world2");
-  base::Process process2 = ShowSingletonTab(page2);
-  ASSERT_TRUE(process2.IsValid());
-  EXPECT_NE(process1.Pid(), process2.Pid());
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(process1.IsProcessBackgrounded(port_provider));
-  EXPECT_FALSE(process2.IsProcessBackgrounded(port_provider));
-#else
-  EXPECT_TRUE(process1.IsProcessBackgrounded());
-  EXPECT_FALSE(process2.IsProcessBackgrounded());
-#endif  // defined(OS_MACOSX)
+  WebContents* tab2 = ShowSingletonTab(page2);
+  {
+    SCOPED_TRACE("TEST STEP: 2nd tab opened in foreground");
+    EXPECT_NE(tab1->GetMainFrame()->GetProcess(),
+              tab2->GetMainFrame()->GetProcess());
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab1);
+    EXPECT_PROCESS_IS_FOREGROUNDED(tab2);
+  }
 
   // Load another tab in background. The renderer of the new tab should be
   // backgrounded, while visibility of the other renderers should not change.
   GURL page3("data:text/html,hello world3");
-  base::Process process3 = OpenBackgroundTab(page3);
-  ASSERT_TRUE(process3.IsValid());
-  EXPECT_NE(process3.Pid(), process1.Pid());
-  EXPECT_NE(process3.Pid(), process2.Pid());
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(process1.IsProcessBackgrounded(port_provider));
-  EXPECT_FALSE(process2.IsProcessBackgrounded(port_provider));
-  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
+  WebContents* tab3 = OpenBackgroundTab(page3);
+  {
+    SCOPED_TRACE("TEST STEP: 3rd tab opened in background");
+    EXPECT_NE(tab1->GetMainFrame()->GetProcess(),
+              tab3->GetMainFrame()->GetProcess());
+    EXPECT_NE(tab2->GetMainFrame()->GetProcess(),
+              tab3->GetMainFrame()->GetProcess());
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab1);
+    EXPECT_PROCESS_IS_FOREGROUNDED(tab2);
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab3);
+  }
 
   // Navigate back to the first page. Its renderer should be in foreground
   // again while the other renderers should be backgrounded.
-  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
-  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
-  EXPECT_TRUE(process2.IsProcessBackgrounded(port_provider));
-  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
+  ShowSingletonTab(page1);
+  {
+    SCOPED_TRACE("TEST STEP: First tab activated again");
+    EXPECT_PROCESS_IS_FOREGROUNDED(tab1);
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab2);
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab3);
+  }
 
-  // Confirm that |process3| remains backgrounded after being shown/hidden.
-  EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
-  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
-  EXPECT_FALSE(process1.IsProcessBackgrounded(port_provider));
-  EXPECT_TRUE(process2.IsProcessBackgrounded(port_provider));
-  EXPECT_TRUE(process3.IsProcessBackgrounded(port_provider));
-#else
-  EXPECT_TRUE(process1.IsProcessBackgrounded());
-  EXPECT_FALSE(process2.IsProcessBackgrounded());
-  EXPECT_TRUE(process3.IsProcessBackgrounded());
-
-  // Navigate back to the first page. Its renderer should be in foreground
-  // again while the other renderers should be backgrounded.
-  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
-  EXPECT_FALSE(process1.IsProcessBackgrounded());
-  EXPECT_TRUE(process2.IsProcessBackgrounded());
-  EXPECT_TRUE(process3.IsProcessBackgrounded());
-
-  // Confirm that |process3| remains backgrounded after being shown/hidden.
-  EXPECT_EQ(process3.Pid(), ShowSingletonTab(page3).Pid());
-  EXPECT_EQ(process1.Pid(), ShowSingletonTab(page1).Pid());
-  EXPECT_FALSE(process1.IsProcessBackgrounded());
-  EXPECT_TRUE(process2.IsProcessBackgrounded());
-  EXPECT_TRUE(process3.IsProcessBackgrounded());
-#endif
+  // Confirm that |tab3| remains backgrounded after being shown/hidden.
+  ShowSingletonTab(page3);
+  ShowSingletonTab(page1);
+  {
+    SCOPED_TRACE("TEST STEP: Third tab activated and deactivated");
+    EXPECT_PROCESS_IS_FOREGROUNDED(tab1);
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab2);
+    EXPECT_PROCESS_IS_BACKGROUNDED(tab3);
+  }
 }
 
 // TODO(nasko): crbug.com/173137
@@ -631,7 +674,9 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
                                            ->GetProcess()
                                            ->GetProcess()
                                            .Handle());
-    no_audio_process_ = ShowSingletonTab(no_audio_url_);
+    WebContents* wc = ShowSingletonTab(no_audio_url_);
+    no_audio_process_ = ProcessFromHandle(
+        wc->GetMainFrame()->GetProcess()->GetProcess().Handle());
     ASSERT_NE(audio_process_.Pid(), no_audio_process_.Pid());
     ASSERT_TRUE(no_audio_process_.IsValid());
     ASSERT_TRUE(audio_process_.IsValid());

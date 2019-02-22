@@ -7,6 +7,9 @@
 
 #include <wayland-client.h>
 
+#include <stdint.h>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
@@ -16,11 +19,21 @@ namespace base {
 class SharedMemory;
 }
 
+namespace ui {
+class WaylandConnection;
+}
+
 namespace gfx {
 class Size;
+enum class SwapResult;
+struct PresentationFeedback;
 }
 
 namespace wl {
+
+// Corresponds to mojom::WaylandConnection::ScheduleBufferSwapCallback.
+using BufferSwapCallback =
+    base::OnceCallback<void(gfx::SwapResult, const gfx::PresentationFeedback&)>;
 
 wl_buffer* CreateSHMBuffer(const gfx::Size& size,
                            base::SharedMemory* shared_memory,
@@ -28,6 +41,11 @@ wl_buffer* CreateSHMBuffer(const gfx::Size& size,
 void DrawBitmapToSHMB(const gfx::Size& size,
                       const base::SharedMemory& shared_memory,
                       const SkBitmap& bitmap);
+
+// Identifies the direction of the "hittest" for Wayland. |connection|
+// is used to identify whether values from shell v5 or v6 must be used.
+uint32_t IdentifyDirection(const ui::WaylandConnection& connection,
+                           int hittest);
 
 }  // namespace wl
 

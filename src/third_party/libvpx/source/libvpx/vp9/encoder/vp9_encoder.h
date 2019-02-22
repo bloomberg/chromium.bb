@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef VP9_ENCODER_VP9_ENCODER_H_
-#define VP9_ENCODER_VP9_ENCODER_H_
+#ifndef VPX_VP9_ENCODER_VP9_ENCODER_H_
+#define VPX_VP9_ENCODER_VP9_ENCODER_H_
 
 #include <stdio.h>
 
@@ -289,6 +289,17 @@ typedef struct TplDepStats {
 
   int ref_frame_index;
   int_mv mv;
+
+#if CONFIG_NON_GREEDY_MV
+  int ready;
+  double mv_dist[3];
+  double mv_cost[3];
+  int64_t inter_cost_arr[3];
+  int64_t recon_error_arr[3];
+  int64_t sse_arr[3];
+  int_mv mv_arr[3];
+  double feature_score;
+#endif
 } TplDepStats;
 
 typedef struct TplDepFrame {
@@ -521,8 +532,6 @@ typedef struct VP9_COMP {
 
   int refresh_last_frame;
   int refresh_golden_frame;
-  int refresh_bwd_ref_frame;
-  int refresh_alt2_ref_frame;
   int refresh_alt_ref_frame;
 
   int ext_refresh_frame_flags_pending;
@@ -684,10 +693,6 @@ typedef struct VP9_COMP {
   // Indices are:  max_tx_size-1,  tx_size_ctx,    tx_size
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
 
-  int multi_arf_allowed;
-  int multi_arf_enabled;
-  int multi_arf_last_grp_enabled;
-
 #if CONFIG_VP9_TEMPORAL_DENOISING
   VP9_DENOISER denoiser;
 #endif
@@ -762,13 +767,6 @@ typedef struct VP9_COMP {
   uint8_t *count_arf_frame_usage;
   uint8_t *count_lastgolden_frame_usage;
 
-  // Parameters on multi-layer ALTREFs
-  int num_extra_arfs;
-  int arf_map[MAX_EXT_ARFS + 1];
-  int arf_pos_in_gf[MAX_EXT_ARFS + 1];
-  int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
-  int extra_arf_allowed;
-
   int multi_layer_arf;
   vpx_roi_map_t roi;
 } VP9_COMP;
@@ -818,6 +816,27 @@ int vp9_set_size_literal(VP9_COMP *cpi, unsigned int width,
 
 void vp9_set_svc(VP9_COMP *cpi, int use_svc);
 
+static INLINE int stack_pop(int *stack, int stack_size) {
+  int idx;
+  const int r = stack[0];
+  for (idx = 1; idx < stack_size; ++idx) stack[idx - 1] = stack[idx];
+
+  return r;
+}
+
+static INLINE int stack_top(const int *stack) { return stack[0]; }
+
+static INLINE void stack_push(int *stack, int new_item, int stack_size) {
+  int idx;
+  for (idx = stack_size; idx > 0; --idx) stack[idx] = stack[idx - 1];
+  stack[0] = new_item;
+}
+
+static INLINE void stack_init(int *stack, int length) {
+  int idx;
+  for (idx = 0; idx < length; ++idx) stack[idx] = -1;
+}
+
 int vp9_get_quantizer(struct VP9_COMP *cpi);
 
 static INLINE int frame_is_kf_gf_arf(const VP9_COMP *cpi) {
@@ -841,6 +860,10 @@ static INLINE int get_ref_frame_buf_idx(const VP9_COMP *const cpi,
   const VP9_COMMON *const cm = &cpi->common;
   const int map_idx = get_ref_frame_map_idx(cpi, ref_frame);
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
+}
+
+static INLINE RefCntBuffer *get_ref_cnt_buffer(VP9_COMMON *cm, int fb_idx) {
+  return fb_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[fb_idx] : NULL;
 }
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
@@ -993,4 +1016,4 @@ void vp9_set_row_mt(VP9_COMP *cpi);
 }  // extern "C"
 #endif
 
-#endif  // VP9_ENCODER_VP9_ENCODER_H_
+#endif  // VPX_VP9_ENCODER_VP9_ENCODER_H_

@@ -206,7 +206,7 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   EXPECT_TRUE(original_test_view->SetPaneFocus(
       original_test_view->third_child_button()));
 
-  // Test travesal in second view.
+  // Test traversal in second view.
   // Set pane focus on second child.
   EXPECT_TRUE(test_view->SetPaneFocus(test_view->second_child_button()));
   // home
@@ -234,4 +234,35 @@ TEST_F(AccessiblePaneViewTest, PaneFocusTraversal) {
   widget->CloseNow();
   widget.reset();
 }
+
+TEST_F(AccessiblePaneViewTest, DoesntCrashOnEscapeWithRemovedView) {
+  TestBarView* test_view1 = new TestBarView();
+  TestBarView* test_view2 = new TestBarView();
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(50, 50, 650, 650);
+  widget.Init(params);
+  View* root = widget.GetRootView();
+  root->AddChildView(test_view1);
+  root->AddChildView(test_view2);
+  widget.Show();
+  widget.Activate();
+
+  View* v1 = test_view1->child_button();
+  View* v2 = test_view2->child_button();
+  // Do the following:
+  // 1. focus |v1|.
+  // 2. focus |v2|. This makes |test_view2| remember |v1| as having focus.
+  // 3. Removes |v1| from it's parent.
+  // 4. Presses escape on |test_view2|. Escape attempts to revert focus to |v1|
+  //    (because of step 2). Because |v1| is not in a widget this should not
+  //    attempt to focus anything.
+  EXPECT_TRUE(test_view1->SetPaneFocus(v1));
+  EXPECT_TRUE(test_view2->SetPaneFocus(v2));
+  v1->parent()->RemoveChildView(v1);
+  // This shouldn't hit a CHECK in the FocusManager.
+  EXPECT_TRUE(test_view2->AcceleratorPressed(test_view2->escape_key()));
+}
+
 }  // namespace views

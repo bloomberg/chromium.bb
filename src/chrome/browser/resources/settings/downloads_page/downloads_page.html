@@ -77,13 +77,15 @@
     </neon-animatable>
 
 <if expr="chromeos">
-    <template is="dom-if" route-path="/smbShares">
-      <settings-subpage
-          associated-control="[[$$('#smbShares')]]"
-          page-title="$i18n{smbSharesTitle}">
-        <settings-smb-shares-page prefs="[[prefs]]">
-        </settings-smb-shares-page>
-      </settings-subpage>
+    <template is="dom-if" if="[[enableSmbSettings_]]">
+      <template is="dom-if" route-path="/smbShares">
+        <settings-subpage
+            associated-control="[[$$('#smbShares')]]"
+            page-title="$i18n{smbSharesTitle}">
+          <settings-smb-shares-page prefs="[[prefs]]">
+          </settings-smb-shares-page>
+        </settings-subpage>
+      </template>
     </template>
 </if>
   </settings-animated-pages>

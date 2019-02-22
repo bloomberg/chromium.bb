@@ -10,8 +10,6 @@
 
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -29,6 +27,8 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
+
+using MD = ui::MaterialDesignController;
 
 namespace {
 
@@ -138,28 +138,20 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetVisible(false);
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Ink drop ripple opacity.
-    set_ink_drop_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
-  }
+  set_ink_drop_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::SELECTED));
 
-  // Bubbles are given the full internal height of the location bar so that all
-  // child views in the location bar have the same height. The visible height of
-  // the bubble should be smaller, so use an empty border to shrink down the
-  // content bounds so the background gets painted correctly.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING),
-                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
+  UpdateBorder();
 
   set_notify_enter_exit_on_child(true);
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   separator_view_->EnableCanvasFlippingForRTLUI(true);
+
+  md_observer_.Add(MD::GetInstance());
 }
 
-IconLabelBubbleView::~IconLabelBubbleView() {
-}
+IconLabelBubbleView::~IconLabelBubbleView() {}
 
 void IconLabelBubbleView::InkDropAnimationStarted() {
   separator_view_->UpdateOpacity();
@@ -183,8 +175,8 @@ void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
 }
 
-void IconLabelBubbleView::OnBubbleCreated(views::Widget* bubble_widget) {
-  bubble_widget->AddObserver(this);
+void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
+  label_->SetFontList(font_list);
 }
 
 bool IconLabelBubbleView::ShouldShowSeparator() const {
@@ -220,6 +212,16 @@ bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
 
 bool IconLabelBubbleView::IsBubbleShowing() const {
   return false;
+}
+
+void IconLabelBubbleView::UpdateBorder() {
+  // Bubbles are given the full internal height of the location bar so that all
+  // child views in the location bar have the same height. The visible height of
+  // the bubble should be smaller, so use an empty border to shrink down the
+  // content bounds so the background gets painted correctly.
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING),
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left())));
 }
 
 gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
@@ -259,10 +261,8 @@ void IconLabelBubbleView::Layout() {
 
   float separator_width =
       GetWidthBetweenIconAndSeparator() + GetEndPaddingWithSeparator();
-  int separator_x =
-      ui::MaterialDesignController::IsRefreshUi() && label_->text().empty()
-          ? image_->bounds().right()
-          : label_->bounds().right();
+  int separator_x = label_->text().empty() ? image_->bounds().right()
+                                           : label_->bounds().right();
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
@@ -298,14 +298,6 @@ void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     GetTooltipText(gfx::Point(), &tooltip_text);
     node_data->SetName(tooltip_text);
   }
-}
-
-void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (!IsMouseHovered()) {
-    GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
-    GetInkDrop()->SetHovered(false);
-  }
-  Button::OnBoundsChanged(previous_bounds);
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
@@ -353,27 +345,13 @@ IconLabelBubbleView::CreateInkDropHighlight() const {
       CreateDefaultInkDropHighlight(
           gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
           ink_drop_container_->size());
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    highlight->set_visible_opacity(
-        GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
-  }
+  highlight->set_visible_opacity(
+      GetOmniboxStateAlpha(OmniboxPartState::HOVERED));
   return highlight;
-}
-
-SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
-  const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    // Opacity of the ink drop is set elsewhere, so just use full opacity here.
-    return ink_color_opaque;
-  }
-  return color_utils::DeriveDefaultIconColor(ink_color_opaque);
 }
 
 std::unique_ptr<views::InkDropMask> IconLabelBubbleView::CreateInkDropMask()
     const {
-  if (!LocationBarView::IsRounded())
-    return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(
       ink_drop_container_->size(), gfx::Insets(),
       ink_drop_container_->height() / 2.f);
@@ -431,15 +409,13 @@ void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void IconLabelBubbleView::OnWidgetDestroying(views::Widget* widget) {
-  widget->RemoveObserver(this);
-}
+void IconLabelBubbleView::OnMdModeChanged() {
+  UpdateBorder();
 
-void IconLabelBubbleView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                    bool visible) {
-  // |widget| is a bubble that has just got shown / hidden.
-  if (!visible)
-    AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
+  // PreferredSizeChanged() incurs an expensive layout of the location bar, so
+  // only call it when this view is showing.
+  if (visible())
+    PreferredSizeChanged();
 }
 
 SkColor IconLabelBubbleView::GetParentBackgroundColor() const {
@@ -477,24 +453,7 @@ int IconLabelBubbleView::GetInternalSpacing() const {
   if (image_->GetPreferredSize().IsEmpty())
     return 0;
 
-  // Touch Optimized, Refresh, and Touch Refresh all have custom spacing values.
-  int default_spacing;
-  switch (ui::MaterialDesignController::GetMode()) {
-    case ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED:
-      default_spacing = 4;
-      break;
-    case ui::MaterialDesignController::MATERIAL_REFRESH:
-      default_spacing = 8;
-      break;
-    case ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH:
-      default_spacing = 10;
-      break;
-    default:
-      default_spacing =
-          GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-          GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left();
-  }
-
+  const int default_spacing = MD::IsTouchOptimizedUiEnabled() ? 10 : 8;
   return default_spacing + GetExtraInternalSpacing();
 }
 
@@ -502,14 +461,14 @@ int IconLabelBubbleView::GetExtraInternalSpacing() const {
   return 0;
 }
 
+int IconLabelBubbleView::GetSlideDurationTime() const {
+  return kIconLabelBubbleAnimationDurationMs;
+}
+
 int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
   return ShouldShowSeparator() || ShouldShowExtraEndSpace()
              ? kIconLabelBubbleSpaceBesideSeparator
              : 0;
-}
-
-int IconLabelBubbleView::GetSlideDurationTime() const {
-  return kIconLabelBubbleAnimationDurationMs;
 }
 
 int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
@@ -521,13 +480,7 @@ int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
 }
 
 bool IconLabelBubbleView::OnActivate(const ui::Event& event) {
-  if (ShowBubble(event)) {
-    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
-    return true;
-  }
-
-  AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
-  return false;
+  return ShowBubble(event);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {
@@ -564,6 +517,10 @@ void IconLabelBubbleView::AnimateOut() {
 void IconLabelBubbleView::ResetSlideAnimation(bool show_label) {
   label()->SetVisible(show_label);
   slide_animation_.Reset(show_label);
+}
+
+void IconLabelBubbleView::ReduceAnimationTimeForTesting() {
+  slide_animation_.SetSlideDuration(1);
 }
 
 void IconLabelBubbleView::PauseAnimation() {

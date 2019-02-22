@@ -284,7 +284,7 @@ std::unique_ptr<ScopedVkCommandPool> CreateVkCommandPool(
 
 ClientBase::InitParams::InitParams() {
 #if defined(USE_GBM)
-  drm_format = DRM_FORMAT_ABGR8888;
+  drm_format = DRM_FORMAT_ARGB8888;
   bo_usage = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING | GBM_BO_USE_TEXTURING;
 #endif
 }

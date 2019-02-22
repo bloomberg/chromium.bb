@@ -4,7 +4,6 @@
 
 #include "ui/events/event_handler.h"
 
-#include "base/debug/alias.h"
 #include "ui/events/event.h"
 #include "ui/events/event_dispatcher.h"
 
@@ -22,10 +21,6 @@ EventHandler::~EventHandler() {
 }
 
 void EventHandler::OnEvent(Event* event) {
-  // TODO(sky): remove |event_type|. Temporary while tracking down crash.
-  // https://crbug.com/867035
-  const EventType event_type = event->type();
-  base::debug::Alias(&event_type);
   if (event->IsKeyEvent())
     OnKeyEvent(event->AsKeyEvent());
   else if (event->IsMouseEvent())

@@ -99,16 +99,20 @@ public:
     }
 
     /**
-     * Returns both a supported and most prefered stencil format to use in draws.
+     * Returns both a supported and most preferred stencil format to use in draws.
      */
-    const StencilFormat& preferedStencilFormat() const {
-        return fPreferedStencilFormat;
+    const StencilFormat& preferredStencilFormat() const {
+        return fPreferredStencilFormat;
     }
 
     // Returns whether the device supports the ability to extend VkPhysicalDeviceProperties struct.
     bool supportsPhysicalDeviceProperties2() const { return fSupportsPhysicalDeviceProperties2; }
     // Returns whether the device supports the ability to extend VkMemoryRequirements struct.
     bool supportsMemoryRequirements2() const { return fSupportsMemoryRequirements2; }
+
+    // Returns whether the device supports the ability to extend the vkBindMemory call.
+    bool supportsBindMemory2() const { return fSupportsBindMemory2; }
+
     // Returns whether or not the device suports the various API maintenance fixes to Vulkan 1.0. In
     // Vulkan 1.1 all these maintenance are part of the core spec.
     bool supportsMaintenance1() const { return fSupportsMaintenance1; }
@@ -209,7 +213,7 @@ private:
     };
     ConfigInfo fConfigTable[kGrPixelConfigCnt];
 
-    StencilFormat fPreferedStencilFormat;
+    StencilFormat fPreferredStencilFormat;
 
     bool fMustDoCopiesFromOrigin = false;
     bool fMustSubmitCommandsBeforeCopyOp = false;
@@ -219,6 +223,7 @@ private:
 
     bool fSupportsPhysicalDeviceProperties2 = false;
     bool fSupportsMemoryRequirements2 = false;
+    bool fSupportsBindMemory2 = false;
     bool fSupportsMaintenance1 = false;
     bool fSupportsMaintenance2 = false;
     bool fSupportsMaintenance3 = false;

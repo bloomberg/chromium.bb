@@ -82,17 +82,17 @@ void EventDispatcher::DispatchSimulatedClick(
   // before dispatchSimulatedClick() returns. This vector is here just to
   // prevent the code from running into an infinite recursion of
   // dispatchSimulatedClick().
-  DEFINE_STATIC_LOCAL(HeapHashSet<Member<Node>>,
+  DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<Node>>>,
                       nodes_dispatching_simulated_clicks,
                       (new HeapHashSet<Member<Node>>));
 
   if (IsDisabledFormControl(&node))
     return;
 
-  if (nodes_dispatching_simulated_clicks.Contains(&node))
+  if (nodes_dispatching_simulated_clicks->Contains(&node))
     return;
 
-  nodes_dispatching_simulated_clicks.insert(&node);
+  nodes_dispatching_simulated_clicks->insert(&node);
 
   if (mouse_event_options == kSendMouseOverUpDownEvents)
     EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseover,
@@ -121,7 +121,7 @@ void EventDispatcher::DispatchSimulatedClick(
                                             underlying_event, creation_scope))
       .Dispatch();
 
-  nodes_dispatching_simulated_clicks.erase(&node);
+  nodes_dispatching_simulated_clicks->erase(&node);
 }
 
 // https://dom.spec.whatwg.org/#dispatching-events
@@ -145,7 +145,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
       UseCounter::Count(node_->GetDocument(),
                         WebFeature::kPerformanceEventTimingConstructor);
       eventTiming = std::make_unique<EventTiming>(frame->DomWindow());
-      eventTiming->WillDispatchEvent(event_);
+      eventTiming->WillDispatchEvent(*event_);
     }
   }
   event_->GetEventPath().EnsureWindowEventContext();
@@ -165,8 +165,8 @@ DispatchEventResult EventDispatcher::Dispatch() {
 
   // A part of step 9 loop.
   if (is_activation_event && !activation_target && event_->bubbles()) {
-    size_t size = event_->GetEventPath().size();
-    for (size_t i = 1; i < size; ++i) {
+    wtf_size_t size = event_->GetEventPath().size();
+    for (wtf_size_t i = 1; i < size; ++i) {
       Node* target = event_->GetEventPath()[i].GetNode();
       if (target->HasActivationBehavior()) {
         activation_target = target;
@@ -187,6 +187,9 @@ DispatchEventResult EventDispatcher::Dispatch() {
                               pre_dispatch_event_handler_result) ==
       kContinueDispatching) {
     if (DispatchEventAtCapturing() == kContinueDispatching) {
+      // TODO(crbug/882574): Remove these.
+      CHECK(event_->HasEventPath());
+      CHECK(!event_->GetEventPath().IsEmpty());
       if (DispatchEventAtTarget() == kContinueDispatching)
         DispatchEventAtBubbling();
     }
@@ -194,7 +197,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
   if (eventTiming)
-    eventTiming->DidDispatchEvent(event_);
+    eventTiming->DidDispatchEvent(*event_);
 
   return EventTarget::GetDispatchEventResult(*event_);
 }
@@ -224,11 +227,20 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtCapturing() {
       event_->PropagationStopped())
     return kDoneDispatching;
 
-  for (size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
+  for (wtf_size_t i = event_->GetEventPath().size() - 1; i > 0; --i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
-    if (event_context.CurrentTargetSameAsTarget())
-      continue;
-    event_context.HandleLocalEvents(*event_);
+    if (event_context.CurrentTargetSameAsTarget()) {
+      if (!RuntimeEnabledFeatures::
+              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled())
+        continue;
+      event_->SetEventPhase(Event::kAtTarget);
+      event_->SetFireOnlyCaptureListenersAtTarget(true);
+      event_context.HandleLocalEvents(*event_);
+      event_->SetFireOnlyCaptureListenersAtTarget(false);
+    } else {
+      event_->SetEventPhase(Event::kCapturingPhase);
+      event_context.HandleLocalEvents(*event_);
+    }
     if (event_->PropagationStopped())
       return kDoneDispatching;
   }
@@ -245,17 +257,26 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventAtTarget() {
 inline void EventDispatcher::DispatchEventAtBubbling() {
   // Trigger bubbling event handlers, starting at the bottom and working our way
   // up.
-  size_t size = event_->GetEventPath().size();
-  for (size_t i = 1; i < size; ++i) {
+  wtf_size_t size = event_->GetEventPath().size();
+  for (wtf_size_t i = 1; i < size; ++i) {
     const NodeEventContext& event_context = event_->GetEventPath()[i];
     if (event_context.CurrentTargetSameAsTarget()) {
+      // TODO(hayato): Need to check cancelBubble() also here?
       event_->SetEventPhase(Event::kAtTarget);
+      if (RuntimeEnabledFeatures::
+              CallCaptureListenersAtCapturePhaseAtShadowHostsEnabled()) {
+        event_->SetFireOnlyNonCaptureListenersAtTarget(true);
+        event_context.HandleLocalEvents(*event_);
+        event_->SetFireOnlyNonCaptureListenersAtTarget(false);
+      } else {
+        event_context.HandleLocalEvents(*event_);
+      }
     } else if (event_->bubbles() && !event_->cancelBubble()) {
       event_->SetEventPhase(Event::kBubblingPhase);
+      event_context.HandleLocalEvents(*event_);
     } else {
       continue;
     }
-    event_context.HandleLocalEvents(*event_);
     if (event_->PropagationStopped())
       return;
   }
@@ -284,7 +305,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
                   ToMouseEvent(*event_).type() == EventTypeNames::click;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
-    // safe if m_event->target()->toNode() returns null.
+    // safe if event_->target()->ToNode() returns null.
     if (AXObjectCache* cache = node_->GetDocument().ExistingAXObjectCache())
       cache->HandleClicked(event_->target()->ToNode());
 
@@ -330,8 +351,8 @@ inline void EventDispatcher::DispatchEventPostProcess(
     // For bubbling events, call default event handlers on the same targets in
     // the same order as the bubbling phase.
     if (!event_->DefaultHandled() && event_->bubbles()) {
-      size_t size = event_->GetEventPath().size();
-      for (size_t i = 1; i < size; ++i) {
+      wtf_size_t size = event_->GetEventPath().size();
+      for (wtf_size_t i = 1; i < size; ++i) {
         event_->GetEventPath()[i].GetNode()->WillCallDefaultEventHandler(
             *event_);
         event_->GetEventPath()[i].GetNode()->DefaultEventHandler(*event_);

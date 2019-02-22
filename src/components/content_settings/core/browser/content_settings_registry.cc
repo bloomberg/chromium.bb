@@ -15,14 +15,13 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/features.h"
 
 namespace content_settings {
 
 namespace {
 
-base::LazyInstance<ContentSettingsRegistry>::DestructorAtExit g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ContentSettingsRegistry>::DestructorAtExit
+    g_content_settings_registry_instance = LAZY_INSTANCE_INITIALIZER;
 
 // TODO(raymes): These overloaded functions make the registration code clearer.
 // When initializer lists are available they won't be needed. The initializer
@@ -73,7 +72,7 @@ std::set<ContentSetting> ValidSettings(ContentSetting setting1,
 
 // static
 ContentSettingsRegistry* ContentSettingsRegistry::GetInstance() {
-  return g_instance.Pointer();
+  return g_content_settings_registry_instance.Pointer();
 }
 
 ContentSettingsRegistry::ContentSettingsRegistry()
@@ -150,19 +149,17 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT);
 
-  Register(
-      CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, WebsiteSettingsInfo::SYNCABLE,
-      WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
-      ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
-                    CONTENT_SETTING_ASK,
-                    CONTENT_SETTING_DETECT_IMPORTANT_CONTENT),
-      WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
-      WebsiteSettingsRegistry::DESKTOP,
-      ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
-      base::FeatureList::IsEnabled(features::kEnableEphemeralFlashPermission)
-          ? ContentSettingsInfo::EPHEMERAL
-          : ContentSettingsInfo::PERSISTENT);
+  Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
+           CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
+           WebsiteSettingsInfo::SYNCABLE,
+           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
+           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
+                         CONTENT_SETTING_ASK,
+                         CONTENT_SETTING_DETECT_IMPORTANT_CONTENT),
+           WebsiteSettingsInfo::SINGLE_ORIGIN_WITH_EMBEDDED_EXCEPTIONS_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP,
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+           ContentSettingsInfo::EPHEMERAL);
 
   Register(CONTENT_SETTINGS_TYPE_POPUPS, "popups", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::SYNCABLE,
@@ -242,8 +239,11 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::INHERIT_IN_INCOGNITO,
            ContentSettingsInfo::PERSISTENT);
 
+  // TODO(raymes): We're temporarily making midi sysex unsyncable while we roll
+  // out the kPermissionDelegation feature. We may want to make it syncable
+  // again sometime in the future. See https://crbug.com/879954 for details.
   Register(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE, WhitelistedSchemes(),
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,

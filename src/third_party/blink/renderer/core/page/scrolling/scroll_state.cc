@@ -13,7 +13,7 @@
 namespace blink {
 
 namespace {
-Element* ElementForId(int element_id) {
+Element* ElementForId(DOMNodeId element_id) {
   Node* node = DOMNodeIds::NodeForId(element_id);
   DCHECK(node);
   if (!node)
@@ -75,7 +75,7 @@ void ScrollState::consumeDelta(double x,
 
 void ScrollState::distributeToScrollChainDescendant() {
   if (!scroll_chain_.empty()) {
-    int descendant_id = scroll_chain_.front();
+    DOMNodeId descendant_id = scroll_chain_.front();
     scroll_chain_.pop_front();
     ElementForId(descendant_id)->CallDistributeScroll(*this);
   }

@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
@@ -58,7 +59,9 @@ struct ManagedWebContentsParams {
 // Interface for a delegate to handle top level browser requests for a
 // managed WebContents.
 interface ManagedWebContentsOpenUrlDelegate {
-  // Invoked on a top level browser request to navigate to |url|. Return false
-  // to consume the navigation attempt or true to allow it to continue.
-  ShouldOpenUrlFromTab(url.mojom.Url url) => (bool should_open);
+  // Invoked on a top level browser request to navigate to |url| with the
+  // specified window open |disposition|. Return false to consume the
+  // navigation attempt or true to allow it to continue.
+  ShouldOpenUrlFromTab(url.mojom.Url url,
+    ui.mojom.WindowOpenDisposition disposition) => (bool should_open);
 };

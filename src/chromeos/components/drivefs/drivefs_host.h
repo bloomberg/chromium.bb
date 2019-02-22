@@ -35,8 +35,7 @@ class DriveFsHostObserver;
 // A host for a DriveFS process. In addition to managing its lifetime via
 // mounting and unmounting, it also bridges between the DriveFS process and the
 // file manager.
-class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
-    : public chromeos::disks::DiskMountManager::Observer {
+class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
  public:
   // Public for overriding in tests. A default implementation is used under
   // normal conditions.
@@ -50,6 +49,19 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
 
     // Accepts the mojo connection over |handle|.
     virtual void AcceptMojoConnection(base::ScopedFD handle) = 0;
+  };
+
+  class MountObserver {
+   public:
+    MountObserver() = default;
+    virtual ~MountObserver() = default;
+    virtual void OnMounted(const base::FilePath& mount_path) = 0;
+    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
+    virtual void OnMountFailed(
+        base::Optional<base::TimeDelta> remount_delay) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MountObserver);
   };
 
   class Delegate {
@@ -70,19 +82,15 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
     virtual std::unique_ptr<MojoConnectionDelegate>
     CreateMojoConnectionDelegate();
 
-    virtual void OnMounted(const base::FilePath& mount_path) = 0;
-    virtual void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) = 0;
-    virtual void OnMountFailed(
-        base::Optional<base::TimeDelta> remount_delay) = 0;
-
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   DriveFsHost(const base::FilePath& profile_path,
               Delegate* delegate,
+              MountObserver* mount_observer,
               std::unique_ptr<base::OneShotTimer> timer);
-  ~DriveFsHost() override;
+  ~DriveFsHost();
 
   void AddObserver(DriveFsHostObserver* observer);
   void RemoveObserver(DriveFsHostObserver* observer);
@@ -96,9 +104,8 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // Returns whether DriveFS is mounted.
   bool IsMounted() const;
 
-  // Returns the path where DriveFS is mounted. It is only valid to call when
-  // |IsMounted()| returns true.
-  const base::FilePath& GetMountPath() const;
+  // Returns the path where DriveFS is mounted.
+  base::FilePath GetMountPath() const;
 
   // Returns the path where DriveFS keeps its data and caches.
   base::FilePath GetDataPath() const;
@@ -108,29 +115,18 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
  private:
   class MountState;
 
-  // DiskMountManager::Observer:
-  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
-                    chromeos::MountError error_code,
-                    const chromeos::disks::DiskMountManager::MountPointInfo&
-                        mount_info) override;
-
   SEQUENCE_CHECKER(sequence_checker_);
-
-  // Returns the connection to the identity service, connecting lazily.
-  identity::mojom::IdentityManager& GetIdentityManager();
 
   // The path to the user's profile.
   const base::FilePath profile_path_;
 
   Delegate* const delegate_;
+  MountObserver* const mount_observer_;
 
   std::unique_ptr<base::OneShotTimer> timer_;
 
   // State specific to the current mount, or null if not mounted.
   std::unique_ptr<MountState> mount_state_;
-
-  // The connection to the identity service. Access via |GetIdentityManager()|.
-  identity::mojom::IdentityManagerPtr identity_manager_;
 
   base::ObserverList<DriveFsHostObserver>::Unchecked observers_;
 

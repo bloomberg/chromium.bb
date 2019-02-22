@@ -102,7 +102,6 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3171922709365450819">Denne enheten støttes ikke av denne klienten fordi den krever tredjepartsautentisering.</translation>
 <translation id="3194245623920924351">Chrome Eksternt skrivebord</translation>
 <translation id="3197730452537982411">Eksternt skrivebord</translation>
-<translation id="3212472844831225214">• Støtte for Android 9.0 Pie er lagt til.</translation>
 <translation id="324272851072175193">Send disse instruksjonene på e-post</translation>
 <translation id="3258789396564295715">Du kan få sikker tilgang til denne datamaskinen ved å bruke Chrome Eksternt skrivebord.</translation>
 <translation id="3286521253923406898">Kontroller for Chromoting-vert</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Full skjerm</translation>
 <translation id="8548209692293300397">Du har tidligere logget på som <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Hvis du vil ha tilgang til datamaskiner på den kontoen, må du bruke den til å <ph name="LINK_BEGIN" />logge på Chrome<ph name="LINK_END" /> og deretter installere Chrome Eksternt skriverbord på nytt.</translation>
 <translation id="8642984861538780905">Akseptabel</translation>
+<translation id="8705151241155781642">• Støtte for Android 9.0 Pie.
+• Støtte for å endre oppløsningen på eksternt skrivebord så det passer til Android-skjermen.</translation>
 <translation id="8712909229180978490">Jeg ser ikke de lagrede filene mine på nettet i Google Disk.</translation>
 <translation id="8743328882720071828">Vil du tillate at <ph name="CLIENT_USERNAME" /> kan se og kontrollere datamaskinen din?</translation>
 <translation id="8747048596626351634">Økten kræsjet eller kunne ikke starte. Hvis ~/.chrome-remote-desktop-session eksisterer på den eksterne datamaskinen, må du sørge for at den starter en prosess i forgrunnen som kjører lenge – for eksempel et skrivebordsmiljø eller en vindusbehandler.</translation>
@@ -346,7 +347,7 @@ PC</translation>
 <translation id="9126115402994542723">Ikke be om PIN-kode igjen når du kobler til denne verten fra denne enheten.</translation>
 <translation id="9149580767411232853">Hold hele det eksterne skrivebordet synlig</translation>
 <translation id="9149992051684092333">Kom i gang med deling av skrivebordet ved å gi adgangskoden nedenfor til personen som skal hjelpe deg.</translation>
-<translation id="9188433529406846933">Autoriser</translation>
+<translation id="9188433529406846933">Godkjenn</translation>
 <translation id="9213184081240281106">Ugyldig vertskonfigurasjon.</translation>
 <translation id="951991426597076286">Avvis</translation>
 <translation id="962733587145768554">Velg «<ph name="SHARE" />» i dialogboksen for tilkoblingen for å fullføre prosessen.</translation>

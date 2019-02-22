@@ -8,16 +8,13 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/touchbar/browser_window_default_touch_bar.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,13 +48,13 @@ class BrowserWindowDefaultTouchBarUnitTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    feature_list.InitAndEnableFeature(features::kBrowserTouchBar);
-
     command_updater_ = browser()->command_controller();
 
-    touch_bar_.reset([[BrowserWindowDefaultTouchBar alloc]
-        initWithBrowser:browser()
-             controller:nil]);
+    if (@available(macOS 10.12.2, *)) {
+      touch_bar_.reset([[BrowserWindowDefaultTouchBar alloc]
+          initWithBrowser:browser()
+               controller:nil]);
+    }
   }
 
   NSString* GetFullscreenTouchBarItemId(NSString* id) {
@@ -73,15 +70,14 @@ class BrowserWindowDefaultTouchBarUnitTest : public CocoaProfileTest {
   }
 
   void TearDown() override {
-    touch_bar_.reset();
+    if (@available(macOS 10.12.2, *))
+      touch_bar_.reset();
     CocoaProfileTest::TearDown();
   }
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
-  // Used to enable the the browser window touch bar.
-  base::test::ScopedFeatureList feature_list;
-
+  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<BrowserWindowDefaultTouchBar> touch_bar_;
 };
 

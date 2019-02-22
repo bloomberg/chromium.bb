@@ -26,7 +26,6 @@ extern const char kSignInPromoQueryKeyContinue[];
 extern const char kSignInPromoQueryKeyForceKeepData[];
 extern const char kSignInPromoQueryKeyReason[];
 extern const char kSignInPromoQueryKeySource[];
-extern const char kSignInPromoQueryKeyConstrained[];
 extern const char kSigninPromoLandingURLSuccessPage[];
 
 // Returns true if we should show the sign in promo at startup.

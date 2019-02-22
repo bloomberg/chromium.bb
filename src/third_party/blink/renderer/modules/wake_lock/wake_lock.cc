@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock.h"
 
 #include "services/device/public/mojom/constants.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom-blink.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_request.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -20,14 +23,17 @@ WakeLock* WakeLock::CreateScreenWakeLock(ScriptState* script_state) {
   return new WakeLock(script_state, LockType::kScreen);
 }
 
+WakeLock* WakeLock::CreateSystemWakeLock(ScriptState* script_state) {
+  return new WakeLock(script_state, LockType::kSystem);
+}
+
 WakeLock::~WakeLock() = default;
 
 WakeLock::WakeLock(ScriptState* script_state, LockType type)
     : ContextLifecycleObserver(blink::ExecutionContext::From(script_state)),
       PageVisibilityObserver(
-          ToDocument(blink::ExecutionContext::From(script_state))->GetPage()),
+          To<Document>(blink::ExecutionContext::From(script_state))->GetPage()),
       type_(type) {
-  DCHECK(type == LockType::kScreen);
 }
 
 ScriptPromise WakeLock::GetPromise(ScriptState* script_state) {
@@ -78,9 +84,23 @@ void WakeLock::BindToServiceIfNeeded() {
   if (wake_lock_service_)
     return;
 
-  LocalFrame* frame = ToDocument(GetExecutionContext())->GetFrame();
-  frame->GetInterfaceProvider().GetInterface(
+  device::mojom::blink::WakeLockType type;
+  switch (type_) {
+    case LockType::kSystem:
+      type = device::mojom::blink::WakeLockType::kPreventAppSuspension;
+      break;
+    case LockType::kScreen:
+      type = device::mojom::blink::WakeLockType::kPreventDisplaySleep;
+      break;
+  }
+
+  device::mojom::blink::WakeLockProviderPtr provider;
+  Platform::Current()->GetConnector()->BindInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&provider));
+  provider->GetWakeLockWithoutContext(
+      type, device::mojom::blink::WakeLockReason::kOther, "Blink Wake Lock",
       mojo::MakeRequest(&wake_lock_service_));
+
   wake_lock_service_.set_connection_error_handler(
       WTF::Bind(&WakeLock::OnConnectionError, WrapWeakPersistent(this)));
 }

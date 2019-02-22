@@ -26,6 +26,7 @@
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,6 +57,7 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -214,8 +216,8 @@ ACTION_P(TrustSignature, contents) {
 }
 
 ACTION_P(CheckDownloadUrlDone, threat_type) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingDatabaseManager::Client::OnCheckDownloadUrlResult,
           base::Unretained(arg1), arg0, threat_type));
@@ -229,8 +231,8 @@ class DownloadProtectionServiceTest : public testing::Test {
   void SetUp() override {
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            content::BrowserThread::GetTaskRunnerForThread(
-                content::BrowserThread::IO));
+            base::CreateSingleThreadTaskRunnerWithTraits(
+                {content::BrowserThread::IO}));
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
         system_request_context_getter_.get());
     // Start real threads for the IO and File threads so that the DCHECKs
@@ -460,21 +462,21 @@ class DownloadProtectionServiceTest : public testing::Test {
   // Helper functions for FlushThreadMessageLoops.
   void RunAllPendingAndQuitUI(const base::Closure& quit_closure) {
     RunLoop().RunUntilIdle();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_closure);
   }
 
   void PostRunMessageLoopTask(BrowserThread::ID thread,
                               const base::Closure& quit_closure) {
-    BrowserThread::PostTask(
-        thread, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {thread},
         base::BindOnce(&DownloadProtectionServiceTest::RunAllPendingAndQuitUI,
                        base::Unretained(this), quit_closure));
   }
 
   void FlushMessageLoop(BrowserThread::ID thread) {
     RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
                        base::Unretained(this), thread, run_loop.QuitClosure()));
     run_loop.Run();
@@ -591,8 +593,9 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
   EXPECT_EQ(0, GetClientDownloadRequest()->archived_binary_size());
   EXPECT_TRUE(GetClientDownloadRequest()->has_download_type());
   ClientDownloadRequest::DownloadType expected_type =
-      type == ZIP ? ClientDownloadRequest_DownloadType_INVALID_ZIP
-                  : ClientDownloadRequest_DownloadType_INVALID_MAC_ARCHIVE;
+      type == ZIP
+          ? ClientDownloadRequest_DownloadType_INVALID_ZIP
+          : ClientDownloadRequest_DownloadType_MAC_ARCHIVE_FAILED_PARSING;
   EXPECT_EQ(expected_type, GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
 
@@ -1411,6 +1414,39 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptZip) {
 #if defined(OS_MACOSX)
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptDmg) {
   CheckClientDownloadReportCorruptArchive(DMG);
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportValidDmg) {
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  base::FilePath test_dmg;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dmg));
+  test_dmg = test_dmg.AppendASCII("safe_browsing")
+                 .AppendASCII("mach_o")
+                 .AppendASCII("signed-archive.dmg");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.dmg"},                     // url_chain
+      "http://www.google.com/",                                 // referrer
+      test_dmg,                                                 // tmp_path
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("a.dmg")));  // final_path
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(HasClientDownloadRequest());
+  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
+
+  ClearClientDownloadRequest();
+
+  Mock::VerifyAndClearExpectations(sb_service_.get());
+  Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
 // Tests that signatures get recorded and uploaded for signed DMGs.
@@ -2635,6 +2671,21 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedByPolicy) {
 
   EXPECT_FALSE(HasClientDownloadRequest());
   EXPECT_TRUE(IsResult(DownloadCheckResult::WHITELISTED_BY_POLICY));
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckOffTheRecordDoesNotSendFeedback) {
+  NiceMockDownloadItem item;
+  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
+      profile_->GetOffTheRecordProfile(), &item, DownloadCommands::KEEP));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       CheckNotExtendedReportedDisabledDoesNotSendFeedback) {
+  SetExtendedReportingPreference(false);
+
+  NiceMockDownloadItem item;
+  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
+      profile_.get(), &item, DownloadCommands::KEEP));
 }
 
 // ------------ class DownloadProtectionServiceFlagTest ----------------

@@ -40,6 +40,29 @@
 
 namespace blink {
 
+namespace {
+
+// Typical HTTP RTT value corresponding to a given WebEffectiveConnectionType
+// value. Taken from
+// https://cs.chromium.org/chromium/src/net/nqe/network_quality_estimator_params.cc.
+const base::TimeDelta kTypicalHttpRttEffectiveConnectionType
+    [static_cast<size_t>(WebEffectiveConnectionType::kMaxValue) + 1] = {
+        base::TimeDelta::FromMilliseconds(0),
+        base::TimeDelta::FromMilliseconds(0),
+        base::TimeDelta::FromMilliseconds(3600),
+        base::TimeDelta::FromMilliseconds(1800),
+        base::TimeDelta::FromMilliseconds(450),
+        base::TimeDelta::FromMilliseconds(175)};
+
+// Typical downlink throughput (in Mbps) value corresponding to a given
+// WebEffectiveConnectionType value. Taken from
+// https://cs.chromium.org/chromium/src/net/nqe/network_quality_estimator_params.cc.
+const double kTypicalDownlinkMbpsEffectiveConnectionType
+    [static_cast<size_t>(WebEffectiveConnectionType::kMaxValue) + 1] = {
+        0, 0, 0.040, 0.075, 0.400, 1.600};
+
+}  // namespace
+
 template <>
 struct CrossThreadCopier<NetworkStateNotifier::NetworkState>
     : public CrossThreadCopierPassThrough<NetworkStateNotifier::NetworkState> {
@@ -141,6 +164,19 @@ void NetworkStateNotifier::SetNetworkQuality(WebEffectiveConnectionType type,
       state_.downlink_throughput_mbps =
           static_cast<double>(downlink_throughput_kbps) / 1000;
     }
+  }
+}
+
+void NetworkStateNotifier::SetNetworkQualityWebHoldback(
+    WebEffectiveConnectionType type) {
+  DCHECK(IsMainThread());
+  if (type == WebEffectiveConnectionType::kTypeUnknown)
+    return;
+  ScopedNotifier notifier(*this);
+  {
+    MutexLocker locker(mutex_);
+
+    state_.network_quality_web_holdback = type;
   }
 }
 
@@ -446,6 +482,69 @@ double NetworkStateNotifier::RoundMbps(
 
   // Convert from Kbps to Mbps.
   return downlink_kbps_rounded / 1000;
+}
+
+base::Optional<WebEffectiveConnectionType>
+NetworkStateNotifier::GetWebHoldbackEffectiveType() const {
+  MutexLocker locker(mutex_);
+
+  const NetworkState& state = has_override_ ? override_ : state_;
+  // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
+  // true once https://crbug.com/728771 is fixed.
+  return state.network_quality_web_holdback;
+}
+
+base::Optional<TimeDelta> NetworkStateNotifier::GetWebHoldbackHttpRtt() const {
+  base::Optional<WebEffectiveConnectionType> override_ect =
+      GetWebHoldbackEffectiveType();
+
+  if (override_ect) {
+    return kTypicalHttpRttEffectiveConnectionType[static_cast<size_t>(
+        override_ect.value())];
+  }
+  return base::nullopt;
+}
+
+base::Optional<double>
+NetworkStateNotifier::GetWebHoldbackDownlinkThroughputMbps() const {
+  base::Optional<WebEffectiveConnectionType> override_ect =
+      GetWebHoldbackEffectiveType();
+
+  if (override_ect) {
+    return kTypicalDownlinkMbpsEffectiveConnectionType[static_cast<size_t>(
+        override_ect.value())];
+  }
+  return base::nullopt;
+}
+
+void NetworkStateNotifier::GetMetricsWithWebHoldback(
+    WebConnectionType* type,
+    double* downlink_max_mbps,
+    WebEffectiveConnectionType* effective_type,
+    base::Optional<TimeDelta>* http_rtt,
+    base::Optional<double>* downlink_mbps,
+    bool* save_data) const {
+  MutexLocker locker(mutex_);
+  const NetworkState& state = has_override_ ? override_ : state_;
+
+  *type = state.type;
+  *downlink_max_mbps = state.max_bandwidth_mbps;
+
+  base::Optional<WebEffectiveConnectionType> override_ect =
+      state.network_quality_web_holdback;
+  if (override_ect) {
+    *effective_type = override_ect.value();
+    *http_rtt = kTypicalHttpRttEffectiveConnectionType[static_cast<size_t>(
+        override_ect.value())];
+    *downlink_mbps =
+        kTypicalDownlinkMbpsEffectiveConnectionType[static_cast<size_t>(
+            override_ect.value())];
+  } else {
+    *effective_type = state.effective_type;
+    *http_rtt = state.http_rtt;
+    *downlink_mbps = state.downlink_throughput_mbps;
+  }
+  *save_data = state.save_data;
 }
 
 }  // namespace blink

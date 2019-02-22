@@ -22,8 +22,9 @@ namespace quic {
 QuicSimpleServerStream::QuicSimpleServerStream(
     QuicStreamId id,
     QuicSpdySession* session,
+    StreamType type,
     QuicSimpleServerBackend* quic_simple_server_backend)
-    : QuicSpdyServerStreamBase(id, session),
+    : QuicSpdyServerStreamBase(id, session, type),
       content_length_(-1),
       quic_simple_server_backend_(quic_simple_server_backend) {}
 
@@ -99,9 +100,10 @@ void QuicSimpleServerStream::PushResponse(
   content_length_ = 0;
   QUIC_DVLOG(1) << "Stream " << id()
                 << " ready to receive server push response.";
+  DCHECK(reading_stopped());
 
-  // Set as if stream decompresed the headers and received fin.
-  QuicSpdyStream::OnInitialHeadersComplete(/*fin=*/true, 0, QuicHeaderList());
+  // Directly send response based on the emulated request_headers_.
+  SendResponse();
 }
 
 void QuicSimpleServerStream::SendResponse() {

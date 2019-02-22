@@ -28,6 +28,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -119,11 +120,13 @@ base::string16 GetRegistryBackupKey() {
 class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
     : public metrics::EnabledStateProvider {
  public:
-  ChromeEnabledStateProvider() {}
+  explicit ChromeEnabledStateProvider(PrefService* local_state)
+      : local_state_(local_state) {}
   ~ChromeEnabledStateProvider() override {}
 
   bool IsConsentGiven() const override {
-    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
+    return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
+        local_state_);
   }
 
   bool IsReportingEnabled() const override {
@@ -131,12 +134,16 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
            ChromeMetricsServicesManagerClient::IsClientInSample();
   }
 
+ private:
+  PrefService* const local_state_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeEnabledStateProvider);
 };
 
 ChromeMetricsServicesManagerClient::ChromeMetricsServicesManagerClient(
     PrefService* local_state)
-    : enabled_state_provider_(std::make_unique<ChromeEnabledStateProvider>()),
+    : enabled_state_provider_(
+          std::make_unique<ChromeEnabledStateProvider>(local_state)),
       local_state_(local_state) {
   DCHECK(local_state);
 }
@@ -240,7 +247,8 @@ ChromeMetricsServicesManagerClient::CreateVariationsService() {
   return variations::VariationsService::Create(
       std::make_unique<ChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), switches::kDisableBackgroundNetworking,
-      chrome_variations::CreateUIStringOverrider());
+      chrome_variations::CreateUIStringOverrider(),
+      base::BindOnce(&content::GetNetworkConnectionTracker));
 }
 
 std::unique_ptr<metrics::MetricsServiceClient>

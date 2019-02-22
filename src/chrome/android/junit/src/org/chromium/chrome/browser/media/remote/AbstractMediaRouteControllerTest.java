@@ -326,7 +326,7 @@ public class AbstractMediaRouteControllerTest {
     /** Shadow needed because getInstance() can't be mocked */
     @Implements(MediaRouter.class)
     public static class ShadowMediaRouter {
-        public static MediaRouter sMediaRouter = null;
+        public static MediaRouter sMediaRouter;
         public static Callback sCallback;
 
         @Implementation

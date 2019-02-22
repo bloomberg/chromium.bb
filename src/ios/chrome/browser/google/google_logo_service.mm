@@ -37,17 +37,17 @@ base::FilePath DoodleDirectory() {
 GoogleLogoService::GoogleLogoService(
     TemplateURLService* template_url_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : LogoServiceImpl(DoodleDirectory(),
-                      // Personalized Doodles aren't supported on iOS (see
-                      // https://crbug.com/711314), so no need to pass a
-                      // GaiaCookieManagerService.
-                      /*cookie_service=*/nullptr,
-                      template_url_service,
-                      image_fetcher::CreateIOSImageDecoder(),
-                      std::move(url_loader_factory),
-                      /*want_gray_logo_getter=*/base::BindRepeating([] {
-                        return !IsUIRefreshPhase1Enabled();
-                      })) {}
+    : LogoServiceImpl(
+          DoodleDirectory(),
+          // Personalized Doodles aren't supported on iOS (see
+          // https://crbug.com/711314), so no need to pass a
+          // GaiaCookieManagerService.
+          /*cookie_service=*/nullptr,
+          template_url_service,
+          image_fetcher::CreateIOSImageDecoder(),
+          std::move(url_loader_factory),
+          /*want_gray_logo_getter=*/base::BindRepeating([] { return false; })) {
+}
 
 GoogleLogoService::~GoogleLogoService() {}
 

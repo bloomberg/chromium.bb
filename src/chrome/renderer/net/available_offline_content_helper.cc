@@ -19,6 +19,7 @@
 namespace {
 
 using chrome::mojom::AvailableOfflineContentPtr;
+using chrome::mojom::AvailableContentType;
 
 base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
   base::Value value(base::Value::Type::DICTIONARY);
@@ -111,13 +112,12 @@ void AvailableOfflineContentHelper::LaunchItem(const std::string& id,
   if (!BindProvider())
     return;
 
-  provider_->LaunchItem(id, name_space);
-
   for (const AvailableOfflineContentPtr& item : fetched_content_) {
     if (item->id == id && item->name_space == name_space) {
       UMA_HISTOGRAM_ENUMERATION("Net.ErrorPageCounts.SuggestionClicked",
                                 item->content_type);
       RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTION_CLICKED);
+      provider_->LaunchItem(id, name_space);
       return;
     }
   }
@@ -128,16 +128,22 @@ void AvailableOfflineContentHelper::LaunchDownloadsPage() {
   if (!BindProvider())
     return;
   RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_DOWNLOADS_PAGE_CLICKED);
-  provider_->LaunchDownloadsPage();
+  provider_->LaunchDownloadsPage(has_prefetched_content_);
 }
 
 void AvailableOfflineContentHelper::AvailableContentReceived(
     base::OnceCallback<void(const std::string& offline_content_json)> callback,
     std::vector<AvailableOfflineContentPtr> content) {
+  has_prefetched_content_ = false;
   fetched_content_ = std::move(content);
   std::string json;
 
   if (!fetched_content_.empty()) {
+    // As prefetched content has the highest priority if at least one piece is
+    // available it will be the at the first position on the list.
+    has_prefetched_content_ = fetched_content_.front()->content_type ==
+                              AvailableContentType::kPrefetchedPage;
+
     RecordSuggestionPresented(fetched_content_);
     RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN);
     base::JSONWriter::Write(AvailableContentListToValue(fetched_content_),
@@ -153,9 +159,12 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
 void AvailableOfflineContentHelper::SummaryReceived(
     base::OnceCallback<void(const std::string& content_summary_json)> callback,
     chrome::mojom::AvailableOfflineContentSummaryPtr summary) {
+  has_prefetched_content_ = false;
   if (summary->total_items == 0) {
     std::move(callback).Run("");
   } else {
+    has_prefetched_content_ = summary->has_prefetched_page;
+
     std::string json;
     base::JSONWriter::Write(AvailableContentSummaryToValue(summary), &json);
     RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_CONTENT_SUMMARY_SHOWN);

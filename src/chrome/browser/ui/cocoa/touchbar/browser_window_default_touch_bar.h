@@ -20,6 +20,7 @@ class WebContents;
 
 // Provides a default touch bar for the browser window. This class implements
 // the NSTouchBarDelegate and handles the items in the touch bar.
+API_AVAILABLE(macos(10.12.2))
 @interface BrowserWindowDefaultTouchBar : NSObject<NSTouchBarDelegate>
 // True is the current page is loading. Used to determine if a stop or reload
 // button should be provided.
@@ -33,7 +34,7 @@ class WebContents;
                      controller:(BrowserWindowTouchBarController*)controller;
 
 // Creates and returns a touch bar for the browser window.
-- (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2));
+- (NSTouchBar*)makeTouchBar;
 
 - (void)updateWebContents:(content::WebContents*)contents;
 

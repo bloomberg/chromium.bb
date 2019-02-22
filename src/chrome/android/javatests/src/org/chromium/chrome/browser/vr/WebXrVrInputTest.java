@@ -44,9 +44,9 @@ import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.ViewEventSink;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -299,6 +299,10 @@ public class WebXrVrInputTest {
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+        // Make it so that the webpage doesn't try to finish the JavaScript step after each input
+        // since we don't need to ack each one like with the Daydream controller.
+        mWebXrVrTestFramework.runJavaScriptOrFail(
+                "finishAfterEachInput = false", POLL_TIMEOUT_SHORT_MS);
         int numIterations = 10;
         mWebXrVrTestFramework.runJavaScriptOrFail(
                 "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS);

@@ -37,7 +37,8 @@ _TEST_MAP_PATH = os.path.join(_TEST_DATA_DIR, 'test.map')
 _TEST_PAK_INFO_PATH = os.path.join(
     _TEST_OUTPUT_DIR, 'size-info/test.apk.pak.info')
 _TEST_ELF_FILE_BEGIN = os.path.join(_TEST_OUTPUT_DIR, 'elf.begin')
-_TEST_APK_PAK_PATH = os.path.join(_TEST_APK_ROOT_DIR, 'assets/en-US.pak')
+_TEST_APK_LOCALE_PAK_PATH = os.path.join(_TEST_APK_ROOT_DIR, 'assets/en-US.pak')
+_TEST_APK_PAK_PATH = os.path.join(_TEST_APK_ROOT_DIR, 'assets/resources.pak')
 
 # The following files are dynamically created.
 _TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')
@@ -147,6 +148,9 @@ class IntegrationTest(unittest.TestCase):
       # Exactly 1KB of data (2^10).
       apk_file.writestr(
           _TEST_APK_RES_FILE_PATH, IntegrationTest._CreateBlankData(10))
+      locale_pak_rel_path = os.path.relpath(
+          _TEST_APK_LOCALE_PAK_PATH, _TEST_APK_ROOT_DIR)
+      apk_file.write(_TEST_APK_LOCALE_PAK_PATH, locale_pak_rel_path)
       pak_rel_path = os.path.relpath(_TEST_APK_PAK_PATH, _TEST_APK_ROOT_DIR)
       apk_file.write(_TEST_APK_PAK_PATH, pak_rel_path)
       # Exactly 8MB of data (2^23).
@@ -181,7 +185,7 @@ class IntegrationTest(unittest.TestCase):
       pak_files = None
       pak_info_file = None
       if use_pak:
-        pak_files = [_TEST_APK_PAK_PATH]
+        pak_files = [_TEST_APK_LOCALE_PAK_PATH, _TEST_APK_PAK_PATH]
         pak_info_file = _TEST_PAK_INFO_PATH
       metadata = None
       linker_name = 'gold'
@@ -218,7 +222,8 @@ class IntegrationTest(unittest.TestCase):
     if use_apk:
       args += ['--apk-file', _TEST_APK_PATH]
     if use_pak:
-      args += ['--pak-file', _TEST_APK_PAK_PATH,
+      args += ['--pak-file', _TEST_APK_LOCALE_PAK_PATH,
+               '--pak-file', _TEST_APK_PAK_PATH,
                '--pak-info-file', _TEST_PAK_INFO_PATH]
     _RunApp('archive', args, debug_measures=debug_measures)
 
@@ -340,7 +345,7 @@ class IntegrationTest(unittest.TestCase):
     padding_sym.padding += 20
     padding_sym.size += 20
     pak_sym = size_info2.raw_symbols.WhereInSection(
-        models.SECTION_PAK_TRANSLATIONS)[0]
+        models.SECTION_PAK_NONTRANSLATED)[0]
     pak_sym.full_name = 'foo: ' + pak_sym.full_name.split()[-1]
 
     # Serialize & de-serialize so that name normalization runs again for the pak

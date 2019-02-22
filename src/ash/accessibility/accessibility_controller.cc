@@ -12,6 +12,7 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/autoclick/autoclick_controller.h"
+#include "ash/events/select_to_speak_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -26,6 +27,7 @@
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -552,7 +554,21 @@ void AccessibilityController::RequestSelectToSpeakStateChange() {
 void AccessibilityController::SetSelectToSpeakState(
     mojom::SelectToSpeakState state) {
   select_to_speak_state_ = state;
+
+  // Forward the state change event to select_to_speak_event_handler_.
+  // The extension may have requested that the handler enter SELECTING state.
+  // Prepare to start capturing events from stylus, mouse or touch.
+  if (select_to_speak_event_handler_) {
+    select_to_speak_event_handler_->SetSelectToSpeakStateSelecting(
+        state == mojom::SelectToSpeakState::kSelectToSpeakStateSelecting);
+  }
   NotifyAccessibilityStatusChanged();
+}
+
+void AccessibilityController::SetSelectToSpeakEventHandlerDelegate(
+    mojom::SelectToSpeakEventHandlerDelegatePtr delegate) {
+  select_to_speak_event_handler_delegate_ptr_ = std::move(delegate);
+  MaybeCreateSelectToSpeakEventHandler();
 }
 
 mojom::SelectToSpeakState AccessibilityController::GetSelectToSpeakState()
@@ -631,6 +647,14 @@ void AccessibilityController::ToggleDictation() {
         },
         base::Unretained(this)));
   }
+}
+
+void AccessibilityController::ToggleDictationFromSource(
+    mojom::DictationToggleSource source) {
+  base::RecordAction(base::UserMetricsAction("Accel_Toggle_Dictation"));
+  UserMetricsRecorder::RecordUserToggleDictation(source);
+
+  ToggleDictation();
 }
 
 void AccessibilityController::SilenceSpokenFeedback() {
@@ -741,7 +765,10 @@ void AccessibilityController::OnActiveUserPrefServiceChanged(
 }
 
 void AccessibilityController::FlushMojoForTest() {
-  client_.FlushForTesting();
+  if (client_)
+    client_.FlushForTesting();
+  if (select_to_speak_event_handler_)
+    select_to_speak_event_handler_->FlushMojoForTest();
 }
 
 void AccessibilityController::OnTabletModeStarted() {
@@ -1031,7 +1058,27 @@ void AccessibilityController::UpdateSelectToSpeakFromPref() {
   select_to_speak_state_ =
       mojom::SelectToSpeakState::kSelectToSpeakStateInactive;
 
+  if (enabled)
+    MaybeCreateSelectToSpeakEventHandler();
+  else
+    select_to_speak_event_handler_.reset();
+
   NotifyAccessibilityStatusChanged();
+}
+
+void AccessibilityController::MaybeCreateSelectToSpeakEventHandler() {
+  // Sometimes the handler is not yet created if the prefs change has taken
+  // longer to propagate than setting the delegate from Chrome.
+  // Create the handler here; we only set the delegate when Select-to-Speak
+  // has been enabled.
+  // A different ordering has been observed between interactive_ui_tests and
+  // running Chrome on Linux, for example.
+  if (!select_to_speak_enabled_ || select_to_speak_event_handler_ ||
+      !select_to_speak_event_handler_delegate_ptr_)
+    return;
+
+  select_to_speak_event_handler_ = std::make_unique<SelectToSpeakEventHandler>(
+      std::move(select_to_speak_event_handler_delegate_ptr_));
 }
 
 void AccessibilityController::UpdateStickyKeysFromPref() {

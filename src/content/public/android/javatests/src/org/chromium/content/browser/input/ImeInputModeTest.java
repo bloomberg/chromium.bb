@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.web.WebTextInputMode;
-import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.ui.base.ime.TextInputType;
 
 /**

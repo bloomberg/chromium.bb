@@ -60,7 +60,7 @@ class TestAdTracker : public AdTracker {
                        ResourceRequest& resource_request,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo& fetch_initiator_info,
-                       Resource::Type resource_type) override {
+                       ResourceType resource_type) override {
     if (!ad_suffix_.IsEmpty() &&
         resource_request.Url().GetString().EndsWith(ad_suffix_)) {
       resource_request.SetIsAdResource();
@@ -209,6 +209,65 @@ TEST_F(AdTrackerSimTest, ScriptLoadedWhileExecutingAdScript) {
   EXPECT_TRUE(IsKnownAdScript(&GetDocument(), kVanillaUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kAdUrl));
   EXPECT_TRUE(ad_tracker_->RequestWithUrlTaggedAsAd(kVanillaUrl));
+}
+
+// Unknown script running in an ad context should be labeled as ad script.
+TEST_F(AdTrackerSimTest, ScriptDetectedByContext) {
+  const char kAdScriptUrl[] = "https://example.com/ad_script.js";
+  SimRequest ad_script(kAdScriptUrl, "text/javascript");
+
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  // Create an iframe that's considered an ad.
+  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
+  ad_script.Complete(R"SCRIPT(
+    frame = document.createElement("iframe");
+    document.body.appendChild(frame);
+    )SCRIPT");
+
+  // The child frame should be an ad subframe.
+  LocalFrame* child_frame =
+      ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild());
+  EXPECT_TRUE(child_frame->IsAdSubframe());
+
+  // Now run unknown script in the child's context. It should be considered an
+  // ad based on context alone.
+  ad_tracker_->SetExecutionContext(child_frame->GetDocument());
+  ad_tracker_->SetScriptAtTopOfStack("foo.js");
+  EXPECT_TRUE(ad_tracker_->IsAdScriptInStack());
+}
+
+// When inline script in an ad frame inserts an iframe into a non-ad frame, the
+// new frame should be considered an ad.
+TEST_F(AdTrackerSimTest, InlineAdScriptRunningInNonAdContext) {
+  SimRequest ad_script("https://example.com/ad_script.js", "text/javascript");
+  SimRequest ad_iframe("https://example.com/ad_frame.html", "text/html");
+  ad_tracker_->SetAdSuffix("ad_script.js");
+
+  main_resource_->Complete("<body><script src='ad_script.js'></script></body>");
+  ad_script.Complete(R"SCRIPT(
+    frame = document.createElement("iframe");
+    frame.src = "ad_frame.html";
+    document.body.appendChild(frame);
+    )SCRIPT");
+
+  // Verify that the new frame is an ad frame.
+  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+                  ->IsAdSubframe());
+
+  // Create a new sibling frame to the ad frame. The ad context calls the non-ad
+  // context's (top frame) appendChild.
+  ad_iframe.Complete(R"HTML(
+    <script>
+      frame = document.createElement("iframe");
+      frame.name = "ad_sibling";
+      parent.document.body.appendChild(frame);
+    </script>
+    )HTML");
+
+  // The new sibling frame should also be identified as an ad.
+  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().Find("ad_sibling"))
+                  ->IsAdSubframe());
 }
 
 // Image loaded by ad script is tagged as ad.

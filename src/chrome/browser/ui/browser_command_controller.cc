@@ -45,7 +45,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/prefs/pref_service.h"

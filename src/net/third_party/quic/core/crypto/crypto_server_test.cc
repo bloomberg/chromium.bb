@@ -177,7 +177,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
 
     QuicStringPiece scfg;
     ASSERT_TRUE(out_.GetStringPiece(kSCFG, &scfg));
-    server_config_ = CryptoFramer::ParseMessage(scfg, Perspective::IS_CLIENT);
+    server_config_ = CryptoFramer::ParseMessage(scfg);
 
     QuicStringPiece scid;
     ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
@@ -286,11 +286,10 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       if (should_succeed_) {
         ASSERT_EQ(error, QUIC_NO_ERROR)
             << "Message failed with error " << error_details << ": "
-            << result_->client_hello.DebugString(Perspective::IS_SERVER);
+            << result_->client_hello.DebugString();
       } else {
         ASSERT_NE(error, QUIC_NO_ERROR)
-            << "Message didn't fail: "
-            << result_->client_hello.DebugString(Perspective::IS_SERVER);
+            << "Message didn't fail: " << result_->client_hello.DebugString();
 
         EXPECT_TRUE(error_details.find(error_substr_) != QuicString::npos)
             << error_substr_ << " not in " << error_details;
@@ -821,7 +820,7 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   EXPECT_TRUE(out_.GetStringPiece(kPROF, &proof));
   EXPECT_TRUE(out_.GetStringPiece(kSCFG, &scfg_str));
   std::unique_ptr<CryptoHandshakeMessage> scfg(
-      CryptoFramer::ParseMessage(scfg_str, Perspective::IS_CLIENT));
+      CryptoFramer::ParseMessage(scfg_str));
   QuicStringPiece scid;
   EXPECT_TRUE(scfg->GetStringPiece(kSCID, &scid));
   EXPECT_NE(scid, kOldConfigId);
@@ -1018,8 +1017,7 @@ TEST_F(CryptoServerConfigGenerationTest, Determinism) {
   std::unique_ptr<CryptoHandshakeMessage> scfg_b(
       b.AddDefaultConfig(&rand_b, &clock, options));
 
-  ASSERT_EQ(scfg_a->DebugString(Perspective::IS_SERVER),
-            scfg_b->DebugString(Perspective::IS_SERVER));
+  ASSERT_EQ(scfg_a->DebugString(), scfg_b->DebugString());
 }
 
 TEST_F(CryptoServerConfigGenerationTest, SCIDVaries) {
@@ -1070,7 +1068,7 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
 
   scfg->Erase(kSCID);
   scfg->MarkDirty();
-  const QuicData& serialized(scfg->GetSerialized(Perspective::IS_SERVER));
+  const QuicData& serialized(scfg->GetSerialized());
 
   uint8_t digest[SHA256_DIGEST_LENGTH];
   SHA256(reinterpret_cast<const uint8_t*>(serialized.data()),

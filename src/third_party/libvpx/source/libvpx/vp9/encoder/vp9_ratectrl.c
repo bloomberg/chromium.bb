@@ -47,8 +47,6 @@
 #define MIN_BPB_FACTOR 0.005
 #define MAX_BPB_FACTOR 50
 
-#define FRAME_OVERHEAD_BITS 200
-
 #if CONFIG_VP9_HIGHBITDEPTH
 #define ASSIGN_MINQ_TABLE(bit_depth, name)       \
   do {                                           \
@@ -212,18 +210,23 @@ int vp9_estimate_bits_at_q(FRAME_TYPE frame_type, int q, int mbs,
 int vp9_rc_clamp_pframe_target_size(const VP9_COMP *const cpi, int target) {
   const RATE_CONTROL *rc = &cpi->rc;
   const VP9EncoderConfig *oxcf = &cpi->oxcf;
-  const int min_frame_target =
-      VPXMAX(rc->min_frame_bandwidth, rc->avg_frame_bandwidth >> 5);
-  if (target < min_frame_target) target = min_frame_target;
-  if (cpi->refresh_golden_frame && rc->is_src_frame_alt_ref) {
-    // If there is an active ARF at this location use the minimum
-    // bits on this frame even if it is a constructed arf.
-    // The active maximum quantizer insures that an appropriate
-    // number of bits will be spent if needed for constructed ARFs.
-    target = min_frame_target;
+
+  if (cpi->oxcf.pass != 2) {
+    const int min_frame_target =
+        VPXMAX(rc->min_frame_bandwidth, rc->avg_frame_bandwidth >> 5);
+    if (target < min_frame_target) target = min_frame_target;
+    if (cpi->refresh_golden_frame && rc->is_src_frame_alt_ref) {
+      // If there is an active ARF at this location use the minimum
+      // bits on this frame even if it is a constructed arf.
+      // The active maximum quantizer insures that an appropriate
+      // number of bits will be spent if needed for constructed ARFs.
+      target = min_frame_target;
+    }
   }
+
   // Clip the frame target to the maximum allowed value.
   if (target > rc->max_frame_bandwidth) target = rc->max_frame_bandwidth;
+
   if (oxcf->rc_max_inter_bitrate_pct) {
     const int max_rate =
         rc->avg_frame_bandwidth * oxcf->rc_max_inter_bitrate_pct / 100;
@@ -774,13 +777,19 @@ static int get_kf_active_quality(const RATE_CONTROL *const rc, int q,
                             kf_low_motion_minq, kf_high_motion_minq);
 }
 
-static int get_gf_active_quality(const RATE_CONTROL *const rc, int q,
+static int get_gf_active_quality(const VP9_COMP *const cpi, int q,
                                  vpx_bit_depth_t bit_depth) {
+  const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+  const RATE_CONTROL *const rc = &cpi->rc;
+
   int *arfgf_low_motion_minq;
   int *arfgf_high_motion_minq;
+  const int gfu_boost = cpi->multi_layer_arf
+                            ? gf_group->gfu_boost[gf_group->index]
+                            : rc->gfu_boost;
   ASSIGN_MINQ_TABLE(bit_depth, arfgf_low_motion_minq);
   ASSIGN_MINQ_TABLE(bit_depth, arfgf_high_motion_minq);
-  return get_active_quality(q, rc->gfu_boost, gf_low, gf_high,
+  return get_active_quality(q, gfu_boost, gf_low, gf_high,
                             arfgf_low_motion_minq, arfgf_high_motion_minq);
 }
 
@@ -932,7 +941,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const VP9_COMP *cpi,
     } else {
       q = active_worst_quality;
     }
-    active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+    active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
   } else {
     // Use the lower of active_worst_quality and recent/average Q.
     if (cm->current_video_frame > 1) {
@@ -1079,7 +1088,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const VP9_COMP *cpi,
     if (oxcf->rc_mode == VPX_CQ) {
       if (q < cq_level) q = cq_level;
 
-      active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
 
       // Constrained quality use slightly lower active best.
       active_best_quality = active_best_quality * 15 / 16;
@@ -1094,7 +1103,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const VP9_COMP *cpi,
         delta_qindex = vp9_compute_qdelta(rc, q, q * 0.50, cm->bit_depth);
       active_best_quality = VPXMAX(qindex + delta_qindex, rc->best_quality);
     } else {
-      active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
     }
   } else {
     if (oxcf->rc_mode == VPX_Q) {
@@ -1185,13 +1194,10 @@ int vp9_frame_type_qdelta(const VP9_COMP *cpi, int rf_level, int q) {
     1.75,  // GF_ARF_STD
     2.00,  // KF_STD
   };
-  static const FRAME_TYPE frame_type[RATE_FACTOR_LEVELS] = {
-    INTER_FRAME, INTER_FRAME, INTER_FRAME, INTER_FRAME, KEY_FRAME
-  };
   const VP9_COMMON *const cm = &cpi->common;
-  int qdelta =
-      vp9_compute_qdelta_by_rate(&cpi->rc, frame_type[rf_level], q,
-                                 rate_factor_deltas[rf_level], cm->bit_depth);
+
+  int qdelta = vp9_compute_qdelta_by_rate(
+      &cpi->rc, cm->frame_type, q, rate_factor_deltas[rf_level], cm->bit_depth);
   return qdelta;
 }
 
@@ -1278,7 +1284,7 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
     if (oxcf->rc_mode == VPX_CQ) {
       if (q < cq_level) q = cq_level;
 
-      active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
 
       // Constrained quality use slightly lower active best.
       active_best_quality = active_best_quality * 15 / 16;
@@ -1287,7 +1293,7 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
       if (!cpi->refresh_alt_ref_frame) {
         active_best_quality = cq_level;
       } else {
-        active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+        active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
 
         // Modify best quality for second level arfs. For mode VPX_Q this
         // becomes the baseline frame q.
@@ -1295,7 +1301,7 @@ static int rc_pick_q_and_bounds_two_pass(const VP9_COMP *cpi, int *bottom_index,
           active_best_quality = (active_best_quality + cq_level + 1) / 2;
       }
     } else {
-      active_best_quality = get_gf_active_quality(rc, q, cm->bit_depth);
+      active_best_quality = get_gf_active_quality(cpi, q, cm->bit_depth);
     }
   } else {
     if (oxcf->rc_mode == VPX_Q) {
@@ -1442,6 +1448,12 @@ void vp9_configure_buffer_updates(VP9_COMP *cpi, int gf_group_index) {
     case OVERLAY_UPDATE:
       cpi->refresh_last_frame = 0;
       cpi->refresh_golden_frame = 1;
+      cpi->refresh_alt_ref_frame = 0;
+      cpi->rc.is_src_frame_alt_ref = 1;
+      break;
+    case MID_OVERLAY_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
       cpi->refresh_alt_ref_frame = 0;
       cpi->rc.is_src_frame_alt_ref = 1;
       break;
@@ -2003,6 +2015,8 @@ void vp9_rc_get_svc_params(VP9_COMP *cpi) {
   int target = rc->avg_frame_bandwidth;
   int layer = LAYER_IDS_TO_IDX(svc->spatial_layer_id, svc->temporal_layer_id,
                                svc->number_temporal_layers);
+  if (svc->first_spatial_layer_to_encode)
+    svc->layer_context[svc->temporal_layer_id].is_key_frame = 0;
   // Periodic key frames is based on the super-frame counter
   // (svc.current_superframe), also only base spatial layer is key frame.
   // Key frame is set for any of the following: very first frame, frame flags

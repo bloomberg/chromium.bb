@@ -8,7 +8,9 @@
 
 #include "base/values.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"
-#include "ios/web/public/web_state/form_activity_params.h"
+#include "components/autofill/ios/form_util/form_activity_params.h"
+#include "ios/web/public/features.h"
+#include "ios/web/public/web_state/web_frame.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,17 +66,20 @@ void FormActivityTabHelper::RemoveObserver(FormActivityObserver* observer) {
 bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
                                           const GURL& url,
                                           bool has_user_gesture,
-                                          bool form_in_main_frame) {
+                                          bool form_in_main_frame,
+                                          web::WebFrame* sender_frame) {
   std::string command;
   if (!message.GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";
     return NO;
   }
   if (command == "form.submit") {
-    return FormSubmissionHandler(message, has_user_gesture, form_in_main_frame);
+    return FormSubmissionHandler(message, has_user_gesture, form_in_main_frame,
+                                 sender_frame);
   }
   if (command == "form.activity") {
-    return HandleFormActivity(message, has_user_gesture, form_in_main_frame);
+    return HandleFormActivity(message, has_user_gesture, form_in_main_frame,
+                              sender_frame);
   }
   return false;
 }
@@ -82,8 +87,9 @@ bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
 bool FormActivityTabHelper::HandleFormActivity(
     const base::DictionaryValue& message,
     bool has_user_gesture,
-    bool form_in_main_frame) {
-  web::FormActivityParams params;
+    bool form_in_main_frame,
+    web::WebFrame* sender_frame) {
+  FormActivityParams params;
   if (!message.GetString("formName", &params.form_name) ||
       !message.GetString("fieldName", &params.field_name) ||
       !message.GetString("fieldIdentifier", &params.field_identifier) ||
@@ -95,15 +101,23 @@ bool FormActivityTabHelper::HandleFormActivity(
   }
 
   params.is_main_frame = form_in_main_frame;
+  if (!sender_frame &&
+      base::FeatureList::IsEnabled(web::features::kWebFrameMessaging)) {
+    return false;
+  }
+  if (sender_frame) {
+    params.frame_id = sender_frame->GetFrameId();
+  }
   for (auto& observer : observers_)
-    observer.OnFormActivity(web_state_, params);
+    observer.FormActivityRegistered(web_state_, sender_frame, params);
   return true;
 }
 
 bool FormActivityTabHelper::FormSubmissionHandler(
     const base::DictionaryValue& message,
     bool has_user_gesture,
-    bool form_in_main_frame) {
+    bool form_in_main_frame,
+    web::WebFrame* sender_frame) {
   std::string href;
   if (!message.GetString("href", &href)) {
     DLOG(WARNING) << "JS message parameter not found: href";
@@ -111,6 +125,9 @@ bool FormActivityTabHelper::FormSubmissionHandler(
   }
   std::string form_name;
   message.GetString("formName", &form_name);
+
+  std::string form_data;
+  message.GetString("formData", &form_data);
   // We decide the form is user-submitted if the user has interacted with
   // the main page (using logic from the popup blocker), or if the keyboard
   // is visible.
@@ -118,8 +135,8 @@ bool FormActivityTabHelper::FormSubmissionHandler(
       has_user_gesture || [web_state_->GetWebViewProxy() keyboardAccessory];
 
   for (auto& observer : observers_)
-    observer.DidSubmitDocument(web_state_, form_name, submitted_by_user,
-                               form_in_main_frame);
+    observer.DocumentSubmitted(web_state_, sender_frame, form_name, form_data,
+                               submitted_by_user, form_in_main_frame);
   return true;
 }
 

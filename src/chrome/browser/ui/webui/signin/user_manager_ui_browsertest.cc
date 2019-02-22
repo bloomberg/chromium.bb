@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -163,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
   entry_->SetSupervisedUserId("supervised_user_id");
   MockLoginUIService* service = static_cast<MockLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_, CreateLoginUIService));
+          profile_, base::BindRepeating(&CreateLoginUIService)));
   EXPECT_CALL(*service, DisplayLoginResult(_, _, _));
 
   LaunchAuthenticatedUser("");
@@ -180,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
   entry_->SetActiveTimeToNow();
   MockLoginUIService* service = static_cast<MockLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_, CreateLoginUIService));
+          profile_, base::BindRepeating(&CreateLoginUIService)));
   EXPECT_CALL(*service, SetProfileBlockingErrorMessage());
 
   LaunchAuthenticatedUser("");

@@ -40,17 +40,16 @@
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
-#include "components/subresource_filter/content/browser/content_ruleset_service.h"
+#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_decision.h"
-#include "components/subresource_filter/core/common/activation_level.h"
-#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -136,6 +135,13 @@ GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
   return url.ReplaceComponents(replacements);
 }
 
+// This string comes from GetErrorStringForDisallowedLoad() in
+// blink/renderer/core/loader/subresource_filter.cc
+constexpr const char kBlinkDisallowSubframeConsoleMessageFormat[] =
+    "Chrome blocked resource %s on this site because this site tends to show "
+    "ads that interrupt, distract, mislead, or prevent user control. Learn "
+    "more at https://www.chromestatus.com/feature/5738264052891648";
+
 }  // namespace
 
 // Tests -----------------------------------------------------------------------
@@ -150,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
 
-  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ACTIVATION_LIST,
                        subresource_filter::ActivationList::SUBRESOURCE_FILTER);
   ResetConfiguration(std::move(config));
@@ -182,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
 
-  Configuration config(subresource_filter::ActivationLevel::ENABLED,
+  Configuration config(subresource_filter::mojom::ActivationLevel::kEnabled,
                        subresource_filter::ActivationScope::ACTIVATION_LIST,
                        subresource_filter::ActivationList::BETTER_ADS);
   ResetConfiguration(std::move(config));
@@ -281,10 +287,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
-  std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessagePrefix << "*";
+  std::string message_filter =
+      base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
   content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter.str());
+                                                    message_filter);
   web_contents()->SetDelegate(&console_observer);
 
   GURL url(GetTestUrl(kTestFrameSetPath));
@@ -303,21 +309,22 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
                            SubresourceFilterAction::kUIShown, 1);
 
   // Console message for subframe blocking should be displayed.
-  std::ostringstream result;
-  result << kDisallowSubframeConsoleMessagePrefix << "*included_script.js*";
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(), result.str()));
+  EXPECT_TRUE(base::MatchPattern(
+      console_observer.message(),
+      base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat,
+                         "*included_script.js")));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDisabled_NoConsoleMessage) {
-  std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessageSuffix << "*";
+  std::string message_filter =
+      base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
   content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter.str());
+                                                    message_filter);
   web_contents()->SetDelegate(&console_observer);
 
   Configuration config(
-      subresource_filter::ActivationLevel::DISABLED,
+      subresource_filter::mojom::ActivationLevel::kDisabled,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
   ResetConfiguration(std::move(config));
@@ -335,14 +342,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDryRun_NoConsoleMessage) {
-  std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessageSuffix << "*";
+  std::string message_filter =
+      base::StringPrintf(kBlinkDisallowSubframeConsoleMessageFormat, "*");
   content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    message_filter.str());
+                                                    message_filter);
   web_contents()->SetDelegate(&console_observer);
 
   Configuration config(
-      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::mojom::ActivationLevel::kDryRun,
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::PHISHING_INTERSTITIAL);
   ResetConfiguration(std::move(config));
@@ -709,7 +716,8 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
 
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
-      static_cast<base::Histogram::Sample>(ActivationLevel::ENABLED), 6);
+      static_cast<base::Histogram::Sample>(mojom::ActivationLevel::kEnabled),
+      6);
 
   EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsTotal),
               ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
@@ -783,7 +791,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Although SubresourceFilterAgents still record the activation decision.
   tester.ExpectUniqueSample(
       kDocumentLoadActivationLevel,
-      static_cast<base::Histogram::Sample>(ActivationLevel::DISABLED), 6);
+      static_cast<base::Histogram::Sample>(mojom::ActivationLevel::kDisabled),
+      6);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

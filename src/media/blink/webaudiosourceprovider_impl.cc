@@ -143,7 +143,7 @@ void WebAudioSourceProviderImpl::SetClient(
     // called when Initialize() is called. Note: Always using |set_format_cb_|
     // ensures we have the same locking order when calling into |client_|.
     if (tee_filter_->initialized())
-      base::ResetAndReturn(&set_format_cb_).Run();
+      std::move(set_format_cb_).Run();
     return;
   }
 
@@ -215,8 +215,8 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
 
   sink_->Initialize(params, tee_filter_.get());
 
-  if (!set_format_cb_.is_null())
-    base::ResetAndReturn(&set_format_cb_).Run();
+  if (set_format_cb_)
+    std::move(set_format_cb_).Run();
 }
 
 void WebAudioSourceProviderImpl::Start() {

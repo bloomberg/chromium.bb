@@ -16,6 +16,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -31,6 +32,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
@@ -118,7 +120,7 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
         gpu_preferences_.disable_gpu_shader_disk_cache ||
         workarounds.disable_program_disk_cache;
 
-    // Use the EGL cache control extension for the passthrough decoder.
+    // Use the EGL blob cache extension for the passthrough decoder.
     if (gpu_preferences_.use_passthrough_cmd_decoder &&
         gles2::PassthroughCommandDecoderSupported()) {
       program_cache_.reset(new gles2::PassthroughProgramCache(
@@ -377,9 +379,8 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       use_virtualized_gl_contexts ? share_group->GetSharedContext(surface.get())
                                   : nullptr;
   if (!context) {
-    gl::GLContextAttribs attribs;
-    if (use_passthrough_decoder)
-      attribs.global_texture_share_group = true;
+    gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
+        ContextCreationAttribs(), use_passthrough_decoder);
     context =
         gl::init::CreateGLContext(share_group.get(), surface.get(), attribs);
     if (!context) {
@@ -422,7 +423,8 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       gpu::kGpuFeatureStatusEnabled;
   if (enable_raster_transport) {
     raster_decoder_context_state_->InitializeGrContext(
-        gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_);
+        gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_,
+        watchdog_);
   }
 
   gr_cache_controller_.emplace(raster_decoder_context_state_.get(),

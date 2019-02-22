@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/window_actions.mojom.h"
+#include "ash/public/interfaces/ash_window_manager.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
 #include "base/auto_reset.h"
@@ -32,13 +32,15 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
@@ -184,7 +186,17 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     const AccountId& current_account_id)
     : current_account_id_(current_account_id),
       suppress_visibility_changes_(false),
-      animation_speed_(ANIMATION_SPEED_NORMAL) {}
+      animation_speed_(ANIMATION_SPEED_NORMAL) {
+  if (features::IsUsingWindowService()) {
+    ash_window_manager_ =
+        views::MusClient::Get()
+            ->window_tree_client()
+            ->BindWindowManagerInterface<ash::mojom::AshWindowManager>();
+  }
+
+  if (TabletModeClient::Get())
+    tablet_mode_observer_.Add(TabletModeClient::Get());
+}
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   // When the MultiUserWindowManager gets destroyed, ash::Shell is mostly gone.
@@ -493,6 +505,21 @@ void MultiUserWindowManagerChromeOS::Observe(
   AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
+void MultiUserWindowManagerChromeOS::OnTabletModeToggled(bool enabled) {
+  if (!enabled)
+    return;
+
+  for (auto entry : window_to_entry_) {
+    aura::Window* window = entry.first;
+    if (ash_window_manager_) {
+      ash_window_manager_->AddWindowToTabletMode(
+          aura::WindowMus::Get(window)->server_id());
+    } else {
+      ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
+    }
+  }
+}
+
 void MultiUserWindowManagerChromeOS::SetAnimationSpeedForTest(
     MultiUserWindowManagerChromeOS::AnimationSpeed speed) {
   animation_speed_ = speed;
@@ -565,11 +592,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window,
     bool visible,
     int animation_time_in_ms) {
-  // For a panel window, it's possible that this panel window is in the middle
-  // of relayout animation because of hiding/reshowing shelf during profile
-  // switch. Thus the window's visibility might not be its real visibility. See
-  // crbug.com/564725 for more info.
-  if (window->TargetVisibility() == visible)
+  if (window->IsVisible() == visible)
     return;
 
   // Hiding a system modal dialog should not be allowed. Instead we switch to
@@ -711,15 +734,18 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
   if (visible) {
-    // TODO(erg): When we get rid of the classic ash, get rid of the direct
-    // linkage on tablet_mode_controller() here.
-    if (features::IsUsingWindowService()) {
-      aura::WindowTreeHostMus::ForWindow(window)->PerformWmAction(
-          ash::mojom::kAddWindowToTabletMode);
+    if (ash_window_manager_) {
+      ash_window_manager_->AddWindowToTabletMode(
+          aura::WindowMus::Get(window)->server_id());
     } else {
       ash::Shell::Get()->tablet_mode_controller()->AddWindow(window);
     }
   }
+
+  // Under mash we apply visibility changes to the root so both the window frame
+  // and contents hide together.
+  if (features::IsUsingWindowService())
+    window = window->GetRootWindow();
 
   AnimationSetter animation_setter(
       window, GetAdjustedAnimationTimeInMS(animation_time_in_ms));

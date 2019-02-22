@@ -35,7 +35,7 @@ KeyframeEffectModelBase* CreateEffectModel() {
 
 KeyframeEffect* CreateKeyframeEffect(Element* element) {
   Timing timing;
-  timing.iteration_duration = 30;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
   return KeyframeEffect::Create(element, CreateEffectModel(), timing);
 }
 
@@ -76,7 +76,8 @@ class WorkletAnimationTest : public RenderingTest {
 };
 
 TEST_F(WorkletAnimationTest, WorkletAnimationInElementAnimations) {
-  worklet_animation_->play();
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation_->play(exception_state);
   EXPECT_EQ(1u,
             element_->EnsureElementAnimations().GetWorkletAnimations().size());
   worklet_animation_->cancel();
@@ -88,7 +89,8 @@ TEST_F(WorkletAnimationTest, StyleHasCurrentAnimation) {
   scoped_refptr<ComputedStyle> style =
       GetDocument().EnsureStyleResolver().StyleForElement(element_).get();
   EXPECT_EQ(false, style->HasCurrentOpacityAnimation());
-  worklet_animation_->play();
+  DummyExceptionStateForTesting exception_state;
+  worklet_animation_->play(exception_state);
   element_->EnsureElementAnimations().UpdateAnimationFlags(*style);
   EXPECT_EQ(true, style->HasCurrentOpacityAnimation());
 }

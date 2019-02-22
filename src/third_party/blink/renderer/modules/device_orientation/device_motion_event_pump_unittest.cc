@@ -46,13 +46,11 @@ class MockDeviceMotionController final
 
   int number_of_events() const { return number_of_events_; }
 
-  void RegisterWithDispatcher() override { motion_pump_->AddController(this); }
+  void RegisterWithDispatcher() override { motion_pump_->SetController(this); }
 
   bool HasLastData() override { return motion_pump_->LatestDeviceMotionData(); }
 
-  void UnregisterWithDispatcher() override {
-    motion_pump_->RemoveController(this);
-  }
+  void UnregisterWithDispatcher() override { motion_pump_->RemoveController(); }
 
   const DeviceMotionData* data() {
     return motion_pump_->LatestDeviceMotionData();

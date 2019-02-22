@@ -47,7 +47,8 @@ extern const char kErrorPersisting[];
 extern const char kErrorListNotPassed[];
 extern const char kErrorNonAscii[];
 
-// Rule parsing install warnings.
+// Rule indexing install warnings.
+extern const char kRuleCountExceeded[];
 extern const char kRulesNotParsedWarning[];
 
 // Histogram names.

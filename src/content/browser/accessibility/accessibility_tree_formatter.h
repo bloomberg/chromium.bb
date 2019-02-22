@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -88,6 +89,11 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Build an accessibility tree for any window.
   virtual std::unique_ptr<base::DictionaryValue>
   BuildAccessibilityTreeForWindow(gfx::AcceleratedWidget widget) = 0;
+
+  // Build an accessibility tree for an application with a name matching the
+  // given pattern.
+  virtual std::unique_ptr<base::DictionaryValue>
+  BuildAccessibilityTreeForPattern(const base::StringPiece& pattern) = 0;
 
   // Returns a filtered accesibility tree using the current filters.
   std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(

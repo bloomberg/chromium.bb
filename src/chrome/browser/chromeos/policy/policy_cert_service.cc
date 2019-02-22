@@ -8,10 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 
@@ -51,11 +53,10 @@ std::unique_ptr<PolicyCertVerifier>
 PolicyCertService::CreatePolicyCertVerifier() {
   base::Closure callback = base::Bind(
       &PolicyCertServiceFactory::SetUsedPolicyCertificates, user_id_);
+  constexpr base::TaskTraits traits = {content::BrowserThread::UI};
   cert_verifier_ = new PolicyCertVerifier(
-      base::Bind(base::IgnoreResult(&content::BrowserThread::PostTask),
-                 content::BrowserThread::UI,
-                 FROM_HERE,
-                 callback));
+      base::Bind(base::IgnoreResult(&base::PostTaskWithTraits), FROM_HERE,
+                 traits, callback));
   // Certs are forwarded to |cert_verifier_|, thus register here after
   // |cert_verifier_| is created.
   net_conf_updater_->AddPolicyProvidedCertsObserver(this);
@@ -102,8 +103,8 @@ void PolicyCertService::OnPolicyProvidedCertsChanged(
   // CreatePolicyCertVerifier).
   // Note: ProfileIOData, which owns the CertVerifier is deleted by a
   // DeleteSoon on IO, i.e. after all pending tasks on IO are finished.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PolicyCertVerifier::SetTrustAnchors,
                      base::Unretained(cert_verifier_), trust_anchors));
 }

@@ -2599,14 +2599,6 @@ void CopySubTextureCHROMIUM(GLuint source_id,
   }
 }
 
-void CompressedCopyTextureCHROMIUM(GLuint source_id, GLuint dest_id) {
-  gles2::cmds::CompressedCopyTextureCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::CompressedCopyTextureCHROMIUM>();
-  if (c) {
-    c->Init(source_id, dest_id);
-  }
-}
-
 void DrawArraysInstancedANGLE(GLenum mode,
                               GLint first,
                               GLsizei count,
@@ -3385,6 +3377,14 @@ void FramebufferTextureMultiviewLayeredANGLE(GLenum target,
       GetCmdSpace<gles2::cmds::FramebufferTextureMultiviewLayeredANGLE>();
   if (c) {
     c->Init(target, attachment, texture, level, baseViewIndex, numViews);
+  }
+}
+
+void MaxShaderCompilerThreadsKHR(GLuint count) {
+  gles2::cmds::MaxShaderCompilerThreadsKHR* c =
+      GetCmdSpace<gles2::cmds::MaxShaderCompilerThreadsKHR>();
+  if (c) {
+    c->Init(count);
   }
 }
 

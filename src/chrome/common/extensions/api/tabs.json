@@ -11,19 +11,19 @@
         "type": "string",
         "description": "An event that caused a muted state change.",
         "enum": [
-          {"name": "user", "description": "A user input action has set/overridden the muted state."},
-          {"name": "capture", "description": "Tab capture started, forcing a muted state change."},
+          {"name": "user", "description": "A user input action set the muted state."},
+          {"name": "capture", "description": "Tab capture was started, forcing a muted state change."},
           {"name": "extension", "description": "An extension, identified by the extensionId field, set the muted state."}
         ]
       },
       {
         "id": "MutedInfo",
         "type": "object",
-        "description": "Tab muted state and the reason for the last state change.",
+        "description": "The tab's muted state and the reason for the last state change.",
         "properties": {
           "muted": {
             "type": "boolean",
-            "description": "Whether the tab is prevented from playing sound (but hasn't necessarily recently produced sound). Equivalent to whether the muted audio indicator is showing."
+            "description": "Whether the tab is muted (prevented from playing sound). The tab may be muted even if it has not played or is not currently playing sound. Equivalent to whether the 'muted' audio indicator is showing."
           },
           "reason": {
             "$ref": "MutedInfoReason",
@@ -41,19 +41,19 @@
         "id": "Tab",
         "type": "object",
         "properties": {
-          "id": {"type": "integer", "minimum": -1, "optional": true, "description": "The ID of the tab. Tab IDs are unique within a browser session. Under some circumstances a Tab may not be assigned an ID, for example when querying foreign tabs using the $(ref:sessions) API, in which case a session ID may be present. Tab ID can also be set to chrome.tabs.TAB_ID_NONE for apps and devtools windows."},
+          "id": {"type": "integer", "minimum": -1, "optional": true, "description": "The ID of the tab. Tab IDs are unique within a browser session. Under some circumstances a tab may not be assigned an ID; for example, when querying foreign tabs using the $(ref:sessions) API, in which case a session ID may be present. Tab ID can also be set to <code>chrome.tabs.TAB_ID_NONE</code> for apps and devtools windows."},
           // TODO(kalman): Investigate how this is ending up as -1 (based on window type? a bug?) and whether it should be optional instead.
           "index": {"type": "integer", "minimum": -1, "description": "The zero-based index of the tab within its window."},
-          "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window the tab is contained within."},
+          "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window that contains the tab."},
           "openerTabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The ID of the tab that opened this tab, if any. This property is only present if the opener tab still exists."},
           "selected": {"type": "boolean", "description": "Whether the tab is selected.", "deprecated": "Please use $(ref:tabs.Tab.highlighted)."},
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
-          "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
+          "active": {"type": "boolean", "description": "Whether the tab is active in its window. Does not necessarily mean the window is focused."},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
-          "audible": {"type": "boolean", "optional": true, "description": "Whether the tab has produced sound over the past couple of seconds (but it might not be heard if also muted). Equivalent to whether the speaker audio indicator is showing."},
-          "discarded": {"type": "boolean", "description": "Whether the tab is discarded. A discarded tab is one whose content has been unloaded from memory, but is still visible in the tab strip. Its content gets reloaded the next time it's activated."},
+          "audible": {"type": "boolean", "optional": true, "description": "Whether the tab has produced sound over the past couple of seconds (but it might not be heard if also muted). Equivalent to whether the 'speaker audio' indicator is showing."},
+          "discarded": {"type": "boolean", "description": "Whether the tab is discarded. A discarded tab is one whose content has been unloaded from memory, but is still visible in the tab strip. Its content is reloaded the next time it is activated."},
           "autoDiscardable":  {"type": "boolean", "description": "Whether the tab can be discarded automatically by the browser when resources are low."},
-          "mutedInfo": {"$ref": "MutedInfo", "optional": true, "description": "Current tab muted state and the reason for the last state change."},
+          "mutedInfo": {"$ref": "MutedInfo", "optional": true, "description": "The tab's muted state and the reason for the last state change."},
           "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "title": {"type": "string", "optional": true, "description": "The title of the tab. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "favIconUrl": {"type": "string", "optional": true, "description": "The URL of the tab's favicon. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission. It may also be an empty string if the tab is loading."},
@@ -61,13 +61,13 @@
           "incognito": {"type": "boolean", "description": "Whether the tab is in an incognito window."},
           "width": {"type": "integer", "optional": true, "description": "The width of the tab in pixels."},
           "height": {"type": "integer", "optional": true, "description": "The height of the tab in pixels."},
-          "sessionId": {"type": "string", "optional": true, "description": "The session ID used to uniquely identify a Tab obtained from the $(ref:sessions) API."}
+          "sessionId": {"type": "string", "optional": true, "description": "The session ID used to uniquely identify a tab obtained from the $(ref:sessions) API."}
         }
       },
       {
         "id": "ZoomSettingsMode",
         "type": "string",
-        "description": "Defines how zoom changes are handled, i.e. which entity is responsible for the actual scaling of the page; defaults to <code>automatic</code>.",
+        "description": "Defines how zoom changes are handled, i.e., which entity is responsible for the actual scaling of the page; defaults to <code>automatic</code>.",
         "enum": [
           {
             "name": "automatic",
@@ -75,26 +75,26 @@
           },
           {
             "name": "manual",
-            "description": "Overrides the automatic handling of zoom changes. The <code>onZoomChange</code> event will still be dispatched, and it is the responsibility of the extension to listen for this event and manually scale the page. This mode does not support <code>per-origin</code> zooming, and will thus ignore the <code>scope</code> zoom setting and assume <code>per-tab</code>."
+            "description": "Overrides the automatic handling of zoom changes. The <code>onZoomChange</code> event will still be dispatched, and it is the extension's responsibility to listen for this event and manually scale the page. This mode does not support <code>per-origin</code> zooming, and thus ignores the <code>scope</code> zoom setting and assumes <code>per-tab</code>."
           },
           {
             "name": "disabled",
-            "description": "Disables all zooming in the tab. The tab will revert to the default zoom level, and all attempted zoom changes will be ignored."
+            "description": "Disables all zooming in the tab. The tab reverts to the default zoom level, and all attempted zoom changes are ignored."
           }
         ]
       },
       {
         "id": "ZoomSettingsScope",
         "type": "string",
-        "description": "Defines whether zoom changes will persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
+        "description": "Defines whether zoom changes persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
         "enum": [
           {
             "name": "per-origin",
-            "description": "Zoom changes will persist in the zoomed page's origin, i.e. all other tabs navigated to that same origin will be zoomed as well. Moreover, <code>per-origin</code> zoom changes are saved with the origin, meaning that when navigating to other pages in the same origin, they will all be zoomed to the same zoom factor. The <code>per-origin</code> scope is only available in the <code>automatic</code> mode."
+            "description": "Zoom changes persist in the zoomed page's origin, i.e., all other tabs navigated to that same origin are zoomed as well. Moreover, <code>per-origin</code> zoom changes are saved with the origin, meaning that when navigating to other pages in the same origin, they are all zoomed to the same zoom factor. The <code>per-origin</code> scope is only available in the <code>automatic</code> mode."
           },
           {
             "name": "per-tab",
-            "description": "Zoom changes only take effect in this tab, and zoom changes in other tabs will not affect the zooming of this tab. Also, <code>per-tab</code> zoom changes are reset on navigation; navigating a tab will always load pages with their <code>per-origin</code> zoom factors."
+            "description": "Zoom changes only take effect in this tab, and zoom changes in other tabs do not affect the zooming of this tab. Also, <code>per-tab</code> zoom changes are reset on navigation; navigating a tab always loads pages with their <code>per-origin</code> zoom factors."
           }
         ]
       },
@@ -105,12 +105,12 @@
         "properties": {
           "mode": {
             "$ref": "ZoomSettingsMode",
-            "description": "Defines how zoom changes are handled, i.e. which entity is responsible for the actual scaling of the page; defaults to <code>automatic</code>.",
+            "description": "Defines how zoom changes are handled, i.e., which entity is responsible for the actual scaling of the page; defaults to <code>automatic</code>.",
             "optional": true
           },
           "scope": {
             "$ref": "ZoomSettingsScope",
-            "description": "Defines whether zoom changes will persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
+            "description": "Defines whether zoom changes persist for the page's origin, or only take effect in this tab; defaults to <code>per-origin</code> when in <code>automatic</code> mode, and <code>per-tab</code> otherwise.",
             "optional": true
           },
           "defaultZoomFactor": {
@@ -136,7 +136,7 @@
     "properties": {
       "TAB_ID_NONE": {
         "value": -1,
-        "description": "An ID which represents the absence of a browser tab."
+        "description": "An ID that represents the absence of a browser tab."
       }
     },
     "functions": [
@@ -162,7 +162,7 @@
       {
         "name": "getCurrent",
         "type": "function",
-        "description": "Gets the tab that this script call is being made from. May be undefined if called from a non-tab context (for example: a background page or popup view).",
+        "description": "Gets the tab that this script call is being made from. May be undefined if called from a non-tab context (for example, a background page or popup view).",
         "parameters": [
           {
             "type": "function",
@@ -192,7 +192,7 @@
             "type": "object",
             "name": "connectInfo",
             "properties": {
-              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for content scripts that are listening for the connection event." },
+              "name": { "type": "string", "optional": true, "description": "Is passed into onConnect for content scripts that are listening for the connection event." },
               "frameId": {
                 "type": "integer",
                 "optional": true,
@@ -232,7 +232,7 @@
               {
                 "name": "response",
                 "type": "any",
-                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and $(ref:runtime.lastError) will be set to the error message."
+                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback is called with no arguments and $(ref:runtime.lastError) is set to the error message."
               }
             ]
           }
@@ -275,7 +275,7 @@
               {
                 "name": "response",
                 "type": "any",
-                "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and $(ref:runtime.lastError) will be set to the error message."
+                "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the specified tab, the callback is called with no arguments and $(ref:runtime.lastError) is set to the error message."
               }
             ]
           }
@@ -338,18 +338,18 @@
                 "type": "integer",
                 "minimum": -2,
                 "optional": true,
-                "description": "The window to create the new tab in. Defaults to the <a href='windows#current-window'>current window</a>."
+                "description": "The window in which to create the new tab. Defaults to the <a href='windows#current-window'>current window</a>."
               },
               "index": {
                 "type": "integer",
                 "minimum": 0,
                 "optional": true,
-                "description": "The position the tab should take in the window. The provided value will be clamped to between zero and the number of tabs in the window."
+                "description": "The position the tab should take in the window. The provided value is clamped to between zero and the number of tabs in the window."
               },
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "The URL to navigate the tab to initially. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page."
+                "description": "The URL to initially navigate the tab to. Fully-qualified URLs must include a scheme (i.e., 'http://www.google.com', not 'www.google.com'). Relative URLs are relative to the current page within the extension. Defaults to the New Tab Page."
               },
               "active": {
                 "type": "boolean",
@@ -383,7 +383,7 @@
               {
                 "name": "tab",
                 "$ref": "Tab",
-                "description": "Details about the created tab. Will contain the ID of the new tab."
+                "description": "The created tab."
               }
             ]
           }
@@ -398,7 +398,7 @@
             "type": "integer",
             "name": "tabId",
             "minimum": 0,
-            "description": "The ID of the tab which is to be duplicated."
+            "description": "The ID of the tab to duplicate."
           },
           {
             "type": "function",
@@ -408,7 +408,7 @@
               {
                 "name": "tab",
                 "optional": true,
-                "description": "Details about the duplicated tab. The $(ref:tabs.Tab) object doesn't contain <code>url</code>, <code>title</code> and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested.",
+                "description": "Details about the duplicated tab. The $(ref:tabs.Tab) object does not contain <code>url</code>, <code>title</code>, and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested.",
                 "$ref": "Tab"
               }
             ]
@@ -452,7 +452,7 @@
               "discarded": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether the tabs are discarded. A discarded tab is one whose content has been unloaded from memory, but is still visible in the tab strip. Its content gets reloaded the next time it's activated."
+                "description": "Whether the tabs are discarded. A discarded tab is one whose content has been unloaded from memory, but is still visible in the tab strip. Its content is reloaded the next time it is activated."
               },
               "autoDiscardable": {
                 "type": "boolean",
@@ -477,7 +477,7 @@
               "title": {
                 "type": "string",
                 "optional": true,
-                "description": "Match page titles against a pattern. Note that this property is ignored if the extension doesn't have the <code>\"tabs\"</code> permission."
+                "description": "Match page titles against a pattern. This property is ignored if the extension does not have the <code>\"tabs\"</code> permission."
               },
               "url": {
                 "choices": [
@@ -485,7 +485,7 @@
                   {"type": "array", "items": {"type": "string"}}
                 ],
                 "optional": true,
-                "description": "Match tabs against one or more <a href='match_patterns'>URL patterns</a>. Note that fragment identifiers are not matched. Note that this property is ignored if the extension doesn't have the <code>\"tabs\"</code> permission."
+                "description": "Match tabs against one or more <a href='match_patterns'>URL patterns</a>. Fragment identifiers are not matched. This property is ignored if the extension does not have the <code>\"tabs\"</code> permission."
               },
               "windowId": {
                 "type": "integer",
@@ -524,7 +524,7 @@
       {
         "name": "highlight",
         "type": "function",
-        "description": "Highlights the given tabs and focuses on the first of group. Will appear to do nothing if specified tab is currently active.",
+        "description": "Highlights the given tabs and focuses on the first of group. Will appear to do nothing if the specified tab is currently active.",
         "parameters": [
           {
             "type": "object",
@@ -578,7 +578,7 @@
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "A URL to navigate the tab to."
+                "description": "A URL to navigate the tab to. JavaScript URLs are not supported; use $(ref:tabs.executeScript) instead."
               },
               "active": {
                 "type": "boolean",
@@ -628,7 +628,7 @@
                 "name": "tab",
                 "$ref": "Tab",
                 "optional": true,
-                "description": "Details about the updated tab. The $(ref:tabs.Tab) object doesn't contain <code>url</code>, <code>title</code> and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested."
+                "description": "Details about the updated tab. The $(ref:tabs.Tab) object does not contain <code>url</code>, <code>title</code>, and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested."
               }
             ]
           }
@@ -641,7 +641,7 @@
         "parameters": [
           {
             "name": "tabIds",
-            "description": "The tab or list of tabs to move.",
+            "description": "The tab ID or list of tab IDs to move.",
             "choices": [
               {"type": "integer", "minimum": 0},
               {"type": "array", "items": {"type": "integer", "minimum": 0}}
@@ -660,7 +660,7 @@
               "index": {
                 "type": "integer",
                 "minimum": -1,
-                "description": "The position to move the window to. -1 will place the tab at the end of the window."
+                "description": "The position to move the window to. Use <code>-1</code> to place the tab at the end of the window."
               }
             }
           },
@@ -695,7 +695,7 @@
               "bypassCache": {
                 "type": "boolean",
                 "optional": true,
-                "description": "Whether using any local cache. Default is false."
+                "description": "Whether to bypass local caching. Defaults to <code>false</code>."
               }
             }
           },
@@ -709,7 +709,7 @@
         "parameters": [
           {
             "name": "tabIds",
-            "description": "The tab or list of tabs to close.",
+            "description": "The tab ID or list of tab IDs to close.",
             "choices": [
               {"type": "integer", "minimum": 0},
               {"type": "array", "items": {"type": "integer", "minimum": 0}}
@@ -737,7 +737,7 @@
               {
                 "type": "string",
                 "name": "language",
-                "description": "An ISO language code such as <code>en</code> or <code>fr</code>. For a complete list of languages supported by this method, see <a href='http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/languages/internal/languages.cc'>kLanguageInfoTable</a>. The 2nd to 4th columns will be checked and the first non-NULL value will be returned except for Simplified Chinese for which zh-CN will be returned. For an unknown language, <code>und</code> will be returned."
+                "description": "An ISO language code such as <code>en</code> or <code>fr</code>. For a complete list of languages supported by this method, see <a href='http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/languages/internal/languages.cc'>kLanguageInfoTable</a>. The second to fourth columns are checked and the first non-NULL value is returned, except for Simplified Chinese for which <code>zh-CN</code> is returned. For an unknown/undefined language, <code>und</code> is returned."
               }
             ]
           }
@@ -746,7 +746,7 @@
       {
         "name": "captureVisibleTab",
         "type": "function",
-        "description": "Captures the visible area of the currently active tab in the specified window. In order to call this method, the extension must have either the <a href='declare_permissions'>&lt;all_urls&gt;</a> permission or the <a href='activeTab'>activeTab</a> permission. In addition to sites extensions can normally access, this method allows extensions to capture sensitive sites that are otherwise restricted, including chrome:-scheme pages, other extensions' pages, and data: URLs. These sensitive sites can only be captured with the activeTab permission. File URLs may be captured only if the extension has been granted file access.",
+        "description": "Captures the visible area of the currently active tab in the specified window. In order to call this method, the extension must have either the <a href='declare_permissions'>&lt;all_urls&gt;</a> permission or the <a href='activeTab'>activeTab</a> permission. In addition to sites that extensions can normally access, this method allows extensions to capture sensitive sites that are otherwise restricted, including chrome:-scheme pages, other extensions' pages, and data: URLs. These sensitive sites can only be captured with the activeTab permission. File URLs may be captured only if the extension has been granted file access.",
         "parameters": [
           {
             "type": "integer",
@@ -762,7 +762,7 @@
           },
           {
             "type": "function", "name": "callback", "parameters": [
-              {"type": "string", "name": "dataUrl", "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."}
+              {"type": "string", "name": "dataUrl", "description": "A data URL that encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML <code>img</code> element for display."}
             ]
           }
         ]
@@ -830,7 +830,7 @@
           {
             "type": "number",
             "name": "zoomFactor",
-            "description": "The new zoom factor. Use a value of 0 here to set the tab to its current default zoom factor. Values greater than zero specify a (possibly non-default) zoom factor for the tab."
+            "description": "The new zoom factor. A value of <code>0</code> sets the tab to its current default zoom factor. Values greater than <code>0</code> specify a (possibly non-default) zoom factor for the tab."
           },
           {
             "type": "function",
@@ -888,7 +888,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called after the zoom settings have been changed.",
+            "description": "Called after the zoom settings are changed.",
             "parameters": []
           }
         ]
@@ -929,7 +929,7 @@
             "name": "tabId",
             "optional": true,
             "minimum": 0,
-            "description": "The ID of the tab to be discarded. If specified, the tab will be discarded unless it's active or already discarded. If omitted, the browser will discard the least important tab. This can fail if no discardable tabs exist."
+            "description": "The ID of the tab to be discarded. If specified, the tab is discarded unless it is active or already discarded. If omitted, the browser discards the least important tab. This can fail if no discardable tabs exist."
           },
           {
             "type": "function",
@@ -941,7 +941,7 @@
                 "name": "tab",
                 "$ref": "Tab",
                 "optional": true,
-                "description": "Discarded tab if it was successfully discarded. Undefined otherwise."
+                "description": "The discarded tab, if it was successfully discarded; undefined otherwise."
               }
             ]
           }
@@ -952,7 +952,7 @@
       {
         "name": "onCreated",
         "type": "function",
-        "description": "Fired when a tab is created. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.",
+        "description": "Fired when a tab is created. Note that the tab's URL may not be set at the time this event is fired, but you can listen to onUpdated events so as to be notified when a URL is set.",
         "parameters": [
           {
             "$ref": "Tab",
@@ -1029,7 +1029,7 @@
       {
         "name": "onMoved",
         "type": "function",
-        "description": "Fired when a tab is moved within a window. Only one move event is fired, representing the tab the user directly moved. Move events are not fired for the other tabs that must move in response. This event is not fired when a tab is moved between windows. For that, see $(ref:tabs.onDetached).",
+        "description": "Fired when a tab is moved within a window. Only one move event is fired, representing the tab the user directly moved. Move events are not fired for the other tabs that must move in response to the manually-moved tab. This event is not fired when a tab is moved between windows; for details, see $(ref:tabs.onDetached).",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1072,7 +1072,7 @@
         "name": "onActiveChanged",
         "deprecated": "Please use $(ref:tabs.onActivated).",
         "type": "function",
-        "description": "Fires when the selected tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to $(ref:tabs.onUpdated) events to be notified when a URL is set.",
+        "description": "Fires when the selected tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to $(ref:tabs.onUpdated) events so as to be notified when a URL is set.",
         "parameters": [
           {
             "type": "integer",
@@ -1096,7 +1096,7 @@
       {
         "name": "onActivated",
         "type": "function",
-        "description": "Fires when the active tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events to be notified when a URL is set.",
+        "description": "Fires when the active tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to onUpdated events so as to be notified when a URL is set.",
         "parameters": [
           {
             "type": "object",
@@ -1168,7 +1168,7 @@
       {
         "name": "onDetached",
         "type": "function",
-        "description": "Fired when a tab is detached from a window, for example because it is being moved between windows.",
+        "description": "Fired when a tab is detached from a window; for example, because it was moved between windows.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1184,7 +1184,7 @@
       {
         "name": "onAttached",
         "type": "function",
-        "description": "Fired when a tab is attached to a window, for example because it was moved between windows.",
+        "description": "Fired when a tab is attached to a window; for example, because it was moved between windows.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
@@ -1208,7 +1208,7 @@
             "name": "removeInfo",
             "properties": {
               "windowId": {"type": "integer", "minimum": 0, "description": "The window whose tab is closed." },
-              "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
+              "isWindowClosing": {"type": "boolean", "description": "True when the tab was closed because its parent window was closed." }
             }
           }
         ]

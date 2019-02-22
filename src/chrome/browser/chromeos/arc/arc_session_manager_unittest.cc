@@ -492,6 +492,55 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 }
 
+// Verifies that Play Store shown is suppressed on restart when required.
+TEST_F(ArcSessionManagerTest, PlayStoreSuppressed) {
+  // Set up the situation that terms were accepted in the previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  // Set the flag indicating that the provisioning was initiated from OOBE in
+  // the previous session.
+  prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  arc_session_manager()->StartArcForTesting();
+
+  // Second start, no fetching code is expected.
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  // Completing the provisioning resets this flag.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  // |prefs::kArcProvisioningInitiatedFromOobe| flag prevents opening the
+  // Play Store.
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, InitiatedFromOobeIsResetOnOptOut) {
+  // Set up the situation that terms were accepted in the previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  // Set the flag indicating that the provisioning was initiated from OOBE in
+  // the previous session.
+  prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+  // Disabling ARC resets suppress state
+  arc_session_manager()->RequestDisable();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
 TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
   // Set up the situation that provisioning is successfully done in the
   // previous session.
@@ -655,6 +704,36 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
   EXPECT_EQ(
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
       profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
+
+  // Initialize ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
+
+  // Child started graduation.
+  profile()->GetPrefs()->SetInteger(
+      prefs::kArcSupervisionTransition,
+      static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
+
+  arc_session_manager()->RequestArcDataRemoval();
+  EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
+            arc::GetSupervisionTransition(profile()));
 
   arc_session_manager()->Shutdown();
 }
@@ -1047,6 +1126,43 @@ TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
   EXPECT_TRUE(terminated);
 }
 
+class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
+ public:
+  ArcSessionManagerPublicSessionTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    const AccountId account_id(
+        AccountId::FromUserEmail(profile()->GetProfileUserName()));
+    GetFakeUserManager()->AddPublicAccountUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerPublicSessionTest);
+};
+
+TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Replace chrome::AttemptUserExit() for testing.
+  // At the end of test, leave the dangling pointer |terminated|,
+  // assuming the callback is never invoked in OnProvisioningFinished()
+  // and not invoked then, including TearDown().
+  bool terminated = false;
+  arc_session_manager()->SetAttemptUserExitCallbackForTesting(
+      base::BindRepeating([](bool* terminated) { *terminated = true; },
+                          &terminated));
+
+  arc_session_manager()->OnProvisioningFinished(
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+  EXPECT_FALSE(terminated);
+  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
+}
+
 class ArcSessionOobeOptInNegotiatorTest
     : public ArcSessionManagerTest,
       public chromeos::ArcTermsOfServiceScreenView,
@@ -1207,6 +1323,169 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
     // Managed user's preference should not be overwritten.
     EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
   }
+}
+
+struct ArcSessionRetryTestParam {
+  enum class Negotiation {
+    // Negotiation is required for provisioning.
+    REQUIRED,
+    // Negotiation is not required and not shown for provisioning.
+    SKIPPED,
+  };
+
+  Negotiation negotiation;
+
+  // Provisioning error to test.
+  ProvisioningResult error;
+
+  // Whether ARC++ container is alive on error.
+  bool container_alive;
+
+  // Whether data is removed on error.
+  bool data_removed;
+};
+
+constexpr ArcSessionRetryTestParam kRetryTestCases[] = {
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::UNKNOWN_ERROR, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_NETWORK_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SERVICE_UNAVAILABLE, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_BAD_AUTHENTICATION, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_FAILED, true, false},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_FAILED, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::MOJO_VERSION_MISMATCH, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::MOJO_CALL_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::DEVICE_CHECK_IN_INTERNAL_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_FAILED, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_TIMEOUT, true, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::GMS_SIGN_IN_INTERNAL_ERROR, true, false},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_TIMEOUT, true, true},
+    {ArcSessionRetryTestParam::Negotiation::SKIPPED,
+     ProvisioningResult::CLOUD_PROVISION_FLOW_INTERNAL_ERROR, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::ARC_STOPPED, false, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT, true, true},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, false, false},
+    {ArcSessionRetryTestParam::Negotiation::REQUIRED,
+     ProvisioningResult::NO_NETWORK_CONNECTION, true, false},
+};
+
+class ArcSessionRetryTest
+    : public ArcSessionManagerTest,
+      public testing::WithParamInterface<ArcSessionRetryTestParam> {
+ public:
+  ArcSessionRetryTest() = default;
+
+  void SetUp() override {
+    ArcSessionManagerTest::SetUp();
+
+    GetFakeUserManager()->set_current_user_new(true);
+
+    // Make negotiation not needed by switching to managed flow with other
+    // preferences under the policy, similar to google.com provisioning case.
+    if (GetParam().negotiation ==
+        ArcSessionRetryTestParam::Negotiation::SKIPPED) {
+      policy::ProfilePolicyConnector* const connector =
+          policy::ProfilePolicyConnectorFactory::GetForBrowserContext(
+              profile());
+      connector->OverrideIsManagedForTesting(true);
+
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcEnabled, std::make_unique<base::Value>(true));
+      // Set all prefs as managed to simulate google.com account provisioning.
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcBackupRestoreEnabled,
+          std::make_unique<base::Value>(false));
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcLocationServiceEnabled,
+          std::make_unique<base::Value>(false));
+      EXPECT_FALSE(arc::IsArcTermsOfServiceNegotiationNeeded(profile()));
+    }
+  }
+
+  void TearDown() override {
+    // Correctly stop service.
+    arc_session_manager()->Shutdown();
+    ArcSessionManagerTest::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        ArcSessionRetryTest,
+                        ::testing::ValuesIn(kRetryTestCases));
+
+// Verifies that Android container behaves as expected.* This checks:
+//   * Whether ARC++ container alive or not on error.
+//   * Whether Android data is removed or not on error.
+//   * ARC++ Container is restared on retry.
+TEST_P(ArcSessionRetryTest, ContainerRestarted) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+
+  if (GetParam().negotiation ==
+      ArcSessionRetryTestParam::Negotiation::REQUIRED) {
+    EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+              arc_session_manager()->state());
+    arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  }
+
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->OnProvisioningFinished(GetParam().error);
+
+  // In case of permanent error data removal request is scheduled.
+  EXPECT_EQ(GetParam().data_removed,
+            profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  if (GetParam().container_alive) {
+    // We don't stop ARC due to let user submit user feedback with alive Android
+    // container.
+    EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  } else {
+    // Container is stopped automatically on this error.
+    EXPECT_EQ(ArcSessionManager::State::STOPPED,
+              arc_session_manager()->state());
+  }
+
+  arc_session_manager()->OnRetryClicked();
+
+  if (GetParam().data_removed) {
+    // Check state goes from REMOVING_DATA_DIR to CHECKING_ANDROID_MANAGEMENT
+    EXPECT_TRUE(WaitForDataRemoved(
+        ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT));
+  }
+
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  // Successful retry keeps ARC++ container running.
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
 }
 
 }  // namespace

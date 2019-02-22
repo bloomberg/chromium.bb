@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -101,18 +100,6 @@ constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
-
-class KeepAliveHandleWithChildProcessReference {
- public:
-  explicit KeepAliveHandleWithChildProcessReference(
-      mojom::KeepAliveHandlePtr ptr)
-      : keep_alive_handle_(std::move(ptr)) {}
-  ~KeepAliveHandleWithChildProcessReference() {}
-
- private:
-  mojom::KeepAliveHandlePtr keep_alive_handle_;
-  ScopedChildProcessReference reference_;
-};
 
 // TODO(estark): Figure out a way for the embedder to provide the
 // security style for a resource. Ideally, the logic for assigning
@@ -463,7 +450,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
-  std::unique_ptr<KeepAliveHandleWithChildProcessReference> keep_alive_handle_;
+  mojom::KeepAliveHandlePtr keep_alive_handle_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
   DeferState defers_loading_;
   int request_id_;
@@ -542,11 +529,7 @@ WebURLLoaderImpl::Context::Context(
       resource_dispatcher_(resource_dispatcher),
       task_runner_handle_(std::move(task_runner_handle)),
       task_runner_(task_runner_handle_->GetTaskRunner()),
-      keep_alive_handle_(
-          keep_alive_handle_ptr
-              ? std::make_unique<KeepAliveHandleWithChildProcessReference>(
-                    std::move(keep_alive_handle_ptr))
-              : nullptr),
+      keep_alive_handle_(std::move(keep_alive_handle_ptr)),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(std::move(url_loader_factory)) {
@@ -661,10 +644,18 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->url = url_;
   resource_request->site_for_cookies = request.SiteForCookies();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
-  resource_request->request_initiator =
-      request.RequestorOrigin().IsNull()
-          ? base::Optional<url::Origin>()
-          : base::Optional<url::Origin>(request.RequestorOrigin());
+  resource_request->is_revalidating = request.IsRevalidating();
+  if (!request.RequestorOrigin().IsNull()) {
+    if (request.RequestorOrigin().ToString() == "null") {
+      // "file:" origin is treated like an opaque unique origin when
+      // allow-file-access-from-files is not specified. Such origin is not
+      // opaque (i.e., IsOpaque() returns false) but still serializes to
+      // "null".
+      resource_request->request_initiator = url::Origin();
+    } else {
+      resource_request->request_initiator = request.RequestorOrigin();
+    }
+  }
   resource_request->referrer = referrer_url;
 
   resource_request->referrer_policy =
@@ -685,6 +676,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
+  resource_request->requested_with =
+      WebString(request.GetRequestedWith()).Utf8();
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
@@ -710,7 +703,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
-      GetRequestContextTypeForWebURLRequest(request);
+      static_cast<int>(GetRequestContextTypeForWebURLRequest(request));
 
   resource_request->fetch_frame_type = request.GetFrameType();
   resource_request->request_body =
@@ -721,7 +714,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->enable_upload_progress = request.ReportUploadProgress();
   GURL gurl(url_);
   if (request.GetRequestContext() ==
-          WebURLRequest::kRequestContextXMLHttpRequest &&
+          blink::mojom::RequestContextType::XML_HTTP_REQUEST &&
       (gurl.has_username() || gurl.has_password())) {
     resource_request->do_not_prompt_for_login = true;
   }
@@ -732,13 +725,14 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       static_cast<int>(request.GetPreviewsState());
   resource_request->throttling_profile_id = request.GetDevToolsToken();
 
+  if (base::UnguessableToken window_id = request.GetFetchWindowId())
+    resource_request->fetch_window_id = base::make_optional(window_id);
+
   // The network request has already been made by the browser. The renderer
   // should bind the URLLoaderClientEndpoints stored in |response_override| to
   // an implementation of a URLLoaderClient to get the response body.
   if (response_override) {
     DCHECK(!sync_load_response);
-    DCHECK_NE(network::mojom::RequestContextFrameType::kNone,
-              request.GetFrameType());
   }
 
   RequestExtraData empty_extra_data;
@@ -987,7 +981,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     } else {
       client_->DidFinishLoading(status.completion_time, total_transfer_size,
                                 encoded_body_size, status.decoded_body_length,
-                                status.should_report_corb_blocking);
+                                status.should_report_corb_blocking,
+                                status.cors_preflight_timing_info);
     }
   }
 }
@@ -1032,7 +1027,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
 
   // Data url requests from object tags may need to be intercepted as streams
   // and so need to be sent to the browser.
-  if (request.GetRequestContext() == WebURLRequest::kRequestContextObject)
+  if (request.GetRequestContext() == blink::mojom::RequestContextType::OBJECT)
     return false;
 
   // Optimize for the case where we can handle a data URL locally.  We must
@@ -1223,6 +1218,9 @@ void WebURLLoaderImpl::PopulateURLResponse(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);
   response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
+  response->SetRequestId(request_id);
+  response->SetIsSignedExchangeInnerResponse(
+      info.is_signed_exchange_inner_response);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
@@ -1233,7 +1231,6 @@ void WebURLLoaderImpl::PopulateURLResponse(
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
   extra_data->set_effective_connection_type(info.effective_connection_type);
-  extra_data->set_request_id(request_id);
 
   // If there's no received headers end time, don't set load timing.  This is
   // the case for non-HTTP requests, requests that don't go over the wire, and
@@ -1260,20 +1257,17 @@ void WebURLLoaderImpl::PopulateURLResponse(
         info.raw_request_response_info->response_headers_text));
     const HeadersVector& request_headers =
         info.raw_request_response_info->request_headers;
-    for (HeadersVector::const_iterator it = request_headers.begin();
-         it != request_headers.end(); ++it) {
+    for (auto it = request_headers.begin(); it != request_headers.end(); ++it) {
       load_info.AddRequestHeader(WebString::FromLatin1(it->first),
                                  WebString::FromLatin1(it->second));
     }
     const HeadersVector& response_headers =
         info.raw_request_response_info->response_headers;
-    for (HeadersVector::const_iterator it = response_headers.begin();
-         it != response_headers.end(); ++it) {
+    for (auto it = response_headers.begin(); it != response_headers.end();
+         ++it) {
       load_info.AddResponseHeader(WebString::FromLatin1(it->first),
                                   WebString::FromLatin1(it->second));
     }
-    load_info.SetNPNNegotiatedProtocol(
-        WebString::FromLatin1(info.alpn_negotiated_protocol));
     response->SetHTTPLoadInfo(load_info);
   }
 
@@ -1388,36 +1382,36 @@ net::NetworkTrafficAnnotationTag
 WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
     const blink::WebURLRequest& request) {
   switch (request.GetRequestContext()) {
-    case WebURLRequest::kRequestContextUnspecified:
-    case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextBeacon:
-    case WebURLRequest::kRequestContextCSPReport:
-    case WebURLRequest::kRequestContextDownload:
-    case WebURLRequest::kRequestContextEventSource:
-    case WebURLRequest::kRequestContextFetch:
-    case WebURLRequest::kRequestContextFont:
-    case WebURLRequest::kRequestContextForm:
-    case WebURLRequest::kRequestContextFrame:
-    case WebURLRequest::kRequestContextHyperlink:
-    case WebURLRequest::kRequestContextIframe:
-    case WebURLRequest::kRequestContextImage:
-    case WebURLRequest::kRequestContextImageSet:
-    case WebURLRequest::kRequestContextImport:
-    case WebURLRequest::kRequestContextInternal:
-    case WebURLRequest::kRequestContextLocation:
-    case WebURLRequest::kRequestContextManifest:
-    case WebURLRequest::kRequestContextPing:
-    case WebURLRequest::kRequestContextPrefetch:
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextServiceWorker:
-    case WebURLRequest::kRequestContextSharedWorker:
-    case WebURLRequest::kRequestContextSubresource:
-    case WebURLRequest::kRequestContextStyle:
-    case WebURLRequest::kRequestContextTrack:
-    case WebURLRequest::kRequestContextVideo:
-    case WebURLRequest::kRequestContextWorker:
-    case WebURLRequest::kRequestContextXMLHttpRequest:
-    case WebURLRequest::kRequestContextXSLT:
+    case blink::mojom::RequestContextType::UNSPECIFIED:
+    case blink::mojom::RequestContextType::AUDIO:
+    case blink::mojom::RequestContextType::BEACON:
+    case blink::mojom::RequestContextType::CSP_REPORT:
+    case blink::mojom::RequestContextType::DOWNLOAD:
+    case blink::mojom::RequestContextType::EVENT_SOURCE:
+    case blink::mojom::RequestContextType::FETCH:
+    case blink::mojom::RequestContextType::FONT:
+    case blink::mojom::RequestContextType::FORM:
+    case blink::mojom::RequestContextType::FRAME:
+    case blink::mojom::RequestContextType::HYPERLINK:
+    case blink::mojom::RequestContextType::IFRAME:
+    case blink::mojom::RequestContextType::IMAGE:
+    case blink::mojom::RequestContextType::IMAGE_SET:
+    case blink::mojom::RequestContextType::IMPORT:
+    case blink::mojom::RequestContextType::INTERNAL:
+    case blink::mojom::RequestContextType::LOCATION:
+    case blink::mojom::RequestContextType::MANIFEST:
+    case blink::mojom::RequestContextType::PING:
+    case blink::mojom::RequestContextType::PREFETCH:
+    case blink::mojom::RequestContextType::SCRIPT:
+    case blink::mojom::RequestContextType::SERVICE_WORKER:
+    case blink::mojom::RequestContextType::SHARED_WORKER:
+    case blink::mojom::RequestContextType::SUBRESOURCE:
+    case blink::mojom::RequestContextType::STYLE:
+    case blink::mojom::RequestContextType::TRACK:
+    case blink::mojom::RequestContextType::VIDEO:
+    case blink::mojom::RequestContextType::WORKER:
+    case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
+    case blink::mojom::RequestContextType::XSLT:
       return net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
       semantics {
         sender: "Blink Resource Loader"
@@ -1439,9 +1433,9 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           "to load any webpage."
       })");
 
-    case WebURLRequest::kRequestContextEmbed:
-    case WebURLRequest::kRequestContextObject:
-    case WebURLRequest::kRequestContextPlugin:
+    case blink::mojom::RequestContextType::EMBED:
+    case blink::mojom::RequestContextType::OBJECT:
+    case blink::mojom::RequestContextType::PLUGIN:
       return net::DefineNetworkTrafficAnnotation(
           "blink_extension_resource_loader", R"(
         semantics {
@@ -1470,7 +1464,7 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           }
         })");
 
-    case WebURLRequest::kRequestContextFavicon:
+    case blink::mojom::RequestContextType::FAVICON:
       return net::DefineNetworkTrafficAnnotation("favicon_loader", R"(
         semantics {
           sender: "Blink Resource Loader"

@@ -26,7 +26,8 @@ class CrostiniUpgradeViewBrowserTest : public CrostiniDialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    ShowCrostiniUpgradeView(browser()->profile(), CrostiniUISurface::kAppList);
+    ShowCrostiniUpgradeView(browser()->profile(),
+                            crostini::CrostiniUISurface::kAppList);
   }
 
   CrostiniUpgradeView* ActiveView() {
@@ -84,21 +85,24 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest, HitOK) {
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UpgradeSource",
-      static_cast<base::HistogramBase::Sample>(CrostiniUISurface::kAppList), 1);
+      static_cast<base::HistogramBase::Sample>(
+          crostini::CrostiniUISurface::kAppList),
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
                        LaunchAppOnline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
-  crostini::CrostiniManager::GetInstance()->MaybeUpgradeCrostini(
-      browser()->profile());
+  crostini::CrostiniManager::GetForProfile(browser()->profile())
+      ->MaybeUpgradeCrostini();
 
   ExpectNoView();
 
   UnregisterTermina();
-  LaunchCrostiniApp(browser()->profile(), kCrostiniTerminalId, 0);
+  crostini::LaunchCrostiniApp(browser()->profile(),
+                              crostini::kCrostiniTerminalId, 0);
   ExpectNoView();
 }
 
@@ -106,13 +110,14 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
                        LaunchAppOffline_UpgradeNeeded) {
   base::HistogramTester histogram_tester;
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
-  crostini::CrostiniManager::GetInstance()->MaybeUpgradeCrostini(
-      browser()->profile());
+  crostini::CrostiniManager::GetForProfile(browser()->profile())
+      ->MaybeUpgradeCrostini();
 
   ExpectNoView();
 
   UnregisterTermina();
-  LaunchCrostiniApp(browser()->profile(), kCrostiniTerminalId, 0);
+  crostini::LaunchCrostiniApp(browser()->profile(),
+                              crostini::kCrostiniTerminalId, 0);
   ExpectView();
 
   ActiveView()->GetDialogClientView()->AcceptWindow();
@@ -120,7 +125,9 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgradeViewBrowserTest,
 
   WaitForViewDestroyed();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester.ExpectUniqueSample(
       "Crostini.UpgradeSource",
-      static_cast<base::HistogramBase::Sample>(CrostiniUISurface::kAppList), 1);
+      static_cast<base::HistogramBase::Sample>(
+          crostini::CrostiniUISurface::kAppList),
+      1);
 }

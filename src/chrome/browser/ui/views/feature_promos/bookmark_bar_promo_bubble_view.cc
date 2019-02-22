@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "ui/views/controls/button/label_button.h"
 
 // BookmarkBarViewObserverImpl is used to observe when the bookmark bar has
 // finished animating, then show the bookmark bubble. It's important to wait

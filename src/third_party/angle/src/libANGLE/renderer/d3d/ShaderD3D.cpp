@@ -132,6 +132,12 @@ unsigned int ShaderD3D::getUniformBlockRegister(const std::string &blockName) co
     return mUniformBlockRegisterMap.find(blockName)->second;
 }
 
+unsigned int ShaderD3D::getShaderStorageBlockRegister(const std::string &blockName) const
+{
+    ASSERT(mShaderStorageBlockRegisterMap.count(blockName) > 0);
+    return mShaderStorageBlockRegisterMap.find(blockName)->second;
+}
+
 ShShaderOutput ShaderD3D::getCompilerOutputType() const
 {
     return mCompilerOutputType;
@@ -174,7 +180,7 @@ const std::map<std::string, unsigned int> &GetUniformRegisterMap(
     return *uniformRegisterMap;
 }
 
-bool ShaderD3D::postTranslateCompile(gl::Compiler *compiler, std::string *infoLog)
+bool ShaderD3D::postTranslateCompile(gl::ShCompilerInstance *compiler, std::string *infoLog)
 {
     // TODO(jmadill): We shouldn't need to cache this.
     mCompilerOutputType = compiler->getShaderOutputType();
@@ -199,7 +205,7 @@ bool ShaderD3D::postTranslateCompile(gl::Compiler *compiler, std::string *infoLo
     mRequiresIEEEStrictCompiling =
         translatedSource.find("ANGLE_REQUIRES_IEEE_STRICT_COMPILING") != std::string::npos;
 
-    ShHandle compilerHandle = compiler->getCompilerHandle(mData.getShaderType());
+    ShHandle compilerHandle = compiler->getHandle();
 
     mUniformRegisterMap = GetUniformRegisterMap(sh::GetUniformRegisterMap(compilerHandle));
 
@@ -213,6 +219,19 @@ bool ShaderD3D::postTranslateCompile(gl::Compiler *compiler, std::string *infoLo
             ASSERT(blockRegisterResult);
 
             mUniformBlockRegisterMap[interfaceBlock.name] = index;
+        }
+    }
+
+    for (const sh::InterfaceBlock &interfaceBlock : mData.getShaderStorageBlocks())
+    {
+        if (interfaceBlock.active)
+        {
+            unsigned int index = static_cast<unsigned int>(-1);
+            bool blockRegisterResult =
+                sh::GetShaderStorageBlockRegister(compilerHandle, interfaceBlock.name, &index);
+            ASSERT(blockRegisterResult);
+
+            mShaderStorageBlockRegisterMap[interfaceBlock.name] = index;
         }
     }
 

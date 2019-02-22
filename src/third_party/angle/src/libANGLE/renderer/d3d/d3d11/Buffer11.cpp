@@ -177,6 +177,7 @@ class Buffer11::NativeStorage : public Buffer11::BufferStorage
     angle::Result getSRVForFormat(const gl::Context *context,
                                   DXGI_FORMAT srvFormat,
                                   const d3d11::ShaderResourceView **srvOut);
+    angle::Result getRawUAV(const gl::Context *context, d3d11::UnorderedAccessView **uavOut);
 
   private:
     static void FillBufferDesc(D3D11_BUFFER_DESC *bufferDesc,
@@ -188,6 +189,7 @@ class Buffer11::NativeStorage : public Buffer11::BufferStorage
     d3d11::Buffer mBuffer;
     const angle::Subject *mOnStorageChanged;
     std::map<DXGI_FORMAT, d3d11::ShaderResourceView> mBufferResourceViews;
+    d3d11::UnorderedAccessView mBufferRawUAV;
 };
 
 // A emulated indexed buffer storage represents an underlying D3D11 buffer for data
@@ -348,6 +350,14 @@ gl::Error Buffer11::setData(const gl::Context *context,
 
 angle::Result Buffer11::getData(const gl::Context *context, const uint8_t **outData)
 {
+    if (mSize == 0)
+    {
+        // TODO(http://anglebug.com/2840): This ensures that we don't crash or assert in robust
+        // buffer access behavior mode if there are buffers without any data. However, technically
+        // it should still be possible to draw, with fetches from this buffer returning zero.
+        return angle::Result::Stop();
+    }
+
     SystemMemoryStorage *systemMemoryStorage = nullptr;
     ANGLE_TRY(getBufferStorage(context, BUFFER_USAGE_SYSTEM_MEMORY, &systemMemoryStorage));
 
@@ -513,7 +523,8 @@ gl::Error Buffer11::mapRange(const gl::Context *context,
         ANGLE_TRY(getStagingStorage(context, &mMappedStorage));
     }
 
-    ANGLE_TRY_ALLOCATION(mMappedStorage);
+    Context11 *context11 = GetImplAs<Context11>(context);
+    ANGLE_CHECK_HR_ALLOC(context11, mMappedStorage);
 
     if ((access & GL_MAP_WRITE_BIT) > 0)
     {
@@ -681,6 +692,13 @@ angle::Result Buffer11::getConstantBufferRange(const gl::Context *context,
 
     *bufferOut = &bufferStorage->getBuffer();
     return angle::Result::Continue();
+}
+
+angle::Result Buffer11::getRawUAV(const gl::Context *context, d3d11::UnorderedAccessView **uavOut)
+{
+    NativeStorage *nativeStorage = nullptr;
+    ANGLE_TRY(getBufferStorage(context, BUFFER_USAGE_RAW_UAV, &nativeStorage));
+    return nativeStorage->getRawUAV(context, uavOut);
 }
 
 angle::Result Buffer11::getSRV(const gl::Context *context,
@@ -1172,6 +1190,13 @@ void Buffer11::NativeStorage::FillBufferDesc(D3D11_BUFFER_DESC *bufferDesc,
                                static_cast<UINT>(renderer->getNativeCaps().maxUniformBlockSize));
             break;
 
+        case BUFFER_USAGE_RAW_UAV:
+            bufferDesc->MiscFlags      = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+            bufferDesc->BindFlags      = D3D11_BIND_UNORDERED_ACCESS;
+            bufferDesc->Usage          = D3D11_USAGE_DEFAULT;
+            bufferDesc->CPUAccessFlags = 0;
+            break;
+
         default:
             UNREACHABLE();
     }
@@ -1227,6 +1252,30 @@ angle::Result Buffer11::NativeStorage::getSRVForFormat(const gl::Context *contex
                                           mBuffer.get(), &mBufferResourceViews[srvFormat]));
 
     *srvOut = &mBufferResourceViews[srvFormat];
+    return angle::Result::Continue();
+}
+
+angle::Result Buffer11::NativeStorage::getRawUAV(const gl::Context *context,
+                                                 d3d11::UnorderedAccessView **uavOut)
+{
+    if (mBufferRawUAV.get())
+    {
+        *uavOut = &mBufferRawUAV;
+        return angle::Result::Continue();
+    }
+
+    D3D11_UNORDERED_ACCESS_VIEW_DESC bufferUAVDesc;
+    bufferUAVDesc.Buffer.FirstElement = 0;
+    bufferUAVDesc.Buffer.NumElements  = mBufferSize / 4;
+    bufferUAVDesc.Buffer.Flags        = D3D11_BUFFER_UAV_FLAG_RAW;
+    bufferUAVDesc.Format = DXGI_FORMAT_R32_TYPELESS;  // Format must be DXGI_FORMAT_R32_TYPELESS,
+                                                      // when creating Raw Unordered Access View
+    bufferUAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+
+    ANGLE_TRY(mRenderer->allocateResource(GetImplAs<Context11>(context), bufferUAVDesc,
+                                          mBuffer.get(), &mBufferRawUAV));
+
+    *uavOut = &mBufferRawUAV;
     return angle::Result::Continue();
 }
 

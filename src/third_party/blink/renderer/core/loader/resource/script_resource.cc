@@ -51,15 +51,14 @@ namespace {
 // Returns true if the given request context is a script-like destination
 // defined in the Fetch spec:
 // https://fetch.spec.whatwg.org/#request-destination-script-like
-bool IsRequestContextSupported(WebURLRequest::RequestContext request_context) {
+bool IsRequestContextSupported(mojom::RequestContextType request_context) {
   // TODO(nhiroki): Support |kRequestContextSharedWorker| for module loading for
   // shared workers (https://crbug.com/824646).
-  // TODO(nhiroki): Support |kRequestContextServiceWorker| for module loading
-  // for service workers (https://crbug.com/824647).
   // TODO(nhiroki): Support "audioworklet" and "paintworklet" destinations.
   switch (request_context) {
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextWorker:
+    case mojom::RequestContextType::SCRIPT:
+    case mojom::RequestContextType::WORKER:
+    case mojom::RequestContextType::SERVICE_WORKER:
       return true;
     default:
       break;
@@ -85,7 +84,10 @@ ScriptResource::ScriptResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,
     const TextResourceDecoderOptions& decoder_options)
-    : TextResource(resource_request, kScript, options, decoder_options) {}
+    : TextResource(resource_request,
+                   ResourceType::kScript,
+                   options,
+                   decoder_options) {}
 
 ScriptResource::~ScriptResource() = default;
 
@@ -137,12 +139,9 @@ void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
 }
 
 AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
-  if (GetCORSStatus() == CORSStatus::kServiceWorkerOpaque)
-    return kOpaqueResource;
-
-  if (IsSameOriginOrCORSSuccessful())
-    return kSharableCrossOrigin;
-  return kNotSharableCrossOrigin;
+  DCHECK_NE(GetResponse().GetType(), network::mojom::FetchResponseType::kError);
+  return GetResponse().IsCORSSameOrigin() ? kSharableCrossOrigin
+                                          : kOpaqueResource;
 }
 
 bool ScriptResource::CanUseCacheValidator() const {

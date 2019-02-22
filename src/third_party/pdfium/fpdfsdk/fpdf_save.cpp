@@ -12,6 +12,7 @@
 
 #include "core/fpdfapi/edit/cpdf_creator.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
@@ -21,6 +22,8 @@
 #include "fpdfsdk/cpdfsdk_filewriteadapter.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "public/fpdf_edit.h"
+#include "third_party/base/optional.h"
+#include "third_party/base/ptr_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
@@ -215,11 +218,10 @@ bool SendPreSaveToXFADoc(CPDFXFA_Context* pContext,
 }
 #endif  // PDF_ENABLE_XFA
 
-bool FPDF_Doc_Save(FPDF_DOCUMENT document,
-                   FPDF_FILEWRITE* pFileWrite,
-                   FPDF_DWORD flags,
-                   FPDF_BOOL bSetVersion,
-                   int fileVerion) {
+bool DoDocSave(FPDF_DOCUMENT document,
+               FPDF_FILEWRITE* pFileWrite,
+               FPDF_DWORD flags,
+               Optional<int> version) {
   CPDF_Document* pPDFDoc = CPDFDocumentFromFPDFDocument(document);
   if (!pPDFDoc)
     return 0;
@@ -237,8 +239,8 @@ bool FPDF_Doc_Save(FPDF_DOCUMENT document,
 
   CPDF_Creator fileMaker(
       pPDFDoc, pdfium::MakeRetain<CPDFSDK_FileWriteAdapter>(pFileWrite));
-  if (bSetVersion)
-    fileMaker.SetFileVersion(fileVerion);
+  if (version.has_value())
+    fileMaker.SetFileVersion(version.value());
   if (flags == FPDF_REMOVE_SECURITY) {
     flags = 0;
     fileMaker.RemoveSecurity();
@@ -258,7 +260,7 @@ bool FPDF_Doc_Save(FPDF_DOCUMENT document,
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SaveAsCopy(FPDF_DOCUMENT document,
                                                     FPDF_FILEWRITE* pFileWrite,
                                                     FPDF_DWORD flags) {
-  return FPDF_Doc_Save(document, pFileWrite, flags, false, 0);
+  return DoDocSave(document, pFileWrite, flags, {});
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -266,5 +268,5 @@ FPDF_SaveWithVersion(FPDF_DOCUMENT document,
                      FPDF_FILEWRITE* pFileWrite,
                      FPDF_DWORD flags,
                      int fileVersion) {
-  return FPDF_Doc_Save(document, pFileWrite, flags, true, fileVersion);
+  return DoDocSave(document, pFileWrite, flags, fileVersion);
 }

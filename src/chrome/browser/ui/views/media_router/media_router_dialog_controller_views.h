@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_VIEWS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/media_router/media_router_dialog_controller_impl_base.h"
 #include "chrome/browser/ui/views/media_router/media_router_views_ui.h"
@@ -31,6 +33,7 @@ class MediaRouterDialogControllerViews
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerViews>;

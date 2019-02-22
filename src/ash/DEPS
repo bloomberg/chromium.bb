@@ -3,6 +3,7 @@ include_rules = [
   "+device/bluetooth",
   "+cc/debug",
   "+cc/output",
+  "+cc/paint",
   "+chromeos/cryptohome",
   "+components/account_id",
   "+components/discardable_memory/public",
@@ -23,10 +24,9 @@ include_rules = [
   "+extensions/common/constants.h",
   "+gpu/config",
   "+media",
-  "+mash/public/mojom",
-  "+mash/shelf/public",
   "+mojo/public",
   "+services/catalog/public",
+  "+services/content/public",
   "+services/preferences/public",
   "+services/service_manager/embedder",
   "+services/service_manager/public",
@@ -83,6 +83,7 @@ include_rules = [
   "+chromeos/services/multidevice_setup/public",
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
+  "+chromeos/strings",
   "+chromeos/system",
 
   # InputMethodManager lives in the browser process. Use ImeController.

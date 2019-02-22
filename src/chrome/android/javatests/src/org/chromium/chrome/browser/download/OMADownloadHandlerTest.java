@@ -29,8 +29,8 @@ import org.chromium.chrome.browser.download.DownloadManagerDelegate.DownloadQuer
 import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.ByteArrayInputStream;

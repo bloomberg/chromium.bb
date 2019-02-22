@@ -50,7 +50,7 @@ class CPDFSDK_WidgetHandler final : public IPDFSDK_AnnotHandler {
   void OnDraw(CPDFSDK_PageView* pPageView,
               CPDFSDK_Annot* pAnnot,
               CFX_RenderDevice* pDevice,
-              CFX_Matrix* pUser2Device,
+              const CFX_Matrix& mtUser2Device,
               bool bDrawAnnots) override;
   void OnLoad(CPDFSDK_Annot* pAnnot) override;
 
@@ -102,10 +102,6 @@ class CPDFSDK_WidgetHandler final : public IPDFSDK_AnnotHandler {
   bool OnXFAChangedFocus(CPDFSDK_Annot::ObservedPtr* pOldAnnot,
                          CPDFSDK_Annot::ObservedPtr* pNewAnnot) override;
 #endif  // PDF_ENABLE_XFA
-
-  CFFL_InteractiveFormFiller* GetFormFiller() const {
-    return m_pFormFiller.Get();
-  }
 
  private:
   UnownedPtr<CPDFSDK_FormFillEnvironment> const m_pFormFillEnv;

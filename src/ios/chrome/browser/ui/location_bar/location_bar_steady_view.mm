@@ -92,6 +92,31 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 @end
 
+#pragma mark - LocationBarSteadyButton
+
+// Buttons with a darker background in highlighted state.
+@interface LocationBarSteadyButton : UIButton
+@end
+
+@implementation LocationBarSteadyButton
+
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+  [UIView animateWithDuration:0.1
+                        delay:0
+                      options:UIViewAnimationOptionBeginFromCurrentState
+                   animations:^{
+                     CGFloat alpha = 0;
+                     if (highlighted)
+                       alpha += 0.07;
+                     self.backgroundColor =
+                         [UIColor colorWithWhite:0 alpha:alpha];
+                   }
+                   completion:nil];
+}
+
+@end
+
 #pragma mark - LocationBarSteadyView
 
 @implementation LocationBarSteadyView
@@ -164,8 +189,9 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     [NSLayoutConstraint activateConstraints:_showLocationImageConstraints];
 
-    _locationButton = [[UIButton alloc] init];
+    _locationButton = [[LocationBarSteadyButton alloc] init];
     _locationButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _locationButton.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
     [_locationButton addSubview:_trailingButton];
     [_locationButton addSubview:_locationContainerView];
 

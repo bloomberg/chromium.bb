@@ -62,8 +62,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,8 +71,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_message_start.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -247,17 +243,6 @@ void RenderWidgetHostViewAndroid::AddDestructionObserver(
 void RenderWidgetHostViewAndroid::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
-}
-
-bool RenderWidgetHostViewAndroid::OnMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostViewAndroid, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectWordAroundCaretAck,
-                        OnSelectWordAroundCaretAck)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void RenderWidgetHostViewAndroid::InitAsChild(gfx::NativeView parent_view) {
@@ -473,9 +458,9 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   return is_showing_ && view_.parent();
 }
 
-void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
-                                                             int start_adjust,
-                                                             int end_adjust) {
+void RenderWidgetHostViewAndroid::SelectWordAroundCaretAck(bool did_select,
+                                                           int start_adjust,
+                                                           int end_adjust) {
   if (!selection_popup_controller_)
     return;
   selection_popup_controller_->OnSelectWordAroundCaretAck(
@@ -514,9 +499,9 @@ gfx::Size RenderWidgetHostViewAndroid::GetCompositorViewportPixelSize() const {
   return view_.GetPhysicalBackingSize();
 }
 
-bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
+bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkRendererSize() const {
   auto* delegate_view = GetRenderViewHostDelegateView();
-  return delegate_view ? delegate_view->DoBrowserControlsShrinkBlinkSize()
+  return delegate_view ? delegate_view->DoBrowserControlsShrinkRendererSize()
                        : false;
 }
 
@@ -678,18 +663,18 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point,
     viz::EventSource source) {
-  if (target_view == this || !delegated_frame_host_) {
+  if (target_view == this) {
     *transformed_point = point;
     return true;
   }
 
-  // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
-  // but it is not necessary here because the final target view is responsible
-  // for converting before computing the final transform.
-  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   if (!surface_id.is_valid())
     return false;
 
+  // In TransformPointToLocalCoordSpace() there is a Point-to-Pixel conversion,
+  // but it is not necessary here because the final target view is responsible
+  // for converting before computing the final transform.
   return target_view->TransformPointToLocalCoordSpace(
       point, surface_id, transformed_point, source);
 }
@@ -889,8 +874,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromSurface");
-  if (!features::IsSurfaceSynchronizationEnabled() &&
-      !IsSurfaceAvailableForCopy()) {
+  if (!IsSurfaceAvailableForCopy()) {
     std::move(callback).Run(SkBitmap());
     return;
   }
@@ -1315,8 +1299,6 @@ void RenderWidgetHostViewAndroid::UpdateTouchSelectionController(
   DCHECK(touch_selection_controller_client_manager_);
   touch_selection_controller_client_manager_->UpdateClientSelectionBounds(
       selection.start, selection.end, this, nullptr);
-  touch_selection_controller_client_manager_->SetPageScaleFactor(
-      page_scale_factor);
 
   // Set parameters for adaptive handle orientation.
   gfx::SizeF viewport_size(scrollable_viewport_size_dip);
@@ -1566,7 +1548,7 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 void RenderWidgetHostViewAndroid::TransformPointToRootSurface(
     gfx::PointF* point) {
   *point += gfx::Vector2d(
-      0, DoBrowserControlsShrinkBlinkSize() ? GetTopControlsHeight() : 0);
+      0, DoBrowserControlsShrinkRendererSize() ? GetTopControlsHeight() : 0);
 }
 
 // TODO(jrg): Find out the implications and answer correctly here,

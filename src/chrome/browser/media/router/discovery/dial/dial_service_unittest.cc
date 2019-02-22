@@ -139,7 +139,8 @@ TEST_F(DialServiceTest, TestNotifyOnError) {
 TEST_F(DialServiceTest, TestOnDeviceDiscovered) {
   dial_service_.discovery_active_ = true;
   int response_size = arraysize(kValidResponse) - 1;
-  dial_socket_->recv_buffer_ = new net::IOBufferWithSize(response_size);
+  dial_socket_->recv_buffer_ =
+      base::MakeRefCounted<net::IOBufferWithSize>(response_size);
   strncpy(dial_socket_->recv_buffer_->data(), kValidResponse, response_size);
   dial_socket_->recv_address_ = net::IPEndPoint(mock_ip_, 12345);
 

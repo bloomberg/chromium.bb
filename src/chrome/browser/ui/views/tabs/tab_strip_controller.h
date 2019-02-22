@@ -66,9 +66,6 @@ class TabStripController {
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
-  // Toggles audio muting for the tab at the specified index in the model.
-  virtual void ToggleTabAudioMute(int index) = 0;
-
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,
                                      const gfx::Point& p,
@@ -97,11 +94,6 @@ class TabStripController {
   // valid URL, then simply loads the URL, otherwise this can open a
   // search-result page for |location|.
   virtual void CreateNewTabWithLocation(const base::string16& location) = 0;
-
-  // Returns true if the tab strip is in an incognito window.  This is used to
-  // determining which theme may have applied to it, so this determination
-  // should match the one in ThemeService::GetThemeProviderForProfile().
-  virtual bool IsIncognito() = 0;
 
   // Invoked if the stacked layout (on or off) might have changed.
   virtual void StackedLayoutMaybeChanged() = 0;
@@ -142,9 +134,8 @@ class TabStripController {
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
   // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.  If |opaque| is true, the resulting
-  // color after drawing the tab background on the frame will be returned.
-  virtual SkColor GetTabBackgroundColor(TabState state, bool opaque) const = 0;
+  // the activation state of the window.
+  virtual SkColor GetTabBackgroundColor(TabState state) const = 0;
 
   // Returns the tab foreground color of the the text based on both the |state|
   // of the tab and the activation state of the window.

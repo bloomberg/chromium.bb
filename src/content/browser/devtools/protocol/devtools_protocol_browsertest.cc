@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -1349,6 +1350,48 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {
   shell()->LoadURL(test_url);
   WaitForNotification("Network.loadingFinished", true);
   continue_observer2.Wait();
+  EXPECT_EQ(test_url, shell()
+                          ->web_contents()
+                          ->GetController()
+                          .GetLastCommittedEntry()
+                          ->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       CertificateErrorRequestInterception) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL test_url = https_server.GetURL("/devtools/navigation.html");
+
+  shell()->LoadURL(GURL("about:blank"));
+  WaitForLoadStop(shell()->web_contents());
+
+  Attach();
+  SendCommand("Network.enable", nullptr, true);
+  SendCommand("Security.enable", nullptr, false);
+  SendCommand(
+      "Network.setRequestInterception",
+      base::JSONReader::Read("{\"patterns\": [{\"urlPattern\": \"*\"}]}"),
+      true);
+
+  SendCommand("Security.setIgnoreCertificateErrors",
+              base::JSONReader::Read("{\"ignore\": true}"), true);
+
+  SendCommand("Network.clearBrowserCache", nullptr, true);
+  SendCommand("Network.clearBrowserCookies", nullptr, true);
+  TestNavigationObserver continue_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  std::unique_ptr<base::DictionaryValue> params =
+      WaitForNotification("Network.requestIntercepted", false);
+  std::string interceptionId;
+  EXPECT_TRUE(params->GetString("interceptionId", &interceptionId));
+  SendCommand("Network.continueInterceptedRequest",
+              base::JSONReader::Read("{\"interceptionId\": \"" +
+                                     interceptionId + "\"}"),
+              false);
+  continue_observer.Wait();
   EXPECT_EQ(test_url, shell()
                           ->web_contents()
                           ->GetController()

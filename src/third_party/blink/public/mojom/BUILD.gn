@@ -16,6 +16,7 @@ mojom("mojom_platform") {
     "blob/blob_url_store.mojom",
     "blob/data_element.mojom",
     "blob/serialized_blob.mojom",
+    "choosers/file_chooser.mojom",
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",
     "cookie_store/cookie_store.mojom",
@@ -29,8 +30,10 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
+    "frame/navigation_initiator.mojom",
     "indexeddb/indexeddb.mojom",
     "leak_detector/leak_detector.mojom",
+    "loader/code_cache.mojom",
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",
     "loader/previews_resource_loading_hints.mojom",
@@ -38,6 +41,7 @@ mojom("mojom_platform") {
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
     "net/ip_address_space.mojom",
+    "notifications/notification.mojom",
     "page/display_cutout.mojom",
     "page/page_visibility_state.mojom",
     "payments/payment_app.mojom",
@@ -56,6 +60,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
     "shared_worker/shared_worker_creation_context_type.mojom",
+    "shared_worker/shared_worker_main_script_load_params.mojom",
     "speech/speech_recognition_error.mojom",
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
@@ -125,7 +130,7 @@ mojom("speech_recognition_error_code") {
 # typemapped to a type in Source/core. This also means these interfaces are not
 # available from Source/platform.
 # Note that service_worker_object.mojom and service_worker.mojom depend
-# on message_port.mojom, and service_worker_registration.mojom depends
+# on transferable_message.mojom, and service_worker_registration.mojom depends
 # on service_worker_object.mojom, so we put these three service worker
 # mojom files here rather than mojom_platform target.
 # In future we may have a separate mojom target for the things that may have
@@ -133,8 +138,9 @@ mojom("speech_recognition_error_code") {
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
   sources = [
-    "message_port/message_port.mojom",
-    "message_port/user_activation_snapshot.mojom",
+    "messaging/cloneable_message.mojom",
+    "messaging/transferable_message.mojom",
+    "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_object.mojom",

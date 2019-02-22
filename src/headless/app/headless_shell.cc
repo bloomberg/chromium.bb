@@ -409,7 +409,15 @@ void HeadlessShell::InputExpression() {
   std::stringstream expression;
   while (true) {
     int c = fgetc(stdin);
-    if (c == EOF || c == '\n') {
+    if (c == '\n')
+      break;
+    if (c == EOF) {
+      // If there's no expression, then quit.
+      if (expression.str().size() == 0) {
+        printf("\n");
+        Shutdown();
+        return;
+      }
       break;
     }
     expression << static_cast<char>(c);
@@ -711,11 +719,6 @@ int HeadlessShellMain(int argc, const char** argv) {
       proxy_config->proxy_rules().bypass_rules.ParseFromString(bypass_list);
     }
     builder.SetProxyConfig(std::move(proxy_config));
-  }
-
-  if (command_line.HasSwitch(::network::switches::kHostResolverRules)) {
-    builder.SetHostResolverRules(command_line.GetSwitchValueASCII(
-        ::network::switches::kHostResolverRules));
   }
 
   if (command_line.HasSwitch(switches::kUseGL)) {

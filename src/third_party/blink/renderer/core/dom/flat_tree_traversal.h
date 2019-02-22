@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/traversal_range.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -127,13 +128,11 @@ class CORE_EXPORT FlatTreeTraversal {
   //   - InclusiveDescendantsOf()
   //   - StartsAt()
   //   - StartsAfter()
-  static TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
-  AncestorsOf(const Node&);
-  static TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
-  ChildrenOf(const Node&);
+  static TraversalAncestorRange<FlatTreeTraversal> AncestorsOf(const Node&);
+  static TraversalSiblingRange<FlatTreeTraversal> ChildrenOf(const Node&);
 
-  static TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
-  InclusiveAncestorsOf(const Node&);
+  static TraversalAncestorRange<FlatTreeTraversal> InclusiveAncestorsOf(
+      const Node&);
 
  private:
   enum TraversalDirection {
@@ -318,20 +317,21 @@ inline Node* FlatTreeTraversal::TraverseLastChild(const Node& node) {
 }
 
 // TraverseRange<T> implementations
-inline TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>
-FlatTreeTraversal::AncestorsOf(const Node& node) {
-  return TraversalRange<TraversalAncestorsIterator<FlatTreeTraversal>>(&node);
+inline TraversalAncestorRange<FlatTreeTraversal> FlatTreeTraversal::AncestorsOf(
+    const Node& node) {
+  return TraversalAncestorRange<FlatTreeTraversal>(
+      FlatTreeTraversal::Parent(node));
 }
 
-inline TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>
-FlatTreeTraversal::ChildrenOf(const Node& parent) {
-  return TraversalRange<TraversalChildrenIterator<FlatTreeTraversal>>(&parent);
+inline TraversalSiblingRange<FlatTreeTraversal> FlatTreeTraversal::ChildrenOf(
+    const Node& parent) {
+  return TraversalSiblingRange<FlatTreeTraversal>(
+      FlatTreeTraversal::FirstChild(parent));
 }
 
-inline TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>
+inline TraversalAncestorRange<FlatTreeTraversal>
 FlatTreeTraversal::InclusiveAncestorsOf(const Node& node) {
-  return TraversalRange<TraversalInclusiveAncestorsIterator<FlatTreeTraversal>>(
-      &node);
+  return TraversalAncestorRange<FlatTreeTraversal>(&node);
 }
 
 }  // namespace blink

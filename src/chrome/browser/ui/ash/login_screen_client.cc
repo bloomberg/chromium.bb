@@ -71,26 +71,41 @@ chromeos::LoginAuthRecorder* LoginScreenClient::auth_recorder() {
   return auth_recorder_.get();
 }
 
-void LoginScreenClient::AuthenticateUser(const AccountId& account_id,
-                                         const std::string& password,
-                                         bool authenticated_by_pin,
-                                         AuthenticateUserCallback callback) {
+void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
+    const AccountId& account_id,
+    const std::string& password,
+    bool authenticated_by_pin,
+    AuthenticateUserWithPasswordOrPinCallback callback) {
   if (delegate_) {
-    delegate_->HandleAuthenticateUser(
+    delegate_->HandleAuthenticateUserWithPasswordOrPin(
         account_id, password, authenticated_by_pin, std::move(callback));
     auth_recorder_->RecordAuthMethod(
         authenticated_by_pin
             ? chromeos::LoginAuthRecorder::AuthMethod::kPin
             : chromeos::LoginAuthRecorder::AuthMethod::kPassword);
   } else {
-    LOG(ERROR) << "Returning failed authentication attempt; no delegate";
+    LOG(ERROR) << "Failed AuthenticateUserWithPasswordOrPin; no delegate";
+    std::move(callback).Run(false);
+  }
+}
+void LoginScreenClient::AuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    AuthenticateUserWithExternalBinaryCallback callback) {
+  if (delegate_) {
+    delegate_->HandleAuthenticateUserWithExternalBinary(account_id,
+                                                        std::move(callback));
+    // TODO(jdufault): Record auth method attempt here
+    NOTIMPLEMENTED() << "Missing UMA recording for external binary auth";
+  } else {
+    LOG(ERROR) << "Failed AuthenticateUserWithExternalBinary; no delegate";
     std::move(callback).Run(false);
   }
 }
 
-void LoginScreenClient::AttemptUnlock(const AccountId& account_id) {
+void LoginScreenClient::AuthenticateUserWithEasyUnlock(
+    const AccountId& account_id) {
   if (delegate_) {
-    delegate_->HandleAttemptUnlock(account_id);
+    delegate_->HandleAuthenticateUserWithEasyUnlock(account_id);
     auth_recorder_->RecordAuthMethod(
         chromeos::LoginAuthRecorder::AuthMethod::kSmartlock);
   }
@@ -122,6 +137,11 @@ void LoginScreenClient::FocusLockScreenApps(bool reverse) {
   // give focus to the next window in the tab order.
   if (!delegate_ || !delegate_->HandleFocusLockScreenApps(reverse))
     login_screen_->HandleFocusLeavingLockScreenApps(reverse);
+}
+
+void LoginScreenClient::FocusOobeDialog() {
+  if (delegate_)
+    delegate_->HandleFocusOobeDialog();
 }
 
 void LoginScreenClient::ShowGaiaSignin(

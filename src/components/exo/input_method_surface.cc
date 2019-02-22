@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "components/exo/input_method_surface_manager.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace exo {
 
@@ -17,7 +18,7 @@ InputMethodSurface::InputMethodSurface(InputMethodSurfaceManager* manager,
           true /* can_minimize */,
           ash::kShellWindowId_ArcVirtualKeyboardContainer),
       manager_(manager),
-      added_to_manager_(false) {
+      input_method_bounds_() {
   SetScale(default_device_scale_factor);
   host_window()->SetName("ExoInputMethodSurface");
 }
@@ -34,6 +35,16 @@ void InputMethodSurface::OnSurfaceCommit() {
     added_to_manager_ = true;
     manager_->AddSurface(this);
   }
+
+  gfx::Rect new_bounds = root_surface()->hit_test_region().bounds();
+  if (input_method_bounds_ != new_bounds) {
+    input_method_bounds_ = new_bounds;
+    manager_->OnTouchableBoundsChanged(this);
+  }
+}
+
+gfx::Rect InputMethodSurface::GetBounds() const {
+  return input_method_bounds_;
 }
 
 }  // namespace exo

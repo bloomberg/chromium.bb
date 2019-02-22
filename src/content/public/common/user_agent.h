@@ -34,7 +34,10 @@ CONTENT_EXPORT std::string BuildUserAgentFromProduct(
 CONTENT_EXPORT std::string BuildUserAgentFromProductAndExtraOSInfo(
     const std::string& product,
     const std::string& extra_os_info,
-    const bool include_android_build_number);
+    bool include_android_build_number);
+
+// Helper function to generate just the OS info.
+CONTENT_EXPORT std::string GetAndroidOSInfo(bool include_android_build_number);
 #endif
 
 // Builds a full user agent string given a string describing the OS and a

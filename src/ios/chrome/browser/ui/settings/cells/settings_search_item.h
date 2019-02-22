@@ -27,6 +27,9 @@
 // The placeholder for the search input field.
 @property(nonatomic, copy) NSString* placeholder;
 
+// Whether or not the search field is enabled.
+@property(nonatomic, assign, getter=isEnabled) BOOL enabled;
+
 @end
 
 // Cell representation for SettingsSearchItem.

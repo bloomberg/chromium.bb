@@ -32,18 +32,19 @@
 
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_callback_queue.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_scheduler.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
-size_t V0CustomElementProcessingStack::element_queue_start_ = 0;
+wtf_size_t V0CustomElementProcessingStack::element_queue_start_ = 0;
 
 // The base of the stack has a null sentinel value.
-size_t V0CustomElementProcessingStack::element_queue_end_ = kNumSentinels;
+wtf_size_t V0CustomElementProcessingStack::element_queue_end_ = kNumSentinels;
 
 V0CustomElementProcessingStack& V0CustomElementProcessingStack::Instance() {
-  DEFINE_STATIC_LOCAL(V0CustomElementProcessingStack, instance,
+  DEFINE_STATIC_LOCAL(Persistent<V0CustomElementProcessingStack>, instance,
                       (new V0CustomElementProcessingStack));
-  return instance;
+  return *instance;
 }
 
 // Dispatches callbacks when popping the processing stack.
@@ -52,13 +53,13 @@ void V0CustomElementProcessingStack::ProcessElementQueueAndPop() {
                                        element_queue_end_);
 }
 
-void V0CustomElementProcessingStack::ProcessElementQueueAndPop(size_t start,
-                                                               size_t end) {
+void V0CustomElementProcessingStack::ProcessElementQueueAndPop(wtf_size_t start,
+                                                               wtf_size_t end) {
   DCHECK(IsMainThread());
   V0CustomElementCallbackQueue::ElementQueueId this_queue =
       CurrentElementQueue();
 
-  for (size_t i = start; i < end; ++i) {
+  for (wtf_size_t i = start; i < end; ++i) {
     {
       // The created callback may schedule entered document
       // callbacks.

@@ -10,9 +10,7 @@
 namespace blink {
 
 PlatformEventController::PlatformEventController(Document* document)
-    : PageVisibilityObserver(document && document->GetFrame()
-                                 ? document->GetFrame()->GetPage()
-                                 : nullptr),
+    : PageVisibilityObserver(document ? document->GetPage() : nullptr),
       has_event_listener_(false),
       is_active_(false),
       document_(document) {}

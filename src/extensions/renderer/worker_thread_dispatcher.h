@@ -56,6 +56,11 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   EventBookkeeper* event_bookkeeper() { return &event_bookkeeper_; }
 
+  // Called when a service worker context started running.
+  void DidStartContext(int64_t service_worker_version_id);
+  // Called when a service worker context was destroyed.
+  void DidStopContext(int64_t service_worker_version_id);
+
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
 

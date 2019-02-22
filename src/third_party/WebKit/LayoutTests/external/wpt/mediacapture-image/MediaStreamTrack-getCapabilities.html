@@ -78,6 +78,15 @@ image_capture_test(async (t, imageCaptureTest) => {
   assert_equals(capabilities.exposureCompensation.step,
                 mockCapabilities.exposureCompensation.step);
 
+  assert_true(capabilities.exposureTime instanceof
+              MediaSettingsRange);
+  assert_equals(capabilities.exposureTime.max,
+                mockCapabilities.exposureTime.max);
+  assert_equals(capabilities.exposureTime.min,
+                mockCapabilities.exposureTime.min);
+  assert_equals(capabilities.exposureTime.step,
+                mockCapabilities.exposureTime.step);
+
   assert_true(capabilities.colorTemperature instanceof
               MediaSettingsRange);
   assert_equals(capabilities.colorTemperature.max,
@@ -123,6 +132,14 @@ image_capture_test(async (t, imageCaptureTest) => {
                 mockCapabilities.sharpness.min);
   assert_equals(capabilities.sharpness.step,
                 mockCapabilities.sharpness.step);
+
+  assert_true(capabilities.focusDistance instanceof MediaSettingsRange);
+  assert_equals(capabilities.focusDistance.max,
+                mockCapabilities.focusDistance.max);
+  assert_equals(capabilities.focusDistance.min,
+                mockCapabilities.focusDistance.min);
+  assert_equals(capabilities.focusDistance.step,
+                mockCapabilities.focusDistance.step);
 
   assert_true(capabilities.zoom instanceof MediaSettingsRange);
   assert_equals(capabilities.zoom.max, mockCapabilities.zoom.max);

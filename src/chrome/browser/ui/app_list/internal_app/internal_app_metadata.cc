@@ -27,6 +27,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_features_parser.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/property/arc_property_bridge.h"
 #include "components/crx_file/id_util.h"
@@ -151,6 +152,31 @@ int GetIconResourceIdByAppId(const std::string& app_id) {
   return app ? app->icon_resource_id : 0;
 }
 
+void OpenChromeCameraApp(Profile* profile,
+                         int event_flags,
+                         const extensions::Extension* extension) {
+  AppListClientImpl* controller = AppListClientImpl::GetInstance();
+  AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
+      profile, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
+      controller->GetAppListDisplayId());
+  params.launch_id = ash::ShelfID(extension->id()).launch_id;
+  OpenApplication(params);
+  VLOG(1) << "Launched CCA.";
+}
+
+void ShowWebStore(Profile* profile,
+                  int event_flags,
+                  const std::string chrome_app_id) {
+  AppListClientImpl* controller = AppListClientImpl::GetInstance();
+  const GURL store_url = net::AppendQueryParameter(
+      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + chrome_app_id),
+      extension_urls::kWebstoreSourceField,
+      extension_urls::kLaunchSourceAppListSearch);
+  controller->OpenURL(profile, store_url, ui::PAGE_TRANSITION_LINK,
+                      ui::DispositionFromEventFlags(event_flags));
+  VLOG(1) << "Launched CWS.";
+}
+
 void OnGetMigrationProperty(Profile* profile,
                             int event_flags,
                             const base::Optional<std::string>& result) {
@@ -161,17 +187,48 @@ void OnGetMigrationProperty(Profile* profile,
   }
 
   AppListClientImpl* controller = AppListClientImpl::GetInstance();
-  if (!arc::LaunchApp(profile, app_id, event_flags,
-                      arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
-                      controller->GetAppListDisplayId())) {
-    arc::LaunchApp(profile, kAndroidLegacyCameraAppId, event_flags,
-                   arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
-                   controller->GetAppListDisplayId());
+  if (arc::LaunchApp(profile, app_id, event_flags,
+                     arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
+                     controller->GetAppListDisplayId())) {
+    VLOG(1) << "Launched "
+            << (app_id == kAndroidCameraAppId ? " GCA." : "GCA migration.");
+    return;
   }
+  if (arc::LaunchApp(profile, kAndroidLegacyCameraAppId, event_flags,
+                     arc::UserInteractionType::APP_STARTED_FROM_LAUNCHER,
+                     controller->GetAppListDisplayId())) {
+    VLOG(1) << "Launched legacy GCA.";
+    return;
+  }
+
+  LOG(ERROR) << "Failed to launch any camera apps. Fallback to CCA.";
+  const std::string chrome_app_id(kChromeCameraAppId);
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(chrome_app_id);
+  if (extension)
+    OpenChromeCameraApp(profile, event_flags, extension);
+  else
+    ShowWebStore(profile, event_flags, chrome_app_id);
 }
 
-void ShowCameraApp(Profile* profile, int event_flags) {
-  std::string chrome_app_id(kChromeCameraAppId);
+bool IsArcPOrAbove(const base::Optional<arc::ArcFeatures>& read_result) {
+  if (read_result == base::nullopt)
+    return false;
+
+  const std::string version_str =
+      read_result.value().build_props.at("ro.build.version.sdk");
+  int version = 0;
+  VLOG(1) << "ARC version is " << version_str;
+  return base::StringToInt(version_str, &version) && version >= 28;
+}
+
+void OnArcFeaturesRead(Profile* profile,
+                       int event_flags,
+                       base::Optional<arc::ArcFeatures> read_result) {
+  bool arc_p_or_above = IsArcPOrAbove(read_result);
+  const std::string chrome_app_id(kChromeCameraAppId);
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   const extensions::Extension* extension =
@@ -180,9 +237,13 @@ void ShowCameraApp(Profile* profile, int event_flags) {
   bool arc_enabled = arc::IsArcPlayStoreEnabledForProfile(profile);
   bool chrome_camera_migrated =
       profile->GetPrefs()->GetBoolean(prefs::kCameraMediaConsolidated);
-  AppListClientImpl* controller = AppListClientImpl::GetInstance();
 
-  if (arc_enabled && (!extension || chrome_camera_migrated)) {
+  VLOG(1) << "Launching camera app. arc_enabled = " << arc_enabled
+          << " arc_p_or_above = " << arc_p_or_above
+          << " chrome_camera_migrated = " << chrome_camera_migrated
+          << " cca_exist = " << (extension != nullptr);
+
+  if (arc_enabled && arc_p_or_above && (!extension || chrome_camera_migrated)) {
     // Open Google camera app or GCA migration app according to GCA
     // migration system property.
     arc::ArcPropertyBridge* property =
@@ -190,20 +251,9 @@ void ShowCameraApp(Profile* profile, int event_flags) {
     property->GetGcaMigrationProperty(
         base::BindOnce(&OnGetMigrationProperty, profile, event_flags));
   } else if (extension) {
-    // Open Chrome camera app.
-    AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-        profile, extension, event_flags, extensions::SOURCE_APP_LAUNCHER,
-        controller->GetAppListDisplayId());
-    params.launch_id = ash::ShelfID(extension->id()).launch_id;
-    OpenApplication(params);
+    OpenChromeCameraApp(profile, event_flags, extension);
   } else {
-    // Open Chrome camera app detail page in CWS.
-    const GURL store_url = net::AppendQueryParameter(
-        GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + chrome_app_id),
-        extension_urls::kWebstoreSourceField,
-        extension_urls::kLaunchSourceAppListSearch);
-    controller->OpenURL(profile, store_url, ui::PAGE_TRANSITION_LINK,
-                        ui::DispositionFromEventFlags(event_flags));
+    ShowWebStore(profile, event_flags, chrome_app_id);
   }
 }
 
@@ -215,7 +265,8 @@ void OpenInternalApp(const std::string& app_id,
   } else if (app_id == kInternalAppIdSettings) {
     chrome::ShowSettingsSubPageForProfile(profile, std::string());
   } else if (app_id == kInternalAppIdCamera) {
-    ShowCameraApp(profile, event_flags);
+    arc::ArcFeaturesParser::GetArcFeatures(
+        base::BindOnce(&OnArcFeaturesRead, profile, event_flags));
   } else if (app_id == kInternalAppIdDiscover) {
 #if defined(OS_CHROMEOS)
     base::RecordAction(base::UserMetricsAction("ShowDiscover"));

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
+#include <memory>
+
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/grit/chromium_strings.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -16,16 +17,13 @@
 #include "ui/views/widget/widget.h"
 
 // static
-BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser,
-                                                  bool user_gesture) {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return BrowserWindow::CreateBrowserWindowCocoa(browser, user_gesture);
-#endif
+BrowserWindow* BrowserWindow::CreateBrowserWindow(
+    std::unique_ptr<Browser> browser,
+    bool user_gesture) {
   // Create the view and the frame. The frame will attach itself via the view
   // so we don't need to do anything with the pointer.
   BrowserView* view = new BrowserView();
-  view->Init(browser);
+  view->Init(std::move(browser));
   (new BrowserFrame(view))->InitBrowserFrame();
   view->GetWidget()->non_client_view()->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
@@ -36,5 +34,6 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser,
   view->GetWidget()->GetNativeWindow()->SetProperty(
       aura::client::kCreatedByUserGesture, user_gesture);
 #endif
+  safe_browsing::LogContentsSize(view->GetContentsSize());
   return view;
 }

@@ -1,5 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_outline_manager.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
@@ -15,6 +18,7 @@
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../data/measurement_system.html">
 <link rel="import" href="../data/user_info.html">
+<link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="state.html">
 <link rel="import" href="model.html">
@@ -38,33 +42,42 @@
 </if>
 <dom-module id="print-preview-app">
   <template>
-    <style>
+    <style include="print-preview-shared cr-shared-style">
       :host {
         display: flex;
         height: 100%;
         user-select: none;
       }
 
-      #sidebar {
-        background-color: white;
-        border-inline-end: 1px solid #c8c8c8;
-        display: flex;
-        flex-direction: column;
-        max-width: 310px;
-        min-width: 310px;
+      :host ::-webkit-scrollbar {
+        display: none;
       }
 
-      #settingsSections {
-        background: #fbfbfb;
-        border-top: 1px solid #f3f3f3;
+      #sidebar {
+        background-color: white;
+        border-inline-end: var(--print-preview-settings-border);
+        display: flex;
+        flex: none;
+        flex-direction: column;
+        width: 311px;
+      }
+
+      #container {
+        color: var(--google-grey-900);
         flex: 1;
-        overflow: auto;
+        overflow: overlay;
+        padding-bottom: 16px;
+      }
+
+      .settings-section {
+        display: block;
+        margin-bottom: 16px;
+        margin-top: 16px;
       }
 
       #preview-area-container {
         align-items: center;
-        background-color: #e6e6e6;
-        border-inline-start: 1px solid #dcdcdc;
+        background-color: var(--google-grey-200);
         flex: 1;
       }
     </style>
@@ -80,31 +93,31 @@
           on-print-requested="onPrintRequested_"
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
-      <div id="settingsSections">
+      <div id="container">
         <print-preview-destination-settings id="destinationSettings"
             destination="[[destination_]]"
             destination-store="[[destinationStore_]]"
             invitation-store="[[invitationStore_]]"
             disabled="[[controlsDisabled_]]" state="[[state]]"
             recent-destinations="[[recentDestinations_]]"
-            user-info="{{userInfo_}}" available>
+            user-info="{{userInfo_}}" available class="settings-section">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
             document-info="[[documentInfo_]]"
             disabled="[[controlsDisabled_]]"
-            hidden$="[[!settings.pages.available]]">
+            hidden$="[[!settings.pages.available]]" class="settings-section">
         </print-preview-pages-settings>
         <print-preview-copies-settings settings="{{settings}}"
             disabled="[[controlsDisabled_]]"
-            hidden$="[[!settings.copies.available]]">
+            hidden$="[[!settings.copies.available]]" class="settings-section">
         </print-preview-copies-settings>
         <print-preview-layout-settings settings="{{settings}}"
             disabled="[[controlsDisabled_]]"
-            hidden$="[[!settings.layout.available]]">
+            hidden$="[[!settings.layout.available]]" class="settings-section">
         </print-preview-layout-settings>
         <print-preview-color-settings settings="{{settings}}"
             disabled="[[controlsDisabled_]]"
-            hidden$="[[!settings.color.available]]">
+            hidden$="[[!settings.color.available]]" class="settings-section">
         </print-preview-color-settings>
         <print-preview-more-settings
             settings-expanded-by-user="{{settingsExpandedByUser_}}"
@@ -117,35 +130,41 @@
           <print-preview-media-size-settings settings="{{settings}}"
               capability="[[destination_.capabilities.printer.media_size]]"
               disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.mediaSize.available]]">
+              hidden$="[[!settings.mediaSize.available]]"
+              class="settings-section">
           </print-preview-media-size-settings>
+          <template is="dom-if" if="[[showPagesPerSheet_]]">
+            <print-preview-pages-per-sheet-settings settings="{{settings}}"
+                disabled="[[controlsDisabled_]]"
+                hidden$="[[!settings.pagesPerSheet.available]]"
+                class="settings-section">
+            </print-preview-pages-per-sheet-settings>
+          </template>
           <print-preview-margins-settings settings="{{settings}}"
               disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.margins.available]]">
+              hidden$="[[!settings.margins.available]]"
+              class="settings-section">
           </print-preview-margins-settings>
           <print-preview-dpi-settings settings="{{settings}}"
               capability="[[destination_.capabilities.printer.dpi]]"
               disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.dpi.available]]">
+              hidden$="[[!settings.dpi.available]]" class="settings-section">
           </print-preview-dpi-settings>
-          <template is="dom-if" if="[[showPagesPerSheet_]]">
-            <print-preview-pages-per-sheet-settings settings="{{settings}}"
-                disabled="[[controlsDisabled_]]"
-                hidden$="[[!settings.pagesPerSheet.available]]">
-            </print-preview-pages-per-sheet-settings>
-          </template>
           <print-preview-scaling-settings settings="{{settings}}"
               document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.scaling.available]]">
+              hidden$="[[!settings.scaling.available]]"
+              class="settings-section">
           </print-preview-scaling-settings>
           <print-preview-other-options-settings settings="{{settings}}"
               disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.otherOptions.available]]">
+              hidden$="[[!settings.otherOptions.available]]"
+              class="settings-section">
           </print-preview-other-options-settings>
           <print-preview-advanced-options-settings
               settings="{{settings}}" destination="[[destination_]]"
               disabled="[[controlsDisabled_]]"
-              hidden$="[[!settings.vendorItems.available]]">
+              hidden$="[[!settings.vendorItems.available]]"
+              class="settings-section">
           </print-preview-advanced-options-settings>
         </iron-collapse>
 <if expr="not chromeos">

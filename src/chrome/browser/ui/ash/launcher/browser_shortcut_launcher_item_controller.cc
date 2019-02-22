@@ -357,7 +357,7 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     // Crostini Terminals always have their own item.
     // TODO(rjwright): We shouldn't need to special-case Crostini here.
     // https://crbug.com/846546
-    if (CrostiniAppIdFromAppName(browser->app_name()))
+    if (crostini::CrostiniAppIdFromAppName(browser->app_name()))
       return false;
 
     // V1 App popup windows may have their own item.

@@ -53,7 +53,10 @@ public:
     class Attribute {
     public:
         constexpr Attribute() = default;
-        constexpr Attribute(const char* name, GrVertexAttribType type) : fName(name), fType(type) {}
+        constexpr Attribute(const char* name,
+                            GrVertexAttribType cpuType,
+                            GrSLType gpuType)
+            : fName(name), fCPUType(cpuType), fGPUType(gpuType) {}
         constexpr Attribute(const Attribute&) = default;
 
         Attribute& operator=(const Attribute&) = default;
@@ -61,18 +64,20 @@ public:
         constexpr bool isInitialized() const { return SkToBool(fName); }
 
         constexpr const char* name() const { return fName; }
-        constexpr GrVertexAttribType type() const { return fType; }
+        constexpr GrVertexAttribType cpuType() const { return fCPUType; }
+        constexpr GrSLType           gpuType() const { return fGPUType; }
 
         inline constexpr size_t size() const;
         constexpr size_t sizeAlign4() const { return SkAlign4(this->size()); }
 
         GrShaderVar asShaderVar() const {
-            return {fName, GrVertexAttribTypeToSLType(fType), GrShaderVar::kIn_TypeModifier};
+            return {fName, fGPUType, GrShaderVar::kIn_TypeModifier};
         }
 
     private:
         const char* fName = nullptr;
-        GrVertexAttribType fType = kFloat_GrVertexAttribType;
+        GrVertexAttribType fCPUType = kFloat_GrVertexAttribType;
+        GrSLType fGPUType = kFloat_GrSLType;
     };
 
     GrPrimitiveProcessor(ClassID);
@@ -166,8 +171,18 @@ protected:
     inline static const TextureSampler& IthTextureSampler(int i);
 
 private:
-    virtual const Attribute& onVertexAttribute(int) const = 0;
-    virtual const Attribute& onInstanceAttribute(int) const = 0;
+    virtual const Attribute& onVertexAttribute(int) const {
+        SK_ABORT("No vertex attributes");
+        static constexpr Attribute kBogus;
+        return kBogus;
+    }
+
+    virtual const Attribute& onInstanceAttribute(int i) const {
+        SK_ABORT("No instanced attributes");
+        static constexpr Attribute kBogus;
+        return kBogus;
+    }
+
     virtual const TextureSampler& onTextureSampler(int) const { return IthTextureSampler(0); }
 
     int fVertexAttributeCnt = 0;
@@ -187,27 +202,23 @@ class GrPrimitiveProcessor::TextureSampler {
 public:
     TextureSampler() = default;
 
-    TextureSampler(GrTextureType, GrPixelConfig, const GrSamplerState&, GrShaderFlags visibility);
+    TextureSampler(GrTextureType, GrPixelConfig, const GrSamplerState&);
 
     explicit TextureSampler(GrTextureType, GrPixelConfig,
                             GrSamplerState::Filter = GrSamplerState::Filter::kNearest,
-                            GrSamplerState::WrapMode wrapXAndY = GrSamplerState::WrapMode::kClamp,
-                            GrShaderFlags visibility = kFragment_GrShaderFlag);
+                            GrSamplerState::WrapMode wrapXAndY = GrSamplerState::WrapMode::kClamp);
 
     TextureSampler(const TextureSampler&) = delete;
     TextureSampler& operator=(const TextureSampler&) = delete;
 
-    void reset(GrTextureType, GrPixelConfig, const GrSamplerState&,
-               GrShaderFlags visibility = kFragment_GrShaderFlag);
+    void reset(GrTextureType, GrPixelConfig, const GrSamplerState&);
     void reset(GrTextureType, GrPixelConfig,
                GrSamplerState::Filter = GrSamplerState::Filter::kNearest,
-               GrSamplerState::WrapMode wrapXAndY = GrSamplerState::WrapMode::kClamp,
-               GrShaderFlags visibility = kFragment_GrShaderFlag);
+               GrSamplerState::WrapMode wrapXAndY = GrSamplerState::WrapMode::kClamp);
 
     GrTextureType textureType() const { return fTextureType; }
     GrPixelConfig config() const { return fConfig; }
 
-    GrShaderFlags visibility() const { return fVisibility; }
     const GrSamplerState& samplerState() const { return fSamplerState; }
 
     bool isInitialized() const { return fConfig != kUnknown_GrPixelConfig; }
@@ -216,7 +227,6 @@ private:
     GrSamplerState fSamplerState;
     GrTextureType fTextureType = GrTextureType::k2D;
     GrPixelConfig fConfig = kUnknown_GrPixelConfig;
-    GrShaderFlags fVisibility = kNone_GrShaderFlags;
 };
 
 const GrPrimitiveProcessor::TextureSampler& GrPrimitiveProcessor::IthTextureSampler(int i) {
@@ -243,13 +253,13 @@ static constexpr inline size_t GrVertexAttribTypeSize(GrVertexAttribType type) {
         case kFloat4_GrVertexAttribType:
             return 4 * sizeof(float);
         case kHalf_GrVertexAttribType:
-            return sizeof(float);
+            return sizeof(uint16_t);
         case kHalf2_GrVertexAttribType:
-            return 2 * sizeof(float);
+            return 2 * sizeof(uint16_t);
         case kHalf3_GrVertexAttribType:
-            return 3 * sizeof(float);
+            return 3 * sizeof(uint16_t);
         case kHalf4_GrVertexAttribType:
-            return 4 * sizeof(float);
+            return 4 * sizeof(uint16_t);
         case kInt2_GrVertexAttribType:
             return 2 * sizeof(int32_t);
         case kInt3_GrVertexAttribType:
@@ -278,6 +288,8 @@ static constexpr inline size_t GrVertexAttribTypeSize(GrVertexAttribType type) {
             return 4 * sizeof(char);
         case kShort2_GrVertexAttribType:
             return 2 * sizeof(int16_t);
+        case kShort4_GrVertexAttribType:
+            return 4 * sizeof(int16_t);
         case kUShort2_GrVertexAttribType: // fall through
         case kUShort2_norm_GrVertexAttribType:
             return 2 * sizeof(uint16_t);
@@ -295,7 +307,7 @@ static constexpr inline size_t GrVertexAttribTypeSize(GrVertexAttribType type) {
 }
 
 constexpr size_t GrPrimitiveProcessor::Attribute::size() const {
-    return GrVertexAttribTypeSize(fType);
+    return GrVertexAttribTypeSize(fCPUType);
 }
 
 #endif

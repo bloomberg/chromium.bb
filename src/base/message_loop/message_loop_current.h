@@ -38,9 +38,9 @@ class MessageLoop;
 class BASE_EXPORT MessageLoopCurrent {
  public:
   // MessageLoopCurrent is effectively just a disguised pointer and is fine to
-  // copy around.
+  // copy/move around.
   MessageLoopCurrent(const MessageLoopCurrent& other) = default;
-  MessageLoopCurrent& operator=(const MessageLoopCurrent& other) = default;
+  MessageLoopCurrent(MessageLoopCurrent&& other) = default;
 
   // Returns a proxy object to interact with the MessageLoop running the
   // current thread. It must only be used on the thread it was obtained.

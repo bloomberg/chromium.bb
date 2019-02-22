@@ -69,7 +69,7 @@ def PrintKnownConfigs(site_config, production, build_config_fragments):
   """
   configs = ConfigsToPrint(site_config, production, build_config_fragments)
 
-  COLUMN_WIDTH = max(len(c.name) for c in configs) + 1
+  COLUMN_WIDTH = max([0] + [len(c.name) for c in configs]) + 1
   if production:
     print('Production configs:')
   else:

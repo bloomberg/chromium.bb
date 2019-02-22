@@ -44,7 +44,7 @@
 
 namespace blink {
 
-typedef size_t TokenPreloadScannerCheckpoint;
+typedef wtf_size_t TokenPreloadScannerCheckpoint;
 
 class HTMLParserOptions;
 class HTMLTokenizer;

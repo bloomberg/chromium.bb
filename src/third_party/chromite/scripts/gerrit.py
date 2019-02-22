@@ -106,23 +106,22 @@ def GetGerrit(opts, cl=None):
 def GetApprovalSummary(_opts, cls):
   """Return a dict of the most important approvals"""
   approvs = dict([(x, '') for x in GERRIT_SUMMARY_CATS])
-  if 'approvals' in cls['currentPatchSet']:
-    for approver in cls['currentPatchSet']['approvals']:
-      cats = GERRIT_APPROVAL_MAP.get(approver['type'])
-      if not cats:
-        logging.warning('unknown gerrit approval type: %s', approver['type'])
-        continue
-      cat = cats[0].strip()
-      val = int(approver['value'])
-      if not cat in approvs:
-        # Ignore the extended categories in the summary view.
-        continue
-      elif approvs[cat] == '':
-        approvs[cat] = val
-      elif val < 0:
-        approvs[cat] = min(approvs[cat], val)
-      else:
-        approvs[cat] = max(approvs[cat], val)
+  for approver in cls.get('currentPatchSet', {}).get('approvals', []):
+    cats = GERRIT_APPROVAL_MAP.get(approver['type'])
+    if not cats:
+      logging.warning('unknown gerrit approval type: %s', approver['type'])
+      continue
+    cat = cats[0].strip()
+    val = int(approver['value'])
+    if not cat in approvs:
+      # Ignore the extended categories in the summary view.
+      continue
+    elif approvs[cat] == '':
+      approvs[cat] = val
+    elif val < 0:
+      approvs[cat] = min(approvs[cat], val)
+    else:
+      approvs[cat] = max(approvs[cat], val)
   return approvs
 
 

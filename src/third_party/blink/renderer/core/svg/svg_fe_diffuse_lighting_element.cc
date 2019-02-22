@@ -19,7 +19,7 @@
 
 #include "third_party/blink/renderer/core/svg/svg_fe_diffuse_lighting_element.h"
 
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_diffuse_lighting.h"
@@ -31,15 +31,14 @@ inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag,
                                            document),
-      diffuse_constant_(SVGAnimatedNumber::Create(this,
-                                                  SVGNames::diffuseConstantAttr,
-                                                  SVGNumber::Create(1))),
-      surface_scale_(SVGAnimatedNumber::Create(this,
-                                               SVGNames::surfaceScaleAttr,
-                                               SVGNumber::Create(1))),
+      diffuse_constant_(
+          SVGAnimatedNumber::Create(this, SVGNames::diffuseConstantAttr, 1)),
+      surface_scale_(
+          SVGAnimatedNumber::Create(this, SVGNames::surfaceScaleAttr, 1)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr)),
+          SVGNames::kernelUnitLengthAttr,
+          0.0f)),
       in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
   AddToPropertyMap(diffuse_constant_);
   AddToPropertyMap(surface_scale_);
@@ -63,11 +62,9 @@ bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
   FEDiffuseLighting* diffuse_lighting = static_cast<FEDiffuseLighting*>(effect);
 
   if (attr_name == SVGNames::lighting_colorAttr) {
-    LayoutObject* layout_object = this->GetLayoutObject();
-    DCHECK(layout_object);
-    DCHECK(layout_object->Style());
+    const ComputedStyle& style = ComputedStyleRef();
     return diffuse_lighting->SetLightingColor(
-        layout_object->StyleRef().SvgStyle().LightingColor());
+        style.VisitedDependentColor(GetCSSPropertyLightingColor()));
   }
   if (attr_name == SVGNames::surfaceScaleAttr)
     return diffuse_lighting->SetSurfaceScale(
@@ -146,12 +143,11 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  LayoutObject* layout_object = this->GetLayoutObject();
-  if (!layout_object)
+  const ComputedStyle* style = GetComputedStyle();
+  if (!style)
     return nullptr;
 
-  DCHECK(layout_object->Style());
-  Color color = layout_object->StyleRef().SvgStyle().LightingColor();
+  Color color = style->VisitedDependentColor(GetCSSPropertyLightingColor());
 
   const SVGFELightElement* light_node =
       SVGFELightElement::FindLightElement(*this);

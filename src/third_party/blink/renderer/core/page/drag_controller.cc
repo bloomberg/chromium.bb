@@ -243,9 +243,10 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
   DCHECK(drag_data);
   document_under_mouse_ =
       local_root.DocumentAtPoint(LayoutPoint(drag_data->ClientPosition()));
-  std::unique_ptr<UserGestureIndicator> gesture = Frame::NotifyUserActivation(
-      document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
-      UserGestureToken::kNewGesture);
+  std::unique_ptr<UserGestureIndicator> gesture =
+      LocalFrame::NotifyUserActivation(
+          document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr,
+          UserGestureToken::kNewGesture);
   if ((drag_destination_action_ & kDragDestinationActionDHTML) &&
       document_is_handling_drag_) {
     bool prevented_default = false;
@@ -296,9 +297,10 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       // origin rather than the origin of the dragged data URL?
       resource_request.SetRequestorOrigin(
           SecurityOrigin::Create(KURL(drag_data->AsURL())));
-      resource_request.SetHasUserGesture(Frame::HasTransientUserActivation(
+      resource_request.SetHasUserGesture(LocalFrame::HasTransientUserActivation(
           document_under_mouse_ ? document_under_mouse_->GetFrame() : nullptr));
-      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request));
+      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request),
+                                   WebFrameLoadType::kStandard);
     }
 
     // TODO(bokan): This case happens when we end a URL drag inside a guest

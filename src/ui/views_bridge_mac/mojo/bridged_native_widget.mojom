@@ -9,6 +9,13 @@ import "ui/base/mojo/ui_base_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
+// Parameters used to described creation of an NSWindow.
+// TODO(ccameron): Add additional members to support all window sub-classes.
+struct CreateWindowParams {
+  // The NSWindowStyleMask for the window.
+  uint64 style_mask;
+};
+
 // Ways of changing the visibility of the bridged NSWindow.
 enum WindowVisibilityState {
   // Hides with -[NSWindow orderOut:].
@@ -20,10 +27,23 @@ enum WindowVisibilityState {
   kShowInactive
 };
 
+// Window transitions to animate, mirrors views::Widget::VisibilityTransition.
+enum VisibilityTransition {
+  kShow = 1,
+  kHide = 2,
+  kBoth = 3,
+  kNone = 4,
+};
+
 struct BridgedNativeWidgetInitParams {
   ui.mojom.ModalType modal_type;
   // If true, the underlying window potentially be seen through.
   bool is_translucent;
+  // True if the widget is considered top level widget.
+  bool widget_is_top_level;
+  // True if the bounds specified to SetBounds should be treated as though they
+  // are in screen coordinates.
+  bool position_window_in_screen_coords;
   // If true, then the NSWindow is set to have a shadow using
   // -[NSWindow setHasShadow:YES].
   bool has_window_server_shadow;
@@ -36,6 +56,13 @@ struct BridgedNativeWidgetInitParams {
 // The interface through which a NativeWidgetMac may interact with an NSWindow
 // in another process.
 interface BridgedNativeWidget {
+  // Create and set the NSWindow for the bridge.
+  CreateWindow(CreateWindowParams params);
+
+  // Set the BridgedNativeWidget indicated by |parent_id| to be the parent of
+  // this BridgedNativeWidget.
+  SetParent(uint64 parent_id);
+
   // Initialize the window's style.
   InitWindow(BridgedNativeWidgetInitParams params);
 
@@ -44,8 +71,9 @@ interface BridgedNativeWidget {
   // BridgedNativeWidgetHost.
   InitCompositorView();
 
-  // Create the NSView to be the content view for the window.
-  CreateContentView(gfx.mojom.Rect bounds);
+  // Create the NSView to be the content view for the window. Use |ns_view_id|
+  // to look up this NSView in other functions (e.g, to specify a parent view).
+  CreateContentView(uint64 ns_view_id, gfx.mojom.Rect bounds);
 
   // Destroy the content NSView for this window. Note that the window will
   // become blank once this has been called.
@@ -62,12 +90,9 @@ interface BridgedNativeWidget {
   // Specify initial bounds for the window via |new_bounds| in screen
   // coordinates. It is invalid for |new_bounds| to have an empty size and
   // non-zero position. The size of the window will be expanded so that the
-  // content size will be at least |minimum_content_size|. The bounds are offset
-  // by |parent_offset| (this isn't incorporated directly into |new_bounds| for
-  // the aforementioned checks of |new_bounds|' position).
+  // content size will be at least |minimum_content_size|.
   SetInitialBounds(gfx.mojom.Rect new_bounds,
-                   gfx.mojom.Size minimum_content_size,
-                   gfx.mojom.Vector2d parent_offset);
+                   gfx.mojom.Size minimum_content_size);
 
   // Specify new bounds for the window via |new_bounds| in screen coordinates.
   // The size of the window will be expanded so that the content size will be
@@ -75,9 +100,19 @@ interface BridgedNativeWidget {
   SetBounds(gfx.mojom.Rect new_bounds,
             gfx.mojom.Size minimum_content_size);
 
+  // Centers the window and sets its content size to |content_size|. The size of
+  // the window will be expanded so that the content size will be at least
+  // |minimum_content_size|.
+  SetSizeAndCenter(gfx.mojom.Size content_size,
+                   gfx.mojom.Size minimum_content_size);
+
   // Sets the desired visibility of the window and updates the visibility of
   // descendant windows where necessary.
   SetVisibilityState(WindowVisibilityState new_state);
+
+  // Sets which transitions will animate. Currently this only affects non-native
+  // animations.
+  SetTransitionsToAnimate(VisibilityTransition transitions);
 
   // Sets the collection behavior so that the window will or will not be visible
   // on all spaces.
@@ -113,6 +148,9 @@ interface BridgedNativeWidget {
 
   // Clear the touchbar.
   ClearTouchBar();
+
+  // Update the tooltip text at the current mouse location.
+  UpdateTooltip();
 
   // Acquiring mouse capture first steals capture from any existing
   // CocoaMouseCaptureDelegate, then captures all mouse events until released.

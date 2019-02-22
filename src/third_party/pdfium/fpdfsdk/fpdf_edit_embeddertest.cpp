@@ -541,7 +541,11 @@ void CheckMarkCounts(FPDF_PAGE page,
       FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, j);
 
       char buffer[256];
-      ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+      unsigned long name_len = 999u;
+      ASSERT_TRUE(
+          FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+      EXPECT_GT(name_len, 0u);
+      EXPECT_NE(999u, name_len);
       std::wstring name =
           GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
       if (name == L"Prime") {
@@ -551,9 +555,9 @@ void CheckMarkCounts(FPDF_PAGE page,
         int expected_square = start_from + i;
         EXPECT_EQ(1, FPDFPageObjMark_CountParams(mark));
 
-        unsigned long get_param_key_return =
-            FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer));
-        ASSERT_GT(get_param_key_return, 0u);
+        unsigned long get_param_key_return = 999u;
+        ASSERT_TRUE(FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer),
+                                                &get_param_key_return));
         EXPECT_EQ((6u + 1u) * 2u, get_param_key_return);
         std::wstring key =
             GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
@@ -571,9 +575,9 @@ void CheckMarkCounts(FPDF_PAGE page,
         bounds_count++;
         EXPECT_EQ(1, FPDFPageObjMark_CountParams(mark));
 
-        unsigned long get_param_key_return =
-            FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer));
-        ASSERT_GT(get_param_key_return, 0u);
+        unsigned long get_param_key_return = 999u;
+        ASSERT_TRUE(FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer),
+                                                &get_param_key_return));
         EXPECT_EQ((8u + 1u) * 2u, get_param_key_return);
         std::wstring key =
             GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
@@ -660,7 +664,11 @@ TEST_F(FPDFEditEmbeddertest, RemoveMarkedObjectsPrime) {
       FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, j);
 
       char buffer[256];
-      ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+      unsigned long name_len = 999u;
+      ASSERT_TRUE(
+          FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+      EXPECT_GT(name_len, 0u);
+      EXPECT_NE(999u, name_len);
       std::wstring name =
           GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
       if (name == L"Prime") {
@@ -677,19 +685,35 @@ TEST_F(FPDFEditEmbeddertest, RemoveMarkedObjectsPrime) {
 
   EXPECT_EQ(11, FPDFPage_CountObjects(page));
 
-  {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-    const char kNonPrimesMD5[] = "57e76dc7375d896704f0fd6d6d1b9e65";
+  const char kNonPrimesMD5[] = "57e76dc7375d896704f0fd6d6d1b9e65";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-    const char kNonPrimesMD5[] = "4d906b57fba36c70c600cf50d60f508c";
+  const char kNonPrimesMD5[] = "4d906b57fba36c70c600cf50d60f508c";
 #else
-    const char kNonPrimesMD5[] = "33d9c45bec41ead92a295e252f6b7922";
+  const char kNonPrimesMD5[] = "33d9c45bec41ead92a295e252f6b7922";
 #endif
+  {
     ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(page, nullptr, 0);
     CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesMD5);
   }
 
+  // Save the file.
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
   UnloadPage(page);
+
+  // Re-open the file and check the prime marks are not there anymore.
+  OpenSavedDocument(nullptr);
+  FPDF_PAGE saved_page = LoadSavedPage(0);
+  EXPECT_EQ(11, FPDFPage_CountObjects(saved_page));
+
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(saved_page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 200, kNonPrimesMD5);
+  }
+
+  CloseSavedPage(saved_page);
+  CloseSavedDocument();
 }
 
 TEST_F(FPDFEditEmbeddertest, RemoveMarks) {
@@ -710,7 +734,11 @@ TEST_F(FPDFEditEmbeddertest, RemoveMarks) {
       FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, j);
 
       char buffer[256];
-      ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+      unsigned long name_len = 999u;
+      ASSERT_TRUE(
+          FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+      EXPECT_GT(name_len, 0u);
+      EXPECT_NE(999u, name_len);
       std::wstring name =
           GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
       if (name == L"Prime") {
@@ -759,7 +787,11 @@ TEST_F(FPDFEditEmbeddertest, RemoveMarkParam) {
       FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, j);
 
       char buffer[256];
-      ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+      unsigned long name_len = 999u;
+      ASSERT_TRUE(
+          FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+      EXPECT_GT(name_len, 0u);
+      EXPECT_NE(999u, name_len);
       std::wstring name =
           GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
       if (name == L"Square") {
@@ -796,7 +828,11 @@ TEST_F(FPDFEditEmbeddertest, RemoveMarkParam) {
       FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, j);
 
       char buffer[256];
-      ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+      unsigned long name_len = 999u;
+      ASSERT_TRUE(
+          FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+      EXPECT_GT(name_len, 0u);
+      EXPECT_NE(999u, name_len);
       std::wstring name =
           GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
       if (name == L"Square") {
@@ -1430,6 +1466,80 @@ TEST_F(FPDFEditEmbeddertest, InsertPageObjectEditAndSave) {
   OpenSavedDocument(nullptr);
   FPDF_PAGE saved_page = LoadSavedPage(0);
   EXPECT_EQ(3, FPDFPage_CountObjects(saved_page));
+  CloseSavedPage(saved_page);
+  CloseSavedDocument();
+}
+
+TEST_F(FPDFEditEmbeddertest, InsertAndRemoveLargeFile) {
+  const int kOriginalObjectCount = 600;
+
+  // Load document with many objects.
+  EXPECT_TRUE(OpenDocument("many_rectangles.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  const char kOriginalMD5[] = "b0170c575b65ecb93ebafada0ff0f038";
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 300, kOriginalMD5);
+  }
+
+  // Add a black rectangle.
+  ASSERT_EQ(kOriginalObjectCount, FPDFPage_CountObjects(page));
+  FPDF_PAGEOBJECT black_rect = FPDFPageObj_CreateNewRect(20, 100, 50, 50);
+  EXPECT_TRUE(FPDFPath_SetFillColor(black_rect, 0, 0, 0, 255));
+  EXPECT_TRUE(FPDFPath_SetDrawMode(black_rect, FPDF_FILLMODE_ALTERNATE, 0));
+  FPDFPage_InsertObject(page, black_rect);
+
+  // Verify the black rectangle was added.
+  ASSERT_EQ(kOriginalObjectCount + 1, FPDFPage_CountObjects(page));
+  const char kPlusRectangleMD5[] = "6b9396ab570754b32b04ca629e902f77";
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 300, kPlusRectangleMD5);
+  }
+
+  // Save the file.
+  EXPECT_TRUE(FPDFPage_GenerateContent(page));
+  EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  UnloadPage(page);
+
+  // Re-open the file and check the rectangle added is still there.
+  OpenSavedDocument(nullptr);
+  FPDF_PAGE saved_page = LoadSavedPage(0);
+  EXPECT_EQ(kOriginalObjectCount + 1, FPDFPage_CountObjects(saved_page));
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(saved_page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 300, kPlusRectangleMD5);
+  }
+
+  // Remove the added rectangle.
+  FPDF_PAGEOBJECT added_object =
+      FPDFPage_GetObject(saved_page, kOriginalObjectCount);
+  EXPECT_TRUE(FPDFPage_RemoveObject(saved_page, added_object));
+  FPDFPageObj_Destroy(added_object);
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(saved_page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 300, kOriginalMD5);
+  }
+  EXPECT_EQ(kOriginalObjectCount, FPDFPage_CountObjects(saved_page));
+
+  // Save the file again.
+  EXPECT_TRUE(FPDFPage_GenerateContent(saved_page));
+  EXPECT_TRUE(FPDF_SaveAsCopy(saved_document_, this, 0));
+
+  CloseSavedPage(saved_page);
+  CloseSavedDocument();
+
+  // Re-open the file (again) and check the black rectangle was removed and the
+  // rest is intact.
+  OpenSavedDocument(nullptr);
+  saved_page = LoadSavedPage(0);
+  EXPECT_EQ(kOriginalObjectCount, FPDFPage_CountObjects(saved_page));
+  {
+    ScopedFPDFBitmap page_bitmap = RenderPageWithFlags(saved_page, nullptr, 0);
+    CompareBitmap(page_bitmap.get(), 200, 300, kOriginalMD5);
+  }
+
   CloseSavedPage(saved_page);
   CloseSavedDocument();
 }
@@ -2407,7 +2517,9 @@ TEST_F(FPDFEditEmbeddertest, SetMarkParam) {
   FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, 1);
   ASSERT_TRUE(mark);
   char buffer[256];
-  ASSERT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+  unsigned long name_len = 999u;
+  ASSERT_TRUE(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+  EXPECT_EQ((6u + 1u) * 2u, name_len);
   ASSERT_EQ(L"Bounds",
             GetPlatformWString(reinterpret_cast<unsigned short*>(buffer)));
   unsigned long out_buffer_len;
@@ -2478,15 +2590,17 @@ TEST_F(FPDFEditEmbeddertest, AddMarkedText) {
 
   // Add a mark with the tag "TestMarkName" to that text.
   EXPECT_EQ(0, FPDFPageObj_CountMarks(text_object));
-  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_AddMark(text_object, "TestMarkName");
+  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_AddMark(text_object, "Test Mark Name");
   EXPECT_TRUE(mark);
   EXPECT_EQ(1, FPDFPageObj_CountMarks(text_object));
   EXPECT_EQ(mark, FPDFPageObj_GetMark(text_object, 0));
   char buffer[256];
-  EXPECT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+  unsigned long name_len = 999u;
+  ASSERT_TRUE(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+  EXPECT_EQ((14u + 1u) * 2, name_len);
   std::wstring name =
       GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
-  EXPECT_EQ(L"TestMarkName", name);
+  EXPECT_EQ(L"Test Mark Name", name);
 
   // Add parameters:
   // - int "IntKey" : 42
@@ -2513,10 +2627,11 @@ TEST_F(FPDFEditEmbeddertest, AddMarkedText) {
 
   EXPECT_EQ(FPDF_OBJECT_STRING,
             FPDFPageObjMark_GetParamValueType(mark, "StringKey"));
-  unsigned long out_buffer_len;
+  unsigned long out_buffer_len = 999u;
   EXPECT_TRUE(FPDFPageObjMark_GetParamStringValue(
       mark, "StringKey", buffer, sizeof(buffer), &out_buffer_len));
   EXPECT_GT(out_buffer_len, 0u);
+  EXPECT_NE(999u, out_buffer_len);
   name = GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
   EXPECT_EQ(L"StringValue", name);
 
@@ -2558,12 +2673,172 @@ TEST_F(FPDFEditEmbeddertest, AddMarkedText) {
   EXPECT_EQ(1, FPDFPageObj_CountMarks(text_object));
   mark = FPDFPageObj_GetMark(text_object, 0);
   EXPECT_TRUE(mark);
-  EXPECT_GT(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer)), 0u);
+
+  name_len = 999u;
+  ASSERT_TRUE(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &name_len));
+  EXPECT_EQ((14u + 1u) * 2, name_len);
   name = GetPlatformWString(reinterpret_cast<unsigned short*>(buffer));
-  EXPECT_EQ(L"TestMarkName", name);
+  EXPECT_EQ(L"Test Mark Name", name);
 
   CloseSavedPage(saved_page);
   CloseSavedDocument();
+}
+
+TEST_F(FPDFEditEmbeddertest, MarkGetName) {
+  EXPECT_TRUE(OpenDocument("text_in_page_marked.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, 18);
+  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, 1);
+  ASSERT_TRUE(mark);
+
+  char buffer[256];
+  unsigned long out_len;
+
+  // Show the positive cases of FPDFPageObjMark_GetName.
+  out_len = 999u;
+  EXPECT_TRUE(FPDFPageObjMark_GetName(mark, nullptr, 0, &out_len));
+  EXPECT_EQ((6u + 1u) * 2u, out_len);
+
+  out_len = 999u;
+  EXPECT_TRUE(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), &out_len));
+  EXPECT_EQ(L"Bounds",
+            GetPlatformWString(reinterpret_cast<unsigned short*>(buffer)));
+  EXPECT_EQ((6u + 1u) * 2u, out_len);
+
+  // Show the negative cases of FPDFPageObjMark_GetName.
+  out_len = 999u;
+  EXPECT_FALSE(
+      FPDFPageObjMark_GetName(nullptr, buffer, sizeof(buffer), &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  EXPECT_FALSE(FPDFPageObjMark_GetName(mark, buffer, sizeof(buffer), nullptr));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbeddertest, MarkGetParamKey) {
+  EXPECT_TRUE(OpenDocument("text_in_page_marked.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, 18);
+  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, 1);
+  ASSERT_TRUE(mark);
+
+  char buffer[256];
+  unsigned long out_len;
+
+  // Show the positive cases of FPDFPageObjMark_GetParamKey.
+  out_len = 999u;
+  EXPECT_TRUE(FPDFPageObjMark_GetParamKey(mark, 0, nullptr, 0, &out_len));
+  EXPECT_EQ((8u + 1u) * 2u, out_len);
+
+  out_len = 999u;
+  EXPECT_TRUE(
+      FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer), &out_len));
+  EXPECT_EQ(L"Position",
+            GetPlatformWString(reinterpret_cast<unsigned short*>(buffer)));
+  EXPECT_EQ((8u + 1u) * 2u, out_len);
+
+  // Show the negative cases of FPDFPageObjMark_GetParamKey.
+  out_len = 999u;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamKey(nullptr, 0, buffer, sizeof(buffer),
+                                           &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  out_len = 999u;
+  EXPECT_FALSE(
+      FPDFPageObjMark_GetParamKey(mark, 1, buffer, sizeof(buffer), &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  EXPECT_FALSE(
+      FPDFPageObjMark_GetParamKey(mark, 0, buffer, sizeof(buffer), nullptr));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbeddertest, MarkGetIntParam) {
+  EXPECT_TRUE(OpenDocument("text_in_page_marked.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, 8);
+  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, 0);
+  ASSERT_TRUE(mark);
+
+  int out_value;
+
+  // Show the positive cases of FPDFPageObjMark_GetParamIntValue.
+  out_value = 999;
+  EXPECT_TRUE(FPDFPageObjMark_GetParamIntValue(mark, "Factor", &out_value));
+  EXPECT_EQ(3, out_value);
+
+  // Show the negative cases of FPDFPageObjMark_GetParamIntValue.
+  out_value = 999;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamIntValue(nullptr, "Factor", &out_value));
+  EXPECT_EQ(999, out_value);
+
+  out_value = 999;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamIntValue(mark, "ParamThatDoesNotExist",
+                                                &out_value));
+  EXPECT_EQ(999, out_value);
+
+  EXPECT_FALSE(FPDFPageObjMark_GetParamIntValue(mark, "Factor", nullptr));
+
+  page_object = FPDFPage_GetObject(page, 18);
+  mark = FPDFPageObj_GetMark(page_object, 1);
+  out_value = 999;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamIntValue(mark, "Position", &out_value));
+  EXPECT_EQ(999, out_value);
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFEditEmbeddertest, MarkGetStringParam) {
+  EXPECT_TRUE(OpenDocument("text_in_page_marked.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  FPDF_PAGEOBJECT page_object = FPDFPage_GetObject(page, 18);
+  FPDF_PAGEOBJECTMARK mark = FPDFPageObj_GetMark(page_object, 1);
+  ASSERT_TRUE(mark);
+
+  char buffer[256];
+  unsigned long out_len;
+
+  // Show the positive cases of FPDFPageObjMark_GetParamStringValue.
+  out_len = 999u;
+  EXPECT_TRUE(FPDFPageObjMark_GetParamStringValue(mark, "Position", nullptr, 0,
+                                                  &out_len));
+  EXPECT_EQ((4u + 1u) * 2u, out_len);
+
+  out_len = 999u;
+  EXPECT_TRUE(FPDFPageObjMark_GetParamStringValue(mark, "Position", buffer,
+                                                  sizeof(buffer), &out_len));
+  EXPECT_EQ(L"Last",
+            GetPlatformWString(reinterpret_cast<unsigned short*>(buffer)));
+  EXPECT_EQ((4u + 1u) * 2u, out_len);
+
+  // Show the negative cases of FPDFPageObjMark_GetParamStringValue.
+  out_len = 999u;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamStringValue(nullptr, "Position", buffer,
+                                                   sizeof(buffer), &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  out_len = 999u;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamStringValue(
+      mark, "ParamThatDoesNotExist", buffer, sizeof(buffer), &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  EXPECT_FALSE(FPDFPageObjMark_GetParamStringValue(mark, "Position", buffer,
+                                                   sizeof(buffer), nullptr));
+
+  page_object = FPDFPage_GetObject(page, 8);
+  mark = FPDFPageObj_GetMark(page_object, 0);
+  out_len = 999u;
+  EXPECT_FALSE(FPDFPageObjMark_GetParamStringValue(mark, "Factor", buffer,
+                                                   sizeof(buffer), &out_len));
+  EXPECT_EQ(999u, out_len);
+
+  UnloadPage(page);
 }
 
 TEST_F(FPDFEditEmbeddertest, ExtractImageBitmap) {

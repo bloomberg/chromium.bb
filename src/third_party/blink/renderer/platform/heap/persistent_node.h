@@ -183,7 +183,7 @@ class CrossThreadPersistentRegion final {
 
   void FreePersistentNode(PersistentNode*& persistent_node) {
 #if DCHECK_IS_ON()
-    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     // When the thread that holds the heap object that the cross-thread
     // persistent shuts down, prepareForThreadStateTermination() will clear out

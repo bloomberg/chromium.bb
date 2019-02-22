@@ -226,7 +226,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   const auto* scroll = scroller_properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(DocScroll(), scroll->Parent());
   EXPECT_EQ(IntRect(0, 0, 413, 317), scroll->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 660, 10200), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(660, 10200), scroll->ContentsSize());
   EXPECT_FALSE(scroll->UserScrollableHorizontal());
   EXPECT_TRUE(scroll->UserScrollableVertical());
   EXPECT_EQ(FloatSize(120, 340), scroller_properties->PaintOffsetTranslation()
@@ -314,7 +314,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
   )HTML");
   CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = GetLayoutObjectByElementId("scroller");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
@@ -322,9 +323,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollExcludeScrollbarsSubpixel) {
             overflow_clip->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(10, 10, 101, 100), overflow_clip->ClipRect());
 
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))->Layer();
-  EXPECT_TRUE(paint_layer->GetScrollableArea()
+  EXPECT_TRUE(ToLayoutBox(scroller)
+                  ->GetScrollableArea()
                   ->VerticalScrollbar()
                   ->IsOverlayScrollbar());
 
@@ -338,24 +338,46 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
     <div id='scroller'
          style='width: 100px; height: 100px; overflow: scroll;
                 writing-mode: vertical-rl; border: 10px solid blue'>
-      <div style='width: 400px; height: 400px'></div>
+      <div id="content" style='width: 400px; height: 400px'></div>
     </div>
   )HTML");
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  const auto* content = GetLayoutObjectByElementId("content");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
-  EXPECT_EQ(TransformationMatrix().Translate(-15, 0),
+  // -315: container_width (100) - contents_width (400) - scrollber_width
+  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
             scroll_translation->Matrix());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 10: border width. 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
-  // The content is placed at (-290, 10) so that its right edge aligns with the
-  // right edge of the container's client box, with the initial
-  // ScrollTranslation applied.
-  EXPECT_EQ(IntRect(-290, 10, 400, 400), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(10, 10), content->FirstFragment().PaintOffset());
+
+  EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
+  EXPECT_EQ(properties->PaintOffsetTranslation(),
+            overflow_clip->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(10, 10, 85, 85), overflow_clip->ClipRect());
+
+  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Only scroll_translation is affected by scrolling.
+  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
+            scroll_translation->Matrix());
+  // Other properties are the same as before.
+  EXPECT_EQ(scroll, scroll_translation->ScrollNode());
+  EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(10, 10), content->FirstFragment().PaintOffset());
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
@@ -369,26 +391,95 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
     <div id='scroller'
          style='width: 100px; height: 100px; overflow: scroll;
                 direction: rtl; border: 10px solid blue'>
-      <div style='width: 400px; height: 400px'></div>
+      <div id='content' style='width: 400px; height: 400px'></div>
     </div>
   )HTML");
 
-  const auto* properties = PaintPropertiesForElement("scroller");
+  const auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  const auto* content = GetLayoutObjectByElementId("content");
+  const auto* properties = scroller->FirstFragment().PaintProperties();
   const auto* overflow_clip = properties->OverflowClip();
   const auto* scroll_translation = properties->ScrollTranslation();
   const auto* scroll = properties->Scroll();
 
-  EXPECT_EQ(TransformationMatrix(), scroll_translation->Matrix());
+  // -315: container_width (100) - contents_width (400) - scrollbar width (15).
+  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
+            scroll_translation->Matrix());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 25: border width (10) + scrollbar (on the left) width (15).
   // 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(25, 10, 85, 85), scroll->ContainerRect());
-  EXPECT_EQ(IntRect(-290, 10, 400, 400), scroll->ContentsRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(25, 10), content->FirstFragment().PaintOffset());
 
   EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
   EXPECT_EQ(properties->PaintOffsetTranslation(),
             overflow_clip->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
+
+  scroller->GetScrollableArea()->ScrollBy(ScrollOffset(-100, 0), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Only scroll_translation is affected by scrolling.
+  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
+            scroll_translation->Matrix());
+  // Other properties are the same as before.
+  EXPECT_EQ(scroll, scroll_translation->ScrollNode());
+  EXPECT_EQ(IntRect(25, 10, 85, 85), scroll->ContainerRect());
+  EXPECT_EQ(IntSize(400, 400), scroll->ContentsSize());
+  EXPECT_EQ(LayoutPoint(), scroller->FirstFragment().PaintOffset());
+  EXPECT_EQ(IntPoint(315, 0), scroller->ScrollOrigin());
+  EXPECT_EQ(LayoutPoint(25, 10), content->FirstFragment().PaintOffset());
+
+  EXPECT_EQ(DocContentClip(), overflow_clip->Parent());
+  EXPECT_EQ(properties->PaintOffsetTranslation(),
+            overflow_clip->LocalTransformSpace());
+  EXPECT_EQ(FloatRoundedRect(25, 10, 85, 85), overflow_clip->ClipRect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRLMulticol) {
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar {width: 15px; height: 15px}</style>
+    <div id='scroller'
+         style='width: 100px; height: 100px; overflow: scroll;
+                writing-mode: vertical-rl; border: 10px solid blue'>
+      <div id="multicol"
+           style="width: 50px; height: 400px; columns: 2; column-gap: 0">
+        <div style="width: 100px"></div>
+      </div>
+      <div style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
+
+  const auto* flow_thread =
+      GetLayoutObjectByElementId("multicol")->SlowFirstChild();
+  auto check_fragments = [flow_thread]() {
+    ASSERT_EQ(2u, NumFragments(flow_thread));
+    EXPECT_EQ(410, FragmentAt(flow_thread, 0)
+                       .PaintProperties()
+                       ->FragmentClip()
+                       ->ClipRect()
+                       .Rect()
+                       .X());
+    EXPECT_EQ(LayoutPoint(360, 10), FragmentAt(flow_thread, 0).PaintOffset());
+    EXPECT_EQ(460, FragmentAt(flow_thread, 1)
+                       .PaintProperties()
+                       ->FragmentClip()
+                       ->ClipRect()
+                       .Rect()
+                       .MaxX());
+    EXPECT_EQ(LayoutPoint(410, 210), FragmentAt(flow_thread, 1).PaintOffset());
+  };
+  check_fragments();
+
+  // Fragment geometries are not affected by parent scrolling.
+  ToLayoutBox(GetLayoutObjectByElementId("scroller"))
+      ->GetScrollableArea()
+      ->ScrollBy(ScrollOffset(-100, 200), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  check_fragments();
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
@@ -399,15 +490,9 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(
-        GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
-        DocPreTranslation()->Parent());
-  } else {
-    // Pre-BGPT we don't create the visual viewport property nodes.
-    EXPECT_TRUE(DocPreTranslation()->Parent()->IsRoot());
-  }
+  EXPECT_EQ(
+      GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
+      DocPreTranslation()->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             DocScrollTranslation()->Matrix());
   EXPECT_EQ(DocPreTranslation(), DocScrollTranslation()->Parent());
@@ -811,7 +896,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   const ObjectPaintProperties* node_with_opacity_properties =
       node_with_opacity->FirstFragment().PaintProperties();
   EXPECT_EQ(0.6f, node_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, node_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
@@ -832,7 +918,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   const ObjectPaintProperties* grand_child_with_opacity_properties =
       grand_child_with_opacity->FirstFragment().PaintProperties();
   EXPECT_EQ(0.4f, grand_child_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(DocContentClip(),
             grand_child_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
@@ -858,7 +944,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   const ObjectPaintProperties* node_with_opacity_properties =
       node_with_opacity->FirstFragment().PaintProperties();
   EXPECT_EQ(0.6f, node_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, node_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
@@ -879,7 +966,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   const ObjectPaintProperties* grand_child_with_opacity_properties =
       grand_child_with_opacity->FirstFragment().PaintProperties();
   EXPECT_EQ(0.4f, grand_child_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(DocContentClip(),
             grand_child_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
@@ -950,13 +1037,15 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossHTMLSVGBoundary) {
   const auto* div_with_opacity_properties =
       PaintPropertiesForElement("divWithOpacity");
   EXPECT_EQ(0.2f, div_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, div_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            div_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, div_with_opacity_properties->Effect()->Parent());
 
   const auto* svg_root_with_opacity_properties =
       PaintPropertiesForElement("svgRootWithOpacity");
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(div_with_opacity_properties->Effect(),
             svg_root_with_opacity_properties->Effect()->Parent());
 
@@ -983,7 +1072,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const auto* svg_root_with_opacity_properties =
       PaintPropertiesForElement("svgRootWithOpacity");
   EXPECT_EQ(0.3f, svg_root_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, svg_root_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            svg_root_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, svg_root_with_opacity_properties->Effect()->Parent());
 
   const auto* foreign_object_with_opacity_properties =
@@ -997,7 +1087,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossSVGHTMLBoundary) {
   const auto* span_with_opacity_properties =
       PaintPropertiesForElement("spanWithOpacity");
   EXPECT_EQ(0.5f, span_with_opacity_properties->Effect()->Opacity());
-  EXPECT_EQ(nullptr, span_with_opacity_properties->Effect()->OutputClip());
+  EXPECT_EQ(svg_root_with_opacity_properties->OverflowClip(),
+            span_with_opacity_properties->Effect()->OutputClip());
   EXPECT_EQ(foreign_object_with_opacity_properties->Effect(),
             span_with_opacity_properties->Effect()->Parent());
 }
@@ -1698,7 +1789,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
             inner_document_scroll_translation->Matrix());
   auto* paint_offset_translation = inner_document_scroll_translation->Parent();
   auto* iframe_pre_translation =
-      inner_document_scroll_translation->Parent()->Parent();
+      inner_document_scroll_translation->Parent()->Unalias()->Parent();
   EXPECT_EQ(FloatSize(), paint_offset_translation->Matrix().To2DTranslation());
   EXPECT_EQ(TransformationMatrix().Translate3d(7, 7, 0),
             iframe_pre_translation->Matrix());
@@ -1718,6 +1809,104 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
     EXPECT_EQ(div_with_transform_properties->Transform(),
               iframe_element_properties->PaintOffsetTranslation()->Parent());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .transformed {
+        transform: translateX(1px);
+      }
+      #parent {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+      }
+    </style>
+    <div id='parent'>
+      <iframe id='iframe'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #child {
+        transform: translateX(50px);
+        width: 50px;
+        height: 50px;
+        overflow: hidden;
+      }
+    </style>
+    <div id='child'></div>
+  )HTML");
+
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->UpdateAllLifecyclePhases();
+
+  LayoutObject* frame = ChildFrame().View()->GetLayoutView();
+  const auto& frame_contents_properties =
+      frame->FirstFragment().ContentsProperties();
+
+  LayoutObject* child =
+      ChildDocument().getElementById("child")->GetLayoutObject();
+  const auto& child_local_border_box_properties =
+      child->FirstFragment().LocalBorderBoxProperties();
+  auto* child_properties =
+      child->GetMutableForPainting().FirstFragment().PaintProperties();
+
+  // From the frame content's properties, we have:
+  //  - transform isolation node
+  //    - paint offset translation
+  //      - transform
+  EXPECT_EQ(TransformationMatrix().Translate(50, 0),
+            child_local_border_box_properties.Transform()->Matrix());
+  EXPECT_EQ(child_local_border_box_properties.Transform()->Parent(),
+            child_properties->PaintOffsetTranslation());
+  EXPECT_EQ(child_local_border_box_properties.Transform()->Parent()->Parent(),
+            frame_contents_properties.Transform());
+  // Verify it's a true isolation node (i.e. it has a parent and it is a parent
+  // alias).
+  EXPECT_TRUE(frame_contents_properties.Transform()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Transform()->IsParentAlias());
+
+  // Do similar checks for clip and effect, although the child local border box
+  // properties directly reference the alias, since they do not have their own
+  // clip and effect.
+  EXPECT_EQ(child_local_border_box_properties.Clip(),
+            frame_contents_properties.Clip());
+  EXPECT_TRUE(frame_contents_properties.Clip()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Clip()->IsParentAlias());
+
+  EXPECT_EQ(child_local_border_box_properties.Effect(),
+            frame_contents_properties.Effect());
+  EXPECT_TRUE(frame_contents_properties.Effect()->Parent());
+  EXPECT_TRUE(frame_contents_properties.Effect()->IsParentAlias());
+
+// The following part of the code would cause a DCHECK, but we want to see if
+// the pre-paint iteration doesn't touch child's state, due to isolation. Hence,
+// this only runs if we don't have DCHECKs enabled.
+#if !DCHECK_IS_ON()
+  // Now clobber the child transform to something identifiable.
+  TransformPaintPropertyNode::State state{
+      TransformationMatrix().Translate(123, 321)};
+  child_properties->UpdateTransform(
+      *child_local_border_box_properties.Transform()->Parent(),
+      std::move(state));
+  // Verify that we clobbered it correctly.
+  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
+            child_local_border_box_properties.Transform()->Matrix());
+
+  // This causes a tree topology change which forces the subtree to be updated.
+  // However, isolation stops this recursion.
+  GetDocument().getElementById("parent")->setAttribute(HTMLNames::classAttr,
+                                                       "transformed");
+  frame_view->UpdateAllLifecyclePhases();
+
+  // Verify that our clobbered state is still clobbered.
+  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
+            child_local_border_box_properties.Transform()->Matrix());
+#endif  // !DCHECK_IS_ON()
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
@@ -1775,7 +1964,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
   EXPECT_EQ(TransformationMatrix().Translate3d(31, 31, 0),
             inner_document_paint_offset_translation->Matrix());
   auto* inner_document_scroll_translation =
-      inner_document_paint_offset_translation->Parent();
+      inner_document_paint_offset_translation->Parent()->Unalias();
   EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
             inner_document_scroll_translation->Matrix());
   auto* iframe_pre_translation = inner_document_scroll_translation->Parent();
@@ -2928,6 +3117,61 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
                           frame_view->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="a" style="transform-style: preserve-3d">
+      <div id="b" style="transform: translate3d(0, 0, 33px)">
+        <div id="c" style="transform: translate3d(0, 0, -10px)">C</div>
+      </div>
+      <div id="d" style="transform: translate3d(0, -10px, 22px)">D</div>
+    </div>
+  )HTML");
+
+  const auto* a_properties = PaintPropertiesForElement("a");
+  ASSERT_NE(a_properties, nullptr);
+  ASSERT_NE(a_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix(), a_properties->Transform()->Matrix());
+  EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(a_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(a_properties->Effect(), nullptr);
+
+  const auto* b_properties = PaintPropertiesForElement("b");
+  ASSERT_NE(b_properties, nullptr);
+  ASSERT_NE(b_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 33),
+            b_properties->Transform()->Matrix());
+  EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+  EXPECT_FALSE(b_properties->Transform()->FlattensInheritedTransform());
+  // Force render surface with an effect node for |b| which is an 3D object in
+  // its container while it flattens its contents.
+  ASSERT_NE(b_properties->Effect(), nullptr);
+  EXPECT_EQ(b_properties->Transform(),
+            b_properties->Effect()->LocalTransformSpace());
+
+  const auto* c_properties = PaintPropertiesForElement("c");
+  ASSERT_NE(c_properties, nullptr);
+  ASSERT_NE(c_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, -10),
+            c_properties->Transform()->Matrix());
+  EXPECT_FALSE(c_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(c_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(c_properties->Effect(), nullptr);
+
+  const auto* d_properties = PaintPropertiesForElement("d");
+  ASSERT_NE(d_properties, nullptr);
+  ASSERT_NE(d_properties->Transform(), nullptr);
+  EXPECT_EQ(TransformationMatrix().Translate3d(0, -10, 22),
+            d_properties->Transform()->Matrix());
+  EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
+            d_properties->Transform()->RenderingContextId());
+  EXPECT_FALSE(d_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_EQ(d_properties->Effect(), nullptr);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        PerspectiveDoesNotEstablishRenderingContext) {
   // It's necessary to make nodes from the one that applies perspective to
@@ -3167,48 +3411,89 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   const ObjectPaintProperties* clip_properties =
       clipper->FirstFragment().PaintProperties();
   LayoutObject* child = GetLayoutObjectByElementId("child");
+  const auto& clip_local_properties =
+      clipper->FirstFragment().LocalBorderBoxProperties();
+
+  // Verify that we created isolation nodes.
+  EXPECT_TRUE(clip_properties->TransformIsolationNode());
+  EXPECT_TRUE(clip_properties->EffectIsolationNode());
+  EXPECT_TRUE(clip_properties->ClipIsolationNode());
+
+  // Verify parenting:
+
+  // Transform isolation node should be parented to the local border box
+  // properties transform, which should be the paint offset translation.
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+            clip_local_properties.Transform());
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Parent(),
+            clip_properties->PaintOffsetTranslation());
+  // Similarly, effect isolation node is parented to the local border box
+  // properties effect.
+  EXPECT_EQ(clip_properties->EffectIsolationNode()->Parent(),
+            clip_local_properties.Effect());
+  // Clip isolation node, however, is parented to the overflow clip, which is in
+  // turn parented to the local border box properties clip.
+  EXPECT_EQ(clip_properties->ClipIsolationNode()->Parent(),
+            clip_properties->OverflowClip());
+  EXPECT_EQ(clip_properties->OverflowClip()->Parent(),
+            clip_local_properties.Clip());
+
+  // Verify transform:
+
+  // Isolation transform node should be identity.
+  EXPECT_EQ(clip_properties->TransformIsolationNode()->Matrix(),
+            TransformationMatrix());
 
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_FALSE(DocScrollTranslation());
     EXPECT_TRUE(DocPreTranslation());
-    EXPECT_EQ(DocPreTranslation(),
-              clipper->FirstFragment().LocalBorderBoxProperties().Transform());
+    // Isolation induces paint offset translation, so the node should be
+    // different from the doc node, but its parent is the same as the doc node.
+    EXPECT_EQ(DocPreTranslation(), clipper->FirstFragment()
+                                       .LocalBorderBoxProperties()
+                                       .Transform()
+                                       ->Parent());
   } else {
     // Always create scroll translation for layout view even the document does
     // not scroll (not enough content).
     EXPECT_TRUE(DocScrollTranslation());
-    EXPECT_EQ(DocScrollTranslation(),
-              clipper->FirstFragment().LocalBorderBoxProperties().Transform());
+    // Isolation induces paint offset translation, so the node should be
+    // different from the doc node, but its parent is the same as the doc node.
+    EXPECT_EQ(DocScrollTranslation(), clipper->FirstFragment()
+                                          .LocalBorderBoxProperties()
+                                          .Transform()
+                                          ->Parent());
   }
+
+  // Verify clip:
+
   EXPECT_EQ(DocContentClip(),
             clipper->FirstFragment().LocalBorderBoxProperties().Clip());
+  // Clip isolation node should be big enough to encompass all other clips,
+  // including DocContentClip.
+  EXPECT_TRUE(clip_properties->ClipIsolationNode()->ClipRect().Rect().Contains(
+      DocContentClip()->ClipRect().Rect()));
+
+  // Verify contents properties and child properties:
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
-  EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(DocPreTranslation(), contents_properties.Transform());
-  } else {
-    EXPECT_EQ(DocScrollTranslation(), contents_properties.Transform());
-  }
-  EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
+  // Since the clipper is isolated, its paint offset should be 0, 0.
+  EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
+  // Ensure that the contents properties match isolation nodes.
+  EXPECT_EQ(clip_properties->TransformIsolationNode(),
+            contents_properties.Transform());
+  EXPECT_EQ(clip_properties->ClipIsolationNode(), contents_properties.Clip());
+  EXPECT_EQ(clip_properties->EffectIsolationNode(),
+            contents_properties.Effect());
 
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(DocPreTranslation(),
-              child->FirstFragment().LocalBorderBoxProperties().Transform());
-  } else {
-    EXPECT_EQ(DocScrollTranslation(),
-              child->FirstFragment().LocalBorderBoxProperties().Transform());
-  }
-  EXPECT_EQ(clip_properties->OverflowClip(),
+  // Child should be using isolation nodes as its local border box properties.
+  EXPECT_EQ(contents_properties.Transform(),
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
+  EXPECT_EQ(contents_properties.Clip(),
             child->FirstFragment().LocalBorderBoxProperties().Clip());
-
-  EXPECT_NE(nullptr,
+  EXPECT_EQ(contents_properties.Effect(),
             child->FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }
@@ -3537,7 +3822,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_a_scroll_node->ContainerRect());
   // 107 is the forceScroll element plus the height of the overflow scroll child
   // (overflowB).
-  EXPECT_EQ(IntRect(0, 0, 9, 107), overflow_a_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 107), overflow_a_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableVertical());
 
@@ -3552,7 +3837,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 9, 7), overflow_b_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 9, 100), overflow_b_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());
 }
@@ -3625,7 +3910,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   // The height should be 4000px because the (dom-order) overflow children are
   // positioned and do not contribute to the height. Only the 4000px
   // "forceScroll" height is present.
-  EXPECT_EQ(IntRect(0, 0, 5, 4000), overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(5, 4000), overflow_scroll_node->ContentsSize());
 
   const ObjectPaintProperties* abspos_overflow_scroll_properties =
       abspos_overflow->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3638,8 +3923,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             abspos_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 9, 7), abspos_overflow_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 9, 4000),
-            abspos_overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(9, 4000), abspos_overflow_scroll_node->ContentsSize());
 
   const ObjectPaintProperties* fixed_overflow_scroll_properties =
       fixed_overflow->GetLayoutObject()->FirstFragment().PaintProperties();
@@ -3648,23 +3932,16 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
   // The fixed position overflow scroll node is parented under the root, not the
   // dom-order parent or frame's scroll.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(GetDocument()
-                  .GetPage()
-                  ->GetVisualViewport()
-                  .GetScrollTranslationNode()
-                  ->ScrollNode(),
-              fixed_overflow_scroll_node->Parent());
-  } else {
-    // Pre-BGPT we don't create the visual viewport property nodes.
-    EXPECT_TRUE(fixed_overflow_scroll_node->Parent()->IsRoot());
-  }
+  EXPECT_EQ(GetDocument()
+                .GetPage()
+                ->GetVisualViewport()
+                .GetScrollTranslationNode()
+                ->ScrollNode(),
+            fixed_overflow_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 13, 4000),
-            fixed_overflow_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
@@ -3732,7 +4009,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_EQ(IntRect(0, 0, 20, 20), overflow_a_scroll_node->ContainerRect());
   // 100 is the forceScroll element's height because the overflow child does not
   // contribute to the height.
-  EXPECT_EQ(IntRect(0, 0, 20, 100), overflow_a_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(20, 100), overflow_a_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_a_scroll_node->UserScrollableVertical());
 
@@ -3747,7 +4024,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_b_scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 5, 100), overflow_b_scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(5, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());
 }
@@ -3832,8 +4109,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   )HTML");
 
   LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
-  ToLayoutBoxModelObject(scroller)->Layer()->GetScrollableArea()->ScrollBy(
-      ScrollOffset(0, 300), kUserScroll);
+  ToLayoutBox(scroller)->GetScrollableArea()->ScrollBy(ScrollOffset(0, 300),
+                                                       kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
@@ -4431,7 +4708,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(DocContentClip(), filter_properties->Filter()->OutputClip());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
@@ -4444,7 +4721,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleFilter) {
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
   EXPECT_EQ(DocContentClip(), filter_properties->Filter()->OutputClip());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
@@ -4464,7 +4741,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
             filter_properties->Filter()->OutputClip());
   EXPECT_EQ(DocScrollTranslation(),
             filter_properties->Filter()->LocalTransformSpace());
-  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->PaintOffset());
+  EXPECT_EQ(FloatPoint(8, 8), filter_properties->Filter()->FiltersOrigin());
 
   const PropertyTreeState& child_paint_state =
       GetLayoutObjectByElementId("child")
@@ -5073,7 +5350,8 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   }
 
   const auto* transform = target_properties->Transform();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     ASSERT_NE(nullptr, transform);
     EXPECT_TRUE(transform->Matrix().IsIdentity());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
@@ -5949,7 +6227,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
   const auto* properties = PaintPropertiesForElement("scroller");
   const auto* scroll_node = properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(IntRect(0, 0, 200, 200), scroll_node->ContainerRect());
-  EXPECT_EQ(IntRect(0, 0, 1000, 200), scroll_node->ContentsRect());
+  EXPECT_EQ(IntSize(1000, 200), scroll_node->ContentsSize());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -6006,6 +6284,270 @@ TEST_P(PaintPropertyTreeBuilderTest, SkipEmptyClipFragments) {
   EXPECT_NE(
       flow_thread->FirstFragment().LogicalTopInFlowThread(),
       flow_thread->FirstFragment().NextFragment()->LogicalTopInFlowThread());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
+  // This test verifies the property tree builder set up sticky constraint
+  // chain properly in case of nested sticky positioned elements.
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="overflow:scroll; width:300px; height:200px;">
+      <div id="outer" style="position:sticky; top:10px;">
+        <div style="height:300px;">
+          <span id="middle" style="position:sticky; top:25px;">
+            <span id="inner" style="position:sticky; top:45px;"></span>
+          </span>
+        </div>
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+  GetDocument().getElementById("scroller")->setScrollTop(50);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* outer_properties = PaintPropertiesForElement("outer");
+  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
+            outer_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            outer_properties->StickyTranslation()->GetStickyConstraint());
+  EXPECT_TRUE(
+      outer_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
+  EXPECT_EQ(CompositorElementId(), outer_properties->StickyTranslation()
+                                       ->GetStickyConstraint()
+                                       ->nearest_element_shifting_sticky_box);
+  EXPECT_EQ(CompositorElementId(),
+            outer_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                ->nearest_element_shifting_containing_block);
+
+  const auto* middle_properties = PaintPropertiesForElement("middle");
+  ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
+            middle_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            middle_properties->StickyTranslation()->GetStickyConstraint());
+  EXPECT_TRUE(
+      middle_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
+  EXPECT_EQ(CompositorElementId(), middle_properties->StickyTranslation()
+                                       ->GetStickyConstraint()
+                                       ->nearest_element_shifting_sticky_box);
+  EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
+            middle_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                ->nearest_element_shifting_containing_block);
+
+  const auto* inner_properties = PaintPropertiesForElement("inner");
+  ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
+            inner_properties->StickyTranslation()->Matrix());
+  ASSERT_NE(nullptr,
+            inner_properties->StickyTranslation()->GetStickyConstraint());
+  EXPECT_TRUE(
+      inner_properties->StickyTranslation()->GetStickyConstraint()->is_sticky);
+  EXPECT_EQ(middle_properties->StickyTranslation()->GetCompositorElementId(),
+            inner_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                ->nearest_element_shifting_sticky_box);
+  EXPECT_EQ(outer_properties->StickyTranslation()->GetCompositorElementId(),
+            inner_properties->StickyTranslation()
+                ->GetStickyConstraint()
+                ->nearest_element_shifting_containing_block);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
+  // This test verifies the property tree builder applies sticky offset
+  // correctly when the clipping container cannot be scrolled, and
+  // does not emit sticky constraints.
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="overflow:hidden; width:300px; height:200px;">
+      <div id="outer" style="position:sticky; top:10px;">
+        <div style="height:300px;">
+          <span id="middle" style="position:sticky; top:25px;">
+            <span id="inner" style="position:sticky; top:45px;"></span>
+          </span>
+        </div>
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+  GetDocument().getElementById("scroller")->setScrollTop(50);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  const auto* outer_properties = PaintPropertiesForElement("outer");
+  ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
+            outer_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(nullptr,
+            outer_properties->StickyTranslation()->GetStickyConstraint());
+
+  const auto* middle_properties = PaintPropertiesForElement("middle");
+  ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
+            middle_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(nullptr,
+            middle_properties->StickyTranslation()->GetStickyConstraint());
+
+  const auto* inner_properties = PaintPropertiesForElement("inner");
+  ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
+  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
+            inner_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(nullptr,
+            inner_properties->StickyTranslation()->GetStickyConstraint());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
+  SetBodyInnerHTML(R"HTML(
+    <style>.transluscent { opacity: 0.5; }</style>
+    <div id="div" style="width:10px; height:10px; will-change: opacity;"></div>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("div");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->Effect());
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 1.f);
+
+  auto* div = GetDocument().getElementById("div");
+  div->setAttribute(HTMLNames::classAttr, "transluscent");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(ToLayoutBox(div->GetLayoutObject())->Layer()->NeedsRepaint());
+
+  ASSERT_TRUE(properties->Effect());
+  EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.5f);
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, EffectOutputClipWithFixedDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <!-- Case 1: No clip. -->
+    <div id="target1" style="opacity: 0.1">
+      <div style="position: fixed"></div>
+    </div>
+    <!-- Case 2: Clip under the container of fixed-position (the LayoutView) -->
+    <div style="overflow: hidden">
+      <div id="target2" style="opacity: 0.1">
+        <div style="position: fixed"></div>
+      </div>
+    </div>
+    <!-- Case 3: Clip above the container of fixed-position. -->
+    <div id="clip3" style="overflow: hidden">
+      <div style="transform: translateY(0)">
+        <div id="target3" style="opacity: 0.1">
+          <div style="position: fixed"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Case 4: Clip on the container of fixed-position. -->
+    <div id="clip4" style="overflow: hidden; transform: translateY(0)">
+      <div id="target4" style="opacity: 0.1">
+        <div style="position: fixed"></div>
+      </div>
+    </div>
+    <!-- Case 5: The container of fixed-position is not a LayoutBlock. -->
+    <table>
+      <tr style="transform: translateY(0)">
+        <td id="target5" style="opacity: 0.1">
+          <div style="position: fixed"></div>
+        </td>
+      </tr>
+    </table>
+  )HTML");
+
+  EXPECT_EQ(DocContentClip(),
+            PaintPropertiesForElement("target1")->Effect()->OutputClip());
+  // OutputClip is null because the fixed descendant escapes the effect's
+  // current clip.
+  EXPECT_EQ(nullptr,
+            PaintPropertiesForElement("target2")->Effect()->OutputClip());
+  EXPECT_EQ(PaintPropertiesForElement("clip3")->OverflowClip(),
+            PaintPropertiesForElement("target3")->Effect()->OutputClip());
+  EXPECT_EQ(PaintPropertiesForElement("clip4")->OverflowClip(),
+            PaintPropertiesForElement("target4")->Effect()->OutputClip());
+  EXPECT_EQ(DocContentClip(),
+            PaintPropertiesForElement("target5")->Effect()->OutputClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, TableColOpacity) {
+  SetBodyInnerHTML(R"HTML(
+    <table>
+      <col id="col" style="opacity: 0.5">
+    </table>
+  )HTML");
+
+  // TODO(crbug.com/892734): For now table col doesn't support effects.
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("col"));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' style='clip-path: circle(); will-change: transform'></svg>
+  )HTML");
+
+  const auto* properties = PaintPropertiesForElement("svg");
+
+  ASSERT_NE(nullptr, properties->PaintOffsetTranslation());
+  const auto* transform = properties->Transform();
+  ASSERT_NE(nullptr, transform);
+  EXPECT_EQ(properties->PaintOffsetTranslation(), transform->Parent());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    EXPECT_TRUE(transform->HasDirectCompositingReasons());
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(nullptr, properties->MaskClip());
+
+    const auto* clip_path_clip = properties->ClipPathClip();
+    ASSERT_NE(nullptr, clip_path_clip);
+    EXPECT_EQ(DocContentClip(), clip_path_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), clip_path_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, clip_path_clip->LocalTransformSpace());
+    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
+
+    const auto* overflow_clip = properties->OverflowClip();
+    ASSERT_NE(nullptr, overflow_clip);
+    EXPECT_EQ(clip_path_clip, overflow_clip->Parent());
+    EXPECT_EQ(FloatRect(0, 0, 300, 150), overflow_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, overflow_clip->LocalTransformSpace());
+
+    // TODO(wangxianzhu): Are the following correct?
+    EXPECT_EQ(nullptr, properties->Effect());
+    EXPECT_EQ(nullptr, properties->Mask());
+    EXPECT_EQ(nullptr, properties->ClipPath());
+  } else {
+    const auto* mask_clip = properties->MaskClip();
+    ASSERT_NE(nullptr, mask_clip);
+    EXPECT_EQ(DocContentClip(), mask_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), mask_clip->ClipRect().Rect());
+    EXPECT_EQ(nullptr, mask_clip->ClipPath());
+    EXPECT_EQ(transform, mask_clip->LocalTransformSpace());
+
+    const auto* clip_path_clip = properties->ClipPathClip();
+    ASSERT_NE(nullptr, clip_path_clip);
+    EXPECT_EQ(mask_clip, clip_path_clip->Parent());
+    EXPECT_EQ(FloatRect(75, 0, 150, 150), clip_path_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, clip_path_clip->LocalTransformSpace());
+    EXPECT_NE(nullptr, clip_path_clip->ClipPath());
+
+    const auto* overflow_clip = properties->OverflowClip();
+    ASSERT_NE(nullptr, overflow_clip);
+    EXPECT_EQ(mask_clip, overflow_clip->Parent());
+    EXPECT_EQ(FloatRect(0, 0, 300, 150), overflow_clip->ClipRect().Rect());
+    EXPECT_EQ(transform, overflow_clip->LocalTransformSpace());
+
+    const auto* effect = properties->Effect();
+    ASSERT_NE(nullptr, effect);
+    EXPECT_EQ(&EffectPaintPropertyNode::Root(), effect->Parent());
+    EXPECT_EQ(transform, effect->LocalTransformSpace());
+    EXPECT_EQ(mask_clip, effect->OutputClip());
+    EXPECT_EQ(SkBlendMode::kSrcOver, effect->BlendMode());
+
+    const auto* mask = properties->Mask();
+    ASSERT_NE(nullptr, mask);
+    EXPECT_EQ(effect, mask->Parent());
+    EXPECT_EQ(transform, mask->LocalTransformSpace());
+    EXPECT_EQ(mask_clip, mask->OutputClip());
+    EXPECT_EQ(SkBlendMode::kDstIn, mask->BlendMode());
+
+    EXPECT_EQ(nullptr, properties->ClipPath());
+  }
 }
 
 }  // namespace blink

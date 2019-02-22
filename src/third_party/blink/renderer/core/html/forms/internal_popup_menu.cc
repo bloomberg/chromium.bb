@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
@@ -445,8 +446,12 @@ void InternalPopupMenu::SetValueAndClosePopup(int num_value,
     WebMouseEvent event;
     event.SetFrameScale(1);
     Element* owner = &OwnerElement();
-    owner->DispatchMouseEvent(event, EventTypeNames::mouseup);
-    owner->DispatchMouseEvent(event, EventTypeNames::click);
+    if (LocalFrame* frame = owner->GetDocument().GetFrame()) {
+      frame->GetEventHandler().HandleTargetedMouseEvent(
+          owner, event, EventTypeNames::mouseup, Vector<WebMouseEvent>());
+      frame->GetEventHandler().HandleTargetedMouseEvent(
+          owner, event, EventTypeNames::click, Vector<WebMouseEvent>());
+    }
   }
 }
 
@@ -459,7 +464,7 @@ void InternalPopupMenu::SetValue(const String& value) {
 }
 
 void InternalPopupMenu::DidClosePopup() {
-  // Clearing m_popup first to prevent from trying to close the popup again.
+  // Clearing popup_ first to prevent from trying to close the popup again.
   popup_ = nullptr;
   if (owner_element_)
     owner_element_->PopupDidHide();

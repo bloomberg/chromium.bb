@@ -8,8 +8,12 @@
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/public/platform/web_crypto_key.h"
 #include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_read_only.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_detected_barcode.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_detected_face.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_detected_text.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -52,6 +56,61 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
     WriteTag(kRTCCertificateTag);
     WriteUTF8String(pem.private_key().c_str());
     WriteUTF8String(pem.certificate().c_str());
+    return true;
+  }
+  if (wrapper_type_info == &V8DetectedBarcode::wrapperTypeInfo) {
+    DetectedBarcode* detected_barcode = wrappable->ToImpl<DetectedBarcode>();
+    WriteTag(kDetectedBarcodeTag);
+    WriteUTF8String(detected_barcode->rawValue());
+    DOMRectReadOnly* bounding_box = detected_barcode->boundingBox();
+    WriteDouble(bounding_box->x());
+    WriteDouble(bounding_box->y());
+    WriteDouble(bounding_box->width());
+    WriteDouble(bounding_box->height());
+    const HeapVector<Point2D>& corner_points = detected_barcode->cornerPoints();
+    WriteUint32(static_cast<uint32_t>(corner_points.size()));
+    for (const auto& corner_point : corner_points) {
+      WriteDouble(corner_point.x());
+      WriteDouble(corner_point.y());
+    }
+    return true;
+  }
+  if (wrapper_type_info == &V8DetectedFace::wrapperTypeInfo) {
+    DetectedFace* detected_face = wrappable->ToImpl<DetectedFace>();
+    WriteTag(kDetectedFaceTag);
+    DOMRectReadOnly* bounding_box = detected_face->boundingBox();
+    WriteDouble(bounding_box->x());
+    WriteDouble(bounding_box->y());
+    WriteDouble(bounding_box->width());
+    WriteDouble(bounding_box->height());
+    const HeapVector<Landmark>& landmarks = detected_face->landmarks();
+    WriteUint32(static_cast<uint32_t>(landmarks.size()));
+    for (const auto& landmark : landmarks) {
+      WriteUTF8String(landmark.type());
+      const HeapVector<Point2D>& locations = landmark.locations();
+      WriteUint32(static_cast<uint32_t>(locations.size()));
+      for (const auto& location : locations) {
+        WriteDouble(location.x());
+        WriteDouble(location.y());
+      }
+    }
+    return true;
+  }
+  if (wrapper_type_info == &V8DetectedText::wrapperTypeInfo) {
+    DetectedText* detected_text = wrappable->ToImpl<DetectedText>();
+    WriteTag(kDetectedTextTag);
+    WriteUTF8String(detected_text->rawValue());
+    DOMRectReadOnly* bounding_box = detected_text->boundingBox();
+    WriteDouble(bounding_box->x());
+    WriteDouble(bounding_box->y());
+    WriteDouble(bounding_box->width());
+    WriteDouble(bounding_box->height());
+    const HeapVector<Point2D>& corner_points = detected_text->cornerPoints();
+    WriteUint32(static_cast<uint32_t>(corner_points.size()));
+    for (const auto& corner_point : corner_points) {
+      WriteDouble(corner_point.x());
+      WriteDouble(corner_point.y());
+    }
     return true;
   }
   return false;
@@ -183,7 +242,15 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
       WriteUint32(AlgorithmIdForWireFormat(algorithm.Id()));
       WriteUint32(AsymmetricKeyTypeForWireFormat(key.GetType()));
       WriteUint32(params.ModulusLengthBits());
-      WriteUint32(params.PublicExponent().size());
+
+      if (params.PublicExponent().size() >
+          std::numeric_limits<uint32_t>::max()) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kDataCloneError,
+            "A CryptoKey object could not be cloned.");
+        return false;
+      }
+      WriteUint32(static_cast<uint32_t>(params.PublicExponent().size()));
       WriteRawBytes(params.PublicExponent().Data(),
                     params.PublicExponent().size());
       WriteUint32(AlgorithmIdForWireFormat(params.GetHash().Id()));
@@ -216,7 +283,7 @@ bool V8ScriptValueSerializerForModules::WriteCryptoKey(
         "A CryptoKey object could not be cloned.");
     return false;
   }
-  WriteUint32(key_data.size());
+  WriteUint32(static_cast<uint32_t>(key_data.size()));
   WriteRawBytes(key_data.Data(), key_data.size());
 
   return true;

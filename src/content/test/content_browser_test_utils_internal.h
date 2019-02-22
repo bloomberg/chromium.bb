@@ -26,9 +26,9 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -106,48 +106,29 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
                  const GURL& url,
                  const std::string& name);
 
-// This class can be used to stall any resource request, based on an URL match.
-// There is no explicit way to resume the request; it should be used carefully.
-// Note: This class likely doesn't work with PlzNavigate.
-// TODO(nasko): Reimplement this class using NavigationThrottle, once it has
-// the ability to defer navigation requests.
-class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
- public:
-  explicit NavigationStallDelegate(const GURL& url);
-
- private:
-  // ResourceDispatcherHostDelegate
-  void RequestBeginning(net::URLRequest* request,
-                        content::ResourceContext* resource_context,
-                        content::AppCacheService* appcache_service,
-                        ResourceType resource_type,
-                        std::vector<std::unique_ptr<content::ResourceThrottle>>*
-                            throttles) override;
-
-  GURL url_;
-};
-
 // Helper for mocking choosing a file via a file dialog.
 class FileChooserDelegate : public WebContentsDelegate {
  public:
   // Constructs a WebContentsDelegate that mocks a file dialog.
   // The mocked file dialog will always reply that the user selected |file|.
   explicit FileChooserDelegate(const base::FilePath& file);
+  ~FileChooserDelegate() override;
 
   // Implementation of WebContentsDelegate::RunFileChooser.
   void RunFileChooser(RenderFrameHost* render_frame_host,
-                      const FileChooserParams& params) override;
+                      std::unique_ptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override;
 
   // Whether the file dialog was shown.
   bool file_chosen() const { return file_chosen_; }
 
-  // Copy of the params passed to RunFileChooser.
-  FileChooserParams params() const { return params_; }
+  // The params passed to RunFileChooser.
+  const blink::mojom::FileChooserParams& params() const { return *params_; }
 
  private:
   base::FilePath file_;
   bool file_chosen_;
-  FileChooserParams params_;
+  blink::mojom::FileChooserParamsPtr params_;
 };
 
 // This class is a TestNavigationManager that only monitors notifications within

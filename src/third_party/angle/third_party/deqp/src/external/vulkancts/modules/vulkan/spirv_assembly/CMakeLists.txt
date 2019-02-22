@@ -3,6 +3,8 @@
 include_directories(..)
 
 set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
+	vktSpvAsm8bitStorageTests.cpp
+	vktSpvAsm8bitStorageTests.hpp
 	vktSpvAsmCrossStageInterfaceTests.cpp
 	vktSpvAsmCrossStageInterfaceTests.hpp
 	vktSpvAsm16bitStorageTests.cpp
@@ -23,6 +25,8 @@ set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
 	vktSpvAsmGraphicsShaderTestUtil.hpp
 	vktSpvAsmInstructionTests.cpp
 	vktSpvAsmInstructionTests.hpp
+	vktSpvAsmPointerParameterTests.cpp
+	vktSpvAsmPointerParameterTests.hpp
 	vktSpvAsmTypeTests.cpp
 	vktSpvAsmTypeTests.hpp
 	vktSpvAsmTests.cpp

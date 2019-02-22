@@ -18,14 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
+          "object": "NGPhysicalTextFragment '                         PASS     .'",
           "rect": [8, 8, 100, 19],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
-          "rect": [8, 8, 100, 19],
-          "reason": "chunk disappeared"
+          "reason": "full"
         }
       ]
     }

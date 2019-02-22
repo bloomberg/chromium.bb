@@ -19,6 +19,14 @@ namespace {
 const char* const kNotificationId =
     NetworkPortalNotificationController::kNotificationId;
 
+class TestWiFiNetworkState : public NetworkState {
+ public:
+  explicit TestWiFiNetworkState(const std::string& name) : NetworkState(name) {
+    SetGuid(name);
+    set_type(shill::kTypeWifi);
+  }
+};
+
 }  // namespace
 
 // A BrowserWithTestWindowTest will set up profiles for us.
@@ -56,8 +64,7 @@ class NetworkPortalNotificationControllerTest
 };
 
 TEST_F(NetworkPortalNotificationControllerTest, NetworkStateChanged) {
-  NetworkState wifi("wifi");
-  wifi.SetGuid("wifi");
+  TestWiFiNetworkState wifi("wifi");
   NetworkPortalDetector::CaptivePortalState wifi_state;
 
   // Notification is not displayed for online state.
@@ -80,8 +87,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NetworkStateChanged) {
 }
 
 TEST_F(NetworkPortalNotificationControllerTest, NetworkChanged) {
-  NetworkState wifi1("wifi1");
-  wifi1.SetGuid("wifi1");
+  TestWiFiNetworkState wifi1("wifi1");
   NetworkPortalDetector::CaptivePortalState wifi1_state;
   wifi1_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   wifi1_state.response_code = 200;
@@ -97,8 +103,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NetworkChanged) {
   OnPortalDetectionCompleted(&wifi1, wifi1_state);
   ASSERT_FALSE(HasNotification());
 
-  NetworkState wifi2("wifi2");
-  wifi2.SetGuid("wifi2");
+  TestWiFiNetworkState wifi2("wifi2");
   NetworkPortalDetector::CaptivePortalState wifi2_state;
   wifi2_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   wifi2_state.response_code = 204;
@@ -121,8 +126,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NotificationUpdated) {
 
   // First network is behind a captive portal, so notification should
   // be displayed.
-  NetworkState wifi1("wifi1");
-  wifi1.SetGuid("wifi1");
+  TestWiFiNetworkState wifi1("wifi1");
   wifi1.PropertyChanged("Name", base::Value("wifi1"));
   OnPortalDetectionCompleted(&wifi1, portal_state);
   ASSERT_TRUE(HasNotification());
@@ -135,8 +139,7 @@ TEST_F(NetworkPortalNotificationControllerTest, NotificationUpdated) {
 
   // Second network is also behind a captive portal, so notification
   // should be updated.
-  NetworkState wifi2("wifi2");
-  wifi2.SetGuid("wifi2");
+  TestWiFiNetworkState wifi2("wifi2");
   wifi2.PropertyChanged("Name", base::Value("wifi2"));
   OnPortalDetectionCompleted(&wifi2, portal_state);
   ASSERT_TRUE(HasNotification());

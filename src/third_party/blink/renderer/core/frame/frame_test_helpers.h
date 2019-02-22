@@ -180,23 +180,25 @@ class LayerTreeViewFactory {
 
 class TestWebWidgetClient : public WebWidgetClient {
  public:
+  TestWebWidgetClient();
   ~TestWebWidgetClient() override = default;
 
-  // WebWidgetClient:
-  WebLayerTreeView* InitializeLayerTreeView() override;
+  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
  private:
+  content::LayerTreeView* layer_tree_view_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;
 };
 
 class TestWebViewClient : public WebViewClient, public WebWidgetClient {
  public:
+  // If no delegate is given, a stub is used.
+  explicit TestWebViewClient(content::LayerTreeViewDelegate* = nullptr);
   ~TestWebViewClient() override = default;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
   // WebWidgetClient:
-  WebLayerTreeView* InitializeLayerTreeView() override;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
 
   // WebViewClient:
@@ -313,7 +315,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   WebSandboxFlags,
                                   const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&) override;
-  void DidStartLoading(bool) override;
+  void DidStartLoading() override;
   void DidStopLoading() override;
   void DidCreateDocumentLoader(WebDocumentLoader*) override;
   service_manager::InterfaceProvider* GetInterfaceProvider() override {

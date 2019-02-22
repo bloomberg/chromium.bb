@@ -9,5 +9,5 @@
     <item android:state_pressed="true" android:color="#80FFFFFF" />
     <item android:state_activated="true" android:color="#80FFFFFF" />
     <item android:state_enabled="false" android:color="#33FFFFFF" />
-    <item android:color="#FFFFFF"/>
+    <item android:color="@color/default_icon_color_white"/>
 </selector>

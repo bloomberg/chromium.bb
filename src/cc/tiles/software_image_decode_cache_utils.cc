@@ -136,9 +136,16 @@ SoftwareImageDecodeCacheUtils::GenerateCacheEntryFromCandidate(
   DCHECK(!key.is_nearest_neighbor());
   SkPixmap target_pixmap(target_info, target_pixels->data(),
                          target_info.minRowBytes());
-  // Always use medium quality for scaling.
-  result = decoded_pixmap.scalePixels(target_pixmap, kMedium_SkFilterQuality);
+  SkFilterQuality filter_quality = kMedium_SkFilterQuality;
+  if (decoded_pixmap.colorType() == kRGBA_F16_SkColorType &&
+      !ImageDecodeCacheUtils::CanResizeF16Image(filter_quality)) {
+    result = ImageDecodeCacheUtils::ScaleToHalfFloatPixmapUsingN32Intermediate(
+        decoded_pixmap, &target_pixmap, filter_quality);
+  } else {
+    result = decoded_pixmap.scalePixels(target_pixmap, filter_quality);
+  }
   DCHECK(result) << key.ToString();
+
   return std::make_unique<CacheEntry>(
       target_info.makeColorSpace(candidate_image.image()->refColorSpace()),
       std::move(target_pixels),
@@ -182,14 +189,12 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   // If any of the following conditions hold, then use at most low filter
   // quality and adjust the target size to match the original image:
   // - Quality is none: We need a pixelated image, so we can't upgrade it.
-  // - Format is 4444: Skia doesn't support scaling these, so use low
-  //   filter quality.
   // - Mip level is 0: The required mip is the original image, so just use low
   //   filter quality.
   // - Matrix is not decomposable: There's perspective on this image and we
   //   can't determine the size, so use the original.
-  if (is_nearest_neighbor || color_type == kARGB_4444_SkColorType ||
-      mip_level == 0 || !image.matrix_is_decomposable()) {
+  if (is_nearest_neighbor || mip_level == 0 ||
+      !image.matrix_is_decomposable()) {
     type = kOriginal;
     // Update the size to be the original image size.
     target_size =

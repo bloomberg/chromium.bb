@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 
 namespace signin_metrics {
@@ -654,8 +655,7 @@ void LogSigninAccountReconciliation(int total_number_accounts,
                                     bool primary_accounts_same,
                                     bool is_first_reconcile,
                                     int pre_count_gaia_cookies) {
-  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfAccountsPerProfile",
-                           total_number_accounts);
+  RecordAccountsPerProfile(total_number_accounts);
   // We want to include zeroes in the counts of added or removed accounts to
   // easily capture _relatively_ how often we merge accounts.
   if (is_first_reconcile) {
@@ -680,6 +680,11 @@ void LogSigninAccountReconciliation(int total_number_accounts,
   }
 }
 
+void RecordAccountsPerProfile(int total_number_accounts) {
+  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfAccountsPerProfile",
+                           total_number_accounts);
+}
+
 void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
                                             bool successful) {
   if (successful) {
@@ -696,8 +701,8 @@ void LogSigninProfile(bool is_first_run, base::Time install_date) {
   // Determine how much time passed since install when this profile was signed
   // in.
   base::TimeDelta elapsed_time = base::Time::Now() - install_date;
-  UMA_HISTOGRAM_COUNTS("Signin.ElapsedTimeFromInstallToSignin",
-                       elapsed_time.InMinutes());
+  UMA_HISTOGRAM_COUNTS_1M("Signin.ElapsedTimeFromInstallToSignin",
+                          elapsed_time.InMinutes());
 }
 
 void LogSigninAddAccount() {
@@ -783,8 +788,10 @@ void LogAccountEquality(AccountEquality equality) {
 void LogCookieJarStableAge(const base::TimeDelta stable_age,
                            const ReportingType type) {
   INVESTIGATOR_HISTOGRAM_CUSTOM_COUNTS(
-      "Signin.CookieJar.StableAge", type, stable_age.InSeconds(), 1,
-      base::TimeDelta::FromDays(365).InSeconds(), 100);
+      "Signin.CookieJar.StableAge", type,
+      base::saturated_cast<int>(stable_age.InSeconds()), 1,
+      base::saturated_cast<int>(base::TimeDelta::FromDays(365).InSeconds()),
+      100);
 }
 
 void LogCookieJarCounts(const int signed_in,

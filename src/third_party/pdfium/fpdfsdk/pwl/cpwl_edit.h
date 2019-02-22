@@ -13,11 +13,9 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_edit_ctrl.h"
 
-#define PWL_CLASSNAME_EDIT "CPWL_Edit"
-
 class IPWL_Filler_Notify {
  public:
-  virtual ~IPWL_Filler_Notify() {}
+  virtual ~IPWL_Filler_Notify() = default;
 
   // Must write to |bBottom| and |fPopupRet|.
   virtual void QueryWherePopup(CPWL_Wnd::PrivateData* pAttached,
@@ -47,7 +45,6 @@ class CPWL_Edit final : public CPWL_EditCtrl {
   ~CPWL_Edit() override;
 
   // CPWL_EditCtrl
-  ByteString GetClassName() const override;
   void OnCreated() override;
   bool RePosChildWnd() override;
   CFX_FloatRect GetClientRect() const override;

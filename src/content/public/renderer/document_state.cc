@@ -4,8 +4,6 @@
 
 #include "content/public/renderer/document_state.h"
 
-#include "content/public/renderer/navigation_state.h"
-
 namespace content {
 
 DocumentState::DocumentState()
@@ -18,8 +16,19 @@ DocumentState::DocumentState()
 
 DocumentState::~DocumentState() {}
 
-void DocumentState::set_navigation_state(NavigationState* navigation_state) {
-  navigation_state_.reset(navigation_state);
+std::unique_ptr<DocumentState> DocumentState::Clone() {
+  std::unique_ptr<DocumentState> new_document_state(new DocumentState());
+  new_document_state->set_was_fetched_via_spdy(was_fetched_via_spdy_);
+  new_document_state->set_was_alpn_negotiated(was_alpn_negotiated_);
+  new_document_state->set_alpn_negotiated_protocol(alpn_negotiated_protocol_);
+  new_document_state->set_was_alternate_protocol_available(
+      was_alternate_protocol_available_);
+  new_document_state->set_connection_info(connection_info_);
+  new_document_state->set_was_load_data_with_base_url_request(
+      was_load_data_with_base_url_request_);
+  new_document_state->set_data_url(data_url_);
+  new_document_state->set_can_load_local_resources(can_load_local_resources_);
+  return new_document_state;
 }
 
 }  // namespace content

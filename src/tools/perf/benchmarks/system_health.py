@@ -39,15 +39,18 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='rail,toplevel')
     cat_filter.AddIncludedCategory('accessibility')
+    # Needed for the console error metric.
+    cat_filter.AddIncludedCategory('v8.console')
 
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
     options.SetTimelineBasedMetrics([
-        'cpuTimeMetric',
-        'tracingMetric',
         'accessibilityMetric',
-        'limitedCpuTimeMetric'
+        'consoleErrorMetric',
+        'cpuTimeMetric',
+        'limitedCpuTimeMetric',
+        'tracingMetric'
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.
@@ -99,11 +102,16 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   options = {'pageset_repeat': 3}
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
-    options = timeline_based_measurement.Options(
-        chrome_trace_category_filter.ChromeTraceCategoryFilter(
-            '-*,disabled-by-default-memory-infra'))
+    cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
+        filter_string='-*,disabled-by-default-memory-infra')
+    # Needed for the console error metric.
+    cat_filter.AddIncludedCategory('v8.console')
+    options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_android_graphics_memtrack = True
-    options.SetTimelineBasedMetrics(['memoryMetric'])
+    options.SetTimelineBasedMetrics([
+      'consoleErrorMetric',
+      'memoryMetric'
+    ])
     # Setting an empty memory dump config disables periodic dumps.
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())

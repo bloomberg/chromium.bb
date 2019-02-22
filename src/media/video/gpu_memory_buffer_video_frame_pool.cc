@@ -638,6 +638,17 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
 #endif
 
   bool passthrough = false;
+#if defined(OS_MACOSX)
+  // GPU memory buffers do not support full-range YUV video on mac.
+  // Fortunately, the hardware decoders never produce full-range video.
+  // https://crbug/882627
+  gfx::ColorSpace color_space = video_frame->ColorSpace();
+  gfx::ColorSpace as_rgb = color_space.GetAsRGB();
+  gfx::ColorSpace as_full_range_rgb = color_space.GetAsFullRangeRGB();
+
+  if (color_space != as_rgb && as_rgb == as_full_range_rgb)
+    passthrough = true;
+#endif
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
     passthrough = true;
   switch (pixel_format) {
@@ -1038,8 +1049,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::Shutdown() {
       continue;
 
     media_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PoolImpl::DeleteFrameResources, gpu_factories_,
-                              base::Owned(frame_resources)));
+        FROM_HERE,
+        base::BindOnce(&PoolImpl::DeleteFrameResources, gpu_factories_,
+                       base::Owned(frame_resources)));
   }
   resources_pool_.clear();
 }

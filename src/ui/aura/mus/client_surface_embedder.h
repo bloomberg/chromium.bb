@@ -37,9 +37,14 @@ class AURA_EXPORT ClientSurfaceEmbedder {
   // on the provided |surface_id|.
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
 
+  bool HasPrimarySurfaceId() const;
+
   // Sets the fallback SurfaceInfo of the surface layer. The clip layer is not
   // updated.
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info);
+
+  void SetClientAreaInsets(const gfx::Insets& client_area_insets);
+  const gfx::Insets& client_area_insets() const { return client_area_insets_; }
 
   // Update the surface layer size and the right and bottom gutter layers for
   // the current window size.

@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_traits.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
@@ -42,18 +44,18 @@ FileStreamForwarder::FileStreamForwarder(
                            // completion of tasks running with this task runner.
                            {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
                             base::MayBlock()})),
-      buf_(new net::IOBufferWithSize(kBufSize)),
+      buf_(base::MakeRefCounted<net::IOBufferWithSize>(kBufSize)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileStreamForwarder::Start, base::Unretained(this)));
 }
 
 void FileStreamForwarder::Destroy() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileStreamForwarder::DestroyOnIOThread,
                      base::Unretained(this)));
 }
@@ -141,8 +143,8 @@ void FileStreamForwarder::OnWriteCompleted(bool result) {
 void FileStreamForwarder::NotifyCompleted(bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback_), result));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback_), result));
 }
 
 }  // namespace arc

@@ -88,7 +88,7 @@ inline void* FX_ReallocOrDie(void* ptr,
   return result;
 }
 
-// These never return nullptr.
+// These never return nullptr, and must return cleared memory.
 #define FX_Alloc(type, size) \
   static_cast<type*>(FX_AllocOrDie(size, sizeof(type)))
 #define FX_Alloc2D(type, w, h) \
@@ -96,7 +96,7 @@ inline void* FX_ReallocOrDie(void* ptr,
 #define FX_Realloc(type, ptr, size) \
   static_cast<type*>(FX_ReallocOrDie(ptr, size, sizeof(type)))
 
-// May return nullptr.
+// May return nullptr, but returns cleared memory otherwise.
 #define FX_TryAlloc(type, size) \
   static_cast<type*>(FX_SafeAlloc(size, sizeof(type)))
 #define FX_TryRealloc(type, ptr, size) \
@@ -129,6 +129,13 @@ inline void FX_Free(void* ptr) {
 // use its type.
 template <typename T, size_t N>
 char (&ArraySizeHelper(T (&array)[N]))[N];
+
+// Round up to the power-of-two boundary N.
+template <int N, typename T>
+inline T FxAlignToBoundary(T size) {
+  static_assert(N > 0 && (N & (N - 1)) == 0, "Not non-zero power of two");
+  return (size + N - 1) & ~(N - 1);
+}
 
 // Used with std::unique_ptr to FX_Free raw memory.
 struct FxFreeDeleter {

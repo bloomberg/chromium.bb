@@ -4,6 +4,7 @@
 
 #include "ash/assistant/ui/assistant_main_view.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
@@ -17,9 +18,13 @@
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -65,6 +70,10 @@ AssistantMainView::~AssistantMainView() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
+const char* AssistantMainView::GetClassName() const {
+  return "AssistantMainView";
+}
+
 gfx::Size AssistantMainView::CalculatePreferredSize() const {
   return gfx::Size(kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip));
 }
@@ -74,6 +83,12 @@ int AssistantMainView::GetHeightForWidth(int width) const {
   int height = views::View::GetHeightForWidth(width);
   height = std::min(height, kMaxHeightDip);
   height = std::max(height, min_height_dip_);
+
+  // |height| should not exceed the height of the usable work area.
+  gfx::Rect usable_work_area =
+      assistant_controller_->ui_controller()->model()->usable_work_area();
+  height = std::min(height, usable_work_area.height());
+
   return height;
 }
 
@@ -97,6 +112,12 @@ void AssistantMainView::ChildPreferredSizeChanged(views::View* child) {
 
 void AssistantMainView::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
+}
+
+views::View* AssistantMainView::FindFirstFocusableView() {
+  // In those instances in which we want to override views::FocusSearch
+  // behavior, DialogPlate will identify the first focusable view.
+  return dialog_plate_->FindFirstFocusableView();
 }
 
 void AssistantMainView::InitLayout() {

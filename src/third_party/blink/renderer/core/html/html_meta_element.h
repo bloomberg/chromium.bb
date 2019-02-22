@@ -67,9 +67,9 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
                                           const String& key,
                                           const String& value,
                                           bool viewport_meta_zero_values_quirk,
-                                          void* data);
+                                          ViewportDescription&);
   static void ParseContentAttribute(const String& content,
-                                    void* data,
+                                    ViewportDescription&,
                                     Document*,
                                     bool viewport_meta_zero_values_quirk);
 

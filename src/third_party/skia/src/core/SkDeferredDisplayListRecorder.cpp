@@ -38,10 +38,26 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
     return nullptr;
 }
 
+sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
+                                                        SkYUVColorSpace yuvColorSpace,
+                                                        const GrBackendFormat yuvaFormats[],
+                                                        const SkYUVAIndex yuvaIndices[4],
+                                                        int imageWidth,
+                                                        int imageHeight,
+                                                        GrSurfaceOrigin imageOrigin,
+                                                        sk_sp<SkColorSpace> imageColorSpace,
+                                                        TextureFulfillProc textureFulfillProc,
+                                                        TextureReleaseProc textureReleaseProc,
+                                                        PromiseDoneProc promiseDoneProc,
+                                                        TextureContext textureContexts[]) {
+    return nullptr;
+}
+
 #else
 
 #include "GrContextPriv.h"
 #include "GrProxyProvider.h"
+#include "GrRenderTargetContext.h"
 #include "GrTexture.h"
 
 #include "SkGr.h"
@@ -59,9 +75,16 @@ SkDeferredDisplayListRecorder::~SkDeferredDisplayListRecorder() {
     if (fContext) {
         auto proxyProvider = fContext->contextPriv().proxyProvider();
 
-        // DDL TODO: Remove this. DDL contexts should allow for deletion while still having live
-        // uniquely keyed proxies.
-        proxyProvider->removeAllUniqueKeys();
+        // This allows the uniquely keyed proxies to keep their keys but removes their back
+        // pointer to the about-to-be-deleted proxy provider. The proxies will use their
+        // unique key to reattach to cached versions of themselves or to appropriately tag new
+        // resources (if a cached version was not found). This system operates independent of
+        // the replaying context's proxy provider (i.e., these uniquely keyed proxies will not
+        // appear in the replaying proxy providers uniquely keyed proxy map). This should be fine
+        // since no one else should be trying to reconnect to the orphaned proxies and orphaned
+        // proxies from different DDLs that share the same key should simply reconnect to the
+        // same cached resource.
+        proxyProvider->orphanAllUniqueKeys();
     }
 }
 
@@ -201,6 +224,36 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
                                            textureReleaseProc,
                                            promiseDoneProc,
                                            textureContext);
+}
+
+sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
+        SkYUVColorSpace yuvColorSpace,
+        const GrBackendFormat yuvaFormats[],
+        const SkYUVAIndex yuvaIndices[4],
+        int imageWidth,
+        int imageHeight,
+        GrSurfaceOrigin imageOrigin,
+        sk_sp<SkColorSpace> imageColorSpace,
+        TextureFulfillProc textureFulfillProc,
+        TextureReleaseProc textureReleaseProc,
+        PromiseDoneProc promiseDoneProc,
+        TextureContext textureContexts[]) {
+    if (!fContext) {
+        return nullptr;
+    }
+
+    return SkImage_Gpu::MakePromiseYUVATexture(fContext.get(),
+                                               yuvColorSpace,
+                                               yuvaFormats,
+                                               yuvaIndices,
+                                               imageWidth,
+                                               imageHeight,
+                                               imageOrigin,
+                                               std::move(imageColorSpace),
+                                               textureFulfillProc,
+                                               textureReleaseProc,
+                                               promiseDoneProc,
+                                               textureContexts);
 }
 
 #endif

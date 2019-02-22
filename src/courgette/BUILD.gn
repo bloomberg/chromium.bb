@@ -15,8 +15,6 @@ static_library("courgette_lib") {
     "courgette.h",
     "courgette_flow.cc",
     "courgette_flow.h",
-    "crc.cc",
-    "crc.h",
     "difference_estimator.cc",
     "difference_estimator.h",
     "disassembler.cc",
@@ -43,13 +41,10 @@ static_library("courgette_lib") {
     "instruction_utils.h",
     "label_manager.cc",
     "label_manager.h",
-    "memory_allocator.cc",
-    "memory_allocator.h",
     "patch_generator_x86_32.h",
     "patcher_x86_32.h",
     "program_detector.cc",
     "program_detector.h",
-    "region.h",
     "rel32_finder.cc",
     "rel32_finder.h",
     "rel32_finder_x64.cc",
@@ -58,18 +53,6 @@ static_library("courgette_lib") {
     "rel32_finder_x86.h",
     "simple_delta.cc",
     "simple_delta.h",
-    "streams.cc",
-    "streams.h",
-    "third_party/bsdiff/bsdiff.h",
-    "third_party/bsdiff/bsdiff_apply.cc",
-    "third_party/bsdiff/bsdiff_create.cc",
-    "third_party/bsdiff/bsdiff_search.h",
-    "third_party/bsdiff/paged_array.h",
-    "third_party/divsufsort/divsufsort.cc",
-    "third_party/divsufsort/divsufsort.h",
-    "third_party/divsufsort/divsufsort_private.h",
-    "third_party/divsufsort/sssort.cc",
-    "third_party/divsufsort/trsort.cc",
     "types_elf.h",
     "types_win_pe.h",
   ]
@@ -78,6 +61,68 @@ static_library("courgette_lib") {
     "//base",
     "//third_party/lzma_sdk",
   ]
+
+  public_deps = [
+    ":bsdiff",
+    ":courgette_common",
+  ]
+}
+
+source_set("courgette_common") {
+  sources = [
+    "crc.cc",
+    "crc.h",
+    "memory_allocator.cc",
+    "memory_allocator.h",
+    "region.h",
+    "streams.cc",
+    "streams.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("paged_array") {
+  sources = [
+    "third_party/bsdiff/paged_array.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("bsdiff") {
+  sources = [
+    "third_party/bsdiff/bsdiff.h",
+    "third_party/bsdiff/bsdiff_apply.cc",
+    "third_party/bsdiff/bsdiff_create.cc",
+    "third_party/bsdiff/bsdiff_search.h",
+  ]
+  deps = [
+    ":courgette_common",
+    "//base",
+  ]
+  public_deps = [
+    ":divsufsort",
+    ":paged_array",
+  ]
+}
+
+source_set("divsufsort") {
+  sources = [
+    "third_party/divsufsort/divsufsort.cc",
+    "third_party/divsufsort/divsufsort.h",
+    "third_party/divsufsort/divsufsort_private.h",
+    "third_party/divsufsort/sssort.cc",
+    "third_party/divsufsort/trsort.cc",
+  ]
+  deps = [
+    ":courgette_common",
+    ":paged_array",
+    "//base",
+  ]
+  configs += [ "//build/config/compiler:no_shorten_64_warnings" ]
 }
 
 if (!is_ios) {
@@ -131,17 +176,31 @@ if (!is_ios) {
         ]
       }
     } else {
-      # Make sure that we have a copy of courgette64.exe in the root out
+      # Make sure that we have a copy of courgette64.exe(.pdb) in the root out
       # directory.
-      copy("copy_courgette_binaries") {
-        if (is_clang) {
-          courgette64_toolchain = "//build/toolchain/win:win_clang_x64"
-        } else {
-          courgette64_toolchain = "//build/toolchain/win:x64"
-        }
-        courgette64_label = ":courgette($courgette64_toolchain)"
+      if (is_clang) {
+        courgette64_toolchain = "//build/toolchain/win:win_clang_x64"
+      } else {
+        courgette64_toolchain = "//build/toolchain/win:x64"
+      }
+      courgette64_label = ":courgette($courgette64_toolchain)"
 
-        courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
+      courgette64_out_dir = get_label_info(courgette64_label, "root_out_dir")
+
+      copy("copy_courgette_pdb") {
+        visibility = [ ":copy_courgette_binaries" ]
+        sources = [
+          "$courgette64_out_dir/courgette64.exe.pdb",
+        ]
+        outputs = [
+          "$root_out_dir/{{source_file_part}}",
+        ]
+        deps = [
+          courgette64_label,
+        ]
+      }
+
+      copy("copy_courgette_binaries") {
         sources = [
           "$courgette64_out_dir/courgette64.exe",
         ]
@@ -149,6 +208,7 @@ if (!is_ios) {
           "$root_out_dir/{{source_file_part}}",
         ]
         deps = [
+          ":copy_courgette_pdb",
           courgette64_label,
         ]
       }

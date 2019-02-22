@@ -44,6 +44,7 @@
 #include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
 using ::gfx::test::RectContains;
@@ -98,7 +99,7 @@ class LoginSigninTest : public InProcessBrowserTest {
 
 class LoginTest : public LoginManagerTest {
  public:
-  LoginTest() : LoginManagerTest(true) {}
+  LoginTest() : LoginManagerTest(true, true) {}
   ~LoginTest() override {}
 
   void StartGaiaAuthOffline() {
@@ -199,7 +200,11 @@ void TestSystemTrayIsVisible(bool otr) {
   EXPECT_TRUE(tray->visible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.
-  if (!otr)
+  // This check is suppressed for Mash since the warning button of Mash changes
+  // the tray bounds which triggers the failure. See: https://crbug.com/892730
+  // TODO(jamescook): remove this when Mash is on by default or the button is
+  // removed.
+  if (!otr && !features::IsUsingWindowService())
     EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
 }
 

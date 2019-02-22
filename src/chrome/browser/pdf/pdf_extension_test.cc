@@ -18,6 +18,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -39,7 +40,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_item.h"
 #include "components/viz/common/features.h"
@@ -48,6 +48,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -339,8 +340,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   int CountPDFProcesses() {
     int result = -1;
     base::RunLoop run_loop;
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PDFExtensionTest::CountPDFProcessesOnIOThread,
                        base::Unretained(this), base::Unretained(&result)),
         run_loop.QuitClosure());
@@ -378,10 +379,6 @@ class PDFExtensionHitTestTest : public PDFExtensionTest,
   }
 
   base::test::ScopedFeatureList feature_list_;
-
-#if defined(OS_MACOSX)
-  test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
-#endif
 };
 
 // Disabled because it's flaky.
@@ -1775,8 +1772,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 
 #endif  // defined(OS_MACOSX)
 
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-// https://crbug.com/856169
+#if (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_CHROME) && defined(MEMORY_SANITIZER))
+// https://crbug.com/856169, https://crbug.com/892484
 #define MAYBE_MouseLeave DISABLED_MouseLeave
 #else
 #define MAYBE_MouseLeave MouseLeave

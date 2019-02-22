@@ -13,7 +13,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"

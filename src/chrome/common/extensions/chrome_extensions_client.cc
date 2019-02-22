@@ -88,8 +88,6 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
 void ChromeExtensionsClient::Initialize() {
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ChromeExtensionsClientInitTime");
-
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs
   // the ability to script webui pages. This is temporary and is not
@@ -131,7 +129,7 @@ void ChromeExtensionsClient::FilterHostPermissions(
     PermissionIDSet* permissions) const {
   // When editing this function, be sure to add the same functionality to
   // FilterHostPermissions() above.
-  for (URLPatternSet::const_iterator i = hosts.begin(); i != hosts.end(); ++i) {
+  for (auto i = hosts.begin(); i != hosts.end(); ++i) {
     // Filters out every URL pattern that matches chrome:// scheme.
     if (i->scheme() == content::kChromeUIScheme) {
       // chrome://favicon is the only URL for chrome:// scheme that we

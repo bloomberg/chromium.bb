@@ -24,9 +24,9 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-private.hh"
+#include "hb.hh"
 #define HB_SHAPER uniscribe
-#include "hb-shaper-impl-private.hh"
+#include "hb-shaper-impl.hh"
 
 #include <windows.h>
 #include <usp10.h>
@@ -34,7 +34,7 @@
 
 #include "hb-uniscribe.h"
 
-#include "hb-open-file-private.hh"
+#include "hb-open-file.hh"
 #include "hb-ot-name-table.hh"
 #include "hb-ot-tag.h"
 
@@ -392,7 +392,7 @@ _hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
   name.stringOffset.set (name.get_size ());
   for (unsigned int i = 0; i < ARRAY_LENGTH (name_IDs); i++)
   {
-    OT::NameRecord &record = name.nameRecord[i];
+    OT::NameRecord &record = name.nameRecordZ[i];
     record.platformID.set (3);
     record.encodingID.set (1);
     record.languageID.set (0x0409u); /* English */

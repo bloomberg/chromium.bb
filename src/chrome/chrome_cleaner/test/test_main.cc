@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
@@ -51,6 +53,14 @@ class ChromeCleanerTestSuite : public base::TestSuite {
 
 }  // namespace
 
+namespace chrome_cleaner {
+
+// Gives each test executable a chance to modify |command_line|. Each
+// executable must link with exactly one implementation of this.
+void OverrideTestCommandLine(base::CommandLine* command_line);
+
+}  // namespace chrome_cleaner
+
 int main(int argc, char** argv) {
   // This must be executed as soon as possible to reduce the number of dlls that
   // the code might try to load before we can lock things down.
@@ -70,6 +80,9 @@ int main(int argc, char** argv) {
   // Make sure tests will not end up in an infinite reboot loop.
   if (chrome_cleaner::Rebooter::IsPostReboot())
     return 0;
+
+  chrome_cleaner::OverrideTestCommandLine(
+      base::CommandLine::ForCurrentProcess());
 
   // ScopedCOMInitializer keeps COM initialized in a specific scope. We don't
   // want to initialize it for sandboxed processes, so manage its lifetime with

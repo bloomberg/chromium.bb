@@ -130,6 +130,12 @@ class VariationsService
   // empty if it is not available.
   std::string GetLatestCountry() const;
 
+  // Ensures the locale that was used for evaluating variations matches the
+  // passed |locale|. This is used to ensure that the locale determined after
+  // loading the resource bundle (which is passed here) corresponds to what
+  // was used for variations during an earlier stage of start up.
+  void EnsureLocaleEquals(const std::string& locale);
+
   // Exposed for testing.
   static std::string GetDefaultVariationsServerURLForTesting();
 
@@ -147,7 +153,9 @@ class VariationsService
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       const char* disable_network_switch,
-      const UIStringOverrider& ui_string_overrider);
+      const UIStringOverrider& ui_string_overrider,
+      web_resource::ResourceRequestAllowedNotifier::
+          NetworkConnectionTrackerGetter network_connection_tracker_getter);
 
   // Enables fetching the seed for testing, even for unofficial builds. This
   // should be used along with overriding |DoActualFetch| or using
@@ -172,6 +180,9 @@ class VariationsService
                         const std::vector<std::string>& variation_ids,
                         std::unique_ptr<base::FeatureList> feature_list,
                         variations::PlatformFieldTrials* platform_field_trials);
+
+  // Overrides cached UI strings on the resource bundle once it is initialized.
+  void OverrideCachedUIStrings();
 
   int request_count() const { return request_count_; }
 

@@ -11,6 +11,8 @@ set(DEQP_VK_PIPELINE_SRCS
 	vktPipelineCombinationsIterator.hpp
 	vktPipelineDepthTests.cpp
 	vktPipelineDepthTests.hpp
+	vktPipelineDerivativeTests.cpp
+	vktPipelineDerivativeTests.hpp
 	vktPipelineEarlyDestroyTests.cpp
 	vktPipelineEarlyDestroyTests.hpp
 	vktPipelineImageSamplingInstance.cpp
@@ -19,6 +21,8 @@ set(DEQP_VK_PIPELINE_SRCS
 	vktPipelineImageTests.hpp
 	vktPipelinePushConstantTests.cpp
 	vktPipelinePushConstantTests.hpp
+	vktPipelinePushDescriptorTests.cpp
+	vktPipelinePushDescriptorTests.hpp
 	vktPipelineSpecConstantTests.hpp
 	vktPipelineSpecConstantTests.cpp
 	vktPipelineSpecConstantUtil.hpp
@@ -57,6 +61,8 @@ set(DEQP_VK_PIPELINE_SRCS
 	vktPipelineFramebufferAttachmentTests.hpp
 	vktPipelineSamplerTests.cpp
 	vktPipelineSamplerTests.hpp
+	vktPipelineStencilExportTests.cpp
+	vktPipelineStencilExportTests.hpp
 	vktPipelineStencilTests.cpp
 	vktPipelineStencilTests.hpp
 	vktPipelineTests.cpp

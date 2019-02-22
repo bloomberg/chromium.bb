@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/fake_cicerone_client.h"
 
+#include <utility>
+
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {
@@ -17,7 +19,20 @@ FakeCiceroneClient::FakeCiceroneClient() {
   install_linux_package_response_.Clear();
   install_linux_package_response_.set_status(
       vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+
+  create_lxd_container_response_.Clear();
+  create_lxd_container_response_.set_status(
+      vm_tools::cicerone::CreateLxdContainerResponse::CREATING);
+
+  start_lxd_container_response_.Clear();
+  start_lxd_container_response_.set_status(
+      vm_tools::cicerone::StartLxdContainerResponse::STARTED);
+
+  setup_lxd_container_user_response_.Clear();
+  setup_lxd_container_user_response_.set_status(
+      vm_tools::cicerone::SetUpLxdContainerUserResponse::SUCCESS);
 }
+
 FakeCiceroneClient::~FakeCiceroneClient() = default;
 
 void FakeCiceroneClient::AddObserver(Observer* observer) {
@@ -91,6 +106,16 @@ void FakeCiceroneClient::CreateLxdContainer(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), create_lxd_container_response_));
+
+  // Trigger CiceroneClient::Observer::NotifyLxdContainerCreatedSignal.
+  vm_tools::cicerone::LxdContainerCreatedSignal signal;
+  signal.set_owner_id(request.owner_id());
+  signal.set_vm_name(request.vm_name());
+  signal.set_container_name(request.container_name());
+  signal.set_status(lxd_container_created_signal_status_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyLxdContainerCreated,
+                                base::Unretained(this), std::move(signal)));
 }
 
 void FakeCiceroneClient::StartLxdContainer(
@@ -118,6 +143,36 @@ void FakeCiceroneClient::SetUpLxdContainerUser(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), setup_lxd_container_user_response_));
+
+  // Trigger CiceroneClient::Observer::NotifyContainerStartedSignal.
+  vm_tools::cicerone::ContainerStartedSignal signal;
+  signal.set_owner_id(request.owner_id());
+  signal.set_vm_name(request.vm_name());
+  signal.set_container_name(request.container_name());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCiceroneClient::NotifyContainerStarted,
+                                base::Unretained(this), std::move(signal)));
+}
+
+void FakeCiceroneClient::NotifyLxdContainerCreated(
+    const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnLxdContainerCreated(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyContainerStarted(
+    const vm_tools::cicerone::ContainerStartedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnContainerStarted(proto);
+  }
+}
+
+void FakeCiceroneClient::NotifyTremplinStarted(
+    const vm_tools::cicerone::TremplinStartedSignal& proto) {
+  for (auto& observer : observer_list_) {
+    observer.OnTremplinStarted(proto);
+  }
 }
 
 }  // namespace chromeos

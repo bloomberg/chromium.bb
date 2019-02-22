@@ -142,7 +142,8 @@ void OobeBaseTest::TearDownOnMainThread() {
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
-  command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
+  if (ShouldForceWebUiLogin())
+    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   if (!needs_background_networking_)
@@ -161,6 +162,10 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
 void OobeBaseTest::InitHttpsForwarders() {
   ASSERT_TRUE(gaia_https_forwarder_.Initialize(
       kGAIAHost, embedded_test_server()->base_url()));
+}
+
+bool OobeBaseTest::ShouldForceWebUiLogin() {
+  return true;
 }
 
 void OobeBaseTest::SimulateNetworkOffline() {

@@ -1252,7 +1252,7 @@ public class CronetUrlRequestContextTest {
     private static native void nativeVerifyUrlRequestContextConfig(long config, String storagePath);
 
     private static class TestBadLibraryLoader extends CronetEngine.Builder.LibraryLoader {
-        private boolean mWasCalled = false;
+        private boolean mWasCalled;
 
         @Override
         public void loadLibrary(String libName) {

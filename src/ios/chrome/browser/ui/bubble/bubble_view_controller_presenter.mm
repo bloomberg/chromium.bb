@@ -18,7 +18,6 @@
 namespace {
 
 // How long, in seconds, the bubble is visible on the screen.
-const NSTimeInterval kBubbleVisibilityDurationLegacy = 4.0;
 const NSTimeInterval kBubbleVisibilityDuration = 5.0;
 // How long, in seconds, the user should be considered engaged with the bubble
 // after the bubble first becomes visible.
@@ -165,9 +164,7 @@ void LogBubbleDismissalReason(BubbleDismissalReason reason) {
   [parentView addGestureRecognizer:self.outsideBubbleTapRecognizer];
   [parentView addGestureRecognizer:self.swipeRecognizer];
 
-  CGFloat duration = IsUIRefreshPhase1Enabled()
-                         ? kBubbleVisibilityDuration
-                         : kBubbleVisibilityDurationLegacy;
+  CGFloat duration = kBubbleVisibilityDuration;
 
   self.bubbleDismissalTimer = [NSTimer
       scheduledTimerWithTimeInterval:duration

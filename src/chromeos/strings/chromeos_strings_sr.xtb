@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="1510238584712386396">Покретач</translation>
+<translation id="1734367976349034509">Овим уређајем управља предузеће</translation>
+<translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Нисмо пронашли ништа на екрану</translation>
+<translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
+<translation id="2805756323405976993">Апликације</translation>
+<translation id="2872961005593481000">Искључи</translation>
+<translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
-<translation id="6674412557034343536">заустави тајмер</translation>
-<translation id="8626219642120025691">Време је истекло</translation>
+<translation id="5222676887888702881">Одјави ме</translation>
+<translation id="5457599981699367932">Прегледајте као гост</translation>
+<translation id="54609108002486618">Управљани</translation>
+<translation id="5832805196449965646">Додај особу</translation>
+<translation id="5895138241574237353">Покрени поново</translation>
+<translation id="7222902781030499995">Заустави тајмер</translation>
+<translation id="7658239707568436148">Откажи</translation>
+<translation id="7837740436429729974">Време је истекло</translation>
 <translation id="8898978413391960553">00:00 с</translation>
+<translation id="9111102763498581341">Откључај</translation>
 </translationbundle>

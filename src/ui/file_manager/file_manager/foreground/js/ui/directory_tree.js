@@ -116,17 +116,6 @@ var TREE_ITEM_INNER_HTML =
     '</div>' +
     '<div class="tree-children"></div>';
 
-var MENU_TREE_ITEM_INNER_HTML =
-    '<div class="tree-row">' +
-    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
-    ' <span class="expand-icon"></span>' +
-    ' <div class="button">' +
-    '  <span class="icon item-icon"></span>' +
-    '  <span class="label entry-name"></span>' +
-    ' </div>' +
-    '</div>' +
-    '<div class="tree-children"></div>';
-
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryItem
 
@@ -1339,95 +1328,6 @@ ShortcutItem.prototype.activate = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// MenuItem
-
-/**
- * A TreeItem which represents a command button.
- * Command items are displayed as top-level children of DirectoryTree.
- *
- * @param {!NavigationModelMenuItem} modelItem
- * @param {!DirectoryTree} tree Current tree, which contains this item.
- * @extends {cr.ui.TreeItem}
- * @constructor
- */
-function MenuItem(modelItem, tree) {
-  var item = new cr.ui.TreeItem();
-  // Get the original label id defined by TreeItem, before overwriting
-  // prototype.
-  var labelId = item.labelElement.id;
-  item.__proto__ = MenuItem.prototype;
-  if (window.IN_TEST) {
-    item.setAttribute('dir-type', 'MenuItem');
-    item.setAttribute('entry-label', modelItem.label);
-  }
-
-  item.parentTree_ = tree;
-  item.modelItem_ = modelItem;
-  item.innerHTML = MENU_TREE_ITEM_INNER_HTML;
-  item.labelElement.id = labelId;
-  item.label = modelItem.label;
-
-  item.menuButton_ = /** @type {!cr.ui.MenuButton} */(queryRequiredElement(
-        '.button', assert(item.firstElementChild)));
-  item.menuButton_.setAttribute('menu', item.modelItem_.menu);
-  cr.ui.MenuButton.decorate(item.menuButton_);
-
-  var icon = queryRequiredElement('.icon', item);
-  icon.setAttribute('menu-button-icon', item.modelItem_.icon);
-
-  return item;
-}
-
-MenuItem.prototype = {
-  __proto__: cr.ui.TreeItem.prototype,
-  get entry() {
-    return null;
-  },
-  get modelItem() {
-    return this.modelItem_;
-  },
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
-};
-
-/**
- * @param {!DirectoryEntry|!FakeEntry} entry
- * @return {boolean} True if the parent item is found.
- */
-MenuItem.prototype.searchAndSelectByEntry = function(entry) {
-  return false;
-};
-
-/**
- * @override
- */
-MenuItem.prototype.handleClick = function(e) {
-  this.activate();
-
-  DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
-      this, e, VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU, true);
-};
-
-/**
- * @param {!DirectoryEntry} entry
- */
-MenuItem.prototype.selectByEntry = function(entry) {
-};
-
-/**
- * Executes the command.
- */
-MenuItem.prototype.activate = function() {
-  // Dispatch an event to update the menu (if updatable).
-  var updateEvent = /** @type {MenuItemUpdateEvent} */ (new Event('update'));
-  updateEvent.menuButton = this.menuButton_;
-  this.menuButton_.menu.dispatchEvent(updateEvent);
-
-  this.menuButton_.showMenu();
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // FakeItem
 
 /**
@@ -1541,7 +1441,7 @@ function DirectoryTree() {}
  * Decorates an element.
  * @param {HTMLElement} el Element to be DirectoryTree.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
- * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!VolumeManager} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
@@ -1645,10 +1545,6 @@ DirectoryTree.createDirectoryItem = function(modelItem, tree) {
       return new ShortcutItem(
           /** @type {!NavigationModelShortcutItem} */ (modelItem), tree);
       break;
-    case NavigationModelItemType.MENU:
-      return new MenuItem(
-          /** @type {!NavigationModelMenuItem} */ (modelItem), tree);
-      break;
     case NavigationModelItemType.RECENT:
       return new FakeItem(
           VolumeManagerCommon.RootType.RECENT,
@@ -1713,9 +1609,9 @@ DirectoryTree.prototype.updateAndSelectNewDirectory = function(
 DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   // First, current items which is not included in the dataModel should be
   // removed.
-  for (var i = 0; i < this.items.length;) {
-    var found = false;
-    for (var j = 0; j < this.dataModel.length; j++) {
+  for (let i = 0; i < this.items.length;) {
+    let found = false;
+    for (let j = 0; j < this.dataModel.length; j++) {
       // Comparison by references, which is safe here, as model items are long
       // living.
       if (this.items[i].modelItem === this.dataModel.item(j)) {
@@ -1733,18 +1629,20 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
   }
 
   // Next, insert items which is in dataModel but not in current items.
-  var modelIndex = 0;
-  var itemIndex = 0;
-  // Starts with TOP_SECTION so first section doesn't get the separator line.
-  var previousSection = NavigationSection.TOP;
+  let modelIndex = 0;
+  let itemIndex = 0;
+  // Initialize with first item's section so the first root doesn't get a
+  // divider line at the top.
+  let previousSection = this.dataModel.item(modelIndex).section;
   while (modelIndex < this.dataModel.length) {
     const currentItem = this.items[itemIndex];
     if (itemIndex < this.items.length &&
         currentItem.modelItem === this.dataModel.item(modelIndex)) {
-      var modelItem = currentItem.modelItem;
-      if (previousSection !== modelItem.section)
-        currentItem.setAttribute('section-start', previousSection);
-      previousSection = modelItem.section;
+      const modelItem = currentItem.modelItem;
+      if (previousSection !== modelItem.section) {
+        currentItem.setAttribute('section-start', modelItem.section);
+        previousSection = modelItem.section;
+      }
       if (recursive && currentItem instanceof VolumeItem)
         currentItem.updateSubDirectories(true);
       // EntryListItem can contain volumes that might have been updated: ask
@@ -1753,13 +1651,13 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
       if (currentItem instanceof EntryListItem)
         currentItem.updateSubDirectories(true);
     } else {
-      var modelItem = this.dataModel.item(modelIndex);
+      const modelItem = this.dataModel.item(modelIndex);
       if (modelItem) {
-        var item = DirectoryTree.createDirectoryItem(modelItem, this);
+        const item = DirectoryTree.createDirectoryItem(modelItem, this);
         if (item) {
           this.addAt(item, itemIndex);
           if (previousSection !== modelItem.section)
-            item.setAttribute('section-start', previousSection);
+            item.setAttribute('section-start', modelItem.section);
         }
         previousSection = modelItem.section;
       }
@@ -1803,7 +1701,7 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
 /**
  * Decorates an element.
  * @param {!DirectoryModel} directoryModel Current DirectoryModel.
- * @param {!VolumeManagerWrapper} volumeManager VolumeManager of the system.
+ * @param {!VolumeManager} volumeManager VolumeManager of the system.
  * @param {!MetadataModel} metadataModel Shared MetadataModel instance.
  * @param {!FileOperationManager} fileOperationManager
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.

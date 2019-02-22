@@ -17,17 +17,23 @@
 namespace blink {
 class WebString;
 class WebMediaConstraints;
-}
+}  // namespace blink
 
 namespace content {
 
 // Calculates and returns videoKind value for |format|.
 // See https://w3c.github.io/mediacapture-depth.
-blink::WebString CONTENT_EXPORT
-GetVideoKindForFormat(const media::VideoCaptureFormat& format);
+CONTENT_EXPORT blink::WebString GetVideoKindForFormat(
+    const media::VideoCaptureFormat& format);
 
-blink::WebMediaStreamTrack::FacingMode CONTENT_EXPORT
-ToWebFacingMode(media::VideoFacingMode video_facing);
+CONTENT_EXPORT blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
+    media::VideoFacingMode video_facing);
+
+CONTENT_EXPORT blink::WebMediaStreamTrack::DisplayCaptureSurfaceType
+ToWebDisplaySurface(media::mojom::DisplayCaptureSurfaceType display_surface);
+
+CONTENT_EXPORT blink::WebMediaStreamTrack::CursorCaptureType
+ToWebCursorCaptureType(media::mojom::CursorCaptureType cursor);
 
 struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
@@ -39,7 +45,6 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   // Each field is independent of each other.
   std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
       device_capabilities;
-  std::vector<media::PowerLineFrequency> power_line_capabilities;
   std::vector<base::Optional<bool>> noise_reduction_capabilities;
 };
 
@@ -100,9 +105,9 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
 //    ideal value and thus has worse fitness according to step 2, even if C3's
 //    native fitness is better than C1's and C2's.
 // 5. C1 is better than C2 if its settings are closer to certain default
-//    settings that include the device ID, power-line frequency, noise
-//    reduction, resolution, and frame rate, in that order. Note that there is
-//    no default facing mode or aspect ratio.
+//    settings that include the device ID, noise reduction, resolution,
+//    and frame rate, in that order. Note that there is no default facing mode
+//    or aspect ratio.
 // This function uses the SelectVideoTrackAdapterSettings function to compute
 // some track-specific settings. These are available in the returned value via
 // the track_adapter_settings() accessor. For more details about the algorithm

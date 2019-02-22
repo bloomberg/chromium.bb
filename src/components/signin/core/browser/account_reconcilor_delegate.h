@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -60,6 +61,20 @@ class AccountReconcilorDelegate {
       const std::string& primary_account,
       bool first_execution,
       bool will_logout) const;
+
+  // Reorders chrome accounts in the order they should appear in cookies with
+  // respect to existing cookies. Returns true if the resulting vector is not
+  // the same as existing vector of gaia accounts (i.e. cookies should be
+  // rebuilt).
+  virtual bool ReorderChromeAccountsForReconcileIfNeeded(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      std::vector<std::string>* accounts_to_send) const;
+
+  // Returns true if it is allowed to change the order of the gaia accounts
+  // (e.g. on mobile or on stratup). Default is true.
+  virtual bool ShouldUpdateAccountsOrderInCookies() const;
 
   // Returns whether secondary accounts should be revoked at the beginning of
   // the reconcile.

@@ -221,7 +221,7 @@ class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
 
   void Start() {
     info_buffer_ = new HttpResponseInfoIOBuffer();
-    io_buffer_ = new net::IOBuffer(kBlockSize);
+    io_buffer_ = base::MakeRefCounted<net::IOBuffer>(kBlockSize);
     reader_->ReadInfo(
         info_buffer_.get(),
         base::BindOnce(&ResponseVerifier::OnReadInfoComplete, this));
@@ -323,7 +323,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */,
-        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
+        RESOURCE_TYPE_SERVICE_WORKER,
+        blink::mojom::RequestContextType::SERVICE_WORKER,
         network::mojom::RequestContextFrameType::kNone,
         scoped_refptr<network::ResourceRequestBody>());
   }
@@ -338,9 +339,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     options.scope = scope_;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ =
-        new ServiceWorkerVersion(registration_.get(), script_url_,
-                                 NextVersionId(), context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        NextVersionId(), context()->AsWeakPtr());
     base::WeakPtr<ServiceWorkerProviderHost> host =
         CreateHostForVersion(helper_->mock_render_process_id(), version_);
     ASSERT_TRUE(host);
@@ -392,9 +393,9 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   // to the script |response|. Returns the new version.
   scoped_refptr<ServiceWorkerVersion> UpdateScript(
       const std::string& response) {
-    scoped_refptr<ServiceWorkerVersion> new_version =
-        new ServiceWorkerVersion(registration_.get(), script_url_,
-                                 NextVersionId(), context()->AsWeakPtr());
+    scoped_refptr<ServiceWorkerVersion> new_version = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        NextVersionId(), context()->AsWeakPtr());
     new_version->SetToPauseAfterDownload(base::DoNothing());
     base::WeakPtr<ServiceWorkerProviderHost> host =
         CreateHostForVersion(helper_->mock_render_process_id(), new_version);

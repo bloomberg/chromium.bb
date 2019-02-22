@@ -24,6 +24,7 @@
 #define png_calculate_crc cr_png_calculate_crc
 #define png_calloc cr_png_calloc
 #define png_check_IHDR cr_png_check_IHDR
+#define png_check_chunk_length cr_png_check_chunk_length
 #define png_check_chunk_name cr_png_check_chunk_name
 #define png_check_fp_number cr_png_check_fp_number
 #define png_check_fp_string cr_png_check_fp_string
@@ -455,6 +456,7 @@
 #define png_write_zTXt cr_png_write_zTXt
 #define png_zalloc cr_png_zalloc
 #define png_zfree cr_png_zfree
+#define png_zlib_inflate cr_png_zlib_inflate
 #define png_zstream_error cr_png_zstream_error
 
 #endif  // PNGPREFIX_H

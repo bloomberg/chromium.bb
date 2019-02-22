@@ -5,9 +5,15 @@
 package com.android.webview.chromium;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Canvas;
 import android.os.Build;
+import android.os.UserManager;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
+import android.webkit.WebView;
+import android.webkit.WebViewDelegate;
 
 import org.chromium.base.annotations.DoNotInline;
 
@@ -41,5 +47,33 @@ public final class GlueApiHelperForN {
     public static TokenBindingService createTokenBindingManagerAdapter(
             WebViewChromiumFactoryProvider factory) {
         return new TokenBindingManagerAdapter(factory);
+    }
+
+    /**
+     * See {@link Context#isDeviceProtectedStorage()}.
+     */
+    public static boolean isDeviceProtectedStorage(Context context) {
+        return context.isDeviceProtectedStorage();
+    }
+
+    /**
+     * See {@link UserManager#isUserUnlocked()}.
+     */
+    public static boolean isUserUnlocked(Context context) {
+        return context.getSystemService(UserManager.class).isUserUnlocked();
+    }
+
+    public static Context createCredentialProtectedStorageContext(Context context) {
+        return context.createCredentialProtectedStorageContext();
+    }
+
+    public static void callDrawGlFunction(WebViewDelegate webViewDelegate, Canvas canvas,
+            long nativeDrawGlFunctor, Runnable releasedCallback) {
+        webViewDelegate.callDrawGlFunction(canvas, nativeDrawGlFunctor, releasedCallback);
+    }
+
+    public static void super_startActivityForResult(
+            WebView.PrivateAccess webViewPrivate, Intent intent, int requestCode) {
+        webViewPrivate.super_startActivityForResult(intent, requestCode);
     }
 }

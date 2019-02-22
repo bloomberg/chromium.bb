@@ -7,13 +7,10 @@
 
 #include <stdint.h>
 
+#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "media/base/data_source.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace chromeos {
 namespace assistant {
@@ -44,17 +41,19 @@ class IPCDataSource : public media::DataSource {
   void ReadMediaData(uint8_t* destination, const ReadCB& callback, int size);
   void ReadDone(uint8_t* destination,
                 const ReadCB& callback,
-                int requested_size,
+                uint32_t requested_size,
                 const std::vector<uint8_t>& data);
 
   mojom::AssistantMediaDataSourcePtr media_data_source_;
 
-  scoped_refptr<base::TaskRunner> utility_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> utility_task_runner_;
 
   THREAD_CHECKER(utility_thread_checker_);
 
   // Enforces that the DataSource methods are called on one other thread only.
   THREAD_CHECKER(data_source_thread_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(IPCDataSource);
 };
 
 }  // namespace assistant

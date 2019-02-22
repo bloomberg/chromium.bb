@@ -18,7 +18,8 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,7 +128,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   EXPECT_THAT(*requested_urls, Not(Contains(item3.url.spec())));
 
   std::string upload_data =
-      url_fetcher_factory()->GetFetcherByID(0)->upload_data();
+      network::GetUploadData(GetPendingRequest(0 /*index*/)->request);
   EXPECT_THAT(upload_data, HasSubstr(MockPrefetchItemGenerator::kUrlPrefix));
 
   EXPECT_EQ(3, store_util()->CountPrefetchItems());

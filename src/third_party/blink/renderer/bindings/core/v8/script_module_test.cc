@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -277,10 +278,11 @@ TEST(ScriptModuleTest, Evaluate) {
   ASSERT_TRUE(exception.IsEmpty());
 
   EXPECT_TRUE(module.Evaluate(scope.GetScriptState()).IsEmpty());
-  v8::Local<v8::Value> value = scope.GetFrame()
-                                   .GetScriptController()
-                                   .ExecuteScriptInMainWorldAndReturnValue(
-                                       ScriptSourceCode("window.foo"));
+  v8::Local<v8::Value> value =
+      scope.GetFrame()
+          .GetScriptController()
+          .ExecuteScriptInMainWorldAndReturnValue(
+              ScriptSourceCode("window.foo"), KURL(), kOpaqueResource);
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
 

@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/resource_type.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -97,6 +99,15 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool GetMatchingIsolatedOrigin(const url::Origin& origin,
                                  url::Origin* result) override;
 
+  // A version of GetMatchingIsolatedOrigin that takes in both the |origin| and
+  // the |site_url| that |origin| corresponds to.  |site_url| is the key by
+  // which |origin| will be looked up in |isolated_origins_|; this function
+  // allows it to be passed in when it is already known to avoid recomputing it
+  // internally.
+  bool GetMatchingIsolatedOrigin(const url::Origin& origin,
+                                 const GURL& site_url,
+                                 url::Origin* result);
+
   // Returns if |child_id| can read all of the |files|.
   bool CanReadAllFiles(int child_id, const std::vector<base::FilePath>& files);
 
@@ -159,6 +170,20 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
+
+  // A version of the public ChildProcessSecurityPolicy::CanCommitURL() which
+  // takes an additional bool |check_origin_lock|, specifying whether to
+  // reject |url| if it does not match the origin lock on process |child_id|.
+  // Passing true for |check_origin_lock| provides stronger enforcement with
+  // strict site isolation; it is only set to false by features (e.g., Origin
+  // header validation) that aren't yet ready for this enforcement. This
+  // function should *not* be used by new features; use the public
+  // ChildProcessSecurityPolicy::CanCommitURL() instead, which internally calls
+  // this with |check_origin_lock| being true.
+  //
+  // TODO(alexmos): Remove |check_origin_lock| and check origin locks
+  // unconditionally once https://crbug.com/515309 is fixed.
+  bool CanCommitURL(int child_id, const GURL& url, bool check_origin_lock);
 
   // Whether the given origin is valid for an origin header. Valid origin
   // headers are commitable URLs.
@@ -286,13 +311,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   friend struct base::DefaultSingletonTraits<ChildProcessSecurityPolicyImpl>;
 
   // Adds child process during registration.
-  void AddChild(int child_id);
+  void AddChild(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Determines if certain permissions were granted for a file to given child
   // process. |permissions| is an internally defined bit-set.
   bool ChildProcessHasPermissionsForFile(int child_id,
                                          const base::FilePath& file,
-                                         int permissions);
+                                         int permissions)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Grant a particular permission set for a file. |permissions| is an
   // internally defined bit-set.
@@ -336,32 +362,43 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // These schemes are white-listed for all child processes in various contexts.
   // These sets are protected by |lock_|.
-  SchemeSet schemes_okay_to_commit_in_any_process_;
-  SchemeSet schemes_okay_to_request_in_any_process_;
-  SchemeSet schemes_okay_to_appear_as_origin_headers_;
+  SchemeSet schemes_okay_to_commit_in_any_process_ GUARDED_BY(lock_);
+  SchemeSet schemes_okay_to_request_in_any_process_ GUARDED_BY(lock_);
+  SchemeSet schemes_okay_to_appear_as_origin_headers_ GUARDED_BY(lock_);
 
   // These schemes do not actually represent retrievable URLs.  For example,
   // the the URLs in the "about" scheme are aliases to other URLs.  This set is
   // protected by |lock_|.
-  SchemeSet pseudo_schemes_;
+  SchemeSet pseudo_schemes_ GUARDED_BY(lock_);
 
   // This map holds a SecurityState for each child process.  The key for the
   // map is the ID of the ChildProcessHost.  The SecurityState objects are
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
-  SecurityStateMap security_state_;
+  SecurityStateMap security_state_ GUARDED_BY(lock_);
 
   // This maps keeps the record of which js worker thread child process
   // corresponds to which main js thread child process.
-  WorkerToMainProcessMap worker_map_;
+  WorkerToMainProcessMap worker_map_ GUARDED_BY(lock_);
 
-  FileSystemPermissionPolicyMap file_system_policy_map_;
+  FileSystemPermissionPolicyMap file_system_policy_map_ GUARDED_BY(lock_);
 
   // Tracks origins for which the entire origin should be treated as a site
   // when making process model decisions, rather than the origin's scheme and
   // eTLD+1. Each of these origins requires a dedicated process.  This set is
   // protected by |lock_|.
-  base::flat_set<url::Origin> isolated_origins_;
+  //
+  // The origins are stored in a map indexed by a site URL computed for each
+  // origin.  For example, adding https://foo.com, https://bar.foo.com, and
+  // https://www.bar.com would result in the following structure:
+  //   https://foo.com -> { https://foo.com, https://bar.foo.com }
+  //   https://bar.com -> { https://www.bar.com }
+  // This organization speeds up lookups of isolated origins. The site can be
+  // found in O(log n) time, and the corresponding list of origins to search
+  // using the expensive DoesOriginMatchIsolatedOrigin() comparison is
+  // typically small.
+  base::flat_map<GURL, base::flat_set<url::Origin>> isolated_origins_
+      GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };

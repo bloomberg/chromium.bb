@@ -21,12 +21,8 @@ class TestFullscreenControllerObserver : public FullscreenControllerObserver {
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,
                                      bool enabled) override;
-  void FullscreenScrollEventEnded(FullscreenController* controller,
-                                  FullscreenAnimator* animator) override;
-  void FullscreenWillEnterForeground(FullscreenController* controller,
-                                     FullscreenAnimator* animator) override;
-  void FullscreenModelWasReset(FullscreenController* controller,
-                               FullscreenAnimator* aniamtor) override;
+  void FullscreenWillAnimate(FullscreenController* controller,
+                             FullscreenAnimator* animator) override;
   void FullscreenControllerWillShutDown(
       FullscreenController* controller) override;
 

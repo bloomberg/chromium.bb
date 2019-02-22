@@ -47,14 +47,14 @@ class CrOSComponentInstallerTest : public PlatformTest {
 class MockCrOSComponentInstallerPolicy : public CrOSComponentInstallerPolicy {
  public:
   explicit MockCrOSComponentInstallerPolicy(const ComponentConfig& config)
-      : CrOSComponentInstallerPolicy(config) {}
+      : CrOSComponentInstallerPolicy(config, nullptr) {}
   MOCK_METHOD2(IsCompatible,
                bool(const std::string& env_version_str,
                     const std::string& min_env_version_str));
 };
 
 TEST_F(CrOSComponentInstallerTest, CompatibleCrOSComponent) {
-  component_updater::CrOSComponentManager cros_component_manager(nullptr);
+  component_updater::CrOSComponentInstaller cros_component_manager(nullptr);
 
   const std::string kComponent = "a";
   EXPECT_FALSE(cros_component_manager.IsCompatible(kComponent));
@@ -94,7 +94,7 @@ TEST_F(CrOSComponentInstallerTest, CompatibilityMissingManifest) {
 
 TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
   ComponentConfig config{"", "", ""};
-  CrOSComponentInstallerPolicy policy(config);
+  CrOSComponentInstallerPolicy policy(config, nullptr);
   EXPECT_TRUE(policy.IsCompatible("1.0", "1.0"));
   EXPECT_TRUE(policy.IsCompatible("1.1", "1.0"));
   EXPECT_FALSE(policy.IsCompatible("1.0", "1.1"));
@@ -111,7 +111,7 @@ TEST_F(CrOSComponentInstallerTest, RegisterComponent) {
       "star-cups-driver", "1.1",
       "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"};
   EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(1);
-  component_updater::CrOSComponentManager cros_component_manager(nullptr);
+  component_updater::CrOSComponentInstaller cros_component_manager(nullptr);
   cros_component_manager.Register(cus.get(), config, base::OnceClosure());
   RunUntilIdle();
 }

@@ -17,6 +17,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -386,6 +387,44 @@ TEST(VideoFrame, WrapExternalSharedMemory) {
   EXPECT_EQ(frame->timestamp(), timestamp);
   EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
 }
+
+#if defined(OS_LINUX)
+TEST(VideoFrame, WrapExternalDmabufs) {
+  gfx::Size coded_size = gfx::Size(256, 256);
+  gfx::Rect visible_rect(coded_size);
+  std::vector<int32_t> strides = {384, 192, 192};
+  std::vector<size_t> offsets = {0, 100, 200};
+  std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  std::vector<VideoFrameLayout::Plane> planes(strides.size());
+
+  for (size_t i = 0; i < planes.size(); i++) {
+    planes[i].stride = strides[i];
+    planes[i].offset = offsets[i];
+  }
+  auto timestamp = base::TimeDelta::FromMilliseconds(1);
+  VideoFrameLayout layout(PIXEL_FORMAT_I420, coded_size, planes, buffer_sizes);
+  std::vector<base::ScopedFD> dmabuf_fds(3u);
+  auto frame =
+      VideoFrame::WrapExternalDmabufs(layout, visible_rect, visible_rect.size(),
+                                      std::move(dmabuf_fds), timestamp);
+
+  EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_I420);
+  EXPECT_EQ(frame->layout().coded_size(), coded_size);
+  EXPECT_EQ(frame->layout().num_planes(), 3u);
+  EXPECT_EQ(frame->layout().num_buffers(), 3u);
+  EXPECT_EQ(frame->layout().GetTotalBufferSize(), 110592u);
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(frame->layout().planes()[i].stride, strides[i]);
+    EXPECT_EQ(frame->layout().planes()[i].offset, offsets[i]);
+    EXPECT_EQ(frame->layout().buffer_sizes()[i], buffer_sizes[i]);
+  }
+  EXPECT_TRUE(frame->HasDmaBufs());
+  EXPECT_EQ(frame->DmabufFds().size(), 3u);
+  EXPECT_EQ(frame->coded_size(), coded_size);
+  EXPECT_EQ(frame->visible_rect(), visible_rect);
+  EXPECT_EQ(frame->timestamp(), timestamp);
+}
+#endif
 
 // Ensure each frame is properly sized and allocated.  Will trigger OOB reads
 // and writes as well as incorrect frame hashes otherwise.

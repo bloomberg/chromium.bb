@@ -8,13 +8,18 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "base/feature_list.h"
 
 namespace base {
 class FilePath;
 }
 
 // The path to the registry key where shell extensions are registered.
-extern const wchar_t kShellExtensionRegistryKey[];
+extern const wchar_t kApprovedShellExtensionRegistryKey[];
+
+// This feature controls whether additional locations are enumerated to find
+// shell extensions in the registry.
+extern const base::Feature kExtendedShellExtensionsEnumeration;
 
 // Finds shell extensions installed on the computer by enumerating the registry.
 // In addition to the file path, the SizeOfImage and TimeDateStamp of the module

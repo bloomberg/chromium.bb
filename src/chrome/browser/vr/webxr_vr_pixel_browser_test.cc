@@ -15,9 +15,11 @@
 
 namespace vr {
 
-class MyOpenVRMock : public MockOpenVRBase {
+class MyOpenVRMock : public MockOpenVRDeviceHookBase {
  public:
-  void OnFrameSubmitted(device::SubmittedFrameData frame_data) final;
+  void OnFrameSubmitted(
+      device_test::mojom::SubmittedFrameDataPtr frame_data,
+      device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) final;
 
   void WaitForFrame() {
     DCHECK(!wait_loop_);
@@ -30,20 +32,24 @@ class MyOpenVRMock : public MockOpenVRBase {
     wait_loop_ = nullptr;
   }
 
-  device::Color last_submitted_color_ = {};
+  device_test::mojom::ColorPtr last_submitted_color_ = {};
   unsigned int num_submitted_frames_ = 0;
 
  private:
   base::RunLoop* wait_loop_ = nullptr;
 };
 
-void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
-  last_submitted_color_ = frame_data.color;
+void MyOpenVRMock::OnFrameSubmitted(
+    device_test::mojom::SubmittedFrameDataPtr frame_data,
+    device_test::mojom::XRTestHook::OnFrameSubmittedCallback callback) {
+  last_submitted_color_ = std::move(frame_data->color);
   num_submitted_frames_++;
 
   if (wait_loop_) {
     wait_loop_->Quit();
   }
+
+  std::move(callback).Run();
 }
 
 // Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
@@ -67,14 +73,14 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
 
   my_mock.WaitForFrame();
 
-  device::Color expected = {0, 0, 255, 255};
-  EXPECT_EQ(expected.r, my_mock.last_submitted_color_.r)
+  auto expected = device_test::mojom::Color::New(0, 0, 255, 255);
+  EXPECT_EQ(expected->r, my_mock.last_submitted_color_->r)
       << "Red channel of submitted color does not match expectation";
-  EXPECT_EQ(expected.g, my_mock.last_submitted_color_.g)
+  EXPECT_EQ(expected->g, my_mock.last_submitted_color_->g)
       << "Green channel of submitted color does not match expectation";
-  EXPECT_EQ(expected.b, my_mock.last_submitted_color_.b)
+  EXPECT_EQ(expected->b, my_mock.last_submitted_color_->b)
       << "Blue channel of submitted color does not match expectation";
-  EXPECT_EQ(expected.a, my_mock.last_submitted_color_.a)
+  EXPECT_EQ(expected->a, my_mock.last_submitted_color_->a)
       << "Alpha channel of submitted color does not match expectation";
 }
 

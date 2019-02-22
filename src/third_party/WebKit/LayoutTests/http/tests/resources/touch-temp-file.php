@@ -1,5 +1,6 @@
 <?php
 require_once 'portabilityLayer.php';
+header("Access-Control-Allow-Origin: *");
 
 if (!sys_get_temp_dir()) {
     echo "FAIL: No temp dir was returned.\n";

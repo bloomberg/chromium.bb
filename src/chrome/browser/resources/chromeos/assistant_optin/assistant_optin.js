@@ -10,7 +10,7 @@
 // <include src="../login/oobe_dialog.js">
 // <include src="assistant_optin_flow.js">
 
-cr.define('assistantOptInFlow', function() {
+cr.define('login.AssistantOptInFlowScreen', function() {
   return {
 
     /**
@@ -51,5 +51,5 @@ cr.define('assistantOptInFlow', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  assistantOptInFlow.show();
+  login.AssistantOptInFlowScreen.show();
 });

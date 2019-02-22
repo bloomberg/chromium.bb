@@ -56,6 +56,7 @@ class LogoView : public BaseLogoView,
   ~LogoView() override;
 
   // BaseLogoView:
+  const char* GetClassName() const override;
   void SetState(State state, bool animate) override;
   void SetSpeechLevel(float speech_level) override;
 

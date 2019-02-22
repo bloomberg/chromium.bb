@@ -149,8 +149,7 @@ bool CheckIPCVisitor::ValidateCheckedTuple(
 
     auto* parent_decl = GetParentDecl<Decl>();
     ReportCheckError(
-        details,
-        parent_decl ? parent_decl->getLocStart() : SourceLocation(),
+        details, parent_decl ? parent_decl->getBeginLoc() : SourceLocation(),
         error_tuple_bad_type_);
   }
 

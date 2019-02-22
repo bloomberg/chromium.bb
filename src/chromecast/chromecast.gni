@@ -88,6 +88,16 @@ declare_args() {
   # versions of websites.
   # TODO(halliwell): consider making this default for all Cast hardware.
   use_android_user_agent = false
+
+  # Contain default command line switches we want to set.
+  # The syntax: "test-flag-one=public,test-flag-two=true,test-flag-three=1,".
+  # This arg can be overridden but not supports += operator.
+  # TODO(ziyangch): make the parsing logic have ability to quote/escape characters.
+  default_command_line_flags = ""
+
+  # Set to true to disable secure flac/opus support in EME, when using
+  # cast CMA media backend and supporting Widevine or Playready.
+  disable_secure_flac_and_opus_decoding = false
 }
 
 declare_args() {

@@ -1,0 +1,284 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This is a .pyl, or "Python Literal", file. You can treat it just like a
+# .json file, with the following exceptions:
+# * all keys must be quoted (use single quotes, please);
+# * comments are allowed, using '#' syntax; and
+# * trailing commas are allowed.
+#
+# The mixins known to exist. These can be applied to a waterfall, builder, or
+# test. The mixins are copied verbatim for each test in a config, overwriting
+# existing values. These values can be overriden by exceptions.
+#
+# 'swarming' mixins are copied verbatim into the test, with one exception; the
+# swarming 'dimensions' key. All values in the 'dimensions' key are applied to
+# every 'dimension_set' in a test, creating one if no 'dimension_set' already
+# exists.
+#
+# TODO: Potentially switch structure. It's possible we want swarming dimensions
+# to live in their own 'swarming' top level key. This could make things more
+# clear for users, but would require moving mixins into sections. Re-evaluate
+# if there are more uses of this potential feature.
+#
+# Examples:
+#
+# == Regular ==
+# Mixin:
+#   'mac-rel-args': {
+#     'args': [
+#       'mac-release/sizes',
+#     ],
+#   },
+#
+# Waterfall:
+#   {
+#     'name': 'chromium'
+#     'machines': {
+#       'mac-rel': {
+#         'test_suites': {
+#           'scripts': 'public_build_scripts',
+#         },
+#         'mixins': ['mac-rel-args'],
+#       },
+#     },
+#   },
+#
+# Output:
+#   {
+#     'name': 'chromium'
+#     'machines': {
+#       'mac-rel': {
+#         "scripts": [
+#           {
+#             "args": [
+#               "mac-release/sizes"
+#             ],
+#             "name": "sizes",
+#             "script": "sizes.py"
+#           }
+#         ]
+#       },
+#     },
+#   },
+#
+# == Swarming ==
+# Mixin:
+#   'x86-64': {
+#     'swarming': {
+#       'dimensions': {
+#         'cpu': 'x86-64',
+#       },
+#     },
+#   },
+#
+# Waterfall:
+#   {
+#     'name': 'chromium'
+#     'machines': {
+#       'msan-bot': {
+#         'test_suites': {
+#           'scripts': 'linux_chromeos_gtests',
+#         },
+#         'mixins': ['x86-64'],
+#       },
+#     },
+#   },
+#
+# Output:
+#   {
+#     'name': 'chromium'
+#     'machines': {
+#       'msan-bot': {
+#         "gtest_tests": [
+#           {
+#             "args": [
+#               "--test-launcher-print-test-stdio=always"
+#             ],
+#             "swarming": {
+#               "can_use_on_swarming_builders": true,
+#               "dimension_sets": [
+#                 {
+#                   "cpu": "x86-64",
+#                   "os": "Ubuntu-14.04"
+#                 }
+#               ]
+#             },
+#             "test": "accessibility_unittests"
+#           },
+#           <snip>
+#       },
+#     },
+#   },
+
+{
+  'amd_8870m': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '1002:6821',
+      },
+    },
+  },
+  'arm_tester': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'armv7l-32',
+      },
+    },
+  },
+  'bullhead': {
+    'swarming': {
+      'dimensions': {
+        'device_type': 'bullhead',
+        'os': 'Android',
+      },
+    },
+  },
+  'gpu_pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'Chrome-GPU',
+      },
+    },
+  },
+  'hammerhead': {
+    'swarming': {
+      'dimensions': {
+        'device_type': 'hammerhead',
+        'os': 'Android',
+      },
+    },
+  },
+  'intel_iris_5100': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
+      },
+    },
+  },
+  'kitkat': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'K',
+      },
+    },
+  },
+  'limited_capacity_bot': {
+    # Some FYI bot configurations have a limited number of bots in the swarming
+    # pool. Increase the default expiration time from 1 hour to 6 hours to
+    # prevent shards from timing out.
+    'swarming': {
+      'expiration': 21600,
+    },
+  },
+  'linux-rel-args': {
+    'args': [
+      'linux-release-64/sizes',
+    ],
+  },
+  'linux-trusty': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-14.04',
+      },
+    },
+  },
+  'mac-rel-args': {
+    'args': [
+      'mac-release/sizes',
+    ],
+  },
+  'mac_10.10': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-10.10',
+      },
+    },
+  },
+  'mac_10.11': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-10.11',
+      },
+    },
+  },
+  'mac_10.13': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-10.13',
+      },
+    },
+  },
+  'mac_10.14': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Mac-10.14',
+      },
+    },
+  },
+  'mac_mini_10.12': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.12.6',
+      },
+    },
+  },
+  'marshmallow': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'MMB29Q',
+      },
+    },
+  },
+  'no_gpu': {
+    'swarming': {
+      'dimensions': {
+        'gpu': 'none',
+      },
+    },
+  },
+  'nvidia_750m_mac_edition': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '10de:0fe9',
+      },
+    },
+  },
+  'win10': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-10-15063',
+      },
+    },
+  },
+  'win7': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-7-SP1',
+      },
+    },
+  },
+  'win8': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-8.1-SP0',
+      },
+    },
+  },
+  'x86-32': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-32',
+      },
+    },
+  },
+  'x86-64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+      },
+    },
+  },
+}

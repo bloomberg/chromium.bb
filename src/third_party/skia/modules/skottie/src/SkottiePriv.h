@@ -11,13 +11,14 @@
 #include "Skottie.h"
 
 #include "SkFontStyle.h"
+#include "SkottieProperty.h"
 #include "SkSGScene.h"
 #include "SkString.h"
 #include "SkTHash.h"
 #include "SkTypeface.h"
 #include "SkUTF.h"
 
-#define LOG SkDebugf
+#include <functional>
 
 class SkFontMgr;
 
@@ -38,14 +39,13 @@ namespace skottie {
 
 namespace internal {
 
-void LogJSON(const skjson::Value&, const char[]);
-
 using AnimatorScope = sksg::AnimatorList;
 
 class AnimationBuilder final : public SkNoncopyable {
 public:
-    AnimationBuilder(sk_sp<ResourceProvider>, sk_sp<SkFontMgr>, Animation::Builder::Stats*,
-                    float duration, float framerate);
+    AnimationBuilder(sk_sp<ResourceProvider>, sk_sp<SkFontMgr>, sk_sp<PropertyObserver>,
+                     sk_sp<Logger>, sk_sp<AnnotationObserver>,
+                     Animation::Builder::Stats*, float duration, float framerate);
 
     std::unique_ptr<sksg::Scene> parse(const skjson::ObjectValue&);
 
@@ -67,6 +67,8 @@ public:
         return this->bindProperty(jv, ascope, std::move(apply), &default_ignore);
     }
 
+    void log(Logger::Level, const skjson::Value*, const char fmt[], ...) const;
+
     sk_sp<sksg::Color> attachColor(const skjson::ObjectValue&, AnimatorScope*,
                                    const char prop_name[]) const;
     sk_sp<sksg::Matrix> attachMatrix(const skjson::ObjectValue&, AnimatorScope*,
@@ -77,35 +79,103 @@ public:
 
 private:
     struct AttachLayerContext;
+    struct AttachShapeContext;
+    struct ImageAssetInfo;
+    struct LayerInfo;
 
     void parseAssets(const skjson::ArrayValue*);
     void parseFonts (const skjson::ObjectValue* jfonts,
                      const skjson::ArrayValue* jchars);
+
+    void dispatchAnnotations(const skjson::ObjectValue*) const;
 
     sk_sp<sksg::RenderNode> attachComposition(const skjson::ObjectValue&, AnimatorScope*) const;
     sk_sp<sksg::RenderNode> attachLayer(const skjson::ObjectValue*, AttachLayerContext*) const;
     sk_sp<sksg::RenderNode> attachLayerEffects(const skjson::ArrayValue& jeffects, AnimatorScope*,
                                                sk_sp<sksg::RenderNode>) const;
 
+    sk_sp<sksg::RenderNode> attachShape(const skjson::ArrayValue*, AttachShapeContext*) const;
     sk_sp<sksg::RenderNode> attachAssetRef(const skjson::ObjectValue&, AnimatorScope*,
-        sk_sp<sksg::RenderNode>(AnimationBuilder::*)(const skjson::ObjectValue&,
-                                                     AnimatorScope* ctx) const) const;
-    sk_sp<sksg::RenderNode> attachImageAsset(const skjson::ObjectValue&, AnimatorScope*) const;
+        const std::function<sk_sp<sksg::RenderNode>(const skjson::ObjectValue&,
+                                                    AnimatorScope* ctx)>&) const;
+    const ImageAssetInfo* loadImageAsset(const skjson::ObjectValue&) const;
+    sk_sp<sksg::RenderNode> attachImageAsset(const skjson::ObjectValue&, const LayerInfo&,
+                                             AnimatorScope*) const;
 
     sk_sp<sksg::RenderNode> attachNestedAnimation(const char* name, AnimatorScope* ascope) const;
 
-    sk_sp<sksg::RenderNode> attachImageLayer  (const skjson::ObjectValue&, AnimatorScope*) const;
-    sk_sp<sksg::RenderNode> attachNullLayer   (const skjson::ObjectValue&, AnimatorScope*) const;
-    sk_sp<sksg::RenderNode> attachPrecompLayer(const skjson::ObjectValue&, AnimatorScope*) const;
-    sk_sp<sksg::RenderNode> attachShapeLayer  (const skjson::ObjectValue&, AnimatorScope*) const;
-    sk_sp<sksg::RenderNode> attachSolidLayer  (const skjson::ObjectValue&, AnimatorScope*) const;
-    sk_sp<sksg::RenderNode> attachTextLayer   (const skjson::ObjectValue&, AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachImageLayer  (const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachNullLayer   (const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachPrecompLayer(const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachShapeLayer  (const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachSolidLayer  (const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+    sk_sp<sksg::RenderNode> attachTextLayer   (const skjson::ObjectValue&, const LayerInfo&,
+                                               AnimatorScope*) const;
+
+    bool dispatchColorProperty(const sk_sp<sksg::Color>&) const;
+    bool dispatchOpacityProperty(const sk_sp<sksg::OpacityEffect>&) const;
+    bool dispatchTransformProperty(const sk_sp<TransformAdapter>&) const;
+
+    // Delay resolving the fontmgr until it is actually needed.
+    struct LazyResolveFontMgr {
+        LazyResolveFontMgr(sk_sp<SkFontMgr> fontMgr) : fFontMgr(std::move(fontMgr)) {}
+
+        const sk_sp<SkFontMgr>& get() {
+            if (!fFontMgr) {
+                fFontMgr = SkFontMgr::RefDefault();
+                SkASSERT(fFontMgr);
+            }
+            return fFontMgr;
+        }
+
+        const sk_sp<SkFontMgr>& getMaybeNull() const { return fFontMgr; }
+
+    private:
+        sk_sp<SkFontMgr> fFontMgr;
+    };
+
+    class AutoPropertyTracker {
+    public:
+        AutoPropertyTracker(const AnimationBuilder* builder, const skjson::ObjectValue& obj)
+            : fBuilder(builder)
+            , fPrevContext(builder->fPropertyObserverContext) {
+            if (fBuilder->fPropertyObserver) {
+                this->updateContext(builder->fPropertyObserver.get(), obj);
+            }
+        }
+
+        ~AutoPropertyTracker() {
+            if (fBuilder->fPropertyObserver) {
+                fBuilder->fPropertyObserverContext = fPrevContext;
+            }
+        }
+    private:
+        void updateContext(PropertyObserver*, const skjson::ObjectValue&);
+
+        const AnimationBuilder* fBuilder;
+        const char*             fPrevContext;
+    };
 
     sk_sp<ResourceProvider>    fResourceProvider;
-    sk_sp<SkFontMgr>           fFontMgr;
+    LazyResolveFontMgr         fLazyFontMgr;
+    sk_sp<PropertyObserver>    fPropertyObserver;
+    sk_sp<Logger>              fLogger;
+    sk_sp<AnnotationObserver>  fAnnotationObserver;
     Animation::Builder::Stats* fStats;
     const float                fDuration,
                                fFrameRate;
+
+    mutable const char*        fPropertyObserverContext;
+
+    struct LayerInfo {
+        float fInPoint,
+              fOutPoint;
+    };
 
     struct AssetInfo {
         const skjson::ObjectValue* fAsset;
@@ -121,14 +191,14 @@ private:
         bool matches(const char family[], const char style[]) const;
     };
 
-    // TODO: consolidate these two?
-    using AssetMap   = SkTHashMap<SkString, AssetInfo>;
-    using AssetCache = SkTHashMap<SkString, sk_sp<sksg::RenderNode>>;
-    using FontMap    = SkTHashMap<SkString, FontInfo>;
+    struct ImageAssetInfo {
+        sk_sp<ImageAsset> fAsset;
+        SkISize           fSize;
+    };
 
-    AssetMap           fAssets;
-    FontMap            fFonts;
-    mutable AssetCache fAssetCache;
+    SkTHashMap<SkString, AssetInfo>              fAssets;
+    SkTHashMap<SkString, FontInfo>               fFonts;
+    mutable SkTHashMap<SkString, ImageAssetInfo> fImageAssetCache;
 
     using INHERITED = SkNoncopyable;
 };

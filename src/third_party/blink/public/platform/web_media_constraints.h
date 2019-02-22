@@ -285,7 +285,6 @@ struct WebMediaTrackConstraintSet {
   LongConstraint goog_high_start_bitrate;
   BooleanConstraint goog_payload_padding;
   LongConstraint goog_latency_ms;
-  LongConstraint goog_power_line_frequency;
 
   BLINK_PLATFORM_EXPORT bool IsEmpty() const;
   BLINK_PLATFORM_EXPORT bool HasMandatory() const;

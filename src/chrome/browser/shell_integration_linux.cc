@@ -6,19 +6,14 @@
 
 #include <fcntl.h>
 #include <stddef.h>
-
-#include <memory>
-
-#if defined(USE_GLIB)
-#include <glib.h>
-#endif
-
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -52,6 +47,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
+
+#if defined(USE_GLIB)
+#include <glib.h>
+#endif
 
 namespace shell_integration_linux {
 
@@ -233,8 +232,7 @@ std::string QuoteCommandLineForDesktopFileExec(
 
   std::string quoted_path = "";
   const base::CommandLine::StringVector& argv = command_line.argv();
-  for (base::CommandLine::StringVector::const_iterator i = argv.begin();
-       i != argv.end(); ++i) {
+  for (auto i = argv.begin(); i != argv.end(); ++i) {
     if (i != argv.begin())
       quoted_path += " ";
     quoted_path += QuoteArgForDesktopFileExec(*i);

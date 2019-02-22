@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/mac/mac_logging.h"
 #include "base/rand_util.h"
+#include "components/os_crypt/encryption_key_creation_util.h"
 #include "crypto/apple_keychain.h"
 
 using crypto::AppleKeychain;
@@ -53,7 +54,18 @@ const char KeychainPassword::service_name[] = "Chromium Safe Storage";
 const char KeychainPassword::account_name[] = "Chromium";
 #endif
 
+KeychainPassword::KeychainPassword(
+    const AppleKeychain& keychain,
+    std::unique_ptr<EncryptionKeyCreationUtil> key_creation_util)
+    : keychain_(keychain), key_creation_util_(std::move(key_creation_util)) {}
+
+KeychainPassword::~KeychainPassword() = default;
+
 std::string KeychainPassword::GetPassword() const {
+  DCHECK(key_creation_util_);
+  bool prevent_overwriting_enabled =
+      key_creation_util_->ShouldPreventOverwriting();
+
   UInt32 password_length = 0;
   void* password_data = NULL;
   OSStatus error = keychain_.FindGenericPassword(
@@ -64,11 +76,27 @@ std::string KeychainPassword::GetPassword() const {
     std::string password =
         std::string(static_cast<char*>(password_data), password_length);
     keychain_.ItemFreeContent(password_data);
+    if (prevent_overwriting_enabled) {
+      key_creation_util_->OnKeyWasFound();
+    }
     return password;
-  } else if (error == errSecItemNotFound) {
-    return AddRandomPasswordToKeychain(keychain_, service_name, account_name);
-  } else {
-    OSSTATUS_DLOG(ERROR, error) << "Keychain lookup failed";
-    return std::string();
   }
+
+  if (error == errSecItemNotFound) {
+    if (prevent_overwriting_enabled &&
+        key_creation_util_->KeyAlreadyCreated()) {
+      key_creation_util_->OnOverwritingPrevented();
+      return std::string();
+    }
+    std::string password =
+        AddRandomPasswordToKeychain(keychain_, service_name, account_name);
+    if (prevent_overwriting_enabled && !password.empty()) {
+      key_creation_util_->OnKeyWasStored();
+    }
+    return password;
+  }
+
+  key_creation_util_->OnKeychainLookupFailed();
+  OSSTATUS_DLOG(ERROR, error) << "Keychain lookup failed";
+  return std::string();
 }

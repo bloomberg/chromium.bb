@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -26,7 +28,7 @@ class FileManagerFileWatcherTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  void FlushMessageLoopTasks() { thread_bundle_.RunUntilIdle(); };
+  void FlushMessageLoopTasks() { thread_bundle_.RunUntilIdle(); }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -135,7 +137,7 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   FileWatcher file_watcher(kVirtualPath);
   file_watcher.AddExtension(kExtensionId);
   file_watcher.WatchLocalFile(temp_dir.GetPath(), change_callback,
-                              start_callback);
+                              std::move(start_callback));
   start_run_loop.Run();
   ASSERT_TRUE(watcher_created);
 

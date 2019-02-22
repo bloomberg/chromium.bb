@@ -61,7 +61,9 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
                      ASCIIToUTF16("Santa Clara"));
   profile.set_language_code("en");
-  profile.SetValidityFromBitfieldValue(1984);
+  profile.SetClientValidityFromBitfieldValue(1984);
+  profile.set_is_client_validity_states_updated(true);
+
   return profile;
 }
 
@@ -99,6 +101,7 @@ AutofillProfileSpecifics ConstructCompleteSpecifics() {
   specifics.set_address_home_dependent_locality("Santa Clara");
   specifics.set_address_home_language_code("en");
   specifics.set_validity_state_bitfield(1984);
+  specifics.set_is_client_validity_states_updated(true);
 
   return specifics;
 }

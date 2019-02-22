@@ -12,12 +12,10 @@
 
 namespace remoting {
 
-CompoundBuffer::DataChunk::DataChunk(
-    net::IOBuffer* buffer_value, const char* start_value, int size_value)
-    : buffer(buffer_value),
-      start(start_value),
-      size(size_value) {
-}
+CompoundBuffer::DataChunk::DataChunk(scoped_refptr<net::IOBuffer> buffer,
+                                     const char* start,
+                                     int size)
+    : buffer(std::move(buffer)), start(start), size(size) {}
 
 CompoundBuffer::DataChunk::DataChunk(const DataChunk& other) = default;
 
@@ -36,61 +34,67 @@ void CompoundBuffer::Clear() {
   total_bytes_ = 0;
 }
 
-void CompoundBuffer::Append(net::IOBuffer* buffer,
-                            const char* start, int size) {
+void CompoundBuffer::Append(scoped_refptr<net::IOBuffer> buffer,
+                            const char* start,
+                            int size) {
   // A weak check that the |start| is within |buffer|.
   DCHECK_GE(start, buffer->data());
   DCHECK_GT(size, 0);
 
   CHECK(!locked_);
 
-  chunks_.push_back(DataChunk(buffer, start, size));
+  chunks_.emplace_back(std::move(buffer), start, size);
   total_bytes_ += size;
 }
 
-void CompoundBuffer::Append(net::IOBuffer* buffer, int size) {
-  Append(buffer, buffer->data(), size);
+void CompoundBuffer::Append(scoped_refptr<net::IOBuffer> buffer, int size) {
+  const char* start = buffer->data();
+  Append(std::move(buffer), start, size);
 }
 
 void CompoundBuffer::Append(const CompoundBuffer& buffer) {
   for (DataChunkList::const_iterator it = buffer.chunks_.begin();
        it != buffer.chunks_.end(); ++it) {
-    Append(it->buffer.get(), it->start, it->size);
+    Append(it->buffer, it->start, it->size);
   }
 }
 
-void CompoundBuffer::Prepend(net::IOBuffer* buffer,
-                             const char* start, int size) {
+void CompoundBuffer::Prepend(scoped_refptr<net::IOBuffer> buffer,
+                             const char* start,
+                             int size) {
   // A weak check that the |start| is within |buffer|.
   DCHECK_GE(start, buffer->data());
   DCHECK_GT(size, 0);
 
   CHECK(!locked_);
 
-  chunks_.push_front(DataChunk(buffer, start, size));
+  chunks_.emplace_front(std::move(buffer), start, size);
   total_bytes_ += size;
 }
 
-void CompoundBuffer::Prepend(net::IOBuffer* buffer, int size) {
-  Prepend(buffer, buffer->data(), size);
+void CompoundBuffer::Prepend(scoped_refptr<net::IOBuffer> buffer, int size) {
+  const char* start = buffer->data();
+  Prepend(std::move(buffer), start, size);
 }
 
 void CompoundBuffer::Prepend(const CompoundBuffer& buffer) {
   for (DataChunkList::const_iterator it = buffer.chunks_.begin();
        it != buffer.chunks_.end(); ++it) {
-    Prepend(it->buffer.get(), it->start, it->size);
+    Prepend(it->buffer, it->start, it->size);
   }
 }
 void CompoundBuffer::AppendCopyOf(const char* data, int size) {
-  net::IOBuffer* buffer = new net::IOBuffer(size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(size);
   memcpy(buffer->data(), data, size);
-  Append(buffer, size);
+  Append(std::move(buffer), size);
 }
 
 void CompoundBuffer::PrependCopyOf(const char* data, int size) {
-  net::IOBuffer* buffer = new net::IOBuffer(size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(size);
   memcpy(buffer->data(), data, size);
-  Prepend(buffer, size);
+  Prepend(std::move(buffer), size);
 }
 
 void CompoundBuffer::CropFront(int bytes) {
@@ -140,8 +144,10 @@ void CompoundBuffer::Lock() {
   locked_ = true;
 }
 
-net::IOBufferWithSize* CompoundBuffer::ToIOBufferWithSize() const {
-  net::IOBufferWithSize* result = new net::IOBufferWithSize(total_bytes_);
+scoped_refptr<net::IOBufferWithSize> CompoundBuffer::ToIOBufferWithSize()
+    const {
+  scoped_refptr<net::IOBufferWithSize> result =
+      base::MakeRefCounted<net::IOBufferWithSize>(total_bytes_);
   CopyTo(result->data(), total_bytes_);
   return result;
 }

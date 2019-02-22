@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -51,6 +52,12 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsAlwaysOnTop() const override;
   void SetAlwaysOnTop(bool always_on_top) override {}
   gfx::NativeWindow GetNativeWindow() const override;
+  void SetTopControlsShownRatio(content::WebContents* web_contents,
+                                float ratio) override;
+  bool DoBrowserControlsShrinkRendererSize(
+      const content::WebContents* contents) const override;
+  int GetTopControlsHeight() const override;
+  void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override {}
   void BookmarkBarStateChanged(
@@ -143,6 +150,12 @@ class TestBrowserWindow : public BrowserWindow {
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {}
+
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
+    defined(OS_LINUX)
+  void ShowHatsBubbleFromAppMenuButton() override {}
+#endif
+
   int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
@@ -167,7 +180,9 @@ class TestBrowserWindow : public BrowserWindow {
     GURL GetDestinationURL() const override;
     WindowOpenDisposition GetWindowOpenDisposition() const override;
     ui::PageTransition GetPageTransition() const override;
+    base::TimeTicks GetMatchSelectionTimestamp() const override;
     void AcceptInput() override {}
+    void AcceptInput(base::TimeTicks match_selection_timestamp) override {}
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}

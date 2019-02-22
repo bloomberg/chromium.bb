@@ -24,8 +24,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/shelf/shelf_controller.h"
-#include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -121,6 +119,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -318,7 +317,19 @@ class TestShelfController : public ash::mojom::ShelfController {
   void UpdateShelfItem(const ash::ShelfItem& item) override {
     updated_count_++;
     last_item_ = item;
+    if (updated_count_ == expected_updated_count_ &&
+        !updated_callback_.is_null()) {
+      base::ResetAndReturn(&updated_callback_).Run();
+    }
   }
+
+  void WaitForUpdates(size_t expected_updates) {
+    base::RunLoop run_loop;
+    expected_updated_count_ = expected_updates + updated_count_;
+    updated_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
   void SetShelfItemDelegate(const ash::ShelfID&,
                             ash::mojom::ShelfItemDelegatePtr) override {
     set_delegate_count_++;
@@ -357,6 +368,8 @@ class TestShelfController : public ash::mojom::ShelfController {
   size_t added_count_ = 0;
   size_t removed_count_ = 0;
   size_t updated_count_ = 0;
+  size_t expected_updated_count_ = 0;
+  base::OnceClosure updated_callback_;
   size_t set_delegate_count_ = 0;
   ash::ShelfItem last_item_;
 
@@ -908,7 +921,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
             result += "Platform_App";
           } else if (app == arc_support_host_->id()) {
             result += "Play Store";
-          } else if (app == kCrostiniTerminalId) {
+          } else if (app == crostini::kCrostiniTerminalId) {
             result += "Terminal";
           } else {
             bool arc_app_found = false;
@@ -2530,6 +2543,8 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   // Reseting custom icon of active window resets shelf icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 std::string());
+  // Wait for default icon load.
+  shelf_controller->WaitForUpdates(ui::GetSupportedScaleFactors().size());
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
                                          shelf_controller->GetLastItemImage()));
   window1->CloseNow();
@@ -4131,9 +4146,12 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   // Wait for real app icon image is decoded and set for shelf item.
   shelf_controller->GetLastItemImage();
-  // Should have only one update that guarantees default icon was not set in
+  // Should have only one update for newly created window with no-icon set plus
+  // update for each scale factor. That guarantees default icon was not set in
   // between.
-  EXPECT_EQ(update_count_before_launch + 1, shelf_controller->updated_count());
+  EXPECT_EQ(
+      update_count_before_launch + 1 + ui::GetSupportedScaleFactors().size(),
+      shelf_controller->updated_count());
 }
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
@@ -4623,7 +4641,7 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
 TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
   InitLauncherController();
 
-  const std::string app_id = kCrostiniTerminalId;
+  const std::string app_id = crostini::kCrostiniTerminalId;
   EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
 
   // Load pinned Terminal from prefs without Crostini UI being allowed

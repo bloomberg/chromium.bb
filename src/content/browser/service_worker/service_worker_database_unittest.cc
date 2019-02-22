@@ -9,15 +9,14 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/content_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -72,14 +71,15 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.registration_id, actual.registration_id);
   EXPECT_EQ(expected.scope, actual.scope);
   EXPECT_EQ(expected.script, actual.script);
+  EXPECT_EQ(expected.script_type, actual.script_type);
+  EXPECT_EQ(expected.update_via_cache, actual.update_via_cache);
   EXPECT_EQ(expected.version_id, actual.version_id);
   EXPECT_EQ(expected.is_active, actual.is_active);
   EXPECT_EQ(expected.has_fetch_handler, actual.has_fetch_handler);
   EXPECT_EQ(expected.last_update_check, actual.last_update_check);
+  EXPECT_EQ(expected.used_features, actual.used_features);
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
-  EXPECT_EQ(expected.used_features, actual.used_features);
-  EXPECT_EQ(expected.update_via_cache, actual.update_via_cache);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -126,7 +126,7 @@ TEST(ServiceWorkerDatabaseTest, OpenDatabase_InMemory) {
 }
 
 TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ValidSchemaVersion) {
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->LazyOpen(true));
 
@@ -163,7 +163,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_ObsoleteSchemaVersion) {
 
   // First writing triggers database initialization and bumps the schema
   // version.
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
   resources.push_back(CreateResource(1, URL(origin, "/resource"), 10));
   ServiceWorkerDatabase::RegistrationData deleted_version;
@@ -203,7 +203,7 @@ TEST(ServiceWorkerDatabaseTest, DatabaseVersion_CorruptedSchemaVersion) {
 
   // First writing triggers database initialization and bumps the schema
   // version.
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
   resources.push_back(CreateResource(1, URL(origin, "/resource"), 10));
   ServiceWorkerDatabase::RegistrationData deleted_version;
@@ -239,7 +239,7 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   std::unique_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.GetPath()));
 
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
 
   // The database has never been used, so returns initial values.
   AvailableIds ids;
@@ -345,7 +345,7 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
 
-  GURL origin1("http://example.com");
+  GURL origin1("https://example.com");
   RegistrationData data1;
   data1.registration_id = 123;
   data1.scope = URL(origin1, "/foo");
@@ -441,7 +441,7 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
 TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  GURL origin1("http://example.com");
+  GURL origin1("https://example.com");
   GURL origin2("https://www.example.com");
   GURL origin3("https://example.org");
 
@@ -548,11 +548,6 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
 }
 
 TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
-  // TODO(https://crbug.com/618076): Remove the following command line switch
-  // when update_via_cache is shipped to stable.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   std::vector<RegistrationData> registrations;
@@ -563,7 +558,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
 
-  GURL origin1("http://www1.example.com");
+  GURL origin1("https://www1.example.com");
   RegistrationData data1;
   data1.registration_id = 100;
   data1.scope = URL(origin1, "/foo");
@@ -576,7 +571,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
             database->WriteRegistration(data1, resources1, &deleted_version,
                                         &newly_purgeable_resources));
 
-  GURL origin2("http://www2.example.com");
+  GURL origin2("https://www2.example.com");
   RegistrationData data2;
   data2.registration_id = 200;
   data2.scope = URL(origin2, "/bar");
@@ -590,7 +585,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
             database->WriteRegistration(data2, resources2, &deleted_version,
                                         &newly_purgeable_resources));
 
-  GURL origin3("http://www3.example.com");
+  GURL origin3("https://www3.example.com");
   RegistrationData data3;
   data3.registration_id = 300;
   data3.scope = URL(origin3, "/hoge");
@@ -620,6 +615,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database->GetAllRegistrations(&registrations));
   EXPECT_EQ(4U, registrations.size());
+
   VerifyRegistrationData(data1, registrations[0]);
   VerifyRegistrationData(data2, registrations[1]);
   VerifyRegistrationData(data3, registrations[2]);
@@ -629,7 +625,7 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
 TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   RegistrationData data;
   data.registration_id = 100;
   data.scope = URL(origin, "/foo");
@@ -717,7 +713,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
 TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   RegistrationData data;
   data.registration_id = 100;
   data.scope = URL(origin, "/foo");
@@ -758,24 +754,18 @@ TEST(ServiceWorkerDatabaseTest, DeleteNonExistentRegistration) {
   deleted_version.version_id = kArbitraryVersionId;
   newly_purgeable_resources.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->DeleteRegistration(kNonExistentRegistrationId,
-                                         GURL("http://example.net"),
-                                         &deleted_version,
-                                         &newly_purgeable_resources));
+            database->DeleteRegistration(
+                kNonExistentRegistrationId, GURL("https://example.net"),
+                &deleted_version, &newly_purgeable_resources));
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
             deleted_version.version_id);
   EXPECT_TRUE(newly_purgeable_resources.empty());
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
-  // TODO(https://crbug.com/618076): Remove the following command line switch
-  // when update_via_cache is shipped to stable.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   RegistrationData data;
   data.registration_id = 100;
   data.scope = URL(origin, "/foo");
@@ -814,6 +804,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   updated_data.version_id = data.version_id + 1;
   updated_data.resources_total_size_bytes = 12 + 13;
   updated_data.used_features = {109, 421, 9101};
+  updated_data.script_type = blink::mojom::ScriptType::kModule;
   updated_data.update_via_cache =
       blink::mojom::ServiceWorkerUpdateViaCache::kAll;
   std::vector<Resource> resources2;
@@ -848,7 +839,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
 
 TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
 
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
@@ -953,7 +944,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
 
 TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL origin("http://example.com");
+  const GURL origin("https://example.com");
 
   // Should be failed because the database does not exist.
   RegistrationData data_out;
@@ -1001,9 +992,90 @@ TEST(ServiceWorkerDatabaseTest, Registration_UninitializedDatabase) {
   EXPECT_TRUE(newly_purgeable_resources.empty());
 }
 
+TEST(ServiceWorkerDatabaseTest, Registration_ScriptType) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+
+  // Default script type.
+  GURL origin1("https://www1.example.com");
+  RegistrationData data1;
+  data1.registration_id = 100;
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/resource1");
+  data1.version_id = 100;
+  data1.resources_total_size_bytes = 10 + 10000;
+  EXPECT_EQ(blink::mojom::ScriptType::kClassic, data1.script_type);
+  std::vector<Resource> resources1;
+  resources1.push_back(CreateResource(1, URL(origin1, "/resource1"), 10));
+  resources1.push_back(CreateResource(2, URL(origin1, "/resource2"), 10000));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data1, resources1, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Classic script type.
+  GURL origin2("https://www2.example.com");
+  RegistrationData data2;
+  data2.registration_id = 200;
+  data2.scope = URL(origin2, "/bar");
+  data2.script = URL(origin2, "/resource3");
+  data2.version_id = 200;
+  data2.resources_total_size_bytes = 20 + 20000;
+  data2.script_type = blink::mojom::ScriptType::kClassic;
+  std::vector<Resource> resources2;
+  resources2.push_back(CreateResource(3, URL(origin2, "/resource3"), 20));
+  resources2.push_back(CreateResource(4, URL(origin2, "/resource4"), 20000));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data2, resources2, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Module script type.
+  GURL origin3("https://www3.example.com");
+  RegistrationData data3;
+  data3.registration_id = 300;
+  data3.scope = URL(origin3, "/baz");
+  data3.script = URL(origin3, "/resource5");
+  data3.version_id = 300;
+  data3.resources_total_size_bytes = 30 + 30000;
+  data3.script_type = blink::mojom::ScriptType::kModule;
+  std::vector<Resource> resources3;
+  resources3.push_back(CreateResource(5, URL(origin3, "/resource5"), 30));
+  resources3.push_back(CreateResource(6, URL(origin3, "/resource6"), 30000));
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data3, resources3, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  RegistrationData data;
+  std::vector<Resource> resources;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadRegistration(data1.registration_id, origin1, &data,
+                                       &resources));
+  VerifyRegistrationData(data1, data);
+  VerifyResourceRecords(resources1, resources);
+  EXPECT_EQ(2U, resources.size());
+  resources.clear();
+
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadRegistration(data2.registration_id, origin2, &data,
+                                       &resources));
+  VerifyRegistrationData(data2, data);
+  VerifyResourceRecords(resources2, resources);
+  EXPECT_EQ(2U, resources.size());
+  resources.clear();
+
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadRegistration(data3.registration_id, origin3, &data,
+                                       &resources));
+  VerifyRegistrationData(data3, data);
+  VerifyResourceRecords(resources3, resources);
+  EXPECT_EQ(2U, resources.size());
+  resources.clear();
+}
+
 TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add a registration.
   RegistrationData data;
@@ -1119,7 +1191,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_Basic) {
 TEST(ServiceWorkerDatabaseTest,
      UserData_ReadUserDataForAllRegistrationsByKeyPrefix) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add registration 1.
   RegistrationData data1;
@@ -1196,7 +1268,7 @@ TEST(ServiceWorkerDatabaseTest,
 
 TEST(ServiceWorkerDatabaseTest, ReadUserDataByKeyPrefix) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add a registration.
   RegistrationData data;
@@ -1242,7 +1314,7 @@ TEST(ServiceWorkerDatabaseTest, ReadUserDataByKeyPrefix) {
 
 TEST(ServiceWorkerDatabaseTest, ReadUserKeysAndDataByKeyPrefix) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add a registration.
   RegistrationData data;
@@ -1292,7 +1364,7 @@ TEST(ServiceWorkerDatabaseTest, ReadUserKeysAndDataByKeyPrefix) {
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add registration 1.
   RegistrationData data1;
@@ -1392,7 +1464,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {
 
 TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add registration 1.
   RegistrationData data1;
@@ -1488,7 +1560,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DataIsolation) {
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Add registration 1.
   RegistrationData data1;
@@ -1569,7 +1641,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_DeleteRegistration) {
 
 TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  const GURL kOrigin("http://example.com");
+  const GURL kOrigin("https://example.com");
 
   // Should be failed because the database does not exist.
   std::vector<std::string> user_data_out;
@@ -1601,7 +1673,7 @@ TEST(ServiceWorkerDatabaseTest, UserData_UninitializedDatabase) {
 
 TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
 
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
@@ -1662,7 +1734,7 @@ TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
 
 TEST(ServiceWorkerDatabaseTest, UpdateLastCheckTime) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
 
@@ -1782,8 +1854,8 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   std::vector<int64_t> newly_purgeable_resources;
 
   // Data associated with |origin1| will be removed.
-  GURL origin1("http://example.com");
-  GURL origin2("http://example.org");
+  GURL origin1("https://example.com");
+  GURL origin2("https://example.org");
 
   // |origin1| has two registrations (registration1 and registration2).
   RegistrationData data1;
@@ -1942,7 +2014,7 @@ TEST(ServiceWorkerDatabaseTest, Corruption_NoMainResource) {
   ServiceWorkerDatabase::RegistrationData deleted_version;
   std::vector<int64_t> newly_purgeable_resources;
 
-  GURL origin("http://example.com");
+  GURL origin("https://example.com");
 
   RegistrationData data;
   data.registration_id = 10;
@@ -1967,6 +2039,66 @@ TEST(ServiceWorkerDatabaseTest, Corruption_NoMainResource) {
             database->ReadRegistration(data.registration_id, origin, &data_out,
                                        &resources_out));
   EXPECT_TRUE(resources_out.empty());
+}
+
+// Tests that GetRegistrationsForOrigin() detects corruption without crashing.
+// It must delete the database after freeing the iterator it uses to read all
+// registrations. Regression test for https://crbug.com/909024.
+TEST(ServiceWorkerDatabaseTest, Corruption_GetRegistrationsForOrigin) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  std::vector<Resource> resources;
+  GURL origin("https://example.com");
+
+  // Write a normal registration.
+  RegistrationData data1;
+  data1.registration_id = 1;
+  data1.scope = URL(origin, "/foo");
+  data1.script = URL(origin, "/resource1");
+  data1.version_id = 1;
+  data1.resources_total_size_bytes = 2016;
+  resources = {CreateResource(1, URL(origin, "/resource1"), 2016)};
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data1, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Write a corrupt registration.
+  RegistrationData data2;
+  data2.registration_id = 2;
+  data2.scope = URL(origin, "/foo");
+  data2.script = URL(origin, "/resource2");
+  data2.version_id = 2;
+  data2.resources_total_size_bytes = 2016;
+  // Simulate that "/resource2" wasn't correctly written in the database by
+  // not adding it.
+  resources = {CreateResource(3, URL(origin, "/resource3"), 2016)};
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data2, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Call GetRegistrationsForOrigin(). It should detect corruption, and not
+  // crash.
+  base::HistogramTester histogram_tester;
+  std::vector<RegistrationData> registrations;
+  std::vector<std::vector<ServiceWorkerDatabase::ResourceRecord>>
+      resources_list;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED,
+            database->GetRegistrationsForOrigin(origin, &registrations,
+                                                &resources_list));
+  EXPECT_TRUE(registrations.empty());
+  EXPECT_TRUE(resources_list.empty());
+
+  // There should be three "read" operations logged:
+  // 1. Reading all registration data.
+  // 2. Reading the resources of the first registration.
+  // 3. Reading the resources of the second registration. This one fails.
+  histogram_tester.ExpectTotalCount("ServiceWorker.Database.ReadResult", 3);
+  histogram_tester.ExpectBucketCount("ServiceWorker.Database.ReadResult",
+                                     ServiceWorkerDatabase::STATUS_OK, 2);
+  histogram_tester.ExpectBucketCount(
+      "ServiceWorker.Database.ReadResult",
+      ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED, 1);
 }
 
 }  // namespace content

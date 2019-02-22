@@ -7,18 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 namespace {
 
@@ -48,24 +43,15 @@ void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterShow(
 }
 
 SiteEngagementService::Helper::~Helper() {
-  service_->HelperDeleted(this);
   if (web_contents()) {
     input_tracker_.Stop();
     media_tracker_.Stop();
   }
 }
 
-void SiteEngagementService::Helper::OnEngagementLevelChanged(
-    const GURL& url,
-    blink::mojom::EngagementLevel level) {
-  web_contents()->ForEachFrame(base::BindRepeating(
-      &SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin,
-      base::Unretained(this), url::Origin::Create(url), level));
-}
-
 SiteEngagementService::Helper::PeriodicTracker::PeriodicTracker(
     SiteEngagementService::Helper* helper)
-    : helper_(helper), pause_timer_(new base::OneShotTimer()) {}
+    : helper_(helper), pause_timer_(std::make_unique<base::OneShotTimer>()) {}
 
 SiteEngagementService::Helper::PeriodicTracker::~PeriodicTracker() {}
 
@@ -196,9 +182,7 @@ void SiteEngagementService::Helper::MediaTracker::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
     const MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
-  active_media_players_.erase(std::remove(active_media_players_.begin(),
-                                          active_media_players_.end(), id),
-                              active_media_players_.end());
+  base::Erase(active_media_players_, id);
 }
 
 SiteEngagementService::Helper::Helper(content::WebContents* web_contents)
@@ -206,9 +190,7 @@ SiteEngagementService::Helper::Helper(content::WebContents* web_contents)
       input_tracker_(this, web_contents),
       media_tracker_(this, web_contents),
       service_(SiteEngagementService::Get(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
-  service_->HelperCreated(this);
-}
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {}
 
 void SiteEngagementService::Helper::RecordUserInput(
     SiteEngagementService::EngagementType type) {
@@ -222,24 +204,6 @@ void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
   content::WebContents* contents = web_contents();
   if (contents)
     service_->HandleMediaPlaying(contents, is_hidden);
-}
-
-void SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin(
-    const url::Origin& origin,
-    blink::mojom::EngagementLevel level,
-    content::RenderFrameHost* render_frame_host) {
-  if (origin == render_frame_host->GetLastCommittedOrigin()) {
-    SendEngagementLevelToFrame(origin, level, render_frame_host);
-  }
-}
-
-void SiteEngagementService::Helper::SendEngagementLevelToFrame(
-    const url::Origin& origin,
-    blink::mojom::EngagementLevel level,
-    content::RenderFrameHost* render_frame_host) {
-  blink::mojom::EngagementClientAssociatedPtr client;
-  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
-  client->SetEngagementLevel(origin, level);
 }
 
 void SiteEngagementService::Helper::DidFinishNavigation(
@@ -273,17 +237,6 @@ void SiteEngagementService::Helper::DidFinishNavigation(
 
   input_tracker_.Start(
       base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));
-}
-
-void SiteEngagementService::Helper::ReadyToCommitNavigation(
-    content::NavigationHandle* handle) {
-  if (service_->ShouldRecordEngagement(handle->GetURL())) {
-    // Don't bother sending the engagement if we wouldn't have recorded any for
-    // the URL. These will have NONE engagement by default.
-    SendEngagementLevelToFrame(url::Origin::Create(handle->GetURL()),
-                               service_->GetEngagementLevel(handle->GetURL()),
-                               handle->GetRenderFrameHost());
-  }
 }
 
 void SiteEngagementService::Helper::OnVisibilityChanged(

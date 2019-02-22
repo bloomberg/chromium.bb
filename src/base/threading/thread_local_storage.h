@@ -29,8 +29,6 @@ class TLSDestructionCheckerForX11;
 
 namespace base {
 
-class PoissonAllocationSampler;
-
 namespace debug {
 class GlobalActivityTracker;
 }  // namespace debug
@@ -162,7 +160,6 @@ class BASE_EXPORT ThreadLocalStorage {
   // thread destruction. Attempting to call Slot::Get() during destruction is
   // disallowed and will hit a DCHECK. Any code that relies on TLS during thread
   // destruction must first check this method before calling Slot::Get().
-  friend class base::PoissonAllocationSampler;
   friend class base::internal::ThreadLocalStorageTestInternal;
   friend class base::trace_event::MallocDumpProvider;
   friend class debug::GlobalActivityTracker;

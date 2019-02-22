@@ -23,6 +23,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -458,9 +459,16 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContextMenu) {
 
   // Trigger the context menu. AppShell doesn't show a context menu; this is
   // just a sanity check that nothing breaks.
+  content::WebContents* root_web_contents =
+      guest_web_contents->GetOutermostWebContents();
+  content::RenderWidgetHostView* guest_view =
+      guest_web_contents->GetRenderWidgetHostView();
+  gfx::Point guest_context_menu_position(5, 5);
+  gfx::Point root_context_menu_position =
+      guest_view->TransformPointToRootCoordSpace(guest_context_menu_position);
   content::SimulateRoutedMouseClickAt(
-      guest_web_contents, blink::WebInputEvent::kNoModifiers,
-      blink::WebMouseEvent::Button::kRight, gfx::Point(10, 10));
+      root_web_contents, blink::WebInputEvent::kNoModifiers,
+      blink::WebMouseEvent::Button::kRight, root_context_menu_position);
   context_menu_filter->Wait();
 }
 #endif

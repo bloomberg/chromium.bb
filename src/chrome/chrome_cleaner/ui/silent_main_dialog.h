@@ -25,9 +25,7 @@ class SilentMainDialog : public MainDialogAPI {
 
   // MainDialogAPI overrides.
   bool Create() override;
-  void StartScanning() override;
   void NoPUPsFound() override;
-  void StartCleanup(size_t num_pups) override;
   void CleanupDone(ResultCode cleanup_result) override;
   void Close() override;
 

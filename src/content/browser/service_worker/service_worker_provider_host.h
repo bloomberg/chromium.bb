@@ -19,13 +19,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_feature.mojom.h"
 
 namespace network {
@@ -178,6 +179,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ~ServiceWorkerProviderHost() override;
 
   const std::string& client_uuid() const { return client_uuid_; }
+  const base::UnguessableToken& fetch_request_window_id() const {
+    return fetch_request_window_id_;
+  }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return info_->provider_id; }
@@ -326,7 +330,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       const std::string& integrity,
       bool keepalive,
       ResourceType resource_type,
-      RequestContextType request_context_type,
+      blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<network::ResourceRequestBody> body,
@@ -494,7 +498,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       const ServiceWorkerRegistrationInfo& info) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
   void OnRegistrationFinishedUninstalling(
@@ -541,7 +545,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void EnsureControllerServiceWorker(
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ControllerServiceWorkerPurpose purpose) override;
-  void CloneForWorker(
+  void CloneContainerHost(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
@@ -594,7 +598,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
+  // A GUID that is web-exposed as FetchEvent.clientId.
   const std::string client_uuid_;
+
+  // For window clients. A token used internally to identify this context in
+  // requests. Corresponds to the Fetch specification's concept of a request's
+  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
+  // This gets reset on redirects, unlike |client_uuid_|.
+  //
+  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
+  // right now because this gets reset on redirects, and potentially sites rely
+  // on the GUID format.
+  base::UnguessableToken fetch_request_window_id_;
+
   const base::TimeTicks create_time_;
   int render_process_id_;
 
@@ -673,17 +689,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // content::ServiceWorkerProviderHost will be destroyed.
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 
-  // Mojo bindings for provider host pointers which are used from (dedicated or
-  // shared) worker threads.
-  // When this is hosting a shared worker, |bindings_for_worker_threads_|
-  // contains exactly one element for the shared worker thread. This binding is
-  // needed because the host pointer which is bound to |binding_| can only be
-  // used from the main thread.
-  // When this is hosting a document, |bindings_for_worker_threads_| contains
-  // all dedicated workers associated with the document. This binding is needed
-  // for the host pointers which are used from the dedicated worker threads.
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost>
-      bindings_for_worker_threads_;
+  // Container host bindings other than the original |binding_|. These include
+  // bindings for container host pointers used from (dedicated or shared) worker
+  // threads, or from ServiceWorkerSubresourceLoaderFactory.
+  mojo::BindingSet<mojom::ServiceWorkerContainerHost> additional_bindings_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>

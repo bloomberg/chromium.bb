@@ -36,12 +36,14 @@ class UrlPatternIndexTest : public ::testing::Test {
     return !!offset.o;
   }
 
-  void AddSimpleUrlRule(std::string pattern, uint32_t id, uint32_t priority) {
+  void AddSimpleUrlRule(std::string pattern,
+                        uint32_t id,
+                        uint32_t priority,
+                        uint8_t options) {
     auto pattern_offset = flat_builder_->CreateString(pattern);
 
     flat::UrlRuleBuilder rule_builder(*flat_builder_);
-    rule_builder.add_options(flat::OptionFlag_APPLIES_TO_THIRD_PARTY |
-                             flat::OptionFlag_APPLIES_TO_FIRST_PARTY);
+    rule_builder.add_options(options);
     rule_builder.add_url_pattern(pattern_offset);
     rule_builder.add_id(id);
     rule_builder.add_priority(priority);
@@ -129,6 +131,36 @@ TEST_F(UrlPatternIndexTest, NoRuleApplies) {
   EXPECT_FALSE(FindMatch("http://example.com"));
   EXPECT_FALSE(FindMatch("http://example.com?filter_not"));
   EXPECT_FALSE(FindMatch("http://example.com?k=v&filter_not"));
+}
+
+TEST_F(UrlPatternIndexTest, ProtoCaseSensitivity) {
+  ASSERT_TRUE(
+      AddUrlRule(MakeUrlRule(UrlPattern("case-sensitive", kSubstring))));
+  proto::UrlRule rule = MakeUrlRule(UrlPattern("case-INSENsitive"));
+  rule.set_match_case(false);
+  ASSERT_TRUE(AddUrlRule(rule));
+  Finish();
+
+  // We don't currently read case sensitivity from proto rules.
+  EXPECT_FALSE(FindMatch("http://abc.com/type=CASE-insEnsitIVe"));
+  EXPECT_FALSE(FindMatch("http://abc.com/type=case-INSENSITIVE"));
+  EXPECT_FALSE(FindMatch("http://abc.com?type=CASE-sensitive"));
+  EXPECT_TRUE(FindMatch("http://abc.com?type=case-sensitive"));
+}
+
+TEST_F(UrlPatternIndexTest, CaseSensitivity) {
+  uint8_t common_options = flat::OptionFlag_APPLIES_TO_FIRST_PARTY |
+                           flat::OptionFlag_APPLIES_TO_THIRD_PARTY;
+  AddSimpleUrlRule("case-insensitive", 0 /* id */, 0 /* priority */,
+                   common_options | flat::OptionFlag_IS_CASE_INSENSITIVE);
+  AddSimpleUrlRule("case-sensitive", 0 /* id */, 0 /* priority */,
+                   common_options);
+  Finish();
+
+  EXPECT_TRUE(FindMatch("http://abc.com/type=CASE-insEnsitIVe"));
+  EXPECT_TRUE(FindMatch("http://abc.com/type=case-INSENSITIVE"));
+  EXPECT_FALSE(FindMatch("http://abc.com?type=CASE-sensitive"));
+  EXPECT_TRUE(FindMatch("http://abc.com?type=case-sensitive"));
 }
 
 TEST_F(UrlPatternIndexTest, OneRuleWithoutMetaInfo) {
@@ -752,7 +784,9 @@ TEST_F(UrlPatternIndexTest, FindMatchHighestPriority) {
     base::RandomShuffle(priorities.begin(), priorities.end());
 
     for (size_t j = 0; j < i; j++) {
-      AddSimpleUrlRule(pattern, id, priorities[j]);
+      AddSimpleUrlRule(pattern, id, priorities[j],
+                       flat::OptionFlag_APPLIES_TO_FIRST_PARTY |
+                           flat::OptionFlag_APPLIES_TO_THIRD_PARTY);
       id++;
     }
   }

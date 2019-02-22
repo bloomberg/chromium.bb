@@ -19,8 +19,11 @@ class InputMethodSurfaceManager {
   // Adds an InputMethodSurface to the manager.
   virtual void AddSurface(InputMethodSurface* surface) = 0;
 
-  // Removes a InputMethodSurface from the manager.
+  // Removes an InputMethodSurface from the manager.
   virtual void RemoveSurface(InputMethodSurface* surface) = 0;
+
+  // Called when a touchable bounds of an InputMethodSurface changed.
+  virtual void OnTouchableBoundsChanged(InputMethodSurface* surface) = 0;
 };
 
 }  // namespace exo

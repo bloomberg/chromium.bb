@@ -36,58 +36,47 @@ function setUp() {
 }
 
 function testModel() {
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT,
       {toURL: () => 'fake-entry://recent'});
-  var addNewServicesItem = new NavigationModelMenuItem(
-      'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
   model.linuxFilesItem = new NavigationModelFakeItem(
       'linux-files-label', NavigationModelItemType.CROSTINI,
       {toURL: () => 'fake-entry://linux-files'});
 
-  assertEquals(6, model.length);
+  assertEquals(5, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
   assertEquals('fake-entry://recent', model.item(2).entry.toURL());
   assertEquals('fake-entry://linux-files', model.item(3).entry.toURL());
   assertEquals('/root/shortcut', model.item(4).entry.fullPath);
-  assertEquals('menu-button-label', model.item(5).label);
-  assertEquals('#add-new-services', model.item(5).menu);
-  assertEquals('menu-button-icon', model.item(5).icon);
 }
 
 function testNoRecentOrLinuxFiles() {
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = new NavigationModelMenuItem(
-      'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
-  assertEquals(4, model.length);
+  assertEquals(3, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
   assertEquals('/root/shortcut', model.item(2).entry.fullPath);
-  assertEquals('menu-button-label', model.item(3).label);
-  assertEquals('#add-new-services', model.item(3).menu);
-  assertEquals('menu-button-icon', model.item(3).icon);
 }
 
 function testAddAndRemoveShortcuts() {
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
   assertEquals(3, model.length);
 
@@ -116,20 +105,18 @@ function testAddAndRemoveShortcuts() {
 }
 
 function testAddAndRemoveVolumes() {
-  var volumeManager = new MockVolumeManagerWrapper();
+  var volumeManager = new MockVolumeManager();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = null;
-  var addNewServicesItem = null;
   var model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, true);
+      volumeManager, shortcutListModel, recentItem, true);
 
   assertEquals(3, model.length);
 
   // Removable volume 'hoge' is mounted.
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
   assertEquals(4, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
@@ -137,9 +124,8 @@ function testAddAndRemoveVolumes() {
   assertEquals('/root/shortcut', model.item(3).entry.fullPath);
 
   // Removable volume 'fuga' is mounted.
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
   assertEquals(5, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
   assertEquals('downloads', model.item(1).volumeInfo.volumeId);
@@ -166,7 +152,7 @@ function testAddAndRemoveVolumes() {
  * 3. keeps MTP/Archive/Removable volumes on the original order.
  */
 function testOrderAndNestItems() {
-  const volumeManager = new MockVolumeManagerWrapper();
+  const volumeManager = new MockVolumeManager();
   const shortcutListModel = new MockFolderShortcutDataModel([
     new MockFileEntry(drive, '/root/shortcut'),
     new MockFileEntry(drive, '/root/shortcut2')
@@ -174,46 +160,34 @@ function testOrderAndNestItems() {
   const recentItem = new NavigationModelFakeItem(
       'recent-label', NavigationModelItemType.RECENT,
       {toURL: () => 'fake-entry://recent'});
-  const addNewServicesItem = null;
   const zipVolumeId = 'provided:dmboannefpncccogfdikhmhpmdnddgoe:' +
       '~%2FDownloads%2Fazip_file%2Ezip:' +
       '096eaa592ea7e8ffb9a27435e50dabd6c809c125';
 
   // Create different volumes.
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov1'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.ARCHIVE, 'archive:a-rar'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.MTP, 'mtp:a-phone'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov2'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files:droid'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:images_root'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:videos_root'));
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:audio_root'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:hoge'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov1'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE, 'archive:a-rar'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:fuga'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.MTP, 'mtp:a-phone'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, 'provided:prov2'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ANDROID_FILES, 'android_files:droid'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:images_root'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:videos_root'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.MEDIA_VIEW, 'media_view:audio_root'));
   // ZipArchiver mounts zip files as PROVIDED volume type.
-  volumeManager.volumeInfoList.push(
-      MockVolumeManagerWrapper.createMockVolumeInfo(
-          VolumeManagerCommon.VolumeType.PROVIDED, zipVolumeId));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.PROVIDED, zipVolumeId));
 
   // Navigation items built above:
   //  1.  fake-entry://recent
@@ -238,7 +212,7 @@ function testOrderAndNestItems() {
 
   // Constructor already calls orderAndNestItems_.
   const model = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, addNewServicesItem, false);
+      volumeManager, shortcutListModel, recentItem, false);
 
   // Check items order and that MTP/Archive/Removable respect the original
   // order.

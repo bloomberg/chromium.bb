@@ -14,6 +14,7 @@
 (define (param-defined? str) (string? (param str)))
 
 ; Define constants for all of the parameter strings passed in.
+(define bundle-version-path "BUNDLE_VERSION_PATH")
 (define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
 (define enable-logging "ENABLE_LOGGING")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")

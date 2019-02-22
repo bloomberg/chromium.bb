@@ -88,10 +88,6 @@ class PasswordManagerDriver
   // Tells the driver to clear previewed password and username fields.
   virtual void ClearPreviewedForm() = 0;
 
-  // Tells the driver to find the focused password field and report back
-  // the corresponding password form, so that it can be saved.
-  virtual void ForceSavePassword() {}
-
   // Tells the driver to find the focused password field and to show generation
   // popup at it.
   virtual void GeneratePassword() {}

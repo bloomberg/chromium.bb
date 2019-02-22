@@ -181,11 +181,13 @@ component("core") {
     "//third_party/blink/renderer/core/clipboard",
     "//third_party/blink/renderer/core/context_features",
     "//third_party/blink/renderer/core/css",
+    "//third_party/blink/renderer/core/display_lock",
     "//third_party/blink/renderer/core/dom",
     "//third_party/blink/renderer/core/editing",
     "//third_party/blink/renderer/core/events",
     "//third_party/blink/renderer/core/execution_context",
     "//third_party/blink/renderer/core/exported",
+    "//third_party/blink/renderer/core/feature_policy",
     "//third_party/blink/renderer/core/fetch",
     "//third_party/blink/renderer/core/fileapi",
     "//third_party/blink/renderer/core/frame",
@@ -206,7 +208,6 @@ component("core") {
     "//third_party/blink/renderer/core/origin_trials",
     "//third_party/blink/renderer/core/page",
     "//third_party/blink/renderer/core/paint",
-    "//third_party/blink/renderer/core/policy",
     "//third_party/blink/renderer/core/probe",
     "//third_party/blink/renderer/core/resize_observer",
     "//third_party/blink/renderer/core/script",
@@ -446,7 +447,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 
 css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
-  in_files = [ "css/ComputedStyleExtraFields.json5" ]
+  in_files = [ "css/computed_style_extra_fields.json5" ]
   other_inputs = [ "../build/scripts/core/style/templates/computed_style_initial_values.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/style/computed_style_initial_values.h",
@@ -456,11 +457,11 @@ css_properties("make_core_generated_computed_style_initial_values") {
 css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/make_computed_style_base.py"
   in_files = [
-    "css/ComputedStyleExtraFields.json5",
-    "css/ComputedStyleDiffFunctions.json5",
-    "css/CSSValueKeywords.json5",
-    "css/CSSPropertiesRanking.json5",
-    "css/CSSGroupConfig.json5",
+    "css/computed_style_extra_fields.json5",
+    "css/computed_style_diff_functions.json5",
+    "css/css_value_keywords.json5",
+    "css/css_properties_ranking.json5",
+    "css/css_group_config.json5",
   ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
@@ -485,7 +486,7 @@ css_properties("make_core_generated_computed_style_base") {
 
 css_properties("make_core_generated_css_value_id_mappings") {
   script = "../build/scripts/make_css_value_id_mappings.py"
-  in_files = [ "css/CSSValueKeywords.json5" ]
+  in_files = [ "css/css_value_keywords.json5" ]
   other_inputs = [
     "../build/scripts/templates/css_value_id_mappings_generated.h.tmpl",
     "../build/scripts/keyword_utils.py",
@@ -515,9 +516,9 @@ css_properties("make_core_generated_css_property_baseclass") {
 css_properties("make_core_generated_css_longhand_property_classes") {
   script =
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
-  in_files = [ "css/properties/CSSPropertyMethods.json5" ]
+  in_files = [ "css/properties/css_property_methods.json5" ]
   other_inputs = [
-    "css/CSSProperties.json5",
+    "css/css_properties.json5",
     "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl",
     "../build/scripts/core/css/properties/templates/css_property_subclass.cc.tmpl",
   ]
@@ -1023,9 +1024,9 @@ css_properties("make_core_generated_css_longhand_property_classes") {
 css_properties("make_core_generated_css_shorthand_property_classes") {
   script =
       "../build/scripts/core/css/properties/make_css_property_subclasses.py"
-  in_files = [ "css/properties/CSSPropertyMethods.json5" ]
+  in_files = [ "css/properties/css_property_methods.json5" ]
   other_inputs = [
-    "css/CSSProperties.json5",
+    "css/css_properties.json5",
     "../build/scripts/core/css/properties/templates/css_property_subclass.h.tmpl",
   ]
   outputs = [
@@ -1192,8 +1193,8 @@ css_properties("make_core_generated_cssom_types") {
 code_generator("make_core_generated_css_value_keywords") {
   script = "../build/scripts/core/css/make_css_value_keywords.py"
   json_inputs = [
-    "css/CSSValueKeywords.json5",
-    "css/SVGCSSValueKeywords.json5",
+    "css/css_value_keywords.json5",
+    "css/svg_css_value_keywords.json5",
   ]
   other_inputs = [ "../build/scripts/gperf.py" ]
   templates = [
@@ -1710,6 +1711,7 @@ jumbo_source_set("unit_tests") {
     "animation/interpolation_effect_test.cc",
     "animation/keyframe_effect_model_test.cc",
     "animation/keyframe_effect_test.cc",
+    "animation/list_interpolation_functions_test.cc",
     "animation/property_handle_test.cc",
     "animation/scroll_timeline_test.cc",
     "animation/timing_calculations_test.cc",
@@ -1765,6 +1767,7 @@ jumbo_source_set("unit_tests") {
     "css/resolver/font_builder_test.cc",
     "css/resolver/font_style_resolver_test.cc",
     "css/resolver/match_result_test.cc",
+    "css/resolver/selector_filter_parent_scope_test.cc",
     "css/resolver/style_adjuster_test.cc",
     "css/rule_feature_set_test.cc",
     "css/rule_set_test.cc",
@@ -1773,6 +1776,7 @@ jumbo_source_set("unit_tests") {
     "css/style_engine_test.cc",
     "css/style_environment_variables_test.cc",
     "css/style_sheet_contents_test.cc",
+    "css/style_traversal_root_test.cc",
     "css/threaded/css_parser_threaded_test.cc",
     "css/threaded/css_to_length_conversion_data_threaded_test.cc",
     "css/threaded/filter_operation_resolver_threaded_test.cc",
@@ -1838,6 +1842,8 @@ jumbo_source_set("unit_tests") {
     "exported/web_surrounding_text_test.cc",
     "exported/web_user_gesture_token_test.cc",
     "exported/web_view_test.cc",
+    "feature_policy/feature_policy_test.cc",
+    "feature_policy/policy_test.cc",
     "fetch/blob_bytes_consumer_test.cc",
     "fetch/body_stream_buffer_test.cc",
     "fetch/bytes_consumer_for_data_consumer_handle_test.cc",
@@ -1846,6 +1852,7 @@ jumbo_source_set("unit_tests") {
     "fetch/bytes_consumer_test_util.h",
     "fetch/data_consumer_handle_test_util.cc",
     "fetch/data_consumer_handle_test_util.h",
+    "fetch/data_pipe_bytes_consumer_test.cc",
     "fetch/fetch_data_loader_test.cc",
     "fetch/fetch_header_list_test.cc",
     "fetch/fetch_response_data_test.cc",
@@ -1871,6 +1878,7 @@ jumbo_source_set("unit_tests") {
     "frame/frame_test_helpers.h",
     "frame/history_test.cc",
     "frame/local_frame_test.cc",
+    "frame/local_frame_ukm_aggregator_test.cc",
     "frame/local_frame_view_test.cc",
     "frame/mhtml_archive_test.cc",
     "frame/mhtml_loading_test.cc",
@@ -1882,6 +1890,7 @@ jumbo_source_set("unit_tests") {
     "frame/visual_viewport_test.cc",
     "fullscreen/scoped_allow_fullscreen_test.cc",
     "geometry/dom_matrix_test.cc",
+    "html/anchor_element_metrics_sender_test.cc",
     "html/anchor_element_metrics_test.cc",
     "html/canvas/canvas_async_blob_creator_test.cc",
     "html/canvas/canvas_font_cache_test.cc",
@@ -1977,6 +1986,7 @@ jumbo_source_set("unit_tests") {
     "layout/layout_box_test.cc",
     "layout/layout_count_test.cc",
     "layout/layout_embedded_content_test.cc",
+    "layout/layout_flexible_box_test.cc",
     "layout/layout_geometry_map_test.cc",
     "layout/layout_image_test.cc",
     "layout/layout_inline_test.cc",
@@ -2024,6 +2034,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/ng_block_node_test.cc",
     "layout/ng/ng_column_layout_algorithm_test.cc",
     "layout/ng/ng_constraint_space_builder_test.cc",
+    "layout/ng/ng_fieldset_layout_algorithm_test.cc",
     "layout/ng/ng_inline_layout_test.cc",
     "layout/ng/ng_layout_test.h",
     "layout/ng/ng_length_utils_test.cc",
@@ -2038,6 +2049,7 @@ jumbo_source_set("unit_tests") {
     "layout/shapes/box_shape_test.cc",
     "layout/svg/layout_svg_foreign_object_test.cc",
     "layout/svg/layout_svg_root_test.cc",
+    "layout/svg/layout_svg_text_test.cc",
     "layout/text_autosizer_test.cc",
     "layout/visual_rect_mapping_test.cc",
     "loader/allowed_by_nosniff_test.cc",
@@ -2086,6 +2098,7 @@ jumbo_source_set("unit_tests") {
     "page/scrolling/snap_coordinator_test.cc",
     "page/slot_scoped_traversal_test.cc",
     "page/spatial_navigation_test.cc",
+    "page/touch_adjustment_test.cc",
     "page/viewport_test.cc",
     "page/window_features_test.cc",
     "paint/block_painter_test.cc",
@@ -2103,6 +2116,7 @@ jumbo_source_set("unit_tests") {
     "paint/first_meaningful_paint_detector_test.cc",
     "paint/fragment_data_test.cc",
     "paint/html_canvas_painter_test.cc",
+    "paint/image_paint_timing_detector_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_paint_fragment_test.cc",
     "paint/ng/ng_paint_fragment_traversal_test.cc",
@@ -2124,11 +2138,11 @@ jumbo_source_set("unit_tests") {
     "paint/pre_paint_tree_walk_test.cc",
     "paint/stub_chrome_client_for_spv2.h",
     "paint/table_painter_test.cc",
+    "paint/text_paint_timing_detector_test.cc",
     "paint/text_painter_test.cc",
     "paint/text_selection_repaint_test.cc",
     "paint/video_painter_test.cc",
     "paint/view_painter_test.cc",
-    "policy/policy_test.cc",
     "resize_observer/resize_observer_test.cc",
     "scheduler/active_connection_throttling_test.cc",
     "scheduler/frame_scheduler_test.cc",
@@ -2178,6 +2192,7 @@ jumbo_source_set("unit_tests") {
     "timing/performance_test.cc",
     "timing/time_clamper_test.cc",
     "timing/window_performance_test.cc",
+    "trustedtypes/trusted_types_util_test.cc",
     "url/url_search_params_test.cc",
     "workers/dedicated_worker_test.cc",
     "workers/main_thread_worklet_test.cc",
@@ -2200,6 +2215,7 @@ jumbo_source_set("unit_tests") {
     ":core",
     ":unit_test_support",
     "//mojo/public/cpp/system",
+    "//skia:skcms",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/core/editing:unit_tests",
@@ -2345,4 +2361,17 @@ if (!is_win) {
       "css/parser/css.proto",
     ]
   }
+}
+
+# Fuzzer for blink::FeaturePolicy.
+fuzzer_test("feature_policy_fuzzer") {
+  sources = [
+    "feature_policy/feature_policy_fuzzer.cc",
+  ]
+  deps = [
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/icu",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/feature_policy.dict"
+  seed_corpus = "//testing/libfuzzer/fuzzers/feature_policy_corpus"
 }

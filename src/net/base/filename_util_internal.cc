@@ -125,10 +125,9 @@ std::string GetFileNameFromURL(const GURL& url,
   if (!url.is_valid() || url.SchemeIs("about") || url.SchemeIs("data"))
     return std::string();
 
-  const std::string unescaped_url_filename = UnescapeURLComponent(
-      url.ExtractFileName(),
-      UnescapeRule::SPACES |
-          UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+  std::string unescaped_url_filename;
+  UnescapeBinaryURLComponent(url.ExtractFileName(), UnescapeRule::NORMAL,
+                             &unescaped_url_filename);
 
   // The URL's path should be escaped UTF-8, but may not be.
   std::string decoded_filename = unescaped_url_filename;

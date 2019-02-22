@@ -19,9 +19,6 @@ std::unique_ptr<NavigationThrottle>
 FormSubmissionThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!IsBrowserSideNavigationEnabled())
-    return nullptr;
-
   if (!handle->IsFormSubmission())
     return nullptr;
 
@@ -33,12 +30,12 @@ FormSubmissionThrottle::~FormSubmissionThrottle() {}
 
 NavigationThrottle::ThrottleCheckResult
 FormSubmissionThrottle::WillStartRequest() {
-  return CheckContentSecurityPolicyFormAction(false /* is_redirect */);
+  return CheckContentSecurityPolicyFormAction(false /* was_server_redirect */);
 }
 
 NavigationThrottle::ThrottleCheckResult
 FormSubmissionThrottle::WillRedirectRequest() {
-  return CheckContentSecurityPolicyFormAction(true /* is_redirect */);
+  return CheckContentSecurityPolicyFormAction(true /* was_server_redirect */);
 }
 
 const char* FormSubmissionThrottle::GetNameForLogging() {
@@ -46,7 +43,8 @@ const char* FormSubmissionThrottle::GetNameForLogging() {
 }
 
 NavigationThrottle::ThrottleCheckResult
-FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
+FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(
+    bool was_server_redirect) {
   // TODO(arthursonzogni): form-action is enforced on the wrong RenderFrameHost.
   // The navigating one is used instead of the one that has initiated the form
   // submission. The renderer side checks are still in place and are used for
@@ -62,7 +60,7 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
   // compromised) renderer being responsible for enforcing the CSP of another
   // (victim) renderer. Therefore it is okay to return early and do no further
   // browser-side checks.
-  if (!is_redirect)
+  if (!was_server_redirect)
     return NavigationThrottle::PROCEED;
 
   NavigationHandleImpl* handle =
@@ -83,7 +81,7 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
   // check report-only CSP, (2) upgrade request if needed, (3) check enforced
   // CSP to match how frame-src works. https://crbug.com/713388
   if (render_frame->IsAllowedByCsp(
-          CSPDirective::FormAction, url, is_redirect,
+          CSPDirective::FormAction, url, was_server_redirect,
           false /* is_response_check */, handle->source_location(),
           CSPContext::CHECK_ALL_CSP, true /* is_form_submission */)) {
     return NavigationThrottle::PROCEED;

@@ -46,9 +46,11 @@ class FakeProducer : public Producer {
   // Producer implementation.
   void OnConnect() override;
   void OnDisconnect() override;
-  void CreateDataSourceInstance(DataSourceInstanceID,
-                                const DataSourceConfig& source_config) override;
-  void TearDownDataSourceInstance(DataSourceInstanceID) override;
+  void SetupDataSource(DataSourceInstanceID,
+                       const DataSourceConfig& source_config) override;
+  void StartDataSource(DataSourceInstanceID,
+                       const DataSourceConfig& source_config) override;
+  void StopDataSource(DataSourceInstanceID) override;
   void OnTracingSetup() override;
   void Flush(FlushRequestID, const DataSourceInstanceID*, size_t) override;
 

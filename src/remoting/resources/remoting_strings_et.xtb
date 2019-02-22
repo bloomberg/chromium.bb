@@ -102,7 +102,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="3171922709365450819">See klient ei toeta seda seadet, kuna see nõuab kolmanda osapoole autentimist.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3212472844831225214">• Lisati Android 9.0 Pie tugi.</translation>
 <translation id="324272851072175193">Saada need juhised meiliga</translation>
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
 <translation id="3286521253923406898">Chromootimise hosti kontroller</translation>
@@ -331,6 +330,8 @@ Lauaarvuti</translation>
 <translation id="8525306231823319788">Täisekraan</translation>
 <translation id="8548209692293300397">Olete varem sisse loginud kasutajana <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN" />logige Google Chrome'i sisse<ph name="LINK_END" /> selle kontoga ja installige Chrome Remote Desktop uuesti.</translation>
 <translation id="8642984861538780905">Rahuldav</translation>
+<translation id="8705151241155781642">• Lisati Android 9.0 Pie tugi.
+• Toetab kaugtöölaua lahutusvõime ühitamist Android-seadme ekraaniga.</translation>
 <translation id="8712909229180978490">Ma ei näe võrgus oma salvestatud faile Google Drive'is.</translation>
 <translation id="8743328882720071828">Kas lubate kasutajal <ph name="CLIENT_USERNAME" /> oma arvutit vaadata ja juhtida?</translation>
 <translation id="8747048596626351634">Seanss jooksis kokku või selle käivitamine ebaõnnestus. Kui seanss ~/.chrome-remote-desktop-session on kaugarvutis olemas, veenduge, et see käivitaks pikaajalise taustaprotsessi (nt töölauakeskkond või aknahaldur).</translation>

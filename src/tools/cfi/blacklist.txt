@@ -143,6 +143,7 @@ fun:*FunctorTraits*
 
 # Calls to auto-generated stubs by generate_stubs.py
 src:*audio/pulse/pulse_stubs.cc
+src:*media/gpu/vaapi/va_stubs.cc
 
 # Calls to auto-generated stubs by generate_library_loader.py
 src:*chrome/browser/speech/tts_linux.cc

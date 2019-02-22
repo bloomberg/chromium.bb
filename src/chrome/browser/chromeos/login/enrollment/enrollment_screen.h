@@ -99,6 +99,7 @@ class EnrollmentScreen
   friend class MultiLicenseEnrollmentScreenUnitTest;
   friend class ZeroTouchEnrollmentScreenUnitTest;
   friend class AutomaticReenrollmentScreenUnitTest;
+  friend class EnterpriseEnrollmentConfigurationTest;
 
   FRIEND_TEST_ALL_PREFIXES(AttestationAuthEnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(ForcedAttestationAuthEnrollmentScreenTest,
@@ -118,6 +119,8 @@ class EnrollmentScreen
                            TestActiveDirectoryEnrollment_UIErrors);
   FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
                            TestActiveDirectoryEnrollment_ErrorCard);
+  FRIEND_TEST_ALL_PREFIXES(ActiveDirectoryJoinTest,
+                           TestActiveDirectoryEnrollment_Streamline);
   FRIEND_TEST_ALL_PREFIXES(HandsOffWelcomeScreenTest, RequiresNoInput);
   FRIEND_TEST_ALL_PREFIXES(HandsOffWelcomeScreenTest, ContinueClickedOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(ZeroTouchEnrollmentScreenUnitTest, Retry);

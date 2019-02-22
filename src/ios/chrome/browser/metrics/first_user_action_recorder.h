@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 
@@ -87,6 +88,10 @@ class FirstUserActionRecorder {
 
   // The callback to invoke when an action is recorded.
   base::ActionCallback action_callback_;
+
+  // A potential action that needs to be confirmed if there is no other relevant
+  // action.
+  base::CancelableOnceClosure rethrow_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstUserActionRecorder);
 };

@@ -44,8 +44,6 @@ class DefaultKeyboardExtensionBrowserTest : public InProcessBrowserTest {
   void RunTest(const base::FilePath& file,
                const DefaultKeyboardExtensionBrowserTestConfig& config);
 
-  void ShowVirtualKeyboard();
-
   // Returns the WebContents that the keyboard with extension |id| is in.
   content::WebContents* GetKeyboardWebContents(const std::string& id);
 

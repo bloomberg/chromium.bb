@@ -10,9 +10,9 @@
 #import "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/views/drag_utils.h"
-#import "ui/views/cocoa/bridged_content_view.h"
-#import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/widget/native_widget_mac.h"
+#import "ui/views_bridge_mac/bridged_content_view.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 @interface CocoaDragDropDataProvider ()
 - (id)initWithData:(const ui::OSExchangeData&)data;
@@ -57,7 +57,7 @@
 
 namespace views {
 
-DragDropClientMac::DragDropClientMac(BridgedNativeWidget* bridge,
+DragDropClientMac::DragDropClientMac(BridgedNativeWidgetImpl* bridge,
                                      View* root_view)
     : drop_helper_(root_view),
       operation_(0),

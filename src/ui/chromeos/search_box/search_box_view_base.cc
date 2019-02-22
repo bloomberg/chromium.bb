@@ -208,6 +208,23 @@ class SearchBoxTextfield : public views::Textfield {
     Textfield::OnBlur();
   }
 
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_LONG_PRESS:
+      case ui::ET_GESTURE_LONG_TAP:
+        // Prevent Long Press from being handled at all, if inactive
+        if (!search_box_view_->is_search_box_active()) {
+          event->SetHandled();
+          break;
+        }
+        // If |search_box_view_| is active, handle it as normal below
+        FALLTHROUGH;
+      default:
+        // Handle all other events as normal
+        Textfield::OnGestureEvent(event);
+    }
+  }
+
  private:
   SearchBoxViewBase* const search_box_view_;
 
@@ -333,8 +350,6 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active,
   } else {
     search_box_->DestroyTouchSelection();
   }
-
-  search_box_right_space_->SetVisible(!active);
 
   UpdateSearchBoxBorder();
   UpdateKeyboardVisibility();
@@ -464,19 +479,25 @@ void SearchBoxViewBase::SetSearchBoxColor(SkColor color) {
 void SearchBoxViewBase::UpdateButtonsVisisbility() {
   DCHECK(close_button_ && assistant_button_);
 
-  bool should_show_close_button =
+  const bool should_show_close_button =
       !search_box_->text().empty() ||
       (show_close_button_when_active_ && is_search_box_active_);
-  bool should_show_assistant_button =
+  const bool should_show_assistant_button =
       show_assistant_button_ && !should_show_close_button;
+  const bool should_show_search_box_right_space =
+      !(should_show_close_button || should_show_assistant_button);
 
   if (close_button_->visible() == should_show_close_button &&
-      assistant_button_->visible() == should_show_assistant_button) {
+      assistant_button_->visible() == should_show_assistant_button &&
+      search_box_right_space_->visible() ==
+          should_show_search_box_right_space) {
     return;
   }
 
   close_button_->SetVisible(should_show_close_button);
   assistant_button_->SetVisible(should_show_assistant_button);
+  search_box_right_space_->SetVisible(should_show_search_box_right_space);
+
   content_container_->Layout();
 }
 
@@ -486,7 +507,8 @@ void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
   search_box_->RequestFocus();
   UpdateModel(true);
   NotifyQueryChanged();
-  SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
+  if (!new_contents.empty())
+    SetSearchBoxActive(true, ui::ET_KEY_PRESSED);
   UpdateButtonsVisisbility();
 }
 

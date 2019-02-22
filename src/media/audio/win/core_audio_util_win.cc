@@ -180,15 +180,6 @@ std::ostream& operator<<(std::ostream& os, const WAVEFORMATPCMEX& format) {
   return os;
 }
 
-bool LoadAudiosesDll() {
-  static const wchar_t* const kAudiosesDLL =
-      L"%WINDIR%\\system32\\audioses.dll";
-
-  wchar_t path[MAX_PATH] = {0};
-  ExpandEnvironmentStringsW(kAudiosesDLL, path, arraysize(path));
-  return (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL);
-}
-
 std::string GetDeviceID(IMMDevice* device) {
   ScopedCoMem<WCHAR> device_id_com;
   std::string device_id;
@@ -286,18 +277,7 @@ bool IsSupportedInternal() {
     return false;
   }
 
-  // The audio core APIs are implemented in the Mmdevapi.dll and
-  // Audioses.dll system components. Dependency Walker shows that it is
-  // enough to verify possibility to load the Audioses DLL since it depends
-  // on Mmdevapi.dll. See http://crbug.com/166397 why this extra step is
-  // required to guarantee Core Audio support.
-  if (!LoadAudiosesDll())
-    return false;
-
-  // Being able to load the Audioses.dll does not seem to be sufficient for
-  // all devices to guarantee Core Audio support. To be 100%, we also verify
-  // that it is possible to a create the IMMDeviceEnumerator interface. If
-  // this works as well we should be home free.
+  // Verify that it is possible to a create the IMMDeviceEnumerator interface.
   ComPtr<IMMDeviceEnumerator> device_enumerator =
       CreateDeviceEnumeratorInternal(false,
                                      base::BindRepeating(&LogUMAEmptyCb));
@@ -920,73 +900,6 @@ bool CoreAudioUtil::FillRenderEndpointBufferWithSilence(
   }
 
   return true;
-}
-
-HRESULT CoreAudioUtil::GetDeviceCollectionIndex(const std::string& device_id,
-                                                EDataFlow data_flow,
-                                                WORD* index) {
-  ComPtr<IMMDeviceEnumerator> enumerator = CreateDeviceEnumerator();
-  if (!enumerator.Get()) {
-    DLOG(ERROR) << "Failed to create device enumerator.";
-    return E_FAIL;
-  }
-
-  ComPtr<IMMDeviceCollection> device_collection;
-  HRESULT hr = enumerator->EnumAudioEndpoints(data_flow, DEVICE_STATE_ACTIVE,
-                                              &device_collection);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to get device collection.";
-    return hr;
-  }
-
-  UINT number_of_devices = 0;
-  hr = device_collection->GetCount(&number_of_devices);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to get device collection count.";
-    return hr;
-  }
-
-  ComPtr<IMMDevice> device;
-  for (WORD i = 0; i < number_of_devices; ++i) {
-    hr = device_collection->Item(i, &device);
-    if (FAILED(hr)) {
-      DLOG(WARNING) << "Failed to get device.";
-      continue;
-    }
-    ScopedCoMem<WCHAR> current_device_id;
-    hr = device->GetId(&current_device_id);
-    if (FAILED(hr)) {
-      DLOG(WARNING) << "Failed to get device id.";
-      continue;
-    }
-    if (base::UTF16ToUTF8(current_device_id.get()) == device_id) {
-      *index = i;
-      return S_OK;
-    }
-  }
-
-  DVLOG(1) << "No matching device found.";
-  return S_FALSE;
-}
-
-HRESULT CoreAudioUtil::SetBoolProperty(IPropertyStore* property_store,
-                                       REFPROPERTYKEY key,
-                                       VARIANT_BOOL value) {
-  base::win::ScopedPropVariant pv;
-  PROPVARIANT* pv_ptr = pv.Receive();
-  pv_ptr->vt = VT_BOOL;
-  pv_ptr->boolVal = value;
-  return property_store->SetValue(key, pv.get());
-}
-
-HRESULT CoreAudioUtil::SetVtI4Property(IPropertyStore* property_store,
-                                       REFPROPERTYKEY key,
-                                       LONG value) {
-  base::win::ScopedPropVariant pv;
-  PROPVARIANT* pv_ptr = pv.Receive();
-  pv_ptr->vt = VT_I4;
-  pv_ptr->lVal = value;
-  return property_store->SetValue(key, pv.get());
 }
 
 }  // namespace media

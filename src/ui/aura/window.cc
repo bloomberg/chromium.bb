@@ -92,7 +92,7 @@ Window::Window(WindowDelegate* delegate,
 }
 
 Window::~Window() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   if (layer()->owner() == this)
     layer()->CompleteAllAnimations();
@@ -160,7 +160,7 @@ Window::~Window() {
 }
 
 void Window::Init(ui::LayerType layer_type) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   if (!port_owner_) {
     port_owner_ = env_->CreateWindowPort(this);
@@ -285,7 +285,7 @@ gfx::Rect Window::GetBoundsInScreen() const {
 }
 
 void Window::SetTransform(const gfx::Transform& transform) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTargetTransformChanging(this, transform);
   layer()->SetTransform(transform);
@@ -308,7 +308,11 @@ void Window::SetLayoutManager(LayoutManager* layout_manager) {
 std::unique_ptr<WindowTargeter> Window::SetEventTargeter(
     std::unique_ptr<WindowTargeter> targeter) {
   std::unique_ptr<WindowTargeter> old_targeter = std::move(targeter_);
+  if (old_targeter)
+    old_targeter->OnInstalled(nullptr);
   targeter_ = std::move(targeter);
+  if (targeter_)
+    targeter_->OnInstalled(this);
   return old_targeter;
 }
 
@@ -369,7 +373,7 @@ void Window::StackChildBelow(Window* child, Window* target) {
 }
 
 void Window::AddChild(Window* child) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   DCHECK(layer()) << "Parent has not been Init()ed yet.";
   DCHECK(child->layer()) << "Child has not been Init()ed yt.";
@@ -411,7 +415,7 @@ void Window::AddChild(Window* child) {
 }
 
 void Window::RemoveChild(Window* child) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   WindowObserver::HierarchyChangeParams params;
   params.target = child;
@@ -547,6 +551,20 @@ bool Window::HasObserver(const WindowObserver* observer) const {
 }
 
 void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
+#if DCHECK_IS_ON()
+  const bool old_window_accepts_events =
+      (event_targeting_policy_ ==
+       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (event_targeting_policy_ ==
+       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  const bool new_window_accepts_events =
+      (policy == ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (policy == ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  if (new_window_accepts_events != old_window_accepts_events) {
+    DCHECK(!created_layer_tree_frame_sink_);
+  }
+#endif
+
   if (event_targeting_policy_ == policy)
     return;
 
@@ -833,7 +851,7 @@ void Window::SetVisible(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;  // No change.
 
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   for (WindowObserver& observer : observers_)
     observer.OnWindowVisibilityChanging(this, visible);
@@ -886,7 +904,7 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   if (child->OwnsLayer())
     layer()->Remove(child->layer());
   child->parent_ = NULL;
-  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
+  auto i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->OnParentChanged();
@@ -908,7 +926,7 @@ void Window::StackChildRelativeTo(Window* child,
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, target->parent());
 
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   client::WindowStackingClient* stacking_client =
       client::GetWindowStackingClient();
@@ -1074,9 +1092,7 @@ bool Window::CleanupGestureState() {
   bool state_modified = false;
   state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
   state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
-  for (Window::Windows::iterator iter = children_.begin();
-       iter != children_.end();
-       ++iter) {
+  for (auto iter = children_.begin(); iter != children_.end(); ++iter) {
     state_modified |= (*iter)->CleanupGestureState();
   }
   return state_modified;
@@ -1087,6 +1103,7 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
   DCHECK(frame_sink_id_.is_valid());
   DCHECK(embeds_external_client_);
   DCHECK(GetLocalSurfaceId().is_valid());
+  created_layer_tree_frame_sink_ = true;
   return sink;
 }
 
@@ -1133,6 +1150,8 @@ const viz::FrameSinkId& Window::GetFrameSinkId() const {
 }
 
 void Window::SetEmbedFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+  UnregisterFrameSinkId();
+
   DCHECK(frame_sink_id.is_valid());
   frame_sink_id_ = frame_sink_id;
   embeds_external_client_ = true;
@@ -1141,6 +1160,10 @@ void Window::SetEmbedFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
 
 bool Window::IsEmbeddingClient() const {
   return embeds_external_client_;
+}
+
+void Window::TrackOcclusionState() {
+  env_->GetWindowOcclusionTracker()->Track(this);
 }
 
 bool Window::RequiresDoubleTapGestureEvents() const {
@@ -1160,7 +1183,7 @@ void Window::OnPaintLayer(const ui::PaintContext& context) {
 
 void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
                                   ui::PropertyChangeReason reason) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   bounds_ = layer()->bounds();
 
@@ -1177,13 +1200,13 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void Window::OnLayerOpacityChanged(ui::PropertyChangeReason reason) {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowOpacitySet(this, reason);
 }
 
 void Window::OnLayerAlphaShapeChanged() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowAlphaShapeSet(this);
 }
@@ -1191,7 +1214,7 @@ void Window::OnLayerAlphaShapeChanged() {
 void Window::OnLayerTransformed(const gfx::Transform& old_transform,
                                 ui::PropertyChangeReason reason) {
   port_->OnDidChangeTransform(old_transform, layer()->transform());
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
   for (WindowObserver& observer : observers_)
     observer.OnWindowTransformed(this, reason);
 }
@@ -1246,8 +1269,18 @@ void Window::ConvertEventToTarget(ui::EventTarget* target,
                                  static_cast<Window*>(target));
 }
 
+gfx::PointF Window::GetScreenLocationF(const ui::LocatedEvent& event) const {
+  DCHECK_EQ(this, event.target());
+  gfx::PointF screen_location(event.root_location_f());
+  const Window* root = GetRootWindow();
+  auto* screen_position_client = aura::client::GetScreenPositionClient(root);
+  if (screen_position_client)
+    screen_position_client->ConvertPointToScreen(root, &screen_location);
+  return screen_location;
+}
+
 std::unique_ptr<ui::Layer> Window::RecreateLayer() {
-  WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
+  WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(env_);
 
   ui::LayerAnimator* const animator = layer()->GetAnimator();
   const bool was_animating_opacity =
@@ -1307,6 +1340,7 @@ void Window::RegisterFrameSinkId() {
   if (auto* compositor = layer()->GetCompositor()) {
     compositor->AddChildFrameSink(frame_sink_id_);
     registered_frame_sink_id_ = true;
+    port_->RegisterFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -1314,6 +1348,7 @@ void Window::UnregisterFrameSinkId() {
   if (!registered_frame_sink_id_)
     return;
   registered_frame_sink_id_ = false;
+  port_->UnregisterFrameSinkId(frame_sink_id_);
   if (auto* compositor = layer()->GetCompositor())
     compositor->RemoveChildFrameSink(frame_sink_id_);
 }

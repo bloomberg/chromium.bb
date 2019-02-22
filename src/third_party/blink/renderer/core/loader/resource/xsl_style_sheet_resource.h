@@ -48,7 +48,7 @@ class XSLStyleSheetResource final : public TextResource {
   class XSLStyleSheetResourceFactory : public ResourceFactory {
    public:
     XSLStyleSheetResourceFactory()
-        : ResourceFactory(Resource::kXSLStyleSheet,
+        : ResourceFactory(ResourceType::kXSLStyleSheet,
                           TextResourceDecoderOptions::kXMLContent) {}
 
     Resource* Create(

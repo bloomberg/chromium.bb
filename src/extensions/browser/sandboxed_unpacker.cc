@@ -23,9 +23,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/services/unzip/public/cpp/unzip.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -84,15 +86,15 @@ void RecordSuccessfulUnpackTimeHistograms(const base::FilePath& crx_path,
   // time for several increments of CRX size.
   int64_t crx_file_size;
   if (!base::GetFileSize(crx_path, &crx_file_size)) {
-    UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
+    UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
     return;
   }
 
   // Cast is safe as long as the number of bytes in the CRX is less than
   // 2^31 * 2^10.
   int crx_file_size_kb = static_cast<int>(crx_file_size / kBytesPerKb);
-  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCrxSize",
-                       crx_file_size_kb);
+  UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccessCrxSize",
+                          crx_file_size_kb);
 
   // We have time in seconds and file size in bytes.  We want the rate bytes are
   // unpacked in kB/s.
@@ -213,8 +215,8 @@ std::set<base::FilePath> GetMessageCatalogPathsToBeSanitized(
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::UI)) {
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -462,7 +464,7 @@ void SandboxedUnpacker::ReadManifestDone(
     ReportUnpackExtensionFailed(error_msg);
     return;
   }
-  extension->AddInstallWarnings(warnings);
+  extension->AddInstallWarnings(std::move(warnings));
 
   UnpackExtensionSucceeded(std::move(manifest_dict));
 }
@@ -700,7 +702,7 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
     declarative_net_request::IndexAndPersistRulesResult result) {
   if (result.success) {
     if (!result.warnings.empty())
-      extension_->AddInstallWarnings(result.warnings);
+      extension_->AddInstallWarnings(std::move(result.warnings));
     ReportSuccess(std::move(manifest), result.ruleset_checksum);
     return;
   }
@@ -917,7 +919,7 @@ void SandboxedUnpacker::ReportSuccess(
     const base::Optional<int>& dnr_ruleset_checksum) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
 
-  UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Extensions.SandboxUnpackSuccess", 1);
 
   if (!crx_unpack_start_time_.is_null())
     RecordSuccessfulUnpackTimeHistograms(

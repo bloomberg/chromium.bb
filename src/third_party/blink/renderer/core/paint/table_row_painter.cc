@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
+#include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -50,10 +50,9 @@ void TableRowPainter::Paint(const PaintInfo& paint_info) {
 
 void TableRowPainter::PaintOutline(const PaintInfo& paint_info) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
-  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
   ObjectPainter(layout_table_row_)
-      .PaintOutline(paint_info_with_offset.GetPaintInfo(),
-                    paint_info_with_offset.PaintOffset());
+      .PaintOutline(paint_state.GetPaintInfo(), paint_state.PaintOffset());
 }
 
 void TableRowPainter::HandleChangedPartialPaint(
@@ -68,9 +67,32 @@ void TableRowPainter::HandleChangedPartialPaint(
       paint_result, paint_info.GetCullRect());
 }
 
+void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                        const LayoutPoint& paint_offset) {
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  auto touch_action = layout_table_row_.EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  auto rect = layout_table_row_.BorderBoxRect();
+  rect.MoveBy(paint_offset);
+  HitTestData::RecordHitTestRect(paint_info.context, layout_table_row_,
+                                 HitTestRect(rect, touch_action));
+}
+
 void TableRowPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const CellSpan& dirtied_columns) {
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
+  const auto& local_paint_info = paint_state.GetPaintInfo();
+  auto paint_offset = paint_state.PaintOffset();
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    RecordHitTestData(local_paint_info, paint_offset);
+
   bool has_background = layout_table_row_.StyleRef().HasBackground();
   bool has_box_shadow = layout_table_row_.StyleRef().BoxShadow();
   if (!has_background && !has_box_shadow)
@@ -78,14 +100,11 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
   HandleChangedPartialPaint(paint_info, dirtied_columns);
 
-  PaintInfoWithOffset paint_info_with_offset(layout_table_row_, paint_info);
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_row_,
           DisplayItem::kBoxDecorationBackground))
     return;
 
-  const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
-  auto paint_offset = paint_info_with_offset.PaintOffset();
   DrawingRecorder recorder(local_paint_info.context, layout_table_row_,
                            DisplayItem::kBoxDecorationBackground);
   LayoutRect paint_rect(paint_offset, layout_table_row_.Size());
@@ -115,7 +134,7 @@ void TableRowPainter::PaintBoxDecorationBackground(
 
 void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                             const CellSpan& dirtied_columns) {
-  PaintInfoWithOffset paint_state(layout_table_row_, paint_info);
+  ScopedPaintState paint_state(layout_table_row_, paint_info);
   base::Optional<DrawingRecorder> recorder;
 
   if (LIKELY(!layout_table_row_.Table()->ShouldPaintAllCollapsedBorders())) {

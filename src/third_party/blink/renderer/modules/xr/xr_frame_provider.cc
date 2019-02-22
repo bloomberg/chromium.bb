@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
@@ -286,8 +287,12 @@ void XRFrameProvider::OnImmersiveFrameData(
   // between frames. Executing mojo tasks back to back within the same
   // execution context caused extreme input delay due to processing
   // multiple frames without yielding, see crbug.com/701444.
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+  //
+  // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
+  // related then tasks should not be throttled or frozen in background tabs.
+  frame->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
                            WrapWeakPersistent(this), nullptr, high_res_now_ms));
 }
 
@@ -301,8 +306,13 @@ void XRFrameProvider::OnNonImmersiveVSync(double high_res_now_ms) {
   if (immersive_session_)
     return;
 
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+  LocalFrame* frame = device_->xr()->GetFrame();
+  if (!frame)
+    return;
+
+  frame->GetTaskRunner(blink::TaskType::kInternalMedia)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
                            WrapWeakPersistent(this), nullptr, high_res_now_ms));
 }
 
@@ -340,8 +350,9 @@ void XRFrameProvider::OnNonImmersiveFrameData(
           .InMillisecondsF();
 
   if (HasARSession()) {
-    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
+    frame->GetTaskRunner(blink::TaskType::kInternalMedia)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
                              WrapWeakPersistent(this), std::move(frame_data),
                              high_res_now_ms));
   }

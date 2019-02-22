@@ -22,6 +22,7 @@
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/infobars/core/infobar.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
@@ -145,6 +147,9 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
                                const std::string& message) override;
   bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
                            bool is_webui) override;
+  bool MayAttachToBrowser() override;
+  bool MayDiscoverTargets() override;
+  bool MayAffectLocalFiles() override;
 
  private:
   using PendingRequests =
@@ -208,7 +213,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
 bool ExtensionDevToolsClientHost::Attach() {
   // Attach to debugger and tell it we are ready.
-  if (!agent_host_->AttachRestrictedClient(this))
+  if (!agent_host_->AttachClient(this))
     return false;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -374,6 +379,18 @@ bool ExtensionDevToolsClientHost::MayAttachToRenderer(
                                  &error);
 }
 
+bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
+  return false;
+}
+
+bool ExtensionDevToolsClientHost::MayDiscoverTargets() {
+  return false;
+}
+
+bool ExtensionDevToolsClientHost::MayAffectLocalFiles() {
+  return false;
+}
+
 // DebuggerFunction -----------------------------------------------------------
 
 DebuggerFunction::DebuggerFunction()
@@ -466,7 +483,7 @@ ExtensionDevToolsClientHost* DebuggerFunction::FindClientHost() {
   const std::string& extension_id = extension()->id();
   DevToolsAgentHost* agent_host = agent_host_.get();
   AttachedClientHosts& hosts = g_attached_client_hosts.Get();
-  AttachedClientHosts::iterator it = std::find_if(
+  auto it = std::find_if(
       hosts.begin(), hosts.end(),
       [&agent_host, &extension_id](ExtensionDevToolsClientHost* client_host) {
         return client_host->agent_host() == agent_host &&
@@ -599,7 +616,10 @@ const char kTargetUrlField[] = "url";
 const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetTabIdField[] = "tabId";
 const char kTargetExtensionIdField[] = "extensionId";
+const char kTargetTypePage[] = "page";
+const char kTargetTypeBackgroundPage[] = "background_page";
 const char kTargetTypeWorker[] = "worker";
+const char kTargetTypeOther[] = "other";
 
 std::unique_ptr<base::DictionaryValue> SerializeTarget(
     scoped_refptr<DevToolsAgentHost> host) {
@@ -611,20 +631,21 @@ std::unique_ptr<base::DictionaryValue> SerializeTarget(
   dictionary->SetString(kTargetUrlField, host->GetURL().spec());
 
   std::string type = host->GetType();
+  std::string target_type = kTargetTypeOther;
   if (type == DevToolsAgentHost::kTypePage) {
     int tab_id =
         extensions::ExtensionTabUtil::GetTabId(host->GetWebContents());
     dictionary->SetInteger(kTargetTabIdField, tab_id);
+    target_type = kTargetTypePage;
   } else if (type == ChromeDevToolsManagerDelegate::kTypeBackgroundPage) {
     dictionary->SetString(kTargetExtensionIdField, host->GetURL().host());
+    target_type = kTargetTypeBackgroundPage;
+  } else if (type == DevToolsAgentHost::kTypeServiceWorker ||
+             type == DevToolsAgentHost::kTypeSharedWorker) {
+    target_type = kTargetTypeWorker;
   }
 
-  if (type == DevToolsAgentHost::kTypeServiceWorker ||
-      type == DevToolsAgentHost::kTypeSharedWorker) {
-    type = kTargetTypeWorker;
-  }
-
-  dictionary->SetString(kTargetTypeField, type);
+  dictionary->SetString(kTargetTypeField, target_type);
 
   GURL favicon_url = host->GetFaviconURL();
   if (favicon_url.is_valid())
@@ -643,8 +664,8 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 
 bool DebuggerGetTargetsFunction::RunAsync() {
   content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DebuggerGetTargetsFunction::SendTargetList, this, list));
   return true;
 }

@@ -7,15 +7,9 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-class Document;
-class ExceptionState;
-class ScriptState;
-class StringOrTrustedHTML;
 
 class CORE_EXPORT TrustedHTML final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -25,11 +19,8 @@ class CORE_EXPORT TrustedHTML final : public ScriptWrappable {
     return new TrustedHTML(html);
   }
 
-  // CredentialsContainer.idl
+  // TrustedHTML.idl
   String toString() const;
-  static TrustedHTML* escape(ScriptState*, const String& html);
-  static TrustedHTML* unsafelyCreate(ScriptState*, const String& html);
-  static String GetString(StringOrTrustedHTML, const Document*, ExceptionState&);
 
  private:
   TrustedHTML(const String& html);

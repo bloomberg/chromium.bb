@@ -17,7 +17,6 @@
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/location.h"
@@ -93,6 +92,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -376,8 +376,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("addUser", IDS_ASH_ADD_USER_BUTTON);
   builder->Add("browseAsGuest", IDS_ASH_BROWSE_AS_GUEST_BUTTON);
   builder->Add("moreOptions", IDS_MORE_OPTIONS_BUTTON);
-  builder->Add("addSupervisedUser",
-               IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL);
   builder->Add("cancel", IDS_ASH_SHELF_CANCEL_BUTTON);
   builder->Add("signOutUser", IDS_ASH_SHELF_SIGN_OUT_BUTTON);
   builder->Add("unlockUser", IDS_ASH_SHELF_UNLOCK_BUTTON);
@@ -506,8 +504,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("completeOfflineAuthentication",
               &SigninScreenHandler::HandleCompleteOfflineAuthentication);
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
-  AddCallback("showSupervisedUserCreationScreen",
-              &SigninScreenHandler::HandleShowSupervisedUserCreationScreen);
   AddCallback("launchPublicSession",
               &SigninScreenHandler::HandleLaunchPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
@@ -854,15 +850,15 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
                                  std::string());
   }
 
-  const bool guest_signin_allowed =
-      chrome_user_manager_util::IsGuestSessionAllowed(CrosSettings::Get()) &&
-      IsSigninScreenError(error_screen_->GetErrorState());
+  bool guest_signin_allowed = false;
+  bool offline_login_allowed = false;
+  if (IsSigninScreenError(error_screen_->GetErrorState())) {
+    guest_signin_allowed =
+        user_manager::UserManager::Get()->IsGuestSessionAllowed();
+    offline_login_allowed = error_screen_->GetErrorState() !=
+                            NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
+  }
   error_screen_->AllowGuestSignin(guest_signin_allowed);
-
-  const bool offline_login_allowed =
-      IsSigninScreenError(error_screen_->GetErrorState()) &&
-      error_screen_->GetErrorState() !=
-          NetworkError::ERROR_STATE_AUTH_EXT_TIMEOUT;
   error_screen_->AllowOfflineLogin(offline_login_allowed);
 
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
@@ -1263,15 +1259,6 @@ void SigninScreenHandler::HandleLaunchIncognito() {
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
-}
-
-void SigninScreenHandler::HandleShowSupervisedUserCreationScreen() {
-  if (!user_manager::UserManager::Get()->AreSupervisedUsersAllowed()) {
-    LOG(ERROR) << "Managed users not allowed.";
-    return;
-  }
-  LoginDisplayHost::default_host()->StartWizard(
-      OobeScreen::SCREEN_CREATE_SUPERVISED_USER_FLOW);
 }
 
 void SigninScreenHandler::HandleLaunchPublicSession(

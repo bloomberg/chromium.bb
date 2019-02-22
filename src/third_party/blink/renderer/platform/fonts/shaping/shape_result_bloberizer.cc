@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
@@ -93,15 +92,15 @@ float ShapeResultBloberizer::FillGlyphs(
       const scoped_refptr<const ShapeResult>& word_result = results[resolved_index];
       word_offset -= word_result->NumCharacters();
       advance =
-          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
-                              run_info.to, advance, word_offset);
+          FillGlyphsForResult(word_result.get(), run_info.run.ToStringView(),
+                              run_info.from, run_info.to, advance, word_offset);
     }
   } else {
     unsigned word_offset = 0;
     for (const auto& word_result : results) {
       advance =
-          FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
-                              run_info.to, advance, word_offset);
+          FillGlyphsForResult(word_result.get(), run_info.run.ToStringView(),
+                              run_info.from, run_info.to, advance, word_offset);
       word_offset += word_result->NumCharacters();
     }
   }
@@ -123,74 +122,16 @@ float ShapeResultBloberizer::FillGlyphs(const StringView& text,
   return FillGlyphsForResult(result, text, from, to, advance, word_offset);
 }
 
-void ShapeResultBloberizer::FillTextEmphasisGlyphs(
-    const TextRunPaintInfo& run_info,
-    const GlyphData& emphasis_data,
-    const ShapeResultBuffer& result_buffer) {
-  float advance = 0;
-  unsigned word_offset = run_info.run.Rtl() ? run_info.run.length() : 0;
-  auto results = result_buffer.results_;
-
-  for (unsigned j = 0; j < results.size(); j++) {
-    unsigned resolved_index = run_info.run.Rtl() ? results.size() - 1 - j : j;
-    const scoped_refptr<const ShapeResult>& word_result = results[resolved_index];
-    for (unsigned i = 0; i < word_result->runs_.size(); i++) {
-      unsigned resolved_offset =
-          word_offset - (run_info.run.Rtl() ? word_result->NumCharacters() : 0);
-      advance += FillTextEmphasisGlyphsForRun(
-          word_result->runs_[i].get(), run_info.run,
-          run_info.run.CharactersLength(), run_info.run.Direction(),
-          run_info.from, run_info.to, emphasis_data, advance, resolved_offset);
-    }
-    word_offset += word_result->NumCharacters() * (run_info.run.Rtl() ? -1 : 1);
-  }
-}
-
-void ShapeResultBloberizer::FillTextEmphasisGlyphs(const StringView& text,
-                                                   TextDirection direction,
-                                                   unsigned from,
-                                                   unsigned to,
-                                                   const GlyphData& emphasis,
-                                                   const ShapeResult* result) {
-  float advance = 0;
-  unsigned offset = 0;
-
-  for (unsigned i = 0; i < result->runs_.size(); i++) {
-    advance += FillTextEmphasisGlyphsForRun(result->runs_[i].get(), text,
-                                            text.length(), direction, from, to,
-                                            emphasis, advance, offset);
-  }
-}
-
 namespace {
 
-template <typename TextContainerType>
 inline bool IsSkipInkException(const ShapeResultBloberizer& bloberizer,
-                               const TextContainerType& text,
+                               const StringView& text,
                                unsigned character_index) {
   // We want to skip descenders in general, but it is undesirable renderings for
   // CJK characters.
   return bloberizer.GetType() == ShapeResultBloberizer::Type::kTextIntercepts &&
          !Character::CanTextDecorationSkipInk(
              text.CodepointAt(character_index));
-}
-
-template <typename TextContainerType>
-inline void AddGlyphToBloberizer(ShapeResultBloberizer& bloberizer,
-                                 float advance,
-                                 hb_direction_t direction,
-                                 CanvasRotationInVertical canvas_rotation,
-                                 const SimpleFontData* font_data,
-                                 const HarfBuzzRunGlyphData& glyph_data,
-                                 const TextContainerType& text,
-                                 unsigned character_index) {
-  FloatPoint start_offset = HB_DIRECTION_IS_HORIZONTAL(direction)
-                                ? FloatPoint(advance, 0)
-                                : FloatPoint(0, advance);
-  if (!IsSkipInkException(bloberizer, text, character_index)) {
-    bloberizer.Add(glyph_data.glyph, font_data, canvas_rotation,
-                   start_offset + glyph_data.offset);
-  }
 }
 
 inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
@@ -218,54 +159,158 @@ inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
   }
 }
 
-inline unsigned CountGraphemesInCluster(const UChar* str,
-                                        unsigned str_length,
-                                        uint16_t start_index,
-                                        uint16_t end_index) {
-  if (start_index > end_index) {
-    uint16_t temp_index = start_index;
-    start_index = end_index;
-    end_index = temp_index;
-  }
-  uint16_t length = end_index - start_index;
-  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
-  TextBreakIterator* cursor_pos_iterator =
-      CursorMovementIterator(&str[start_index], length);
+class GlyphCallbackContext {
+  WTF_MAKE_NONCOPYABLE(GlyphCallbackContext);
+  STACK_ALLOCATED();
 
-  int cursor_pos = cursor_pos_iterator->current();
-  int num_graphemes = -1;
-  while (0 <= cursor_pos) {
-    cursor_pos = cursor_pos_iterator->next();
-    num_graphemes++;
+ public:
+  ShapeResultBloberizer* bloberizer;
+  const StringView& text;
+};
+
+void AddGlyphToBloberizer(void* context,
+                          unsigned character_index,
+                          Glyph glyph,
+                          FloatSize glyph_offset,
+                          float advance,
+                          bool is_horizontal,
+                          CanvasRotationInVertical rotation,
+                          const SimpleFontData* font_data) {
+  GlyphCallbackContext* parsed_context =
+      static_cast<GlyphCallbackContext*>(context);
+  ShapeResultBloberizer* bloberizer = parsed_context->bloberizer;
+  const StringView& text = parsed_context->text;
+
+  if (IsSkipInkException(*bloberizer, text, character_index))
+    return;
+  FloatPoint start_offset =
+      is_horizontal ? FloatPoint(advance, 0) : FloatPoint(0, advance);
+  bloberizer->Add(glyph, font_data, rotation, start_offset + glyph_offset);
+}
+
+void AddFastHorizontalGlyphToBloberizer(
+    void* context,
+    unsigned,
+    Glyph glyph,
+    FloatSize glyph_offset,
+    float advance,
+    bool is_horizontal,
+    CanvasRotationInVertical canvas_rotation,
+    const SimpleFontData* font_data) {
+  ShapeResultBloberizer* bloberizer =
+      static_cast<ShapeResultBloberizer*>(context);
+  DCHECK(!glyph_offset.Height());
+  DCHECK(is_horizontal);
+  bloberizer->Add(glyph, font_data, canvas_rotation,
+                  advance + glyph_offset.Width());
+}
+
+class ClusterCallbackContext {
+  WTF_MAKE_NONCOPYABLE(ClusterCallbackContext);
+  STACK_ALLOCATED();
+
+ public:
+  ShapeResultBloberizer* bloberizer;
+  const StringView& text;
+  const GlyphData& emphasis_data;
+  FloatPoint glyph_center;
+};
+
+void AddEmphasisMarkToBloberizer(void* context,
+                                 unsigned character_index,
+                                 float advance_so_far,
+                                 unsigned graphemes_in_cluster,
+                                 float cluster_advance,
+                                 CanvasRotationInVertical canvas_rotation) {
+  ClusterCallbackContext* parsed_context =
+      static_cast<ClusterCallbackContext*>(context);
+  ShapeResultBloberizer* bloberizer = parsed_context->bloberizer;
+  const StringView& text = parsed_context->text;
+  const GlyphData& emphasis_data = parsed_context->emphasis_data;
+  FloatPoint glyph_center = parsed_context->glyph_center;
+
+  if (text.Is8Bit()) {
+    if (Character::CanReceiveTextEmphasis(text[character_index])) {
+      AddEmphasisMark(*bloberizer, emphasis_data, canvas_rotation, glyph_center,
+                      advance_so_far + cluster_advance / 2);
+    }
+  } else {
+    float glyph_advance_x = cluster_advance / graphemes_in_cluster;
+    for (unsigned j = 0; j < graphemes_in_cluster; ++j) {
+      // Do not put emphasis marks on space, separator, and control
+      // characters.
+      if (Character::CanReceiveTextEmphasis(text[character_index])) {
+        AddEmphasisMark(*bloberizer, emphasis_data, canvas_rotation,
+                        glyph_center, advance_so_far + glyph_advance_x / 2);
+      }
+      advance_so_far += glyph_advance_x;
+    }
   }
-  return std::max(0, num_graphemes);
 }
 
 }  // namespace
 
-template <typename TextContainerType>
+void ShapeResultBloberizer::FillTextEmphasisGlyphs(
+    const TextRunPaintInfo& run_info,
+    const GlyphData& emphasis,
+    const ShapeResultBuffer& result_buffer) {
+  FloatPoint glyph_center =
+      emphasis.font_data->BoundsForGlyph(emphasis.glyph).Center();
+
+  float advance = 0;
+  auto results = result_buffer.results_;
+
+  if (run_info.run.Rtl()) {
+    unsigned word_offset = run_info.run.length();
+    for (unsigned j = 0; j < results.size(); j++) {
+      unsigned resolved_index = results.size() - 1 - j;
+      const scoped_refptr<const ShapeResult>& word_result =
+          results[resolved_index];
+      word_offset -= word_result->NumCharacters();
+      StringView text = run_info.run.ToStringView();
+      ClusterCallbackContext context = {this, text, emphasis, glyph_center};
+      advance = word_result->ForEachGraphemeClusters(
+          text, advance, run_info.from, run_info.to, word_offset,
+          AddEmphasisMarkToBloberizer, static_cast<void*>(&context));
+    }
+  } else {  // Left-to-right.
+    unsigned word_offset = 0;
+    for (const auto& word_result : results) {
+      StringView text = run_info.run.ToStringView();
+      ClusterCallbackContext context = {this, text, emphasis, glyph_center};
+      advance = word_result->ForEachGraphemeClusters(
+          text, advance, run_info.from, run_info.to, word_offset,
+          AddEmphasisMarkToBloberizer, static_cast<void*>(&context));
+      word_offset += word_result->NumCharacters();
+    }
+  }
+}
+
+void ShapeResultBloberizer::FillTextEmphasisGlyphs(const StringView& text,
+                                                   unsigned from,
+                                                   unsigned to,
+                                                   const GlyphData& emphasis,
+                                                   const ShapeResult* result) {
+  FloatPoint glyph_center =
+      emphasis.font_data->BoundsForGlyph(emphasis.glyph).Center();
+  ClusterCallbackContext context = {this, text, emphasis, glyph_center};
+  float initial_advance = 0;
+  unsigned index_offset = 0;
+  result->ForEachGraphemeClusters(text, initial_advance, from, to, index_offset,
+                                  AddEmphasisMarkToBloberizer,
+                                  static_cast<void*>(&context));
+}
+
 float ShapeResultBloberizer::FillGlyphsForResult(const ShapeResult* result,
-                                                 const TextContainerType& text,
+                                                 const StringView& text,
                                                  unsigned from,
                                                  unsigned to,
                                                  float initial_advance,
                                                  unsigned run_offset) {
-  auto total_advance = initial_advance;
-
-  for (const auto& run : result->runs_) {
-    total_advance = run->ForEachGlyphInRange(
-        total_advance, from, to, run_offset,
-        [&](const HarfBuzzRunGlyphData& glyph_data, float total_advance,
-            uint16_t character_index) -> bool {
-
-          AddGlyphToBloberizer(*this, total_advance, run->direction_,
-                               run->canvas_rotation_, run->font_data_.get(),
-                               glyph_data, text, character_index);
-          return true;
-        });
-  }
-
-  return total_advance;
+  GlyphCallbackContext context = {this, text};
+  return result->ForEachGlyph(initial_advance, from, to, run_offset,
+                              AddGlyphToBloberizer,
+                              static_cast<void*>(&context));
 }
 
 bool ShapeResultBloberizer::CanUseFastPath(unsigned from,
@@ -303,119 +348,14 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   return advance;
 }
 
-float ShapeResultBloberizer::FillFastHorizontalGlyphs(
-    const ShapeResult* shape_result,
-    float advance) {
-  DCHECK(!shape_result->HasVerticalOffsets());
+float ShapeResultBloberizer::FillFastHorizontalGlyphs(const ShapeResult* result,
+                                                      float initial_advance) {
+  DCHECK(!result->HasVerticalOffsets());
   DCHECK_NE(GetType(), ShapeResultBloberizer::Type::kTextIntercepts);
 
-  for (const auto& run : shape_result->runs_) {
-    DCHECK(run);
-    DCHECK(HB_DIRECTION_IS_HORIZONTAL(run->direction_));
-
-    advance =
-        run->ForEachGlyph(advance,
-                          [&](const HarfBuzzRunGlyphData& glyph_data,
-                              float total_advance) -> bool {
-                            DCHECK(!glyph_data.offset.Height());
-                            Add(glyph_data.glyph, run->font_data_.get(),
-                                run->CanvasRotation(),
-                                total_advance + glyph_data.offset.Width());
-                            return true;
-                          });
-  }
-
-  return advance;
-}
-
-template <typename TextContainerType>
-float ShapeResultBloberizer::FillTextEmphasisGlyphsForRun(
-    const ShapeResult::RunInfo* run,
-    const TextContainerType& text,
-    unsigned text_length,
-    TextDirection direction,
-    unsigned from,
-    unsigned to,
-    const GlyphData& emphasis_data,
-    float initial_advance,
-    unsigned run_offset) {
-  if (!run)
-    return 0;
-
-  unsigned graphemes_in_cluster = 1;
-  float cluster_advance = 0;
-
-  FloatPoint glyph_center =
-      emphasis_data.font_data->BoundsForGlyph(emphasis_data.glyph).Center();
-
-  // A "cluster" in this context means a cluster as it is used by HarfBuzz:
-  // The minimal group of characters and corresponding glyphs, that cannot be
-  // broken down further from a text shaping point of view.  A cluster can
-  // contain multiple glyphs and grapheme clusters, with mutually overlapping
-  // boundaries. Below we count grapheme clusters per HarfBuzz clusters, then
-  // linearly split the sum of corresponding glyph advances by the number of
-  // grapheme clusters in order to find positions for emphasis mark drawing.
-  uint16_t cluster_start = static_cast<uint16_t>(
-      direction == TextDirection::kRtl
-          ? run->start_index_ + run->num_characters_ + run_offset
-          : run->GlyphToCharacterIndex(0) + run_offset);
-
-  float advance_so_far = initial_advance;
-  const unsigned num_glyphs = run->glyph_data_.size();
-  for (unsigned i = 0; i < num_glyphs; ++i) {
-    const HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-    uint16_t current_character_index =
-        run->start_index_ + glyph_data.character_index + run_offset;
-    bool is_run_end = (i + 1 == num_glyphs);
-    bool is_cluster_end =
-        is_run_end || (run->GlyphToCharacterIndex(i + 1) + run_offset !=
-                       current_character_index);
-
-    if ((direction == TextDirection::kRtl && current_character_index >= to) ||
-        (direction != TextDirection::kRtl && current_character_index < from)) {
-      advance_so_far += glyph_data.advance;
-      direction == TextDirection::kRtl ? --cluster_start : ++cluster_start;
-      continue;
-    }
-
-    cluster_advance += glyph_data.advance;
-
-    if (text.Is8Bit()) {
-      float glyph_advance_x = glyph_data.advance;
-      if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
-        AddEmphasisMark(*this, emphasis_data, run->CanvasRotation(),
-                        glyph_center, advance_so_far + glyph_advance_x / 2);
-      }
-      advance_so_far += glyph_advance_x;
-    } else if (is_cluster_end) {
-      uint16_t cluster_end;
-      if (direction == TextDirection::kRtl) {
-        cluster_end = current_character_index;
-      } else {
-        cluster_end = static_cast<uint16_t>(
-            is_run_end ? run->start_index_ + run->num_characters_ + run_offset
-                       : run->GlyphToCharacterIndex(i + 1) + run_offset);
-      }
-      graphemes_in_cluster = CountGraphemesInCluster(
-          text.Characters16(), text_length, cluster_start, cluster_end);
-      if (!graphemes_in_cluster || !cluster_advance)
-        continue;
-
-      float glyph_advance_x = cluster_advance / graphemes_in_cluster;
-      for (unsigned j = 0; j < graphemes_in_cluster; ++j) {
-        // Do not put emphasis marks on space, separator, and control
-        // characters.
-        if (Character::CanReceiveTextEmphasis(text[current_character_index])) {
-          AddEmphasisMark(*this, emphasis_data, run->CanvasRotation(),
-                          glyph_center, advance_so_far + glyph_advance_x / 2);
-        }
-        advance_so_far += glyph_advance_x;
-      }
-      cluster_start = cluster_end;
-      cluster_advance = 0;
-    }
-  }
-  return advance_so_far - initial_advance;
+  return result->ForEachGlyph(initial_advance,
+                              &AddFastHorizontalGlyphToBloberizer,
+                              static_cast<void*>(this));
 }
 
 }  // namespace blink

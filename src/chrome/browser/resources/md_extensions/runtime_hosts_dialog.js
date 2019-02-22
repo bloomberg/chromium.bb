@@ -85,7 +85,7 @@ cr.define('extensions', function() {
 
     /** @override */
     attached: function() {
-      if (this.currentSite !== null) {
+      if (this.currentSite !== null && this.currentSite !== undefined) {
         this.site_ = this.currentSite;
         this.validate_();
       }
@@ -128,7 +128,8 @@ cr.define('extensions', function() {
      * @private
      */
     computeSubmitButtonDisabled_: function() {
-      return this.inputInvalid_ || this.site_.trim().length == 0;
+      return this.inputInvalid_ || this.site_ === undefined ||
+          this.site_.trim().length == 0;
     },
 
     /**

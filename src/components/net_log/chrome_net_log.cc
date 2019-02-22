@@ -14,23 +14,16 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/net_log/net_export_file_writer.h"
 #include "components/version_info/version_info.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/log/trace_net_log_observer.h"
 
 namespace net_log {
 
-ChromeNetLog::ChromeNetLog() {
-  trace_net_log_observer_.reset(new net::TraceNetLogObserver());
-  trace_net_log_observer_->WatchForTraceStart(this);
-}
+ChromeNetLog::ChromeNetLog() {}
 
 ChromeNetLog::~ChromeNetLog() {
-  net_export_file_writer_.reset();
   ClearFileNetLogObserver();
-  trace_net_log_observer_->StopWatchForTraceStart();
 }
 
 void ChromeNetLog::StartWritingToFile(
@@ -45,12 +38,6 @@ void ChromeNetLog::StartWritingToFile(
       path, GetConstants(command_line_string, channel_string));
 
   file_net_log_observer_->StartObserving(this, capture_mode);
-}
-
-NetExportFileWriter* ChromeNetLog::net_export_file_writer() {
-  if (!net_export_file_writer_)
-    net_export_file_writer_ = base::WrapUnique(new NetExportFileWriter());
-  return net_export_file_writer_.get();
 }
 
 // static

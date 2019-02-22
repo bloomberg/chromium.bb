@@ -20,6 +20,7 @@ class AboutUIHTMLSource : public content::URLDataSource {
  public:
   // Construct a data source for the specified |source_name|.
   AboutUIHTMLSource(const std::string& source_name, Profile* profile);
+  ~AboutUIHTMLSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -39,11 +40,18 @@ class AboutUIHTMLSource : public content::URLDataSource {
 
   Profile* profile() { return profile_; }
 
- private:
-  ~AboutUIHTMLSource() override;
+  // Overrides Chrome OS assets location for tests.
+  void SetChromeOSAssetsDirForTests(const std::string& path) {
+    chromeos_assets_dir_for_tests_ = path;
+  }
 
+ private:
   std::string source_name_;
   Profile* profile_;
+
+  // Directory to be used as Chrome OS assets location in tests. If set, it
+  // overrides chrome::kChromeOSAssetPath.
+  std::string chromeos_assets_dir_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutUIHTMLSource);
 };

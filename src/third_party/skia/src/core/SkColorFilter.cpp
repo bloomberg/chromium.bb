@@ -65,12 +65,12 @@ SkColor SkColorFilter::filterColor(SkColor c) const {
 
 #include "SkRasterPipeline.h"
 SkColor4f SkColorFilter::filterColor4f(const SkColor4f& c, SkColorSpace* colorSpace) const {
-    SkPM4f dst, src = c.premul();
+    SkPMColor4f dst, src = c.premul();
 
     SkSTArenaAlloc<128> alloc;
     SkRasterPipeline    pipeline(&alloc);
 
-    pipeline.append_constant_color(&alloc, src);
+    pipeline.append_constant_color(&alloc, src.vec());
     this->onAppendStages(&pipeline, colorSpace, &alloc, c.fA == 1);
     SkJumper_MemoryCtx dstPtr = { &dst, 0 };
     pipeline.append(SkRasterPipeline::store_f32, &dstPtr);
@@ -94,7 +94,7 @@ SkColor4f SkColorFilter::filterColor4f(const SkColor4f& c, SkColorSpace* colorSp
 class SkComposeColorFilter : public SkColorFilter {
 public:
     uint32_t getFlags() const override {
-        // Can only claim alphaunchanged and SkPM4f support if both our proxys do.
+        // Can only claim alphaunchanged support if both our proxys do.
         return fOuter->getFlags() & fInner->getFlags();
     }
 

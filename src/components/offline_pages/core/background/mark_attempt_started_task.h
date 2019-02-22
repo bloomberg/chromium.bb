@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "components/offline_pages/core/background/update_request_task.h"
-#include "components/offline_pages/core/task.h"
+#include "components/offline_pages/task/task.h"
 
 namespace offline_pages {
 
@@ -23,7 +23,7 @@ class MarkAttemptStartedTask : public UpdateRequestTask {
 
  protected:
   // UpdateRequestTask implementation:
-  void UpdateRequestImpl(std::unique_ptr<UpdateRequestsResult> result) override;
+  void UpdateRequestImpl(UpdateRequestsResult result) override;
 };
 
 }  // namespace offline_pages

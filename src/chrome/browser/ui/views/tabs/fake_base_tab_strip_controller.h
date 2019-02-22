@@ -36,7 +36,6 @@ class FakeBaseTabStripController : public TabStripController {
   void ToggleSelected(int index) override;
   void AddSelectionFromAnchorTo(int index) override;
   void CloseTab(int index, CloseTabSource source) override;
-  void ToggleTabAudioMute(int index) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;
@@ -46,7 +45,6 @@ class FakeBaseTabStripController : public TabStripController {
   NewTabButtonPosition GetNewTabButtonPosition() const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
-  bool IsIncognito() override;
   void StackedLayoutMaybeChanged() override;
   bool IsSingleTabModeAvailable() override;
   bool ShouldDrawStrokes() const override;
@@ -57,7 +55,7 @@ class FakeBaseTabStripController : public TabStripController {
   bool EverHasVisibleBackgroundTabShapes() const override;
   SkColor GetFrameColor() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState state, bool opaque) const override;
+  SkColor GetTabBackgroundColor(TabState state) const override;
   SkColor GetTabForegroundColor(TabState state) const override;
   int GetTabBackgroundResourceId(
       BrowserNonClientFrameView::ActiveState active_state,

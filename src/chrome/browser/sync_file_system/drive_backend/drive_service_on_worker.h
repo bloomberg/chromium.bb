@@ -124,12 +124,6 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   google_apis::CancelCallback Search(
       const std::string& search_query,
       const google_apis::FileListCallback& callback) override;
-  google_apis::CancelCallback GetShareUrl(
-      const std::string& resource_id,
-      const GURL& embed_origin,
-      const google_apis::GetShareUrlCallback& callback) override;
-  google_apis::CancelCallback GetAppList(
-      const google_apis::AppListCallback& callback) override;
   google_apis::CancelCallback TrashResource(
       const std::string& resource_id,
       const google_apis::EntryActionCallback& callback) override;
@@ -196,13 +190,6 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const google_apis::ProgressCallback& progress_callback) override;
   std::unique_ptr<drive::BatchRequestConfiguratorInterface> StartBatchRequest()
       override;
-  google_apis::CancelCallback AuthorizeApp(
-      const std::string& resource_id,
-      const std::string& app_id,
-      const google_apis::AuthorizeAppCallback& callback) override;
-  google_apis::CancelCallback UninstallApp(
-      const std::string& app_id,
-      const google_apis::EntryActionCallback& callback) override;
   google_apis::CancelCallback AddPermission(
       const std::string& resource_id,
       const std::string& email,

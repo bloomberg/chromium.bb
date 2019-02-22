@@ -34,7 +34,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_coordinator.h"
 #include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller_impl.h"
-#import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -143,6 +143,7 @@ const int kLocationAuthorizationStatusCount = 4;
   self.omniboxPopupCoordinator =
       [self.omniboxCoordinator createPopupCoordinator:self.popupPositioner];
   self.omniboxPopupCoordinator.dispatcher = self.dispatcher;
+  self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
   self.mediator =
@@ -265,11 +266,13 @@ const int kLocationAuthorizationStatusCount = 4;
     [self.viewController.dispatcher focusFakebox];
   } else {
     [self.omniboxCoordinator focusOmnibox];
+    [self.omniboxPopupCoordinator openPopup];
   }
 }
 
 - (void)cancelOmniboxEdit {
   [self.omniboxCoordinator endEditing];
+  [self.omniboxPopupCoordinator closePopup];
 }
 
 #pragma mark - LocationBarDelegate

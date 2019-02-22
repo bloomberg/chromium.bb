@@ -12,12 +12,13 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/previews/content/previews_content_util.h"
+#include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -50,7 +51,7 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
     return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
-  if (data && data->used_data_reduction_proxy() && data->lite_page_received()) {
+  if (data && data->lite_page_received()) {
     lite_page_seen_ = true;
   }
   content::PreviewsState previews_state =
@@ -129,7 +130,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   if (resource_loading_hints_seen_)
     builder.Setresource_loading_hints(1);
   if (opt_out_occurred_)
-    builder.Setopt_out(1);
+    builder.Setopt_out(previews::params::IsPreviewsOmniboxUiEnabled() ? 2 : 1);
   if (origin_opt_out_occurred_)
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)
@@ -155,7 +156,7 @@ void PreviewsUKMObserver::OnLoadedResource(
 
 void PreviewsUKMObserver::OnEventOccurred(const void* const event_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (event_key == PreviewsInfoBarDelegate::OptOutEventKey())
+  if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opt_out_occurred_ = true;
 }
 

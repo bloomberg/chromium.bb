@@ -59,25 +59,22 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(button, root->DeepestLastChild());
 
   ASSERT_NE(nullptr, paragraph->FirstChild());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
-            paragraph->FirstChild()->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, paragraph->FirstChild()->RoleValue());
   ASSERT_NE(nullptr, paragraph->LastChild());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
-            paragraph->LastChild()->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, paragraph->LastChild()->RoleValue());
   ASSERT_NE(nullptr, paragraph->DeepestFirstChild());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
             paragraph->DeepestFirstChild()->RoleValue());
   ASSERT_NE(nullptr, paragraph->DeepestLastChild());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
             paragraph->DeepestLastChild()->RoleValue());
 
   EXPECT_EQ(paragraph->PreviousSibling(), input);
   EXPECT_EQ(paragraph, input->NextSibling());
   ASSERT_NE(nullptr, br->NextSibling());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole, br->NextSibling()->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());
-  EXPECT_EQ(AccessibilityRole::kStaticTextRole,
-            br->PreviousSibling()->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kStaticText, br->PreviousSibling()->RoleValue());
 }
 
 TEST_F(AccessibilityTest, AXObjectComparisonOperators) {
@@ -134,11 +131,11 @@ TEST_F(AccessibilityTest, AXObjectAncestorsIterator) {
   ASSERT_NE(nullptr, bold);
   AXObject* br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, br);
-  ASSERT_EQ(AccessibilityRole::kLineBreakRole, br->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, br->RoleValue());
 
   AXObject::AncestorsIterator iter = br->AncestorsBegin();
   EXPECT_EQ(*paragraph, *iter);
-  EXPECT_EQ(AccessibilityRole::kParagraphRole, iter->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kParagraph, iter->RoleValue());
   EXPECT_EQ(*root, *++iter);
   EXPECT_EQ(*root, *iter++);
   EXPECT_EQ(br->AncestorsEnd(), ++iter);
@@ -157,13 +154,13 @@ TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
   ++iter;  // Skip the generic container which is an ignored object.
   EXPECT_NE(GetAXObjectCache().InOrderTraversalEnd(), iter);
   EXPECT_EQ(*button, *++iter);
-  EXPECT_EQ(AccessibilityRole::kButtonRole, iter->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kButton, iter->RoleValue());
   EXPECT_EQ(*button, *iter++);
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalEnd(), iter);
   EXPECT_EQ(*button, *--iter);
   EXPECT_EQ(*button, *iter--);
   --iter;  // Skip the generic container which is an ignored object.
-  EXPECT_EQ(AccessibilityRole::kWebAreaRole, iter->RoleValue());
+  EXPECT_EQ(ax::mojom::Role::kRootWebArea, iter->RoleValue());
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
 }
 

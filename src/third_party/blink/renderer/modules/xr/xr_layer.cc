@@ -15,6 +15,8 @@ XRLayer::XRLayer(XRSession* session, XRLayerType layer_type)
 void XRLayer::OnFrameStart(const base::Optional<gpu::MailboxHolder>&) {}
 void XRLayer::OnFrameEnd() {}
 void XRLayer::OnResize() {}
+void XRLayer::HandleBackgroundImage(const gpu::MailboxHolder&, const IntSize&) {
+}
 
 void XRLayer::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);

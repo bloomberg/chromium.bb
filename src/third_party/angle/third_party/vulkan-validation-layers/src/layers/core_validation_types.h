@@ -92,6 +92,10 @@ static bool IsAcquireOp(const COMMAND_POOL_NODE *pool, const Barrier *barrier) {
     return (assume_transfer || IsTransferOp(barrier)) && (pool->queueFamilyIndex == barrier->dstQueueFamilyIndex);
 }
 
+inline bool IsSpecial(const uint32_t queue_family_index) {
+    return (queue_family_index == VK_QUEUE_FAMILY_EXTERNAL_KHR) || (queue_family_index == VK_QUEUE_FAMILY_FOREIGN_EXT);
+}
+
 // Generic wrapper for vulkan objects
 struct VK_OBJECT {
     uint64_t handle;
@@ -129,6 +133,10 @@ enum descriptor_req {
 
     DESCRIPTOR_REQ_SINGLE_SAMPLE = 2 << VK_IMAGE_VIEW_TYPE_END_RANGE,
     DESCRIPTOR_REQ_MULTI_SAMPLE = DESCRIPTOR_REQ_SINGLE_SAMPLE << 1,
+
+    DESCRIPTOR_REQ_COMPONENT_TYPE_FLOAT = DESCRIPTOR_REQ_MULTI_SAMPLE << 1,
+    DESCRIPTOR_REQ_COMPONENT_TYPE_SINT = DESCRIPTOR_REQ_COMPONENT_TYPE_FLOAT << 1,
+    DESCRIPTOR_REQ_COMPONENT_TYPE_UINT = DESCRIPTOR_REQ_COMPONENT_TYPE_SINT << 1,
 };
 
 struct DESCRIPTOR_POOL_STATE : BASE_NODE {
@@ -138,16 +146,16 @@ struct DESCRIPTOR_POOL_STATE : BASE_NODE {
 
     safe_VkDescriptorPoolCreateInfo createInfo;
     std::unordered_set<cvdescriptorset::DescriptorSet *> sets;  // Collection of all sets in this pool
-    std::vector<uint32_t> maxDescriptorTypeCount;               // Max # of descriptors of each type in this pool
-    std::vector<uint32_t> availableDescriptorTypeCount;         // Available # of descriptors of each type in this pool
+    std::map<uint32_t, uint32_t> maxDescriptorTypeCount;               // Max # of descriptors of each type in this pool
+    std::map<uint32_t, uint32_t> availableDescriptorTypeCount;         // Available # of descriptors of each type in this pool
 
     DESCRIPTOR_POOL_STATE(const VkDescriptorPool pool, const VkDescriptorPoolCreateInfo *pCreateInfo)
         : pool(pool),
           maxSets(pCreateInfo->maxSets),
           availableSets(pCreateInfo->maxSets),
           createInfo(pCreateInfo),
-          maxDescriptorTypeCount(VK_DESCRIPTOR_TYPE_RANGE_SIZE, 0),
-          availableDescriptorTypeCount(VK_DESCRIPTOR_TYPE_RANGE_SIZE, 0) {
+          maxDescriptorTypeCount(),
+          availableDescriptorTypeCount() {
         // Collect maximums per descriptor type.
         for (uint32_t i = 0; i < createInfo.poolSizeCount; ++i) {
             uint32_t typeIndex = static_cast<uint32_t>(createInfo.pPoolSizes[i].type);
@@ -425,6 +433,7 @@ enum CMD_TYPE {
     CMD_BINDDESCRIPTORSETS,
     CMD_BINDINDEXBUFFER,
     CMD_BINDPIPELINE,
+    CMD_BINDSHADINGRATEIMAGE,
     CMD_BINDVERTEXBUFFERS,
     CMD_BLITIMAGE,
     CMD_CLEARATTACHMENTS,
@@ -449,6 +458,9 @@ enum CMD_TYPE {
     CMD_DRAWINDIRECT,
     CMD_DRAWINDIRECTCOUNTAMD,
     CMD_DRAWINDIRECTCOUNTKHR,
+    CMD_DRAWMESHTASKSNV,
+    CMD_DRAWMESHTASKSINDIRECTNV,
+    CMD_DRAWMESHTASKSINDIRECTCOUNTNV,
     CMD_ENDCOMMANDBUFFER,  // Should be the last command in any RECORDED cmd buffer
     CMD_ENDQUERY,
     CMD_ENDRENDERPASS,
@@ -470,6 +482,7 @@ enum CMD_TYPE {
     CMD_SETDEVICEMASKKHX,
     CMD_SETDISCARDRECTANGLEEXT,
     CMD_SETEVENT,
+    CMD_SETEXCLUSIVESCISSOR,
     CMD_SETLINEWIDTH,
     CMD_SETSAMPLELOCATIONSEXT,
     CMD_SETSCISSOR,
@@ -477,6 +490,7 @@ enum CMD_TYPE {
     CMD_SETSTENCILREFERENCE,
     CMD_SETSTENCILWRITEMASK,
     CMD_SETVIEWPORT,
+    CMD_SETVIEWPORTSHADINGRATEPALETTE,
     CMD_SETVIEWPORTWSCALINGNV,
     CMD_UPDATEBUFFER,
     CMD_WAITEVENTS,
@@ -506,7 +520,9 @@ enum CBStatusFlagBits {
     CBSTATUS_VIEWPORT_SET           = 0x00000080,
     CBSTATUS_SCISSOR_SET            = 0x00000100,
     CBSTATUS_INDEX_BUFFER_BOUND     = 0x00000200,   // Index buffer has been set
-    CBSTATUS_ALL_STATE_SET          = 0x000001FF,   // All state set (intentionally exclude index buffer)
+    CBSTATUS_EXCLUSIVE_SCISSOR_SET  = 0x00000400,
+    CBSTATUS_SHADING_RATE_PALETTE_SET = 0x00000800,
+    CBSTATUS_ALL_STATE_SET          = 0x00000DFF,   // All state set (intentionally exclude index buffer)
     // clang-format on
 };
 
@@ -623,6 +639,7 @@ class PIPELINE_STATE : public BASE_NODE {
     // Hold shared ptr to RP in case RP itself is destroyed
     std::shared_ptr<RENDER_PASS_STATE> rp_state;
     safe_VkComputePipelineCreateInfo computePipelineCI;
+    safe_VkRaytracingPipelineCreateInfoNVX raytracingPipelineCI;
     // Flag of which shader stages are active for this pipeline
     uint32_t active_shaders;
     uint32_t duplicate_shaders;
@@ -643,6 +660,7 @@ class PIPELINE_STATE : public BASE_NODE {
           graphicsPipelineCI{},
           rp_state(nullptr),
           computePipelineCI{},
+          raytracingPipelineCI{},
           active_shaders(0),
           duplicate_shaders(0),
           active_slots(),
@@ -724,6 +742,37 @@ class PIPELINE_STATE : public BASE_NODE {
                 break;
         }
     }
+    void initRaytracingPipelineNVX(const VkRaytracingPipelineCreateInfoNVX *pCreateInfo) {
+        raytracingPipelineCI.initialize(pCreateInfo);
+        // Make sure gfx and compute pipeline is null
+        VkGraphicsPipelineCreateInfo emptyGraphicsCI = {};
+        VkComputePipelineCreateInfo emptyComputeCI = {};
+        computePipelineCI.initialize(&emptyComputeCI);
+        graphicsPipelineCI.initialize(&emptyGraphicsCI, false, false);
+        switch (raytracingPipelineCI.pStages->stage) {
+        case VK_SHADER_STAGE_RAYGEN_BIT_NVX:
+            this->active_shaders |= VK_SHADER_STAGE_RAYGEN_BIT_NVX;
+            break;
+        case VK_SHADER_STAGE_ANY_HIT_BIT_NVX:
+            this->active_shaders |= VK_SHADER_STAGE_ANY_HIT_BIT_NVX;
+            break;
+        case VK_SHADER_STAGE_CLOSEST_HIT_BIT_NVX:
+            this->active_shaders |= VK_SHADER_STAGE_CLOSEST_HIT_BIT_NVX;
+            break;
+        case VK_SHADER_STAGE_MISS_BIT_NVX:
+            this->active_shaders = VK_SHADER_STAGE_MISS_BIT_NVX;
+            break;
+        case VK_SHADER_STAGE_INTERSECTION_BIT_NVX:
+            this->active_shaders = VK_SHADER_STAGE_INTERSECTION_BIT_NVX;
+            break;
+        case VK_SHADER_STAGE_CALLABLE_BIT_NVX:
+            this->active_shaders |= VK_SHADER_STAGE_CALLABLE_BIT_NVX;
+            break;
+        default:
+            // TODO : Flag error
+            break;
+        }
+    }
 };
 
 // Track last states that are bound per pipeline bind point (Gfx & Compute)
@@ -744,6 +793,7 @@ struct LAST_BOUND_STATE {
         boundDescriptorSets.clear();
         push_descriptor_set = nullptr;
         dynamicOffsets.clear();
+        compat_id_for_set.clear();
     }
 };
 
@@ -894,7 +944,7 @@ struct GLOBAL_CB_NODE : public BASE_NODE {
     //  long-term may want to create caches of "lastBound" states and could have
     //  each individual CMD_NODE referencing its own "lastBound" state
     // Store last bound state for Gfx & Compute pipeline bind points
-    LAST_BOUND_STATE lastBound[VK_PIPELINE_BIND_POINT_RANGE_SIZE];
+    std::map<uint32_t, LAST_BOUND_STATE> lastBound;
 
     uint32_t viewportMask;
     uint32_t scissorMask;
@@ -1028,13 +1078,28 @@ class FRAMEBUFFER_STATE : public BASE_NODE {
     VkFramebuffer framebuffer;
     safe_VkFramebufferCreateInfo createInfo;
     std::shared_ptr<RENDER_PASS_STATE> rp_state;
+#ifdef FRAMEBUFFER_ATTACHMENT_STATE_CACHE
+    // TODO Re-enable attachment state cache once staleness protection is implemented
+    //      For staleness protection destoryed images and image view must invalidate the cached data and tag the framebuffer object
+    //      as no longer valid
     std::vector<MT_FB_ATTACHMENT_INFO> attachments;
+#endif
     FRAMEBUFFER_STATE(VkFramebuffer fb, const VkFramebufferCreateInfo *pCreateInfo, std::shared_ptr<RENDER_PASS_STATE> &&rpstate)
         : framebuffer(fb), createInfo(pCreateInfo), rp_state(rpstate){};
 };
 
 struct shader_module;
 struct DeviceExtensions;
+
+struct DeviceFeatures {
+    VkPhysicalDeviceFeatures core;
+    VkPhysicalDeviceDescriptorIndexingFeaturesEXT descriptor_indexing;
+    VkPhysicalDevice8BitStorageFeaturesKHR eight_bit_storage;
+    VkPhysicalDeviceExclusiveScissorFeaturesNV exclusive_scissor;
+    VkPhysicalDeviceShadingRateImageFeaturesNV shading_rate_image;
+    VkPhysicalDeviceMeshShaderFeaturesNV mesh_shader;
+    VkPhysicalDeviceInlineUniformBlockFeaturesEXT inline_uniform_block;
+};
 
 // Fwd declarations of layer_data and helpers to look-up/validate state from layer_data maps
 namespace core_validation {
@@ -1047,6 +1112,7 @@ IMAGE_STATE *GetImageState(const layer_data *, VkImage);
 DEVICE_MEM_INFO *GetMemObjInfo(const layer_data *, VkDeviceMemory);
 BUFFER_VIEW_STATE *GetBufferViewState(const layer_data *, VkBufferView);
 SAMPLER_STATE *GetSamplerState(const layer_data *, VkSampler);
+IMAGE_VIEW_STATE *GetAttachmentImageViewState(layer_data *dev_data, FRAMEBUFFER_STATE *framebuffer, uint32_t index);
 IMAGE_VIEW_STATE *GetImageViewState(const layer_data *, VkImageView);
 SWAPCHAIN_NODE *GetSwapchainNode(const layer_data *, VkSwapchainKHR);
 GLOBAL_CB_NODE *GetCBNode(layer_data const *my_data, const VkCommandBuffer cb);
@@ -1056,9 +1122,8 @@ FRAMEBUFFER_STATE *GetFramebufferState(const layer_data *my_data, VkFramebuffer 
 COMMAND_POOL_NODE *GetCommandPoolNode(layer_data *dev_data, VkCommandPool pool);
 shader_module const *GetShaderModuleState(layer_data const *dev_data, VkShaderModule module);
 const PHYS_DEV_PROPERTIES_NODE *GetPhysDevProperties(const layer_data *device_data);
-const VkPhysicalDeviceFeatures *GetEnabledFeatures(const layer_data *device_data);
+const DeviceFeatures *GetEnabledFeatures(const layer_data *device_data);
 const DeviceExtensions *GetEnabledExtensions(const layer_data *device_data);
-const VkPhysicalDeviceDescriptorIndexingFeaturesEXT *GetEnabledDescriptorIndexingFeatures(const layer_data *device_data);
 
 void InvalidateCommandBuffers(const layer_data *, std::unordered_set<GLOBAL_CB_NODE *> const &, VK_OBJECT);
 bool ValidateMemoryIsBoundToBuffer(const layer_data *, const BUFFER_STATE *, const char *, const std::string &);
@@ -1073,7 +1138,7 @@ bool ValidateObjectNotInUse(const layer_data *dev_data, BASE_NODE *obj_node, VK_
 void InvalidateCommandBuffers(const layer_data *dev_data, std::unordered_set<GLOBAL_CB_NODE *> const &cb_nodes, VK_OBJECT obj);
 void RemoveImageMemoryRange(uint64_t handle, DEVICE_MEM_INFO *mem_info);
 void RemoveBufferMemoryRange(uint64_t handle, DEVICE_MEM_INFO *mem_info);
-bool ClearMemoryObjectBindings(layer_data *dev_data, uint64_t handle, VulkanObjectType type);
+void ClearMemoryObjectBindings(layer_data *dev_data, uint64_t handle, VulkanObjectType type);
 bool ValidateCmdQueueFlags(layer_data *dev_data, const GLOBAL_CB_NODE *cb_node, const char *caller_name, VkQueueFlags flags,
                            const std::string &error_code);
 bool ValidateCmd(layer_data *my_data, const GLOBAL_CB_NODE *pCB, const CMD_TYPE cmd, const char *caller_name);

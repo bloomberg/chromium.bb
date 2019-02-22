@@ -625,6 +625,12 @@ class ChromeSDKCommand(command.CliCommand):
     parser.add_argument(
         '--download-vm', action='store_true', default=False,
         help='Additionally downloads a VM image from cloud storage.')
+    parser.add_argument(
+        '--thinlto', action='store_true', default=False,
+        help='Enable ThinLTO in build.')
+    parser.add_argument(
+        '--cfi', action='store_true', default=False,
+        help='Enable CFI in build.')
 
     parser.caching_group.add_argument(
         '--clear-sdk-cache', action='store_true',
@@ -818,13 +824,20 @@ class ChromeSDKCommand(command.CliCommand):
     env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
 
-  def _RelativizeToolchainPath(self, compiler):
-    """Relativize toolchain path for GN."""
+  def _ModifyPathForGomaBuild(self, compiler, tc_path=None):
+    """Modify toolchain path for goma build.
+
+    This function relativizes path of -B flag, but absolutize compiler path.
+    Compiler path will be relativized in build/toolchain/cros/BUILD.gn for
+    directory independent cache sharing in some distributed build system.
+    """
     args = []
-    for i in compiler.split():
-      if i.startswith('-B'):
-        i = '-B' + os.path.relpath(i[len('-B'):], self._BuildDir())
-      args.append(i)
+    for i, v in enumerate(compiler.split()):
+      if v.startswith('-B'):
+        v = '-B' + os.path.relpath(v[len('-B'):], self._BuildDir())
+      elif i == 0 and os.path.basename(v) == v:
+        v = os.path.join(tc_path, 'bin', v)
+      args.append(v)
     return ' '.join(args)
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
@@ -925,19 +938,26 @@ class ChromeSDKCommand(command.CliCommand):
     # See crosbug/618346.
     gn_args['cros_v8_snapshot_is_clang'] = True
     #
-    gn_args['cros_target_cc'] = self._RelativizeToolchainPath(env['CC'])
-    gn_args['cros_target_cxx'] = self._RelativizeToolchainPath(env['CXX'])
+    target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
+    modified_env_cc = self._ModifyPathForGomaBuild(env['CC'], target_tc_path)
+    modified_env_cxx = self._ModifyPathForGomaBuild(env['CXX'], target_tc_path)
+    gn_args['cros_target_cc'] = modified_env_cc.split()[0]
+    gn_args['cros_target_cxx'] = modified_env_cxx.split()[0]
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
-    gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
-    gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
-    gn_args['cros_host_cc'] = env['CC_host']
-    gn_args['cros_host_cxx'] = env['CXX_host']
+    gn_args['cros_target_extra_cflags'] = ' '.join(
+        [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
+    gn_args['cros_target_extra_cxxflags'] = ' '.join(
+        [env.get('CXXFLAGS', '')] + modified_env_cxx.split()[1:])
+    gn_args['cros_host_cc'] = self._ModifyPathForGomaBuild(env['CC_host'])
+    gn_args['cros_host_cxx'] = self._ModifyPathForGomaBuild(env['CXX_host'])
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
-    gn_args['cros_v8_snapshot_cc'] = env['CC_host']
-    gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
+    gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
+        env['CC_host'])
+    gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
+        env['CXX_host'])
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
@@ -964,24 +984,24 @@ class ChromeSDKCommand(command.CliCommand):
 
     # Disable ThinLTO and CFI for simplechrome. Tryjob machines do not have
     # enough file descriptors to use. crbug.com/789607
-    if 'use_thin_lto' in gn_args:
+    if not options.thinlto and 'use_thin_lto' in gn_args:
       gn_args['use_thin_lto'] = False
-    if 'is_cfi' in gn_args:
+    if not options.cfi and 'is_cfi' in gn_args:
       gn_args['is_cfi'] = False
-    if 'use_cfi_cast' in gn_args:
       gn_args['use_cfi_cast'] = False
     # We need to remove the flag -Wl,-plugin-opt,-import-instr-limit=$num
-    # from cros_target_extra_ldflags.
+    # from cros_target_extra_ldflags if options.thinlto is not set.
     # The format of ld flags is something like
     # '-Wl,-O1 -Wl,-O2 -Wl,--as-needed -stdlib=libc++'
-    extra_ldflags = gn_args.get('cros_target_extra_ldflags', '')
+    if not options.thinlto:
+      extra_ldflags = gn_args.get('cros_target_extra_ldflags', '')
 
-    ld_flags_list = extra_ldflags.split()
-    ld_flags_list = (
-        [f for f in ld_flags_list
-         if not f.startswith('-Wl,-plugin-opt,-import-instr-limit')])
-    if extra_ldflags:
-      gn_args['cros_target_extra_ldflags'] = ' '.join(ld_flags_list)
+      ld_flags_list = extra_ldflags.split()
+      ld_flags_list = (
+          [f for f in ld_flags_list
+           if not f.startswith('-Wl,-plugin-opt,-import-instr-limit')])
+      if extra_ldflags:
+        gn_args['cros_target_extra_ldflags'] = ' '.join(ld_flags_list)
 
     # We removed webcore debug symbols on release builds on arm.
     # See crbug.com/792999. However, we want to keep the symbols
@@ -1173,6 +1193,9 @@ class ChromeSDKCommand(command.CliCommand):
 
     if self.options.version and self.options.sdk_path:
       cros_build_lib.Die('Cannot specify both --version and --sdk-path.')
+
+    if self.options.cfi and not self.options.thinlto:
+      cros_build_lib.Die('CFI requires ThinLTO.')
 
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its

@@ -25,7 +25,7 @@ public final class QuicTestServer {
     private static final String KEY_USED = "quic-leaf-cert.key";
     private static final String[] CERTS_USED = {CERT_USED};
 
-    private static boolean sServerRunning = false;
+    private static boolean sServerRunning;
 
     /*
      * Starts the server.

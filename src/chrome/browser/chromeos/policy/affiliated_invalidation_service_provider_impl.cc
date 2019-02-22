@@ -32,6 +32,7 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/user_manager/user.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -323,7 +324,8 @@ AffiliatedInvalidationServiceProviderImpl::FindConnectedInvalidationService() {
                 new TiclDeviceSettingsProvider),
             g_browser_process->gcm_driver(),
             g_browser_process->system_request_context(),
-            std::move(url_loader_factory));
+            std::move(url_loader_factory),
+            content::GetNetworkConnectionTracker());
     device_invalidation_service_->Init(
         std::unique_ptr<syncer::InvalidationStateTracker>(
             new invalidation::InvalidatorStorage(

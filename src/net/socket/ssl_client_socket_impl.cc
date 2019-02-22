@@ -53,7 +53,6 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_key_logger.h"
 #include "net/ssl/ssl_private_key.h"
-#include "net/ssl/token_binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/bio.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -461,7 +460,6 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       cert_verifier_(context.cert_verifier),
       cert_transparency_verifier_(context.cert_transparency_verifier),
       channel_id_service_(context.channel_id_service),
-      tb_signature_map_(10),
       transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
@@ -666,10 +664,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->client_cert_sent =
       ssl_config_.send_client_cert && ssl_config_.client_cert.get();
   ssl_info->channel_id_sent = channel_id_sent_;
-  ssl_info->token_binding_negotiated =
-      SSL_is_token_binding_negotiated(ssl_.get());
-  ssl_info->token_binding_key_param = static_cast<net::TokenBindingParam>(
-      SSL_get_negotiated_token_binding_param(ssl_.get()));
   ssl_info->pinning_failure_log = pinning_failure_log_;
   ssl_info->ocsp_result = server_cert_verify_result_.ocsp_result;
   ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
@@ -746,39 +740,6 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
 
 ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
   return channel_id_service_;
-}
-
-Error SSLClientSocketImpl::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                                    TokenBindingType tb_type,
-                                                    std::vector<uint8_t>* out) {
-  // The same key will be used across multiple requests to sign the same value,
-  // so the signature is cached.
-  std::string raw_public_key;
-  if (!key->ExportRawPublicKey(&raw_public_key))
-    return ERR_FAILED;
-  auto it = tb_signature_map_.Get(std::make_pair(tb_type, raw_public_key));
-  if (it != tb_signature_map_.end()) {
-    *out = it->second;
-    return OK;
-  }
-
-  uint8_t tb_ekm_buf[32];
-  static const char kTokenBindingExporterLabel[] = "EXPORTER-Token-Binding";
-  if (!SSL_export_keying_material(ssl_.get(), tb_ekm_buf, sizeof(tb_ekm_buf),
-                                  kTokenBindingExporterLabel,
-                                  strlen(kTokenBindingExporterLabel), nullptr,
-                                  0, false /* no context */)) {
-    return ERR_FAILED;
-  }
-
-  if (!CreateTokenBindingSignature(
-          base::StringPiece(reinterpret_cast<char*>(tb_ekm_buf),
-                            sizeof(tb_ekm_buf)),
-          tb_type, key, out))
-    return ERR_FAILED;
-
-  tb_signature_map_.Put(std::make_pair(tb_type, raw_public_key), *out);
-  return OK;
 }
 
 crypto::ECPrivateKey* SSLClientSocketImpl::GetChannelIDKey() const {
@@ -922,9 +883,6 @@ int SSLClientSocketImpl::Init() {
     case kTLS13VariantDraft23:
       SSL_set_tls13_variant(ssl_.get(), tls13_draft23);
       break;
-    case kTLS13VariantDraft28:
-      SSL_set_tls13_variant(ssl_.get(), tls13_draft28);
-      break;
     case kTLS13VariantFinal:
       SSL_set_tls13_variant(ssl_.get(), tls13_rfc);
       break;
@@ -977,12 +935,6 @@ int SSLClientSocketImpl::Init() {
   // TLS channel ids.
   if (IsChannelIDEnabled()) {
     SSL_enable_tls_channel_id(ssl_.get());
-  }
-
-  if (!ssl_config_.token_binding_params.empty()) {
-    std::vector<uint8_t> params(ssl_config_.token_binding_params.begin(),
-                                ssl_config_.token_binding_params.end());
-    SSL_set_token_binding_params(ssl_.get(), params.data(), params.size());
   }
 
   if (!ssl_config_.alpn_protos.empty()) {
@@ -1550,7 +1502,7 @@ int SSLClientSocketImpl::VerifyCT() {
     if (server_cert_verify_result_.is_issued_by_known_root) {
       UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance2.SSL",
                                 ct_verify_result_.policy_compliance,
-                                ct::CTPolicyCompliance::CT_POLICY_MAX);
+                                ct::CTPolicyCompliance::CT_POLICY_COUNT);
     }
   }
 
@@ -1560,7 +1512,7 @@ int SSLClientSocketImpl::VerifyCT() {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL",
         ct_verify_result_.policy_compliance,
-        ct::CTPolicyCompliance::CT_POLICY_MAX);
+        ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
@@ -1581,7 +1533,7 @@ int SSLClientSocketImpl::VerifyCT() {
           "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2."
           "SSL",
           ct_verify_result_.policy_compliance,
-          ct::CTPolicyCompliance::CT_POLICY_MAX);
+          ct::CTPolicyCompliance::CT_POLICY_COUNT);
     }
   } else {
     ct_verify_result_.policy_compliance_required = false;
@@ -1702,9 +1654,6 @@ std::string SSLClientSocketImpl::GetSessionCacheKey() const {
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
-  if (SSL_is_token_binding_negotiated(ssl_.get()))
-    return false;
-
   if (negotiated_protocol_ == kProtoUnknown)
     return ssl_config_.renego_allowed_default;
 

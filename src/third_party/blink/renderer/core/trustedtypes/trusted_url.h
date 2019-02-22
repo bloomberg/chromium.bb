@@ -7,16 +7,15 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace WTF {
+
+class String;
+
+}  // namespace WTF
 
 namespace blink {
-
-class Document;
-class ExceptionState;
-class ScriptState;
-class USVStringOrTrustedURL;
 
 class CORE_EXPORT TrustedURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,11 +25,6 @@ class CORE_EXPORT TrustedURL final : public ScriptWrappable {
 
   // TrustedURL.idl
   String toString() const;
-  static TrustedURL* create(ScriptState*, const String& url);
-  static TrustedURL* unsafelyCreate(ScriptState*, const String& url);
-  static String GetString(USVStringOrTrustedURL,
-                          const Document*,
-                          ExceptionState&);
 
  private:
   TrustedURL(const KURL&);

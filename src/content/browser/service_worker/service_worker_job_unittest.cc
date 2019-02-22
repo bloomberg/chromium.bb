@@ -33,6 +33,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -550,7 +551,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url1,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ServiceWorkerUpdateViaCache::kNone),
+          pattern, blink::mojom::ScriptType::kClassic,
+          blink::mojom::ServiceWorkerUpdateViaCache::kNone),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration1_called, &registration1));
 
@@ -560,7 +562,8 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   job_coordinator()->Register(
       script_url2,
       blink::mojom::ServiceWorkerRegistrationOptions(
-          pattern, blink::mojom::ServiceWorkerUpdateViaCache::kAll),
+          pattern, blink::mojom::ScriptType::kClassic,
+          blink::mojom::ServiceWorkerUpdateViaCache::kAll),
       SaveRegistration(blink::ServiceWorkerStatusCode::kOk,
                        &registration2_called, &registration2));
 
@@ -764,7 +767,8 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   // Manually create the waiting worker since there is no way to become a
   // waiting worker until Update is implemented.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), script_url, 1L, helper_->context()->AsWeakPtr());
+      registration.get(), script_url, blink::mojom::ScriptType::kClassic, 1L,
+      helper_->context()->AsWeakPtr());
   base::Optional<blink::ServiceWorkerStatusCode> status;
   version->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                        CreateReceiverOnCurrentThread(&status));
@@ -884,7 +888,8 @@ void WriteResponse(ServiceWorkerStorage* storage,
 void WriteStringResponse(ServiceWorkerStorage* storage,
                          int64_t id,
                          const std::string& body) {
-  scoped_refptr<IOBuffer> body_buffer(new WrappedIOBuffer(body.data()));
+  scoped_refptr<IOBuffer> body_buffer =
+      base::MakeRefCounted<WrappedIOBuffer>(body.data());
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0\0";
   std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
   WriteResponse(storage, id, headers, body_buffer.get(), body.length());
@@ -896,7 +901,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
  public:
   struct AttributeChangeLogEntry {
     int64_t registration_id;
-    ChangedVersionAttributesMask mask;
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr mask;
     ServiceWorkerRegistrationInfo info;
   };
 
@@ -905,7 +910,8 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     ServiceWorkerVersion::Status status;
   };
 
-  UpdateJobTestHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  UpdateJobTestHelper()
+      : EmbeddedWorkerTestHelper(base::FilePath()), weak_factory_(this) {}
   ~UpdateJobTestHelper() override {
     if (observed_registration_.get())
       observed_registration_->RemoveListener(this);
@@ -920,6 +926,10 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
 
   void set_force_start_worker_failure(bool force_start_worker_failure) {
     force_start_worker_failure_ = force_start_worker_failure;
+  }
+
+  const base::Optional<bool>& will_be_terminated() const {
+    return will_be_terminated_;
   }
 
   scoped_refptr<ServiceWorkerRegistration> SetupInitialRegistration(
@@ -940,6 +950,17 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     EXPECT_FALSE(registration->waiting_version());
     observed_registration_ = registration;
     return registration;
+  }
+
+  void RequestTermination(int embedded_worker_id) {
+    GetEmbeddedWorkerInstanceHost(embedded_worker_id)
+        ->RequestTermination(
+            base::BindOnce(&UpdateJobTestHelper::OnRequestedTermination,
+                           weak_factory_.GetWeakPtr()));
+  }
+
+  void OnRequestedTermination(bool will_be_terminated) {
+    will_be_terminated_ = will_be_terminated;
   }
 
   // EmbeddedWorkerTestHelper overrides
@@ -1041,13 +1062,13 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   // ServiceWorkerRegistration::Listener overrides
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      ChangedVersionAttributesMask changed_mask,
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
       const ServiceWorkerRegistrationInfo& info) override {
     AttributeChangeLogEntry entry;
     entry.registration_id = registration->id();
-    entry.mask = changed_mask;
+    entry.mask = std::move(changed_mask);
     entry.info = info;
-    attribute_change_log_.push_back(entry);
+    attribute_change_log_.push_back(std::move(entry));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1063,7 +1084,7 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
     StateChangeLogEntry entry;
     entry.version_id = version->version_id();
     entry.status = version->status();
-    state_change_log_.push_back(entry);
+    state_change_log_.push_back(std::move(entry));
   }
 
   scoped_refptr<ServiceWorkerRegistration> observed_registration_;
@@ -1074,6 +1095,9 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   std::set<int /* embedded_worker_id */> started_workers_;
   bool update_found_ = false;
   bool force_start_worker_failure_ = false;
+  base::Optional<bool> will_be_terminated_;
+
+  base::WeakPtrFactory<UpdateJobTestHelper> weak_factory_;
 };
 
 // Helper class for update tests that evicts the active version when the update
@@ -1231,39 +1255,47 @@ TEST_F(ServiceWorkerJobTest, Update_NewVersion) {
   EXPECT_FALSE(registration->waiting_version());
   ASSERT_EQ(3u, update_helper->attribute_change_log_.size());
 
-  UpdateJobTestHelper::AttributeChangeLogEntry entry;
-  entry = update_helper->attribute_change_log_[0];
-  EXPECT_TRUE(entry.mask.installing_changed());
-  EXPECT_FALSE(entry.mask.waiting_changed());
-  EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_NE(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[0];
+    EXPECT_TRUE(entry.mask->installing);
+    EXPECT_FALSE(entry.mask->waiting);
+    EXPECT_FALSE(entry.mask->active);
+    EXPECT_NE(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_EQ(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
-  entry = update_helper->attribute_change_log_[1];
-  EXPECT_TRUE(entry.mask.installing_changed());
-  EXPECT_TRUE(entry.mask.waiting_changed());
-  EXPECT_FALSE(entry.mask.active_changed());
-  EXPECT_EQ(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[1];
+    EXPECT_TRUE(entry.mask->installing);
+    EXPECT_TRUE(entry.mask->waiting);
+    EXPECT_FALSE(entry.mask->active);
+    EXPECT_EQ(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
-  entry = update_helper->attribute_change_log_[2];
-  EXPECT_FALSE(entry.mask.installing_changed());
-  EXPECT_TRUE(entry.mask.waiting_changed());
-  EXPECT_TRUE(entry.mask.active_changed());
-  EXPECT_EQ(entry.info.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(entry.info.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_NE(entry.info.active_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  {
+    const UpdateJobTestHelper::AttributeChangeLogEntry& entry =
+        update_helper->attribute_change_log_[2];
+    EXPECT_FALSE(entry.mask->installing);
+    EXPECT_TRUE(entry.mask->waiting);
+    EXPECT_TRUE(entry.mask->active);
+    EXPECT_EQ(entry.info.installing_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_EQ(entry.info.waiting_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+    EXPECT_NE(entry.info.active_version.version_id,
+              blink::mojom::kInvalidServiceWorkerVersionId);
+  }
 
   // expected version state transitions:
   // new.installing, new.installed,
@@ -1314,8 +1346,8 @@ TEST_F(ServiceWorkerJobTest, Update_ScriptUrlChanged) {
   // Add a waiting version with a new script.
   GURL new_script("https://www.example.com/new_worker.js");
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
-      registration.get(), new_script, 2L /* dummy version id */,
-      helper_->context()->AsWeakPtr());
+      registration.get(), new_script, blink::mojom::ScriptType::kClassic,
+      2L /* dummy version id */, helper_->context()->AsWeakPtr());
   registration->SetWaitingVersion(version);
 
   // Run the update job.
@@ -1612,18 +1644,18 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   void OnInstallEvent(
       mojom::ServiceWorker::DispatchInstallEventCallback callback) override {
     if (!install_callback_.is_null())
-      install_callback_.Run();
+      std::move(install_callback_).Run();
     std::move(callback).Run(install_event_result_, has_fetch_handler_,
-                            base::Time::Now());
+                            base::TimeTicks::Now());
   }
 
   void OnActivateEvent(
       mojom::ServiceWorker::DispatchActivateEventCallback callback) override {
-    std::move(callback).Run(activate_event_result_, base::Time::Now());
+    std::move(callback).Run(activate_event_result_, base::TimeTicks::Now());
   }
 
-  void set_install_callback(const base::Closure& callback) {
-    install_callback_ = callback;
+  void set_install_callback(base::OnceClosure callback) {
+    install_callback_ = std::move(callback);
   }
   void set_install_event_result(blink::mojom::ServiceWorkerEventStatus result) {
     install_event_result_ = result;
@@ -1637,7 +1669,7 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   }
 
  private:
-  base::Closure install_callback_;
+  base::OnceClosure install_callback_;
   blink::mojom::ServiceWorkerEventStatus install_event_result_;
   blink::mojom::ServiceWorkerEventStatus activate_event_result_;
   bool has_fetch_handler_ = true;
@@ -1664,8 +1696,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
 
   // Register another script. While installing, old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
 
   EXPECT_FALSE(registration->is_uninstalling());
@@ -1706,8 +1738,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringRejectedInstall) {
   // Register another script that fails to install. While installing,
   // old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   helper->set_install_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
@@ -1745,8 +1777,8 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   // Register another script that fails to activate. While installing,
   // old_version loses controllee.
   helper->set_install_callback(
-      base::BindRepeating(&ServiceWorkerVersion::RemoveControllee, old_version,
-                          host->client_uuid()));
+      base::BindOnce(&ServiceWorkerVersion::RemoveControllee, old_version,
+                     host->client_uuid()));
   helper->set_activate_event_result(
       blink::mojom::ServiceWorkerEventStatus::REJECTED);
   EXPECT_EQ(registration, RunRegisterJob(script2, options));
@@ -1879,6 +1911,17 @@ TEST_F(ServiceWorkerJobTest, ActivateCancelsOnShutdown) {
   // until the runner runs again.
   first_version->RemoveControllee(host->client_uuid());
   base::RunLoop().RunUntilIdle();
+
+  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // S13nServiceWorker: Activating the new version won't happen until
+    // RequestTermination() is called.
+    EXPECT_EQ(first_version.get(), registration->active_version());
+    update_helper->RequestTermination(
+        first_version->embedded_worker()->embedded_worker_id());
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(update_helper->will_be_terminated().value());
+  }
+
   EXPECT_EQ(new_version.get(), registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, new_version->status());
 

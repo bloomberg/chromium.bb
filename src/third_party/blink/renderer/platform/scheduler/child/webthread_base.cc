@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// An implementation of WebThread in terms of base::MessageLoop and
+// An implementation of blink::Thread in terms of base::MessageLoop and
 // base::Thread
 
 #include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
@@ -24,7 +24,7 @@ namespace scheduler {
 class WebThreadBase::TaskObserverAdapter
     : public base::MessageLoop::TaskObserver {
  public:
-  explicit TaskObserverAdapter(WebThread::TaskObserver* observer)
+  explicit TaskObserverAdapter(Thread::TaskObserver* observer)
       : observer_(observer) {}
 
   void WillProcessTask(const base::PendingTask& pending_task) override {
@@ -36,7 +36,7 @@ class WebThreadBase::TaskObserverAdapter
   }
 
  private:
-  WebThread::TaskObserver* observer_;
+  Thread::TaskObserver* observer_;
 };
 
 WebThreadBase::WebThreadBase() = default;
@@ -94,10 +94,8 @@ namespace {
 
 class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
  public:
-  explicit WebThreadForCompositor(const WebThreadCreationParams& params)
-      : WebThreadImplForWorkerScheduler(params) {
-    Init();
-  }
+  explicit WebThreadForCompositor(const ThreadCreationParams& params)
+      : WebThreadImplForWorkerScheduler(params) {}
   ~WebThreadForCompositor() override = default;
 
  private:
@@ -114,12 +112,12 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
 }  // namespace
 
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateWorkerThread(
-    const WebThreadCreationParams& params) {
+    const ThreadCreationParams& params) {
   return std::make_unique<WebThreadImplForWorkerScheduler>(params);
 }
 
 std::unique_ptr<WebThreadBase> WebThreadBase::CreateCompositorThread(
-    const WebThreadCreationParams& params) {
+    const ThreadCreationParams& params) {
   return std::make_unique<WebThreadForCompositor>(params);
 }
 

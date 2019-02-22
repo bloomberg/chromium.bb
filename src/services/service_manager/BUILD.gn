@@ -37,6 +37,8 @@ source_set("service_manager") {
     "switches.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base/third_party/dynamic_annotations",
   ]
@@ -51,9 +53,4 @@ source_set("service_manager") {
     "//services/service_manager/runner/host:lib",
     "//services/service_manager/sandbox",
   ]
-}
-
-service_manifest("manifest") {
-  name = "service_manager"
-  source = "manifest.json"
 }

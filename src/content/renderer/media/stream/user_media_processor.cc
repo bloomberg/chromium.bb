@@ -609,10 +609,6 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
 
   VideoDeviceCaptureCapabilities capabilities;
   capabilities.device_capabilities = std::move(video_input_capabilities);
-  capabilities.power_line_capabilities = {
-      media::PowerLineFrequency::FREQUENCY_DEFAULT,
-      media::PowerLineFrequency::FREQUENCY_50HZ,
-      media::PowerLineFrequency::FREQUENCY_60HZ};
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
                                                base::Optional<bool>(true),
                                                base::Optional<bool>(false)};
@@ -1256,7 +1252,7 @@ bool UserMediaProcessor::RemoveLocalSource(
     const blink::WebMediaStreamSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (LocalStreamSources::iterator device_it = local_sources_.begin();
+  for (auto device_it = local_sources_.begin();
        device_it != local_sources_.end(); ++device_it) {
     if (IsSameSource(*device_it, source)) {
       local_sources_.erase(device_it);
@@ -1265,7 +1261,7 @@ bool UserMediaProcessor::RemoveLocalSource(
   }
 
   // Check if the source was pending.
-  for (LocalStreamSources::iterator device_it = pending_local_sources_.begin();
+  for (auto device_it = pending_local_sources_.begin();
        device_it != pending_local_sources_.end(); ++device_it) {
     if (IsSameSource(*device_it, source)) {
       MediaStreamSource* const source_extra_data =
@@ -1374,6 +1370,10 @@ void UserMediaProcessor::StopLocalSource(
 
   source_impl->ResetSourceStoppedCallback();
   source_impl->StopSource();
+}
+
+bool UserMediaProcessor::HasActiveSources() const {
+  return !local_sources_.empty();
 }
 
 const mojom::MediaStreamDispatcherHostPtr&

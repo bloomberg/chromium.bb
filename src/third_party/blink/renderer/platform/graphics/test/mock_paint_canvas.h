@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_text_blob.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 
 namespace blink {
@@ -82,7 +82,7 @@ class MockPaintCanvas : public cc::PaintCanvas {
                     SkScalar top,
                     const PaintFlags* flags));
   MOCK_METHOD4(drawTextBlob,
-               void(scoped_refptr<PaintTextBlob>,
+               void(scoped_refptr<cc::PaintTextBlob>,
                     SkScalar x,
                     SkScalar y,
                     const PaintFlags& flags));

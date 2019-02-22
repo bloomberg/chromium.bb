@@ -180,6 +180,11 @@ void TestWindowTreeClient::OnWindowOpacityChanged(Id window,
   tracker_.OnWindowOpacityChanged(window, new_opacity);
 }
 
+void TestWindowTreeClient::OnWindowDisplayChanged(Id window_id,
+                                                  int64_t display_id) {
+  tracker_.OnWindowDisplayChanged(window_id, display_id);
+}
+
 void TestWindowTreeClient::OnWindowParentDrawnStateChanged(Id window,
                                                            bool drawn) {
   tracker_.OnWindowParentDrawnStateChanged(window, drawn);
@@ -230,12 +235,6 @@ void TestWindowTreeClient::OnWindowFocused(Id focused_window_id) {
 void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
                                                  ui::CursorData cursor) {
   tracker_.OnWindowCursorChanged(window_id, cursor);
-}
-
-void TestWindowTreeClient::OnWindowSurfaceChanged(
-    Id window_id,
-    const viz::SurfaceInfo& surface_info) {
-  tracker_.OnWindowSurfaceChanged(window_id, surface_info);
 }
 
 void TestWindowTreeClient::OnDragDropStart(

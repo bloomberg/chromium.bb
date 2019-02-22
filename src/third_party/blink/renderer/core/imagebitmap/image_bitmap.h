@@ -27,6 +27,11 @@ class ImageData;
 class ImageDecoder;
 class OffscreenCanvas;
 
+enum ImageBitmapPixelFormat {
+  kImageBitmapPixelFormat_Default,
+  kImageBitmapPixelFormat_Uint8,
+};
+
 class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                                       public CanvasImageSource,
                                       public ImageBitmapSource {
@@ -122,10 +127,12 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
     bool premultiply_alpha = true;
     bool should_scale_input = false;
     bool has_color_space_conversion = false;
+    bool preserve_source_color_space = false;
     bool source_is_unpremul = false;
     unsigned resize_width = 0;
     unsigned resize_height = 0;
     IntRect crop_rect;
+    ImageBitmapPixelFormat pixel_format = kImageBitmapPixelFormat_Default;
     SkFilterQuality resize_quality = kLow_SkFilterQuality;
     CanvasColorParams color_params;
   };

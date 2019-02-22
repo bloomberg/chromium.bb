@@ -10,7 +10,7 @@ static_library("renderer") {
 
   deps = [
     "//base",
-    "//components/web_cache/public/interfaces",
+    "//components/web_cache/public/mojom",
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",

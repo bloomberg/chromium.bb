@@ -7,7 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/enterprise_hardware_platform.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace extensions {
 
@@ -19,6 +22,14 @@ EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction::
 
 ExtensionFunction::ResponseAction
 EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction::Run() {
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!profile->GetPrefs()->IsManagedPreference(
+          prefs::kEnterpriseHardwarePlatformAPIEnabled) ||
+      !profile->GetPrefs()->GetBoolean(
+          prefs::kEnterpriseHardwarePlatformAPIEnabled)) {
+    return RespondNow(Error("Not allowed"));
+  }
+
   base::SysInfo::GetHardwareInfo(base::BindOnce(
       &EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction::
           OnHardwarePlatformInfo,

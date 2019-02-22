@@ -752,10 +752,13 @@ class MetaBuildWrapper(object):
         self.FlattenMixins(mixin_vals['mixins'], vals, visited)
     return vals
 
-  def RunGNGen(self, vals, compute_inputs_for_analyze=False):
+  def RunGNGen(self, vals, compute_inputs_for_analyze=False, check=True):
     build_dir = self.args.path
 
-    cmd = self.GNCmd('gen', build_dir, '--check')
+    if check:
+      cmd = self.GNCmd('gen', build_dir, '--check')
+    else:
+      cmd = self.GNCmd('gen', build_dir)
     gn_args = self.GNArgs(vals)
     if compute_inputs_for_analyze:
       gn_args += ' compute_inputs_for_analyze=true'
@@ -1168,7 +1171,7 @@ class MetaBuildWrapper(object):
   def RunGNAnalyze(self, vals):
     # Analyze runs before 'gn gen' now, so we need to run gn gen
     # in order to ensure that we have a build directory.
-    ret = self.RunGNGen(vals, compute_inputs_for_analyze=True)
+    ret = self.RunGNGen(vals, compute_inputs_for_analyze=True, check=False)
     if ret:
       return ret
 

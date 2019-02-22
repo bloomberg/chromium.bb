@@ -184,8 +184,6 @@ static void GL_BINDING_CALL Mock_glColorMask(GLboolean red,
                                              GLboolean blue,
                                              GLboolean alpha);
 static void GL_BINDING_CALL Mock_glCompileShader(GLuint shader);
-static void GL_BINDING_CALL
-Mock_glCompressedCopyTextureCHROMIUM(GLuint sourceId, GLuint destId);
 static void GL_BINDING_CALL Mock_glCompressedTexImage2D(GLenum target,
                                                         GLint level,
                                                         GLenum internalformat,
@@ -1234,6 +1232,7 @@ static void GL_BINDING_CALL Mock_glMatrixLoadfCHROMIUM(GLenum matrixMode,
                                                        const GLfloat* m);
 static void GL_BINDING_CALL Mock_glMatrixLoadfEXT(GLenum matrixMode,
                                                   const GLfloat* m);
+static void GL_BINDING_CALL Mock_glMaxShaderCompilerThreadsKHR(GLuint count);
 static void GL_BINDING_CALL Mock_glMemoryBarrier(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierByRegion(GLbitfield barriers);
 static void GL_BINDING_CALL Mock_glMemoryBarrierEXT(GLbitfield barriers);

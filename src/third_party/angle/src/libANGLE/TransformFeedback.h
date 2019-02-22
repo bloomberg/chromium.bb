@@ -58,7 +58,7 @@ class TransformFeedback final : public RefCountObject, public LabeledObject
   public:
     TransformFeedback(rx::GLImplFactory *implFactory, GLuint id, const Caps &caps);
     ~TransformFeedback() override;
-    Error onDestroy(const Context *context) override;
+    void onDestroy(const Context *context) override;
 
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;
@@ -68,7 +68,8 @@ class TransformFeedback final : public RefCountObject, public LabeledObject
     void pause();
     void resume();
 
-    bool isActive() const;
+    bool isActive() const { return mState.mActive; }
+
     bool isPaused() const;
     PrimitiveMode getPrimitiveMode() const;
     // Validates that the vertices produced by a draw call will fit in the bound transform feedback

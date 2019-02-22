@@ -38,8 +38,7 @@ constexpr int kInherit = INT_MIN;
 // of the font. Where possible, RenderText uses this additional space to
 // vertically center the cap height of the font instead of centering the
 // entire font.
-static constexpr int kVerticalPadding = 4;
-static constexpr int kRefreshVerticalPadding = 3;
+static constexpr int kVerticalPadding = 3;
 
 struct TextStyle {
   OmniboxPart part;
@@ -175,7 +174,8 @@ void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
       style = {part_color, .baseline = gfx::SUPERIOR};
       break;
     case SuggestionAnswer::TextStyle::BOLD:
-      style = {part_color, .weight = gfx::Font::Weight::BOLD};
+      style = {part_color, .baseline = gfx::NORMAL_BASELINE,
+               .weight = gfx::Font::Weight::BOLD};
       break;
     case SuggestionAnswer::TextStyle::NORMAL:
     case SuggestionAnswer::TextStyle::NORMAL_DIM:
@@ -219,9 +219,7 @@ int OmniboxTextView::GetHeightForWidth(int width) const {
   }
   render_text_->SetDisplayRect(gfx::Rect(width, 0));
   gfx::Size string_size = render_text_->GetStringSize();
-  return string_size.height() + (ui::MaterialDesignController::IsRefreshUi()
-                                     ? kRefreshVerticalPadding
-                                     : kVerticalPadding);
+  return string_size.height() + kVerticalPadding;
 }
 
 void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
@@ -421,7 +419,5 @@ void OmniboxTextView::UpdateLineHeight() {
                                 gfx::Font::NORMAL, gfx::Font::Weight::BOLD)
           .GetHeight();
   font_height_ = std::max(height_normal, height_bold);
-  font_height_ += ui::MaterialDesignController::IsRefreshUi()
-                      ? kRefreshVerticalPadding
-                      : kVerticalPadding;
+  font_height_ += kVerticalPadding;
 }

@@ -78,5 +78,14 @@ bool GetExternalStorageDirectory(FilePath* result) {
   return true;
 }
 
+bool GetPathToBaseApk(FilePath* result) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> path =
+      Java_PathUtils_getPathToBaseApk(env);
+  FilePath apk_path(ConvertJavaStringToUTF8(path));
+  *result = apk_path;
+  return true;
+}
+
 }  // namespace android
 }  // namespace base

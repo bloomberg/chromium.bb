@@ -72,7 +72,7 @@ void InstanceIDDeleteTokenRequestHandler::ReportUMAs(
   if (status != UnregistrationRequest::SUCCESS)
     return;
 
-  UMA_HISTOGRAM_COUNTS("InstanceID.DeleteToken.RetryCount", retry_count);
+  UMA_HISTOGRAM_COUNTS_1M("InstanceID.DeleteToken.RetryCount", retry_count);
   UMA_HISTOGRAM_TIMES("InstanceID.DeleteToken.CompleteTime", complete_time);
 }
 

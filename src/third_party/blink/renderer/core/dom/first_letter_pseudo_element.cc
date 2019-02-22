@@ -236,18 +236,24 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
   }
 }
 
-void FirstLetterPseudoElement::SetRemainingTextLayoutObject(
-    LayoutTextFragment* fragment) {
-  // The text fragment we get our content from is being destroyed. We need
-  // to tell our parent element to recalcStyle so we can get cleaned up
-  // as well.
-  if (!fragment) {
-    SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(StyleChangeReason::kPseudoClass));
+void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
+  DCHECK(remaining_text_layout_object_);
+  remaining_text_layout_object_ = nullptr;
+
+  if (GetDocument().ChildNeedsReattachLayoutTree()) {
+    // We are in the layout tree rebuild phase. We will do UpdateFirstLetter()
+    // as part of RebuildFirstLetterLayoutTree() or AttachLayoutTree(). Marking
+    // us style-dirty during layout tree rebuild is not allowed.
+    return;
   }
 
-  remaining_text_layout_object_ = fragment;
+  // When we remove nodes from the tree, we do not mark ancestry for
+  // ChildNeedsStyleRecalc(). When removing the text node which contains the
+  // first letter, we need to UpdateFirstLetter to render the new first letter
+  // or remove the ::first-letter pseudo if there is no text left. Do that as
+  // part of a style recalc for this ::first-letter.
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             StyleChangeReason::kPseudoClass));
 }
 
 void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
@@ -357,6 +363,36 @@ void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
 
     child->SetPseudoStyle(layout_object->MutableStyle());
   }
+}
+
+Node* FirstLetterPseudoElement::InnerNodeForHitTesting() const {
+  // When we hit a first letter during hit testing, hover state and events
+  // should be triggered on the parent of the real text node where the first
+  // letter is taken from. The first letter may not come from a real node - for
+  // quotes and generated text in ::before/::after. In that case walk up the
+  // layout tree to find the closest ancestor which is not anonymous. Note that
+  // display:contents will not be skipped since we generate anonymous
+  // LayoutInline boxes for ::before/::after with display:contents.
+  DCHECK(remaining_text_layout_object_);
+  LayoutObject* layout_object = remaining_text_layout_object_;
+  while (layout_object->IsAnonymous()) {
+    layout_object = layout_object->Parent();
+    DCHECK(layout_object);
+  }
+  Node* node = layout_object->GetNode();
+  DCHECK(node);
+  if (layout_object == remaining_text_layout_object_) {
+    // The text containing the first-letter is a real node, return its flat tree
+    // parent. If we used the layout tree parent, we would have incorrectly
+    // skipped display:contents ancestors.
+    return FlatTreeTraversal::Parent(*node);
+  }
+  if (node->IsPseudoElement()) {
+    // ::first-letter in generated content for ::before/::after. Use pseudo
+    // element parent.
+    return node->ParentOrShadowHostNode();
+  }
+  return node;
 }
 
 }  // namespace blink

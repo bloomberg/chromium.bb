@@ -30,7 +30,7 @@ void P2PAsyncAddressResolver::Start(const rtc::SocketAddress& host_name,
 
   state_ = STATE_SENT;
   done_callback_ = done_callback;
-  dispatcher_->GetP2PSocketManager()->GetHostAddress(
+  dispatcher_->GetP2PSocketManager()->get()->GetHostAddress(
       host_name.hostname(), base::BindOnce(&P2PAsyncAddressResolver::OnResponse,
                                            base::Unretained(this)));
 }

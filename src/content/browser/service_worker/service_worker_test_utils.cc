@@ -281,4 +281,175 @@ WriteToDiskCacheWithCustomResponseInfoAsync(
                                                body.size());
 }
 
+MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()
+    : ServiceWorkerResponseReader(/* resource_id=*/0, /*disk_cache=*/nullptr) {}
+
+MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
+
+void MockServiceWorkerResponseReader::ReadInfo(
+    HttpResponseInfoIOBuffer* info_buf,
+    OnceCompletionCallback callback) {
+  DCHECK(!expected_reads_.empty());
+  ExpectedRead expected = expected_reads_.front();
+  EXPECT_TRUE(expected.info);
+  if (expected.async) {
+    pending_info_ = info_buf;
+    pending_callback_ = std::move(callback);
+  } else {
+    expected_reads_.pop();
+    info_buf->response_data_size = expected.len;
+    std::move(callback).Run(expected.result);
+  }
+}
+
+void MockServiceWorkerResponseReader::ReadData(
+    net::IOBuffer* buf,
+    int buf_len,
+    OnceCompletionCallback callback) {
+  DCHECK(!expected_reads_.empty());
+  ExpectedRead expected = expected_reads_.front();
+  EXPECT_FALSE(expected.info);
+  if (expected.async) {
+    pending_callback_ = std::move(callback);
+    pending_buffer_ = buf;
+    pending_buffer_len_ = static_cast<size_t>(buf_len);
+  } else {
+    expected_reads_.pop();
+    if (expected.len > 0) {
+      size_t to_read = std::min(static_cast<size_t>(buf_len), expected.len);
+      memcpy(buf->data(), expected.data, to_read);
+    }
+    std::move(callback).Run(expected.result);
+  }
+}
+
+void MockServiceWorkerResponseReader::ExpectReadInfo(size_t len,
+                                                     bool async,
+                                                     int result) {
+  expected_reads_.push(ExpectedRead(len, async, result));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadInfoOk(size_t len, bool async) {
+  expected_reads_.push(ExpectedRead(len, async, len));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadData(const char* data,
+                                                     size_t len,
+                                                     bool async,
+                                                     int result) {
+  expected_reads_.push(ExpectedRead(data, len, async, result));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadDataOk(const std::string& data,
+                                                       bool async) {
+  expected_reads_.push(
+      ExpectedRead(data.data(), data.size(), async, data.size()));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadOk(
+    const std::vector<std::string>& stored_data,
+    const size_t bytes_stored,
+    const bool async) {
+  ExpectReadInfoOk(bytes_stored, async);
+  for (const auto& data : stored_data)
+    ExpectReadDataOk(data, async);
+}
+
+void MockServiceWorkerResponseReader::CompletePendingRead() {
+  DCHECK(!expected_reads_.empty());
+  ExpectedRead expected = expected_reads_.front();
+  expected_reads_.pop();
+  EXPECT_TRUE(expected.async);
+  if (expected.info) {
+    pending_info_->response_data_size = expected.len;
+  } else {
+    size_t to_read = std::min(pending_buffer_len_, expected.len);
+    if (to_read > 0)
+      memcpy(pending_buffer_->data(), expected.data, to_read);
+  }
+  pending_info_ = nullptr;
+  pending_buffer_ = nullptr;
+  OnceCompletionCallback callback = std::move(pending_callback_);
+  pending_callback_.Reset();
+  std::move(callback).Run(expected.result);
+}
+
+MockServiceWorkerResponseWriter::MockServiceWorkerResponseWriter()
+    : ServiceWorkerResponseWriter(/*resource_id=*/0, /*disk_cache=*/nullptr),
+      info_written_(0),
+      data_written_(0) {}
+
+MockServiceWorkerResponseWriter::~MockServiceWorkerResponseWriter() = default;
+
+void MockServiceWorkerResponseWriter::WriteInfo(
+    HttpResponseInfoIOBuffer* info_buf,
+    OnceCompletionCallback callback) {
+  DCHECK(!expected_writes_.empty());
+  ExpectedWrite write = expected_writes_.front();
+  EXPECT_TRUE(write.is_info);
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, static_cast<size_t>(info_buf->response_data_size));
+    info_written_ += info_buf->response_data_size;
+  }
+  if (!write.async) {
+    expected_writes_.pop();
+    std::move(callback).Run(write.result);
+  } else {
+    pending_callback_ = std::move(callback);
+  }
+}
+
+void MockServiceWorkerResponseWriter::WriteData(
+    net::IOBuffer* buf,
+    int buf_len,
+    OnceCompletionCallback callback) {
+  DCHECK(!expected_writes_.empty());
+  ExpectedWrite write = expected_writes_.front();
+  EXPECT_FALSE(write.is_info);
+  if (write.result > 0) {
+    EXPECT_EQ(write.length, static_cast<size_t>(buf_len));
+    data_written_ += buf_len;
+  }
+  if (!write.async) {
+    expected_writes_.pop();
+    std::move(callback).Run(write.result);
+  } else {
+    pending_callback_ = std::move(callback);
+  }
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteInfoOk(size_t length,
+                                                        bool async) {
+  ExpectWriteInfo(length, async, length);
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteDataOk(size_t length,
+                                                        bool async) {
+  ExpectWriteData(length, async, length);
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteInfo(size_t length,
+                                                      bool async,
+                                                      int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  ExpectedWrite expected(true, length, async, result);
+  expected_writes_.push(expected);
+}
+
+void MockServiceWorkerResponseWriter::ExpectWriteData(size_t length,
+                                                      bool async,
+                                                      int result) {
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+  ExpectedWrite expected(false, length, async, result);
+  expected_writes_.push(expected);
+}
+
+void MockServiceWorkerResponseWriter::CompletePendingWrite() {
+  DCHECK(!expected_writes_.empty());
+  ExpectedWrite write = expected_writes_.front();
+  DCHECK(write.async);
+  expected_writes_.pop();
+  std::move(pending_callback_).Run(write.result);
+}
+
 }  // namespace content

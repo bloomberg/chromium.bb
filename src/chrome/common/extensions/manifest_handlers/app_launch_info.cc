@@ -161,8 +161,11 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, base::string16* error) {
     // Ensure the launch web URL is a valid absolute URL and web extent scheme.
     GURL url(launch_url);
     URLPattern pattern(Extension::kValidWebExtentSchemes);
-    if (extension->from_bookmark())
-      pattern.SetValidSchemes(Extension::kValidBookmarkAppSchemes);
+    if (extension->from_bookmark()) {
+      // System Web Apps are bookmark apps that point to chrome:// URLs.
+      pattern.SetValidSchemes(Extension::kValidBookmarkAppSchemes |
+                              URLPattern::SCHEME_CHROMEUI);
+    }
     if ((!url.is_valid() || !pattern.SetScheme(url.scheme()))) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidLaunchValue,
@@ -289,7 +292,7 @@ void AppLaunchInfo::OverrideLaunchURL(Extension* extension,
 
   URLPattern pattern(Extension::kValidWebExtentSchemes);
   URLPattern::ParseResult result = pattern.Parse(override_url.spec());
-  DCHECK_EQ(result, URLPattern::PARSE_SUCCESS);
+  DCHECK_EQ(result, URLPattern::ParseResult::kSuccess);
   pattern.SetPath(pattern.path() + '*');
   extension->AddWebExtentPattern(pattern);
 }

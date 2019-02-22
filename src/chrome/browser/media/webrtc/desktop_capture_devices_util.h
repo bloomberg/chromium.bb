@@ -18,7 +18,7 @@
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
     content::MediaStreamDevices* devices,
-    content::DesktopMediaID media_id,
+    const content::DesktopMediaID& media_id,
     content::MediaStreamType devices_video_type,
     content::MediaStreamType devices_audio_type,
     bool capture_audio,

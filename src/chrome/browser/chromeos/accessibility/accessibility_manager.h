@@ -19,6 +19,7 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+#include "chrome/browser/chromeos/accessibility/switch_access_panel.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -41,7 +42,7 @@ namespace chromeos {
 
 class AccessibilityExtensionLoader;
 class DictationChromeos;
-class SelectToSpeakEventHandler;
+class SelectToSpeakEventHandlerDelegate;
 class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
@@ -257,9 +258,9 @@ class AccessibilityManager
   // touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
 
-  // Called by our widget observer when the ChromeVoxPanel is closing.
-  void OnChromeVoxPanelClosing();
+  // Called by our widget observer when the respective panel is closing.
   void OnChromeVoxPanelDestroying();
+  void OnSwitchAccessPanelDestroying();
 
   // Profile having the a11y context.
   Profile* profile() { return profile_; }
@@ -333,7 +334,9 @@ class AccessibilityManager
   void PostSwitchChromeVoxProfile();
 
   void PostUnloadSelectToSpeak();
+  void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
+
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
   void OnStickyKeysChanged();
@@ -411,6 +414,10 @@ class AccessibilityManager
   std::unique_ptr<AccessibilityPanelWidgetObserver>
       chromevox_panel_widget_observer_;
 
+  SwitchAccessPanel* switch_access_panel_;
+  std::unique_ptr<AccessibilityPanelWidgetObserver>
+      switch_access_panel_widget_observer_;
+
   std::string keyboard_listener_extension_id_;
   bool keyboard_listener_capture_;
 
@@ -423,8 +430,8 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityExtensionLoader> select_to_speak_loader_;
 
-  std::unique_ptr<chromeos::SelectToSpeakEventHandler>
-      select_to_speak_event_handler_;
+  std::unique_ptr<chromeos::SelectToSpeakEventHandlerDelegate>
+      select_to_speak_event_handler_delegate_;
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
 
@@ -451,7 +458,6 @@ class AccessibilityManager
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
   friend class DictationTest;
-  friend class SwitchAccessTest;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
 

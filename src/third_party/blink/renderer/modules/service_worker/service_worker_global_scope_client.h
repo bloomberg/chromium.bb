@@ -32,128 +32,138 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_CLIENT_H_
 
 #include <memory>
-#include "third_party/blink/public/common/message_port/transferable_message.h"
+
+#include "base/macros.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_claim_callbacks.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_clients_info.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_skip_waiting_callbacks.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 struct WebPaymentHandlerResponse;
-struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
+class KURL;
+class ScriptPromiseResolver;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
-class WebURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this
 // class.
-class MODULES_EXPORT ServiceWorkerGlobalScopeClient
-    : public GarbageCollected<ServiceWorkerGlobalScopeClient>,
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
+    : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClient>,
       public Supplement<WorkerClients> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClient);
-  WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 
  public:
+  using ClaimCallback = mojom::blink::ServiceWorkerHost::ClaimClientsCallback;
+  using SkipWaitingCallback =
+      mojom::blink::ServiceWorkerHost::SkipWaitingCallback;
+  using GetClientCallback = mojom::blink::ServiceWorkerHost::GetClientCallback;
+  using GetClientsCallback =
+      mojom::blink::ServiceWorkerHost::GetClientsCallback;
+  using FocusCallback = mojom::blink::ServiceWorkerHost::FocusClientCallback;
+
   static const char kSupplementName[];
 
   explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
 
   // Called from ServiceWorkerClients.
-  void GetClient(const WebString&,
-                 std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void GetClients(const WebServiceWorkerClientQueryOptions&,
-                  std::unique_ptr<WebServiceWorkerClientsCallbacks>);
-  void OpenWindowForClients(const WebURL&,
-                            std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void OpenWindowForPaymentHandler(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void SetCachedMetadata(const WebURL&, const char*, size_t);
-  void ClearCachedMetadata(const WebURL&);
+  void GetClient(const String&, GetClientCallback);
+  void GetClients(mojom::blink::ServiceWorkerClientQueryOptionsPtr,
+                  GetClientsCallback);
+  void OpenWindowForClients(const KURL&, ScriptPromiseResolver*);
+  void OpenWindowForPaymentHandler(const KURL&, ScriptPromiseResolver*);
+  void SetCachedMetadata(const KURL&, const char*, size_t);
+  void ClearCachedMetadata(const KURL&);
+  void PostMessageToClient(const String& client_uuid, BlinkTransferableMessage);
+  void SkipWaiting(SkipWaitingCallback);
+  void Claim(ClaimCallback);
+  void Focus(const String& client_uuid, FocusCallback);
+  void Navigate(const String& client_uuid, const KURL&, ScriptPromiseResolver*);
 
   void DidHandleActivateEvent(int event_id,
                               mojom::ServiceWorkerEventStatus,
-                              double event_dispatch_time);
+                              base::TimeTicks event_dispatch_time);
   void DidHandleBackgroundFetchAbortEvent(int event_id,
                                           mojom::ServiceWorkerEventStatus,
-                                          double event_dispatch_time);
+                                          base::TimeTicks event_dispatch_time);
   void DidHandleBackgroundFetchClickEvent(int event_id,
                                           mojom::ServiceWorkerEventStatus,
-                                          double event_dispatch_time);
+                                          base::TimeTicks event_dispatch_time);
   void DidHandleBackgroundFetchFailEvent(int event_id,
                                          mojom::ServiceWorkerEventStatus,
-                                         double event_dispatch_time);
-  void DidHandleBackgroundFetchSuccessEvent(int event_id,
-                                            mojom::ServiceWorkerEventStatus,
-                                            double event_dispatch_time);
+                                         base::TimeTicks event_dispatch_time);
+  void DidHandleBackgroundFetchSuccessEvent(
+      int event_id,
+      mojom::ServiceWorkerEventStatus,
+      base::TimeTicks event_dispatch_time);
   void DidHandleCookieChangeEvent(int event_id,
                                   mojom::ServiceWorkerEventStatus,
-                                  double event_dispatch_time);
+                                  base::TimeTicks event_dispatch_time);
   void DidHandleExtendableMessageEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
-                                       double event_dispatch_time);
-  void RespondToFetchEventWithNoResponse(int fetch_event_id,
-                                         double event_dispatch_time);
+                                       base::TimeTicks event_dispatch_time);
+  void RespondToFetchEventWithNoResponse(
+      int fetch_event_id,
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time);
   void RespondToFetchEvent(int fetch_event_id,
                            const WebServiceWorkerResponse&,
-                           double event_dispatch_time);
-  void RespondToFetchEventWithResponseStream(int fetch_event_id,
-                                             const WebServiceWorkerResponse&,
-                                             WebServiceWorkerStreamHandle*,
-                                             double event_dispatch_time);
+                           base::TimeTicks event_dispatch_time,
+                           base::TimeTicks respond_with_settled_time);
+  void RespondToFetchEventWithResponseStream(
+      int fetch_event_id,
+      const WebServiceWorkerResponse&,
+      WebServiceWorkerStreamHandle*,
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time);
   void RespondToAbortPaymentEvent(int event_id,
                                   bool abort_payment,
-                                  double event_dispatch_time);
+                                  base::TimeTicks event_dispatch_time);
   void RespondToCanMakePaymentEvent(int event_id,
                                     bool can_make_payment,
-                                    double event_dispatch_time);
+                                    base::TimeTicks event_dispatch_time);
   void RespondToPaymentRequestEvent(int event_id,
                                     const WebPaymentHandlerResponse&,
-                                    double event_dispatch_time);
+                                    base::TimeTicks event_dispatch_time);
   void DidHandleFetchEvent(int fetch_event_id,
                            mojom::ServiceWorkerEventStatus,
-                           double event_dispatch_time);
+                           base::TimeTicks event_dispatch_time);
   void DidHandleInstallEvent(int install_event_id,
                              mojom::ServiceWorkerEventStatus,
-                             double event_dispatch_time);
+                             base::TimeTicks event_dispatch_time);
   void DidHandleNotificationClickEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
-                                       double event_dispatch_time);
+                                       base::TimeTicks event_dispatch_time);
   void DidHandleNotificationCloseEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
-                                       double event_dispatch_time);
+                                       base::TimeTicks event_dispatch_time);
   void DidHandlePushEvent(int push_event_id,
                           mojom::ServiceWorkerEventStatus,
-                          double event_dispatch_time);
+                          base::TimeTicks event_dispatch_time);
   void DidHandleSyncEvent(int sync_event_id,
                           mojom::ServiceWorkerEventStatus,
-                          double event_dispatch_time);
+                          base::TimeTicks event_dispatch_time);
   void DidHandleAbortPaymentEvent(int abort_payment_event_id,
                                   mojom::ServiceWorkerEventStatus,
-                                  double event_dispatch_time);
+                                  base::TimeTicks event_dispatch_time);
   void DidHandleCanMakePaymentEvent(int payment_request_event_id,
                                     mojom::ServiceWorkerEventStatus,
-                                    double event_dispatch_time);
+                                    base::TimeTicks event_dispatch_time);
   void DidHandlePaymentRequestEvent(int payment_request_event_id,
                                     mojom::ServiceWorkerEventStatus,
-                                    double event_dispatch_time);
-  void PostMessageToClient(const WebString& client_uuid, TransferableMessage);
-  void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
-  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
-  void Focus(const WebString& client_uuid,
-             std::unique_ptr<WebServiceWorkerClientCallbacks>);
-  void Navigate(const WebString& client_uuid,
-                const WebURL&,
-                std::unique_ptr<WebServiceWorkerClientCallbacks>);
+                                    base::TimeTicks event_dispatch_time);
+
+  void BindServiceWorkerHost(
+      mojom::blink::ServiceWorkerHostAssociatedPtrInfo service_worker_host);
+
+  void WillDestroyWorkerContext();
 
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
@@ -161,6 +171,14 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
 
  private:
   WebServiceWorkerContextClient& client_;
+
+  // Lives on the service worker thread, is bound by BindServiceWorkerHost()
+  // which is triggered by the first Mojo call received on the service worker
+  // thread content::mojom::ServiceWorker::InitializeGlobalScope(), and is
+  // closed by WillDestroyWorkerContext().
+  mojom::blink::ServiceWorkerHostAssociatedPtr service_worker_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerGlobalScopeClient);
 };
 
 MODULES_EXPORT void ProvideServiceWorkerGlobalScopeClientToWorker(

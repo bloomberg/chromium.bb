@@ -1,9 +1,23 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="1510238584712386396">లాంచర్</translation>
+<translation id="1734367976349034509">ఈ పరికరం సంస్థ ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="2049639323467105390">ఈ పరికరం <ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="2083960536266308407">స్క్రీన్‌పై ఏమీ కనుగొనబడలేదు</translation>
+<translation id="2338501278241028356">సమీప పరికరాలను కనుగొనడానికి బ్లూటూత్‌ను ఆన్ చేయండి</translation>
+<translation id="2805756323405976993">యాప్స్</translation>
+<translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
+<translation id="3147142846278915599">లాంచర్ (అనువర్తనాలను సమకాలీకరిస్తోంది...)</translation>
 <translation id="5212543919916444558">నేను సహాయం అందించగలిగేలా మీ స్క్రీన్‌పై నాకు ఏదీ కనిపించలేదు. మైక్‌ను నొక్కి, నన్ను ఏదైనా అడగడానికి ప్రయత్నించండి.</translation>
-<translation id="6674412557034343536">టైమర్‌ను ఆపివేయి</translation>
-<translation id="8626219642120025691">టైమర్ పూర్తయింది</translation>
+<translation id="5222676887888702881">సైన్ ఔట్</translation>
+<translation id="5457599981699367932">అతిథి వలె బ్రౌజ్ చెయ్యండి</translation>
+<translation id="54609108002486618">నిర్వహించబడింది</translation>
+<translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
+<translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
+<translation id="7222902781030499995">టైమర్‌ను ఆపివేయి</translation>
+<translation id="7658239707568436148">రద్దు చెయ్యి</translation>
+<translation id="7837740436429729974">సమయం ముగిసింది</translation>
 <translation id="8898978413391960553">00:00సె</translation>
+<translation id="9111102763498581341">అన్‌లాక్ చెయ్యి</translation>
 </translationbundle>

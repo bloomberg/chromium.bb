@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -269,8 +270,10 @@ Response InspectorOverlayAgent::enable() {
   if (!dom_agent_->Enabled())
     return Response::Error("DOM should be enabled first");
   enabled_.Set(true);
-  if (backend_node_id_to_inspect_)
-    GetFrontend()->inspectNodeRequested(backend_node_id_to_inspect_);
+  if (backend_node_id_to_inspect_) {
+    GetFrontend()->inspectNodeRequested(
+        static_cast<int>(backend_node_id_to_inspect_));
+  }
   backend_node_id_to_inspect_ = 0;
   return Response::OK();
 }
@@ -756,7 +759,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
 
-  DEFINE_STATIC_LOCAL(LocalFrameClient, dummy_local_frame_client,
+  DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (EmptyLocalFrameClient::Create()));
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
@@ -794,7 +797,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetAcceleratedCompositingEnabled(false);
 
   LocalFrame* frame =
-      LocalFrame::Create(&dummy_local_frame_client, *overlay_page_, nullptr);
+      LocalFrame::Create(dummy_local_frame_client, *overlay_page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -900,7 +903,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
           ->GetScriptController()
           .ExecuteScriptInMainWorldAndReturnValue(
               ScriptSourceCode(script, ScriptSourceLocationType::kInspector),
-              KURL(), ScriptFetchOptions(),
+              KURL(), kOpaqueResource, ScriptFetchOptions(),
               ScriptController::kExecuteScriptWhenScriptsDisabled);
   return ToCoreStringWithUndefinedOrNullCheck(string);
 }
@@ -1118,13 +1121,13 @@ void InspectorOverlayAgent::Inspect(Node* inspected_node) {
   if (!node)
     return;
 
-  int backend_node_id = DOMNodeIds::IdForNode(node);
+  DOMNodeId backend_node_id = DOMNodeIds::IdForNode(node);
   if (!enabled_.Get()) {
     backend_node_id_to_inspect_ = backend_node_id;
     return;
   }
 
-  GetFrontend()->inspectNodeRequested(backend_node_id);
+  GetFrontend()->inspectNodeRequested(IdentifiersFactory::IntIdForNode(node));
 }
 
 void InspectorOverlayAgent::NodeHighlightRequested(Node* node) {

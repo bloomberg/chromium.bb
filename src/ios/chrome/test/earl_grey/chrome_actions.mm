@@ -67,4 +67,10 @@ id<GREYAction> TurnSyncSwitchOn(BOOL on) {
         }];
 }
 
+id<GREYAction> TapWebElement(const std::string& element_id) {
+  return web::WebViewTapElement(
+      chrome_test_util::GetCurrentWebState(),
+      web::test::ElementSelector::ElementSelectorId(element_id));
+}
+
 }  // namespace chrome_test_util

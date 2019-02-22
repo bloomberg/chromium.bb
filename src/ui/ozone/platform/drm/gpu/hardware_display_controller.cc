@@ -21,8 +21,8 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
-#include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
@@ -42,7 +42,7 @@ void CompletePageFlip(
   std::move(callback).Run(presentation_feedback);
 }
 
-void DrawCursor(DrmBuffer* cursor, const SkBitmap& image) {
+void DrawCursor(DrmDumbBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
   image.getBounds(&damage);
 
@@ -309,13 +309,9 @@ gfx::Size HardwareDisplayController::GetModeSize() const {
                    crtc_controllers_[0]->mode().vdisplay);
 }
 
-uint32_t HardwareDisplayController::GetRefreshRate() const {
-  // If there are multiple CRTCs they should all have the same size.
-  return crtc_controllers_[0]->mode().vrefresh;
-}
-
 base::TimeDelta HardwareDisplayController::GetRefreshInterval() const {
-  uint32_t vrefresh = GetRefreshRate();
+  // If there are multiple CRTCs they should all have the same refresh rate.
+  float vrefresh = ModeRefreshRate(crtc_controllers_[0]->mode());
   return vrefresh ? base::TimeDelta::FromSeconds(1) / vrefresh
                   : base::TimeDelta();
 }
@@ -338,6 +334,8 @@ void HardwareDisplayController::OnPageFlipComplete(
     return;  // Modeset occured during this page flip.
   time_of_last_flip_ = presentation_feedback.timestamp;
   current_planes_ = std::move(pending_planes);
+  for (const auto& controller : crtc_controllers_)
+    controller->OnPageFlipComplete();
   page_flip_request_ = nullptr;
 }
 
@@ -359,7 +357,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
   SkImageInfo info = SkImageInfo::MakeN32Premul(max_cursor_size.width(),
                                                 max_cursor_size.height());
   for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
-    cursor_buffers_[i] = std::make_unique<DrmBuffer>(GetDrmDevice());
+    cursor_buffers_[i] = std::make_unique<DrmDumbBuffer>(GetDrmDevice());
     // Don't register a framebuffer for cursors since they are special (they
     // aren't modesetting buffers and drivers may fail to register them due to
     // their small sizes).
@@ -370,7 +368,7 @@ void HardwareDisplayController::AllocateCursorBuffers() {
   }
 }
 
-DrmBuffer* HardwareDisplayController::NextCursorBuffer() {
+DrmDumbBuffer* HardwareDisplayController::NextCursorBuffer() {
   ++cursor_frontbuffer_;
   cursor_frontbuffer_ %= base::size(cursor_buffers_);
   return cursor_buffers_[cursor_frontbuffer_].get();

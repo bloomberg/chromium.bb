@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/host/gpu_client_delegate.h"
+#include "components/viz/host/gpu_host_impl.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
@@ -35,6 +36,8 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
 
   void SetConnectionErrorHandler(
       ConnectionErrorHandlerClosure connection_error_handler);
+
+  base::WeakPtr<GpuClient> GetWeakPtr();
 
   // ws::mojom::GpuMemoryBufferFactory overrides:
   void CreateGpuMemoryBuffer(
@@ -65,11 +68,10 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
     kConnectionLost
   };
   void OnError(ErrorReason reason);
-  void OnEstablishGpuChannel(
-      mojo::ScopedMessagePipeHandle channel_handle,
-      const gpu::GPUInfo& gpu_info,
-      const gpu::GpuFeatureInfo& gpu_feature_info,
-      GpuClientDelegate::EstablishGpuChannelStatus status);
+  void OnEstablishGpuChannel(mojo::ScopedMessagePipeHandle channel_handle,
+                             const gpu::GPUInfo& gpu_info,
+                             const gpu::GpuFeatureInfo& gpu_feature_info,
+                             GpuHostImpl::EstablishChannelStatus status);
   void OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
                                gfx::GpuMemoryBufferHandle handle);
   void ClearCallback();

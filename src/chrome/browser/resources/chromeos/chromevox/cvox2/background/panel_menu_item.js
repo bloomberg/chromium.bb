@@ -8,15 +8,18 @@
 
 goog.provide('PanelMenuItem');
 
+goog.require('EventSourceType');
+
 /**
  * @param {string} menuItemTitle The title of the menu item.
  * @param {string} menuItemShortcut The keystrokes to select this item.
  * @param {string} menuItemBraille The braille keystrokes to select this item.
+ * @param {string} gesture The gesture to select this item.
  * @param {Function} callback The function to call if this item is selected.
  * @constructor
  */
 PanelMenuItem = function(
-    menuItemTitle, menuItemShortcut, menuItemBraille, callback) {
+    menuItemTitle, menuItemShortcut, menuItemBraille, gesture, callback) {
   this.callback = callback;
 
   this.element = document.createElement('tr');
@@ -37,6 +40,16 @@ PanelMenuItem = function(
   // Tooltip in case the menu item is cut off.
   title.title = menuItemTitle;
   this.element.appendChild(title);
+
+  var backgroundWindow = chrome.extension.getBackgroundPage();
+  if (backgroundWindow['EventSourceState']['get']() ==
+      EventSourceType.TOUCH_GESTURE) {
+    var gestureNode = document.createElement('td');
+    gestureNode.className = 'menu-item-shortcut';
+    gestureNode.textContent = gesture;
+    this.element.appendChild(gestureNode);
+    return;
+  }
 
   var shortcut = document.createElement('td');
   shortcut.className = 'menu-item-shortcut';

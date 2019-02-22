@@ -47,9 +47,11 @@ class COMPONENTS_PREFS_EXPORT PrefNotifierImpl : public PrefNotifier {
 
   void SetPrefService(PrefService* pref_service);
 
- protected:
   // PrefNotifier overrides.
   void OnPreferenceChanged(const std::string& pref_name) override;
+
+ protected:
+  // PrefNotifier overrides.
   void OnInitializationCompleted(bool succeeded) override;
 
   // A map from pref names to a list of observers. Observers get fired in the

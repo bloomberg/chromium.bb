@@ -4,6 +4,9 @@
 
 library chromium.web;
 
+using fuchsia.sys;
+using fuchsia.ui.viewsv1token;
+
 interface Frame {
   // Creates and registers a view with the view manager and returns its
   // view owner which may subsequently be passed to |View.AddChild()|

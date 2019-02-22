@@ -22,7 +22,7 @@
 // https://html.spec.whatwg.org/#the-textarea-element
 [HTMLConstructor]
 interface HTMLTextAreaElement : HTMLElement {
-    [CEReactions, Reflect] attribute DOMString autocomplete;
+    [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;
     [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions] attribute unsigned long cols;
     [CEReactions, Reflect] attribute DOMString dirName;
@@ -39,7 +39,7 @@ interface HTMLTextAreaElement : HTMLElement {
 
     readonly attribute DOMString type;
     [CEReactions] attribute DOMString defaultValue;
-    [CEReactions] attribute [TreatNullAs=NullString] DOMString value;
+    [CEReactions] attribute [TreatNullAs=EmptyString] DOMString value;
     readonly attribute unsigned long textLength;
 
     readonly attribute boolean willValidate;

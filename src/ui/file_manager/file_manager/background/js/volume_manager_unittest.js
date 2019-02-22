@@ -297,6 +297,30 @@ function testGetLocationInfo(callback) {
         assertFalse(teamDriveLocationInfo.isReadOnly);
         assertTrue(teamDriveLocationInfo.isRootEntry);
 
+        var driveFilesByIdDirectoryEntry = new MockDirectoryEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/.files-by-id/123');
+        var driveFilesByIdDirectoryLocationInfo =
+            volumeManager.getLocationInfo(driveFilesByIdDirectoryEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveFilesByIdDirectoryLocationInfo.rootType);
+        assertFalse(driveFilesByIdDirectoryLocationInfo.hasFixedLabel);
+        assertTrue(driveFilesByIdDirectoryLocationInfo.isReadOnly);
+        assertFalse(driveFilesByIdDirectoryLocationInfo.isRootEntry);
+
+        var driveFilesByIdEntry = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/.files-by-id/123/foo.txt');
+        var driveFilesByIdLocationInfo =
+            volumeManager.getLocationInfo(driveFilesByIdEntry);
+        assertEquals(
+            VolumeManagerCommon.RootType.DRIVE_OTHER,
+            driveFilesByIdLocationInfo.rootType);
+        assertFalse(driveFilesByIdLocationInfo.hasFixedLabel);
+        assertFalse(driveFilesByIdLocationInfo.isReadOnly);
+        assertFalse(driveFilesByIdLocationInfo.isRootEntry);
+
         var androidRoot =
             new MockFileEntry(new MockFileSystem('android_files:0'), '/');
         var androidRootLocationInfo =
@@ -310,36 +334,61 @@ function testGetLocationInfo(callback) {
             volumeManager.getLocationInfo(androidSubFolder);
         assertFalse(androidSubFolderLocationInfo.isReadOnly);
         assertFalse(androidSubFolderLocationInfo.isRootEntry);
+
+        const computersGrandRoot = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/Computers');
+        const computersGrandRootLocationInfo =
+            volumeManager.getLocationInfo(computersGrandRoot);
+        assertEquals(
+            VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
+            computersGrandRootLocationInfo.rootType);
+        assertTrue(computersGrandRootLocationInfo.hasFixedLabel);
+        assertTrue(computersGrandRootLocationInfo.isReadOnly);
+        assertTrue(computersGrandRootLocationInfo.isRootEntry);
+
+        const computer = new MockFileEntry(
+            new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+            '/Computers/MyComputer');
+        const computerLocationInfo = volumeManager.getLocationInfo(computer);
+        assertEquals(
+            VolumeManagerCommon.RootType.COMPUTER,
+            computerLocationInfo.rootType);
+        assertFalse(computerLocationInfo.hasFixedLabel);
+        assertFalse(computerLocationInfo.isReadOnly);
+        assertTrue(computerLocationInfo.isRootEntry);
       }),
       callback);
 }
 
-function testVolumeInfoListWhenReady(callback) {
-  var list = new VolumeInfoListImpl();
-  var promiseBeforeAdd = list.whenVolumeInfoReady('volumeId');
-  var volumeInfo = new VolumeInfoImpl(
-      /* volumeType */ null,
-      'volumeId',
-      /* fileSystem */ null,
-      /* error */ null,
-      /* deviceType */ null,
-      /* devicePath */ null,
-      /* isReadOnly */ false,
-      /* isReadOnlyRemovableDevice */ false,
-      /* profile */ {},
-      /* label */ null,
-      /* extensionid */ null,
-      /* hasMedia */ false,
-      /* configurable */ false,
-      /* watchable */ true,
-      /* source */ VolumeManagerCommon.Source.FILE);
-  list.add(volumeInfo);
-  var promiseAfterAdd = list.whenVolumeInfoReady('volumeId');
-  reportPromise(Promise.all([promiseBeforeAdd, promiseAfterAdd]).then(
-      function(volumes) {
-        assertEquals(volumeInfo, volumes[0]);
-        assertEquals(volumeInfo, volumes[1]);
-      }), callback);
+function testWhenReady(callback) {
+  volumeManagerFactory.getInstance().then((volumeManager) => {
+    const promiseBeforeAdd = volumeManager.whenVolumeInfoReady('volumeId');
+    const volumeInfo = new VolumeInfoImpl(
+        /* volumeType */ null,
+        /* volumeId */ 'volumeId',
+        /* fileSystem */ null,
+        /* error */ null,
+        /* deviceType */ null,
+        /* devicePath */ null,
+        /* isReadOnly */ false,
+        /* isReadOnlyRemovableDevice */ false,
+        /* profile */ {},
+        /* label */ null,
+        /* extensionid */ null,
+        /* hasMedia */ false,
+        /* configurable */ false,
+        /* watchable */ true,
+        /* source */ VolumeManagerCommon.Source.FILE);
+    volumeManager.volumeInfoList.add(volumeInfo);
+    const promiseAfterAdd = volumeManager.whenVolumeInfoReady('volumeId');
+    reportPromise(
+        Promise.all([promiseBeforeAdd, promiseAfterAdd]).then((volumes) => {
+          assertEquals(volumeInfo, volumes[0]);
+          assertEquals(volumeInfo, volumes[1]);
+        }),
+        callback);
+  });
 }
 
 function testDriveMountedDuringInitialization(callback) {

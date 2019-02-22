@@ -50,6 +50,7 @@
 #include "tcuStringTemplate.hpp"
 
 #include "vktSpvAsmCrossStageInterfaceTests.hpp"
+#include "vktSpvAsm8bitStorageTests.hpp"
 #include "vktSpvAsm16bitStorageTests.hpp"
 #include "vktSpvAsmUboMatrixPaddingTests.hpp"
 #include "vktSpvAsmConditionalBranchTests.hpp"
@@ -60,6 +61,7 @@
 #include "vktSpvAsmGraphicsShaderTestUtil.hpp"
 #include "vktSpvAsmVariablePointersTests.hpp"
 #include "vktSpvAsmVariableInitTests.hpp"
+#include "vktSpvAsmPointerParameterTests.hpp"
 #include "vktSpvAsmSpirvVersionTests.hpp"
 #include "vktTestCaseUtil.hpp"
 #include "vktSpvAsmLoopDepLenTests.hpp"
@@ -367,7 +369,7 @@ tcu::TestCaseGroup* createOpNopGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-bool compareFUnord (const std::vector<BufferSp>& inputs, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog& log)
+bool compareFUnord (const std::vector<Resource>& inputs, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog& log)
 {
 	if (outputAllocs.size() != 1)
 		return false;
@@ -376,14 +378,14 @@ bool compareFUnord (const std::vector<BufferSp>& inputs, const vector<Allocation
 	vector<deUint8>	input2Bytes;
 	vector<deUint8>	expectedBytes;
 
-	inputs[0]->getBytes(input1Bytes);
-	inputs[1]->getBytes(input2Bytes);
-	expectedOutputs[0]->getBytes(expectedBytes);
+	inputs[0].getBytes(input1Bytes);
+	inputs[1].getBytes(input2Bytes);
+	expectedOutputs[0].getBytes(expectedBytes);
 
-	const deInt32* const	expectedOutputAsInt		= reinterpret_cast<const deInt32* const>(&expectedBytes.front());
-	const deInt32* const	outputAsInt				= static_cast<const deInt32* const>(outputAllocs[0]->getHostPtr());
-	const float* const		input1AsFloat			= reinterpret_cast<const float* const>(&input1Bytes.front());
-	const float* const		input2AsFloat			= reinterpret_cast<const float* const>(&input2Bytes.front());
+	const deInt32* const	expectedOutputAsInt		= reinterpret_cast<const deInt32*>(&expectedBytes.front());
+	const deInt32* const	outputAsInt				= static_cast<const deInt32*>(outputAllocs[0]->getHostPtr());
+	const float* const		input1AsFloat			= reinterpret_cast<const float*>(&input1Bytes.front());
+	const float* const		input2AsFloat			= reinterpret_cast<const float*>(&input2Bytes.front());
 	bool returnValue								= true;
 
 	for (size_t idx = 0; idx < expectedBytes.size() / sizeof(deInt32); ++idx)
@@ -956,13 +958,13 @@ tcu::TestCaseGroup* createOpNoLineGroup (tcu::TestContext& testCtx)
 
 // Compare instruction for the contraction compute case.
 // Returns true if the output is what is expected from the test case.
-bool compareNoContractCase(const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareNoContractCase(const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
 	// Only size is needed because we are not comparing the exact values.
-	size_t byteSize = expectedOutputs[0]->getByteSize();
+	size_t byteSize = expectedOutputs[0].getByteSize();
 
 	const float*	outputAsFloat	= static_cast<const float*>(outputAllocs[0]->getHostPtr());
 
@@ -1066,13 +1068,13 @@ tcu::TestCaseGroup* createNoContractionGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-bool compareFRem(const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareFRem(const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
 	vector<deUint8>	expectedBytes;
-	expectedOutputs[0]->getBytes(expectedBytes);
+	expectedOutputs[0].getBytes(expectedBytes);
 
 	const float*	expectedOutputAsFloat	= reinterpret_cast<const float*>(&expectedBytes.front());
 	const float*	outputAsFloat			= static_cast<const float*>(outputAllocs[0]->getHostPtr());
@@ -1167,12 +1169,12 @@ tcu::TestCaseGroup* createOpFRemGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-bool compareNMin (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareNMin (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
-	const BufferSp&			expectedOutput			(expectedOutputs[0]);
+	const BufferSp&			expectedOutput			(expectedOutputs[0].getBuffer());
 	std::vector<deUint8>	data;
 	expectedOutput->getBytes(data);
 
@@ -1291,12 +1293,12 @@ tcu::TestCaseGroup* createOpNMinGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-bool compareNMax (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareNMax (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
-	const BufferSp&			expectedOutput			= expectedOutputs[0];
+	const BufferSp&			expectedOutput			= expectedOutputs[0].getBuffer();
 	std::vector<deUint8>	data;
 	expectedOutput->getBytes(data);
 
@@ -1414,12 +1416,12 @@ tcu::TestCaseGroup* createOpNMaxGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
-bool compareNClamp (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareNClamp (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
-	const BufferSp&			expectedOutput			= expectedOutputs[0];
+	const BufferSp&			expectedOutput			= expectedOutputs[0].getBuffer();
 	std::vector<deUint8>	data;
 	expectedOutput->getBytes(data);
 
@@ -2778,8 +2780,8 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 		spec.inputs.push_back(BufferSp(new Int32Buffer(inputInts)));
 		spec.outputs.push_back(BufferSp(new Int32Buffer(cases[caseNdx].expectedOutput)));
 		spec.numWorkGroups = IVec3(numElements, 1, 1);
-		spec.specConstants.push_back(cases[caseNdx].scActualValue0);
-		spec.specConstants.push_back(cases[caseNdx].scActualValue1);
+		spec.specConstants.append(cases[caseNdx].scActualValue0);
+		spec.specConstants.append(cases[caseNdx].scActualValue1);
 
 		group->addChild(new SpvAsmComputeShaderCase(testCtx, cases[caseNdx].caseName, cases[caseNdx].caseName, spec, features));
 	}
@@ -2842,9 +2844,9 @@ tcu::TestCaseGroup* createSpecConstantGroup (tcu::TestContext& testCtx)
 	spec.inputs.push_back(BufferSp(new Int32Buffer(inputInts)));
 	spec.outputs.push_back(BufferSp(new Int32Buffer(outputInts3)));
 	spec.numWorkGroups = IVec3(numElements, 1, 1);
-	spec.specConstants.push_back(123);
-	spec.specConstants.push_back(56);
-	spec.specConstants.push_back(-77);
+	spec.specConstants.append<deInt32>(123);
+	spec.specConstants.append<deInt32>(56);
+	spec.specConstants.append<deInt32>(-77);
 
 	group->addChild(new SpvAsmComputeShaderCase(testCtx, "vector_related", "VectorShuffle, CompositeExtract, & CompositeInsert", spec));
 
@@ -4378,13 +4380,13 @@ float constructNormalizedFloat (deInt32 exponent, deUint32 significand)
 
 // Compare instruction for the OpQuantizeF16 compute exact case.
 // Returns true if the output is what is expected from the test case.
-bool compareOpQuantizeF16ComputeExactCase (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareOpQuantizeF16ComputeExactCase (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
 	// Only size is needed because we cannot compare Nans.
-	size_t byteSize = expectedOutputs[0]->getByteSize();
+	size_t byteSize = expectedOutputs[0].getByteSize();
 
 	const float*	outputAsFloat	= static_cast<const float*>(outputAllocs[0]->getHostPtr());
 
@@ -4419,15 +4421,15 @@ bool compareOpQuantizeF16ComputeExactCase (const std::vector<BufferSp>&, const v
 }
 
 // Checks that every output from a test-case is a float NaN.
-bool compareNan (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool compareNan (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	if (outputAllocs.size() != 1)
 		return false;
 
 	// Only size is needed because we cannot compare Nans.
-	size_t byteSize = expectedOutputs[0]->getByteSize();
+	size_t byteSize = expectedOutputs[0].getByteSize();
 
-	const float* const	output_as_float	= static_cast<const float* const>(outputAllocs[0]->getHostPtr());
+	const float* const	output_as_float	= static_cast<const float*>(outputAllocs[0]->getHostPtr());
 
 	for (size_t idx = 0; idx < byteSize / sizeof(float); ++idx)
 	{
@@ -4718,10 +4720,10 @@ tcu::TestCaseGroup* createSpecConstantOpQuantizeToF16Group (tcu::TestContext& te
 		spec.assembly		= shader;
 		spec.numWorkGroups	= IVec3(numCases, 1, 1);
 
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::numeric_limits<float>::infinity()));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(-std::numeric_limits<float>::infinity()));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::ldexp(1.0f, 16)));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::ldexp(-1.0f, 32)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::numeric_limits<float>::infinity()));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(-std::numeric_limits<float>::infinity()));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::ldexp(1.0f, 16)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::ldexp(-1.0f, 32)));
 
 		outputs.push_back(std::numeric_limits<float>::infinity());
 		outputs.push_back(-std::numeric_limits<float>::infinity());
@@ -4749,7 +4751,7 @@ tcu::TestCaseGroup* createSpecConstantOpQuantizeToF16Group (tcu::TestContext& te
 		outputs.push_back(-std::numeric_limits<float>::quiet_NaN());
 
 		for (deUint8 idx = 0; idx < numCases; ++idx)
-			spec.specConstants.push_back(bitwiseCast<deUint32>(outputs[idx]));
+			spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(outputs[idx]));
 
 		spec.inputs.push_back(BufferSp(new Float32Buffer(inputs)));
 		spec.outputs.push_back(BufferSp(new Float32Buffer(outputs)));
@@ -4767,12 +4769,12 @@ tcu::TestCaseGroup* createSpecConstantOpQuantizeToF16Group (tcu::TestContext& te
 		spec.assembly		= shader;
 		spec.numWorkGroups	= IVec3(numCases, 1, 1);
 
-		spec.specConstants.push_back(bitwiseCast<deUint32>(0.f));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(-0.f));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::ldexp(1.0f, -16)));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::ldexp(-1.0f, -32)));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(std::ldexp(1.0f, -127)));
-		spec.specConstants.push_back(bitwiseCast<deUint32>(-std::ldexp(1.0f, -128)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(0.f));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(-0.f));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::ldexp(1.0f, -16)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::ldexp(-1.0f, -32)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(std::ldexp(1.0f, -127)));
+		spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(-std::ldexp(1.0f, -128)));
 
 		outputs.push_back(0.f);
 		outputs.push_back(-0.f);
@@ -4800,7 +4802,7 @@ tcu::TestCaseGroup* createSpecConstantOpQuantizeToF16Group (tcu::TestContext& te
 		for (deUint8 idx = 0; idx < 6; ++idx)
 		{
 			const float f = static_cast<float>(idx * 10 - 30) / 4.f;
-			spec.specConstants.push_back(bitwiseCast<deUint32>(f));
+			spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(f));
 			outputs.push_back(f);
 		}
 
@@ -4827,7 +4829,7 @@ tcu::TestCaseGroup* createSpecConstantOpQuantizeToF16Group (tcu::TestContext& te
 		outputs.push_back(constructNormalizedFloat(1, 0xFFE000));
 
 		for (deUint8 idx = 0; idx < numCases; ++idx)
-			spec.specConstants.push_back(bitwiseCast<deUint32>(outputs[idx]));
+			spec.specConstants.append<deInt32>(bitwiseCast<deUint32>(outputs[idx]));
 
 		spec.inputs.push_back(BufferSp(new Float32Buffer(inputs)));
 		spec.outputs.push_back(BufferSp(new Float32Buffer(outputs)));
@@ -6407,7 +6409,7 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 	{
 		map<string, string>			specializations;
 		map<string, string>			fragments;
-		vector<deInt32>				specConstants;
+		SpecConstants				specConstants;
 		vector<string>				features;
 		PushConstants				noPushConstants;
 		GraphicsResources			noResources;
@@ -6442,8 +6444,8 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 		fragments["pre_main"]				= tcu::StringTemplate(typesAndConstants1).specialize(specializations);
 		fragments["testfun"]				= tcu::StringTemplate(function1).specialize(specializations);
 
-		specConstants.push_back(cases[caseNdx].scActualValue0);
-		specConstants.push_back(cases[caseNdx].scActualValue1);
+		specConstants.append(cases[caseNdx].scActualValue0);
+		specConstants.append(cases[caseNdx].scActualValue1);
 
 		createTestsForAllStages(
 			cases[caseNdx].caseName, inputColors, cases[caseNdx].expectedColors, fragments, specConstants,
@@ -6491,15 +6493,15 @@ tcu::TestCaseGroup* createSpecConstantTests (tcu::TestContext& testCtx)
 		"             OpFunctionEnd\n";
 
 	map<string, string>	fragments;
-	vector<deInt32>		specConstants;
+	SpecConstants		specConstants;
 
 	fragments["decoration"]	= decorations2;
 	fragments["pre_main"]	= typesAndConstants2;
 	fragments["testfun"]	= function2;
 
-	specConstants.push_back(56789);
-	specConstants.push_back(-2);
-	specConstants.push_back(56788);
+	specConstants.append<deInt32>(56789);
+	specConstants.append<deInt32>(-2);
+	specConstants.append<deInt32>(56788);
 
 	createTestsForAllStages("vector_related", inputColors, outputColors2, fragments, specConstants, group.get());
 
@@ -6930,9 +6932,9 @@ tcu::TestCaseGroup* createOpUndefTests(tcu::TestContext& testCtx)
 		"%is_nan_2 = OpIsNan %bool %zero_2\n"
 		"%is_nan_3 = OpIsNan %bool %zero_3\n"
 		"%actually_zero_0 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_0\n"
-		"%actually_zero_1 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_1\n"
-		"%actually_zero_2 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_2\n"
-		"%actually_zero_3 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_3\n"
+		"%actually_zero_1 = OpSelect %f32 %is_nan_1 %c_f32_0 %zero_1\n"
+		"%actually_zero_2 = OpSelect %f32 %is_nan_2 %c_f32_0 %zero_2\n"
+		"%actually_zero_3 = OpSelect %f32 %is_nan_3 %c_f32_0 %zero_3\n"
 		"%param1_0 = OpVectorExtractDynamic %f32 %param1 %c_i32_0\n"
 		"%param1_1 = OpVectorExtractDynamic %f32 %param1 %c_i32_1\n"
 		"%param1_2 = OpVectorExtractDynamic %f32 %param1 %c_i32_2\n"
@@ -6967,9 +6969,9 @@ tcu::TestCaseGroup* createOpUndefTests(tcu::TestContext& testCtx)
 		"%is_nan_2 = OpIsNan %bool %zero_2\n"
 		"%is_nan_3 = OpIsNan %bool %zero_3\n"
 		"%actually_zero_0 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_0\n"
-		"%actually_zero_1 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_1\n"
-		"%actually_zero_2 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_2\n"
-		"%actually_zero_3 = OpSelect %f32 %is_nan_0 %c_f32_0 %zero_3\n"
+		"%actually_zero_1 = OpSelect %f32 %is_nan_1 %c_f32_0 %zero_1\n"
+		"%actually_zero_2 = OpSelect %f32 %is_nan_2 %c_f32_0 %zero_2\n"
+		"%actually_zero_3 = OpSelect %f32 %is_nan_3 %c_f32_0 %zero_3\n"
 		"%param1_0 = OpVectorExtractDynamic %f32 %param1 %c_i32_0\n"
 		"%param1_1 = OpVectorExtractDynamic %f32 %param1 %c_i32_1\n"
 		"%param1_2 = OpVectorExtractDynamic %f32 %param1 %c_i32_2\n"
@@ -7156,7 +7158,7 @@ void createOpQuantizeSingleOptionTests(tcu::TestCaseGroup* testCtx)
 	{
 		map<string, string>								codeSpecialization;
 		map<string, string>								fragments;
-		vector<deInt32>									passConstants;
+		SpecConstants									passConstants;
 		deInt32											specConstant;
 
 		codeSpecialization["condition"]					= tests[idx].condition;
@@ -7165,7 +7167,7 @@ void createOpQuantizeSingleOptionTests(tcu::TestCaseGroup* testCtx)
 		fragments["pre_main"]							= specConstants;
 
 		memcpy(&specConstant, &tests[idx].valueAsFloat, sizeof(float));
-		passConstants.push_back(specConstant);
+		passConstants.append(specConstant);
 
 		createTestsForAllStages(string("spec_const_") + tests[idx].name, inputColors, expectedColors, fragments, passConstants, testCtx);
 	}
@@ -7271,7 +7273,7 @@ void createOpQuantizeTwoPossibilityTests(tcu::TestCaseGroup* testCtx)
 	for(size_t idx = 0; idx < (sizeof(tests)/sizeof(tests[0])); ++idx) {
 		map<string, string>									fragments;
 		map<string, string>									constantSpecialization;
-		vector<deInt32>										passConstants;
+		SpecConstants										passConstants;
 		deInt32												specConstant;
 
 		constantSpecialization["output1"]					= tests[idx].possibleOutput1;
@@ -7281,7 +7283,7 @@ void createOpQuantizeTwoPossibilityTests(tcu::TestCaseGroup* testCtx)
 		fragments["pre_main"]								= specConstants.specialize(constantSpecialization);
 
 		memcpy(&specConstant, &tests[idx].inputAsFloat, sizeof(float));
-		passConstants.push_back(specConstant);
+		passConstants.append(specConstant);
 
 		createTestsForAllStages(string("spec_const_") + tests[idx].name, inputColors, expectedColors, fragments, passConstants, testCtx);
 	}
@@ -8245,11 +8247,18 @@ bool usesFloat64 (ConversionDataType from, ConversionDataType to)
 	return (from == DATA_TYPE_FLOAT_64 || to == DATA_TYPE_FLOAT_64);
 }
 
+bool usesFloat32 (ConversionDataType from, ConversionDataType to)
+{
+	return (from == DATA_TYPE_FLOAT_32 || to == DATA_TYPE_FLOAT_32);
+}
 
 ComputeTestFeatures getConversionUsedFeatures (ConversionDataType from, ConversionDataType to)
 {
 	if (usesInt16(from, to) && usesInt64(from, to))			return COMPUTE_TEST_USES_INT16_INT64;
 	else if (usesInt16(from, to) && usesInt32(from, to))	return COMPUTE_TEST_USES_NONE;
+	else if (usesInt16(from, to) && usesFloat64(from, to))	return COMPUTE_TEST_USES_INT16_FLOAT64;
+	else if (usesInt32(from, to) && usesFloat32(from, to))	return COMPUTE_TEST_USES_NONE;
+	else if (usesInt64(from, to) && usesFloat64(from, to))	return COMPUTE_TEST_USES_INT64_FLOAT64;
 	else if (usesInt16(from, to))							return COMPUTE_TEST_USES_INT16;			// This is not set for int16<-->int32 only conversions
 	else if (usesInt64(from, to))							return COMPUTE_TEST_USES_INT64;
 	else if (usesFloat64(from, to))							return COMPUTE_TEST_USES_FLOAT64;
@@ -8264,11 +8273,21 @@ vector<string> getFeatureStringVector (ComputeTestFeatures computeTestFeatures)
 		features.push_back("shaderInt16");
 		features.push_back("shaderInt64");
 	}
-	else if	(computeTestFeatures == COMPUTE_TEST_USES_INT16)		features.push_back("shaderInt16");
-	else if	(computeTestFeatures == COMPUTE_TEST_USES_INT64)		features.push_back("shaderInt64");
-	else if	(computeTestFeatures == COMPUTE_TEST_USES_FLOAT64)		features.push_back("shaderFloat64");
-	else if (computeTestFeatures == COMPUTE_TEST_USES_NONE)			{}
-	else															DE_ASSERT(false);
+	else if (computeTestFeatures == COMPUTE_TEST_USES_INT64_FLOAT64)
+	{
+		features.push_back("shaderInt64");
+		features.push_back("shaderFloat64");
+	}
+	else if (computeTestFeatures == COMPUTE_TEST_USES_INT16_FLOAT64)
+	{
+		features.push_back("shaderInt16");
+		features.push_back("shaderFloat64");
+	}
+	else if (computeTestFeatures == COMPUTE_TEST_USES_INT16)	features.push_back("shaderInt16");
+	else if (computeTestFeatures == COMPUTE_TEST_USES_INT64)	features.push_back("shaderInt64");
+	else if (computeTestFeatures == COMPUTE_TEST_USES_FLOAT64)	features.push_back("shaderFloat64");
+	else if (computeTestFeatures == COMPUTE_TEST_USES_NONE)		{}
+	else														DE_ASSERT(false);
 
 	return features;
 }
@@ -8292,32 +8311,32 @@ struct ConvertCase
 
 		if (m_features == COMPUTE_TEST_USES_INT16)
 		{
-			m_asmTypes["datatype_capabilities"]	  =		"OpCapability Int16\n"
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability Int16\n"
 														"OpCapability StorageUniformBufferBlock16\n"
 														"OpCapability StorageUniform16\n";
-			m_asmTypes["datatype_additional_decl"] =	"%i16        = OpTypeInt 16 1\n"
+			m_asmTypes["datatype_additional_decl"]	=	"%i16        = OpTypeInt 16 1\n"
 														"%u16        = OpTypeInt 16 0\n"
 														"%i16vec2    = OpTypeVector %i16 2\n";
-			m_asmTypes["datatype_extensions"]	  =		"OpExtension \"SPV_KHR_16bit_storage\"\n";
+			m_asmTypes["datatype_extensions"]		=	"OpExtension \"SPV_KHR_16bit_storage\"\n";
 		}
 		else if (m_features == COMPUTE_TEST_USES_INT64)
 		{
-			m_asmTypes["datatype_capabilities"]	  =		"OpCapability Int64\n";
-			m_asmTypes["datatype_additional_decl"] =	"%i64        = OpTypeInt 64 1\n"
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability Int64\n";
+			m_asmTypes["datatype_additional_decl"]	=	"%i64        = OpTypeInt 64 1\n"
 														"%u64        = OpTypeInt 64 0\n";
-			m_asmTypes["datatype_extensions"]	  =		"";
+			m_asmTypes["datatype_extensions"]		=	"";
 		}
 		else if (m_features == COMPUTE_TEST_USES_INT16_INT64)
 		{
-			m_asmTypes["datatype_capabilities"]	  =		"OpCapability Int16\n"
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability Int16\n"
 														"OpCapability StorageUniformBufferBlock16\n"
 														"OpCapability StorageUniform16\n"
 														"OpCapability Int64\n";
-			m_asmTypes["datatype_additional_decl"] =	"%i16        = OpTypeInt 16 1\n"
+			m_asmTypes["datatype_additional_decl"]	=	"%i16        = OpTypeInt 16 1\n"
 														"%u16        = OpTypeInt 16 0\n"
 														"%i64        = OpTypeInt 64 1\n"
 														"%u64        = OpTypeInt 64 0\n";
-			m_asmTypes["datatype_extensions"]	  =		"OpExtension \"SPV_KHR_16bit_storage\"\n";
+			m_asmTypes["datatype_extensions"]		=	"OpExtension \"SPV_KHR_16bit_storage\"\n";
 		}
 		else if (m_features == COMPUTE_TEST_USES_FLOAT64)
 		{
@@ -8326,12 +8345,37 @@ struct ConvertCase
 		}
 		else if (usesInt16(from, to) && usesInt32(from, to))
 		{
-			m_asmTypes["datatype_capabilities"]	  =		"OpCapability StorageUniformBufferBlock16\n"
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability StorageUniformBufferBlock16\n"
 														"OpCapability StorageUniform16\n";
-			m_asmTypes["datatype_additional_decl"] =	"%i16        = OpTypeInt 16 1\n"
+			m_asmTypes["datatype_additional_decl"]	=	"%i16        = OpTypeInt 16 1\n"
 														"%u16        = OpTypeInt 16 0\n"
 														"%i16vec2    = OpTypeVector %i16 2\n";
-			m_asmTypes["datatype_extensions"]	  =		"OpExtension \"SPV_KHR_16bit_storage\"\n";
+			m_asmTypes["datatype_extensions"]		=	"OpExtension \"SPV_KHR_16bit_storage\"\n";
+		}
+		else if (m_features == COMPUTE_TEST_USES_INT16_FLOAT64)
+		{
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability Int16\n"
+														"OpCapability StorageUniform16\n"
+														"OpCapability Float64\n";
+			m_asmTypes["datatype_additional_decl"]	=	"%i16        = OpTypeInt 16 1\n"
+														"%u16        = OpTypeInt 16 0\n"
+														"%f64        = OpTypeFloat 64\n";
+			m_asmTypes["datatype_extensions"]		=	"OpExtension \"SPV_KHR_16bit_storage\"\n";
+		}
+		else if (m_features == COMPUTE_TEST_USES_INT64_FLOAT64)
+		{
+			m_asmTypes["datatype_capabilities"]		=	"OpCapability Int64\n"
+														"OpCapability Float64\n";
+			m_asmTypes["datatype_additional_decl"]	=	"%i64        = OpTypeInt 64 1\n"
+														"%u64        = OpTypeInt 64 0\n"
+														"%f64        = OpTypeFloat 64\n";
+			m_asmTypes["datatype_extensions"]		=	"";
+		}
+		else if (usesInt32(from, to) && usesFloat32(from, to))
+		{
+			m_asmTypes["datatype_capabilities"]		=	"";
+			m_asmTypes["datatype_additional_decl"]	=	"";
+			m_asmTypes["datatype_extensions"]		=	"";
 		}
 		else
 		{
@@ -8461,9 +8505,45 @@ void createConvertCases (vector<ConvertCase>& testCases, const string& instructi
 	}
 	else if (instruction == "OpFConvert")
 	{
-		// All hexadecimal values below represent 1024.0 as 32/64-bit IEEE 754 float
+		// All hexadecimal values below represent 1234.0 as 32/64-bit IEEE 754 float
 		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_FLOAT_64,			0x449a4000,							true,	0x4093480000000000));
 		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_FLOAT_32,			0x4093480000000000,					true,	0x449a4000));
+	}
+	else if (instruction == "OpConvertSToF")
+	{
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_16,		DATA_TYPE_FLOAT_32,			-1234,								true,	0xc49a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_16,		DATA_TYPE_FLOAT_64,			-1234,								true,	0xc093480000000000));
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_32,		DATA_TYPE_FLOAT_32,			-1234,								true,	0xc49a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_32,		DATA_TYPE_FLOAT_64,			-1234,								true,	0xc093480000000000));
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_64,		DATA_TYPE_FLOAT_32,			-1234,								true,	0xc49a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_SIGNED_64,		DATA_TYPE_FLOAT_64,			-1234,								true,	0xc093480000000000));
+	}
+	else if (instruction == "OpConvertFToS")
+	{
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_SIGNED_16,		0xc49a4000,							true,	-1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_SIGNED_32,		0xc49a4000,							true,	-1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_SIGNED_64,		0xc49a4000,							true,	-1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_SIGNED_16,		0xc093480000000000,					true,	-1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_SIGNED_32,		0xc093480000000000,					true,	-1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_SIGNED_64,		0xc093480000000000,					true,	-1234));
+	}
+	else if (instruction == "OpConvertUToF")
+	{
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_16,		DATA_TYPE_FLOAT_32,			1234,								true,	0x449a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_16,		DATA_TYPE_FLOAT_64,			1234,								true,	0x4093480000000000));
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_32,		DATA_TYPE_FLOAT_32,			1234,								true,	0x449a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_32,		DATA_TYPE_FLOAT_64,			1234,								true,	0x4093480000000000));
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_64,		DATA_TYPE_FLOAT_32,			1234,								true,	0x449a4000));
+		testCases.push_back(ConvertCase(DATA_TYPE_UNSIGNED_64,		DATA_TYPE_FLOAT_64,			1234,								true,	0x4093480000000000));
+	}
+	else if (instruction == "OpConvertFToU")
+	{
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_UNSIGNED_16,		0x449a4000,							true,	1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_UNSIGNED_32,		0x449a4000,							true,	1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_32,			DATA_TYPE_UNSIGNED_64,		0x449a4000,							true,	1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_UNSIGNED_16,		0x4093480000000000,					true,	1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_UNSIGNED_32,		0x4093480000000000,					true,	1234));
+		testCases.push_back(ConvertCase(DATA_TYPE_FLOAT_64,			DATA_TYPE_UNSIGNED_64,		0x4093480000000000,					true,	1234));
 	}
 	else
 		DE_FATAL("Unknown instruction");
@@ -8561,18 +8641,19 @@ tcu::TestCaseGroup* createConvertGraphicsTests (tcu::TestContext& testCtx, const
 		vector<string>		features		= getFeatureStringVector(test->m_features);
 		GraphicsResources	resources;
 		vector<string>		extensions;
-		vector<deInt32>		noSpecConstants;
+		SpecConstants		noSpecConstants;
 		PushConstants		noPushConstants;
-		VulkanFeatures          vulkanFeatures;
+		VulkanFeatures		vulkanFeatures;
 		GraphicsInterfaces	noInterfaces;
 		tcu::RGBA			defaultColors[4];
 
 		getDefaultColors			(defaultColors);
-		resources.inputs.push_back	(std::make_pair(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, test->m_inputBuffer));
-		resources.outputs.push_back	(std::make_pair(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, test->m_outputBuffer));
+		resources.inputs.push_back	(Resource(test->m_inputBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
+		resources.outputs.push_back	(Resource(test->m_outputBuffer, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER));
 		extensions.push_back		("VK_KHR_storage_buffer_storage_class");
 
-		if (test->m_features == COMPUTE_TEST_USES_INT16 || test->m_features == COMPUTE_TEST_USES_INT16_INT64 || usesInt16(test->m_fromType, test->m_toType)) {
+		if (test->m_features == COMPUTE_TEST_USES_INT16 || test->m_features == COMPUTE_TEST_USES_INT16_INT64 || usesInt16(test->m_fromType, test->m_toType))
+		{
 			extensions.push_back("VK_KHR_16bit_storage");
 			vulkanFeatures.ext16BitStorage = EXT16BITSTORAGEFEATURES_UNIFORM_BUFFER_BLOCK;
 		}
@@ -8926,6 +9007,126 @@ tcu::TestCaseGroup* createOpCompositeInsertGroup (tcu::TestContext& testCtx)
 	return group.release();
 }
 
+tcu::TestCaseGroup* createOpCompositeExtractGroup (tcu::TestContext& testCtx)
+{
+	de::MovePtr<tcu::TestCaseGroup> group		(new tcu::TestCaseGroup(testCtx, "opcompositeextract", "Test the OpCompositeExtract instruction"));
+	ComputeShaderSpec				spec;
+	de::Random						rnd			(deStringHash(group->getName()));
+	const int						numElements = 100;
+	vector<float>					input		(4 * numElements, 0);
+	vector<float>					output		(4 * numElements, 0);
+
+	fillRandomScalars(rnd, -100.0f, 100.0f, &input[0], 4 * numElements);
+
+	for(size_t ndx = 0; ndx < numElements; ++ndx)
+	{
+		output[ndx * 4]		= input[ndx * 4 + 2];
+		output[ndx * 4 + 1] = input[ndx * 4 + 1];
+		output[ndx * 4 + 2] = input[ndx * 4];
+		output[ndx * 4 + 3] = input[ndx * 4 + 3];
+	}
+
+	const string shader (
+		"OpCapability Shader\n"
+		"OpMemoryModel Logical GLSL450\n"
+		"OpEntryPoint GLCompute %main \"main\" %gl_GlobalInvocationID\n"
+		"OpExecutionMode %main LocalSize 1 1 1\n"
+		"OpSource OpenCL_C 120\n"
+
+		"OpMemberDecorate %struct_4_f32 0 Offset 0\n"
+		"OpMemberDecorate %struct_4_f32 1 Offset 4\n"
+		"OpMemberDecorate %struct_4_f32 2 Offset 8\n"
+		"OpMemberDecorate %struct_4_f32 3 Offset 12\n"
+		"OpDecorate %_runtimearr_struct_4_f32 ArrayStride 16\n"
+		"OpMemberDecorate %InStruct 0 Offset 0\n"
+		"OpDecorate %InStruct BufferBlock\n"
+		"OpDecorate %gl_GlobalInvocationID BuiltIn GlobalInvocationId\n"
+		"OpDecorate %output DescriptorSet 0\n"
+		"OpDecorate %output Binding 1\n"
+		"OpDecorate %input DescriptorSet 0\n"
+		"OpDecorate %input Binding 0\n"
+
+		"%f32                       = OpTypeFloat 32\n"
+		"%struct_4_f32              = OpTypeStruct %f32 %f32 %f32 %f32\n"
+		"%_runtimearr_struct_4_f32  = OpTypeRuntimeArray %struct_4_f32\n"
+		"%InStruct                  = OpTypeStruct %_runtimearr_struct_4_f32\n"
+		"%_ptr_Uniform__InStruct    = OpTypePointer Uniform %InStruct\n"
+		"%uint                      = OpTypeInt 32 0\n"
+		"%void                      = OpTypeVoid\n"
+		"%voidf                     = OpTypeFunction %void\n"
+		"%v3uint                    = OpTypeVector %uint 3\n"
+		"%_ptr_Input_v3uint         = OpTypePointer Input %v3uint\n"
+		"%_ptr_Input_uint           = OpTypePointer Input %uint\n"
+		"%_ptr_Uniform_float        = OpTypePointer Uniform %f32\n"
+		"%structf                   = OpTypeFunction %struct_4_f32 %struct_4_f32\n"
+		"%_ptr_Private_v3uint       = OpTypePointer Private %v3uint\n"
+		"%uint_0                    = OpConstant %uint 0\n"
+		"%uint_1                    = OpConstant %uint 1\n"
+		"%uint_2                    = OpConstant %uint 2\n"
+		"%uint_3                    = OpConstant %uint 3\n"
+		"%gl_GlobalInvocationID     = OpVariable %_ptr_Input_v3uint Input\n"
+		"%output                    = OpVariable %_ptr_Uniform__InStruct Uniform\n"
+		"%input                     = OpVariable %_ptr_Uniform__InStruct Uniform\n"
+
+		"%helper                    = OpFunction %struct_4_f32 Const %structf\n"
+		"%param_struct              = OpFunctionParameter %struct_4_f32\n"
+		"%label1                    = OpLabel\n"
+
+		"%param_a                   = OpCompositeExtract %f32 %param_struct 0\n"
+		"%param_b                   = OpCompositeExtract %f32 %param_struct 1\n"
+		"%param_c                   = OpCompositeExtract %f32 %param_struct 2\n"
+		"%param_d                   = OpCompositeExtract %f32 %param_struct 3\n"
+
+		"%returnVal                 = OpCompositeConstruct %struct_4_f32 %param_c %param_b %param_a %param_d\n"
+
+		"                             OpReturnValue %returnVal\n"
+		"                             OpFunctionEnd\n"
+
+		"%main                      = OpFunction %void None %voidf\n"
+		"%label2                    = OpLabel\n"
+
+		"%struct_index              = OpAccessChain %_ptr_Input_uint %gl_GlobalInvocationID %uint_0\n"
+		"%struct_loc                = OpLoad %uint %struct_index\n"
+		"%input_a_loc               = OpAccessChain %_ptr_Uniform_float %input %uint_0 %struct_loc %uint_0\n"
+		"%input_a                   = OpLoad %f32 %input_a_loc\n"
+		"%input_b_loc               = OpAccessChain %_ptr_Uniform_float %input %uint_0 %struct_loc %uint_1\n"
+		"%input_b                   = OpLoad %f32 %input_b_loc\n"
+		"%input_c_loc               = OpAccessChain %_ptr_Uniform_float %input %uint_0 %struct_loc %uint_2\n"
+		"%input_c                   = OpLoad %f32 %input_c_loc\n"
+		"%input_d_loc               = OpAccessChain %_ptr_Uniform_float %input %uint_0 %struct_loc %uint_3\n"
+		"%input_d                   = OpLoad %f32 %input_d_loc\n"
+
+		"%input_struct              = OpCompositeConstruct %struct_4_f32 %input_a %input_b %input_c %input_d\n"
+
+		"%output_struct             = OpFunctionCall %struct_4_f32 %helper %input_struct\n"
+
+		"%output_a                  = OpCompositeExtract %f32 %output_struct 0\n"
+		"%output_b                  = OpCompositeExtract %f32 %output_struct 1\n"
+		"%output_c                  = OpCompositeExtract %f32 %output_struct 2\n"
+		"%output_d                  = OpCompositeExtract %f32 %output_struct 3\n"
+
+		"%output_a_loc              = OpAccessChain %_ptr_Uniform_float %output %uint_0 %struct_loc %uint_0\n"
+		"                             OpStore %output_a_loc %output_a\n"
+		"%output_b_loc              = OpAccessChain %_ptr_Uniform_float %output %uint_0 %struct_loc %uint_1\n"
+		"                             OpStore %output_b_loc %output_b\n"
+		"%output_c_loc              = OpAccessChain %_ptr_Uniform_float %output %uint_0 %struct_loc %uint_2\n"
+		"                             OpStore %output_c_loc %output_c\n"
+		"%output_d_loc              = OpAccessChain %_ptr_Uniform_float %output %uint_0 %struct_loc %uint_3\n"
+		"                             OpStore %output_d_loc %output_d\n"
+
+		"                             OpReturn\n"
+		"                             OpFunctionEnd\n");
+
+	spec.inputs.push_back(BufferSp(new Buffer<float>(input)));
+	spec.outputs.push_back(BufferSp(new Buffer<float>(output)));
+	spec.assembly = shader;
+	spec.numWorkGroups = IVec3(numElements, 1, 1);
+
+	group->addChild(new SpvAsmComputeShaderCase(testCtx, "basic_test", "OpCompositeExtract test", spec));
+
+	return group.release();
+}
+
 struct AssemblyStructInfo
 {
 	AssemblyStructInfo (const deUint32 comp, const deUint32 idx)
@@ -9199,7 +9400,7 @@ const string specializeDefaultOutputShaderTemplate (const NumberType type, const
 	).specialize(parameters);
 }
 
-bool compareFloats (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog& log)
+bool compareFloats (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog& log)
 {
 	DE_ASSERT(outputAllocs.size() != 0);
 	DE_ASSERT(outputAllocs.size() == expectedOutputs.size());
@@ -9213,7 +9414,7 @@ bool compareFloats (const std::vector<BufferSp>&, const vector<AllocationSp>& ou
 		float			expected;
 		float			actual;
 
-		expectedOutputs[outputNdx]->getBytes(expectedBytes);
+		expectedOutputs[outputNdx].getBytes(expectedBytes);
 		memcpy(&expected, &expectedBytes.front(), expectedBytes.size());
 		memcpy(&actual, outputAllocs[outputNdx]->getHostPtr(), expectedBytes.size());
 
@@ -9229,7 +9430,7 @@ bool compareFloats (const std::vector<BufferSp>&, const vector<AllocationSp>& ou
 }
 
 // Checks if the driver crash with uninitialized cases
-bool passthruVerify (const std::vector<BufferSp>&, const vector<AllocationSp>& outputAllocs, const std::vector<BufferSp>& expectedOutputs, TestLog&)
+bool passthruVerify (const std::vector<Resource>&, const vector<AllocationSp>& outputAllocs, const std::vector<Resource>& expectedOutputs, TestLog&)
 {
 	DE_ASSERT(outputAllocs.size() != 0);
 	DE_ASSERT(outputAllocs.size() == expectedOutputs.size());
@@ -9238,7 +9439,7 @@ bool passthruVerify (const std::vector<BufferSp>&, const vector<AllocationSp>& o
 	for (size_t outputNdx = 0; outputNdx < outputAllocs.size(); ++outputNdx)
 	{
 		vector<deUint8>	expectedBytes;
-		expectedOutputs[outputNdx]->getBytes(expectedBytes);
+		expectedOutputs[outputNdx].getBytes(expectedBytes);
 
 		const size_t	width			= expectedBytes.size();
 		vector<char>	data			(width);
@@ -9417,8 +9618,8 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createNoContractionGroup(testCtx));
 	computeTests->addChild(createOpUndefGroup(testCtx));
 	computeTests->addChild(createOpUnreachableGroup(testCtx));
-	computeTests ->addChild(createOpQuantizeToF16Group(testCtx));
-	computeTests ->addChild(createOpFRemGroup(testCtx));
+	computeTests->addChild(createOpQuantizeToF16Group(testCtx));
+	computeTests->addChild(createOpFRemGroup(testCtx));
 	computeTests->addChild(createOpSRemComputeGroup(testCtx, QP_TEST_RESULT_PASS));
 	computeTests->addChild(createOpSRemComputeGroup64(testCtx, QP_TEST_RESULT_PASS));
 	computeTests->addChild(createOpSModComputeGroup(testCtx, QP_TEST_RESULT_PASS));
@@ -9426,7 +9627,12 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createConvertComputeTests(testCtx, "OpSConvert", "sconvert"));
 	computeTests->addChild(createConvertComputeTests(testCtx, "OpUConvert", "uconvert"));
 	computeTests->addChild(createConvertComputeTests(testCtx, "OpFConvert", "fconvert"));
+	computeTests->addChild(createConvertComputeTests(testCtx, "OpConvertSToF", "convertstof"));
+	computeTests->addChild(createConvertComputeTests(testCtx, "OpConvertFToS", "convertftos"));
+	computeTests->addChild(createConvertComputeTests(testCtx, "OpConvertUToF", "convertutof"));
+	computeTests->addChild(createConvertComputeTests(testCtx, "OpConvertFToU", "convertftou"));
 	computeTests->addChild(createOpCompositeInsertGroup(testCtx));
+	computeTests->addChild(createOpCompositeExtractGroup(testCtx));
 	computeTests->addChild(createOpInBoundsAccessChainGroup(testCtx));
 	computeTests->addChild(createShaderDefaultOutputGroup(testCtx));
 	computeTests->addChild(createOpNMinGroup(testCtx));
@@ -9440,6 +9646,8 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 
 		computeTests->addChild(computeAndroidTests.release());
 	}
+
+	computeTests->addChild(create8BitStorageComputeGroup(testCtx));
 	computeTests->addChild(create16BitStorageComputeGroup(testCtx));
 	computeTests->addChild(createUboMatrixPaddingComputeGroup(testCtx));
 	computeTests->addChild(createVariableInitComputeGroup(testCtx));
@@ -9448,6 +9656,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	computeTests->addChild(createVariablePointersComputeGroup(testCtx));
 	computeTests->addChild(createImageSamplerComputeGroup(testCtx));
 	computeTests->addChild(createOpNameGroup(testCtx));
+	computeTests->addChild(createPointerParameterComputeGroup(testCtx));
 	graphicsTests->addChild(createCrossStageInterfaceTests(testCtx));
 	graphicsTests->addChild(createSpivVersionCheckTests(testCtx, !testComputePipeline));
 	graphicsTests->addChild(createOpNopTests(testCtx));
@@ -9485,6 +9694,7 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	}
 	graphicsTests->addChild(createOpNameTests(testCtx));
 
+	graphicsTests->addChild(create8BitStorageGraphicsGroup(testCtx));
 	graphicsTests->addChild(create16BitStorageGraphicsGroup(testCtx));
 	graphicsTests->addChild(createUboMatrixPaddingGraphicsGroup(testCtx));
 	graphicsTests->addChild(createVariableInitGraphicsGroup(testCtx));
@@ -9495,6 +9705,11 @@ tcu::TestCaseGroup* createInstructionTests (tcu::TestContext& testCtx)
 	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpSConvert", "sconvert"));
 	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpUConvert", "uconvert"));
 	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpFConvert", "fconvert"));
+	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpConvertSToF", "convertstof"));
+	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpConvertFToS", "convertftos"));
+	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpConvertUToF", "convertutof"));
+	graphicsTests->addChild(createConvertGraphicsTests(testCtx, "OpConvertFToU", "convertftou"));
+	graphicsTests->addChild(createPointerParameterGraphicsGroup(testCtx));
 
 	instructionTests->addChild(computeTests.release());
 	instructionTests->addChild(graphicsTests.release());

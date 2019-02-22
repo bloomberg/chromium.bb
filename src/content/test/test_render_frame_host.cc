@@ -53,7 +53,6 @@ void TestRenderFrameHostCreationObserver::RenderFrameCreated(
 TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                                          RenderViewHostImpl* render_view_host,
                                          RenderFrameHostDelegate* delegate,
-                                         RenderWidgetHostDelegate* rwh_delegate,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int32_t routing_id,
@@ -62,7 +61,6 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
     : RenderFrameHostImpl(site_instance,
                           render_view_host,
                           delegate,
-                          rwh_delegate,
                           frame_tree,
                           frame_tree_node,
                           routing_id,
@@ -123,33 +121,21 @@ void TestRenderFrameHost::Detach() {
 }
 
 void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
-  if (IsBrowserSideNavigationEnabled()) {
-    SendRendererInitiatedNavigationRequest(url, false);
-    return;
-  }
-
-  OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url, std::vector<GURL>(), base::TimeTicks::Now());
+  SendRendererInitiatedNavigationRequest(url, false);
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
-  if (IsBrowserSideNavigationEnabled()) {
-    NavigationRequest* request = frame_tree_node_->navigation_request();
-    if (!request->loader_for_testing()) {
-      base::RunLoop loop;
-      request->set_on_start_checks_complete_closure_for_testing(
-          loop.QuitClosure());
-      loop.Run();
-    }
-    TestNavigationURLLoader* url_loader =
-        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-    CHECK(url_loader);
-    url_loader->SimulateServerRedirect(new_url);
-    return;
+  NavigationRequest* request = frame_tree_node_->navigation_request();
+  if (!request->loader_for_testing()) {
+    base::RunLoop loop;
+    request->set_on_start_checks_complete_closure_for_testing(
+        loop.QuitClosure());
+    loop.Run();
   }
-
-  GetNavigationHandle()->CallWillRedirectRequestForTesting(new_url, false,
-                                                           GURL(), false);
+  TestNavigationURLLoader* url_loader =
+      static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
+  CHECK(url_loader);
+  url_loader->SimulateServerRedirect(new_url);
 }
 
 void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
@@ -229,8 +215,6 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   CHECK(GetNavigationHandle());
   GURL error_url = GURL(kUnreachableWebDataURL);
-  OnDidStartProvisionalLoad(error_url, std::vector<GURL>(),
-                            base::TimeTicks::Now());
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
@@ -337,18 +321,9 @@ void TestRenderFrameHost::SendNavigateWithParameters(
     ui::PageTransition transition,
     int response_code,
     const ModificationCallback& callback) {
-  if (!IsBrowserSideNavigationEnabled())
-    OnDidStartLoading(true);
-
-  // DidStartProvisionalLoad may delete the pending entry that holds |url|,
-  // so we keep a copy of it to use below.
-  GURL url_copy(url);
-  OnDidStartProvisionalLoad(url_copy, std::vector<GURL>(),
-                            base::TimeTicks::Now());
-
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = nav_entry_id;
-  params.url = url_copy;
+  params.url = url;
   params.transition = transition;
   params.should_update_history = true;
   params.did_create_new_entry = did_create_new_entry;
@@ -360,7 +335,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   params.socket_address.set_host("2001:db8::1");
   params.socket_address.set_port(80);
   params.history_list_was_cleared = simulate_history_list_was_cleared_;
-  params.original_request_url = url_copy;
+  params.original_request_url = url;
 
   // Simulate Blink assigning an item and document sequence number to the
   // navigation.
@@ -390,7 +365,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // In most cases, the origin will match the URL's origin.  Tests that need to
   // check corner cases (like about:blank) should specify the origin param
   // manually.
-  url::Origin origin = url::Origin::Create(url_copy);
+  url::Origin origin = url::Origin::Create(url);
   params.origin = origin;
 
   url::Replacements<char> replacements;
@@ -403,13 +378,11 @@ void TestRenderFrameHost::SendNavigateWithParameters(
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
       !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
       (GetLastCommittedURL().is_valid() && !last_commit_was_error_page_ &&
-       url_copy.ReplaceComponents(replacements) ==
+       url.ReplaceComponents(replacements) ==
            GetLastCommittedURL().ReplaceComponents(replacements));
 
-  params.page_state =
-      PageState::CreateForTestingWithSequenceNumbers(
-          url_copy, params.item_sequence_number,
-          params.document_sequence_number);
+  params.page_state = PageState::CreateForTestingWithSequenceNumbers(
+      url, params.item_sequence_number, params.document_sequence_number);
 
   if (!callback.is_null())
     callback.Run(&params);
@@ -464,7 +437,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,
-          false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+          false /* skip_service_worker */,
+          blink::mojom::RequestContextType::HYPERLINK,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, url::Origin(),
@@ -481,9 +455,10 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
     BeginNavigation(common_params, std::move(begin_params), nullptr,
-                    navigation_client_ptr.PassInterface());
+                    navigation_client_ptr.PassInterface(), nullptr);
   } else {
-    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr);
+    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr,
+                    nullptr);
   }
 }
 
@@ -497,22 +472,27 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 }
 
 void TestRenderFrameHost::PrepareForCommit() {
-  PrepareForCommitInternal(GURL(), net::HostPortPair());
+  PrepareForCommitInternal(GURL(), net::HostPortPair(),
+                           /* is_signed_exchange_inner_response=*/false);
 }
 
-void TestRenderFrameHost::PrepareForCommitWithSocketAddress(
-    const net::HostPortPair& socket_address) {
-  PrepareForCommitInternal(GURL(), socket_address);
+void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
+    const net::HostPortPair& socket_address,
+    bool is_signed_exchange_inner_response) {
+  PrepareForCommitInternal(GURL(), socket_address,
+                           is_signed_exchange_inner_response);
 }
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
-  PrepareForCommitInternal(redirect_url, net::HostPortPair());
+  PrepareForCommitInternal(redirect_url, net::HostPortPair(),
+                           /* is_signed_exchange_inner_response=*/false);
 }
 
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
-    const net::HostPortPair& socket_address) {
+    const net::HostPortPair& socket_address,
+    bool is_signed_exchange_inner_response) {
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
   bool have_to_make_network_request =
@@ -551,6 +531,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
   response->head.socket_address = socket_address;
+  response->head.is_signed_exchange_inner_response =
+      is_signed_exchange_inner_response;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, nullptr);

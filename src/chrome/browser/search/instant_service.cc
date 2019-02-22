@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/search/ntp_icon_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/thumbnail_source.h"
+#include "chrome/browser/search/url_validity_checker_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -40,6 +43,8 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -49,10 +54,15 @@
 
 namespace {
 
-const char* kNtpCustomBackgroundURL = "background_url";
-const char* kNtpCustomBackgroundAttributionLine1 = "attribution_line_1";
-const char* kNtpCustomBackgroundAttributionLine2 = "attribution_line_2";
-const char* kNtpCustomBackgroundAttributionActionURL = "attribution_action_url";
+const char kNtpCustomBackgroundURL[] = "background_url";
+const char kNtpCustomBackgroundAttributionLine1[] = "attribution_line_1";
+const char kNtpCustomBackgroundAttributionLine2[] = "attribution_line_2";
+const char kNtpCustomBackgroundAttributionActionURL[] =
+    "attribution_action_url";
+
+// Time in seconds before the UI add/edit custom link dialog automatically
+// closes. Keep in sync with custom_edit_dialog.js.
+const int kCustomLinkDialogTimeoutSeconds = 2;
 
 base::DictionaryValue GetBackgroundInfoAsDict(
     const GURL& background_url,
@@ -82,20 +92,47 @@ std::unique_ptr<base::DictionaryValue> NtpCustomBackgroundDefaults() {
   return defaults;
 }
 
-void CopyFileToProfilePath(const base::FilePath& from_path) {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath to_path(user_data_dir.AppendASCII(
-      chrome::kChromeSearchLocalNtpBackgroundFilename));
-  base::CopyFile(from_path, to_path);
+void CopyFileToProfilePath(const base::FilePath& from_path,
+                           const base::FilePath& profile_path) {
+  base::CopyFile(from_path,
+                 profile_path.AppendASCII(
+                     chrome::kChromeSearchLocalNtpBackgroundFilename));
 }
 
-void RemoveLocalBackgroundImageCopy() {
+void RemoveLocalBackgroundImageCopy(const base::FilePath& profile_path) {
+  base::DeleteFile(
+      profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename),
+      false);
+}
+
+// In some cases (Sync, upgrading versions) its necessary to check if the file
+// actually exists and is in the correct location.
+bool CheckLocalBackgroundImageExists(const base::FilePath& profile_path) {
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath path(user_data_dir.AppendASCII(
-      chrome::kChromeSearchLocalNtpBackgroundFilename));
-  base::DeleteFile(path, false);
+  base::FilePath profile_image =
+      profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename);
+  base::FilePath user_data_image = user_data_dir.AppendASCII(
+      chrome::kChromeSearchLocalNtpBackgroundFilename);
+
+  if (base::PathExists(profile_image))
+    return true;
+
+  // The image was originally stored in the user data dir, it needs to be moved
+  // to the profile path if it's still there.
+  if (base::PathExists(user_data_image)) {
+    base::CopyFile(user_data_image, profile_image);
+    base::DeleteFile(user_data_image, false);
+    return true;
+  }
+
+  return false;
+}
+
+bool IsLocalFileUrl(GURL url) {
+  return base::StartsWith(url.spec(),
+                          chrome::kChromeSearchLocalNtpBackgroundUrl,
+                          base::CompareCase::SENSITIVE);
 }
 
 }  // namespace
@@ -139,7 +176,9 @@ class InstantService::SearchProviderObserver
 };
 
 InstantService::InstantService(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
+    : profile_(profile),
+      pref_service_(profile_->GetPrefs()),
+      weak_ptr_factory_(this) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
@@ -183,8 +222,8 @@ InstantService::InstantService(Profile* profile)
   }
 
   if (profile_ && profile_->GetResourceContext()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::SetUserDataOnIO,
                        profile->GetResourceContext(), instant_io_context_));
   }
@@ -195,14 +234,29 @@ InstantService::InstantService(Profile* profile)
                      ThemeServiceFactory::GetForProfile(profile_)));
 
   // Set up the data sources that Instant uses on the NTP.
-  content::URLDataSource::Add(profile_, new ThemeSource(profile_));
-  content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
-  content::URLDataSource::Add(profile_, new NtpIconSource(profile_));
-  content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
-  content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
-  content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
-  content::URLDataSource::Add(profile_, new FaviconSource(profile_));
-  content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<ThemeSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<LocalNtpSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<NtpIconSource>(profile_));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<ThumbnailSource>(profile_, false));
+  content::URLDataSource::Add(
+      profile_, std::make_unique<ThumbnailSource>(profile_, true));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<ThumbnailListSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<FaviconSource>(profile_));
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<MostVisitedIframeSource>());
+
+  // Update theme info when the pref is changed via Sync.
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      prefs::kNtpCustomBackgroundDict,
+      base::BindRepeating(&InstantService::UpdateThemeInfo,
+                          base::Unretained(this)));
 }
 
 InstantService::~InstantService() = default;
@@ -211,8 +265,8 @@ void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::AddInstantProcessOnIO,
                        instant_io_context_, process_id));
   }
@@ -270,7 +324,8 @@ bool InstantService::UpdateCustomLink(const GURL& url,
     // Initializes custom links if they have not been initialized yet.
     most_visited_sites_->InitializeCustomLinks();
     return most_visited_sites_->UpdateCustomLink(url, new_url,
-                                                 base::UTF8ToUTF16(new_title));
+                                                 base::UTF8ToUTF16(new_title),
+                                                 /*is_user_action=*/true);
   }
   return false;
 }
@@ -300,6 +355,45 @@ bool InstantService::ResetCustomLinks() {
     return true;
   }
   return false;
+}
+
+void InstantService::DoesUrlResolve(
+    const GURL& url,
+    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback) {
+  if (!features::IsCustomLinksEnabled())
+    return;
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("ntp_custom_link_checker_request", R"(
+        semantics {
+          sender: "New Tab Page Custom Links"
+          description:
+            "When a user adds/edits a custom link to the New Tab Page without "
+            "specifying the URL scheme, it defaults to HTTPS. This request "
+            "checks if the URL resolves with HTTPS; if not, the URL will "
+            "default to HTTP instead."
+          trigger:
+            "When a user adds/edits a custom link without specifying the URL "
+            "scheme."
+          data: "An HTTP HEAD request to the user specified URL."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This feature cannot be independently disabled in settings, but it "
+            "is only activated by direct user action. Note: This will be "
+            "disabled if custom links (chrome://flags#ntp-custom-links) is "
+            "disabled."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+
+  UrlValidityChecker* url_checker = GetUrlValidityChecker();
+  url_checker->DoesUrlResolve(
+      url, traffic_annotation,
+      base::BindOnce(&InstantService::OnDoesUrlResolveComplete,
+                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
 }
 
 void InstantService::UpdateThemeInfo() {
@@ -336,17 +430,18 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
     const GURL& action_url) {
-  PrefService* pref_service = profile_->GetPrefs();
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&RemoveLocalBackgroundImageCopy, profile_->GetPath()));
 
   if (background_url.is_valid()) {
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url);
-    pref_service->Set(prefs::kNtpCustomBackgroundDict, background_info);
+    pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
   } else {
-    pref_service->ClearPref(prefs::kNtpCustomBackgroundDict);
+    pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
   }
-
-  UpdateThemeInfo();
 }
 
 void InstantService::SetBackgroundToLocalResource() {
@@ -358,15 +453,14 @@ void InstantService::SetBackgroundToLocalResource() {
 
   base::DictionaryValue background_info = GetBackgroundInfoAsDict(
       timestamped_url, std::string(), std::string(), GURL());
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->Set(prefs::kNtpCustomBackgroundDict, background_info);
-  UpdateThemeInfo();
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, true);
+  pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&CopyFileToProfilePath, path),
+      base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),
       base::BindOnce(&InstantService::SetBackgroundToLocalResource,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -375,8 +469,8 @@ void InstantService::Shutdown() {
   process_ids_.clear();
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::ClearInstantProcessesOnIO,
                        instant_io_context_));
   }
@@ -388,21 +482,55 @@ void InstantService::Shutdown() {
   instant_io_context_ = NULL;
 }
 
+void InstantService::OnDoesUrlResolveComplete(
+    const GURL& url,
+    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback,
+    bool resolves,
+    base::TimeDelta duration) {
+  bool timeout = false;
+  if (!resolves) {
+    // Internally update the default "https" scheme to "http" if UI dialog has
+    // already timed out.
+    if (duration >
+        base::TimeDelta::FromSeconds(kCustomLinkDialogTimeoutSeconds)) {
+      timeout = true;
+      if (most_visited_sites_) {
+        GURL::Replacements replacements;
+        replacements.SetSchemeStr(url::kHttpScheme);
+        GURL new_url = url.ReplaceComponents(replacements);
+        most_visited_sites_->UpdateCustomLink(url, new_url, base::string16(),
+                                              /*is_user_action=*/false);
+      }
+    }
+  }
+  std::move(callback).Run(resolves, timeout);
+}
+
 void InstantService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      SendNewTabPageURLToRenderer(
-          content::Source<content::RenderProcessHost>(source).ptr());
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      content::RenderProcessHost* rph =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      Profile* renderer_profile =
+          static_cast<Profile*>(rph->GetBrowserContext());
+      if (profile_ == renderer_profile)
+        SendNewTabPageURLToRenderer(rph);
       break;
-    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      OnRendererProcessTerminated(
-          content::Source<content::RenderProcessHost>(source)->GetID());
+    }
+    case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
+      content::RenderProcessHost* rph =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      Profile* renderer_profile =
+          static_cast<Profile*>(rph->GetBrowserContext());
+      if (profile_ == renderer_profile)
+        OnRendererProcessTerminated(rph->GetID());
       break;
+    }
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      BuildThemeInfo();
-      NotifyAboutThemeInfo();
+      theme_info_ = nullptr;
+      UpdateThemeInfo();
       break;
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
@@ -413,8 +541,8 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   process_ids_.erase(process_id);
 
   if (instant_io_context_.get()) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::RemoveInstantProcessOnIO,
                        instant_io_context_, process_id));
   }
@@ -507,16 +635,6 @@ void InstantService::BuildThemeInfo() {
                      SkColorGetG(header_color),
                      SkColorGetB(header_color));
 
-  // Invert colors if needed.
-  if (color_utils::IsInvertedColorScheme()) {
-    background_color = color_utils::InvertColor(background_color);
-    text_color = color_utils::InvertColor(text_color);
-    link_color = color_utils::InvertColor(link_color);
-    text_color_light = color_utils::InvertColor(text_color_light);
-    header_color = color_utils::InvertColor(header_color);
-    section_border_color = color_utils::InvertColor(section_border_color);
-  }
-
   // Set colors.
   theme_info_->background_color = SkColorToRGBAColor(background_color);
   theme_info_->text_color = SkColorToRGBAColor(text_color);
@@ -591,7 +709,7 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
 
   // Attempt to get custom background URL from preferences.
   const base::DictionaryValue* background_info =
-      profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
+      pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
   const base::Value* background_url =
       background_info->FindKey(kNtpCustomBackgroundURL);
   if (!background_url) {
@@ -604,6 +722,50 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
       background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
   if (!custom_background_url.is_valid()) {
     ResetCustomBackgroundThemeInfo();
+    return;
+  }
+
+  // If the url points to a local image check that it actually exists, if not
+  // fall back to the default background.
+  const PrefService::Preference* background_local_to_device_pref =
+      pref_service_->FindPreference(prefs::kNtpCustomBackgroundLocalToDevice);
+  if (IsLocalFileUrl(custom_background_url) &&
+      background_local_to_device_pref->IsDefaultValue()) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&CheckLocalBackgroundImageExists, profile_->GetPath()),
+        base::BindOnce(
+            &InstantService::ApplyCustomBackgroundThemeInfoFromLocalFile,
+            weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+  ApplyCustomBackgroundThemeInfo();
+}
+
+void InstantService::ApplyCustomBackgroundThemeInfoFromLocalFile(
+    bool file_exists) {
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice,
+                            file_exists);
+
+  ApplyCustomBackgroundThemeInfo();
+
+  // This method executes as a result of PostTask... so the call to
+  // NotifyAboutThemeInfo from UpdateThemeInfo is lost, explicitly send it
+  // here instead.
+  NotifyAboutThemeInfo();
+}
+
+void InstantService::ApplyCustomBackgroundThemeInfo() {
+  const base::DictionaryValue* background_info =
+      pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
+  GURL custom_background_url(
+      background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
+
+  // If a background was set using a local image on a different device fallback
+  // to the default background.
+  if (IsLocalFileUrl(custom_background_url) &&
+      !pref_service_->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice)) {
+    FallbackToDefaultThemeInfo();
     return;
   }
 
@@ -642,19 +804,33 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
 }
 
 void InstantService::ResetCustomBackgroundThemeInfo() {
-  profile_->GetPrefs()->ClearPref(prefs::kNtpCustomBackgroundDict);
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-                           base::BindOnce(&RemoveLocalBackgroundImageCopy));
+  pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
+  pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&RemoveLocalBackgroundImageCopy, profile_->GetPath()));
 
+  FallbackToDefaultThemeInfo();
+}
+
+void InstantService::FallbackToDefaultThemeInfo() {
   theme_info_->custom_background_url = GURL();
   theme_info_->custom_background_attribution_line_1 = std::string();
   theme_info_->custom_background_attribution_line_2 = std::string();
   theme_info_->custom_background_attribution_action_url = GURL();
 }
 
+UrlValidityChecker* InstantService::GetUrlValidityChecker() {
+  if (url_checker_for_testing_ != nullptr)
+    return url_checker_for_testing_;
+  return UrlValidityCheckerFactory::GetUrlValidityChecker();
+}
+
 // static
 void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kNtpCustomBackgroundDict,
-                                   NtpCustomBackgroundDefaults());
+  registry->RegisterDictionaryPref(
+      prefs::kNtpCustomBackgroundDict, NtpCustomBackgroundDefaults(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kNtpCustomBackgroundLocalToDevice,
+                                false);
 }

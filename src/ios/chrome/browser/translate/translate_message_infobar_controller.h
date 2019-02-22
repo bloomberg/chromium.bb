@@ -13,10 +13,9 @@ class TranslateInfoBarDelegate;
 
 @interface TranslateMessageInfoBarController : InfoBarController
 
-- (instancetype)init NS_UNAVAILABLE;
-
 - (instancetype)initWithInfoBarDelegate:
-    (translate::TranslateInfoBarDelegate*)delegate;
+    (translate::TranslateInfoBarDelegate*)infoBarDelegate
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

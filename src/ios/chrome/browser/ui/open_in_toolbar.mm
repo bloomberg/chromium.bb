@@ -171,8 +171,8 @@ const CGFloat kToolbarBackgroundTransparency = 0.97f;
   return CGSizeMake(size.width, requiredHeight);
 }
 
-- (void)didMoveToSuperview {
-  if (!self.superview) {
+- (void)didMoveToWindow {
+  if (!self.window) {
     self.bottomMarginConstraint = nil;
     return;
   }

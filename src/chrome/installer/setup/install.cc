@@ -35,7 +35,6 @@
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
 #include "chrome/installer/setup/user_experiment.h"
 #include "chrome/installer/util/beacons.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_old_versions.h"
@@ -54,7 +53,6 @@ namespace installer {
 namespace {
 
 void LogShortcutOperation(ShellUtil::ShortcutLocation location,
-                          BrowserDistribution* dist,
                           const ShellUtil::ShortcutProperties& properties,
                           ShellUtil::ShortcutOperation operation,
                           bool failed) {
@@ -83,16 +81,12 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
       message.append("Start menu ");
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:
-      message.append("Start menu/" +
-                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
-                                     BrowserDistribution::SUBFOLDER_CHROME)) +
-                      " ");
+      NOTREACHED();
       break;
     case ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
-      message.append("Start menu/" +
-                     base::UTF16ToUTF8(dist->GetStartMenuShortcutSubfolder(
-                                     BrowserDistribution::SUBFOLDER_APPS)) +
-                     " ");
+      message.append(
+          "Start menu/" +
+          base::UTF16ToUTF8(InstallUtil::GetChromeAppsShortcutDirName()) + " ");
       break;
     default:
       NOTREACHED();
@@ -102,7 +96,7 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
   if (properties.has_shortcut_name())
     message.append(base::UTF16ToUTF8(properties.shortcut_name));
   else
-    message.append(base::UTF16ToUTF8(dist->GetDisplayName()));
+    message.append(base::UTF16ToUTF8(InstallUtil::GetDisplayName()));
   message.push_back('"');
 
   message.append(" shortcut to ");
@@ -123,13 +117,11 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
 
 void ExecuteAndLogShortcutOperation(
     ShellUtil::ShortcutLocation location,
-    BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties,
     ShellUtil::ShortcutOperation operation) {
-  LogShortcutOperation(location, dist, properties, operation, false);
-  if (!ShellUtil::CreateOrUpdateShortcut(location, dist, properties,
-                                         operation)) {
-    LogShortcutOperation(location, dist, properties, operation, true);
+  LogShortcutOperation(location, properties, operation, false);
+  if (!ShellUtil::CreateOrUpdateShortcut(location, properties, operation)) {
+    LogShortcutOperation(location, properties, operation, true);
   }
 }
 
@@ -344,7 +336,6 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 }
 
 void CreateOrUpdateShortcuts(const base::FilePath& target,
-                             const Product& product,
                              const MasterPreferences& prefs,
                              InstallShortcutLevel install_level,
                              InstallShortcutOperation install_operation) {
@@ -364,8 +355,6 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
                 &do_not_create_quick_launch_shortcut);
   prefs.GetBool(master_preferences::kDoNotCreateTaskbarShortcut,
                 &do_not_create_taskbar_shortcut);
-
-  BrowserDistribution* dist = product.distribution();
 
   // The default operation on update is to overwrite shortcuts with the
   // currently desired properties, but do so only for shortcuts that still
@@ -391,13 +380,12 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   // |base_properties|: The basic properties to set on every shortcut installed
   // (to be refined on a per-shortcut basis).
   ShellUtil::ShortcutProperties base_properties(shortcut_level);
-  product.AddDefaultShortcutProperties(target, &base_properties);
+  ShellUtil::AddDefaultShortcutProperties(target, &base_properties);
 
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
-    ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, base_properties,
-        shortcut_operation);
+    ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                   base_properties, shortcut_operation);
   }
 
   if (!do_not_create_quick_launch_shortcut ||
@@ -406,9 +394,8 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
     // install the per-user shortcut.
     ShellUtil::ShortcutProperties quick_launch_properties(base_properties);
     quick_launch_properties.level = ShellUtil::CURRENT_USER;
-    ExecuteAndLogShortcutOperation(
-        ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist,
-        quick_launch_properties, shortcut_operation);
+    ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
+                                   quick_launch_properties, shortcut_operation);
   }
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
@@ -428,22 +415,19 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   // location.
   base::FilePath old_shortcut_path;
   ShellUtil::GetShortcutPath(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist,
+      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
       shortcut_level, &old_shortcut_path);
   if (base::PathExists(old_shortcut_path)) {
     ShellUtil::MoveExistingShortcut(
         ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
-        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
-        dist, start_menu_properties);
+        ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, start_menu_properties);
   }
 
-  ExecuteAndLogShortcutOperation(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
-      start_menu_properties, shortcut_operation);
+  ExecuteAndLogShortcutOperation(ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT,
+                                 start_menu_properties, shortcut_operation);
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,
-                             const Product& product,
                              bool make_chrome_default,
                              const base::Version& version) {
   // Try to add Chrome to Media Player shim inclusion list. We don't do any
@@ -458,7 +442,6 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 
   // Make Chrome the default browser if desired when possible. Otherwise, only
   // register it with Windows.
-  BrowserDistribution* dist = product.distribution();
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(kChromeExe));
   VLOG(1) << "Registering Chrome as browser: " << chrome_exe.value();
@@ -467,9 +450,9 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
     int level = ShellUtil::CURRENT_USER;
     if (installer_state.system_install())
       level = level | ShellUtil::SYSTEM_LEVEL;
-    ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
+    ShellUtil::MakeChromeDefault(level, chrome_exe, true);
   } else {
-    ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(), false);
+    ShellUtil::RegisterChromeBrowser(chrome_exe, base::string16(), false);
   }
 }
 
@@ -520,7 +503,6 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
     installer_state.SetStage(CREATING_SHORTCUTS);
 
     // Creates shortcuts for Chrome.
-    const Product& chrome_product = installer_state.product();
     const base::FilePath chrome_exe(
         installer_state.target_path().Append(kChromeExe));
 
@@ -540,7 +522,7 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
       install_operation = INSTALL_SHORTCUT_CREATE_ALL;
     }
 
-    CreateOrUpdateShortcuts(chrome_exe, chrome_product, prefs, install_level,
+    CreateOrUpdateShortcuts(chrome_exe, prefs, install_level,
                             install_operation);
 
     // Register Chrome and, if requested, make Chrome the default browser.
@@ -561,12 +543,10 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
     }
 
     RegisterChromeOnMachine(
-        installer_state, chrome_product,
-        make_chrome_default || force_chrome_default_for_user, new_version);
+        installer_state, make_chrome_default || force_chrome_default_for_user,
+        new_version);
 
     if (!installer_state.system_install()) {
-      DCHECK_EQ(chrome_product.distribution(),
-                BrowserDistribution::GetDistribution());
       UpdateDefaultBrowserBeaconForPath(
           installer_state.target_path().Append(kChromeExe));
     }
@@ -616,7 +596,6 @@ void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
 }
 
 void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
-                               const Product& chrome,
                                const base::Version& installed_version) {
   VLOG(1) << "Updating and registering shortcuts for --on-os-upgrade.";
 
@@ -630,11 +609,11 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
       installer_state.system_install() ? ALL_USERS : CURRENT_USER;
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(kChromeExe));
-  CreateOrUpdateShortcuts(chrome_exe, chrome, prefs, level,
+  CreateOrUpdateShortcuts(chrome_exe, prefs, level,
                           INSTALL_SHORTCUT_REPLACE_EXISTING);
 
   // Adapt Chrome registrations to this new OS.
-  RegisterChromeOnMachine(installer_state, chrome, false, installed_version);
+  RegisterChromeOnMachine(installer_state, false, installed_version);
 
   // Active Setup registrations are sometimes lost across OS update, make sure
   // they're back in place. Note: when Active Setup registrations in HKLM are
@@ -645,7 +624,7 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
   // something between InstallOrUpdateProduct and AddActiveSetupWorkItems, but
   // this takes care of what is most required for now).
   std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
-  AddActiveSetupWorkItems(installer_state, installed_version, chrome,
+  AddActiveSetupWorkItems(installer_state, installed_version,
                           work_item_list.get());
   if (!work_item_list->Do()) {
     LOG(WARNING) << "Failed to reinstall Active Setup keys.";
@@ -681,8 +660,7 @@ void HandleActiveSetupForBrowser(const InstallerState& installer_state,
   cleanup_list->set_log_message("Cleanup deprecated per-user registrations");
   cleanup_list->set_rollback_enabled(false);
   cleanup_list->set_best_effort(true);
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(installer_state.product(),
-                                                    cleanup_list.get());
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(cleanup_list.get());
   cleanup_list->Do();
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
@@ -702,8 +680,7 @@ void HandleActiveSetupForBrowser(const InstallerState& installer_state,
   const base::FilePath installation_root = installer_state.target_path();
   MasterPreferences prefs(installation_root.AppendASCII(kDefaultMasterPrefs));
   base::FilePath chrome_exe(installation_root.Append(kChromeExe));
-  CreateOrUpdateShortcuts(chrome_exe, installer_state.product(), prefs,
-                          CURRENT_USER, install_operation);
+  CreateOrUpdateShortcuts(chrome_exe, prefs, CURRENT_USER, install_operation);
 
   UpdateDefaultBrowserBeaconForPath(chrome_exe);
 

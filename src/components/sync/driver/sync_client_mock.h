@@ -16,7 +16,6 @@ class SyncClientMock : public SyncClient {
   SyncClientMock();
   ~SyncClientMock() override;
 
-  MOCK_METHOD0(Initialize, void());
   MOCK_METHOD0(GetSyncService, SyncService*());
   MOCK_METHOD0(GetPrefService, PrefService*());
   MOCK_METHOD0(GetLocalSyncBackendFolder, base::FilePath());
@@ -25,6 +24,7 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
   MOCK_METHOD0(HasPasswordStore, bool());
+  MOCK_METHOD0(GetSessionSyncService, sync_sessions::SessionSyncService*());
   MOCK_METHOD1(CreateDataTypeControllers,
                DataTypeController::TypeVector(
                    LocalDeviceInfoProvider* local_device_info_provider));
@@ -34,7 +34,6 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetBookmarkUndoServiceIfExists, BookmarkUndoService*());
   MOCK_METHOD0(GetInvalidationService, invalidation::InvalidationService*());
   MOCK_METHOD0(GetExtensionsActivity, scoped_refptr<ExtensionsActivity>());
-  MOCK_METHOD0(GetSyncSessionsClient, sync_sessions::SyncSessionsClient*());
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<SyncableService>(ModelType type));
   MOCK_METHOD1(GetControllerDelegateForModelType,

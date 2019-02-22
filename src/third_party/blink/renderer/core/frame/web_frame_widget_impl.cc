@@ -80,9 +80,9 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -104,26 +104,41 @@ FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
 
 // WebFrameWidget ------------------------------------------------------------
 
-WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
-                                       WebLocalFrame* local_root) {
+WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
+                                                   WebLocalFrame* main_frame) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
-  WebFrameWidgetBase* widget;
-  if (!local_root->Parent()) {
-    // Note: this isn't a leak, as the object has a self-reference that the
-    // caller needs to release by calling Close().
-    WebLocalFrameImpl& main_frame = ToWebLocalFrameImpl(*local_root);
-    DCHECK(main_frame.ViewImpl());
-    // Note: this can't DCHECK that the view's main frame points to
-    // |main_frame|, as provisional frames violate this precondition.
-    // TODO(dcheng): Remove the special bridge class for main frame widgets.
-    widget = new WebViewFrameWidget(*client, *main_frame.ViewImpl());
-  } else {
-    DCHECK(local_root->Parent()->IsWebRemoteFrame())
-        << "Only local roots can have web frame widgets.";
-    // Note: this isn't a leak, as the object has a self-reference that the
-    // caller needs to release by calling Close().
-    widget = WebFrameWidgetImpl::Create(*client);
-  }
+  DCHECK(!main_frame->Parent());  // This is the main frame.
+
+  // Grabs the WebViewImpl associated with the |main_frame|, which will then
+  // be wrapped by the WebViewFrameWidget, with calls being forwarded to the
+  // |main_frame|'s WebViewImpl.
+  // Note: this can't DCHECK that the view's main frame points to
+  // |main_frame|, as provisional frames violate this precondition.
+  WebLocalFrameImpl& main_frame_impl = ToWebLocalFrameImpl(*main_frame);
+  DCHECK(main_frame_impl.ViewImpl());
+  WebViewImpl& web_view_impl = *main_frame_impl.ViewImpl();
+
+  // Note: this isn't a leak, as the object has a self-reference that the
+  // caller needs to release by calling Close().
+  // TODO(dcheng): Remove the special bridge class for main frame widgets.
+  WebFrameWidgetBase* widget = new WebViewFrameWidget(*client, web_view_impl);
+  widget->BindLocalRoot(*main_frame);
+  return widget;
+}
+
+WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
+    WebWidgetClient* client,
+    WebLocalFrame* local_root) {
+  DCHECK(client) << "A valid WebWidgetClient must be supplied.";
+  DCHECK(local_root->Parent());  // This is not the main frame.
+  // Frames whose direct ancestor is a remote frame are local roots. Verify this
+  // is one. Other frames should be using the widget for their nearest local
+  // root.
+  DCHECK(local_root->Parent()->IsWebRemoteFrame());
+
+  // Note: this isn't a leak, as the object has a self-reference that the
+  // caller needs to release by calling Close().
+  WebFrameWidgetBase* widget = WebFrameWidgetImpl::Create(*client);
   widget->BindLocalRoot(*local_root);
   return widget;
 }
@@ -136,7 +151,7 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient& client) {
 
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
     : WebFrameWidgetBase(client),
-      mutator_(nullptr),
+      mutator_dispatcher_(nullptr),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
       root_graphics_layer_(nullptr),
@@ -162,7 +177,7 @@ void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
 void WebFrameWidgetImpl::Close() {
   WebFrameWidgetBase::Close();
 
-  mutator_ = nullptr;
+  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
   root_layer_ = nullptr;
   root_graphics_layer_ = nullptr;
@@ -298,11 +313,6 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update);
   UpdateLayerTreeBackgroundColor();
-}
-
-void WebFrameWidgetImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (layer_tree_view_)
-    layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
 }
 
 void WebFrameWidgetImpl::PaintContent(cc::PaintCanvas* canvas,
@@ -474,7 +484,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
         break;
       case WebInputEvent::kMouseDown:
         event_type = EventTypeNames::mousedown;
-        gesture_indicator = Frame::NotifyUserActivation(
+        gesture_indicator = LocalFrame::NotifyUserActivation(
             node->GetDocument().GetFrame(), UserGestureToken::kNewGesture);
         mouse_capture_gesture_token_ = gesture_indicator->CurrentToken();
         break;
@@ -490,8 +500,13 @@ WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
     WebMouseEvent transformed_event =
         TransformWebMouseEvent(LocalRootImpl()->GetFrameView(),
                                static_cast<const WebMouseEvent&>(input_event));
-    node->DispatchMouseEvent(transformed_event, event_type,
-                             transformed_event.click_count);
+    if (LocalFrame* frame = node->GetDocument().GetFrame()) {
+      frame->GetEventHandler().HandleTargetedMouseEvent(
+          node, transformed_event, event_type,
+          TransformWebMouseEventVector(
+              LocalRootImpl()->GetFrameView(),
+              coalesced_event.GetCoalescedEventsPointers()));
+    }
     return WebInputEventResult::kHandledSystem;
   }
 
@@ -545,8 +560,6 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
 }
 
 void WebFrameWidgetImpl::Initialize() {
-  InitializeLayerTreeView();
-
   if (LocalRoot()->Parent())
     SetBackgroundColorOverride(Color::kTransparent);
 }
@@ -570,26 +583,21 @@ void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
   Client()->IntrinsicSizingInfoChanged(web_sizing_info);
 }
 
-base::WeakPtr<CompositorMutatorImpl>
-WebFrameWidgetImpl::EnsureCompositorMutator(
+base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
+WebFrameWidgetImpl::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
     layer_tree_view_->SetMutatorClient(
-        CompositorMutatorImpl::CreateClient(&mutator_, &mutator_task_runner_));
+        AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
+            &mutator_dispatcher_, &mutator_task_runner_));
   }
 
   DCHECK(mutator_task_runner_);
   *mutator_task_runner = mutator_task_runner_;
-  return mutator_;
+  return mutator_dispatcher_;
 }
 
-void WebFrameWidgetImpl::ApplyViewportDeltas(
-    const WebFloatSize& visual_viewport_delta,
-    const WebFloatSize& main_frame_delta,
-    const WebFloatSize& elastic_overscroll_delta,
-    float page_scale_delta,
-    float browser_controls_delta) {
-  // FIXME: To be implemented.
+void WebFrameWidgetImpl::ApplyViewportChanges(const ApplyViewportChangesArgs&) {
 }
 
 void WebFrameWidgetImpl::MouseCaptureLost() {
@@ -683,7 +691,7 @@ void WebFrameWidgetImpl::WillCloseLayerTreeView() {
   }
 
   SetIsAcceleratedCompositingActive(false);
-  mutator_ = nullptr;
+  mutator_dispatcher_ = nullptr;
   layer_tree_view_ = nullptr;
   animation_host_ = nullptr;
   layer_tree_view_closed_ = true;
@@ -720,6 +728,13 @@ void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(
       is_throttled, subtree_throttled);
+}
+
+WebURL WebFrameWidgetImpl::GetURLForDebugTrace() {
+  WebFrame* main_frame = View()->MainFrame();
+  if (main_frame->IsWebLocalFrame())
+    return main_frame->ToWebLocalFrame()->GetDocument().Url();
+  return {};
 }
 
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,
@@ -1026,11 +1041,10 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::InitializeLayerTreeView() {
+void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   DCHECK(Client());
-  DCHECK(!mutator_);
-  layer_tree_view_ = Client()->InitializeLayerTreeView();
-  DCHECK(layer_tree_view_);
+  DCHECK(!mutator_dispatcher_);
+  layer_tree_view_ = layer_tree_view;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());

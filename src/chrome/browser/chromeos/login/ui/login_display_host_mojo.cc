@@ -32,8 +32,9 @@ constexpr char kAccelReset[] = "reset";
 
 }  // namespace
 
-LoginDisplayHostMojo::AuthState::AuthState(AccountId account_id,
-                                           AuthenticateUserCallback callback)
+LoginDisplayHostMojo::AuthState::AuthState(
+    AccountId account_id,
+    AuthenticateUserWithPasswordOrPinCallback callback)
     : account_id(account_id), callback(std::move(callback)) {}
 
 LoginDisplayHostMojo::AuthState::~AuthState() = default;
@@ -149,7 +150,7 @@ void LoginDisplayHostMojo::OnFinalize() {
   if (dialog_)
     dialog_->Close();
 
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  ShutdownDisplayHost();
 }
 
 void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
@@ -330,11 +331,11 @@ void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
   HideOobeDialog();
 }
 
-void LoginDisplayHostMojo::HandleAuthenticateUser(
+void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    AuthenticateUserCallback callback) {
+    AuthenticateUserWithPasswordOrPinCallback callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
 
@@ -372,7 +373,15 @@ void LoginDisplayHostMojo::HandleAuthenticateUser(
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
 }
 
-void LoginDisplayHostMojo::HandleAttemptUnlock(const AccountId& account_id) {
+void LoginDisplayHostMojo::HandleAuthenticateUserWithExternalBinary(
+    const AccountId& account_id,
+    AuthenticateUserWithExternalBinaryCallback callback) {
+  // Authenticating with an external binary is not supported for login.
+  std::move(callback).Run(false);
+}
+
+void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
+    const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 
@@ -401,6 +410,13 @@ void LoginDisplayHostMojo::HandleOnNoPodFocused() {
 bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {
   NOTREACHED();
   return false;
+}
+
+void LoginDisplayHostMojo::HandleFocusOobeDialog() {
+  if (!dialog_->IsVisible())
+    return;
+
+  dialog_->GetWebContents()->Focus();
 }
 
 void LoginDisplayHostMojo::HandleLoginAsGuest() {

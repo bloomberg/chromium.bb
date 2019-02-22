@@ -12,6 +12,7 @@
 #import <UIKit/UIKit.h>
 #include <cmath>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"
@@ -560,16 +561,20 @@ bool IsRegularXRegularSizeClass() {
 }
 
 bool IsRegularXRegularSizeClass(id<UITraitEnvironment> environment) {
-  UITraitCollection* traitCollection = environment.traitCollection;
+  return IsRegularXRegularSizeClass(environment.traitCollection);
+}
+
+bool IsRegularXRegularSizeClass(UITraitCollection* traitCollection) {
   return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
+bool ShouldShowCompactToolbar(UITraitCollection* traitCollection) {
+  return !IsRegularXRegularSizeClass(traitCollection);
+}
+
 bool ShouldShowCompactToolbar() {
-  if (IsUIRefreshPhase1Enabled()) {
-    return !IsRegularXRegularSizeClass();
-  }
-  return !IsIPadIdiom();
+  return !IsRegularXRegularSizeClass();
 }
 
 bool IsSplitToolbarMode() {
@@ -577,8 +582,7 @@ bool IsSplitToolbarMode() {
 }
 
 bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
-  return IsUIRefreshPhase1Enabled() && IsCompactWidth(environment) &&
-         !IsCompactHeight(environment);
+  return IsCompactWidth(environment) && !IsCompactHeight(environment);
 }
 
 // Returns the first responder in the subviews of |view|, or nil if no view in
@@ -597,19 +601,21 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 UIResponder* GetFirstResponder() {
-  if (!base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
-    DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    DCHECK(!gFirstResponder);
-    [[UIApplication sharedApplication]
-        sendAction:@selector(cr_markSelfCurrentFirstResponder)
-                to:nil
-              from:nil
-          forEvent:nil];
-    UIResponder* firstResponder = gFirstResponder;
-    gFirstResponder = nil;
-    return firstResponder;
+  UIApplication* application = [UIApplication sharedApplication];
+  if (base::ios::IsRunningOnIOS11OrLater() &&
+      base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
+    return GetFirstResponderSubview(application.keyWindow);
   }
-  return GetFirstResponderSubview([UIApplication sharedApplication].keyWindow);
+
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  DCHECK(!gFirstResponder);
+  [application sendAction:@selector(cr_markSelfCurrentFirstResponder)
+                       to:nil
+                     from:nil
+                 forEvent:nil];
+  UIResponder* firstResponder = gFirstResponder;
+  gFirstResponder = nil;
+  return firstResponder;
 }
 
 // Trigger a haptic vibration for the user selecting an action. This is a no-op
@@ -675,4 +681,19 @@ NSString* TextForTabCount(long count) {
   if (count > 99)
     return @":)";
   return [NSString stringWithFormat:@"%ld", count];
+}
+
+BOOL ContentSizeCategoryIsAccessibilityCategory(
+    UIContentSizeCategory category) {
+  if (@available(iOS 11.0, *)) {
+    return UIContentSizeCategoryIsAccessibilityCategory(category);
+  } else {
+    return
+        [category
+            isEqual:UIContentSizeCategoryAccessibilityExtraExtraExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityExtraExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityExtraLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityLarge] ||
+        [category isEqual:UIContentSizeCategoryAccessibilityMedium];
+  }
 }

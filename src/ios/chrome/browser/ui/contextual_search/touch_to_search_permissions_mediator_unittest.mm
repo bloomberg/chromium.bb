@@ -97,7 +97,8 @@ class TouchToSearchPermissionsMediatorTest : public PlatformTest {
   TouchToSearchPermissionsMediatorTest() {
     TestChromeBrowserState::Builder browserStateBuilder;
     browserStateBuilder.AddTestingFactory(
-        SyncSetupServiceFactory::GetInstance(), &CreateSyncSetupService);
+        SyncSetupServiceFactory::GetInstance(),
+        base::BindRepeating(&CreateSyncSetupService));
     browserStateBuilder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());

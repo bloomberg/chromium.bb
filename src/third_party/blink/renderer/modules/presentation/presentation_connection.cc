@@ -166,28 +166,22 @@ PresentationConnection::~PresentationConnection() {
 }
 
 void PresentationConnection::OnMessage(
-    mojom::blink::PresentationConnectionMessagePtr message,
-    OnMessageCallback callback) {
-  DCHECK(!callback.is_null());
+    mojom::blink::PresentationConnectionMessagePtr message) {
   if (message->is_data()) {
     const auto& data = message->get_data();
     DidReceiveBinaryMessage(&data.front(), data.size());
   } else {
     DidReceiveTextMessage(message->get_message());
   }
-
-  std::move(callback).Run(true);
 }
 
 void PresentationConnection::DidChangeState(
     mojom::blink::PresentationConnectionState state) {
+  // Closed state is handled in |DidClose()|.
+  DCHECK_NE(mojom::blink::PresentationConnectionState::CLOSED, state);
+
   if (state_ == state)
     return;
-
-  if (state == mojom::blink::PresentationConnectionState::CLOSED) {
-    DidClose();
-    return;
-  }
 
   state_ = state;
 
@@ -197,7 +191,6 @@ void PresentationConnection::DidChangeState(
     case mojom::blink::PresentationConnectionState::CONNECTED:
       DispatchStateChangeEvent(Event::Create(EventTypeNames::connect));
       return;
-    // Closed state is handled in |DidClose()|.
     case mojom::blink::PresentationConnectionState::CLOSED:
       return;
     case mojom::blink::PresentationConnectionState::TERMINATED:
@@ -207,15 +200,9 @@ void PresentationConnection::DidChangeState(
   NOTREACHED();
 }
 
-void PresentationConnection::RequestClose() {
-  DidChangeState(mojom::blink::PresentationConnectionState::CLOSED);
-
-  // TODO(crbug.com/749327): Instead of calling DidChangeState, consider
-  // supplying a callback to RequestClose() and invoking it here.
-  if (target_connection_) {
-    target_connection_->DidChangeState(
-        mojom::blink::PresentationConnectionState::CLOSED);
-  }
+void PresentationConnection::DidClose(
+    mojom::blink::PresentationConnectionCloseReason reason) {
+  DidClose(reason, /* message */ String());
 }
 
 // static
@@ -225,9 +212,8 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
     PresentationRequest* request) {
   DCHECK(resolver);
   DCHECK(request);
-  DCHECK(resolver->GetExecutionContext()->IsDocument());
 
-  Document* document = ToDocument(resolver->GetExecutionContext());
+  Document* document = To<Document>(resolver->GetExecutionContext());
   if (!document->GetFrame())
     return nullptr;
 
@@ -271,7 +257,7 @@ ControllerPresentationConnection::ControllerPresentationConnection(
     const KURL& url)
     : PresentationConnection(frame, id, url), controller_(controller) {}
 
-ControllerPresentationConnection::~ControllerPresentationConnection() = default;
+ControllerPresentationConnection::~ControllerPresentationConnection() {}
 
 void ControllerPresentationConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
@@ -295,13 +281,13 @@ void ControllerPresentationConnection::Init(
   connection_binding_.Bind(std::move(connection_request));
 }
 
-void ControllerPresentationConnection::DoClose() {
+void ControllerPresentationConnection::CloseInternal() {
   auto& service = controller_->GetPresentationService();
   if (service)
     service->CloseConnection(url_, id_);
 }
 
-void ControllerPresentationConnection::DoTerminate() {
+void ControllerPresentationConnection::TerminateInternal() {
   auto& service = controller_->GetPresentationService();
   if (service)
     service->Terminate(url_, id_);
@@ -350,15 +336,19 @@ void ReceiverPresentationConnection::Init(
 void ReceiverPresentationConnection::DidChangeState(
     mojom::blink::PresentationConnectionState state) {
   PresentationConnection::DidChangeState(state);
-  if (state == mojom::blink::PresentationConnectionState::CLOSED)
-    receiver_->RemoveConnection(this);
 }
 
-void ReceiverPresentationConnection::DoClose() {
+void ReceiverPresentationConnection::DidClose(
+    mojom::blink::PresentationConnectionCloseReason reason) {
+  PresentationConnection::DidClose(reason);
+  receiver_->RemoveConnection(this);
+}
+
+void ReceiverPresentationConnection::CloseInternal() {
   // No-op
 }
 
-void ReceiverPresentationConnection::DoTerminate() {
+void ReceiverPresentationConnection::TerminateInternal() {
   // This will close the receiver window. Change the state to TERMINATED now
   // since ReceiverPresentationConnection won't get a state change notification.
   if (state_ == mojom::blink::PresentationConnectionState::TERMINATED)
@@ -408,6 +398,7 @@ void PresentationConnection::AddedEventListener(
 }
 
 void PresentationConnection::ContextDestroyed(ExecutionContext*) {
+  DoClose(mojom::blink::PresentationConnectionCloseReason::WENT_AWAY);
   target_connection_.reset();
   connection_binding_.Close();
 }
@@ -461,6 +452,21 @@ void PresentationConnection::send(Blob* data, ExceptionState& exception_state) {
 
   messages_.push_back(new Message(data->GetBlobDataHandle()));
   HandleMessageQueue();
+}
+
+void PresentationConnection::DoClose(
+    mojom::blink::PresentationConnectionCloseReason reason) {
+  if (state_ != mojom::blink::PresentationConnectionState::CONNECTING &&
+      state_ != mojom::blink::PresentationConnectionState::CONNECTED) {
+    return;
+  }
+
+  if (target_connection_)
+    target_connection_->DidClose(reason);
+
+  DidClose(reason);
+  CloseInternal();
+  TearDown();
 }
 
 bool PresentationConnection::CanSendMessage(ExceptionState& exception_state) {
@@ -520,10 +526,8 @@ void PresentationConnection::setBinaryType(const String& binary_type) {
 
 void PresentationConnection::SendMessageToTargetConnection(
     mojom::blink::PresentationConnectionMessagePtr message) {
-  if (target_connection_) {
-    target_connection_->OnMessage(std::move(message),
-                                  base::OnceCallback<void(bool)>());
-  }
+  if (target_connection_)
+    target_connection_->OnMessage(std::move(message));
 }
 
 void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
@@ -534,7 +538,7 @@ void PresentationConnection::DidReceiveTextMessage(const WebString& message) {
 }
 
 void PresentationConnection::DidReceiveBinaryMessage(const uint8_t* data,
-                                                     size_t length) {
+                                                     uint32_t length) {
   if (state_ != mojom::blink::PresentationConnectionState::CONNECTED)
     return;
 
@@ -561,23 +565,14 @@ mojom::blink::PresentationConnectionState PresentationConnection::GetState()
 }
 
 void PresentationConnection::close() {
-  if (state_ != mojom::blink::PresentationConnectionState::CONNECTING &&
-      state_ != mojom::blink::PresentationConnectionState::CONNECTED) {
-    return;
-  }
-
-  if (target_connection_)
-    target_connection_->RequestClose();
-
-  DoClose();
-  TearDown();
+  DoClose(mojom::blink::PresentationConnectionCloseReason::CLOSED);
 }
 
 void PresentationConnection::terminate() {
   if (state_ != mojom::blink::PresentationConnectionState::CONNECTED)
     return;
 
-  DoTerminate();
+  TerminateInternal();
   TearDown();
 }
 
@@ -596,10 +591,6 @@ void PresentationConnection::DidClose(
   state_ = mojom::blink::PresentationConnectionState::CLOSED;
   DispatchStateChangeEvent(PresentationConnectionCloseEvent::Create(
       EventTypeNames::close, ConnectionCloseReasonToString(reason), message));
-}
-
-void PresentationConnection::DidClose() {
-  DidClose(mojom::blink::PresentationConnectionCloseReason::CLOSED, "");
 }
 
 void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {

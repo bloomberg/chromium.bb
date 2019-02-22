@@ -51,6 +51,10 @@ bool CheckFlateDecodeParams(int Colors, int BitsPerComponent, int Columns) {
   return check.ValueOrDie() <= INT_MAX - 7;
 }
 
+uint8_t GetA85Result(uint32_t res, size_t i) {
+  return static_cast<uint8_t>(res >> (3 - i) * 8);
+}
+
 }  // namespace
 
 const uint16_t PDFDocEncoding[256] = {
@@ -101,12 +105,13 @@ bool ValidateDecoderPipeline(const CPDF_Array* pDecoders) {
 }
 
 uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
-                   uint8_t** dest_buf,
+                   std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                    uint32_t* dest_size) {
   *dest_size = 0;
-  *dest_buf = nullptr;
-  if (src_span.empty())
+  if (src_span.empty()) {
+    dest_buf->reset();
     return 0;
+  }
 
   // Count legal characters and zeros.
   uint32_t zcount = 0;
@@ -128,10 +133,14 @@ uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
   // Count the space needed to contain non-zero characters. The encoding ratio
   // of Ascii85 is 4:5.
   uint32_t space_for_non_zeroes = (pos - zcount) / 5 * 4 + 4;
-  if (zcount > (UINT_MAX - space_for_non_zeroes) / 4)
+  FX_SAFE_UINT32 size = zcount;
+  size *= 4;
+  size += space_for_non_zeroes;
+  if (!size.IsValid())
     return FX_INVALID_OFFSET;
 
-  *dest_buf = FX_Alloc(uint8_t, zcount * 4 + space_for_non_zeroes);
+  dest_buf->reset(FX_Alloc(uint8_t, size.ValueOrDie()));
+  uint8_t* dest_buf_ptr = dest_buf->get();
   size_t state = 0;
   uint32_t res = 0;
   pos = 0;
@@ -141,7 +150,7 @@ uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
       continue;
 
     if (ch == 'z') {
-      memset(*dest_buf + *dest_size, 0, 4);
+      memset(dest_buf_ptr + *dest_size, 0, 4);
       state = 0;
       res = 0;
       *dest_size += 4;
@@ -159,7 +168,7 @@ uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
     }
 
     for (size_t i = 0; i < 4; ++i) {
-      (*dest_buf)[(*dest_size)++] = static_cast<uint8_t>(res >> (3 - i) * 8);
+      dest_buf_ptr[(*dest_size)++] = GetA85Result(res, i);
     }
     state = 0;
     res = 0;
@@ -169,7 +178,7 @@ uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
     for (size_t i = state; i < 5; ++i)
       res = res * 85 + 84;
     for (size_t i = 0; i < state - 1; ++i)
-      (*dest_buf)[(*dest_size)++] = static_cast<uint8_t>(res >> (3 - i) * 8);
+      dest_buf_ptr[(*dest_size)++] = GetA85Result(res, i);
   }
   if (pos < src_span.size() && src_span[pos] == '>')
     ++pos;
@@ -177,11 +186,11 @@ uint32_t A85Decode(pdfium::span<const uint8_t> src_span,
 }
 
 uint32_t HexDecode(pdfium::span<const uint8_t> src_span,
-                   uint8_t** dest_buf,
+                   std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                    uint32_t* dest_size) {
   *dest_size = 0;
   if (src_span.empty()) {
-    *dest_buf = nullptr;
+    dest_buf->reset();
     return 0;
   }
 
@@ -190,7 +199,8 @@ uint32_t HexDecode(pdfium::span<const uint8_t> src_span,
   while (i < src_span.size() && src_span[i] != '>')
     ++i;
 
-  *dest_buf = FX_Alloc(uint8_t, i / 2 + 1);
+  dest_buf->reset(FX_Alloc(uint8_t, i / 2 + 1));
+  uint8_t* dest_buf_ptr = dest_buf->get();
   bool bFirst = true;
   for (i = 0; i < src_span.size(); ++i) {
     uint8_t ch = src_span[i];
@@ -206,9 +216,9 @@ uint32_t HexDecode(pdfium::span<const uint8_t> src_span,
 
     int digit = FXSYS_HexCharToInt(ch);
     if (bFirst)
-      (*dest_buf)[*dest_size] = digit * 16;
+      dest_buf_ptr[*dest_size] = digit * 16;
     else
-      (*dest_buf)[(*dest_size)++] += digit;
+      dest_buf_ptr[(*dest_size)++] += digit;
     bFirst = !bFirst;
   }
   if (!bFirst)
@@ -217,7 +227,7 @@ uint32_t HexDecode(pdfium::span<const uint8_t> src_span,
 }
 
 uint32_t RunLengthDecode(pdfium::span<const uint8_t> src_span,
-                         uint8_t** dest_buf,
+                         std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                          uint32_t* dest_size) {
   size_t i = 0;
   *dest_size = 0;
@@ -241,7 +251,8 @@ uint32_t RunLengthDecode(pdfium::span<const uint8_t> src_span,
   if (*dest_size >= kMaxStreamSize)
     return FX_INVALID_OFFSET;
 
-  *dest_buf = FX_Alloc(uint8_t, *dest_size);
+  dest_buf->reset(FX_Alloc(uint8_t, *dest_size));
+  pdfium::span<uint8_t> dest_span(dest_buf->get(), *dest_size);
   i = 0;
   int dest_count = 0;
   while (i < src_span.size()) {
@@ -254,17 +265,17 @@ uint32_t RunLengthDecode(pdfium::span<const uint8_t> src_span,
       if (buf_left < copy_len) {
         uint32_t delta = copy_len - buf_left;
         copy_len = buf_left;
-        memset(*dest_buf + dest_count + copy_len, '\0', delta);
+        memset(&dest_span[dest_count + copy_len], '\0', delta);
       }
       auto copy_span = src_span.subspan(i + 1, copy_len);
-      memcpy(*dest_buf + dest_count, copy_span.data(), copy_span.size());
+      memcpy(&dest_span[dest_count], copy_span.data(), copy_span.size());
       dest_count += src_span[i] + 1;
       i += src_span[i] + 2;
     } else {
       int fill = 0;
       if (i < src_span.size() - 1)
         fill = src_span[i + 1];
-      memset(*dest_buf + dest_count, fill, 257 - src_span[i]);
+      memset(&dest_span[dest_count], fill, 257 - src_span[i]);
       dest_count += 257 - src_span[i];
       i += 2;
     }
@@ -326,7 +337,7 @@ uint32_t FlateOrLZWDecode(bool bLZW,
                           pdfium::span<const uint8_t> src_span,
                           const CPDF_Dictionary* pParams,
                           uint32_t estimated_size,
-                          uint8_t** dest_buf,
+                          std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                           uint32_t* dest_size) {
   int predictor = 0;
   int Colors = 0;
@@ -398,15 +409,23 @@ bool PDF_DataDecode(pdfium::span<const uint8_t> src_span,
         *pImageParams = pParam;
         return true;
       }
+      std::unique_ptr<uint8_t, FxFreeDeleter> result;
       offset = FlateOrLZWDecode(false, last_span, pParam, estimated_size,
-                                &new_buf, &new_size);
+                                &result, &new_size);
+      new_buf = result.release();
     } else if (decoder == "LZWDecode" || decoder == "LZW") {
+      std::unique_ptr<uint8_t, FxFreeDeleter> result;
       offset = FlateOrLZWDecode(true, last_span, pParam, estimated_size,
-                                &new_buf, &new_size);
+                                &result, &new_size);
+      new_buf = result.release();
     } else if (decoder == "ASCII85Decode" || decoder == "A85") {
-      offset = A85Decode(last_span, &new_buf, &new_size);
+      std::unique_ptr<uint8_t, FxFreeDeleter> result;
+      offset = A85Decode(last_span, &result, &new_size);
+      new_buf = result.release();
     } else if (decoder == "ASCIIHexDecode" || decoder == "AHx") {
-      offset = HexDecode(last_span, &new_buf, &new_size);
+      std::unique_ptr<uint8_t, FxFreeDeleter> result;
+      offset = HexDecode(last_span, &result, &new_size);
+      new_buf = result.release();
     } else if (decoder == "RunLengthDecode" || decoder == "RL") {
       if (bImageAcc && i == nSize - 1) {
         *ImageEncoding = "RunLengthDecode";
@@ -415,7 +434,9 @@ bool PDF_DataDecode(pdfium::span<const uint8_t> src_span,
         *pImageParams = pParam;
         return true;
       }
-      offset = RunLengthDecode(last_span, &new_buf, &new_size);
+      std::unique_ptr<uint8_t, FxFreeDeleter> result;
+      offset = RunLengthDecode(last_span, &result, &new_size);
+      new_buf = result.release();
     } else {
       // If we get here, assume it's an image decoder.
       if (decoder == "DCT")
@@ -581,7 +602,7 @@ bool FlateEncode(pdfium::span<const uint8_t> src_span,
 }
 
 uint32_t FlateDecode(pdfium::span<const uint8_t> src_span,
-                     uint8_t** dest_buf,
+                     std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                      uint32_t* dest_size) {
   CCodec_ModuleMgr* pEncoders = CPDF_ModuleMgr::Get()->GetCodecModule();
   return pEncoders->GetFlateModule()->FlateOrLZWDecode(

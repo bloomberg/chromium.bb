@@ -228,15 +228,17 @@ def _MergeResInfoFiles(res_info_path, resource_apk):
   shutil.copy(resource_apk_info_path, res_info_path)
 
 
-def _MergePakInfoFiles(pak_info_path, asset_list):
-  lines = set()
-  for asset_details in asset_list:
-    src = asset_details.split(':')[0]
-    if src.endswith('.pak'):
-      with open(src + '.info', 'r') as src_info_file:
-        lines.update(src_info_file.readlines())
-  with open(pak_info_path, 'w') as merged_info_file:
-    merged_info_file.writelines(sorted(lines))
+def _FilterPakInfoPaths(assets):
+  return [f.split(':')[0] + '.info' for f in assets if f.endswith('.pak')]
+
+
+def _MergePakInfoFiles(merged_path, pak_infos):
+  info_lines = set()
+  for pak_info_path in pak_infos:
+    with open(pak_info_path, 'r') as src_info_file:
+      info_lines.update(src_info_file.readlines())
+  with open(merged_path, 'w') as merged_info_file:
+    merged_info_file.writelines(sorted(info_lines))
 
 
 def main(args):
@@ -272,6 +274,11 @@ def main(args):
 
   assets = _ExpandPaths(options.assets)
   uncompressed_assets = _ExpandPaths(options.uncompressed_assets)
+
+  if options.apk_pak_info_path:
+    pak_infos = _FilterPakInfoPaths(
+        options.assets + options.uncompressed_assets)
+    depfile_deps.extend(pak_infos)
 
   for src_path, dest_path in itertools.chain(assets, uncompressed_assets):
     # Included via .build_config, so need to write it to depfile.
@@ -392,8 +399,7 @@ def main(args):
                   data=java_resource_jar.read(apk_path))
 
         if options.apk_pak_info_path:
-          _MergePakInfoFiles(options.apk_pak_info_path,
-                             options.assets + options.uncompressed_assets)
+          _MergePakInfoFiles(options.apk_pak_info_path, pak_infos)
         if options.apk_res_info_path:
           _MergeResInfoFiles(options.apk_res_info_path, options.resource_apk)
 

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,6 +27,7 @@
 namespace {
 const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
+const CGFloat kShortcutsRowHeight = 100;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
 UIColor* BackgroundColorTablet() {
@@ -70,6 +72,10 @@ UIColor* BackgroundColorIncognito() {
 // updating the cells to avoid defocusing the omnibox when the omnibox popup
 // changes size and table view issues a scroll event.
 @property(nonatomic, assign) BOOL forwardsScrollEvents;
+
+// The cell with shortcuts to display when no results are available (only if
+// this is enabled with |shortcutsEnabled|). Lazily instantiated.
+@property(nonatomic, strong) UITableViewCell* shortcutsCell;
 
 @end
 
@@ -209,6 +215,36 @@ UIColor* BackgroundColorIncognito() {
 - (void)setIncognito:(BOOL)incognito {
   DCHECK(!self.viewLoaded);
   _incognito = incognito;
+}
+
+- (void)setShortcutsEnabled:(BOOL)shortcutsEnabled {
+  if (shortcutsEnabled == _shortcutsEnabled) {
+    return;
+  }
+
+  DCHECK(!shortcutsEnabled || self.shortcutsViewController);
+
+  _shortcutsEnabled = shortcutsEnabled;
+  [self.tableView reloadData];
+}
+
+- (UITableViewCell*)shortcutsCell {
+  if (_shortcutsCell) {
+    return _shortcutsCell;
+  }
+
+  DCHECK(self.shortcutsEnabled);
+  DCHECK(self.shortcutsViewController);
+
+  UITableViewCell* cell = [[UITableViewCell alloc] init];
+  [self.shortcutsViewController willMoveToParentViewController:self];
+  [self addChildViewController:self.shortcutsViewController];
+  [cell.contentView addSubview:self.shortcutsViewController.view];
+  self.shortcutsViewController.view.translatesAutoresizingMaskIntoConstraints =
+      NO;
+  AddSameConstraints(self.shortcutsViewController.view, cell.contentView);
+  [self.shortcutsViewController didMoveToParentViewController:self];
+  return cell;
 }
 
 #pragma mark - AutocompleteResultConsumer
@@ -608,6 +644,11 @@ UIColor* BackgroundColorIncognito() {
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return kShortcutsRowHeight;
+  }
+
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return ((OmniboxPopupRow*)(_rows[indexPath.row])).rowHeight;
@@ -620,6 +661,9 @@ UIColor* BackgroundColorIncognito() {
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
   DCHECK_EQ(0, section);
+  if (self.shortcutsEnabled && _currentResult.count == 0) {
+    return 1;
+  }
   return _currentResult.count;
 }
 
@@ -627,6 +671,12 @@ UIColor* BackgroundColorIncognito() {
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
+
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return self.shortcutsCell;
+  }
+
   DCHECK_LT((NSUInteger)indexPath.row, _currentResult.count);
   return _rows[indexPath.row];
 }
@@ -634,6 +684,12 @@ UIColor* BackgroundColorIncognito() {
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
+
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return NO;
+  }
+
   // iOS doesn't check -numberOfRowsInSection before checking
   // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,
   // simple return |NO|.

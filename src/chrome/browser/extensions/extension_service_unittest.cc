@@ -18,7 +18,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -183,7 +182,6 @@ const char updates_from_webstore3[] = "bmfoocgfinpmkmlbjhcbofejhkhlbchk";
 const char permissions_blocklist[] = "noffkehfcaggllbcojjbopcmlhcnhcdn";
 const char cast_stable[] = "boadgeojelhgndaghljhdicfkmllpafd";
 const char cast_beta[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
-const char zip_unpacker[] = "oedeeodfidgoollimchfdnbmhcpnklnd";
 
 struct BubbleErrorsTestData {
   BubbleErrorsTestData(const std::string& id,
@@ -240,9 +238,9 @@ size_t GetExternalInstallBubbleCount(ExtensionService* service) {
   return bubble_count;
 }
 
-scoped_refptr<Extension> CreateExtension(const std::string& name,
-                                         const base::FilePath& path,
-                                         Manifest::Location location) {
+scoped_refptr<const Extension> CreateExtension(const std::string& name,
+                                               const base::FilePath& path,
+                                               Manifest::Location location) {
   return ExtensionBuilder(name).SetPath(path).SetLocation(location).Build();
 }
 
@@ -733,8 +731,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     msg += extension_id + " " + pref_path;
 
     auto list_value = std::make_unique<base::ListValue>();
-    for (std::set<std::string>::const_iterator iter = value.begin();
-         iter != value.end(); ++iter)
+    for (auto iter = value.begin(); iter != value.end(); ++iter)
       list_value->AppendString(*iter);
 
     SetPref(extension_id, pref_path, std::move(list_value), msg);
@@ -4849,9 +4846,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   std::string origin_id = storage::GetIdentifierFromOrigin(ext_url);
 
   // Set a cookie for the extension.
-  net::CookieStore* cookie_store = profile()->GetRequestContextForExtensions()
-                                            ->GetURLRequestContext()
-                                            ->cookie_store();
+  net::CookieStore* cookie_store =
+      profile()->GetExtensionsCookieStoreGetter().Run();
   ASSERT_TRUE(cookie_store);
   net::CookieOptions options;
   cookie_store->SetCookieWithOptionsAsync(
@@ -6541,7 +6537,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
   InitializeEmptyExtensionService();
   service_->Init();
 
-  scoped_refptr<Extension> external_component_extension = CreateExtension(
+  scoped_refptr<const Extension> external_component_extension = CreateExtension(
       "external_component_extension",
       base::FilePath(FILE_PATH_LITERAL("//external_component_extension")),
       Manifest::EXTERNAL_COMPONENT);
@@ -6553,7 +6549,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
   EXPECT_TRUE(registry()->disabled_extensions().Contains(
       external_component_extension->id()));
 
-  scoped_refptr<Extension> component_extension = CreateExtension(
+  scoped_refptr<const Extension> component_extension = CreateExtension(
       "component_extension",
       base::FilePath(FILE_PATH_LITERAL("//component_extension")),
       Manifest::COMPONENT);
@@ -7091,7 +7087,8 @@ TEST_F(ExtensionServiceTest,
 TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
   InitializeEmptyExtensionService();
 
-  scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("extension").Build();
   ASSERT_TRUE(extension.get());
   const std::string& id = extension->id();
 
@@ -7145,7 +7142,7 @@ TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
 // Test that calls to disable Shared Modules do not work.
 TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   InitializeEmptyExtensionService();
-  scoped_refptr<Extension> extension =
+  scoped_refptr<const Extension> extension =
       ExtensionBuilder("Shared Module")
           .SetManifestPath({"export", "resources"},
                            ListBuilder().Append("foo.js").Build())
@@ -7325,47 +7322,62 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
   EXPECT_FALSE(service()->GetInstalledExtension(cast_stable));
 }
 
-TEST_F(ExtensionServiceTest, EnableZipUnpackerExtension) {
-  InitializeEmptyExtensionService();
+// Tests the case of a user installing a non-policy extension (e.g. through the
+// webstore), and that extension later becoming required by policy.
+// Regression test for https://crbug.com/894184.
+TEST_F(ExtensionServiceTest, UserInstalledExtensionThenRequiredByPolicy) {
+  InitializeEmptyExtensionServiceWithTestingPrefs();
 
-  scoped_refptr<const Extension> zip_unpacker_extension =
-      ExtensionBuilder("stable")
-          .SetID(zip_unpacker)
-          .SetLocation(Manifest::EXTERNAL_COMPONENT)
-          .Build();
-  service()->AddExtension(zip_unpacker_extension.get());
-  service()->DisableExtension(zip_unpacker,
-                              disable_reason::DISABLE_USER_ACTION);
-  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
+  // Install an extension as if the user did it.
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(path, INSTALL_NEW);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(good_crx, extension->id());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
 
-  service()->EnableZipUnpackerExtensionForTest();
-#if defined(OS_CHROMEOS)
-  ASSERT_TRUE(registry()->enabled_extensions().Contains(zip_unpacker));
-#else
-  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
-#endif
-}
+  std::string kVersionStr = "1.0.0.0";
+  EXPECT_EQ(kVersionStr, extension->VersionString());
 
-TEST_F(ExtensionServiceTest, ShouldNotEnableZipUnpackerExtensionAgainstPolicy) {
-  InitializeEmptyExtensionService();
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    // Mark good.crx for force-installation.
+    pref.SetIndividualExtensionAutoInstalled(
+        good_crx, "http://example.com/update_url", true);
+  }
 
-  GetManagementPolicy()->UnregisterAllProviders();
-  TestManagementPolicyProvider provider_(
-      TestManagementPolicyProvider::MUST_REMAIN_DISABLED);
-  GetManagementPolicy()->RegisterProvider(&provider_);
+  // Require good.crx by policy.
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  // TODO(devlin): Do we also need to check installing extensions with different
+  // versions?
+  provider->UpdateOrAddExtension(good_crx, kVersionStr,
+                                 data_dir().AppendASCII("good.crx"));
+  service()->CheckForExternalUpdates();
 
-  scoped_refptr<const Extension> zip_unpacker_extension =
-      ExtensionBuilder("stable")
-          .SetID(zip_unpacker)
-          .SetLocation(Manifest::EXTERNAL_COMPONENT)
-          .Build();
-  service()->AddExtension(zip_unpacker_extension.get());
-  service()->DisableExtension(zip_unpacker,
-                              disable_reason::DISABLE_USER_ACTION);
-  ASSERT_TRUE(registry()->disabled_extensions().Contains(zip_unpacker));
+  ExtensionManagement* management =
+      ExtensionManagementFactory::GetForBrowserContext(profile());
+  ExtensionManagement::InstallationMode installation_mode =
+      management->GetInstallationMode(extension);
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_FORCED, installation_mode);
 
-  service()->EnableZipUnpackerExtensionForTest();
-  ASSERT_FALSE(registry()->enabled_extensions().Contains(zip_unpacker));
+  // Reload all extensions.
+  service()->ReloadExtensionsForTest();
+
+  extension = registry()->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
+  ManagementPolicy* policy =
+      ExtensionSystem::Get(browser_context())->management_policy();
+  // The extension should still be installed, and should be required to
+  // remain installed.
+  EXPECT_TRUE(policy->MustRemainInstalled(extension, nullptr));
+  // TODO(devlin): This currently doesn't work, because the extension is still
+  // installed with Manifest::Location INTERNAL.
+  // EXPECT_FALSE(policy->UserMayModifySettings(extension, nullptr));
+
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_EQ(disable_reason::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+  EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
 }
 
 }  // namespace extensions

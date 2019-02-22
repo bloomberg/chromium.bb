@@ -1418,9 +1418,9 @@ taa.it
 tos.it
 toscana.it
 trentin-sud-tirol.it
-trentin-süd-tirol.it
+trentin-süd-tirol.it
 trentin-sudtirol.it
-trentin-südtirol.it
+trentin-südtirol.it
 trentin-sued-tirol.it
 trentin-suedtirol.it
 trentino-a-adige.it
@@ -1430,9 +1430,9 @@ trentino-altoadige.it
 trentino-s-tirol.it
 trentino-stirol.it
 trentino-sud-tirol.it
-trentino-süd-tirol.it
+trentino-süd-tirol.it
 trentino-sudtirol.it
-trentino-südtirol.it
+trentino-südtirol.it
 trentino-sued-tirol.it
 trentino-suedtirol.it
 trentino.it
@@ -1443,15 +1443,15 @@ trentinoaltoadige.it
 trentinos-tirol.it
 trentinostirol.it
 trentinosud-tirol.it
-trentinosüd-tirol.it
+trentinosüd-tirol.it
 trentinosudtirol.it
-trentinosüdtirol.it
+trentinosüdtirol.it
 trentinosued-tirol.it
 trentinosuedtirol.it
 trentinsud-tirol.it
-trentinsüd-tirol.it
+trentinsüd-tirol.it
 trentinsudtirol.it
-trentinsüdtirol.it
+trentinsüdtirol.it
 trentinsued-tirol.it
 trentinsuedtirol.it
 tuscany.it
@@ -1468,13 +1468,13 @@ valleaosta.it
 valled-aosta.it
 valledaosta.it
 vallee-aoste.it
-vallée-aoste.it
+vallée-aoste.it
 vallee-d-aoste.it
-vallée-d-aoste.it
+vallée-d-aoste.it
 valleeaoste.it
-valléeaoste.it
+valléeaoste.it
 valleedaoste.it
-valléedaoste.it
+valléedaoste.it
 vao.it
 vda.it
 ven.it
@@ -1508,7 +1508,7 @@ av.it
 avellino.it
 ba.it
 balsan-sudtirol.it
-balsan-südtirol.it
+balsan-südtirol.it
 balsan-suedtirol.it
 balsan.it
 bari.it
@@ -1527,7 +1527,7 @@ bologna.it
 bolzano-altoadige.it
 bolzano.it
 bozen-sudtirol.it
-bozen-südtirol.it
+bozen-südtirol.it
 bozen-suedtirol.it
 bozen.it
 br.it
@@ -1536,7 +1536,7 @@ brindisi.it
 bs.it
 bt.it
 bulsan-sudtirol.it
-bulsan-südtirol.it
+bulsan-südtirol.it
 bulsan-suedtirol.it
 bulsan.it
 bz.it
@@ -1556,9 +1556,9 @@ catanzaro.it
 cb.it
 ce.it
 cesena-forli.it
-cesena-forlì.it
+cesena-forlì.it
 cesenaforli.it
-cesenaforlì.it
+cesenaforlì.it
 ch.it
 chieti.it
 ci.it
@@ -1589,9 +1589,9 @@ florence.it
 fm.it
 foggia.it
 forli-cesena.it
-forlì-cesena.it
+forlì-cesena.it
 forlicesena.it
-forlìcesena.it
+forlìcesena.it
 fr.it
 frosinone.it
 ge.it
@@ -1722,7 +1722,7 @@ sp.it
 sr.it
 ss.it
 suedtirol.it
-südtirol.it
+südtirol.it
 sv.it
 ta.it
 taranto.it
@@ -3794,10 +3794,18 @@ gov.lr
 org.lr
 net.lr
 
-// ls : https://en.wikipedia.org/wiki/.ls
+// ls : http://www.nic.ls/
+// Confirmed by registry <lsadmin@nic.ls>
 ls
+ac.ls
+biz.ls
 co.ls
+edu.ls
+gov.ls
+info.ls
+net.ls
 org.ls
+sc.ls
 
 // lt : https://en.wikipedia.org/wiki/.lt
 lt
@@ -9878,9 +9886,6 @@ statebank
 // statefarm : 2015-07-30 State Farm Mutual Automobile Insurance Company
 statefarm
 
-// statoil : 2014-12-04 Statoil ASA
-statoil
-
 // stc : 2014-10-09 Saudi Telecom Company
 stc
 
@@ -10839,6 +10844,11 @@ sweetpepper.org
 // Submitted by Vincent Tseng <vincenttseng@asustor.com>
 myasustor.com
 
+// Automattic Inc. : https://automattic.com/
+// Submitted by Alex Concha <alex.concha@automattic.com>
+go-vip.co
+wpcomstaging.com
+
 // AVM : https://avm.de
 // Submitted by Andreas Weise <a.weise@avm.de>
 myfritz.net
@@ -10884,6 +10894,11 @@ square7.net
 // BrowserSafetyMark
 // Submitted by Dave Tharp <browsersafetymark.io@quicinc.com>
 browsersafetymark.io
+
+// Bytemark Hosting : https://www.bytemark.co.uk
+// Submitted by Paul Cammish <paul.cammish@bytemark.co.uk>
+dh.bytemark.co.uk
+vm.bytemark.co.uk
 
 // callidomus : https://www.callidomus.com/
 // Submitted by Marcus Popp <admin@callidomus.com>
@@ -11088,6 +11103,11 @@ dedyn.io
 // DNShome : https://www.dnshome.de/
 // Submitted by Norbert Auler <mail@dnshome.de>
 dnshome.de
+
+// DotArai : https://www.dotarai.com/
+// Submitted by Atsadawat Netcharadsang <atsadawat@dotarai.co.th>
+online.th
+shop.th
 
 // DrayTek Corp. : https://www.draytek.com/
 // Submitted by Paul Fang <mis@draytek.com>
@@ -11645,6 +11665,10 @@ cloud.fedoraproject.org
 app.os.fedoraproject.org
 app.os.stg.fedoraproject.org
 
+// Fermax : https://fermax.com/
+// submitted by Koen Van Isterdael <k.vanisterdael@fermax.be>
+mydobiss.com
+
 // Filegear Inc. : https://www.filegear.com
 // Submitted by Jason Zhu <jason@owtware.com>
 filegear.me
@@ -11931,6 +11955,15 @@ linkyard-cloud.ch
 // LiquidNet Ltd : http://www.liquidnetlimited.com/
 // Submitted by Victor Velchev <admin@liquidnetlimited.com>
 we.bs
+
+// LubMAN UMCS Sp. z o.o : https://lubman.pl/
+// Submitted by Ireneusz Maliszewski <ireneusz.maliszewski@lubman.pl>
+krasnik.pl
+leczna.pl
+lubartow.pl
+lublin.pl
+poniatowa.pl
+swidnik.pl
 
 // Lug.org.uk : https://lug.org.uk
 // Submitted by Jon Spriggs <admin@lug.org.uk>
@@ -12320,6 +12353,10 @@ protonet.io
 chirurgiens-dentistes-en-france.fr
 byen.site
 
+// Redstar Consultants : https://www.redstarconsultants.com/
+// Submitted by Jons Slemmer <jons@redstarconsultants.com>
+instantcloud.cn
+
 // Russian Academy of Sciences
 // Submitted by Tech Support <support@rasnet.ru>
 ras.ru
@@ -12347,6 +12384,10 @@ vaporcloud.io
 // Submitted by Kirill Pertsev <kika@rackmaze.com>
 rackmaze.com
 rackmaze.net
+
+// Read The Docs, Inc : https://www.readthedocs.org
+// Submitted by David Fischer <team@readthedocs.org>
+readthedocs.io
 
 // Red Hat, Inc. OpenShift : https://openshift.redhat.com/
 // Submitted by Tim Kramer <tkramer@rhcloud.com>
@@ -12423,6 +12464,10 @@ appchizi.com
 applinzi.com
 sinaapp.com
 vipsinaapp.com
+
+// Siteleaf : https://www.siteleaf.com/
+// Submitted by Skylar Challand <support@siteleaf.com>
+siteleaf.net
 
 // Skyhat : http://www.skyhat.io
 // Submitted by Shante Adam <shante@skyhat.io>

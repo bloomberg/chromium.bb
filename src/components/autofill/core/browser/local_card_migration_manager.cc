@@ -61,6 +61,10 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   if (!IsCreditCardMigrationEnabled())
     return false;
 
+  // Don't show the the prompt if user cancelled/rejected previously.
+  if (prefs::IsLocalCardMigrationPromptPreviouslyCancelled(client_->GetPrefs()))
+    return false;
+
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
   GetMigratableCreditCards();
 
@@ -83,15 +87,15 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
     return;
   migration_request_ = payments::PaymentsClient::MigrationRequestDetails();
 
-  // Don't send pan_first_six, as potentially migrating multiple local cards at
-  // once will negate its usefulness.
   payments_client_->GetUploadDetails(
       std::vector<AutofillProfile>(), GetDetectedValues(),
-      /*pan_first_six=*/std::string(),
       /*active_experiments=*/std::vector<const char*>(), app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
-      payments::kMigrateCardsBillableServiceNumber);
+      payments::kMigrateCardsBillableServiceNumber,
+      is_from_settings_page
+          ? payments::PaymentsClient::MigrationSource::SETTINGS_PAGE
+          : payments::PaymentsClient::MigrationSource::CHECKOUT_FLOW);
 }
 
 // Callback function when user agrees to migration on the intermediate dialog.
@@ -105,10 +109,21 @@ void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
 }
 
 // Send the migration request once risk data is available.
-void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
+    const std::vector<std::string>& selected_card_guids) {
   user_accepted_main_migration_dialog_ = true;
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
+  // Update the |migratable_credit_cards_| with the |selected_card_guids|. This
+  // will remove any card from |migratable_credit_cards_| of which the GUID is
+  // not in |selected_card_guids|.
+  auto card_is_selected = [&selected_card_guids](MigratableCreditCard& card) {
+    return !base::ContainsValue(selected_card_guids, card.credit_card().guid());
+  };
+  migratable_credit_cards_.erase(
+      std::remove_if(migratable_credit_cards_.begin(),
+                     migratable_credit_cards_.end(), card_is_selected),
+      migratable_credit_cards_.end());
   // Populating risk data and offering migration two-round pop-ups occur
   // asynchronously. If |migration_risk_data_| has already been loaded, send the
   // migrate local cards request. Otherwise, continue to wait and let
@@ -174,6 +189,7 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
   if (!save_result)
     return;
 
+  std::vector<CreditCard> migrated_cards;
   // Traverse the migratable credit cards to update each migrated card status.
   for (MigratableCreditCard& card : migratable_credit_cards_) {
     // Not every card exists in the |save_result| since some cards are unchecked
@@ -191,11 +207,15 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
       } else if (it->second == kMigrationResultSuccess) {
         card.set_migration_status(
             autofill::MigratableCreditCard::SUCCESS_ON_UPLOAD);
+        migrated_cards.push_back(card.credit_card());
       } else {
         NOTREACHED();
       }
     }
   }
+  // Remove cards that were successfully migrated from local storage.
+  personal_data_manager_->DeleteLocalCreditCards(migrated_cards);
+
   // TODO(crbug.com/852904): Trigger the show result window.
 }
 
@@ -220,6 +240,7 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
       migration_request_, migratable_credit_cards_,
       base::BindOnce(&LocalCardMigrationManager::OnDidMigrateLocalCards,
                      weak_ptr_factory_.GetWeakPtr()));
+  user_accepted_main_migration_dialog_ = false;
 }
 
 // Pops up a larger, modal dialog showing the local cards to be uploaded. Pass
@@ -227,7 +248,6 @@ void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {
 // OnUserAcceptedMainMigrationDialog(). Can be called when user agrees to
 // migration on the intermediate dialog or directly from settings page.
 void LocalCardMigrationManager::ShowMainMigrationDialog() {
-  user_accepted_main_migration_dialog_ = false;
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_SHOWN);
   // Pops up a larger, modal dialog showing the local cards to be uploaded.

@@ -17,7 +17,6 @@ js_type_check("closure_compile") {
     ":import_data_browser_proxy",
     ":import_data_dialog",
     ":lock_screen",
-    ":lock_screen_constants",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
     ":manage_profile",
@@ -121,24 +120,17 @@ js_library("lock_screen") {
     ":easy_unlock_browser_proxy",
     ":easy_unlock_turn_off_dialog",
     ":fingerprint_browser_proxy",
-    ":lock_screen_constants",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
     "..:route",
     "../controls:settings_dropdown_menu",
     "../controls:settings_toggle_button",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:web_ui_listener_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
-  ]
-}
-
-js_library("lock_screen_constants") {
-  deps = [
-    "//ui/webui/resources/cr_elements/cr_profile_avatar_selector:cr_profile_avatar_selector",
-    "//ui/webui/resources/js:cr",
   ]
 }
 
@@ -172,16 +164,15 @@ js_library("manage_profile_browser_proxy") {
 
 js_library("lock_screen_password_prompt_dialog") {
   deps = [
-    ":lock_screen_constants",
     ":lock_state_behavior",
     "../controls:password_prompt_dialog",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
   ]
 }
 
 js_library("people_page") {
   deps = [
     ":lock_screen",
-    ":lock_screen_constants",
     ":lock_state_behavior",
     ":profile_info_browser_proxy",
     ":signout_dialog",
@@ -189,6 +180,7 @@ js_library("people_page") {
     "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_png_behavior",
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
     "//ui/webui/resources/js:assert",
@@ -217,9 +209,9 @@ js_library("setup_fingerprint_dialog") {
 
 js_library("setup_pin_dialog") {
   deps = [
-    ":lock_screen_constants",
     ":lock_screen_password_prompt_dialog",
     "..:route",
+    "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

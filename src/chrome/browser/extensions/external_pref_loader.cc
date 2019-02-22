@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/lazy_task_runner.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -29,6 +30,7 @@
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 
@@ -103,8 +105,8 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
     browser_sync::ProfileSyncService* service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
-    if (service->CanSyncStart() && (service->IsFirstSetupComplete() ||
-                                    browser_defaults::kSyncAutoStarts)) {
+    if (service->CanSyncFeatureStart() && (service->IsFirstSetupComplete() ||
+                                           browser_defaults::kSyncAutoStarts)) {
       done_closure_ = std::move(done_closure);
       AddObservers();
     } else {
@@ -125,7 +127,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 
   // syncer::SyncServiceObserver
   void OnStateChanged(syncer::SyncService* sync) override {
-    if (!sync->CanSyncStart())
+    if (!sync->CanSyncFeatureStart())
       Finish();
   }
 
@@ -264,9 +266,9 @@ void ExternalPrefLoader::LoadOnFileThread() {
   if (!prefs->empty())
     CHECK(!base_path_.empty());
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(&ExternalPrefLoader::LoadFinished,
-                                         this, std::move(prefs)));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(&ExternalPrefLoader::LoadFinished,
+                                          this, std::move(prefs)));
 }
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(
@@ -322,9 +324,7 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
 
   // For each file read the json description & build the proper
   // associated prefs.
-  for (std::set<base::FilePath>::const_iterator it = candidates.begin();
-       it != candidates.end();
-       ++it) {
+  for (auto it = candidates.begin(); it != candidates.end(); ++it) {
     base::FilePath extension_candidate_path = base_path_.Append(*it);
 
     std::string id =

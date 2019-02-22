@@ -38,6 +38,13 @@ StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
     is_paint_image_ = true;
 }
 
+bool StyleGeneratedImage::IsEqual(const StyleImage& other) const {
+  if (!other.IsGeneratedImage())
+    return false;
+  const auto& other_generated = ToStyleGeneratedImage(other);
+  return image_generator_value_ == other_generated.image_generator_value_;
+}
+
 CSSValue* StyleGeneratedImage::CssValue() const {
   return image_generator_value_.Get();
 }

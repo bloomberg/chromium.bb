@@ -126,7 +126,11 @@ interface AudioContext : BaseAudioContext
     getter baseLatency
     method close
     method constructor
+    method createMediaElementSource
+    method createMediaStreamDestination
+    method createMediaStreamSource
     method getOutputTimestamp
+    method resume
     method suspend
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
@@ -251,9 +255,6 @@ interface BaseAudioContext : EventTarget
     method createDynamicsCompressor
     method createGain
     method createIIRFilter
-    method createMediaElementSource
-    method createMediaStreamDestination
-    method createMediaStreamSource
     method createOscillator
     method createPanner
     method createPeriodicWave
@@ -261,7 +262,6 @@ interface BaseAudioContext : EventTarget
     method createStereoPanner
     method createWaveShaper
     method decodeAudioData
-    method resume
     setter onstatechange
 interface BatteryManager : EventTarget
     attribute @@toStringTag
@@ -1174,6 +1174,9 @@ interface Document : Node
     getter firstElementChild
     getter fonts
     getter forms
+    getter fullscreen
+    getter fullscreenElement
+    getter fullscreenEnabled
     getter head
     getter hidden
     getter images
@@ -1213,6 +1216,8 @@ interface Document : Node
     getter onerror
     getter onfocus
     getter onfreeze
+    getter onfullscreenchange
+    getter onfullscreenerror
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -1274,7 +1279,6 @@ interface Document : Node
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter onwheel
-    getter origin
     getter pictureInPictureElement
     getter pictureInPictureEnabled
     getter plugins
@@ -1324,6 +1328,7 @@ interface Document : Node
     method elementsFromPoint
     method evaluate
     method execCommand
+    method exitFullscreen
     method exitPictureInPicture
     method exitPointerLock
     method getElementById
@@ -1357,6 +1362,9 @@ interface Document : Node
     setter dir
     setter domain
     setter fgColor
+    setter fullscreen
+    setter fullscreenElement
+    setter fullscreenEnabled
     setter linkColor
     setter onabort
     setter onauxclick
@@ -1388,6 +1396,8 @@ interface Document : Node
     setter onerror
     setter onfocus
     setter onfreeze
+    setter onfullscreenchange
+    setter onfullscreenerror
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -1514,11 +1524,9 @@ interface Element : Node
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
-    getter oncopy
-    getter oncut
-    getter onpaste
+    getter onfullscreenchange
+    getter onfullscreenerror
     getter onsearch
-    getter onselectstart
     getter onwebkitfullscreenchange
     getter onwebkitfullscreenerror
     getter outerHTML
@@ -1568,6 +1576,7 @@ interface Element : Node
     method removeAttributeNS
     method removeAttributeNode
     method replaceWith
+    method requestFullscreen
     method requestPointerLock
     method scroll
     method scrollBy
@@ -1590,11 +1599,9 @@ interface Element : Node
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
-    setter oncopy
-    setter oncut
-    setter onpaste
+    setter onfullscreenchange
+    setter onfullscreenerror
     setter onsearch
-    setter onselectstart
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter outerHTML
@@ -2094,7 +2101,9 @@ interface HTMLElement : Element
     getter onclick
     getter onclose
     getter oncontextmenu
+    getter oncopy
     getter oncuechange
+    getter oncut
     getter ondblclick
     getter ondrag
     getter ondragend
@@ -2127,6 +2136,7 @@ interface HTMLElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onpaste
     getter onpause
     getter onplay
     getter onplaying
@@ -2146,6 +2156,8 @@ interface HTMLElement : Element
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -2188,7 +2200,9 @@ interface HTMLElement : Element
     setter onclick
     setter onclose
     setter oncontextmenu
+    setter oncopy
     setter oncuechange
+    setter oncut
     setter ondblclick
     setter ondrag
     setter ondragend
@@ -2221,6 +2235,7 @@ interface HTMLElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onpaste
     setter onpause
     setter onplay
     setter onplaying
@@ -2240,6 +2255,8 @@ interface HTMLElement : Element
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -4208,6 +4225,7 @@ interface OfflineAudioContext : BaseAudioContext
     getter length
     getter oncomplete
     method constructor
+    method resume
     method startRendering
     method suspend
     setter oncomplete
@@ -4437,7 +4455,7 @@ interface PaymentRequestUpdateEvent : Event
     attribute @@toStringTag
     method constructor
     method updateWith
-interface PaymentResponse
+interface PaymentResponse : EventTarget
     attribute @@toStringTag
     getter details
     getter methodName
@@ -5214,7 +5232,9 @@ interface SVGElement : Element
     getter onclick
     getter onclose
     getter oncontextmenu
+    getter oncopy
     getter oncuechange
+    getter oncut
     getter ondblclick
     getter ondrag
     getter ondragend
@@ -5247,6 +5267,7 @@ interface SVGElement : Element
     getter onmouseover
     getter onmouseup
     getter onmousewheel
+    getter onpaste
     getter onpause
     getter onplay
     getter onplaying
@@ -5266,6 +5287,8 @@ interface SVGElement : Element
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -5296,7 +5319,9 @@ interface SVGElement : Element
     setter onclick
     setter onclose
     setter oncontextmenu
+    setter oncopy
     setter oncuechange
+    setter oncut
     setter ondblclick
     setter ondrag
     setter ondragend
@@ -5329,6 +5354,7 @@ interface SVGElement : Element
     setter onmouseover
     setter onmouseup
     setter onmousewheel
+    setter onpaste
     setter onpause
     setter onplay
     setter onplaying
@@ -5348,6 +5374,8 @@ interface SVGElement : Element
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -6265,6 +6293,7 @@ interface ShadowRoot : DocumentFragment
     attribute @@toStringTag
     getter activeElement
     getter delegatesFocus
+    getter fullscreenElement
     getter host
     getter innerHTML
     getter mode
@@ -6275,6 +6304,7 @@ interface ShadowRoot : DocumentFragment
     method elementFromPoint
     method elementsFromPoint
     method getSelection
+    setter fullscreenElement
     setter innerHTML
 interface SharedWorker : EventTarget
     attribute @@toStringTag
@@ -6318,6 +6348,10 @@ interface SourceBufferList : EventTarget
     method constructor
     setter onaddsourcebuffer
     setter onremovesourcebuffer
+interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface SpeechSynthesisEvent : Event
     attribute @@toStringTag
     getter charIndex
@@ -6469,11 +6503,25 @@ interface TextDecoder
     getter ignoreBOM
     method constructor
     method decode
+interface TextDecoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter fatal
+    getter ignoreBOM
+    getter readable
+    getter writable
+    method constructor
 interface TextEncoder
     attribute @@toStringTag
     getter encoding
     method constructor
     method encode
+interface TextEncoderStream
+    attribute @@toStringTag
+    getter encoding
+    getter readable
+    getter writable
+    method constructor
 interface TextEvent : UIEvent
     attribute @@toStringTag
     getter data
@@ -6623,6 +6671,7 @@ interface URL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
@@ -8087,12 +8136,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebKitAnimationEvent : Event
-    attribute @@toStringTag
-    getter animationName
-    getter elapsedTime
-    getter pseudoElement
-    method constructor
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -8158,12 +8201,6 @@ interface WebKitMutationObserver
     method disconnect
     method observe
     method takeRecords
-interface WebKitTransitionEvent : Event
-    attribute @@toStringTag
-    getter elapsedTime
-    getter propertyName
-    getter pseudoElement
-    method constructor
 interface WebSocket : EventTarget
     attribute @@toStringTag
     attribute CLOSED
@@ -8479,6 +8516,7 @@ interface webkitURL
     getter searchParams
     getter username
     method constructor
+    method toJSON
     method toString
     setter hash
     setter host
@@ -8499,6 +8537,7 @@ interface webkitURL
     attribute eventSender
     attribute frames
     attribute gamepadController
+    attribute globalThis
     attribute internals
     attribute length
     attribute location
@@ -8617,6 +8656,8 @@ interface webkitURL
     getter onseeked
     getter onseeking
     getter onselect
+    getter onselectionchange
+    getter onselectstart
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -8687,6 +8728,7 @@ interface webkitURL
     method postMessage
     method print
     method prompt
+    method queueMicrotask
     method releaseEvents
     method requestAnimationFrame
     method requestIdleCallback
@@ -8798,6 +8840,8 @@ interface webkitURL
     setter onseeked
     setter onseeking
     setter onselect
+    setter onselectionchange
+    setter onselectstart
     setter onstalled
     setter onstorage
     setter onsubmit

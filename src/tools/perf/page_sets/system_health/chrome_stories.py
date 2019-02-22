@@ -13,7 +13,7 @@ class BlankAboutBlankStory(system_health_story.SystemHealthStory):
   """Story that loads the about:blank page."""
   NAME = 'load:chrome:blank'
   URL = 'about:blank'
-  TAGS = [story_tags.HEALTH_CHECK]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
   def _DidLoadDocument(self, action_runner):
     # Request a RAF and wait for it to be processed to ensure that the metric
@@ -38,7 +38,7 @@ class SearchOmniboxStory(system_health_story.SystemHealthStory):
   NAME = 'browse:chrome:omnibox'
   URL = 'https://www.google.co.in'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
   # WebView has no omnibox, so not supported.
   WEBVIEW_NOT_SUPPORTED = True
 
@@ -74,7 +74,7 @@ class MobileNewTabPageStory(system_health_story.SystemHealthStory):
                    'how to tie a tie']
 
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET]
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
   # WebView has no tabs, so this story is not supported there.
   WEBVIEW_NOT_SUPPORTED = True
 

@@ -69,8 +69,10 @@ DriveFsHost::Delegate::CreateMojoConnectionDelegate() {
 
 // A container of state tied to a particular mounting of DriveFS. None of this
 // should be shared between mounts.
-class DriveFsHost::MountState : public mojom::DriveFsDelegate,
-                                public OAuth2MintTokenFlow::Delegate {
+class DriveFsHost::MountState
+    : public mojom::DriveFsDelegate,
+      public OAuth2MintTokenFlow::Delegate,
+      public chromeos::disks::DiskMountManager::Observer {
  public:
   explicit MountState(DriveFsHost* host)
       : host_(host),
@@ -78,6 +80,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
             host_->delegate_->CreateMojoConnectionDelegate()),
         pending_token_(base::UnguessableToken::Create()),
         binding_(this) {
+    chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
     source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
     std::string datadir_option =
         base::StrCat({"datadir=", host_->GetDataPath().value()});
@@ -112,6 +115,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
 
   ~MountState() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
     host_->timer_->Stop();
     if (pending_token_) {
       PendingConnectionManager::Get().CancelExpectedOpenIpcChannel(
@@ -142,28 +146,6 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mojo_connection_delegate_->AcceptMojoConnection(std::move(handle));
   }
 
-  // Returns false if there was an error for |source_path_| and thus if |this|
-  // should be deleted.
-  bool OnMountEvent(
-      chromeos::disks::DiskMountManager::MountEvent event,
-      chromeos::MountError error_code,
-      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (mount_info.mount_type != chromeos::MOUNT_TYPE_NETWORK_STORAGE ||
-        mount_info.source_path != source_path_ ||
-        event != chromeos::disks::DiskMountManager::MOUNTING) {
-      return true;
-    }
-    if (error_code != chromeos::MOUNT_ERROR_NONE) {
-      host_->delegate_->OnMountFailed({});
-      return false;
-    }
-    DCHECK(!mount_info.mount_path.empty());
-    mount_path_ = base::FilePath(mount_info.mount_path);
-    MaybeNotifyDelegateOnMounted();
-    return true;
-  }
-
  private:
   // mojom::DriveFsDelegate:
   void GetAccessToken(const std::string& client_id,
@@ -180,7 +162,7 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mint_token_flow_ =
         host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
     DCHECK(mint_token_flow_);
-    host_->GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
+    GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
         &DriveFsHost::MountState::AccountReady, base::Unretained(this)));
   }
 
@@ -194,14 +176,14 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
     drivefs_has_terminated_ = true;
-    host_->delegate_->OnMountFailed(std::move(remount_delay));
+    host_->mount_observer_->OnMountFailed(std::move(remount_delay));
   }
 
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     drivefs_has_mounted_ = false;
     drivefs_has_terminated_ = true;
-    host_->delegate_->OnUnmounted(std::move(remount_delay));
+    host_->mount_observer_->OnUnmounted(std::move(remount_delay));
   }
 
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
@@ -221,13 +203,22 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     }
   }
 
+  void OnError(mojom::DriveErrorPtr error) override {
+    if (!IsKnownEnumValue(error->type)) {
+      return;
+    }
+    for (auto& observer : host_->observers_) {
+      observer.OnError(*error);
+    }
+  }
+
   void OnConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (!drivefs_has_terminated_) {
       if (mounted())
-        host_->delegate_->OnUnmounted({});
+        host_->mount_observer_->OnUnmounted({});
       else
-        host_->delegate_->OnMountFailed({});
+        host_->mount_observer_->OnMountFailed({});
       drivefs_has_terminated_ = true;
     }
   }
@@ -240,13 +231,13 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   void MaybeNotifyDelegateOnMounted() {
     if (mounted()) {
       host_->timer_->Stop();
-      host_->delegate_->OnMounted(mount_path());
+      host_->mount_observer_->OnMounted(mount_path());
     }
   }
 
   void AccountReady(const AccountInfo& info,
                     const identity::AccountState& state) {
-    host_->GetIdentityManager().GetAccessToken(
+    GetIdentityManager().GetAccessToken(
         host_->delegate_->GetAccountId().GetUserEmail(), {},
         kIdentityConsumerId,
         base::BindOnce(&DriveFsHost::MountState::GotChromeAccessToken,
@@ -284,6 +275,36 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
     mint_token_flow_.reset();
   }
 
+  identity::mojom::IdentityManager& GetIdentityManager() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (!identity_manager_) {
+      host_->delegate_->GetConnector()->BindInterface(
+          identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+    }
+    return *identity_manager_;
+  }
+
+  // DiskMountManager::Observer:
+  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
+                    chromeos::MountError error_code,
+                    const chromeos::disks::DiskMountManager::MountPointInfo&
+                        mount_info) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (mount_info.mount_type != chromeos::MOUNT_TYPE_NETWORK_STORAGE ||
+        mount_info.source_path != source_path_ ||
+        event != chromeos::disks::DiskMountManager::MOUNTING) {
+      return;
+    }
+    if (error_code != chromeos::MOUNT_ERROR_NONE) {
+      host_->mount_observer_->OnMountFailed({});
+      host_->Unmount();
+      return;
+    }
+    DCHECK(!mount_info.mount_path.empty());
+    mount_path_ = base::FilePath(mount_info.mount_path);
+    MaybeNotifyDelegateOnMounted();
+  }
+
   // Owns |this|.
   DriveFsHost* const host_;
 
@@ -313,21 +334,26 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
   bool drivefs_has_mounted_ = false;
   bool drivefs_has_terminated_ = false;
 
+  // The connection to the identity service. Access via |GetIdentityManager()|.
+  identity::mojom::IdentityManagerPtr identity_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(MountState);
 };
 
 DriveFsHost::DriveFsHost(const base::FilePath& profile_path,
                          DriveFsHost::Delegate* delegate,
+                         DriveFsHost::MountObserver* mount_observer,
                          std::unique_ptr<base::OneShotTimer> timer)
     : profile_path_(profile_path),
       delegate_(delegate),
+      mount_observer_(mount_observer),
       timer_(std::move(timer)) {
-  chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
+  DCHECK(delegate_);
+  DCHECK(mount_observer_);
 }
 
 DriveFsHost::~DriveFsHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  chromeos::disks::DiskMountManager::GetInstance()->RemoveObserver(this);
 }
 
 void DriveFsHost::AddObserver(DriveFsHostObserver* observer) {
@@ -358,9 +384,12 @@ bool DriveFsHost::IsMounted() const {
   return mount_state_ && mount_state_->mounted();
 }
 
-const base::FilePath& DriveFsHost::GetMountPath() const {
-  DCHECK(mount_state_);
-  return mount_state_->mount_path();
+base::FilePath DriveFsHost::GetMountPath() const {
+  return mount_state_ && mount_state_->mounted()
+             ? mount_state_->mount_path()
+             : base::FilePath("/media/fuse")
+                   .Append(base::StrCat(
+                       {"drivefs-", delegate_->GetObfuscatedAccountId()}));
 }
 
 base::FilePath DriveFsHost::GetDataPath() const {
@@ -373,29 +402,6 @@ mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
     return nullptr;
   }
   return mount_state_->GetDriveFsInterface();
-}
-
-void DriveFsHost::OnMountEvent(
-    chromeos::disks::DiskMountManager::MountEvent event,
-    chromeos::MountError error_code,
-    const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!mount_state_) {
-    return;
-  }
-
-  if (!mount_state_->OnMountEvent(event, error_code, mount_info)) {
-    Unmount();
-  }
-}
-
-identity::mojom::IdentityManager& DriveFsHost::GetIdentityManager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_manager_) {
-    delegate_->GetConnector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
-  }
-  return *identity_manager_;
 }
 
 }  // namespace drivefs

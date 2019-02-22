@@ -72,7 +72,6 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   // Overridden from OAuth2TokenServiceDelegate.
   void Shutdown() override;
-  LoadCredentialsState GetLoadCredentialsState() const override;
 
   // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -206,9 +205,6 @@ class MutableProfileOAuth2TokenServiceDelegate
   // The primary account id of this service's profile during the loading of
   // credentials.  This member is empty otherwise.
   std::string loading_primary_account_id_;
-
-  // The state of the load credentials operation.
-  LoadCredentialsState load_credentials_state_;
 
   std::vector<std::unique_ptr<RevokeServerRefreshToken>> server_revokes_;
 

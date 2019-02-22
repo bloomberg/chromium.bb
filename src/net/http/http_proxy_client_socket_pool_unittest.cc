@@ -354,9 +354,6 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
   // so we skip this test for SPDY
   if (GetParam() == SPDY)
     return;
-  std::string proxy_host_port = GetParam() == HTTP
-                                    ? (kHttpProxyHost + std::string(":80"))
-                                    : (kHttpsProxyHost + std::string(":443"));
   std::string request =
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
       "Host: www.google.com:443\r\n"
@@ -382,9 +379,6 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
-  std::string proxy_host_port = GetParam() == HTTP
-                                    ? (kHttpProxyHost + std::string(":80"))
-                                    : (kHttpsProxyHost + std::string(":443"));
   std::string request =
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
       "Host: www.google.com:443\r\n"
@@ -892,6 +886,10 @@ TEST_P(HttpProxyClientSocketPoolTest,
 // returned underlying TCP sockets.
 #if defined(OS_ANDROID)
 TEST_P(HttpProxyClientSocketPoolTest, Tag) {
+  // Socket tagging only supports Android without data reduction proxy, so only
+  // HTTP proxies are supported.
+  if (GetParam() != HTTP)
+    return;
   Initialize(base::span<MockRead>(), base::span<MockWrite>(),
              base::span<MockRead>(), base::span<MockWrite>());
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
@@ -900,6 +898,57 @@ TEST_P(HttpProxyClientSocketPoolTest, Tag) {
   // Verify requested socket is tagged properly.
   int rv =
       handle_.Init("a", CreateNoTunnelParams(), LOW, tag1,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(handle_.is_initialized());
+  ASSERT_TRUE(handle_.socket());
+  EXPECT_TRUE(handle_.socket()->IsConnected());
+  EXPECT_EQ(socket_factory()->GetLastProducedTCPSocket()->tag(), tag1);
+  EXPECT_TRUE(
+      socket_factory()->GetLastProducedTCPSocket()->tagged_before_connected());
+
+  // Verify reused socket is retagged properly.
+  StreamSocket* socket = handle_.socket();
+  handle_.Reset();
+  rv = handle_.Init("a", CreateNoTunnelParams(), LOW, tag2,
+                    ClientSocketPool::RespectLimits::ENABLED,
+                    CompletionOnceCallback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(handle_.socket());
+  EXPECT_TRUE(handle_.socket()->IsConnected());
+  EXPECT_EQ(handle_.socket(), socket);
+  EXPECT_EQ(socket_factory()->GetLastProducedTCPSocket()->tag(), tag2);
+  handle_.socket()->Disconnect();
+  handle_.Reset();
+}
+
+TEST_P(HttpProxyClientSocketPoolTest, TagWithProxy) {
+  // Socket tagging only supports Android without data reduction proxy, so only
+  // HTTP proxies are supported.
+  if (GetParam() != HTTP)
+    return;
+  std::string request =
+      "CONNECT www.google.com:443 HTTP/1.1\r\n"
+      "Host: www.google.com:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n";
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, request.c_str()),
+  };
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
+  };
+
+  Initialize(reads, writes, base::span<MockRead>(), base::span<MockWrite>());
+  AddAuthToCache();
+
+  SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
+  SocketTag tag2(getuid(), 0x87654321);
+
+  // Verify requested socket is tagged properly.
+  int rv =
+      handle_.Init("a", CreateTunnelParams(), LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
                    CompletionOnceCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());

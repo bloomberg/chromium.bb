@@ -126,7 +126,9 @@ class KeyboardEmulator(object):
       for i in range(5):
         kbd.SwitchTab()
   """
-  REMOTE_LOG_KEY_FILENAME = '/usr/local/tmp/log_key_tab_switch'
+  REMOTE_TEMP_DIR = '/usr/local/tmp/'
+  REMOTE_LOG_KEY_FILENAME = 'log_key_tab_switch'
+  REMOTE_KEY_PROP_FILENAME = 'keyboard.prop'
 
   def __init__(self, dut_ip):
     """Inits KeyboardEmulator.
@@ -146,7 +148,8 @@ class KeyboardEmulator(object):
     Raises:
       RuntimeError: Keyboard emulation failed.
     """
-    kbd_prop_filename = '/usr/local/autotest/cros/input_playback/keyboard.prop'
+    kbd_prop_filename = os.path.join(KeyboardEmulator.REMOTE_TEMP_DIR,
+                                     KeyboardEmulator.REMOTE_KEY_PROP_FILENAME)
 
     ret = _RunCommand(self._dut_ip, 'test -e %s' % kbd_prop_filename)
     if ret != 0:
@@ -171,22 +174,25 @@ class KeyboardEmulator(object):
     return key_device_name
 
   def _SetupKeyDispatch(self):
-    """Uploads the script to send key to switch tabs."""
+    """Uploads required files to emulate keyboard."""
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    log_key_filename = os.path.join(cur_dir, 'data', 'log_key_tab_switch')
-    _CopyToDUT(self._dut_ip, log_key_filename,
-               KeyboardEmulator.REMOTE_LOG_KEY_FILENAME)
+    for filename in (KeyboardEmulator.REMOTE_KEY_PROP_FILENAME,
+                     KeyboardEmulator.REMOTE_LOG_KEY_FILENAME):
+      src = os.path.join(cur_dir, 'data', filename)
+      dest = os.path.join(KeyboardEmulator.REMOTE_TEMP_DIR, filename)
+      _CopyToDUT(self._dut_ip, src, dest)
 
   def __enter__(self):
-    self._key_device_name = self._StartRemoteKeyboardEmulator()
     self._SetupKeyDispatch()
+    self._key_device_name = self._StartRemoteKeyboardEmulator()
     return self
 
   def SwitchTab(self):
     """Sending Ctrl-tab key to trigger tab switching."""
+    log_key_filename = os.path.join(KeyboardEmulator.REMOTE_TEMP_DIR,
+                                    KeyboardEmulator.REMOTE_LOG_KEY_FILENAME)
     cmd = ('evemu-play --insert-slot0 %s < %s' %
-           (self._key_device_name,
-            KeyboardEmulator.REMOTE_LOG_KEY_FILENAME))
+           (self._key_device_name, log_key_filename))
     _RunCommand(self._dut_ip, cmd)
 
   def __exit__(self, exc_type, exc_value, traceback):

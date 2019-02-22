@@ -81,8 +81,8 @@ public class DialogOverlayImplTestRule extends ContentShellActivityTestRule {
             public long surfaceKey;
         }
 
-        private boolean mHasReceivedOverlayModeChange = false;
-        private boolean mUseOverlayMode = false;
+        private boolean mHasReceivedOverlayModeChange;
+        private boolean mUseOverlayMode;
 
         private ArrayBlockingQueue<Event> mPending;
 

@@ -102,7 +102,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="3171922709365450819">Az eszközt nem támogatja a kliens, mert harmadik fél általi hitelesítés szükséges hozzá.</translation>
 <translation id="3194245623920924351">Chrome távoliasztal-szolgáltatás</translation>
 <translation id="3197730452537982411">Távoli asztal</translation>
-<translation id="3212472844831225214">• Az Android 9.0 Pie támogatásának hozzáadása.</translation>
 <translation id="324272851072175193">Utasítások elküldése e-mailben</translation>
 <translation id="3258789396564295715">Biztonságosan hozzáférhet a számítógéphez a Chrome távoliasztal-szolgáltatás segítségével.</translation>
 <translation id="3286521253923406898">Chromoting gazdagépvezérlő</translation>
@@ -331,6 +330,8 @@ PC</translation>
 <translation id="8525306231823319788">Teljes képernyő</translation>
 <translation id="8548209692293300397">Korábban <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) felhasználóként jelentkezett be. A fiók számítógépeinek eléréséhez <ph name="LINK_BEGIN" />jelentkezzen be a Google Chrome-ba<ph name="LINK_END" /> az adott fiókkal, majd telepítse újra a Chrome távoliasztal-szolgáltatást.</translation>
 <translation id="8642984861538780905">Közepes</translation>
+<translation id="8705151241155781642">• Az Android 9.0 Pie támogatásának hozzáadása.
+• A távoli asztal felbontása átméretezésének engedélyezése annak érdekében, hogy egyezzen az Android-eszköz képernyőméretével.</translation>
 <translation id="8712909229180978490">Nem látom a mentett fájlokat online, a Google Drive-on.</translation>
 <translation id="8743328882720071828">Szeretné engedélyezni <ph name="CLIENT_USERNAME" /> számára, hogy lássa és irányítsa a számítógépet?</translation>
 <translation id="8747048596626351634">A munkamenet összeomlott vagy nem tudott elindulni. Ha található ~/.chrome-remote-desktop-session munkamenet a távoli számítógépen, győződjön meg arról, hogy hosszú ideig, előtérben futó folyamatot indít el, például asztali környezetet vagy ablakkezelőt.</translation>

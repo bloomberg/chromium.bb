@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -87,8 +88,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -161,7 +160,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -181,6 +179,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
@@ -264,8 +263,9 @@ namespace {
 // How long we wait before updating the browser chrome while loading a page.
 const int kUIUpdateCoalescingTimeMS = 200;
 
-BrowserWindow* CreateBrowserWindow(Browser* browser, bool user_gesture) {
-  return BrowserWindow::CreateBrowserWindow(browser, user_gesture);
+BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
+                                   bool user_gesture) {
+  return BrowserWindow::CreateBrowserWindow(std::move(browser), user_gesture);
 }
 
 // Is the fast tab unload experiment enabled?
@@ -304,6 +304,18 @@ MaybeCreateHostedAppController(Browser* browser) {
     return std::make_unique<extensions::HostedAppBrowserController>(browser);
 #endif
   return nullptr;
+}
+
+void UnmuteIfMutedByExtension(content::WebContents* contents,
+                              const std::string& extension_id) {
+  LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
+  LastMuteMetadata* const metadata =
+      LastMuteMetadata::FromWebContents(contents);
+  if (metadata->reason == TabMutedReason::EXTENSION &&
+      metadata->extension_id == extension_id) {
+    chrome::SetTabAudioMuted(contents, false, TabMutedReason::EXTENSION,
+                             extension_id);
+  }
 }
 
 }  // namespace
@@ -455,7 +467,8 @@ Browser::Browser(const CreateParams& params)
     return;
 
   window_ = params.window ? params.window
-                          : CreateBrowserWindow(this, params.user_gesture);
+                          : CreateBrowserWindow(std::unique_ptr<Browser>(this),
+                                                params.user_gesture);
 
   if (hosted_app_controller_)
     hosted_app_controller_->UpdateLocationBarVisibility(false);
@@ -1212,6 +1225,24 @@ void Browser::TabStripEmpty() {
   instant_controller_.reset();
 }
 
+void Browser::SetTopControlsShownRatio(content::WebContents* web_contents,
+                                       float ratio) {
+  window_->SetTopControlsShownRatio(web_contents, ratio);
+}
+
+int Browser::GetTopControlsHeight() const {
+  return window_->GetTopControlsHeight();
+}
+
+bool Browser::DoBrowserControlsShrinkRendererSize(
+    const content::WebContents* contents) const {
+  return window_->DoBrowserControlsShrinkRendererSize(contents);
+}
+
+void Browser::SetTopControlsGestureScrollInProgress(bool in_progress) {
+  window_->SetTopControlsGestureScrollInProgress(in_progress);
+}
+
 bool Browser::CanOverscrollContent() const {
 #if defined(OS_WIN)
   // Don't enable overscroll on Windows machines unless they have a touch
@@ -1429,6 +1460,33 @@ gfx::Size Browser::EnterPictureInPicture(const viz::SurfaceId& surface_id,
 
 void Browser::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
+}
+
+std::unique_ptr<content::WebContents> Browser::SwapWebContents(
+    content::WebContents* old_contents,
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  // Copies the background color and contents of the old WebContents to a new
+  // one that replaces it on the screen. This allows the new WebContents to
+  // have something to show before having loaded any contents. As a result, we
+  // avoid flashing white when navigating from a site with a dark background to
+  // another site with a dark background.
+  if (old_contents && new_contents) {
+    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
+    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
+    if (old_view && new_view)
+      new_view->TakeFallbackContentFrom(old_view);
+  }
+
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
+  DCHECK_NE(TabStripModel::kNoTab, index);
+  return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
 }
 
 bool Browser::IsMouseLocked() const {
@@ -1704,6 +1762,10 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   task_manager::WebContentsTags::CreateForTabContents(new_contents);
 }
 
+void Browser::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  TabHelpers::AttachTabHelpers(portal_web_contents);
+}
+
 void Browser::RendererUnresponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host,
@@ -1742,15 +1804,19 @@ content::ColorChooser* Browser::OpenColorChooser(
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
-void Browser::RunFileChooser(content::RenderFrameHost* render_frame_host,
-                             const content::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+void Browser::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
-void Browser::EnumerateDirectory(WebContents* web_contents,
-                                 int request_id,
-                                 const base::FilePath& path) {
-  FileSelectHelper::EnumerateDirectory(web_contents, request_id, path);
+void Browser::EnumerateDirectory(
+    WebContents* web_contents,
+    std::unique_ptr<content::FileSelectListener> listener,
+    const base::FilePath& path) {
+  FileSelectHelper::EnumerateDirectory(web_contents, std::move(listener), path);
 }
 
 bool Browser::EmbedsFullscreenWidget() const {
@@ -2005,33 +2071,6 @@ void Browser::PrintCrossProcessSubframe(
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, CoreTabHelperDelegate implementation:
 
-std::unique_ptr<content::WebContents> Browser::SwapTabContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  // Copies the background color and contents of the old WebContents to a new
-  // one that replaces it on the screen. This allows the new WebContents to
-  // have something to show before having loaded any contents. As a result, we
-  // avoid flashing white when navigating from a site whith a dark background to
-  // another site with a dark background.
-  if (old_contents && new_contents) {
-    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
-    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
-    if (old_view && new_view)
-      new_view->TakeFallbackContentFrom(old_view);
-  }
-
-  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
-  // directly about tab contents swaps.
-  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
-      old_contents, new_contents.get());
-
-  int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
-  DCHECK_NE(TabStripModel::kNoTab, index);
-  return tab_strip_model_->ReplaceWebContentsAt(index, std::move(new_contents));
-}
-
 bool Browser::CanReloadContents(content::WebContents* web_contents) const {
   return chrome::CanReload(this);
 }
@@ -2193,11 +2232,11 @@ void Browser::OnExtensionUnloaded(content::BrowserContext* browser_context,
       // installed.
       if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
            web_contents->GetURL().host_piece() == extension->id()) ||
-          (extensions::TabHelper::FromWebContents(web_contents)
-               ->extension_app() == extension)) {
+          (extensions::TabHelper::FromWebContents(web_contents)->GetAppId() ==
+           extension->id())) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);
       } else {
-        chrome::UnmuteIfMutedByExtension(web_contents, extension->id());
+        UnmuteIfMutedByExtension(web_contents, extension->id());
       }
     }
   }
@@ -2358,7 +2397,7 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
   if (!contents)
     return;
 
-  UpdateMap::iterator i = scheduled_updates_.find(contents);
+  auto i = scheduled_updates_.find(contents);
   if (i != scheduled_updates_.end())
     scheduled_updates_.erase(i);
 }

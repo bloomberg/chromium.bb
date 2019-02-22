@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "media/gpu/h264_decoder.h"
+#include "media/video/h264_level_limits.h"
 
 namespace media {
 
@@ -921,7 +922,7 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
   // in DPB afterwards would at least be equal to max_num_reorder_frames.
   // If the outputted picture is not a reference picture, it doesn't have
   // to remain in the DPB and can be removed.
-  H264Picture::Vector::iterator output_candidate = not_outputted.begin();
+  auto output_candidate = not_outputted.begin();
   size_t num_remaining = not_outputted.size();
   while (num_remaining > max_num_reorder_frames_ ||
          // If the condition below is used, this is an invalid stream. We should
@@ -962,42 +963,6 @@ bool H264Decoder::FinishPicture(scoped_refptr<H264Picture> pic) {
   }
 
   return true;
-}
-
-static int LevelToMaxDpbMbs(int level) {
-  // See table A-1 in spec.
-  switch (level) {
-    case 10:
-      return 396;
-    case 11:
-      return 900;
-    case 12:  //  fallthrough
-    case 13:  //  fallthrough
-    case 20:
-      return 2376;
-    case 21:
-      return 4752;
-    case 22:  //  fallthrough
-    case 30:
-      return 8100;
-    case 31:
-      return 18000;
-    case 32:
-      return 20480;
-    case 40:  //  fallthrough
-    case 41:
-      return 32768;
-    case 42:
-      return 34816;
-    case 50:
-      return 110400;
-    case 51:  //  fallthrough
-    case 52:
-      return 184320;
-    default:
-      DVLOG(1) << "Invalid codec level (" << level << ")";
-      return 0;
-  }
 }
 
 bool H264Decoder::UpdateMaxNumReorderFrames(const H264SPS* sps) {
@@ -1066,8 +1031,17 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     return false;
   }
 
-  int level = sps->level_idc;
-  int max_dpb_mbs = LevelToMaxDpbMbs(level);
+  // Spec A.3.1 and A.3.2
+  // For Baseline, Constrained Baseline and Main profile, the indicated level is
+  // Level 1b if level_idc is equal to 11 and constraint_set3_flag is equal to 1
+  uint8_t level = base::checked_cast<uint8_t>(sps->level_idc);
+  if ((sps->profile_idc == H264SPS::kProfileIDCBaseline ||
+       sps->profile_idc == H264SPS::kProfileIDCConstrainedBaseline ||
+       sps->profile_idc == H264SPS::kProfileIDCMain) &&
+      level == 11 && sps->constraint_set3_flag) {
+    level = 9;  // Level 1b
+  }
+  int max_dpb_mbs = base::checked_cast<int>(H264LevelToMaxDpbMbs(level));
   if (max_dpb_mbs == 0)
     return false;
 

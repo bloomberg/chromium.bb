@@ -71,6 +71,10 @@ enum PasswordGenerationEvent {
   // Context menu with generation item was shown.
   PASSWORD_GENERATION_CONTEXT_MENU_SHOWN,
 
+  // The generated password was removed from the field because a credential
+  // was autofilled.
+  PASSWORD_DELETED_BY_AUTOFILLING,
+
   // Number of enum entries, used for UMA histogram reporting macros.
   EVENT_ENUM_COUNT
 };

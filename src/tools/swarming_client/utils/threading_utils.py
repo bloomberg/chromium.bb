@@ -717,8 +717,9 @@ class TaskChannel(object):
   class Timeout(Exception):
     """Raised by 'pull' in case of timeout."""
 
-  _ITEM_RESULT = 0
-  _ITEM_EXCEPTION = 1
+  _ITEM_RESULT = object()
+  _ITEM_EXCEPTION = object()
+  _ITEM_DONE = object()
 
   def __init__(self):
     self._queue = Queue.Queue()
@@ -726,6 +727,10 @@ class TaskChannel(object):
   def send_result(self, result):
     """Enqueues a result of task execution."""
     self._queue.put((self._ITEM_RESULT, result))
+
+  def send_done(self):
+    """Stops the iteration."""
+    self._queue.put((self._ITEM_DONE, None))
 
   def send_exception(self, exc_info=None):
     """Enqueue an exception raised by a task.
@@ -748,7 +753,10 @@ class TaskChannel(object):
           exc_info[2])
     self._queue.put((self._ITEM_EXCEPTION, exc_info))
 
-  def pull(self, timeout=None):
+  def __iter__(self):
+    return self
+
+  def next(self, timeout=None):
     """Dequeues available result or exception.
 
     Args:
@@ -781,6 +789,8 @@ class TaskChannel(object):
       # another thread).
       assert isinstance(value, tuple) and len(value) == 3
       raise value[0], value[1], value[2]
+    if item_type == self._ITEM_DONE:
+      raise StopIteration()
     assert False, 'Impossible queue item type: %r' % item_type
 
   def wrap_task(self, task):

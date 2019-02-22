@@ -241,7 +241,7 @@ int32_t RTCVideoDecoder::Decode(
   }
 
   // Create buffer metadata.
-  BufferData buffer_data(next_bitstream_buffer_id_, input_image._timeStamp,
+  BufferData buffer_data(next_bitstream_buffer_id_, input_image.Timestamp(),
                          input_image._length, gfx::Rect(frame_size_));
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & ID_LAST;
@@ -361,8 +361,7 @@ void RTCVideoDecoder::DismissPictureBuffer(int32_t id) {
   DVLOG(3) << "DismissPictureBuffer. id=" << id;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32_t, media::PictureBuffer>::iterator it =
-      assigned_picture_buffers_.find(id);
+  auto it = assigned_picture_buffers_.find(id);
   if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << id;
     return;
@@ -385,8 +384,7 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
   DVLOG(3) << "PictureReady";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
-  std::map<int32_t, media::PictureBuffer>::iterator it =
-      assigned_picture_buffers_.find(picture.picture_buffer_id());
+  auto it = assigned_picture_buffers_.find(picture.picture_buffer_id());
   if (it == assigned_picture_buffers_.end()) {
     NOTREACHED() << "Missing picture buffer: " << picture.picture_buffer_id();
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);

@@ -159,7 +159,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     URLPattern pattern(valid_schemes);
 
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
-    if (parse_result != URLPattern::PARSE_SUCCESS) {
+    if (parse_result != URLPattern::ParseResult::kSuccess) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidMatch, base::IntToString(definition_index),
           base::NumberToString(j),
@@ -212,7 +212,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       URLPattern pattern(valid_schemes);
 
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);
-      if (parse_result != URLPattern::PARSE_SUCCESS) {
+      if (parse_result != URLPattern::ParseResult::kSuccess) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidExcludeMatch, base::IntToString(definition_index),
             base::NumberToString(j),

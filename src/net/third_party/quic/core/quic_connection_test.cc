@@ -376,7 +376,10 @@ class TestPacketWriter : public QuicPacketWriter {
 
   bool IsBatchMode() const override { return false; }
 
-  char* GetNextWriteLocation() const override { return nullptr; }
+  char* GetNextWriteLocation(const QuicIpAddress& self_address,
+                             const QuicSocketAddress& peer_address) override {
+    return nullptr;
+  }
 
   WriteResult Flush() override { return WriteResult(WRITE_STATUS_OK, 0); }
 
@@ -417,6 +420,10 @@ class TestPacketWriter : public QuicPacketWriter {
 
   const std::vector<QuicPingFrame>& ping_frames() const {
     return framer_.ping_frames();
+  }
+
+  const std::vector<QuicMessageFrame>& message_frames() const {
+    return framer_.message_frames();
   }
 
   const std::vector<QuicWindowUpdateFrame>& window_update_frames() const {
@@ -3618,6 +3625,119 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
   EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, IdleTimeoutAfterFirstSentPacket) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  QuicTime initial_ddl =
+      clock_.ApproximateNow() +
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+  EXPECT_EQ(initial_ddl, connection_.GetTimeoutAlarm()->deadline());
+  EXPECT_TRUE(connection_.connected());
+
+  // Advance the time and send the first packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(20));
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+  // This will be the updated deadline for the connection to idle time out.
+  QuicTime new_ddl = clock_.ApproximateNow() +
+                     QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+
+  // Simulate the timeout alarm firing, the connection should not be closed as
+  // a new packet has been sent.
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+  QuicTime::Delta delay = initial_ddl - clock_.ApproximateNow();
+  clock_.AdvanceTime(delay);
+  connection_.GetTimeoutAlarm()->Fire();
+  // Verify the timeout alarm deadline is updated.
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_EQ(new_ddl, connection_.GetTimeoutAlarm()->deadline());
+
+  // Simulate the timeout alarm firing again, the connection now should be
+  // closed.
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                           ConnectionCloseSource::FROM_SELF));
+  clock_.AdvanceTime(new_ddl - clock_.ApproximateNow());
+  connection_.GetTimeoutAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, IdleTimeoutAfterSendTwoPackets) {
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  QuicTime initial_ddl =
+      clock_.ApproximateNow() +
+      QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
+  EXPECT_EQ(initial_ddl, connection_.GetTimeoutAlarm()->deadline());
+  EXPECT_TRUE(connection_.connected());
+
+  // Immediately send the first packet, this is a rare case but test code will
+  // hit this issue often as MockClock used for tests doesn't move with code
+  // execution until manually adjusted.
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(1u, last_packet);
+
+  // Advance the time and send the second packet to the peer.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);
+  EXPECT_EQ(2u, last_packet);
+
+  if (GetQuicReloadableFlag(
+          quic_fix_time_of_first_packet_sent_after_receiving)) {
+    // Simulate the timeout alarm firing, the connection will be closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                             ConnectionCloseSource::FROM_SELF));
+    clock_.AdvanceTime(initial_ddl - clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+  } else {
+    // Simulate the timeout alarm firing, the connection will not be closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
+    clock_.AdvanceTime(initial_ddl - clock_.ApproximateNow());
+    connection_.GetTimeoutAlarm()->Fire();
+    EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+    EXPECT_TRUE(connection_.connected());
+
+    // Advance another 20ms, and fire the alarm again. The connection will be
+    // closed.
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
+                                             ConnectionCloseSource::FROM_SELF));
+    clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
+    connection_.GetTimeoutAlarm()->Fire();
+  }
+
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+
+  EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetPingAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
+  EXPECT_FALSE(connection_.GetRetransmittableOnWireAlarm()->IsSet());
+}
+
 TEST_P(QuicConnectionTest, HandshakeTimeout) {
   // Use a shorter handshake timeout than idle timeout for this test.
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(5);
@@ -5101,9 +5221,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
     }
     EXPECT_FALSE(writer_->ack_frames().empty());
     EXPECT_FALSE(connection_.GetAckAlarm()->IsSet());
-    if (!GetQuicReloadableFlag(quic_ack_reordered_packets)) {
-      break;
-    }
   }
 }
 
@@ -6579,6 +6696,40 @@ TEST_P(QuicConnectionTest, UnmarkPathDegradingOnForwardProgress) {
   EXPECT_TRUE(connection_.GetPathDegradingAlarm()->IsSet());
 }
 
+TEST_P(QuicConnectionTest, NoPathDegradingOnServer) {
+  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
+  set_perspective(Perspective::IS_SERVER);
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+
+  // Send data.
+  const char data[] = "data";
+  connection_.SendStreamDataWithString(1, data, 0, NO_FIN);
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+
+  // Ack data.
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  QuicAckFrame frame = InitAckFrame({{1u, 2u}});
+  ProcessAckPacket(&frame);
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+}
+
+TEST_P(QuicConnectionTest, NoPathDegradingAfterSendingAck) {
+  SetQuicReloadableFlag(quic_fix_path_degrading_alarm, true);
+
+  SendAckPacketToPeer();
+  EXPECT_FALSE(connection_.sent_packet_manager().unacked_packets().empty());
+  EXPECT_FALSE(connection_.sent_packet_manager().HasInFlightPackets());
+  EXPECT_FALSE(connection_.IsPathDegrading());
+  EXPECT_FALSE(connection_.GetPathDegradingAlarm()->IsSet());
+}
+
 TEST_P(QuicConnectionTest, MultipleCallsToCloseConnection) {
   // Verifies that multiple calls to CloseConnection do not
   // result in multiple attempts to close the connection - it will be marked as
@@ -6599,8 +6750,7 @@ TEST_P(QuicConnectionTest, ServerReceivesChloOnNonCryptoStream) {
   CryptoHandshakeMessage message;
   CryptoFramer framer;
   message.set_tag(kCHLO);
-  std::unique_ptr<QuicData> data(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_CLIENT));
+  std::unique_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
   frame1_.stream_id = 10;
   frame1_.data_buffer = data->data();
   frame1_.data_length = data->length();
@@ -6616,8 +6766,7 @@ TEST_P(QuicConnectionTest, ClientReceivesRejOnNonCryptoStream) {
   CryptoHandshakeMessage message;
   CryptoFramer framer;
   message.set_tag(kREJ);
-  std::unique_ptr<QuicData> data(
-      framer.ConstructHandshakeMessage(message, Perspective::IS_SERVER));
+  std::unique_ptr<QuicData> data(framer.ConstructHandshakeMessage(message));
   frame1_.stream_id = 10;
   frame1_.data_buffer = data->data();
   frame1_.data_length = data->length();
@@ -6683,9 +6832,6 @@ TEST_P(QuicConnectionTest, NotBecomeApplicationLimitedDueToWriteBlock) {
 
   connection_.SendStreamData3();
 
-  if (!GetQuicReloadableFlag(quic_retransmissions_app_limited)) {
-    return;
-  }
   // Now unblock the writer, become congestion control blocked,
   // and ensure we become app-limited after writing.
   writer_->SetWritable();
@@ -6838,6 +6984,8 @@ TEST_P(QuicConnectionTest, SendProbingRetransmissions) {
         EXPECT_EQ(3 * (sent_count % 3), writer_->stream_frames()[0]->offset);
         sent_count++;
       }));
+  EXPECT_CALL(*send_algorithm_, ShouldSendProbingPacket())
+      .WillRepeatedly(Return(true));
 
   connection_.SendProbingRetransmissions();
 
@@ -6851,11 +6999,13 @@ TEST_P(QuicConnectionTest, SendProbingRetransmissions) {
 // there are no outstanding packets.
 TEST_P(QuicConnectionTest,
        SendProbingRetransmissionsFailsWhenNothingToRetransmit) {
-  ASSERT_FALSE(connection_.sent_packet_manager().HasUnackedPackets());
+  ASSERT_TRUE(connection_.sent_packet_manager().unacked_packets().empty());
 
   MockQuicConnectionDebugVisitor debug_visitor;
   connection_.set_debug_visitor(&debug_visitor);
   EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _)).Times(0);
+  EXPECT_CALL(*send_algorithm_, ShouldSendProbingPacket())
+      .WillRepeatedly(Return(true));
 
   connection_.SendProbingRetransmissions();
 }
@@ -7060,6 +7210,38 @@ TEST_P(QuicConnectionTest, WriteBlockedWithInvalidAck) {
   // This causes connection to be closed because packet 1 has not been sent yet.
   QuicAckFrame frame = InitAckFrame(1);
   ProcessAckPacket(1, &frame);
+}
+
+TEST_P(QuicConnectionTest, SendMessage) {
+  if (connection_.transport_version() <= QUIC_VERSION_44) {
+    return;
+  }
+  QuicString message(connection_.GetLargestMessagePayload() * 2, 'a');
+  QuicStringPiece message_data(message);
+  {
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
+                                                QuicConnection::SEND_ACK);
+    connection_.SendStreamData3();
+    // Send a message which cannot fit into current open packet, and 2 packets
+    // get sent, one contains stream frame, and the other only contains the
+    // message frame.
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
+    EXPECT_EQ(MESSAGE_STATUS_SUCCESS,
+              connection_.SendMessage(
+                  1, QuicStringPiece(message_data.data(),
+                                     connection_.GetLargestMessagePayload())));
+  }
+  // Fail to send a message if connection is congestion control blocked.
+  EXPECT_CALL(*send_algorithm_, CanSend(_)).WillOnce(Return(false));
+  EXPECT_EQ(MESSAGE_STATUS_BLOCKED, connection_.SendMessage(2, "message"));
+
+  // Always fail to send a message which cannot fit into one packet.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  EXPECT_EQ(
+      MESSAGE_STATUS_TOO_LARGE,
+      connection_.SendMessage(
+          3, QuicStringPiece(message_data.data(),
+                             connection_.GetLargestMessagePayload() + 1)));
 }
 
 }  // namespace

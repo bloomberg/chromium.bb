@@ -15,6 +15,7 @@ mojom("mojo") {
     "overlay_transform.mojom",
     "presentation_feedback.mojom",
     "selection_bound.mojom",
+    "swap_result.mojom",
     "transform.mojom",
   ]
 

@@ -33,6 +33,7 @@ if (is_android) {
       ":crazy_linker_test_load_library",
       ":crazy_linker_test_load_library_callbacks",
       ":crazy_linker_test_load_library_depends",
+      ":crazy_linker_test_load_library_with_gnu_hash_table",
       ":crazy_linker_test_relocated_shared_relro",
       ":crazy_linker_test_search_path_list",
       ":crazy_linker_test_shared_relro",
@@ -58,6 +59,8 @@ if (is_android) {
         "src/src/crazy_linker_debug.cpp",
         "src/src/crazy_linker_debug.h",
         "src/src/crazy_linker_defines.h",
+        "src/src/crazy_linker_elf_hash_table.cpp",
+        "src/src/crazy_linker_elf_hash_table.h",
         "src/src/crazy_linker_elf_loader.cpp",
         "src/src/crazy_linker_elf_loader.h",
         "src/src/crazy_linker_elf_relocations.cpp",
@@ -72,12 +75,15 @@ if (is_android) {
         "src/src/crazy_linker_error.h",
         "src/src/crazy_linker_globals.cpp",
         "src/src/crazy_linker_globals.h",
+        "src/src/crazy_linker_gnu_hash_table.cpp",
+        "src/src/crazy_linker_gnu_hash_table.h",
         "src/src/crazy_linker_library_list.cpp",
         "src/src/crazy_linker_library_list.h",
         "src/src/crazy_linker_library_view.cpp",
         "src/src/crazy_linker_library_view.h",
         "src/src/crazy_linker_line_reader.cpp",
         "src/src/crazy_linker_line_reader.h",
+        "src/src/crazy_linker_memory_mapping.cpp",
         "src/src/crazy_linker_memory_mapping.h",
         "src/src/crazy_linker_pointer_set.cpp",
         "src/src/crazy_linker_pointer_set.h",
@@ -145,8 +151,11 @@ if (is_android) {
   test("android_crazy_linker_unittests") {
     sources = [
       "src/src/crazy_linker_ashmem_unittest.cpp",
+      "src/src/crazy_linker_elf_hash_table_unittest.cpp",
+      "src/src/crazy_linker_elf_symbols_unittest.cpp",
       "src/src/crazy_linker_error_unittest.cpp",
       "src/src/crazy_linker_globals_unittest.cpp",
+      "src/src/crazy_linker_gnu_hash_table_unittest.cpp",
       "src/src/crazy_linker_line_reader_unittest.cpp",
       "src/src/crazy_linker_pointer_set_unittest.cpp",
       "src/src/crazy_linker_proc_maps_unittest.cpp",
@@ -178,19 +187,17 @@ if (is_android) {
 
   template("crazy_linker_test_library") {
     shared_library(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "data_deps",
+                               "defines",
+                               "ldflags",
+                             ])
       sources = invoker.sources
       libs = [ "log" ]
-      if (defined(invoker.deps)) {
-        deps = invoker.deps
-      }
-      if (defined(invoker.data_deps)) {
-        data_deps = invoker.data_deps
-      }
       if (defined(invoker.libs)) {
         libs += invoker.libs
-      }
-      if (defined(invoker.defines)) {
-        defines = invoker.defines
       }
 
       # This is not Chromium code.
@@ -210,6 +217,13 @@ if (is_android) {
     sources = [
       "src/tests/foo.cpp",
     ]
+  }
+
+  crazy_linker_test_library("crazy_linker_tests_libfoo_with_gnu_hash_table") {
+    sources = [
+      "src/tests/foo.cpp",
+    ]
+    ldflags = [ "-Wl,--hash-style=gnu" ]
   }
 
   crazy_linker_test_library("crazy_linker_tests_libfoo2") {
@@ -361,6 +375,20 @@ if (is_android) {
     ]
     data_deps = [
       ":crazy_linker_tests_libfoo_with_static_constructor",
+    ]
+    deps = [
+      ":android_crazy_linker",
+    ]
+  }
+
+  executable("crazy_linker_test_load_library_with_gnu_hash_table") {
+    sources = [
+      "src/tests/test_load_library.cpp",
+    ]
+    defines =
+        [ "LIB_NAME=\"libcrazy_linker_tests_libfoo_with_gnu_hash_table.so\"" ]
+    data_deps = [
+      ":crazy_linker_tests_libfoo_with_gnu_hash_table",
     ]
     deps = [
       ":android_crazy_linker",

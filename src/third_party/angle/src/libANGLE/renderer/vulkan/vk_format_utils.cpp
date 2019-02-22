@@ -63,6 +63,30 @@ bool HasFullBufferFormatSupport(VkPhysicalDevice physicalDevice, VkFormat vkForm
     return formatProperties.bufferFeatures & VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
 }
 
+using SupportTest = bool (*)(VkPhysicalDevice physicalDevice, VkFormat vkFormat);
+
+template <class FormatInitInfo>
+int FindSupportedFormat(VkPhysicalDevice physicalDevice,
+                        const FormatInitInfo *info,
+                        int numInfo,
+                        SupportTest hasSupport)
+{
+    ASSERT(numInfo > 1);
+    const int last = numInfo - 1;
+
+    for (int i = 0; i < last; ++i)
+    {
+        ASSERT(info[i].format != angle::FormatID::NONE);
+        if (hasSupport(physicalDevice, info[i].vkFormat))
+            return i;
+    }
+
+    // List must contain a supported item.  We failed on all the others so the last one must be it.
+    ASSERT(info[last].format != angle::FormatID::NONE);
+    ASSERT(hasSupport(physicalDevice, info[last].vkFormat));
+    return last;
+}
+
 }  // anonymous namespace
 
 namespace vk
@@ -99,64 +123,32 @@ Format::Format()
       vkTextureFormat(VK_FORMAT_UNDEFINED),
       bufferFormatID(angle::FormatID::NONE),
       vkBufferFormat(VK_FORMAT_UNDEFINED),
+      vkBufferFormatIsPacked(false),
       textureInitializerFunction(nullptr),
       textureLoadFunctions()
 {
 }
 
 void Format::initTextureFallback(VkPhysicalDevice physicalDevice,
-                                 angle::FormatID format,
-                                 VkFormat vkFormat,
-                                 InitializeTextureDataFunction initializer,
-                                 angle::FormatID fallbackFormat,
-                                 VkFormat fallbackVkFormat,
-                                 InitializeTextureDataFunction fallbackInitializer)
+                                 const TextureFormatInitInfo *info,
+                                 int numInfo)
 {
-    ASSERT(format != angle::FormatID::NONE);
-    ASSERT(fallbackFormat != angle::FormatID::NONE);
-
-    if (HasFullTextureFormatSupport(physicalDevice, vkFormat))
-    {
-        textureFormatID            = format;
-        vkTextureFormat            = vkFormat;
-        textureInitializerFunction = initializer;
-    }
-    else
-    {
-        textureFormatID            = fallbackFormat;
-        vkTextureFormat            = fallbackVkFormat;
-        textureInitializerFunction = fallbackInitializer;
-        ASSERT(HasFullTextureFormatSupport(physicalDevice, vkTextureFormat));
-    }
+    int i = FindSupportedFormat(physicalDevice, info, numInfo, HasFullTextureFormatSupport);
+    textureFormatID            = info[i].format;
+    vkTextureFormat            = info[i].vkFormat;
+    textureInitializerFunction = info[i].initializer;
 }
 
 void Format::initBufferFallback(VkPhysicalDevice physicalDevice,
-                                angle::FormatID format,
-                                VkFormat vkFormat,
-                                VertexCopyFunction function,
-                                bool functionConverts,
-                                angle::FormatID fallbackFormat,
-                                VkFormat fallbackVkFormat,
-                                VertexCopyFunction fallbackFunction)
+                                const BufferFormatInitInfo *info,
+                                int numInfo)
 {
-    ASSERT(format != angle::FormatID::NONE);
-    ASSERT(fallbackFormat != angle::FormatID::NONE);
-
-    if (HasFullBufferFormatSupport(physicalDevice, vkFormat))
-    {
-        bufferFormatID               = format;
-        vkBufferFormat               = vkFormat;
-        vertexLoadFunction           = function;
-        vertexLoadRequiresConversion = functionConverts;
-    }
-    else
-    {
-        bufferFormatID               = fallbackFormat;
-        vkBufferFormat               = fallbackVkFormat;
-        vertexLoadFunction           = fallbackFunction;
-        vertexLoadRequiresConversion = true;
-        ASSERT(HasFullBufferFormatSupport(physicalDevice, vkBufferFormat));
-    }
+    int i          = FindSupportedFormat(physicalDevice, info, numInfo, HasFullBufferFormatSupport);
+    bufferFormatID = info[i].format;
+    vkBufferFormat = info[i].vkFormat;
+    vkBufferFormatIsPacked       = info[i].vkFormatIsPacked;
+    vertexLoadFunction           = info[i].vertexLoadFunction;
+    vertexLoadRequiresConversion = info[i].vertexLoadRequiresConversion;
 }
 
 const angle::Format &Format::textureFormat() const
@@ -242,4 +234,10 @@ const Format &FormatTable::operator[](angle::FormatID formatID) const
 
 }  // namespace vk
 
+size_t GetVertexInputAlignment(const vk::Format &format)
+{
+    const angle::Format &bufferFormat = format.bufferFormat();
+    size_t pixelBytes = bufferFormat.pixelBytes;
+    return format.vkBufferFormatIsPacked ? pixelBytes : (pixelBytes / bufferFormat.channelCount());
+}
 }  // namespace rx

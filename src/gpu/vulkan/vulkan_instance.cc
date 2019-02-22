@@ -46,7 +46,8 @@ VulkanInstance::~VulkanInstance() {
 }
 
 bool VulkanInstance::Initialize(
-    const std::vector<const char*>& required_extensions) {
+    const std::vector<const char*>& required_extensions,
+    const std::vector<const char*>& required_layers) {
   DCHECK(!vk_instance_);
 
   VulkanFunctionPointers* vulkan_function_pointers =
@@ -124,6 +125,9 @@ bool VulkanInstance::Initialize(
       enabled_layer_names.push_back(layer_property.layerName);
   }
 #endif
+  enabled_layer_names.insert(std::end(enabled_layer_names),
+                             std::begin(required_layers),
+                             std::end(required_layers));
 
   VkInstanceCreateInfo instance_create_info = {};
   instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

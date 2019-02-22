@@ -19,6 +19,7 @@
 namespace content {
 namespace {
 
+const char kDeveloperId[] = "my-fetch";
 const char kPrimaryUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kSecondaryUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
@@ -32,16 +33,24 @@ class TestRegistrationObserver
     ProgressUpdate(uint64_t upload_total,
                    uint64_t uploaded,
                    uint64_t download_total,
-                   uint64_t downloaded)
+                   uint64_t downloaded,
+                   blink::mojom::BackgroundFetchResult result,
+                   blink::mojom::BackgroundFetchFailureReason failure_reason)
         : upload_total(upload_total),
           uploaded(uploaded),
           download_total(download_total),
-          downloaded(downloaded) {}
+          downloaded(downloaded),
+          result(result),
+          failure_reason(failure_reason) {}
 
     uint64_t upload_total = 0;
     uint64_t uploaded = 0;
     uint64_t download_total = 0;
     uint64_t downloaded = 0;
+    blink::mojom::BackgroundFetchResult result =
+        blink::mojom::BackgroundFetchResult::UNSET;
+    blink::mojom::BackgroundFetchFailureReason failure_reason =
+        blink::mojom::BackgroundFetchFailureReason::NONE;
   };
 
   TestRegistrationObserver() : binding_(this) {}
@@ -62,18 +71,26 @@ class TestRegistrationObserver
     return progress_updates_;
   }
 
+  bool records_available() const { return records_available_; }
+
   // blink::mojom::BackgroundFetchRegistrationObserver implementation.
-  void OnProgress(uint64_t upload_total,
-                  uint64_t uploaded,
-                  uint64_t download_total,
-                  uint64_t downloaded) override {
+  void OnProgress(
+      uint64_t upload_total,
+      uint64_t uploaded,
+      uint64_t download_total,
+      uint64_t downloaded,
+      blink::mojom::BackgroundFetchResult result,
+      blink::mojom::BackgroundFetchFailureReason failure_reason) override {
     progress_updates_.emplace_back(upload_total, uploaded, download_total,
-                                   downloaded);
+                                   downloaded, result, failure_reason);
   }
+
+  void OnRecordsUnavailable() override { records_available_ = false; }
 
  private:
   std::vector<ProgressUpdate> progress_updates_;
   mojo::Binding<blink::mojom::BackgroundFetchRegistrationObserver> binding_;
+  bool records_available_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestRegistrationObserver);
 };
@@ -89,22 +106,21 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
 
   // Notifies all observers for the |unique_id| of the made progress, and waits
   // until the task runner managing the Mojo connection has finished.
-  void Notify(const std::string& unique_id,
-              uint64_t download_total,
-              uint64_t downloaded) {
-    notifier_->Notify(unique_id, download_total, downloaded);
+  void Notify(const BackgroundFetchRegistration& registration) {
+    notifier_->Notify(registration);
     task_runner_->RunUntilIdle();
   }
 
-  void CollectGarbage() { garbage_collected_ = true; }
+  void NotifyRecordsUnavailable(const std::string& unique_id) {
+    notifier_->NotifyRecordsUnavailable(unique_id);
+    task_runner_->RunUntilIdle();
+  }
 
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
 
   std::unique_ptr<BackgroundFetchRegistrationNotifier> notifier_;
-
-  bool garbage_collected_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRegistrationNotifierTest);
@@ -116,7 +132,11 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
+  Notify(BackgroundFetchRegistration(
+      kDeveloperId, kPrimaryUniqueId,
+      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+      blink::mojom::BackgroundFetchResult::UNSET,
+      blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
@@ -126,6 +146,9 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   EXPECT_EQ(update.uploaded, 0u);
   EXPECT_EQ(update.download_total, kDownloadTotal);
   EXPECT_EQ(update.downloaded, kDownloaded);
+  EXPECT_EQ(update.result, blink::mojom::BackgroundFetchResult::UNSET);
+  EXPECT_EQ(update.failure_reason,
+            blink::mojom::BackgroundFetchFailureReason::NONE);
 }
 
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
@@ -145,7 +168,11 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
   ASSERT_EQ(secondary_observer->progress_updates().size(), 0u);
 
   // Notify the |kPrimaryUniqueId|.
-  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
+  Notify(BackgroundFetchRegistration(
+      kDeveloperId, kPrimaryUniqueId,
+      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+      blink::mojom::BackgroundFetchResult::UNSET,
+      blink::mojom::BackgroundFetchFailureReason::NONE));
 
   for (auto& observer : primary_observers) {
     ASSERT_EQ(observer->progress_updates().size(), 1u);
@@ -156,6 +183,9 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
     EXPECT_EQ(update.uploaded, 0u);
     EXPECT_EQ(update.download_total, kDownloadTotal);
     EXPECT_EQ(update.downloaded, kDownloaded);
+    EXPECT_EQ(update.result, blink::mojom::BackgroundFetchResult::UNSET);
+    EXPECT_EQ(update.failure_reason,
+              blink::mojom::BackgroundFetchFailureReason::NONE);
   }
 
   // The observer for |kSecondaryUniqueId| should not have been notified.
@@ -169,14 +199,22 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
+  Notify(BackgroundFetchRegistration(
+      kDeveloperId, kPrimaryUniqueId,
+      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+      blink::mojom::BackgroundFetchResult::UNSET,
+      blink::mojom::BackgroundFetchFailureReason::NONE));
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   // Closes the binding as would be done from the renderer process.
   observer->Close();
 
-  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
+  Notify(BackgroundFetchRegistration(
+      kDeveloperId, kPrimaryUniqueId,
+      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+      blink::mojom::BackgroundFetchResult::UNSET,
+      blink::mojom::BackgroundFetchFailureReason::NONE));
 
   // The observers for |kPrimaryUniqueId| were removed, so no second update
   // should have been received by the |observer|.
@@ -189,44 +227,25 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyWithoutObservers) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kSecondaryUniqueId, kDownloadTotal, kDownloaded);
+  Notify(BackgroundFetchRegistration(
+      kDeveloperId, kSecondaryUniqueId,
+      /* upload_total*/ 0, /* uploaded*/ 0, kDownloadTotal, kDownloaded,
+      blink::mojom::BackgroundFetchResult::UNSET,
+      blink::mojom::BackgroundFetchFailureReason::NONE));
 
   // Because the notification was for |kSecondaryUniqueId|, no progress updates
   // should be received by the |observer|.
   EXPECT_EQ(observer->progress_updates().size(), 0u);
 }
 
-TEST_F(BackgroundFetchRegistrationNotifierTest,
-       AddGarbageCollectionCallback_NoObservers) {
-  notifier_->AddGarbageCollectionCallback(
-      kPrimaryUniqueId,
-      base::BindOnce(&BackgroundFetchRegistrationNotifierTest::CollectGarbage,
-                     base::Unretained(this)));
-
-  ASSERT_TRUE(garbage_collected_)
-      << "Garbage should be collected when there are no observers";
-}
-
-TEST_F(BackgroundFetchRegistrationNotifierTest,
-       AddGarbageCollectionCallback_OneObserver) {
+TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
-  auto foo = observer->GetPtr();
-  notifier_->AddObserver(kPrimaryUniqueId, std::move(foo));
-  notifier_->AddGarbageCollectionCallback(
-      kPrimaryUniqueId,
-      base::BindOnce(&BackgroundFetchRegistrationNotifierTest::CollectGarbage,
-                     base::Unretained(this)));
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  ASSERT_TRUE(observer->records_available());
 
-  ASSERT_FALSE(garbage_collected_)
-      << "Garbage should not be collected when there is an observer";
-
-  observer->Close();
-
-  // TODO(crbug.com/777764): Add this back when non-exceptional binding closures
-  // are detected properly.
-  // ASSERT_TRUE(garbage_collected_) << "Garbage should be collected when the
-  //                                    "observer is closed.";
+  NotifyRecordsUnavailable(kPrimaryUniqueId);
+  ASSERT_FALSE(observer->records_available());
 }
 
 }  // namespace

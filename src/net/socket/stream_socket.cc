@@ -8,6 +8,11 @@
 
 namespace net {
 
+void StreamSocket::SetBeforeConnectCallback(
+    const BeforeConnectCallback& before_connect_callback) {
+  NOTREACHED();
+}
+
 void StreamSocket::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) const {
   NOTREACHED();
@@ -16,13 +21,6 @@ void StreamSocket::GetSSLCertRequestInfo(
 ChannelIDService* StreamSocket::GetChannelIDService() const {
   NOTREACHED();
   return nullptr;
-}
-
-Error StreamSocket::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                             TokenBindingType tb_type,
-                                             std::vector<uint8_t>* out) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
 }
 
 crypto::ECPrivateKey* StreamSocket::GetChannelIDKey() const {

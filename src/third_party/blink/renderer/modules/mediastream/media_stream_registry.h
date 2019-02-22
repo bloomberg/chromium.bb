@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -50,7 +51,7 @@ class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
 
  private:
   MediaStreamRegistry();
-  PersistentHeapHashMap<String, Member<MediaStreamDescriptor>>
+  Persistent<HeapHashMap<String, Member<MediaStreamDescriptor>>>
       stream_descriptors_;
 };
 

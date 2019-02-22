@@ -95,7 +95,7 @@ VerifiedRulesetDealer::Handle::Handle(
 VerifiedRulesetDealer::Handle::~Handle() = default;
 
 void VerifiedRulesetDealer::Handle::GetDealerAsync(
-    base::Callback<void(VerifiedRulesetDealer*)> callback) {
+    base::OnceCallback<void(VerifiedRulesetDealer*)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // NOTE: Properties of the sequenced |task_runner| guarantee that the
@@ -140,8 +140,8 @@ void VerifiedRuleset::Initialize(VerifiedRulesetDealer* dealer) {
 VerifiedRuleset::Handle::Handle(VerifiedRulesetDealer::Handle* dealer_handle)
     : task_runner_(dealer_handle->task_runner()),
       ruleset_(new VerifiedRuleset, base::OnTaskRunnerDeleter(task_runner_)) {
-  dealer_handle->GetDealerAsync(base::Bind(&VerifiedRuleset::Initialize,
-                                           base::Unretained(ruleset_.get())));
+  dealer_handle->GetDealerAsync(base::BindOnce(
+      &VerifiedRuleset::Initialize, base::Unretained(ruleset_.get())));
 }
 
 VerifiedRuleset::Handle::~Handle() {
@@ -149,9 +149,10 @@ VerifiedRuleset::Handle::~Handle() {
 }
 
 void VerifiedRuleset::Handle::GetRulesetAsync(
-    base::Callback<void(VerifiedRuleset*)> callback) {
+    base::OnceCallback<void(VerifiedRuleset*)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, ruleset_.get()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(callback), ruleset_.get()));
 }
 
 }  // namespace subresource_filter

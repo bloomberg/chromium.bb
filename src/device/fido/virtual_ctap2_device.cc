@@ -123,6 +123,7 @@ std::vector<uint8_t> ConstructMakeCredentialResponse(
   }
 
   AuthenticatorMakeCredentialResponse make_credential_response(
+      FidoTransportProtocol::kUsbHumanInterfaceDevice,
       AttestationObject(
           std::move(authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(

@@ -47,12 +47,11 @@ Buffer::~Buffer()
     SafeDelete(mImpl);
 }
 
-Error Buffer::onDestroy(const Context *context)
+void Buffer::onDestroy(const Context *context)
 {
     // In tests, mImpl might be null.
     if (mImpl)
         mImpl->destroy(context);
-    return NoError();
 }
 
 void Buffer::setLabel(const std::string &label)
@@ -65,7 +64,7 @@ const std::string &Buffer::getLabel() const
     return mState.mLabel;
 }
 
-Error Buffer::bufferData(const Context *context,
+Error Buffer::bufferData(Context *context,
                          BufferBinding target,
                          const void *data,
                          GLsizeiptr size,
@@ -79,8 +78,8 @@ Error Buffer::bufferData(const Context *context,
     if (context && context->getGLState().isRobustResourceInitEnabled() && !data && size > 0)
     {
         angle::MemoryBuffer *scratchBuffer = nullptr;
-        ANGLE_TRY_ALLOCATION(
-            context->getZeroFilledBuffer(static_cast<size_t>(size), &scratchBuffer));
+        ANGLE_CHECK_GL_ALLOC(
+            context, context->getZeroFilledBuffer(static_cast<size_t>(size), &scratchBuffer));
         dataForImpl = scratchBuffer->data();
     }
 
@@ -272,5 +271,4 @@ void Buffer::onTFBindingChanged(const Context *context, bool bound, bool indexed
         mState.mTransformFeedbackGenericBindingCount += bound ? 1 : -1;
     }
 }
-
 }  // namespace gl

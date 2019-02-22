@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/test/fake_server/fake_server.h"
 
 namespace {
 
@@ -28,6 +29,13 @@ bool AreProgressMarkersEquivalent(const std::string& serialized1,
   CHECK(marker2.ParseFromString(serialized2));
   marker1.clear_gc_directive();
   marker2.clear_gc_directive();
+  DCHECK(marker1.data_type_id() == marker2.data_type_id());
+
+  if (syncer::GetModelTypeFromSpecificsFieldNumber(marker1.data_type_id()) ==
+      syncer::AUTOFILL_WALLET_DATA) {
+    return fake_server::AreWalletDataProgressMarkersEquivalent(marker1,
+                                                               marker2);
+  }
   return marker1.SerializeAsString() == marker2.SerializeAsString();
 }
 
@@ -52,14 +60,12 @@ bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
 
   for (syncer::ModelType type : common_types) {
     // Look up the progress markers.  Fail if either one is missing.
-    syncer::ProgressMarkerMap::const_iterator pm_it1 =
-        snap1.download_progress_markers().find(type);
+    auto pm_it1 = snap1.download_progress_markers().find(type);
     if (pm_it1 == snap1.download_progress_markers().end()) {
       return false;
     }
 
-    syncer::ProgressMarkerMap::const_iterator pm_it2 =
-        snap2.download_progress_markers().find(type);
+    auto pm_it2 = snap2.download_progress_markers().find(type);
     if (pm_it2 == snap2.download_progress_markers().end()) {
       return false;
     }

@@ -30,18 +30,14 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
       const std::string& unique_id,
       blink::mojom::BackgroundFetchRegistrationObserverPtr observer);
 
-  // Notifies any registered observers for the registration identified by the
-  // |unique_id| of the progress. This will cause JavaScript events to fire.
-  // Successful fetches must also call Notify with the final state.
-  void Notify(const std::string& unique_id,
-              uint64_t download_total,
-              uint64_t downloaded);
+  // Notifies any registered observers for the |registration| of the progress.
+  // This will cause JavaScript events to fire.
+  // Completed fetches must also call Notify with the final state.
+  void Notify(const BackgroundFetchRegistration& registration);
 
-  // Runs |callback| when the last observer for |unique_id| is removed, or
-  // immediately if there are already no observers. Callback will never be run
-  // if the browser is shutdown before the last observer is removed.
-  void AddGarbageCollectionCallback(const std::string& unique_id,
-                                    base::OnceClosure callback);
+  // Notifies any registered observers for the registration identifier by
+  // |unique_id| that the records for the fetch are no longer available.
+  void NotifyRecordsUnavailable(const std::string& unique_id);
 
   base::WeakPtr<BackgroundFetchRegistrationNotifier> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -58,10 +54,6 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   std::multimap<std::string,
                 blink::mojom::BackgroundFetchRegistrationObserverPtr>
       observers_;
-
-  // Map from registration |unique_id| to callback to run when last observer is
-  // removed.
-  std::map<std::string, base::OnceClosure> garbage_collection_callbacks_;
 
   base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_;
 

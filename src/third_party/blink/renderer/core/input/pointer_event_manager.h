@@ -59,6 +59,19 @@ class CORE_EXPORT PointerEventManager
                                          const String& canvas_region_id,
                                          const WebMouseEvent&);
 
+  WebInputEventResult DirectDispatchMousePointerEvent(
+      Node* target,
+      const WebMouseEvent&,
+      const AtomicString& event_type,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const String& canvas_node_id = String());
+
+  WebInputEventResult CreateAndDispatchPointerEvent(
+      Node* target,
+      const AtomicString& mouse_event_name,
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalesced_events);
+
   // Resets the internal state of this object.
   void Clear();
 
@@ -104,7 +117,7 @@ class CORE_EXPORT PointerEventManager
                       WTF::UnsignedWithZeroKeyHashTraits<int>>
       PointerCapturingMap;
   class EventTargetAttributes {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+    DISALLOW_NEW();
 
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target); }

@@ -223,7 +223,7 @@ class TranslateManagerRenderViewHostTest
                 &test_url_loader_factory_)),
         infobar_observer_(this) {}
 
-#if !defined(USE_AURA)
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
   // Ensure that we are testing under the bubble UI.
   // TODO(groby): Remove once the bubble is enabled by default everywhere.
   // http://crbug.com/507442
@@ -288,7 +288,7 @@ class TranslateManagerRenderViewHostTest
       return infobar->translate_step();
     }
   }
-#endif  // defined(USE_AURA)
+#endif  // defined(USE_AURA) && !defined(OS_MACOSX)
 
   // Simulates navigating to a page and getting the page contents and language
   // for that navigation.
@@ -371,7 +371,7 @@ class TranslateManagerRenderViewHostTest
         NULL;
   }
 
-#if !defined(USE_AURA)
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
   // If there is 1 infobar and it is a translate infobar, closes it and returns
   // true.  Returns false otherwise.
   bool CloseTranslateInfoBar() {
@@ -410,7 +410,7 @@ class TranslateManagerRenderViewHostTest
       return true;
     }
   }
-#endif  // defined(USE_AURA)
+#endif  // defined(USE_AURA) && !defined(OS_MACOSX)
 
   void ReloadAndWait(bool successful_reload) {
     NavEntryCommittedObserver nav_observer(web_contents());
@@ -474,7 +474,8 @@ class TranslateManagerRenderViewHostTest
     // Clears the translate script so it is fetched every time and sets the
     // expiration delay to a large value by default (in case it was zeroed in a
     // previous test).
-    TranslateService::InitializeForTesting();
+    TranslateService::InitializeForTesting(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     translate::TranslateDownloadManager* download_manager =
         translate::TranslateDownloadManager::GetInstance();
     download_manager->ClearTranslateScriptForTesting();
@@ -647,7 +648,7 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
 // The following tests depend on the translate infobar. They should be ported to
 // use the translate bubble. On Aura there is no infobar so the tests are not
 // compiled.
-#if !defined(USE_AURA)
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
 TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   // See BubbleNormalTranslate for corresponding bubble UX testing.
   if (TranslateService::IsTranslateBubbleEnabled())
@@ -1334,8 +1335,9 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
   PrefService* prefs = profile->GetPrefs();
   PrefChangeRegistrar registrar;
   registrar.Init(prefs);
-  registrar.Add(translate::TranslatePrefs::kPrefTranslateSiteBlacklist,
-                pref_callback_);
+  registrar.Add(
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated,
+      pref_callback_);
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(host));
@@ -1343,7 +1345,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
       ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated);
   translate_prefs->BlacklistSite(host);
   EXPECT_TRUE(translate_prefs->IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
@@ -1358,7 +1360,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
 
   // Remove the site from the blacklist.
   SetPrefObserverExpectation(
-      translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+      translate::TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated);
   translate_prefs->RemoveSiteFromBlacklist(host);
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(host));
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
@@ -1777,4 +1779,4 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleUnknownLanguage) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
             bubble->GetViewState());
 }
-#endif  // defined(USE_AURA)
+#endif  // defined(USE_AURA) && !defined(OS_MACOSX)

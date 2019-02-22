@@ -767,10 +767,15 @@ def GeneratePathWrapper(root, wrappath, path):
       'path': path,
       'relroot': os.path.relpath('/', os.path.dirname(wrappath)),
   }
+
+  # Do not use exec here, because exec invokes script with absolute path in
+  # argv0. Keeping relativeness allows us to remove abs path from compile result
+  # and leads directory independent build cache sharing in some distributed
+  # build system.
   wrapper = """#!/bin/sh
-base=$(realpath "$0")
-basedir=${base%%/*}
-exec "${basedir}/%(relroot)s%(path)s" "$@"
+basedir=$(dirname "$0")
+"${basedir}/%(relroot)s%(path)s" "$@"
+exit "$?"
 """ % replacements
   root_wrapper = root + wrappath
   if os.path.islink(root_wrapper):

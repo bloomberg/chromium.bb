@@ -158,7 +158,7 @@ class PasswordFormMetricsRecorder
     kCorrectedUsernameInForm = 200,
   };
 
-  // Old and new form parsings comparison result.
+  // Result of comparing of the old and new form parsing for filling.
   enum class ParsingComparisonResult {
     kSame,
     kDifferent,
@@ -168,11 +168,38 @@ class PasswordFormMetricsRecorder
     kMax
   };
 
+  // Result of comparing of the old and new form parsing for saving. Multiple
+  // values are meant to be combined and reported in a single number as a
+  // bitmask.
+  enum class ParsingOnSavingDifference {
+    // Different fields were identified for username or password.
+    kFields = 1 << 0,
+    // Signon_realms are different.
+    kSignonRealm = 1 << 1,
+    // One password form manager wants to update, the other to save as new.
+    kNewLoginStatus = 1 << 2,
+    // One password form manager thinks the password is generated, the other
+    // does not.
+    kGenerated = 1 << 3,
+  };
+
   // Indicator whether the user has seen a password generation popup and why.
   enum class PasswordGenerationPopupShown {
     kNotShown = 0,
     kShownAutomatically = 1,
     kShownManually = 2,
+  };
+
+  // Represents form differences.
+  // 1.This is a bit mask, so new values must be powers of 2.
+  // 2.This is used for UMA, so no deletion, only adding at the end.
+  enum FormDataDifferences {
+    // Different number of fields.
+    kFieldsNumber = 1 << 0,
+    kRendererFieldIDs = 1 << 1,
+    kAutocompleteAttributes = 1 << 2,
+    kFormControlTypes = 1 << 3,
+    kMaxFormDifferencesValue = 1 << 4,
   };
 
   // The maximum number of combinations of the ManagerAction, UserAction and
@@ -272,10 +299,28 @@ class PasswordFormMetricsRecorder
   void RecordParsingsComparisonResult(
       ParsingComparisonResult comparison_result);
 
+  // Records the comparison of the old and new password form parsing for saving.
+  // |comparison_result| is a bitmask of values from ParsingOnSavingDifference.
+  void RecordParsingOnSavingDifference(uint64_t comparison_result);
+
+  // Records the readonly status encoded with parsing success after parsing for
+  // filling. The |value| is constructed as follows: The least significant bit
+  // says whether parsing succeeded (1) or not (0). The rest, shifted by one
+  // bit to the right is the FormDataParser::ReadonlyPasswordFields
+  // representation of the readonly status.
+  void RecordReadonlyWhenFilling(uint64_t value);
+
+  // Records the readonly status encoded with parsing success after parsing for
+  // creating pending credentials. See RecordReadonlyWhenFilling for the meaning
+  // of |value|.
+  void RecordReadonlyWhenSaving(uint64_t value);
+
   // Records that Chrome noticed that it should show a manual fallback for
   // saving.
   void RecordShowManualFallbackForSaving(bool has_generated_password,
                                          bool is_update);
+
+  void RecordFormChangeBitmask(uint32_t bitmask);
 
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
@@ -379,6 +424,8 @@ class PasswordFormMetricsRecorder
   // 2 = the password was generated.
   // 4 = this was an update prompt.
   base::Optional<uint32_t> showed_manual_fallback_for_saving_;
+
+  base::Optional<uint32_t> form_changes_bitmask_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

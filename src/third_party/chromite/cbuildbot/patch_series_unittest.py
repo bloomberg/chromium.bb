@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import contextlib
 import mock
-import mox
 import os
 
 from chromite.cbuildbot import patch_series
@@ -88,7 +87,6 @@ class FakeGerritPatch(FakePatch):
 # pylint: disable=protected-access
 # pylint: disable=too-many-ancestors
 class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
-                          cros_test_lib.MoxTestCase,
                           cros_test_lib.MockTestCase):
   """Base class for tests that need to test PatchSeries."""
 
@@ -107,11 +105,11 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     # pylint: disable=attribute-defined-outside-init
     site_params = config_lib.GetSiteParams()
     if cros_internal:
-      cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
+      cros_internal = mock.create_autospec(gerrit.GerritHelper)
       cros_internal.version = '2.2'
       cros_internal.remote = site_params.INTERNAL_REMOTE
     if cros:
-      cros = self.mox.CreateMock(gerrit.GerritHelper)
+      cros = mock.create_autospec(gerrit.GerritHelper)
       cros.remote = site_params.EXTERNAL_REMOTE
       cros.version = '2.2'
     return patch_series.HelperPool(cros_internal=cros_internal,
@@ -129,16 +127,15 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
 
     return series
 
-  def _ValidatePatchApplyManifest(self, value):
-    self.assertTrue(isinstance(value, validation_pool_unittest.MockManifest))
-    self.assertEqual(value.root, self.build_root)
-    return True
+  def CheckPatchApply(self, apply_mocks):
+    for apply_mock in apply_mocks:
+      apply_mock.assert_called_once_with(mock.ANY, trivial=False)
+      value = apply_mock.call_args[0][0]
+      self.assertTrue(isinstance(value, validation_pool_unittest.MockManifest))
+      self.assertEqual(value.root, self.build_root)
 
-  def SetPatchApply(self, patch, trivial=False):
-    self.mox.StubOutWithMock(patch, 'ApplyAgainstManifest')
-    return patch.ApplyAgainstManifest(
-        mox.Func(self._ValidatePatchApplyManifest),
-        trivial=trivial)
+  def SetPatchApply(self, patch):
+    return self.PatchObject(patch, 'ApplyAgainstManifest')
 
   def assertResults(self, series, changes, applied=(), failed_tot=(),
                     failed_inflight=(), frozen=True):
@@ -235,12 +232,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2)
     self.SetPatchDeps(patch1, [patch2.id])
 
-    self.SetPatchApply(patch2)
-    self.SetPatchApply(patch1)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, [patch2, patch1])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testSha1Deps(self):
     """Test that we can apply changes correctly and respect sha1 deps.
@@ -259,13 +253,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2, ['*%s' % patch3.sha1])
     self.SetPatchDeps(patch3)
 
-    self.SetPatchApply(patch2)
-    self.SetPatchApply(patch3)
-    self.SetPatchApply(patch1)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, [patch3, patch2, patch1])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testGerritNumberDeps(self):
     """Test that we can apply CQ-DEPEND changes in the right order."""
@@ -277,13 +267,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2, cq=[patch3.gerrit_number])
     self.SetPatchDeps(patch3, cq=[patch1.gerrit_number])
 
-    self.SetPatchApply(patch1)
-    self.SetPatchApply(patch2)
-    self.SetPatchApply(patch3)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, patches[::-1])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testGerritLazyMapping(self):
     """Given a patch lacking a gerrit number, via gerrit, map it to that change.
@@ -303,16 +289,19 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2)
     self.SetPatchDeps(patch1)
 
-    self.SetPatchApply(patch1)
-    self.SetPatchApply(patch3)
+    apply_mocks = [self.SetPatchApply(x) for x in (patch1, patch3)]
 
-    self._SetQuery(series, patch2, query=patch2.gerrit_number).AndReturn(patch2)
+    helper = series._helper_pool.GetHelper(patch2.remote)
+    def QueryChecker(query, **kwargs):
+      self.assertEqual(query, patch2.gerrit_number)
+      self.assertTrue(kwargs['must_match'])
+      return patch2
+    helper.QuerySingleRecord.side_effect = QueryChecker
 
-    self.mox.ReplayAll()
     applied = self.assertResults(series, [patch1, patch3], [patch1, patch3])[0]
-    self.assertTrue(applied[0] is patch1)
-    self.assertTrue(applied[1] is patch3)
-    self.mox.VerifyAll()
+    self.assertIs(applied[0], patch1)
+    self.assertIs(applied[1], patch3)
+    self.CheckPatchApply(apply_mocks)
 
   def testCrosGerritDeps(self, cros_internal=True):
     """Test that we can apply changes correctly and respect deps.
@@ -338,24 +327,19 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2)
     self.SetPatchDeps(patch3, cq=[patch2.id])
 
+    apply_mocks = [
+        self.SetPatchApply(patch1),
+        self.SetPatchApply(patch3),
+    ]
     if cros_internal:
-      self.SetPatchApply(patch2)
-    self.SetPatchApply(patch1)
-    self.SetPatchApply(patch3)
+      apply_mocks.append(self.SetPatchApply(patch2))
 
-    self.mox.ReplayAll()
     self.assertResults(series, patches, applied_patches)
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testExternalCrosGerritDeps(self):
     """Test that we exclude internal deps on external trybot."""
     self.testCrosGerritDeps(cros_internal=False)
-
-  @staticmethod
-  def _SetQuery(series, change, query=None):
-    helper = series._helper_pool.GetHelper(change.remote)
-    query = change.id if query is None else query
-    return helper.QuerySingleRecord(query, must_match=True)
 
   def testApplyMissingDep(self):
     """Test that we don't try to apply a change without met dependencies.
@@ -368,12 +352,16 @@ class TestPatchSeries(PatchSeriesTestCase):
     patch1, patch2 = self.GetPatches(2)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1).AndReturn(patch1)
 
-    self.mox.ReplayAll()
+    helper = series._helper_pool.GetHelper(patch1.remote)
+    def QueryChecker(query, **kwargs):
+      self.assertEqual(query, patch1.id)
+      self.assertTrue(kwargs['must_match'])
+      return patch1
+    helper.QuerySingleRecord.side_effect = QueryChecker
+
     self.assertResults(series, [patch2],
                        [], [patch2])
-    self.mox.VerifyAll()
 
   def testApplyWithCommittedDeps(self):
     """Test that we apply a change with dependency already committed."""
@@ -384,21 +372,32 @@ class TestPatchSeries(PatchSeriesTestCase):
     patch2 = self.GetPatches(1)
 
     self.SetPatchDeps(patch2, [patch1.id])
-    self._SetQuery(series, patch1).AndReturn(patch1)
-    self.SetPatchApply(patch2)
+    apply_mocks = [self.SetPatchApply(patch2)]
 
     # Used to ensure that an uncommitted change put in the lookup cache
     # isn't invalidly pulled into the graph...
     patch3, patch4, patch5 = self.GetPatches(3)
 
-    self._SetQuery(series, patch3).AndReturn(patch3)
     self.SetPatchDeps(patch4, [patch3.id])
     self.SetPatchDeps(patch5, [patch3.id])
 
-    self.mox.ReplayAll()
+    # Sanity check so we only set up one mock query.
+    self.assertEqual(patch1.remote, patch3.remote)
+
+    helper = series._helper_pool.GetHelper(patch1.remote)
+    def QueryChecker(query, **kwargs):
+      self.assertTrue(kwargs['must_match'])
+      if query == patch1.id:
+        return patch1
+      elif query == patch3.id:
+        return patch3
+      else:
+        self.fail()
+    helper.QuerySingleRecord.side_effect = QueryChecker
+
     self.assertResults(series, [patch2, patch4, patch5], [patch2],
                        [patch4, patch5])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testCyclicalDeps(self):
     """Verify that the machinery handles cycles correctly."""
@@ -410,13 +409,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch2, cq=[patch3.id])
     self.SetPatchDeps(patch3, [patch1.id])
 
-    self.SetPatchApply(patch1)
-    self.SetPatchApply(patch2)
-    self.SetPatchApply(patch3)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, [patch2, patch1, patch3])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testApplyWithNotInManifestException(self):
     """Test Apply with NotInManifest Exception."""
@@ -426,16 +421,15 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch1, [])
     self.SetPatchDeps(patch2, [])
     self.SetPatchDeps(patch3, [])
-    self.SetPatchApply(patch1)
-    self.SetPatchApply(patch2)
+
+    apply_mocks = [self.SetPatchApply(x) for x in (patch1, patch2)]
 
     not_in_manifest = [cros_patch.ChangeNotInManifest(patch3)]
     series.FetchChanges = lambda changes: ([patch1, patch2], not_in_manifest)
 
-    self.mox.ReplayAll()
     self.assertResults(series, patches, applied=[patch1, patch2],
                        failed_tot=[patch3])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testComplexCyclicalDeps(self, fail=False):
     """Verify handling of two interdependent cycles."""
@@ -457,25 +451,23 @@ class TestPatchSeries(PatchSeriesTestCase):
     to_apply = [chain1[-2]] + [x for x in (chain1 + chain2) if x != chain1[-2]]
 
     # Mark all the patches but the last ones as applied successfully.
-    for patch in chain1 + chain2[:-1]:
-      self.SetPatchApply(patch)
+    apply_mocks = [self.SetPatchApply(x) for x in chain1 + chain2[:-1]]
 
     if fail:
       # Pretend that chain2[-1] failed to apply.
-      res = self.SetPatchApply(chain2[-1])
-      res.AndRaise(cros_patch.ApplyPatchException(chain1[-1]))
+      self.SetPatchApply(chain2[-1]).side_effect = (
+          cros_patch.ApplyPatchException(chain1[-1]))
       applied = []
       failed_tot = to_apply
     else:
       # We apply the patches in this order since the last patch in chain1
       # is pulled in via CQ-DEPEND.
-      self.SetPatchApply(chain2[-1])
+      apply_mocks.append(self.SetPatchApply(chain2[-1]))
       applied = chain1[:2] + chain2[:-1] + chain1[2:] + chain2[-1:]
       failed_tot = []
 
-    self.mox.ReplayAll()
     self.assertResults(series, to_apply, applied=applied, failed_tot=failed_tot)
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testFailingComplexCyclicalDeps(self):
     """Verify handling of failing interlocked cycles."""
@@ -500,17 +492,15 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch3)
     self.SetPatchDeps(patch4)
 
-    self.SetPatchApply(patch1).AndRaise(
+    self.SetPatchApply(patch1).side_effect = (
         cros_patch.ApplyPatchException(patch1))
-
-    self.SetPatchApply(patch3)
-    self.SetPatchApply(patch4).AndRaise(
+    apply_mock = self.SetPatchApply(patch3)
+    self.SetPatchApply(patch4).side_effect = (
         cros_patch.ApplyPatchException(patch1, inflight=True))
 
-    self.mox.ReplayAll()
     self.assertResults(series, patches,
                        [patch3], [patch2, patch1], [patch4])
-    self.mox.VerifyAll()
+    self.CheckPatchApply([apply_mock])
 
   def testComplexApply(self):
     """More complex deps test.
@@ -533,13 +523,11 @@ class TestPatchSeries(PatchSeriesTestCase):
     self.SetPatchDeps(patch4, cq=[patch5.id])
     self.SetPatchDeps(patch5)
 
-    for patch in (patch2, patch1, patch3, patch4, patch5):
-      self.SetPatchApply(patch)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x)
+                   for x in (patch2, patch1, patch3, patch4, patch5)]
     self.assertResults(
         series, patches, [patch2, patch1, patch3, patch5, patch4])
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testApplyStandalonePatches(self):
     """Simple apply of two changes with no dependent CL's."""
@@ -550,12 +538,9 @@ class TestPatchSeries(PatchSeriesTestCase):
     for patch in patches:
       self.SetPatchDeps(patch)
 
-    for patch in patches:
-      self.SetPatchApply(patch)
-
-    self.mox.ReplayAll()
+    apply_mocks = [self.SetPatchApply(x) for x in patches]
     self.assertResults(series, patches, patches)
-    self.mox.VerifyAll()
+    self.CheckPatchApply(apply_mocks)
 
   def testResetCheckouts(self):
     """Tests resetting git repositories to origin."""

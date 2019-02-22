@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -52,11 +53,14 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   return 0;
 }
 
-int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) {
   // Odd sizes are handled in various ways, depending how they arrive.
   // Let's not worry about that case here.
-  if (size % sizeof(UChar))
+  if (data_size % sizeof(UChar))
     return 0;
+
+  // Truncate the input.
+  wtf_size_t size = base::saturated_cast<wtf_size_t>(data_size);
 
   // Used to control what kind of extra data is provided to the deserializer.
   unsigned hash = StringHasher::HashMemory(data, size);

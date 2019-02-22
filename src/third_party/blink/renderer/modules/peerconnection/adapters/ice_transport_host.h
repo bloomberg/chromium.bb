@@ -9,15 +9,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
-
-namespace rtc {
-class Thread;
-}
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 
 namespace blink {
 
 class IceTransportProxy;
+class QuicTransportHost;
 
 // This class is the host side correspondent to the IceTransportProxy. See the
 // IceTransportProxy documentation for background. This class lives on the host
@@ -41,38 +39,53 @@ class IceTransportProxy;
 //
 // The Host can be constructed on any thread but after that point all methods
 // must be called on the host thread.
-class IceTransportHost final : public sigslot::has_slots<> {
+class IceTransportHost final : public IceTransportAdapter::Delegate {
  public:
   IceTransportHost(scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
-                   base::WeakPtr<IceTransportProxy> proxy,
-                   std::unique_ptr<cricket::PortAllocator> port_allocator);
+                   scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+                   base::WeakPtr<IceTransportProxy> proxy);
   ~IceTransportHost() override;
 
-  void Initialize(rtc::Thread* host_thread_rtc_thread);
+  void Initialize(
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
+
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
+  scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
   void StartGathering(
       const cricket::IceParameters& local_parameters,
       const cricket::ServerAddresses& stun_servers,
       const std::vector<cricket::RelayServerConfig>& turn_servers,
-      int32_t candidate_filter);
-
-  void SetRole(cricket::IceRole role);
-  void SetRemoteParameters(const cricket::IceParameters& remote_parameters);
-
+      IceTransportPolicy policy);
+  void Start(const cricket::IceParameters& remote_parameters,
+             cricket::IceRole role,
+             const std::vector<cricket::Candidate>& initial_remote_candidates);
+  void HandleRemoteRestart(const cricket::IceParameters& new_remote_parameters);
   void AddRemoteCandidate(const cricket::Candidate& candidate);
-  void ClearRemoteCandidates();
+
+  // A QuicTransportHost can be connected to this IceTransportHost. Only one can
+  // be connected at a time, and the caller must ensure that the consumer is
+  // disconnected before destroying the IceTransportHost.
+  // ConnectConsumer returns an implementation of IceTransportAdapter that
+  // should only be used on the host thread.
+  bool HasConsumer() const;
+  IceTransportAdapter* ConnectConsumer(QuicTransportHost* consumer_host);
+  void DisconnectConsumer(QuicTransportHost* consumer_host);
 
  private:
-  // Callbacks from P2PTransportChannel.
-  void OnGatheringStateChanged(cricket::IceTransportInternal* transport);
-  void OnCandidateGathered(cricket::IceTransportInternal* transport,
-                           const cricket::Candidate& candidate);
-  void OnStateChanged(cricket::IceTransportInternal* transport);
+  // IceTransportAdapter::Delegate overrides.
+  void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
+  void OnCandidateGathered(const cricket::Candidate& candidate) override;
+  void OnStateChanged(cricket::IceTransportState new_state) override;
+  void OnSelectedCandidatePairChanged(
+      const std::pair<cricket::Candidate, cricket::Candidate>&
+          selected_candidate_pair) override;
 
   const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
-  std::unique_ptr<cricket::PortAllocator> port_allocator_;
-  std::unique_ptr<cricket::P2PTransportChannel> transport_;
+  const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
+  std::unique_ptr<IceTransportAdapter> transport_;
   base::WeakPtr<IceTransportProxy> proxy_;
+  QuicTransportHost* consumer_host_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 };

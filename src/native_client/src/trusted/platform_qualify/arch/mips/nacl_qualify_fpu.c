@@ -46,12 +46,12 @@ int NaClQualifyFpu(void) {
 
   if (0 == sigsetjmp(g_try_state, 1)) {
     /* Bit representation of (double)1 is 0x3FF0000000000000 */
-    asm("lui   $t0, 0x3FF0\n"
-        "ldc1  $f0, %0\n"
-        "mtc1  $t0, $f1\n"
-        "sdc1  $f0, %0\n"
-        : "+m" (result)
-        : : "t0", "$f0", "$f1", "memory");
+    __asm__("lui   $t0, 0x3FF0\n"
+            "ldc1  $f0, %0\n"
+            "mtc1  $t0, $f1\n"
+            "sdc1  $f0, %0\n"
+            : "+m" (result)
+            : : "t0", "$f0", "$f1", "memory");
   }
 
   if (sigaction(SIGILL, &old_sigaction_ill, NULL)) {

@@ -101,9 +101,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   SVGImage* EmbeddedSVGImage() const;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
 
-  void ImageChanged(WrappedImagePtr,
-                    CanDeferInvalidation,
-                    const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
   void Paint(const PaintInfo&) const final;
 

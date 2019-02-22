@@ -11,7 +11,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller.h"
@@ -92,8 +91,11 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
     auto power_manager_client =
         std::make_unique<chromeos::FakePowerManagerClient>();
     power_manager_client_ = power_manager_client.get();
-    power_manager_client_->SetScreenBrightnessPercent(kVisibleBrightnessPercent,
-                                                      false /*gradual*/);
+
+    power_manager::SetBacklightBrightnessRequest request;
+    request.set_percent(kVisibleBrightnessPercent);
+    power_manager_client_->SetScreenBrightness(request);
+
     power_manager_observer_ =
         std::make_unique<TestPowerManagerObserver>(power_manager_client_);
     chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(

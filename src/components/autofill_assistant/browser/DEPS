@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/autofill",
   "+components/version_info/version_info.h",
   "+content/public/browser",
   "+content/public/test",
@@ -6,4 +7,6 @@ include_rules = [
   "+google_apis",
   "+net",
   "+services/network/public/cpp",
+  "+third_party/blink/public/mojom/payments/payment_request.mojom.h",
+  "+third_party/re2",
 ]

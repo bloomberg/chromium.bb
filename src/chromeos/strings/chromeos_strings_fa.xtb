@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1510238584712386396">راه‌انداز</translation>
+<translation id="1734367976349034509">این دستگاه توسط سازمانی مدیریت می‌شود</translation>
+<translation id="2049639323467105390">این دستگاه توسط <ph name="DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="2083960536266308407">چیزی در صفحه پیدا نشد</translation>
+<translation id="2338501278241028356">برای کاوش دستگاه‌های همین اطراف، بلوتوث را روشن کنید</translation>
+<translation id="2805756323405976993">برنامه‌ها</translation>
+<translation id="2872961005593481000">خاموش کردن</translation>
+<translation id="3147142846278915599">راه انداز (همگام‌سازی برنامه‌ها...)</translation>
 <translation id="5212543919916444558">در صفحه‌‌تان چیزی پیدا نمی‌کنم تا درمورد آن کمکتان کنم.
 برای درخواست از من، روی میکروفون ضربه بزنید.</translation>
-<translation id="6674412557034343536">توقف تایمر</translation>
-<translation id="8626219642120025691">تایمر تمام</translation>
+<translation id="5222676887888702881">خروج از سیستم</translation>
+<translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
+<translation id="54609108002486618">مدیریت شده</translation>
+<translation id="5832805196449965646">افزودن شخص</translation>
+<translation id="5895138241574237353">راه‌اندازی مجدد</translation>
+<translation id="7222902781030499995">توقف تایمر</translation>
+<translation id="7658239707568436148">لغو</translation>
+<translation id="7837740436429729974">وقت تمام است</translation>
 <translation id="8898978413391960553">00:00ثانیه</translation>
+<translation id="9111102763498581341">باز کردن قفل</translation>
 </translationbundle>

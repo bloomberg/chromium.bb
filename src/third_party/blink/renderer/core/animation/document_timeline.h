@@ -92,7 +92,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }
-  size_t PendingAnimationsCount() const {
+  wtf_size_t PendingAnimationsCount() const {
     return animations_needing_update_.size();
   }
   TimeTicks ZeroTime();

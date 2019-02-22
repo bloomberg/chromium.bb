@@ -24,9 +24,27 @@ class TestHelper : public device::TestHookRegistration {
                         const VRTextureBounds_t* bounds,
                         EVREye eye);
   TrackedDevicePose_t GetPose(bool presenting);
-  float GetIpd();
+  float GetInterpupillaryDistance();
   ProjectionRaw GetProjectionRaw(bool left);
+  ETrackedPropertyError GetInt32TrackedDeviceProperty(
+      unsigned int index,
+      ETrackedDeviceProperty prop,
+      int32_t& prop_value);
+  ETrackedPropertyError GetUint64TrackedDeviceProperty(
+      unsigned int index,
+      ETrackedDeviceProperty prop,
+      uint64_t& prop_value);
+  ETrackedControllerRole GetControllerRoleForTrackedDeviceIndex(
+      unsigned int index);
+  ETrackedDeviceClass GetTrackedDeviceClass(unsigned int index);
+  bool GetControllerState(unsigned int index,
+                          VRControllerState_t* controller_state);
+  bool GetControllerPose(unsigned int index,
+                         TrackedDevicePose_t* controller_pose);
   void TestFailure();
+
+  void AttachToCurrentThread();
+  void DetachFromCurrentThread();
 
   // TestHookRegistration
   void SetTestHook(device::OpenVRTestHook* hook) final;

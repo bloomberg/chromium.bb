@@ -8,8 +8,8 @@
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
-#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 
 namespace blink {
 
@@ -35,13 +35,13 @@ void SVGInlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   DCHECK(paint_info.phase == PaintPhase::kForeground ||
          paint_info.phase == PaintPhase::kSelection);
 
-  SVGPaintContext paint_context(*LineLayoutAPIShim::ConstLayoutObjectFrom(
-                                    svg_inline_flow_box_.GetLineLayoutItem()),
-                                paint_info);
-  if (paint_context.ApplyClipMaskAndFilterIfNecessary()) {
+  ScopedSVGPaintState paint_state(*LineLayoutAPIShim::ConstLayoutObjectFrom(
+                                      svg_inline_flow_box_.GetLineLayoutItem()),
+                                  paint_info);
+  if (paint_state.ApplyClipMaskAndFilterIfNecessary()) {
     for (InlineBox* child = svg_inline_flow_box_.FirstChild(); child;
          child = child->NextOnLine())
-      child->Paint(paint_context.GetPaintInfo(), paint_offset, LayoutUnit(),
+      child->Paint(paint_state.GetPaintInfo(), paint_offset, LayoutUnit(),
                    LayoutUnit());
   }
 }

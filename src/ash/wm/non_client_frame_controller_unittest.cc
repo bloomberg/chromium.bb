@@ -5,7 +5,6 @@
 #include "ash/wm/non_client_frame_controller.h"
 
 #include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -20,13 +19,14 @@
 #include "services/ws/test_window_tree_client.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/compositor/test/fake_context_factory.h"
-#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -112,8 +112,8 @@ class NonClientFrameControllerMashTest : public AshTestBase {
 };
 
 TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
-  if (Shell::GetAshConfig() != Config::MASH_DEPRECATED)
-    return;  // TODO: decide if this test should be made to work with ws2.
+  if (!::features::IsSingleProcessMash() && !::features::IsMultiProcessMash())
+    return;
 
   std::map<std::string, std::vector<uint8_t>> properties;
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
@@ -227,14 +227,15 @@ TEST_F(NonClientFrameControllerTest, WindowTitle) {
 
 TEST_F(NonClientFrameControllerTest, ExposesChildTreeIdToAccessibility) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
+  const std::string ax_tree_id = "123";
+  window->SetProperty(ui::kChildAXTreeID, new std::string(ax_tree_id));
   NonClientFrameController* non_client_frame_controller =
       NonClientFrameController::Get(window.get());
   views::View* contents_view = non_client_frame_controller->GetContentsView();
   ui::AXNodeData ax_node_data;
   contents_view->GetAccessibleNodeData(&ax_node_data);
-  EXPECT_EQ(
-      views::AXRemoteHost::kRemoteAXTreeID,
-      ax_node_data.GetIntAttribute(ax::mojom::IntAttribute::kChildTreeId));
+  EXPECT_EQ(ax_tree_id, ax_node_data.GetStringAttribute(
+                            ax::mojom::StringAttribute::kChildTreeId));
   EXPECT_EQ(ax::mojom::Role::kClient, ax_node_data.role);
 }
 

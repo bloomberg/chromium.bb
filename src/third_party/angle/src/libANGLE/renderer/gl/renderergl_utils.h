@@ -32,6 +32,7 @@ namespace rx
 {
 class BlitGL;
 class ClearMultiviewGL;
+class ContextGL;
 class FunctionsGL;
 class StateManagerGL;
 struct WorkaroundsGL;
@@ -42,7 +43,6 @@ enum class MultiviewImplementationTypeGL
 };
 
 VendorID GetVendorID(const FunctionsGL *functions);
-std::string GetDriverVersion(const FunctionsGL *functions);
 
 // Helpers for extracting the GL helper objects out of a context
 const FunctionsGL *GetFunctionsGL(const gl::Context *context);
@@ -84,13 +84,15 @@ uint8_t *MapBufferRangeWithFallback(const FunctionsGL *functions,
                                     size_t length,
                                     GLbitfield access);
 
-gl::ErrorOrResult<bool> ShouldApplyLastRowPaddingWorkaround(const gl::Extents &size,
-                                                            const gl::PixelStoreStateBase &state,
-                                                            const gl::Buffer *pixelBuffer,
-                                                            GLenum format,
-                                                            GLenum type,
-                                                            bool is3D,
-                                                            const void *pixels);
+angle::Result ShouldApplyLastRowPaddingWorkaround(ContextGL *contextGL,
+                                                  const gl::Extents &size,
+                                                  const gl::PixelStoreStateBase &state,
+                                                  const gl::Buffer *pixelBuffer,
+                                                  GLenum format,
+                                                  GLenum type,
+                                                  bool is3D,
+                                                  const void *pixels,
+                                                  bool *shouldApplyOut);
 
 struct ContextCreationTry
 {
@@ -112,6 +114,6 @@ struct ContextCreationTry
 };
 
 std::vector<ContextCreationTry> GenerateContextCreationToTry(EGLint requestedType, bool isMesaGLX);
-}
+}  // namespace rx
 
 #endif // LIBANGLE_RENDERER_GL_RENDERERGLUTILS_H_

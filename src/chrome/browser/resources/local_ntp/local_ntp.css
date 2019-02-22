@@ -150,6 +150,10 @@ body.hide-fakebox #fakebox {
   display: block;
 }
 
+#logo-doodle-image {
+  outline: none;
+}
+
 #logo-default.fade,
 #logo-doodle.fade {
   transition: opacity 130ms, visibility 130ms;
@@ -681,7 +685,7 @@ html[dir=rtl] #attribution,
   border: none;
   height: 100%;
   padding: 0;
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 100%;
 }
@@ -833,15 +837,12 @@ input:checked + .toggle::before {
   margin: 0 auto;
   opacity: 1;
   padding: 0;
+  position: relative;
   width: fit-content;
 }
 
 #error-notice.notice-hide {
   display: none;
-}
-
-#error-notice-icon-container {
-  position: relative;
 }
 
 #error-notice-icon {
@@ -853,13 +854,25 @@ input:checked + .toggle::before {
   width: 18px;
 }
 
+.rtl #error-notice-icon {
+  margin-right: 8px;
+}
+
 #error-notice-msg {
   cursor: default;
   padding: 0 16px 0 36px;
 }
 
+.rtl #error-notice-msg {
+  padding: 0 36px 0 16px;
+}
+
 #error-notice.has-link #error-notice-msg {
   padding-right: 0;
+}
+
+.rtl #error-notice.has-link #error-notice-msg {
+  padding: 0 36px 0 0;
 }
 
 #error-notice span:not(#error-notice-icon-container) {
@@ -877,14 +890,11 @@ input:checked + .toggle::before {
   display: none;
   outline: none;
   padding: 0 16px;
+  position: relative;
 }
 
 #error-notice:not(.has-link) #error-notice-link {
   display: none;
-}
-
-#error-notice.has-link #error-notice-link {
-  display: inline;
 }
 
 #error-notice-link:hover,

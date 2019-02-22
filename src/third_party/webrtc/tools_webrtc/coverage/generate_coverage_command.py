@@ -28,7 +28,6 @@ TESTS = [
   'rtc_pc_unittests',
   'rtc_media_unittests',
   'peerconnection_unittests',
-  'ortc_unittests',
   'modules_unittests',
   'modules_tests',
   'low_bandwidth_audio_test',
@@ -40,7 +39,7 @@ TESTS = [
 def main():
   cmd = ([sys.executable, 'tools/code_coverage/coverage.py'] + TESTS +
          ['-b out/coverage', '-o out/report'] +
-         ['-i=\'.*/out/.*|.*/third_party/.*\''] +
+         ['-i=\'.*/out/.*|.*/third_party/.*|.*test.*\''] +
          ['-c \'out/coverage/%s\'' % t for t in TESTS])
 
   def WithXvfb(binary):

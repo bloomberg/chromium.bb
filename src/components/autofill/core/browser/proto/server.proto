@@ -50,12 +50,144 @@ message AutofillQueryResponseContents {
   }
 }
 
+// This message contains a randomized encoding of a string, where each bit
+// in the encoded string is randomly sent as either the true value seen by
+// the client, or random noise. The mapping of specific bits in the encoded
+// string back to bits in the original string is specified by the EncodingType.
+message AutofillRandomizedValue {
+  enum EncodingType {
+    // Reserved default value. Should never be sent over the wire.
+    UNSPECIFIED_ENCODING_TYPE = -1;
+
+    // This string encodes only one bit, bit N, for each byte.
+    BIT_0 = 0;
+    BIT_1 = 1;
+    BIT_2 = 2;
+    BIT_3 = 3;
+    BIT_4 = 4;
+    BIT_5 = 5;
+    BIT_6 = 6;
+    BIT_7 = 7;
+
+    // For each byte, the encoded value contains even or odd bits only.
+    EVEN_BITS = 8;
+    ODD_BITS = 9;
+
+    // The encoded value contains all of the bits.
+    ALL_BITS = 10;
+  }
+
+  // Selector denoting the source bits to which the encoded bits correspond.
+  optional EncodingType encoding_type = 1 [default = UNSPECIFIED_ENCODING_TYPE];
+
+  // The encoded bits. Only the bits denoted by |encoding_type| are included in
+  // |encoded_bits|.
+  //
+  // BIT_K encodings:
+  //    each randomized bit i in |encoded_bits| corresponds to bit k of the byte
+  //    at the corresponsding offset i of the original metadata value, up to
+  //    i=64 (8 bytes).
+  //
+  // EVEN_BITS encoding:
+  //     each randomized bit i in |encoded_bits| corresponds to bit 2*i of the
+  //     original metadata value, up to i=256 (32 bytes).
+  //
+  // ODD_BITS encoding:
+  //     each randomized bit i in |encoded_bits| corresponds to bit 2*i+1 of the
+  //     original metadata value, up to i=256 (32 bytes).
+  //
+  // ALL_BITS encding:
+  //     each bit i in |encoded_bits| corresponds to bit i of the original
+  //     metadata value, up to i=512 (64 bytes).
+  //
+  // The encoded data is generally not user data, however, it is possible that
+  // user visible metadata (like the Label for an input field) could be
+  // personalized and thus contains user data (possibly PII). For the ALL_BITS
+  // encoding, each randomized byte has a 10% probability of being encoded 1:1
+  // as the true byte seen by the client, even if some of those bits were
+  // transmitted as noise. For all of the other encodings, the encoded bits
+  // does not encode any full bytes.
+  optional bytes encoded_bits = 2;
+}
+
+// The collection of autofill field metadata to be sent using randomization.
+message AutofillRandomizedFormMetadata {
+  // Form element id. Example: <form id="XXXXXXXX">
+  optional AutofillRandomizedValue id = 1;
+
+  // Form element name. Example: <form name="XXXXXXXX">
+  optional AutofillRandomizedValue name = 2;
+
+  // Form element action. Example: <form action="XXXXXXXX">
+  optional AutofillRandomizedValue action = 3;
+}
+
+// The collection of autofill field metadata to be sent using randomization.
+message AutofillRandomizedFieldMetadata {
+  // Input element id. Example: <input id="XXXXXXXX">
+  optional AutofillRandomizedValue id = 1;
+
+  // Input element name. Example:  <input name="XXXXXXXX">
+  optional AutofillRandomizedValue name = 2;
+
+  // Input element type. Example: <input type="XXXXXXXX">
+  optional AutofillRandomizedValue type = 3;
+
+  // Input field label value seen by the user, either explicitly annotated in
+  // the DOM or inferred by the client.
+  //
+  // The value encountered by the client may be personalized (for example:
+  // "Please enter the password for foo@bar.net"). The system will learn the
+  // common/static prefix and determine that the personalized substring is
+  // noise. That said, for a given upload using the ALL_BITS encoding, each
+  // byte has a 10% probability or matching the original plaintext byte and
+  // a 1 in 10^m chance of the full m-character string being uploaded as
+  // plaintext. The other encodings only send partial bytes.
+  //
+  // Example:  <label for="id">XXXXXXX</label>
+  optional AutofillRandomizedValue label = 4;
+
+  // Input field label value exposed to the user via ARIA.
+  // Example 1: <input aria-label="XXXXXX>
+  // Example 2: <div id="foo">XXXXXXX</div>
+  //            <input aria-labelledby="foo">
+  optional AutofillRandomizedValue aria_label = 5;
+
+  // Input field description exposed to the user via ARIA.
+  // Example:
+  //     <div id="foo">XXXXXXX</div>
+  //     <input aria-describedby="foo">
+  optional AutofillRandomizedValue aria_description = 6;
+
+  // CSS class for the input element.
+  // Example: <input class="XXXXXXXX">
+  optional AutofillRandomizedValue css_class = 7;
+
+  // Placeholder text for the input element.
+  // Example: <input placeholder="XXXXXXXX">
+  optional AutofillRandomizedValue placeholder = 8;
+
+  // Hash of the initial value of the field. We want to learn if the initial
+  // value of this field is personalized to the user (we will learn that the
+  // value is noise) or if it is a placeholder in disguise (we will learn a
+  // constant hash).
+  //
+  // Example: <input value="VVVVVVV">
+  //          XXXXXXXX = hash("VVVVVVV"")
+  optional AutofillRandomizedValue initial_value_hash = 9;
+}
+
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 31
+// Next available id: 35
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
+
+  // The secondary form signature is calculated based on field types instead of
+  // names and is used if the primary one is unstable, i.e. the field names
+  // change on every page load.
+  optional fixed64 secondary_form_signature = 34;
 
   // True if the autofill feature was used to fill this form, false otherwise.
   required bool autofill_used = 3;
@@ -80,13 +212,19 @@ message AutofillUploadContents {
 
     // The value of the name attribute on the field, if present. Otherwise, the
     // value of the id attribute. See HTMLFormControlElement::nameForAutofill.
+    // TODO(850606): Deprecate once randomized metadata is launched.
     optional string name = 8;
 
     // The value of the autocomplete attribute on the field, if present.
+    // TODO(850606): Deprecate once randomized metadata is launched.
     optional string autocomplete = 9;
 
     // The type of input control for this field (e.g. text, textarea, email).
+    // TODO(850606): Deprecate once randomized metadata is launched.
     optional string type = 10;
+
+    // The field-level metadata associated with this field, randomized.
+    optional AutofillRandomizedFieldMetadata randomized_field_metadata = 33;
 
     enum PasswordGenerationType {
       NO_GENERATION = 0;
@@ -100,6 +238,7 @@ message AutofillUploadContents {
     optional PasswordGenerationType generation_type = 17;
 
     // The value of the class attribute on the field, if present.
+    // TODO(850606): Deprecate once randomized metadata is launched.
     optional string css_classes = 19;
 
     // The properties mask (i.e. whether the field was autofilled, user
@@ -108,6 +247,7 @@ message AutofillUploadContents {
 
     // The value of the id attribute, if it differs from the name attribute.
     // Otherwise, this field is absent.
+    // TODO(850606): Deprecate once randomized metadata is launched.
     optional string id = 21;
 
     // True iff the user changed generated password. If there was no generation,
@@ -142,6 +282,12 @@ message AutofillUploadContents {
     // or any PASSWORD vote, then the field is absent. This field describes the
     // context of the vote.
     optional VoteType vote_type = 23;
+
+    message AutofillTypeValiditiesPair {
+      required int32 type = 1;
+      repeated int32 validity = 2;
+    }
+    repeated AutofillTypeValiditiesPair autofill_type_validities = 35;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;
@@ -196,11 +342,18 @@ message AutofillUploadContents {
     PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD = 7;
     DEPRECATED_FILLED_FORM_ON_START_PROVISIONAL_LOAD = 8;            // unused
     DEPRECATED_FILLED_INPUT_ELEMENTS_ON_START_PROVISIONAL_LOAD = 9;  // unused
+    PROBABLE_FORM_SUBMISSION = 10;
   }
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
   optional SubmissionIndicatorEvent submission_event = 30;
+
+  // The language of the page on which this form appears.
+  optional string language = 31;
+
+  // Form-level metadata observed by the client, randomized.
+  optional AutofillRandomizedFormMetadata randomized_form_metadata = 32;
 }
 
 // This proto contains information about the validity of each field in an
@@ -212,7 +365,7 @@ message ProfileValidityMap {
   // Map from autofill type to the validity of its value in the profile.
   //
   // Key should be one of the enum values from ServerFieldType. Values should be
-  // from the AutofillProfile::ValidityState enum above. Plain integers are used
+  // from the AutofillProfile::ValidityState. Plain integers are used
   // instead of enums because proto2 treats unknown enum values as unknown
   // fields, which is confusing when the enums are in maps.
   map<int32, int32> field_validity_states = 1;

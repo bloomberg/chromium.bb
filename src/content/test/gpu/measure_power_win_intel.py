@@ -16,7 +16,8 @@ python measure_power_win_intel.py --browser=canary --duration=10 --delay=5
   --extra-browser-args="--no-sandbox --disable-features=UseSurfaceLayerForVideo"
 """
 
-import ipg_utils
+import csv
+import datetime
 import logging
 import os
 import shutil
@@ -26,17 +27,20 @@ import tempfile
 import time
 import optparse
 
+import gpu_tests.ipg_utils as ipg_utils
+
 CHROME_STABLE_PATH = (
-  "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe")
 CHROME_BETA_PATH = (
-  "C:\Program Files (x86)\Google\Chrome Beta\Application\chrome.exe")
+    r"C:\Program Files (x86)\Google\Chrome Beta\Application\chrome.exe")
 CHROME_DEV_PATH = (
-  "C:\Program Files (x86)\Google\Chrome Dev\Application\chrome.exe")
+    r"C:\Program Files (x86)\Google\Chrome Dev\Application\chrome.exe")
 # The following two paths are relative to the LOCALAPPDATA
-CHROME_CANARY_PATH = "Google\Chrome SxS\Application\chrome.exe"
-CHROMIUM_PATH = "Chromium\Application\chrome.exe"
+CHROME_CANARY_PATH = r"Google\Chrome SxS\Application\chrome.exe"
+CHROMIUM_PATH = r"Chromium\Application\chrome.exe"
 
 SUPPORTED_BROWSERS = ['stable', 'beta', 'dev', 'canary', 'chromium']
+
 
 def LocateBrowser(options_browser):
   browser = None
@@ -55,14 +59,15 @@ def LocateBrowser(options_browser):
   else:
     logging.warning("Invalid value for --browser")
     logging.warning(
-      "Supported values: %s, or a full path to a browser executable." %
-      ", ".join(SUPPORTED_BROWSERS))
+        "Supported values: %s, or a full path to a browser executable.",
+        ", ".join(SUPPORTED_BROWSERS))
     return None
   if not os.path.exists(browser):
     logging.warning("Can't locate browser at " + browser)
     logging.warning("Please pass full path to the executable in --browser")
     return None
   return browser
+
 
 def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
   args = []
@@ -79,6 +84,7 @@ def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
   logging.debug(" ".join(args))
   browser_proc = subprocess.Popen(args)
   return browser_proc
+
 
 def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
                      extra_browser_args):
@@ -97,6 +103,7 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
   except Exception as err:
     logging.warning("Failed to remove temporary folder: " + user_data_dir)
     logging.warning("Please kill browser and remove it manually to avoid leak")
+    logging.debug(err)
   results = ipg_utils.AnalyzeIPGLogFile(logfile, delay)
   return results
 
@@ -132,8 +139,8 @@ def main(argv):
   parser.add_option("--url",
                     help="specify the webpage URL the browser launches with.")
   parser.add_option("--extra-browser-args", dest="extra_browser_args",
-                    help="specify extra commandline switches for the browser "
-                    "that are separated by ' '.")
+                    help="specify extra command line switches for the browser "
+                    "that are separated by spaces (quoted).")
   # TODO(zmo): add an option --start-fullscreen
   (options, _) = parser.parse_args(args=argv)
   if options.verbose:
@@ -148,14 +155,31 @@ def main(argv):
 
   log_prefix = options.logname or 'PowerLog'
 
-  for run in range(0, options.repeat):
-    logfile = ipg_utils.GenerateIPGLogFilename(log_prefix, options.logdir,
-                                               run, options.repeat, True)
-    logging.info("Iteration #%d out of %d" % (run, options.repeat))
+  all_results = []
+
+  for run in range(1, options.repeat + 1):
+    logfile = ipg_utils.GenerateIPGLogFilename(
+        log_prefix, options.logdir, run, options.repeat, True)
+    print "Iteration #%d out of %d" % (run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
                                options.extra_browser_args)
-    logging.info(results)
+    print results
+    all_results.append(results)
+
+  now = datetime.datetime.now()
+  results_filename = '%s_%s_results.csv' % (
+      log_prefix, now.strftime('%Y%m%d%H%M%S'))
+  try:
+    with open(results_filename, 'wb') as results_csv:
+      labels = sorted(all_results[0].keys())
+      w = csv.DictWriter(results_csv, fieldnames=labels)
+      w.writeheader()
+      w.writerows(all_results)
+  except Exception as err:
+    logging.warning('Failed to write results file ' + results_filename)
+    logging.debug(err)
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

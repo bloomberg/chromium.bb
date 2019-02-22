@@ -30,6 +30,7 @@
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
+#include "third_party/blink/public/common/blob/blob_utils.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -166,7 +167,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(
 
   BlobEntry* entry =
       registry_.CreateEntry(uuid, content_type, content_disposition);
-  entry->set_size(BlobDataItem::kUnknownSize);
+  entry->set_size(blink::BlobUtils::kUnknownSize);
   entry->set_status(BlobStatus::PENDING_CONSTRUCTION);
   entry->set_building_state(std::make_unique<BlobEntry::BuildingState>(
       false, TransportAllowedCallback(), 0));

@@ -83,10 +83,6 @@ EXTERN_C const IID IID_IElevator;
     IElevator : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE GetElevatorFactory( 
-            /* [string][in] */ const WCHAR *elevator_id,
-            /* [out] */ IClassFactory **factory) = 0;
-        
     };
     
     
@@ -107,11 +103,6 @@ EXTERN_C const IID IID_IElevator;
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IElevator * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetElevatorFactory )( 
-            IElevator * This,
-            /* [string][in] */ const WCHAR *elevator_id,
-            /* [out] */ IClassFactory **factory);
         
         END_INTERFACE
     } IElevatorVtbl;
@@ -135,9 +126,6 @@ EXTERN_C const IID IID_IElevator;
 #define IElevator_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
-
-#define IElevator_GetElevatorFactory(This,elevator_id,factory)	\
-    ( (This)->lpVtbl -> GetElevatorFactory(This,elevator_id,factory) ) 
 
 #endif /* COBJMACROS */
 

@@ -11,9 +11,9 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
+class WebFrame;
 class WebState;
 }
 
@@ -23,20 +23,23 @@ namespace autofill {
 
 // Class that drives autofill flow on iOS. There is one instance per
 // WebContents.
-class AutofillDriverIOS : public AutofillDriver,
-                          public web::WebStateUserData<AutofillDriverIOS> {
+class AutofillDriverIOS : public AutofillDriver {
  public:
   ~AutofillDriverIOS() override;
 
-  static void CreateForWebStateAndDelegate(
+  static void PrepareForWebStateWebFrameAndDelegate(
       web::WebState* web_state,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
 
+  static AutofillDriverIOS* FromWebStateAndWebFrame(web::WebState* web_state,
+                                                    web::WebFrame* web_frame);
+
   // AutofillDriver:
   bool IsIncognito() const override;
+  bool IsInMainFrame() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
@@ -62,19 +65,32 @@ class AutofillDriverIOS : public AutofillDriver,
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
 
- private:
+  bool is_processed() const { return processed_; }
+  void set_processed(bool processed) { processed_ = processed; };
+
+ protected:
   AutofillDriverIOS(
       web::WebState* web_state,
+      web::WebFrame* web_frame,
       AutofillClient* client,
       id<AutofillDriverIOSBridge> bridge,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
 
+ private:
   // The WebState with which this object is associated.
-  web::WebState* web_state_;
+  web::WebState* web_state_ = nullptr;
+
+  // The WebState with which this object is associated.
+  // nullptr if frame messaging is disabled.
+  web::WebFrame* web_frame_ = nullptr;
 
   // AutofillDriverIOSBridge instance that is passed in.
   __unsafe_unretained id<AutofillDriverIOSBridge> bridge_;
+
+  // Whether the initial processing has been done (JavaScript observers have
+  // been enabled and the forms have been extracted).
+  bool processed_ = false;
 
   // AutofillManager instance via which this object drives the shared Autofill
   // code.

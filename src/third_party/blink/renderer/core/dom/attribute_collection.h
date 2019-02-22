@@ -64,11 +64,11 @@ class AttributeCollectionGeneric {
   // Find() returns nullptr if the specified name is not found.
   iterator Find(const QualifiedName&) const;
   iterator Find(const AtomicString& name) const;
-  size_t FindIndex(const QualifiedName&) const;
-  size_t FindIndex(const AtomicString& name) const;
+  wtf_size_t FindIndex(const QualifiedName&) const;
+  wtf_size_t FindIndex(const AtomicString& name) const;
 
  protected:
-  size_t FindSlowCase(const AtomicString& name) const;
+  wtf_size_t FindSlowCase(const AtomicString& name) const;
 
   ContainerMemberType attributes_;
 };
@@ -129,16 +129,16 @@ inline typename AttributeCollectionGeneric<Container,
                                            ContainerMemberType>::iterator
 AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
     const AtomicString& name) const {
-  size_t index = FindIndex(name);
+  wtf_size_t index = FindIndex(name);
   return index != kNotFound ? &at(index) : nullptr;
 }
 
 template <typename Container, typename ContainerMemberType>
-inline size_t
+inline wtf_size_t
 AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
     const QualifiedName& name) const {
   iterator end = this->end();
-  unsigned index = 0;
+  wtf_size_t index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
     if (it->GetName().Matches(name))
       return index;
@@ -147,7 +147,7 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
 }
 
 template <typename Container, typename ContainerMemberType>
-inline size_t
+inline wtf_size_t
 AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
     const AtomicString& name) const {
   bool do_slow_check = false;
@@ -155,7 +155,7 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::FindIndex(
   // Optimize for the case where the attribute exists and its name exactly
   // matches.
   iterator end = this->end();
-  unsigned index = 0;
+  wtf_size_t index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
     // FIXME: Why check the prefix? Namespaces should be all that matter.
     // Most attributes (all of HTML and CSS) have no namespace.
@@ -186,12 +186,13 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::Find(
 }
 
 template <typename Container, typename ContainerMemberType>
-size_t AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
+wtf_size_t
+AttributeCollectionGeneric<Container, ContainerMemberType>::FindSlowCase(
     const AtomicString& name) const {
   // Continue to checking case-insensitively and/or full namespaced names if
   // necessary:
   iterator end = this->end();
-  unsigned index = 0;
+  wtf_size_t index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
     if (!it->GetName().HasPrefix()) {
       // Skip attributes with no prefixes because they must be checked in

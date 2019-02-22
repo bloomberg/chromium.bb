@@ -1,8 +1,13 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 'use strict';
 
 function createFrame(url, name) {
   let frame = document.createElement('iframe');
   frame.name = name;
+  frame.id = name;
   frame.src = url;
   document.body.appendChild(frame);
 }
@@ -20,6 +25,9 @@ async function createDocWrittenFrame(name, base_url) {
   document.body.appendChild(frame);
 
   frame.contentDocument.open();
+  frame.onload = function() {
+    window.domAutomationController.send(true);
+  }
   frame.contentDocument.write(doc_text);
   frame.contentDocument.close();
 }

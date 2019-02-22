@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -74,7 +75,8 @@ void TiclProfileSettingsProviderTest::SetUp() {
       "TestUserAgent", identity_provider_.get(),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
-      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */);
+      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */,
+      network::TestNetworkConnectionTracker::GetInstance());
   invalidation_service_->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));
 }

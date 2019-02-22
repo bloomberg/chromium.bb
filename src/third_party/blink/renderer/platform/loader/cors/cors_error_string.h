@@ -9,7 +9,6 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -17,6 +16,7 @@ namespace blink {
 
 class KURL;
 class SecurityOrigin;
+enum class ResourceType : uint8_t;
 
 // CORS error strings related utility functions.
 namespace CORS {
@@ -27,7 +27,7 @@ PLATFORM_EXPORT String GetErrorString(const network::CORSErrorStatus& status,
                                       const KURL& initial_request_url,
                                       const KURL& last_request_url,
                                       const SecurityOrigin& origin,
-                                      Resource::Type resource_type,
+                                      ResourceType resource_type,
                                       const AtomicString& initiator_name);
 
 }  // namespace CORS

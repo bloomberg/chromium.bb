@@ -429,18 +429,12 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->BeginMainFrame(args);
   }
 
-  void UpdateLayerTreeHost(VisualStateUpdate requested_update) override {
-    test_hooks_->UpdateLayerTreeHost(requested_update);
-  }
+  void RecordEndOfFrameMetrics(base::TimeTicks) override {}
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {
-    test_hooks_->ApplyViewportDeltas(inner_delta, outer_delta,
-                                     elastic_overscroll_delta, page_scale,
-                                     top_controls_delta);
+  void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
+
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
+    test_hooks_->ApplyViewportChanges(args);
   }
 
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
@@ -512,8 +506,8 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     params.image_worker_task_runner = std::move(image_worker_task_runner);
     params.ukm_recorder_factory = std::make_unique<TestUkmRecorderFactory>();
 
-    std::unique_ptr<LayerTreeHostForTesting> layer_tree_host(
-        new LayerTreeHostForTesting(test_hooks, &params, mode));
+    auto layer_tree_host = base::WrapUnique(
+        new LayerTreeHostForTesting(test_hooks, std::move(params), mode));
     std::unique_ptr<TaskRunnerProvider> task_runner_provider =
         TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
     std::unique_ptr<Proxy> proxy;
@@ -563,14 +557,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
-                          LayerTreeHost::InitParams* params,
+                          LayerTreeHost::InitParams params,
                           CompositorMode mode)
-      : LayerTreeHost(params, mode),
-        test_hooks_(test_hooks),
-        test_started_(false) {}
+      : LayerTreeHost(std::move(params), mode), test_hooks_(test_hooks) {}
 
   TestHooks* test_hooks_;
-  bool test_started_;
+  bool test_started_ = false;
 };
 
 class LayerTreeTestLayerTreeFrameSinkClient
@@ -733,10 +725,20 @@ void LayerTreeTest::PostRequestNewLocalSurfaceIdToMainThread() {
                      main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::PostSetDeferCommitsToMainThread(bool defer_commits) {
+void LayerTreeTest::PostGetDeferCommitsToMainThread(
+    std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits) {
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchSetDeferCommits,
-                                main_thread_weak_ptr_, defer_commits));
+      FROM_HERE, base::BindOnce(&LayerTreeTest::DispatchGetDeferCommits,
+                                main_thread_weak_ptr_,
+                                base::Unretained(scoped_defer_commits)));
+}
+
+void LayerTreeTest::PostReturnDeferCommitsToMainThread(
+    std::unique_ptr<ScopedDeferCommits> scoped_defer_commits) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LayerTreeTest::DispatchReturnDeferCommits,
+                     main_thread_weak_ptr_, std::move(scoped_defer_commits)));
 }
 
 void LayerTreeTest::PostSetNeedsCommitToMainThread() {
@@ -928,10 +930,17 @@ void LayerTreeTest::DispatchRequestNewLocalSurfaceId() {
     layer_tree_host_->RequestNewLocalSurfaceId();
 }
 
-void LayerTreeTest::DispatchSetDeferCommits(bool defer_commits) {
+void LayerTreeTest::DispatchGetDeferCommits(
+    std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetDeferCommits(defer_commits);
+    *scoped_defer_commits = layer_tree_host_->DeferCommits();
+}
+
+void LayerTreeTest::DispatchReturnDeferCommits(
+    std::unique_ptr<ScopedDeferCommits> scoped_defer_commits) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  // Just let |scoped_defer_commits| go out of scope.
 }
 
 void LayerTreeTest::DispatchSetNeedsCommit() {

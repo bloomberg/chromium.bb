@@ -6,15 +6,15 @@
 
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
+#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using subresource_filter::ActivationList;
 using subresource_filter::ActivationScope;
-using subresource_filter::ActivationLevel;
+using subresource_filter::mojom::ActivationLevel;
 
 using FlattenedConfig =
     std::tuple<ActivationScope, ActivationList, ActivationLevel>;
@@ -75,6 +75,6 @@ INSTANTIATE_TEST_CASE_P(
                           ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
                           ActivationList::PHISHING_INTERSTITIAL,
                           ActivationList::SUBRESOURCE_FILTER),
-        ::testing::Values(ActivationLevel::ENABLED,
-                          ActivationLevel::DISABLED,
-                          ActivationLevel::DRYRUN)));
+        ::testing::Values(ActivationLevel::kEnabled,
+                          ActivationLevel::kDisabled,
+                          ActivationLevel::kDryRun)));

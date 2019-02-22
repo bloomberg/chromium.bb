@@ -36,8 +36,24 @@ StyleSheetList* StyleSheetList::Create() {
   return new StyleSheetList();
 }
 
+StyleSheetList* StyleSheetList::Create(
+    const HeapVector<Member<CSSStyleSheet>>& style_sheet_vector,
+    ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
+    exception_state.ThrowTypeError("Illegal constructor");
+    return nullptr;
+  }
+  return new StyleSheetList(style_sheet_vector);
+}
+
+StyleSheetList::StyleSheetList(
+    const HeapVector<Member<CSSStyleSheet>>& style_sheet_vector)
+    : style_sheet_vector_(style_sheet_vector) {}
+
 StyleSheetList::StyleSheetList(TreeScope* tree_scope)
-    : tree_scope_(tree_scope) {}
+    : tree_scope_(tree_scope) {
+  CHECK(tree_scope);
+}
 
 inline const HeapVector<TraceWrapperMember<StyleSheet>>&
 StyleSheetList::StyleSheets() const {
@@ -46,10 +62,16 @@ StyleSheetList::StyleSheets() const {
 }
 
 unsigned StyleSheetList::length() {
+  if (!tree_scope_)
+    return style_sheet_vector_.size();
   return StyleSheets().size();
 }
 
 StyleSheet* StyleSheetList::item(unsigned index) {
+  if (!tree_scope_) {
+    return index < style_sheet_vector_.size() ? style_sheet_vector_[index].Get()
+                                              : nullptr;
+  }
   const HeapVector<TraceWrapperMember<StyleSheet>>& sheets = StyleSheets();
   return index < sheets.size() ? sheets[index].Get() : nullptr;
 }
@@ -86,6 +108,7 @@ CSSStyleSheet* StyleSheetList::AnonymousNamedGetter(const AtomicString& name) {
 
 void StyleSheetList::Trace(blink::Visitor* visitor) {
   visitor->Trace(tree_scope_);
+  visitor->Trace(style_sheet_vector_);
   ScriptWrappable::Trace(visitor);
 }
 

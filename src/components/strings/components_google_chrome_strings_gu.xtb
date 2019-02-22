@@ -6,7 +6,7 @@
 <translation id="2147651015520127414">Chrome એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે.</translation>
 <translation id="2874156562296220396">Google Chrome <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> ઓપન સોર્સ પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS" />ઓપન સોર્સ સૉફ્ટવેર<ph name="END_LINK_OSS" /> દ્વારા સંભવ થયું છે.</translation>
 <translation id="3140883423282498090">તમે આગલી વખત Google Chrome ને ફરીથી શરૂ કરશો ત્યારે તમારા ફેરફારો પ્રભાવી થશે.</translation>
-<translation id="3444832043240812445">આ પૃષ્ઠ તો જ તમારા હાલનાં ક્રેશેસ પર માહિતી બતાવે છે જો તમે <ph name="BEGIN_LINK" />ક્રેશ રિપોર્ટિંગ સક્ષમ કરો છો<ph name="END_LINK" />.</translation>
+<translation id="3444832043240812445">જો તમે <ph name="BEGIN_LINK" />ક્રૅશ રિપોર્ટિંગ ચાલુ કરો છો<ph name="END_LINK" /> તો આ પેજ માત્ર તમારા હાલનાં ક્રૅશ પર માહિતી બતાવે છે</translation>
 <translation id="3875312571075912821">Chrome ને તમારી ફાયરવોલ અથવા એન્ટિવાયરસ સેટિંગ્સમાં નેટવર્ક ઍક્સેસ કરવાની
         મંજૂરી આપો.</translation>
 <translation id="4010643444566880169">Chrome OSનું શરૂઆતનું સેટઅપ પૂરું થયું નથી.</translation>
@@ -17,7 +17,7 @@
           <ph name="ADVANCED_TITLE" />
           &gt;
           <ph name="PROXIES_TITLE" />
-          પર જાઓ અને ખાતરી કરો કે ગોઠવણી "પ્રોક્સી નહીં" અથવા "પ્રત્યક્ષ" પર સેટ કરેલી છે.</translation>
+          પર જાઓ અને ખાતરી કરો કે કન્ફિગ્યુરેશન "પ્રૉક્સી નહીંં" અથવા "પ્રત્યક્ષ" પર સેટ કરેલું છે.</translation>
 <translation id="6341737370356890233">Chrome મેનૂ &gt;
         <ph name="SETTINGS_TITLE" />
         &gt;
@@ -32,8 +32,8 @@
           &gt;
           <ph name="PROXIES_TITLE" />
           &gt;
-          LAN સેટિંગ્સ પર જાઓ
-          અને "તમારા LAN માટે એક પ્રોક્સી સર્વરનો ઉપયોગ કરો" ની પસંદગી હટાવો.</translation>
+          LAN સેટિંગ પર જાઓ
+          અને "તમારા LAN માટે એક પ્રૉક્સી સર્વરનો ઉપયોગ કરો"ની પસંદગી હટાવો.</translation>
 <translation id="8187289872471304532">ઍપ્લિકેશનો &gt; સિસ્ટમ પસંદગીઓ &gt; નેટવર્ક &gt; વિગતવાર &gt; પ્રોક્સીઝ
           પર જાઓ અને પસંદ કરવામાં આવેલી કોઈપણ પ્રોક્સીની પસંદગી હટાવો.</translation>
 </translationbundle>

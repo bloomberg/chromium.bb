@@ -34,7 +34,6 @@
 #include "build/build_config.h"
 #include "components/cronet/cronet_global_state.h"
 #include "components/cronet/cronet_prefs_manager.h"
-#include "components/cronet/histogram_manager.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/base/ip_address.h"
@@ -111,14 +110,16 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  private:
   // net::NetworkDelegate implementation.
   bool OnCanGetCookies(const net::URLRequest& request,
-                       const net::CookieList& cookie_list) override {
+                       const net::CookieList& cookie_list,
+                       bool allowed_from_caller) override {
     // Disallow sending cookies by default.
     return false;
   }
 
   bool OnCanSetCookie(const net::URLRequest& request,
                       const net::CanonicalCookie& cookie,
-                      net::CookieOptions* options) override {
+                      net::CookieOptions* options,
+                      bool allowed_from_caller) override {
     // Disallow saving cookies by default.
     return false;
   }
@@ -452,6 +453,40 @@ CronetURLRequestContext::NetworkTasks::GetURLRequestContext() {
     LOG(ERROR) << "URLRequestContext is not set up";
   }
   return context_.get();
+}
+
+// Request context getter for CronetURLRequestContext.
+class CronetURLRequestContext::ContextGetter
+    : public net::URLRequestContextGetter {
+ public:
+  explicit ContextGetter(CronetURLRequestContext* cronet_context)
+      : cronet_context_(cronet_context) {
+    DCHECK(cronet_context_);
+  }
+
+  net::URLRequestContext* GetURLRequestContext() override {
+    return cronet_context_->GetURLRequestContext();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
+      const override {
+    return cronet_context_->GetNetworkTaskRunner();
+  }
+
+ private:
+  // Must be called on the network thread.
+  ~ContextGetter() override { DCHECK(cronet_context_->IsOnNetworkThread()); }
+
+  // CronetURLRequestContext associated with this ContextGetter.
+  CronetURLRequestContext* const cronet_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextGetter);
+};
+
+net::URLRequestContextGetter*
+CronetURLRequestContext::CreateURLRequestContextGetter() {
+  DCHECK(IsOnNetworkThread());
+  return new ContextGetter(this);
 }
 
 net::URLRequestContext* CronetURLRequestContext::GetURLRequestContext() {

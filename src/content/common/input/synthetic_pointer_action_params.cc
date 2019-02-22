@@ -8,12 +8,14 @@ namespace content {
 
 SyntheticPointerActionParams::SyntheticPointerActionParams()
     : pointer_action_type_(PointerActionType::NOT_INITIALIZED),
-      index_(0),
+      pointer_id_(0),
       button_(Button::LEFT) {}
 
 SyntheticPointerActionParams::SyntheticPointerActionParams(
     PointerActionType action_type)
-    : pointer_action_type_(action_type), index_(0), button_(Button::LEFT) {}
+    : pointer_action_type_(action_type),
+      pointer_id_(0),
+      button_(Button::LEFT) {}
 
 SyntheticPointerActionParams::~SyntheticPointerActionParams() {}
 
@@ -31,6 +33,8 @@ unsigned SyntheticPointerActionParams::GetWebMouseEventModifier(
       return blink::WebMouseEvent::kBackButtonDown;
     case SyntheticPointerActionParams::Button::FORWARD:
       return blink::WebMouseEvent::kForwardButtonDown;
+    case SyntheticPointerActionParams::Button::NO_BUTTON:
+      return blink::WebMouseEvent::kNoModifiers;
   }
   NOTREACHED();
   return blink::WebMouseEvent::kNoModifiers;
@@ -51,9 +55,25 @@ SyntheticPointerActionParams::GetWebMouseEventButton(
       return blink::WebMouseEvent::Button::kBack;
     case SyntheticPointerActionParams::Button::FORWARD:
       return blink::WebMouseEvent::Button::kForward;
+    case SyntheticPointerActionParams::Button::NO_BUTTON:
+      return blink::WebMouseEvent::Button::kNoButton;
   }
   NOTREACHED();
   return blink::WebMouseEvent::Button::kNoButton;
+}
+
+// static
+blink::WebMouseEvent::Button
+SyntheticPointerActionParams::GetWebMouseEventButtonFromModifier(
+    unsigned modifiers) {
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::Button::kNoButton;
+  if (modifiers & blink::WebMouseEvent::kLeftButtonDown)
+    button = blink::WebMouseEvent::Button::kLeft;
+  if (modifiers & blink::WebMouseEvent::kMiddleButtonDown)
+    button = blink::WebMouseEvent::Button::kMiddle;
+  if (modifiers & blink::WebMouseEvent::kRightButtonDown)
+    button = blink::WebMouseEvent::Button::kRight;
+  return button;
 }
 
 }  // namespace content

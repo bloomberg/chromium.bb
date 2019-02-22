@@ -164,7 +164,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     defaultNullStringOptionalstringArg = nullptr;
   }
   if (UNLIKELY(numArgsPassed <= 5)) {
-    Document& document = *ToDocument(ToExecutionContext(
+    Document& document = *To<Document>(ToExecutionContext(
         info.NewTarget().As<v8::Object>()->CreationContext()));
     TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::CreateForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, exceptionState);
     if (exceptionState.HadException()) {
@@ -179,7 +179,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   if (!optionalStringArg.Prepare())
     return;
 
-  Document& document = *ToDocument(ToExecutionContext(
+  Document& document = *To<Document>(ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext()));
   TestInterfaceNamedConstructor* impl = TestInterfaceNamedConstructor::CreateForJSConstructor(document, stringArg, defaultUndefinedOptionalBooleanArg, defaultUndefinedOptionalLongArg, defaultUndefinedOptionalStringArg, defaultNullStringOptionalstringArg, optionalStringArg, exceptionState);
   if (exceptionState.HadException()) {

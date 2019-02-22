@@ -10,6 +10,7 @@ import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "services/ws/public/mojom/cursor/cursor.mojom";
+import "services/ws/public/mojom/window_manager.mojom";
 import "services/ws/public/mojom/screen_provider_observer.mojom";
 import "services/ws/public/mojom/window_tree_constants.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
@@ -126,10 +127,12 @@ interface WindowTree {
                 gfx.mojom.Insets insets,
                 array<gfx.mojom.Rect>? additional_client_areas);
 
-  // Mouse events outside a hit test mask do not hit the window. The |mask| is
-  // in window local coordinates. Pass null to clear the mask.
-  // TODO(jamescook): Convert |mask| to a path. http://crbug.com/613210
-  SetHitTestMask(uint64 window_id, gfx.mojom.Rect? mask);
+  // Insets the hit test of a window by the specified values. The insets must be
+  // positive (or zero). |mouse| applies to events originating from the mouse,
+  // and |touch| from a non-mouse pointer device (such as tap).
+  SetHitTestInsets(uint64 window_id,
+                   gfx.mojom.Insets mouse,
+                   gfx.mojom.Insets touch);
 
   // Called by clients that want to accept drag and drops. Windows default to
   // this being disabled; a window must actively opt-in to receiving OnDrag*()
@@ -196,12 +199,6 @@ interface WindowTree {
   // . |window_id| does not identify a valid window.
   // . Client does not have a valid user id (i.e., it is an embedded app).
   SetModalType(uint32 change_id, uint64 window_id, ui.mojom.ModalType type);
-
-  // Sets the modal parent of a CHILD_MODAL window. This is the modal parent of
-  // the window, which is not necessarily the same as the parent of the window.
-  SetChildModalParent(uint32 change_id,
-                      uint64 window_id,
-                      uint64 parent_window_id);
 
   // Reorders a window in its parent, relative to |relative_window_id| according
   // to |direction|. Only the connection that created the window's parent can
@@ -285,6 +282,12 @@ interface WindowTree {
                   uint32 embed_flags)
       => (bool success);
 
+  // Attaches/unattaches a FrameSinkId to this window. A window can only have
+  // a single frame-sink-id attached to it.
+  AttachFrameSinkId(uint64 window_id,
+                    viz.mojom.FrameSinkId frame_sink_id);
+  UnattachFrameSinkId(uint64 window_id);
+
   // Sets focus to the specified window, use 0 to clear focus. For a window to
   // get focus the following has to happen: the window is drawn, the window has
   // been marked as focusable (see SetCanFocus()) and the window is in a
@@ -327,8 +330,14 @@ interface WindowTree {
   // Stacks the window above all sibling windows.
   StackAtTop(uint32 change_id, uint64 window_id);
 
-  // Tells the window manager to perform |string_action| for |window_id|.
-  PerformWmAction(uint64 window_id, string action);
+  // Requests a window manager specific interface. |name| is the name of the
+  // interface. This function is typed to WindowManager, but that's purely
+  // by necessity. This function is used to request *any* interface known to
+  // the environment hosting the window service. If |name| is not the name of
+  // an interface known to the environment hosting the window service,
+  // |window_manager| is closed.
+  BindWindowManagerInterface(string name,
+                             associated WindowManager& window_manager);
 
   // Returns a shared memory segment that contains two 16-bit ints packed into a
   // single Atomic32, which represent the current location of the mouse cursor
@@ -376,6 +385,22 @@ interface WindowTree {
   // Called by the client to request stopping the ongoing session of observing
   // the topmost window under the cursor.
   StopObservingTopmostWindow();
+
+  // Called by the client to cancel active touch events. not_cancelled_window_id
+  // is a window ID, and that window is excluded from cancelling. When
+  // not_cancelled_window_id is invalid, active touch events should be cancelled
+  // on all windows.
+  CancelActiveTouchesExcept(uint64 not_cancelled_window_id);
+
+  // Called by the client to cancel active touches on |window_id|.
+  CancelActiveTouches(uint64 window_id);
+
+  // Called by the client to transfer the gesture stream from the window of
+  // |current_id| to the window of |new_id|. If |should_cancel| is set, then
+  // cancel events are also dispatched to |current_id|. Both |current_id| and
+  // |new_id| need to be valid window ID created by the client. This operation
+  // is not allowed for embedded clients.
+  TransferGestureEventsTo(uint64 current_id, uint64 new_id, bool should_cancel);
 };
 
 // Changes to windows are not sent to the connection that originated the
@@ -480,6 +505,10 @@ interface WindowTreeClient {
   // Invoked when the opacity of the specified window has changed.
   OnWindowOpacityChanged(uint64 window, float old_opacity, float new_opacity);
 
+  // Invoked when the window moves to a new display. This is only called on
+  // a top-level window or an embedded root.
+  OnWindowDisplayChanged(uint64 window, int64 display_id);
+
   // Invoked when the drawn state of |window|'s parent changes. The drawn state
   // is determined by the visibility of a Window and the Windows ancestors. A
   // Window is drawn if all ancestors are visible, not drawn if any ancestor is
@@ -529,15 +558,6 @@ interface WindowTreeClient {
   OnWindowFocused(uint64 focused_window_id);
 
   OnWindowCursorChanged(uint64 window_id, CursorData cursor);
-
-  // Invoked when a client window submits a new surface ID. The surface ID and
-  // associated information is propagated to the parent connection. The parent
-  // compositor can take ownership of this surface ID and embed it along with
-  // frame_size and device_scale_factor in a layer.
-  // TODO(fsamuel): Surface IDs should be passed to parents directly instead of
-  // going through the window server. http://crbug.com/655231
-  OnWindowSurfaceChanged(uint64 window_id,
-                         viz.mojom.SurfaceInfo surface_info);
 
   // Called when the mouse cursor enters a window on this connection for the
   // first time, providing a list of available mime types. We want to send this

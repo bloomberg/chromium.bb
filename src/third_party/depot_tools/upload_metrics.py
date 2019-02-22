@@ -15,6 +15,8 @@ def main():
     urllib2.urlopen(metrics_utils.APP_URL + '/upload', metrics)
   except urllib2.HTTPError:
     pass
+  except urllib2.URLError:
+    pass
 
   return 0
 

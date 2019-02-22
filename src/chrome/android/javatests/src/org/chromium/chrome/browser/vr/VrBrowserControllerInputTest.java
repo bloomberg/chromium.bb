@@ -30,10 +30,10 @@ import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.DOMUtils;
-import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.RenderCoordinates;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -389,5 +389,27 @@ public class VrBrowserControllerInputTest {
                            .doubleValue()
                     > navigationTimestamp;
         });
+    }
+
+    /**
+     * Tests that pressing the app button on the Daydream controller exits omnibox text input mode.
+     */
+    @Test
+    @MediumTest
+    public void testAppButtonExitsOmniboxTextInput() throws InterruptedException {
+        // We should always have the keyboard installed and up to date during automated testing, so
+        // this isn't strictly required. However, it may prevent weird issues when running locally
+        // if you don't have the keyboard installed for some reason.
+        NativeUiUtils.enableMockedKeyboard();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
+        // This acts as an assert that we're actually in omnibox text input mode. If the omnibox
+        // is not actually visible, we'll hit a DCHECK in the native code.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF());
+        NativeUiUtils.revertToRealInput();
+        // Wait for the URL bar to re-appear, which we take as a signal that we've exited omnibox
+        // text input mode.
+        NativeUiUtils.performActionAndWaitForVisibilityChange(
+                UserFriendlyElementName.URL, () -> { mController.pressReleaseAppButton(); });
     }
 }

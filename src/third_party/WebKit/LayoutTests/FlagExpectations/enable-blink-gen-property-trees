@@ -1,8 +1,7 @@
 # Expectations for --enable-blink-gen-property-trees
 # We are focused on scrolling, compositing, animations, threading, and paint
-# related tests with all other directories skipped (for now).
+# related tests with all other directories skipped to improve bot cycle time.
 
-Bug(none) accessibility/ [ Skip ]
 Bug(none) app_banner/ [ Skip ]
 Bug(none) battery-status/ [ Skip ]
 Bug(none) bindings/ [ Skip ]
@@ -11,9 +10,6 @@ Bug(none) clipboard/ [ Skip ]
 Bug(none) crypto/ [ Skip ]
 Bug(none) css-parser/ [ Skip ]
 Bug(none) css-shadow-parts/ [ Skip ]
-Bug(none) css1/ [ Skip ]
-Bug(none) css2.1/ [ Skip ]
-Bug(none) cssom/ [ Skip ]
 Bug(none) custom-elements/ [ Skip ]
 Bug(none) custom-properties/ [ Skip ]
 Bug(none) device_orientation/ [ Skip ]
@@ -22,15 +18,12 @@ Bug(none) editing/ [ Skip ]
 Bug(none) external/ [ Skip ]
 Bug(none) fonts/ [ Skip ]
 Bug(none) fragmentation/ [ Skip ]
-Bug(none) fullscreen/ [ Skip ]
 Bug(none) gamepad/ [ Skip ]
 Bug(none) geolocation-api/ [ Skip ]
 Bug(none) harness-tests/ [ Skip ]
 Bug(none) hdr/ [ Skip ]
-Bug(none) hittesting/ [ Skip ]
 Bug(none) html/ [ Skip ]
 Bug(none) html5lib/ [ Skip ]
-Bug(none) http/ [ Skip ]
 Bug(none) idle-callback/ [ Skip ]
 Bug(none) ietestcenter/ [ Skip ]
 Bug(none) external/wpt/imagecapture/ [ Skip ]
@@ -48,11 +41,8 @@ Bug(none) netinfo/ [ Skip ]
 Bug(none) nfc/ [ Skip ]
 Bug(none) payments/ [ Skip ]
 Bug(none) permissionclient/ [ Skip ]
-Bug(none) platform/ [ Skip ]
-Bug(none) plugins/ [ Skip ]
 Bug(none) pointer-lock/ [ Skip ]
 Bug(none) presentation/ [ Skip ]
-Bug(none) printing/ [ Skip ]
 Bug(none) reporting-observer/ [ Skip ]
 Bug(none) resize-observer/ [ Skip ]
 Bug(none) resources/ [ Skip ]
@@ -64,16 +54,12 @@ Bug(none) shapedetection/ [ Skip ]
 Bug(none) storage/ [ Skip ]
 Bug(none) tables/ [ Skip ]
 Bug(none) third_party/ [ Skip ]
-Bug(none) transforms/ [ Skip ]
 Bug(none) traversal/ [ Skip ]
 Bug(none) typedcssom/ [ Skip ]
 Bug(none) usb/ [ Skip ]
 Bug(none) vibration/ [ Skip ]
 Bug(none) virtual/cors-rfc1918/ [ Skip ]
 Bug(none) virtual/custom-user-timing/ [ Skip ]
-Bug(none) virtual/enable_asmjs/ [ Skip ]
-Bug(none) virtual/enable_wasm/ [ Skip ]
-Bug(none) virtual/enable_wasm_streaming/ [ Skip ]
 Bug(none) virtual/exotic-color-space/ [ Skip ]
 Bug(none) virtual/feature-policy-permissions/ [ Skip ]
 Bug(none) virtual/feature-policy-vibrate/ [ Skip ]
@@ -94,7 +80,6 @@ Bug(none) virtual/new-remote-playback-pipeline/ [ Skip ]
 Bug(none) virtual/origin-trials-runtimeflags-disabled/ [ Skip ]
 Bug(none) virtual/outofblink-cors/ [ Skip ]
 Bug(none) virtual/paint-timing/ [ Skip ]
-Bug(none) virtual/prefer_compositing_to_lcd_text/ [ Skip ]
 Bug(none) virtual/presentation/ [ Skip ]
 Bug(none) virtual/print_browser/ [ Skip ]
 Bug(none) virtual/reporting-api/ [ Skip ]
@@ -124,21 +109,21 @@ Bug(none) webshare/ [ Skip ]
 Bug(none) xmlviewer/ [ Skip ]
 Bug(none) xr/ [ Skip ]
 
-# These inspector tests should pass.
-Bug(none) http/tests/devtools/ [ Pass ]
-Bug(none) http/tests/inspector-protocol/ [ Pass ]
-Bug(none) inspector-protocol/ [ Pass ]
-# Suspect this is the same issue as the animation timeouts in crbug.com/855688.
-Bug(none) inspector-protocol/animation/animation-multiple-frames.js [ Timeout ]
-
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
+Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
+Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 crbug.com/400829 media/video-object-fit.html [ Pass ]
 crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html [ Pass ]
+
+# These tests are no longer applicable with layer list mode.
+# Move to NeverFixTests later.
+Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
+Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
 # Backdrop filters are experimental (behind a flag) and do not really work with
 # or without BlinkGenPropertyTrees. These tests are marked as failing because
@@ -146,111 +131,23 @@ crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html 
 crbug.com/854189 css3/filters/backdrop-filter-rendering-no-background.html [ Failure ]
 crbug.com/854189 css3/filters/backdrop-filter-rendering.html [ Failure ]
 
-# These animation/transition tests should pass.
-Bug(none) animations/ [ Pass ]
-Bug(none) transitions/ [ Pass ]
-
-crbug.com/861824 virtual/threaded/fast/animationworklet/animation-worklet-inside-iframe.html [ Failure ]
-
-# These scrollbar tests should pass.
-Bug(none) virtual/prefer_compositing_to_lcd_text/scrollbars/ [ Pass ]
-crbug.com/836890 compositing/rtl/rtl-absolute-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-and-writing-mode-scrolling.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-fixed-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-overflow-invalidation.html [ Failure ]
-crbug.com/836890 compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
-crbug.com/836890 fast/dom/rtl-scroll-to-leftmost-and-resize.html [ Failure ]
-crbug.com/836890 fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 paint/invalidation/scroll/document-flipped-blocks-writing-mode-scroll.html [ Failure ]
-crbug.com/836890 virtual/user-activation-v2/fast/events/wheel/wheelevent-in-horizontal-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 virtual/user-activation-v2/fast/events/wheel/wheelevent-in-vertical-scrollbar-in-rtl.html [ Failure ]
-crbug.com/836890 compositing/squashing/vertical-writing-mode-squashed.html [ Failure ]
-crbug.com/836890 paint/overflow/composited-scroll-vertical-rl.html [ Failure ]
-crbug.com/836912 compositing/squashing/no-squashing-into-another-clip-layer.html [ Pass Failure ]
-crbug.com/836912 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
-
 # These scrolling tests should pass.
-Bug(none) virtual/threaded/ [ Pass ]
-Bug(none) fast/scrolling [ Pass ]
-Bug(none) fast/events [ Pass ]
-Bug(none) virtual/scroll_customization/ [ Pass ]
-crbug.com/836913 virtual/threaded/fast/scrolling/overlay-scrollbars.html [ Failure ]
 crbug.com/836913 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
-
-# These visual viewport tests should pass.
-Bug(none) external/wpt/visual-viewport [ Pass ]
-Bug(none) rootscroller/ [ Pass ]
-Bug(none) virtual/android/ [ Pass ]
-# Benign subpixel rounding difference.
-crbug.com/836890 virtual/android/fullscreen/video-transform.html [ Failure ]
 
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 
-# Rounding differences.
-# Maybe due to different render surface generation? (Needs investigation.)
-Bug(none) compositing/backface-visibility-transformed.html [ Failure ]
-Bug(none) compositing/iframes/invisible-nested-iframe-show.html [ Failure ]
-Bug(none) compositing/lots-of-img-layers-with-opacity.html [ Failure ]
-Bug(none) compositing/lots-of-img-layers.html [ Failure ]
-Bug(none) compositing/opacity-with-mask.html [ Failure ]
-Bug(none) compositing/perpendicular-layer-sorting.html [ Failure ]
-Bug(none) compositing/perspective-interest-rect.html [ Failure ]
-Bug(none) compositing/geometry/layer-due-to-layer-children.html [ Failure ]
-Bug(none) compositing/shadows/shadow-drawing.html [ Failure Pass ]
-Bug(none) compositing/masks/direct-image-mask.html [ Failure ]
-Bug(none) compositing/masks/masked-ancestor.html [ Failure ]
-Bug(none) compositing/masks/multiple-masks.html [ Failure ]
-Bug(none) compositing/masks/simple-composited-mask.html [ Failure ]
+# One line of pixels different when clipping the scrollbar.
+Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
-Bug(none) compositing/overflow/tiled-mask.html [ Failure ]
 
-# Subpixel differences on text. Likely benign.
-Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Failure ]
+# Incorrect scrollbar invalidation.
+crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 
-# Failures that don't belong to any of above categories. Investigation needed.
-Bug(none) compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
-Bug(none) compositing/overflow-trumps-transform-style.html [ Failure ]
-Bug(none) compositing/backface-visibility/backface-visibility-hierarchical-transform.html [ Failure ]
-Bug(none) compositing/geometry/clipping-foreground.html [ Failure Pass ]
-Bug(none) compositing/video/video-controls-layer-creation.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
 
-# Rounded borders have slightly different antialiasing
-Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
-Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-above-composited-subframe.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-composited-subframe.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-on-grandparent-composited-grandchild.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-on-parent-composited-grandchild.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-on-two-ancestors-composited-grandchild.html [ Failure ]
-Bug(none) compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
-Bug(none) compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
-Bug(none) compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
-Bug(none) compositing/overflow/grandchild-with-border-radius-ancestor.html [ Failure ]
-Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor.html [ Failure ]
-Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor-one-clipped.html [ Failure ]
-Bug(none) compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-canvas-border.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-canvas.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video-ratio.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video-shadow.html [ Failure ]
-Bug(none) fast/borders/border-radius-mask-video.html [ Failure ]
-Bug(none) fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
-Bug(none) fast/clip/overflow-border-radius-composited.html [ Failure ]
+crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
 
-# Something wrong with vertical-rl scrollbars
-crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
-crbug.com/853945 fast/block/positioning/vertical-rl/fixed-positioning.html [ Failure ]
-crbug.com/853945 fast/block/positioning/rtl-fixed-positioning.html [ Failure ]
-
-Bug(none) fast/dom/scroll-reveal-left-overflow.html [ Failure ]
-Bug(none) fast/dom/scroll-reveal-top-overflow.html [ Failure ]
-Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-hidden.html [ Failure ]
-Bug(none) virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad.html [ Failure ]
-
-# Scroll snap data missing.
-crbug.com/853945 fast/scroll-snap/snap-scrolls-visual-viewport.html [ Failure ]
+crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]

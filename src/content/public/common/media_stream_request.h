@@ -17,6 +17,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/mojo/interfaces/display_media_information.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -84,6 +85,8 @@ using CameraCalibration =
 CONTENT_EXPORT bool IsAudioInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsVideoInputMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsScreenCaptureMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsDesktopCaptureMediaType(MediaStreamType type);
+CONTENT_EXPORT bool IsTabCaptureMediaType(MediaStreamType type);
 CONTENT_EXPORT bool IsDeviceMediaType(MediaStreamType type);
 
 // TODO(xians): Change the structs to classes.
@@ -114,6 +117,8 @@ struct CONTENT_EXPORT MediaStreamDevice {
   MediaStreamDevice(const MediaStreamDevice& other);
 
   ~MediaStreamDevice();
+
+  MediaStreamDevice& operator=(const MediaStreamDevice& other);
 
   bool IsSameDevice(const MediaStreamDevice& other_device) const;
 
@@ -146,6 +151,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
 
   // This field is optional and available only for some camera models.
   base::Optional<CameraCalibration> camera_calibration;
+
+  // This field is optional and available only for display media devices.
+  base::Optional<media::mojom::DisplayMediaInformationPtr> display_media_info;
 };
 
 using MediaStreamDevices = std::vector<MediaStreamDevice>;

@@ -70,13 +70,15 @@ class MockConsumerEndpoint : public perfetto::TracingService::ConsumerEndpoint {
     mock_service_->OnTracingEnabled(
         config.data_sources()[0].config().chrome_config().trace_config());
   }
-
   void DisableTracing() override { mock_service_->OnTracingDisabled(); }
   void ReadBuffers() override {}
   void FreeBuffers() override {}
   void Flush(uint32_t timeout_ms, FlushCallback callback) override {
     callback(true);
   }
+
+  // Unused in chrome, only meaningful when using TraceConfig.deferred_start.
+  void StartTracing() override {}
 
  private:
   MockService* mock_service_;
@@ -221,9 +223,10 @@ class JSONTraceExporterTest : public testing::Test {
     return trace_event;
   }
 
-  const trace_analyzer::TraceAnalyzer* trace_analyzer() const {
+  trace_analyzer::TraceAnalyzer* trace_analyzer() {
     return trace_analyzer_.get();
   }
+
   MockService* service() { return service_.get(); }
   const base::DictionaryValue* parsed_trace_data() const {
     return parsed_trace_data_.get();
@@ -305,6 +308,58 @@ TEST_F(JSONTraceExporterTest, TestBasicEvent) {
 
   service()->WaitForTracingDisabled();
   ValidateAndGetBasicTestPacket();
+}
+
+TEST_F(JSONTraceExporterTest, TestStringTable) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+  auto* new_trace_event =
+      trace_packet_proto.mutable_chrome_events()->add_trace_events();
+
+  {
+    auto* string_table_entry =
+        trace_packet_proto.mutable_chrome_events()->add_string_table();
+    string_table_entry->set_index(1);
+    string_table_entry->set_value("foo_name");
+  }
+
+  {
+    auto* string_table_entry =
+        trace_packet_proto.mutable_chrome_events()->add_string_table();
+    string_table_entry->set_index(2);
+    string_table_entry->set_value("foo_cat");
+  }
+
+  {
+    auto* string_table_entry =
+        trace_packet_proto.mutable_chrome_events()->add_string_table();
+    string_table_entry->set_index(3);
+    string_table_entry->set_value("foo_arg");
+  }
+
+  new_trace_event->set_name_index(1);
+  new_trace_event->set_category_group_name_index(2);
+
+  auto* new_arg = new_trace_event->add_args();
+  new_arg->set_name_index(3);
+  new_arg->set_bool_value(true);
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+
+  auto* trace_event = trace_analyzer()->FindFirstOf(
+      trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
+      trace_analyzer::Query::String("foo_name"));
+  EXPECT_TRUE(trace_event);
+
+  EXPECT_EQ("foo_name", trace_event->name);
+  EXPECT_EQ("foo_cat", trace_event->category);
+
+  EXPECT_TRUE(trace_event->GetKnownArgAsBool("foo_arg"));
 }
 
 TEST_F(JSONTraceExporterTest, TestEventWithBoolArgs) {

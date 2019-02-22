@@ -40,14 +40,15 @@ def GetAdTaggingProfileFiles(chrome_output_directory):
   if chrome_output_directory is None:
     return []
 
-  ruleset_path = os.path.join(chrome_output_directory, 'gen', 'components',
-      'subresource_filter', 'tools', 'GeneratedRulesetData')
+  gen_path = os.path.join(chrome_output_directory, 'gen', 'components',
+                          'subresource_filter', 'tools')
+  ruleset_path = os.path.join(gen_path, 'GeneratedRulesetData')
   if not os.path.exists(ruleset_path):
     return []
 
-  local_state_path = os.path.join(
-      os.path.dirname(__file__), 'default_local_state.json')
-  assert os.path.exists(local_state_path)
+  local_state_path = os.path.join(gen_path, 'default_local_state.json')
+  if not os.path.exists(local_state_path):
+    return []
 
   with open(local_state_path, 'r') as f:
     state_json = json.load(f)
@@ -104,6 +105,13 @@ class PerfBenchmark(benchmark.Benchmark):
     # with the test results.
     options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
+
+
+    # TODO(crbug.com/881469): remove this once Webview support surface
+    # synchronization and viz.
+    if options.browser_type and 'android-webview' in options.browser_type:
+      options.AppendExtraBrowserArgs(
+          '--disable-features=SurfaceSynchronization,VizDisplayCompositor')
     self.SetExtraBrowserOptions(options)
 
   @staticmethod

@@ -54,7 +54,6 @@ class SK_API SkTextBlobCacheDiffCanvas : public SkNoDrawCanvas {
 public:
     struct SK_API Settings {
         Settings();
-        ~Settings();
 
         bool fContextSupportsDistanceFieldText = true;
         SkScalar fMinDistanceFieldFontSize = -1.f;
@@ -63,7 +62,7 @@ public:
         size_t fMaxTextureBytes = 0u;
     };
     SkTextBlobCacheDiffCanvas(int width, int height, const SkSurfaceProps& props,
-                              SkStrikeServer* strikeserver, Settings settings = Settings());
+                              SkStrikeServer* strikeServer, Settings settings = Settings());
 
     // TODO(khushalsagar): Remove once removed from chromium.
     SkTextBlobCacheDiffCanvas(int width, int height, const SkMatrix& deviceMatrix,
@@ -91,7 +90,7 @@ public:
     // entries on the remote client.
     class SK_API DiscardableHandleManager {
     public:
-        virtual ~DiscardableHandleManager() {}
+        virtual ~DiscardableHandleManager() = default;
 
         // Creates a new *locked* handle and returns a unique ID that can be used to identify
         // it on the remote client.
@@ -105,12 +104,13 @@ public:
         // allowed.
         virtual bool lockHandle(SkDiscardableHandleId) = 0;
 
-        // TODO(khushalsagar): Add an API which checks whether a handle is still
-        // valid without locking, so we can avoid tracking stale handles once they
-        // have been purged on the remote side.
+        // Returns true if a handle has been deleted on the remote client. It is
+        // invalid to use a handle id again with this manager once this returns true.
+        // TODO(khushalsagar): Make pure virtual once chrome implementation lands.
+        virtual bool isHandleDeleted(SkDiscardableHandleId) { return false; }
     };
 
-    SkStrikeServer(DiscardableHandleManager* discardableHandleManager);
+    explicit SkStrikeServer(DiscardableHandleManager* discardableHandleManager);
     ~SkStrikeServer();
 
     // Serializes the typeface to be remoted using this server.
@@ -124,14 +124,24 @@ public:
     // Methods used internally in skia ------------------------------------------
     class SkGlyphCacheState;
 
-    SkGlyphCacheState* getOrCreateCache(const SkPaint&, const SkSurfaceProps*, const SkMatrix*,
+    SkGlyphCacheState* getOrCreateCache(const SkPaint&, const SkSurfaceProps&, const SkMatrix&,
                                         SkScalerContextFlags flags,
                                         SkScalerContextEffects* effects);
 
+    void setMaxEntriesInDescriptorMapForTesting(size_t count) {
+        fMaxEntriesInDescriptorMap = count;
+    }
+    size_t remoteGlyphStateMapSizeForTesting() const { return fRemoteGlyphStateMap.size(); }
+
 private:
+    static constexpr size_t kMaxEntriesInDescriptorMap = 2000u;
+
+    void checkForDeletedEntries();
+
     SkDescriptorMap<std::unique_ptr<SkGlyphCacheState>> fRemoteGlyphStateMap;
     DiscardableHandleManager* const fDiscardableHandleManager;
     SkTHashSet<SkFontID> fCachedTypefaces;
+    size_t fMaxEntriesInDescriptorMap = kMaxEntriesInDescriptorMap;
 
     // State cached until the next serialization.
     SkDescriptorSet fLockedDescs;
@@ -159,7 +169,7 @@ public:
     // An interface to delete handles that may be pinned by the remote server.
     class DiscardableHandleManager : public SkRefCnt {
     public:
-        virtual ~DiscardableHandleManager() {}
+        virtual ~DiscardableHandleManager() = default;
 
         // Returns true if the handle was unlocked and can be safely deleted. Once
         // successful, subsequent attempts to delete the same handle are invalid.
@@ -168,9 +178,9 @@ public:
         virtual void notifyCacheMiss(CacheMissType) {}
     };
 
-    SkStrikeClient(sk_sp<DiscardableHandleManager>,
-                   bool isLogging = true,
-                   SkStrikeCache* strikeCache = nullptr);
+    explicit SkStrikeClient(sk_sp<DiscardableHandleManager>,
+                            bool isLogging = true,
+                            SkStrikeCache* strikeCache = nullptr);
     ~SkStrikeClient();
 
     // Deserializes the typeface previously serialized using the SkStrikeServer. Returns null if the

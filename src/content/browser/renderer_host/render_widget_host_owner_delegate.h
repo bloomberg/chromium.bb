@@ -57,8 +57,9 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   // priority to the RenderProcessHost.
   virtual bool ShouldContributePriorityToProcess() = 0;
 
-  // Called when the RenderWidgetHost has shutdown.
-  virtual void RenderWidgetDidShutdown() = 0;
+  // Notify the OwnerDelegate that the renderer has requested a change in
+  // the bounds of the content area.
+  virtual void RequestSetBounds(const gfx::Rect& bounds) = 0;
 
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}

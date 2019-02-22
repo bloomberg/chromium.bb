@@ -42,10 +42,12 @@ class ExtensionBindingsApiTest
 
   void SetUp() override {
     if (GetParam() == NATIVE_BINDINGS) {
-      scoped_feature_list_.InitAndEnableFeature(features::kNativeCrxBindings);
+      scoped_feature_list_.InitAndEnableFeature(
+          extensions_features::kNativeCrxBindings);
     } else {
       DCHECK_EQ(JAVASCRIPT_BINDINGS, GetParam());
-      scoped_feature_list_.InitAndDisableFeature(features::kNativeCrxBindings);
+      scoped_feature_list_.InitAndDisableFeature(
+          extensions_features::kNativeCrxBindings);
     }
     ExtensionApiTest::SetUp();
   }
@@ -520,6 +522,119 @@ IN_PROC_BROWSER_TEST_P(
       first_tab, "domAutomationController.send(window.tabEventId)",
       &result_tab_id));
   EXPECT_EQ(SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
+}
+
+// Verifies that user gestures are carried through extension messages.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+                       UserGestureFromExtensionMessageTest) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "User Gesture Content Script",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": { "scripts": ["background.js"] },
+           "content_scripts": [{
+             "matches": ["*://*.example.com:*/*"],
+             "js": ["content_script.js"],
+             "run_at": "document_end"
+           }]
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
+                     R"(const button = document.getElementById('go-button');
+                        button.addEventListener('click', () => {
+                          chrome.runtime.sendMessage('clicked');
+                        });)");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     R"(chrome.runtime.onMessage.addListener((message) => {
+                        chrome.test.sendMessage(
+                            'Clicked: ' +
+                            chrome.test.isProcessingUserGesture());
+                        });)");
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL url = embedded_test_server()->GetURL(
+      "example.com", "/extensions/page_with_button.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // Passing a message without an active user gesture shouldn't result in a
+    // gesture being active on the receiving end.
+    ExtensionTestMessageListener listener(false);
+    content::EvalJsResult result =
+        content::EvalJs(tab, "document.getElementById('go-button').click()",
+                        content::EXECUTE_SCRIPT_NO_USER_GESTURE);
+    EXPECT_TRUE(result.value.is_none());
+
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    EXPECT_EQ("Clicked: false", listener.message());
+  }
+
+  {
+    // If there is an active user gesture when the message is sent, we should
+    // synthesize a user gesture on the receiving end.
+    ExtensionTestMessageListener listener(false);
+    content::EvalJsResult result =
+        content::EvalJs(tab, "document.getElementById('go-button').click()");
+    EXPECT_TRUE(result.value.is_none());
+
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    EXPECT_EQ("Clicked: true", listener.message());
+  }
+}
+
+// Verifies that user gestures from API calls are active when the callback is
+// triggered.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+                       UserGestureInExtensionAPICallback) {
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "User Gesture Extension API Callback",
+           "manifest_version": 2,
+           "version": "0.1"
+         })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), "<html></html>");
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  const GURL extension_page = extension->GetResourceURL("page.html");
+  ui_test_utils::NavigateToURL(browser(), extension_page);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  constexpr char kScript[] =
+      R"(chrome.tabs.query({}, (tabs) => {
+           let message;
+           if (chrome.runtime.lastError)
+             message = 'Unexpected error: ' + chrome.runtime.lastError;
+           else
+             message = 'Has gesture: ' + chrome.test.isProcessingUserGesture();
+           domAutomationController.send(message);
+         });)";
+
+  {
+    // Triggering an API without an active gesture shouldn't result in a
+    // gesture in the callback.
+    std::string message;
+    EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+        tab, kScript, &message));
+    EXPECT_EQ("Has gesture: false", message);
+  }
+  {
+    // If there was an active gesture at the time of the API call, there should
+    // be an active gesture in the callback.
+    std::string message;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, kScript, &message));
+    EXPECT_EQ("Has gesture: true", message);
+  }
 }
 
 // Run core bindings API tests with both native and JS-based bindings. This

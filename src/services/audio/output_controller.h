@@ -242,6 +242,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // via tasks run by this TaskRunner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Time when the controller is constructed. Used to record its lifetime on
+  // destruction.
+  const base::TimeTicks construction_time_;
+
   // Specifies the device id of the output device to open or empty for the
   // default output device.
   const std::string output_device_id_;

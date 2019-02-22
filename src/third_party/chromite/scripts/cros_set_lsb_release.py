@@ -30,6 +30,7 @@ from chromite.lib import image_lib
 # CHROMEOS_RELEASE_PATCH_NUMBER is the patch number for the current branch.
 # CHROMEOS_RELEASE_TRACK and CHROMEOS_RELEASE_VERSION are used by the software
 #   update service.
+# CHROMEOS_RELEASE_KEYSET is the named of the keyset used to sign this build.
 # TODO(skrul):  Remove GOOGLE_RELEASE once Chromium is updated to look at
 #   CHROMEOS_RELEASE_VERSION for UserAgent data.
 LSB_KEY_NAME = 'CHROMEOS_RELEASE_NAME'
@@ -39,6 +40,7 @@ LSB_KEY_TRACK = 'CHROMEOS_RELEASE_TRACK'
 LSB_KEY_BUILD_TYPE = 'CHROMEOS_RELEASE_BUILD_TYPE'
 LSB_KEY_DESCRIPTION = 'CHROMEOS_RELEASE_DESCRIPTION'
 LSB_KEY_BOARD = 'CHROMEOS_RELEASE_BOARD'
+LSB_KEY_KEYSET = 'CHROMEOS_RELEASE_KEYSET'
 LSB_KEY_MODELS = 'CHROMEOS_RELEASE_MODELS'
 LSB_KEY_UNIBUILD = 'CHROMEOS_RELEASE_UNIBUILD'
 LSB_KEY_BRANCH_NUMBER = 'CHROMEOS_RELEASE_BRANCH_NUMBER'
@@ -77,6 +79,8 @@ def _ParseArguments(argv):
   parser.add_argument('--official', action='store_true',
                       help='Whether or not to populate with fields for an '
                       'official image.')
+  parser.add_argument('--keyset',
+                      help='The keyset name used to sign this image.')
   parser.add_argument('--buildbot_build', default='N/A',
                       help='The build number, for use with the continuous '
                       'builder.')
@@ -149,6 +153,11 @@ def main(argv):
   if opts.builder_path is not None:
     fields.update({
         LSB_KEY_BUILDER_PATH: opts.builder_path,
+    })
+
+  if opts.keyset is not None:
+    fields.update({
+        LSB_KEY_BOARD: opts.keyset,
     })
 
   board_and_models = opts.board

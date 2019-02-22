@@ -5,23 +5,23 @@
 #include "google_apis/drive/request_sender.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/base_requests.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace google_apis {
 
 RequestSender::RequestSender(
-    AuthServiceInterface* auth_service,
-    net::URLRequestContextGetter* url_request_context_getter,
+    std::unique_ptr<AuthServiceInterface> auth_service,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const std::string& custom_user_agent,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : auth_service_(auth_service),
-      url_request_context_getter_(url_request_context_getter),
+    : auth_service_(std::move(auth_service)),
+      url_loader_factory_(url_loader_factory),
       blocking_task_runner_(blocking_task_runner),
       custom_user_agent_(custom_user_agent),
       traffic_annotation_(traffic_annotation),

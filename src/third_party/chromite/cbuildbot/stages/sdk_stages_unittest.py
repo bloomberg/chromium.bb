@@ -81,8 +81,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
     osutils.Touch(os.path.join(self.fake_chroot, 'file'))
     for package, v in self.fake_packages:
       cpv = portage_util.SplitCPV('%s-%s' % (package, v))
-      key = '%s/%s' % (cpv.category, cpv.package)
-      self.fake_json_data.setdefault(key, []).append([v, {}])
+      self.fake_json_data.setdefault(cpv.cp, []).append([v, {}])
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
@@ -258,7 +257,7 @@ class SDKPackageToolchainOverlaysStageTest(
         toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
         if toolchains.issubset(sdk_toolchains):
           all_toolchain_combos.add('-'.join(sorted(toolchains)))
-      except portage_util.MissingOverlayException:
+      except portage_util.MissingOverlayError:
         pass
 
     for toolchains in all_toolchain_combos:

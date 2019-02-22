@@ -52,8 +52,6 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
   params->transition = transition;
   params->redirects = std::vector<GURL>();
   params->should_update_history = false;
-  params->searchable_form_url = GURL();
-  params->searchable_form_encoding = std::string();
   params->did_create_new_entry = did_create_new_entry;
   params->gesture = NavigationGestureUser;
   params->method = "GET";

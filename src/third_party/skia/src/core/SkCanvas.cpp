@@ -541,11 +541,7 @@ void SkCanvas::resetForNextPicture(const SkIRect& bounds) {
     fIsScaleTranslate = true;
 }
 
-void SkCanvas::init(sk_sp<SkBaseDevice> device, InitFlags flags) {
-    if (device && device->forceConservativeRasterClip()) {
-        flags = InitFlags(flags | kConservativeRasterClip_InitFlag);
-    }
-
+void SkCanvas::init(sk_sp<SkBaseDevice> device) {
     fAllowSimplifyClip = false;
     fSaveCount = 1;
     fMetaData = nullptr;
@@ -581,7 +577,7 @@ SkCanvas::SkCanvas()
 {
     inc_canvas();
 
-    this->init(nullptr, kDefault_InitFlags);
+    this->init(nullptr);
 }
 
 SkCanvas::SkCanvas(int width, int height, const SkSurfaceProps* props)
@@ -590,17 +586,17 @@ SkCanvas::SkCanvas(int width, int height, const SkSurfaceProps* props)
 {
     inc_canvas();
     this->init(sk_make_sp<SkNoPixelsDevice>(
-            SkIRect::MakeWH(SkTMax(width, 0), SkTMax(height, 0)), fProps), kDefault_InitFlags);
+            SkIRect::MakeWH(SkTMax(width, 0), SkTMax(height, 0)), fProps));
 }
 
-SkCanvas::SkCanvas(const SkIRect& bounds, InitFlags flags)
+SkCanvas::SkCanvas(const SkIRect& bounds)
     : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
     , fProps(SkSurfaceProps::kLegacyFontHost_InitType)
 {
     inc_canvas();
 
     SkIRect r = bounds.isEmpty() ? SkIRect::MakeEmpty() : bounds;
-    this->init(sk_make_sp<SkNoPixelsDevice>(r, fProps), flags);
+    this->init(sk_make_sp<SkNoPixelsDevice>(r, fProps));
 }
 
 SkCanvas::SkCanvas(sk_sp<SkBaseDevice> device)
@@ -609,16 +605,7 @@ SkCanvas::SkCanvas(sk_sp<SkBaseDevice> device)
 {
     inc_canvas();
 
-    this->init(device, kDefault_InitFlags);
-}
-
-SkCanvas::SkCanvas(sk_sp<SkBaseDevice> device, InitFlags flags)
-    : fMCStack(sizeof(MCRec), fMCRecStorage, sizeof(fMCRecStorage))
-    , fProps(device->surfaceProps())
-{
-    inc_canvas();
-
-    this->init(device, flags);
+    this->init(device);
 }
 
 SkCanvas::SkCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props)
@@ -628,7 +615,7 @@ SkCanvas::SkCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props)
     inc_canvas();
 
     sk_sp<SkBaseDevice> device(new SkBitmapDevice(bitmap, fProps, nullptr, nullptr));
-    this->init(device, kDefault_InitFlags);
+    this->init(device);
 }
 
 SkCanvas::SkCanvas(const SkBitmap& bitmap, std::unique_ptr<SkRasterHandleAllocator> alloc,
@@ -640,7 +627,7 @@ SkCanvas::SkCanvas(const SkBitmap& bitmap, std::unique_ptr<SkRasterHandleAllocat
     inc_canvas();
 
     sk_sp<SkBaseDevice> device(new SkBitmapDevice(bitmap, fProps, hndl, nullptr));
-    this->init(device, kDefault_InitFlags);
+    this->init(device);
 }
 
 SkCanvas::SkCanvas(const SkBitmap& bitmap) : SkCanvas(bitmap, nullptr, nullptr) {}
@@ -656,7 +643,7 @@ SkCanvas::SkCanvas(const SkBitmap& bitmap, ColorBehavior)
     SkBitmap tmp(bitmap);
     *const_cast<SkImageInfo*>(&tmp.info()) = tmp.info().makeColorSpace(nullptr);
     sk_sp<SkBaseDevice> device(new SkBitmapDevice(tmp, fProps, nullptr, nullptr));
-    this->init(device, kDefault_InitFlags);
+    this->init(device);
 }
 #endif
 
@@ -1128,6 +1115,7 @@ void SkCanvas::internalRestore() {
     if (layer) {
         if (fMCRec) {
             const SkIPoint& origin = layer->fDevice->getOrigin();
+            layer->fDevice->setImmutable();
             this->internalDrawDevice(layer->fDevice.get(), origin.x(), origin.y(),
                                      layer->fPaint.get(),
                                      layer->fClipImage.get(), layer->fClipMatrix);
@@ -2814,34 +2802,9 @@ int SkCanvas::LayerIter::y() const { return fImpl->getY(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO: This still disagrees with SkSurfaceValidateRasterInfo
-static bool supported_for_raster_canvas(const SkImageInfo& info) {
-    switch (info.alphaType()) {
-        case kPremul_SkAlphaType:
-        case kOpaque_SkAlphaType:
-            break;
-        default:
-            return false;
-    }
-
-    switch (info.colorType()) {
-        case kAlpha_8_SkColorType:
-        case kRGB_565_SkColorType:
-        case kN32_SkColorType:
-        case kRGBA_F16_SkColorType:
-        case kRGBA_F32_SkColorType:
-        case kRGBA_1010102_SkColorType:
-            break;
-        default:
-            return false;
-    }
-
-    return true;
-}
-
 std::unique_ptr<SkCanvas> SkCanvas::MakeRasterDirect(const SkImageInfo& info, void* pixels,
                                                      size_t rowBytes, const SkSurfaceProps* props) {
-    if (!supported_for_raster_canvas(info)) {
+    if (!SkSurfaceValidateRasterInfo(info, rowBytes)) {
         return nullptr;
     }
 
@@ -2858,10 +2821,10 @@ std::unique_ptr<SkCanvas> SkCanvas::MakeRasterDirect(const SkImageInfo& info, vo
 ///////////////////////////////////////////////////////////////////////////////
 
 SkNoDrawCanvas::SkNoDrawCanvas(int width, int height)
-    : INHERITED(SkIRect::MakeWH(width, height), kConservativeRasterClip_InitFlag) {}
+    : INHERITED(SkIRect::MakeWH(width, height)) {}
 
 SkNoDrawCanvas::SkNoDrawCanvas(const SkIRect& bounds)
-    : INHERITED(bounds, kConservativeRasterClip_InitFlag) {}
+    : INHERITED(bounds) {}
 
 SkNoDrawCanvas::SkNoDrawCanvas(sk_sp<SkBaseDevice> device)
     : INHERITED(device) {}
@@ -2919,7 +2882,7 @@ SkRasterHandleAllocator::Handle SkRasterHandleAllocator::allocBitmap(const SkIma
 std::unique_ptr<SkCanvas>
 SkRasterHandleAllocator::MakeCanvas(std::unique_ptr<SkRasterHandleAllocator> alloc,
                                     const SkImageInfo& info, const Rec* rec) {
-    if (!alloc || !supported_for_raster_canvas(info)) {
+    if (!alloc || !SkSurfaceValidateRasterInfo(info, rec ? rec->fRowBytes : kIgnoreRowBytesValue)) {
         return nullptr;
     }
 

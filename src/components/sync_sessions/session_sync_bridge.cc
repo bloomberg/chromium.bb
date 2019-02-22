@@ -18,6 +18,8 @@
 #include "base/time/time.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -100,30 +102,21 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 
 SessionSyncBridge::SessionSyncBridge(
     SyncSessionsClient* sessions_client,
-    syncer::SessionSyncPrefs* sync_prefs,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    const syncer::RepeatingModelTypeStoreFactory& store_factory,
-    const base::RepeatingClosure& foreign_sessions_updated_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
       sessions_client_(sessions_client),
       local_session_event_router_(
           sessions_client->GetLocalSessionEventRouter()),
-      foreign_sessions_updated_callback_(foreign_sessions_updated_callback),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
                      kMaxSyncFavicons),
       session_store_factory_(SessionStore::CreateFactory(
           sessions_client,
-          sync_prefs,
-          local_device_info_provider,
-          store_factory,
           base::BindRepeating(&FaviconCache::UpdateMappingsFromForeignTab,
                               base::Unretained(&favicon_cache_)))),
       weak_ptr_factory_(this) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
-  DCHECK(foreign_sessions_updated_callback_);
 }
 
 SessionSyncBridge::~SessionSyncBridge() {
@@ -265,7 +258,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   SessionStore::WriteBatch::Commit(std::move(batch));
 
   if (!entity_changes.empty()) {
-    foreign_sessions_updated_callback_.Run();
+    sessions_client_->NotifyForeignSessionUpdated();
   }
 
   return base::nullopt;
@@ -344,8 +337,17 @@ void SessionSyncBridge::OnSyncStarting(
     const syncer::DataTypeActivationRequest& request) {
   DCHECK(!syncing_);
 
-  session_store_factory_.Run(base::BindOnce(
-      &SessionSyncBridge::OnStoreInitialized, weak_ptr_factory_.GetWeakPtr()));
+  const syncer::DeviceInfo* device_info =
+      sessions_client_->GetLocalDeviceInfo();
+
+  // DeviceInfo must be available by the time sync starts, because there's no
+  // task posting involved in the sessions controller.
+  DCHECK(device_info);
+  DCHECK_EQ(device_info->guid(), request.cache_guid);
+
+  session_store_factory_.Run(
+      *device_info, base::BindOnce(&SessionSyncBridge::OnStoreInitialized,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SessionSyncBridge::OnStoreInitialized(
@@ -443,7 +445,7 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
   change_processor()->Delete(header_storage_key,
                              batch->GetMetadataChangeList());
 
-  foreign_sessions_updated_callback_.Run();
+  sessions_client_->NotifyForeignSessionUpdated();
 }
 
 std::unique_ptr<SessionStore::WriteBatch>

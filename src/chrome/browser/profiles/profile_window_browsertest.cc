@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -224,6 +225,36 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
   Browser* guest_browser = OpenGuestBrowser();
   AppMenuModel model_guest_profile(&accelerator_handler, guest_browser);
   EXPECT_EQ(-1, model_guest_profile.GetIndexOfCommandId(IDC_BOOKMARKS_MENU));
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, OpenBrowserWindowForProfile) {
+  Profile* profile = browser()->profile();
+  size_t num_browsers = BrowserList::GetInstance()->size();
+  profiles::OpenBrowserWindowForProfile(
+      ProfileManager::CreateCallback(), true, false, false, profile,
+      Profile::CreateStatus::CREATE_STATUS_INITIALIZED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(num_browsers + 1, BrowserList::GetInstance()->size());
+  EXPECT_FALSE(UserManager::IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest,
+                       OpenBrowserWindowForProfileWithSigninRequired) {
+  Profile* profile = browser()->profile();
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
+  size_t num_browsers = BrowserList::GetInstance()->size();
+  base::RunLoop run_loop;
+  UserManager::AddOnUserManagerShownCallbackForTesting(run_loop.QuitClosure());
+  profiles::OpenBrowserWindowForProfile(
+      ProfileManager::CreateCallback(), true, false, false, profile,
+      Profile::CreateStatus::CREATE_STATUS_INITIALIZED);
+  run_loop.Run();
+  EXPECT_EQ(num_browsers, BrowserList::GetInstance()->size());
+  EXPECT_TRUE(UserManager::IsShowing());
 }
 
 class ProfileWindowWebUIBrowserTest : public WebUIBrowserTest {

@@ -4,6 +4,9 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+# TODO(tapted): This entire folder should move to //ui/file_manager/base.
+visibility = [ "//ui/file_manager/*" ]
+
 js_type_check("closure_compile") {
   deps = [
     ":byte_reader",
@@ -35,9 +38,6 @@ js_type_check("closure_compile") {
 js_library("closure_compile_externs") {
   sources = []
   externs_list = [
-    "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/file_system_provider.js",
     "../../../../externs/app_window_common.js",
     "../../../../externs/entry_location.js",
     "../../../../externs/platform.js",
@@ -148,6 +148,7 @@ js_library("metadata_model") {
     ":metadata_provider",
     ":multi_metadata_provider",
     "../../../common/js:util",
+    "//ui/file_manager/externs:volume_manager",
   ]
 }
 
@@ -186,6 +187,7 @@ js_library("multi_metadata_provider") {
     ":external_metadata_provider",
     ":file_system_metadata_provider",
     ":metadata_provider",
+    "//ui/file_manager/externs:volume_manager",
   ]
 }
 

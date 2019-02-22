@@ -100,7 +100,6 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3171922709365450819">Te naprave ne podpira odjemalec, ker zahteva preverjanje pristnosti tretje osebe.</translation>
 <translation id="3194245623920924351">Oddaljeno namizje za Chrome</translation>
 <translation id="3197730452537982411">Oddaljeno namizje</translation>
-<translation id="3212472844831225214">• Dodana podpora za Android 9.0 Pie.</translation>
 <translation id="324272851072175193">Pošlji ta navodila po e-pošti</translation>
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
 <translation id="3286521253923406898">Krmilnik gostitelja za Oddaljeno povezovanje s Chromom</translation>
@@ -316,6 +315,8 @@ PC</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
 <translation id="8548209692293300397">V preteklosti ste se prijavljali kot <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Če želite dostopati do računalnikov v tistem računu, <ph name="LINK_BEGIN" />se prijavite v Google Chrome<ph name="LINK_END" /> s tistim računom in znova namestite Oddaljeno namizje za Chrome.</translation>
 <translation id="8642984861538780905">Zadovoljiva</translation>
+<translation id="8705151241155781642">• Dodana podpora za Android 9.0 Pie.
+• Podpora za spreminjanje ločljivosti oddaljenega namizja, da se ujema z zaslonom naprave Android.</translation>
 <translation id="8712909229180978490">V spletu ne vidim shranjenih datotek v Googlu Drive.</translation>
 <translation id="8743328882720071828">Ali želite dovoliti, da ima uporabnik <ph name="CLIENT_USERNAME" /> dostop do vašega računalnika in ga lahko nadzira?</translation>
 <translation id="8747048596626351634">Seja se je zrušila ali je ni bilo mogoče začeti. Če je v oddaljenem računalniku seja ~/.chrome-remote-desktop-session, poskrbite, da je v njej zagnan dolgotrajen proces v ospredju, kot je okolje namizja ali upravitelj oken.</translation>

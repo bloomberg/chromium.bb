@@ -5,7 +5,6 @@
 module content.mojom;
 
 import "content/common/input/input_handler.mojom";
-import "content/common/native_types.mojom";
 import "content/common/widget.mojom";
 import "content/public/common/renderer_preferences.mojom";
 import "mojo/public/mojom/base/thread_priority.mojom";
@@ -19,31 +18,12 @@ interface RenderMessageFilter {
 
   // Similar to CreateWindow, except used for sub-widgets, like <select>
   // dropdowns.
-  [Sync] CreateNewWidget(int32 opener_id, content.mojom.WebPopupType popup_type, Widget widget)
+  [Sync] CreateNewWidget(int32 opener_id, Widget widget)
       => (int32 route_id);
 
   // Similar to CreateWidget except the widget is a full screen window.
   [Sync] CreateFullscreenWidget(int32 opener_id, Widget widget)
       => (int32 route_id);
-
-  // Requests that the browser cache |data| associated with |url| and |expected_response_time|.
-  // TODO(https://crbug.com/779444): Verify or remove |url| and |cache_storage_origin|.
-  DidGenerateCacheableMetadata(url.mojom.Url url,
-                               mojo_base.mojom.Time expected_response_time,
-                               array<uint8> data);
-
-  // TODO(crbug.com/867848) Pass the data as mojo data_pipe instead of
-  // array<unit8>.
-  FetchCachedCode(url.mojom.Url url) => (mojo_base.mojom.Time response_time,
-                                         array<uint8> data);
-
-  ClearCodeCacheEntry(url.mojom.Url url);
-
-  // Requests that the browser cache |data| for the specified CacheStorage entry.
-  DidGenerateCacheableMetadataInCacheStorage(
-      url.mojom.Url url, mojo_base.mojom.Time expected_response_time,
-      array<uint8> data, url.mojom.Origin cache_storage_origin,
-      string cache_storage_cache_name);
 
   // A renderer sends this when it wants to know whether a gpu process exists.
   [Sync] HasGpuProcess() => (bool has_gpu_process);

@@ -294,6 +294,10 @@ void VkRenderFramework::GetPhysicalDeviceFeatures(VkPhysicalDeviceFeatures *feat
     }
 }
 
+void VkRenderFramework::GetPhysicalDeviceProperties(VkPhysicalDeviceProperties *props) {
+    *props = vk_testing::PhysicalDevice(gpu()).properties();
+}
+
 void VkRenderFramework::InitState(VkPhysicalDeviceFeatures *features, VkPhysicalDeviceFeatures2 *features2,
                                   const VkCommandPoolCreateFlags flags) {
     // Remove any unsupported device extension names from list
@@ -957,6 +961,8 @@ void VkImageObj::Init(uint32_t const width, uint32_t const height, uint32_t cons
                       const std::vector<uint32_t> *queue_families) {
     InitNoLayout(width, height, mipLevels, format, usage, requested_tiling, reqs, queue_families);
 
+    if (!initialized()) return;  // We don't have a valid handle from early stage init, and thus SetLayout will fail
+
     VkImageLayout newLayout;
     if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
         newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -1202,6 +1208,34 @@ VkShaderObj::VkShaderObj(VkDeviceObj *device, const char *shader_code, VkShaderS
     moduleCreateInfo.pNext = nullptr;
 
     framework->GLSLtoSPV(stage, shader_code, spv);
+    moduleCreateInfo.pCode = spv.data();
+    moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
+    moduleCreateInfo.flags = 0;
+
+    err = init_try(*m_device, moduleCreateInfo);
+    m_stage_info.module = handle();
+    assert(VK_SUCCESS == err);
+}
+
+VkShaderObj::VkShaderObj(VkDeviceObj *device, const std::string spv_source, VkShaderStageFlagBits stage,
+                         VkRenderFramework *framework, char const *name) {
+    VkResult U_ASSERT_ONLY err = VK_SUCCESS;
+    std::vector<unsigned int> spv;
+    VkShaderModuleCreateInfo moduleCreateInfo;
+
+    m_device = device;
+    m_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    m_stage_info.pNext = nullptr;
+    m_stage_info.flags = 0;
+    m_stage_info.stage = stage;
+    m_stage_info.module = VK_NULL_HANDLE;
+    m_stage_info.pName = name;
+    m_stage_info.pSpecializationInfo = nullptr;
+
+    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleCreateInfo.pNext = nullptr;
+
+    framework->ASMtoSPV(SPV_ENV_VULKAN_1_0, 0, spv_source.data(), spv);
     moduleCreateInfo.pCode = spv.data();
     moduleCreateInfo.codeSize = spv.size() * sizeof(unsigned int);
     moduleCreateInfo.flags = 0;

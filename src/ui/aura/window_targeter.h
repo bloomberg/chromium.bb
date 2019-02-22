@@ -88,6 +88,12 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
                                       ui::Event* event) override;
 
  protected:
+  aura::Window* window() { return window_; }
+  const aura::Window* window() const { return window_; }
+
+  // This is called by Window when the targeter is set on a window.
+  virtual void OnInstalled(Window* window);
+
   // Same as FindTargetForEvent(), but used for positional events. The location
   // etc. of |event| are in |window|'s coordinate system. When finding the
   // target for the event, the targeter can mutate the |event| (e.g. change the
@@ -114,21 +120,25 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
 
   // Returns true if the hit testing (GetHitTestRects()) should use the
   // extended bounds.
-  virtual bool ShouldUseExtendedBounds(const aura::Window* window) const;
-
-  // Called after the hit-test area has been extended with SetInsets(). The
-  // supplied insets are the values before the call to SetInsets().
-  virtual void OnSetInsets(const gfx::Insets& last_mouse_extend,
-                           const gfx::Insets& last_touch_extend);
+  virtual bool ShouldUseExtendedBounds(const aura::Window* w) const;
 
   const gfx::Insets& mouse_extend() const { return mouse_extend_; }
   const gfx::Insets& touch_extend() const { return touch_extend_; }
 
  private:
+  // To call OnInstalled().
+  friend class Window;
+
+  void UpdateMusIfNecessary();
+
   Window* FindTargetForKeyEvent(Window* root_window, const ui::KeyEvent& event);
   Window* FindTargetForNonKeyEvent(Window* root_window, ui::Event* event);
   Window* FindTargetForLocatedEventRecursively(Window* root_window,
                                                ui::LocatedEvent* event);
+
+  // The Window this WindowTargeter is installed on. Null if not attached to a
+  // Window.
+  aura::Window* window_ = nullptr;
 
   gfx::Insets mouse_extend_;
   gfx::Insets touch_extend_;

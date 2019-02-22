@@ -17,6 +17,21 @@ namespace media {
 
 class CHROMECAST_EXPORT ExternalAudioPipelineShlib {
  public:
+  // Represents a media input source of the external media pipeline.
+  enum class MediaInputSource {
+    UNKNOWN_INPUT_SOURCE,
+    HDMI,
+    AIRPLAY,
+  };
+
+  // Represents a media playback state of the external media pipeline.
+  enum class MediaPlaybackState {
+    UNKNOWN_STATE,
+    STOPPED,
+    PAUSED,
+    PLAYING,
+  };
+
   // Observer for reporting requests for media volume change/muting from the
   // external media pipeline. The external pipeline should communicate the media
   // volume change requests through this observer and otherwise shouldn't change
@@ -38,6 +53,33 @@ class CHROMECAST_EXPORT ExternalAudioPipelineShlib {
 
    protected:
     virtual ~ExternalMediaVolumeChangeRequestObserver() = default;
+  };
+
+  // Media metadata which can be acquired from the external pipeline.
+  struct ExternalMediaMetadata {
+    ExternalMediaMetadata();
+    ExternalMediaMetadata(const ExternalMediaMetadata& other);
+    ~ExternalMediaMetadata();
+
+    std::string title;
+    std::string artist;
+    std::string album;
+    std::string genre;
+    int track_num = -1;
+    MediaInputSource source = MediaInputSource::HDMI;
+    MediaPlaybackState state = MediaPlaybackState::UNKNOWN_STATE;
+  };
+
+  // Observer for reporting media metadata change from the external media
+  // pipeline, e.g., title, artist, input source, play back state, and etc.
+  class ExternalMediaMetadataChangeObserver {
+   public:
+    // Called when media metadata is updated.
+    virtual void OnExternalMediaMetadataChanged(
+        const ExternalMediaMetadata& metadata) = 0;
+
+   protected:
+    virtual ~ExternalMediaMetadataChangeObserver() = default;
   };
 
   // Returns whether this shlib is supported. If this returns true, it indicates
@@ -84,10 +126,28 @@ class CHROMECAST_EXPORT ExternalAudioPipelineShlib {
   static void RemoveExternalLoopbackAudioObserver(
       CastMediaShlib::LoopbackAudioObserver* observer);
 
+  // Adds an external media metadata observer.
+  static void AddExternalMediaMetadataChangeObserver(
+      ExternalMediaMetadataChangeObserver* observer) __attribute__((__weak__));
+
+  // Removes an external media volume observer. After this is called, the
+  // implementation must not call any more methods on the observer.
+  static void RemoveExternalMediaMetadataChangeObserver(
+      ExternalMediaMetadataChangeObserver* observer) __attribute__((__weak__));
+
   // Returns an instance of MixerOutputStream from the shared library.
   // Caller will take ownership of the returned pointer.
   static std::unique_ptr<MixerOutputStream> CreateMixerOutputStream();
 };
+
+inline ExternalAudioPipelineShlib::ExternalMediaMetadata::
+    ExternalMediaMetadata() = default;
+
+inline ExternalAudioPipelineShlib::ExternalMediaMetadata::ExternalMediaMetadata(
+    const ExternalMediaMetadata& other) = default;
+
+inline ExternalAudioPipelineShlib::ExternalMediaMetadata::
+    ~ExternalMediaMetadata() = default;
 
 }  // namespace media
 }  // namespace chromecast

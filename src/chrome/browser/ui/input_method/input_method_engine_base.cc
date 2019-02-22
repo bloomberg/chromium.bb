@@ -24,8 +24,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/ime_keymap.h"
@@ -204,8 +202,7 @@ bool InputMethodEngineBase::SetComposition(
   composition_text_->selection.set_end(selection_end);
 
   // TODO: Add support for displaying selected text in the composition string.
-  for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
-       segment != segments.end(); ++segment) {
+  for (auto segment = segments.begin(); segment != segments.end(); ++segment) {
     ui::ImeTextSpan ime_text_span;
 
     ime_text_span.underline_color = SK_ColorTRANSPARENT;
@@ -410,7 +407,7 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
     composition_changed_ = false;
   }
 
-  RequestMap::iterator request = request_map_.find(request_id);
+  auto request = request_map_.find(request_id);
   if (request == request_map_.end()) {
     LOG(ERROR) << "Request ID not found: " << request_id;
     return;

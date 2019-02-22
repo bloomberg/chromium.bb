@@ -4,12 +4,14 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_util.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -97,9 +99,16 @@ ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
+  // |info->options->script_type| is never accessed anywhere, so just set it to
+  // kClassic.
+  // TODO(asamidoi, nhiroki): Remove |options| from
+  // ServiceWorkerRegistrationObjectInfo, since |script_type| is a
+  // non-per-registration property.
+  blink::mojom::ScriptType script_type = blink::mojom::ScriptType::kClassic;
+
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
-      registration_->pattern(), registration_->update_via_cache());
+      registration_->pattern(), script_type, registration_->update_via_cache());
   info->registration_id = registration_->id();
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   info->request = mojo::MakeRequest(&remote_registration_);
@@ -115,12 +124,12 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
 
 void ServiceWorkerRegistrationObjectHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
-    ChangedVersionAttributesMask changed_mask,
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     const ServiceWorkerRegistrationInfo& info) {
   DCHECK_EQ(registration->id(), registration_->id());
-  SetVersionAttributes(changed_mask, registration->installing_version(),
-                       registration->waiting_version(),
-                       registration->active_version());
+  SetServiceWorkerObjects(
+      std::move(changed_mask), registration->installing_version(),
+      registration->waiting_version(), registration->active_version());
 }
 
 void ServiceWorkerRegistrationObjectHost::OnUpdateViaCacheChanged(
@@ -131,11 +140,9 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateViaCacheChanged(
 void ServiceWorkerRegistrationObjectHost::OnRegistrationFailed(
     ServiceWorkerRegistration* registration) {
   DCHECK_EQ(registration->id(), registration_->id());
-  ChangedVersionAttributesMask changed_mask(
-      ChangedVersionAttributesMask::INSTALLING_VERSION |
-      ChangedVersionAttributesMask::WAITING_VERSION |
-      ChangedVersionAttributesMask::ACTIVE_VERSION);
-  SetVersionAttributes(changed_mask, nullptr, nullptr, nullptr);
+  auto changed_mask =
+      blink::mojom::ChangedServiceWorkerObjectsMask::New(true, true, true);
+  SetServiceWorkerObjects(std::move(changed_mask), nullptr, nullptr, nullptr);
 }
 
 void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
@@ -205,8 +212,8 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  BrowserThread::PostDelayedTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(update_function),
                      blink::ServiceWorkerStatusCode::kOk),
       delay);
@@ -371,29 +378,30 @@ void ServiceWorkerRegistrationObjectHost::DidUpdateNavigationPreloadHeader(
                           base::nullopt);
 }
 
-void ServiceWorkerRegistrationObjectHost::SetVersionAttributes(
-    ChangedVersionAttributesMask changed_mask,
+void ServiceWorkerRegistrationObjectHost::SetServiceWorkerObjects(
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
     ServiceWorkerVersion* installing_version,
     ServiceWorkerVersion* waiting_version,
     ServiceWorkerVersion* active_version) {
-  if (!changed_mask.changed())
+  if (!(changed_mask->installing || changed_mask->waiting ||
+        changed_mask->active))
     return;
 
   blink::mojom::ServiceWorkerObjectInfoPtr installing;
   blink::mojom::ServiceWorkerObjectInfoPtr waiting;
   blink::mojom::ServiceWorkerObjectInfoPtr active;
-  if (changed_mask.installing_changed()) {
+  if (changed_mask->installing) {
     installing =
         CreateCompleteObjectInfoToSend(provider_host_, installing_version);
   }
-  if (changed_mask.waiting_changed())
+  if (changed_mask->waiting)
     waiting = CreateCompleteObjectInfoToSend(provider_host_, waiting_version);
-  if (changed_mask.active_changed())
+  if (changed_mask->active)
     active = CreateCompleteObjectInfoToSend(provider_host_, active_version);
 
   DCHECK(remote_registration_);
-  remote_registration_->SetVersionAttributes(
-      changed_mask.changed(), std::move(installing), std::move(waiting),
+  remote_registration_->SetServiceWorkerObjects(
+      std::move(changed_mask), std::move(installing), std::move(waiting),
       std::move(active));
 }
 

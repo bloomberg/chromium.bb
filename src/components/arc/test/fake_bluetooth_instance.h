@@ -43,10 +43,10 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
 
   class LEDeviceFoundData {
    public:
-    LEDeviceFoundData(
-        mojom::BluetoothAddressPtr&& addr,
-        int32_t rssi,
-        std::vector<mojom::BluetoothAdvertisingDataPtr>&& adv_data);
+    LEDeviceFoundData(mojom::BluetoothAddressPtr addr,
+                      int32_t rssi,
+                      std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data,
+                      const std::vector<uint8_t>& eir);
     ~LEDeviceFoundData();
 
     const mojom::BluetoothAddressPtr& addr() const { return addr_; }
@@ -57,10 +57,13 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
       return adv_data_;
     }
 
+    const std::vector<uint8_t>& eir() const { return eir_; }
+
    private:
     mojom::BluetoothAddressPtr addr_;
     int32_t rssi_;
     std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data_;
+    std::vector<uint8_t> eir_;
 
     DISALLOW_COPY_AND_ASSIGN(LEDeviceFoundData);
   };
@@ -87,10 +90,13 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   void OnAclStateChanged(mojom::BluetoothStatus status,
                          mojom::BluetoothAddressPtr remote_addr,
                          mojom::BluetoothAclState state) override;
-  void OnLEDeviceFound(
+  void OnLEDeviceFoundForN(
       mojom::BluetoothAddressPtr addr,
       int32_t rssi,
       std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data) override;
+  void OnLEDeviceFound(mojom::BluetoothAddressPtr addr,
+                       int32_t rssi,
+                       const std::vector<uint8_t>& eir) override;
   void OnLEConnectionStateChange(mojom::BluetoothAddressPtr remote_addr,
                                  bool connected) override;
   void OnLEDeviceAddressChange(mojom::BluetoothAddressPtr old_addr,

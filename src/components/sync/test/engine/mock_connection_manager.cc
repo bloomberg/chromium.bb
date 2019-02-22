@@ -118,7 +118,7 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   if (auth_token != kValidAuthToken) {
     // Simulate server-side auth failure.
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-    InvalidateAndClearAuthToken();
+    ClearAuthToken();
   }
 
   if (--countdown_to_postbuffer_fail_ == 0) {
@@ -600,8 +600,7 @@ bool MockConnectionManager::ShouldConflictThisCommit() {
 }
 
 bool MockConnectionManager::ShouldTransientErrorThisId(syncable::Id id) {
-  return find(transient_error_ids_.begin(), transient_error_ids_.end(), id) !=
-         transient_error_ids_.end();
+  return base::ContainsValue(transient_error_ids_, id);
 }
 
 bool MockConnectionManager::ProcessCommit(

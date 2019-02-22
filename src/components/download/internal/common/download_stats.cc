@@ -865,23 +865,6 @@ void RecordParallelizableDownloadStats(
                        1000.0 * bytes_downloaded_with_parallel_streams /
                        bandwidth_without_parallel_streams) -
                    time_with_parallel_streams;
-      int bandwidth_ratio_percentage =
-          (100.0 * bandwidth_with_parallel_streams) /
-          bandwidth_without_parallel_streams;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Download.ParallelDownload.BandwidthRatioPercentage",
-          bandwidth_ratio_percentage, 0, 400, 101);
-      base::TimeDelta total_time =
-          time_with_parallel_streams + time_without_parallel_streams;
-      size_t total_size = bytes_downloaded_with_parallel_streams +
-                          bytes_downloaded_without_parallel_streams;
-      base::TimeDelta non_parallel_time = base::TimeDelta::FromSecondsD(
-          static_cast<double>(total_size) / bandwidth_without_parallel_streams);
-      int time_ratio_percentage =
-          100.0 * total_time.InSecondsF() / non_parallel_time.InSecondsF();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Download.ParallelDownload.TotalTimeRatioPercentage",
-          time_ratio_percentage, 0, 200, 101);
     }
   }
 

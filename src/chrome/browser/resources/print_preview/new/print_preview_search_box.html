@@ -1,5 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
 
@@ -8,23 +11,23 @@
     <style include="print-preview-shared">
       :host {
         display: flex;
-        position: relative;
-        user-select: none;
+        font-size: calc(13/15 * 1em);
+        --cr-input-row-container: {
+          background-color: var(--google-grey-refresh-100);
+          min-height: 32px;
+        };
+        --cr-input-error-display: none;
       }
 
-      .search-box-icon {
-        display: inline-block;
-        height: 1em;
-        left: 8px;
-        position: absolute;
-        right: 8px;
-        top: 6px;
-        user-select: none;
-        width: 1em;
+      #icon {
+        background-color: var(--google-grey-refresh-100);
+        height: 30px;
+        margin-inline-end: 0;
+        margin-inline-start: 0;
+        width: 30px;
       }
 
       .search-box-input {
-        text-indent: 2em;
         width: 100%;
       }
 
@@ -32,11 +35,12 @@
         -webkit-appearance: none;
       }
     </style>
-    <img src="../images/search.png" class="search-box-icon" alt="">
-    <input type="search" id="searchInput" class="search-box-input"
+    <cr-input type="search" id="searchInput" class="search-box-input"
         on-search="onSearchTermSearch" on-input="onSearchTermInput"
-        incremental aria-label$="[[label]]" placeholder="[[label]]"
+        aria-label$="[[label]]" placeholder="[[label]]"
         autofocus="[[autofocus]]" spellcheck="false">
+      <div slot="prefix" id="icon" class="cr-icon icon-search" alt=""></div>
+    </cr-input>
   </template>
   <script src="print_preview_search_box.js"></script>
 </dom-module>

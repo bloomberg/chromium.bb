@@ -17,8 +17,10 @@ class WebFrame;
 
 // Stores and provides access to all WebFrame objects associated with a
 // particular WebState.
-// NOTE: WebFrame objects should be used directly from this manager and not
-// stored elsewhere for later use becase WebFrames are frequently replaced.
+// NOTE: Code that store references to WebFrames must observe WebState, in
+// particular |WebFrameDidBecomeUnavailable| event, and clear all reference
+// when the frame becomes unavailable ad the pointer to the WebFrame becomes
+// invalid.
 // For example, a navigation will invalidate the WebFrame object for that frame.
 class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
  public:

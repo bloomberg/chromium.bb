@@ -76,6 +76,7 @@ void PrintUsage() {
           " Other flags:\n"
           "  --test-launcher-filter-file=PATH\n"
           "    Like --gtest_filter, but read the test filter from PATH.\n"
+          "    Supports multiple filter paths separated by ';'.\n"
           "    One pattern per line; lines starting with '-' are exclusions.\n"
           "    See also //testing/buildbot/filters/README.md file.\n"
           "\n"

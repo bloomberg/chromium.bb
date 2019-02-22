@@ -16,12 +16,12 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
-enum class BackgroundFetchReasonToAbort;
 
 // Maintains a list of Controllers and chooses which ones should launch new
 // downloads.
@@ -29,7 +29,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
-                              BackgroundFetchReasonToAbort)>;
+                              blink::mojom::BackgroundFetchFailureReason)>;
 
   // Interface for download job controllers.
   class CONTENT_EXPORT Controller {
@@ -46,7 +46,12 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
     virtual void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                               RequestFinishedCallback callback) = 0;
 
-    void Finish(BackgroundFetchReasonToAbort reason_to_abort);
+    // Returns a list of requests that started in a previous session and did not
+    // complete. Clears the list of outstanding GUIDs in the controller.
+    virtual std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+    TakeOutstandingRequests() = 0;
+
+    void Finish(blink::mojom::BackgroundFetchFailureReason reason_to_abort);
 
     const BackgroundFetchRegistrationId& registration_id() const {
       return registration_id_;
@@ -66,8 +71,11 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
     FinishedCallback finished_callback_;
   };
 
+  using MarkRequestCompleteCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   class CONTENT_EXPORT RequestProvider {
    public:
@@ -83,7 +91,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
     virtual void MarkRequestAsComplete(
         const BackgroundFetchRegistrationId& registration_id,
         scoped_refptr<BackgroundFetchRequestInfo> request_info,
-        base::OnceClosure closure) = 0;
+        MarkRequestCompleteCallback callback) = 0;
   };
 
   explicit BackgroundFetchScheduler(RequestProvider* request_provider);
@@ -101,11 +109,12 @@ class CONTENT_EXPORT BackgroundFetchScheduler {
   void ScheduleDownload();
 
   void DidPopNextRequest(
+      blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info);
 
   void MarkRequestAsComplete(
       scoped_refptr<BackgroundFetchRequestInfo> request_info);
-  void DidMarkRequestAsComplete();
+  void DidMarkRequestAsComplete(blink::mojom::BackgroundFetchError error);
 
   RequestProvider* request_provider_;
 

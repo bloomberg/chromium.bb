@@ -95,8 +95,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     STACK_BELOW
   };
   enum class OcclusionState {
-    // The window's occlusion state isn't tracked
-    // (WindowOcclusionTracker::Track) or hasn't been computed yet.
+    // The window's occlusion state isn't tracked (Window::TrackOcclusionState)
+    // or hasn't been computed yet.
     UNKNOWN,
     // The window or one of its descendants IsVisible() [1] and:
     // - Its bounds aren't completely covered by fully opaque windows [2], or,
@@ -194,9 +194,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // whether Show() without a Hide() has been invoked.
   bool TargetVisibility() const { return visible_; }
   // Returns the occlusion state of this window. Is UNKNOWN if the occlusion
-  // state of this window isn't tracked (WindowOcclusionTracker::Track) or
+  // state of this window isn't tracked (Window::TrackOcclusionState) or
   // hasn't been computed yet. Is stale if called within the scope of a
-  // WindowOcclusionTracker::ScopedPauseOcclusionTracking.
+  // WindowOcclusionTracker::ScopedPause.
   OcclusionState occlusion_state() const { return occlusion_state_; }
 
   // Returns the window's bounds in root window's coordinates.
@@ -221,6 +221,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<WindowTargeter> SetEventTargeter(
       std::unique_ptr<WindowTargeter> targeter);
   WindowTargeter* targeter() { return targeter_.get(); }
+  const WindowTargeter* targeter() const { return targeter_.get(); }
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.
@@ -430,6 +431,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns whether this window is embedding another client.
   bool IsEmbeddingClient() const;
 
+  // Starts occlusion state tracking.
+  void TrackOcclusionState();
+
   Env* env() { return env_; }
   const Env* env() const { return env_; }
 
@@ -558,6 +562,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   ui::EventTargeter* GetEventTargeter() override;
   void ConvertEventToTarget(ui::EventTarget* target,
                             ui::LocatedEvent* event) override;
+  gfx::PointF GetScreenLocationF(const ui::LocatedEvent& event) const override;
 
   // Updates the layer name based on the window's name and id.
   void UpdateLayerName();
@@ -571,6 +576,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   bool registered_frame_sink_id_ = false;
   bool disable_frame_sink_id_registration_ = false;
+
+  bool created_layer_tree_frame_sink_ = false;
 
   // Window owns its corresponding WindowPort, but the ref is held as a raw
   // pointer in |port_| so that it can still be accessed during destruction.

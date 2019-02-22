@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -48,9 +48,9 @@
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
@@ -202,13 +202,18 @@ bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
   return nomodule && script_type == ScriptType::kClassic;
 }
 
-// Step 16 of
-// https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+// Corresponds to
+// https://html.spec.whatwg.org/multipage/urls-and-fetching.html#module-script-credentials-mode
+// which is a translation of the CORS settings attribute in the context of
+// module scripts. This is used in:
+//   - Step 17 of
+//     https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
+//   - Step 6 of obtaining a preloaded module script
+//     https://html.spec.whatwg.org/multipage/links.html#link-type-modulepreload.
 network::mojom::FetchCredentialsMode ScriptLoader::ModuleScriptCredentialsMode(
     CrossOriginAttributeValue cross_origin) {
   switch (cross_origin) {
     case kCrossOriginAttributeNotSet:
-      return network::mojom::FetchCredentialsMode::kOmit;
     case kCrossOriginAttributeAnonymous:
       return network::mojom::FetchCredentialsMode::kSameOrigin;
     case kCrossOriginAttributeUseCredentials:
@@ -417,7 +422,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //
   // Note: We use |element_document| as "settings object" in the steps below.
   auto* settings_object =
-      new FetchClientSettingsObjectSnapshot(element_document);
+      element_document.CreateFetchClientSettingsObjectSnapshot();
 
   // <spec step="24">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
@@ -475,7 +480,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       //
       // Fetch a classic script given url, settings object, options, classic
       // script CORS setting, and encoding.</spec>
-      FetchClassicScript(url, element_document, options, encoding);
+      FetchClassicScript(url, element_document, options, cross_origin,
+                         encoding);
     } else {
       // - "module":
 
@@ -573,8 +579,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // script is ready.</spec>
         auto* module_tree_client = ModulePendingScriptTreeClient::Create();
         modulator->FetchDescendantsForInlineScript(
-            module_script, settings_object,
-            WebURLRequest::kRequestContextScript, module_tree_client);
+            module_script, settings_object, mojom::RequestContextType::SCRIPT,
+            module_tree_client);
         prepared_pending_script_ = ModulePendingScript::Create(
             element_, module_tree_client, is_external_script_);
         break;
@@ -737,6 +743,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 void ScriptLoader::FetchClassicScript(const KURL& url,
                                       Document& element_document,
                                       const ScriptFetchOptions& options,
+                                      CrossOriginAttributeValue cross_origin,
                                       const WTF::TextEncoding& encoding) {
   FetchParameters::DeferOption defer = FetchParameters::kNoDefer;
   if (!parser_inserted_ || element_->AsyncAttributeValue() ||
@@ -744,7 +751,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
     defer = FetchParameters::kLazyLoad;
 
   ClassicPendingScript* pending_script = ClassicPendingScript::Fetch(
-      url, element_document, options, encoding, element_, defer);
+      url, element_document, options, cross_origin, encoding, element_, defer);
   prepared_pending_script_ = pending_script;
   resource_keep_alive_ = pending_script->GetResource();
 }
@@ -761,9 +768,9 @@ void ScriptLoader::FetchModuleScriptTree(
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-  modulator->FetchTree(url, settings_object,
-                       WebURLRequest::kRequestContextScript, options,
-                       ModuleScriptCustomFetchType::kNone, module_tree_client);
+  modulator->FetchTree(url, settings_object, mojom::RequestContextType::SCRIPT,
+                       options, ModuleScriptCustomFetchType::kNone,
+                       module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);
 }

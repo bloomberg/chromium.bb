@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/ui_input_manager.h"
-
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "build/build_config.h"
 #include "chrome/browser/vr/elements/content_element.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/vr/test/mock_text_input_delegate.h"
 #include "chrome/browser/vr/test/ui_test.h"
 #include "chrome/browser/vr/text_edit_action.h"
+#include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -120,12 +121,13 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   EXPECT_CALL(*kb_delegate, HideKeyboard());
   kb->SetKeyboardDelegate(kb_delegate.get());
 
+  auto browser_ui = ui_->GetBrowserUiWeakPtr();
   // Editing web input.
   EXPECT_CALL(*text_input_delegate_, RequestFocus(_));
   EXPECT_CALL(*kb_delegate, ShowKeyboard());
   EXPECT_CALL(*kb_delegate, OnBeginFrame());
   EXPECT_CALL(*kb_delegate, SetTransform(_));
-  ui_->ShowSoftInput(true);
+  browser_ui->ShowSoftInput(true);
   EXPECT_TRUE(OnBeginFrame());
 
   // Giving content focus should tell the delegate the focued field's content.
@@ -146,14 +148,14 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   EXPECT_CALL(*text_input_delegate_, UpdateInput(info));
   EXPECT_CALL(*kb_delegate, OnBeginFrame());
   EXPECT_CALL(*kb_delegate, SetTransform(_));
-  ui_->UpdateWebInputIndices(1, 1, 0, 1);
+  browser_ui->UpdateWebInputIndices(1, 1, 0, 1);
   EXPECT_TRUE(OnBeginFrame());
 
   // End editing.
   EXPECT_CALL(*kb_delegate, HideKeyboard());
   EXPECT_CALL(*kb_delegate, OnBeginFrame());
   EXPECT_CALL(*kb_delegate, SetTransform(_));
-  ui_->ShowSoftInput(false);
+  browser_ui->ShowSoftInput(false);
   EXPECT_TRUE(OnBeginFrame());
 
   // Taking focus away from content should clear the delegate state.

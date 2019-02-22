@@ -58,6 +58,23 @@ gfx::Rect GetPermissionAnchorRect(Browser* browser) {
 
 }  // namespace
 
+// A custom view for the title label that will be ignored by screen readers
+// (since the PermissionsBubble handles the context).
+class PermissionsLabel : public views::Label {
+ public:
+  explicit PermissionsLabel(const base::string16& text)
+      : views::Label(text, views::style::CONTEXT_DIALOG_TITLE) {}
+  ~PermissionsLabel() override {}
+
+  // views::Label:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kIgnored;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PermissionsLabel);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // View implementation for the permissions bubble.
 class PermissionsBubbleDialogDelegateView
@@ -156,7 +173,10 @@ void PermissionsBubbleDialogDelegateView::AddedToWidget() {
     return;
 
   std::unique_ptr<views::Label> title =
-      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
+      std::make_unique<PermissionsLabel>(GetWindowTitle());
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title->set_collapse_when_hidden(true);
+  title->SetMultiLine(true);
 
   // Elide from head in order to keep the most significant part of the origin
   // and avoid spoofing. Note that in English, GetWindowTitle() returns a string
@@ -238,9 +258,10 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor() {
   AnchorConfiguration configuration =
       GetPermissionAnchorConfiguration(owner_->browser());
   SetAnchorView(configuration.anchor_view);
+  SetHighlightedButton(configuration.highlighted_button);
   if (!configuration.anchor_view)
     SetAnchorRect(GetPermissionAnchorRect(owner_->browser()));
-  set_arrow(configuration.bubble_arrow);
+  SetArrow(configuration.bubble_arrow);
 }
 
 //////////////////////////////////////////////////////////////////////////////

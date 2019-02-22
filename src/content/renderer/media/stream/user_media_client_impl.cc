@@ -194,6 +194,10 @@ void UserMediaClientImpl::StopTrack(
     MaybeProcessNextRequestInfo();
 }
 
+bool UserMediaClientImpl::IsCapturing() {
+  return user_media_processor_->HasActiveSources();
+}
+
 void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_processing_request_ || pending_request_infos_.empty())

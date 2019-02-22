@@ -23,7 +23,6 @@ namespace {
 
 // ISpObjectToken key and value names.
 const wchar_t kAttributesKey[] = L"Attributes";
-const wchar_t kGenderValue[] = L"Gender";
 const wchar_t kLanguageValue[] = L"Language";
 
 }  // anonymous namespace.
@@ -213,14 +212,6 @@ void TtsPlatformImplWin::GetVoices(
     Microsoft::WRL::ComPtr<ISpDataKey> attributes;
     if (S_OK != voice_token->OpenKey(kAttributesKey, attributes.GetAddressOf()))
       continue;
-
-    base::win::ScopedCoMem<WCHAR> gender;
-    if (S_OK == attributes->GetStringValue(kGenderValue, &gender)) {
-      if (0 == _wcsicmp(gender.get(), L"male"))
-        voice.gender = TTS_GENDER_MALE;
-      else if (0 == _wcsicmp(gender.get(), L"female"))
-        voice.gender = TTS_GENDER_FEMALE;
-    }
 
     base::win::ScopedCoMem<WCHAR> language;
     if (S_OK == attributes->GetStringValue(kLanguageValue, &language)) {

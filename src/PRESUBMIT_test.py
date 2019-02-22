@@ -1652,40 +1652,6 @@ class MojoManifestOwnerTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
-class CheckCrbugLinksHaveHttpsTest(unittest.TestCase):
-  def assertWarningsWithFile(self, content, expected_warnings, file_name):
-    input_api = MockInputApi()
-    input_api.files = [
-      MockFile(file_name, [content])
-    ]
-
-    warnings = PRESUBMIT._CheckCrbugLinksHaveHttps(input_api, MockOutputApi())
-    self.assertEqual(expected_warnings, len(warnings))
-
-  def assertWarnings(self, content, expected_warnings):
-    for f in ['somewhere/file.cc', 'file.java', 'file.py', 'file_test.cc']:
-      self.assertWarningsWithFile(content, expected_warnings, f)
-
-  # The cr bug strings are split to avoid matching in real PRESUBMIT, so meta!
-  def testNoScheme(self):
-    self.assertWarnings('// TODO(dev): cr''bug.com should be linkified', 1)
-
-  def testNoScheme2(self):
-    self.assertWarnings('// TODO(dev): (cr''bug.com) should be linkified', 1)
-
-  def testNoCom(self):
-    self.assertWarnings('// TODO(dev): cr''bug/123 should be well formed', 1)
-
-  def testHttp(self):
-    self.assertWarnings('// TODO(dev): http://cr''bug.com it\'s OK', 0)
-
-  def testHttps(self):
-    self.assertWarnings('// TODO(dev): https://cr''bug.com is just great', 0)
-
-  def testTodo(self):
-    self.assertWarnings('// TODO(cr''bug.com/123456): it\'s also OK', 0)
-
-
 class BannedFunctionCheckTest(unittest.TestCase):
 
   def testBannedIosObcjFunctions(self):
@@ -2052,6 +2018,69 @@ class TranslationScreenshotsTest(unittest.TestCase):
                                                       MockOutputApi())
     self.assertEqual([], warnings)
 
+
+class DISABLETypoInTest(unittest.TestCase):
+
+  def testPositive(self):
+    # Verify the typo "DISABLE_" instead of "DISABLED_" in various contexts
+    # where the desire is to disable a test.
+    tests = [
+        # Disabled on one platform:
+        '#if defined(OS_WIN)\n'
+        '#define MAYBE_FoobarTest DISABLE_FoobarTest\n'
+        '#else\n'
+        '#define MAYBE_FoobarTest FoobarTest\n'
+        '#endif\n',
+        # Disabled on one platform spread cross lines:
+        '#if defined(OS_WIN)\n'
+        '#define MAYBE_FoobarTest \\\n'
+        '    DISABLE_FoobarTest\n'
+        '#else\n'
+        '#define MAYBE_FoobarTest FoobarTest\n'
+        '#endif\n',
+        # Disabled on all platforms:
+        '  TEST_F(FoobarTest, DISABLE_Foo)\n{\n}',
+        # Disabled on all platforms but multiple lines
+        '  TEST_F(FoobarTest,\n   DISABLE_foo){\n}\n',
+    ]
+
+    for test in tests:
+      mock_input_api = MockInputApi()
+      mock_input_api.files = [
+          MockFile('some/path/foo_unittest.cc', test.splitlines()),
+      ]
+
+      results = PRESUBMIT._CheckNoDISABLETypoInTests(mock_input_api,
+                                                     MockOutputApi())
+      self.assertEqual(
+          1,
+          len(results),
+          msg=('expected len(results) == 1 but got %d in test: %s' %
+               (len(results), test)))
+      self.assertTrue(
+          'foo_unittest.cc' in results[0].message,
+          msg=('expected foo_unittest.cc in message but got %s in test %s' %
+               (results[0].message, test)))
+
+  def testIngoreNotTestFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('some/path/foo.cc', 'TEST_F(FoobarTest, DISABLE_Foo)'),
+    ]
+
+    results = PRESUBMIT._CheckNoDISABLETypoInTests(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testIngoreDeletedFiles(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('some/path/foo.cc', 'TEST_F(FoobarTest, Foo)', action='D'),
+    ]
+
+    results = PRESUBMIT._CheckNoDISABLETypoInTests(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(results))
 
 if __name__ == '__main__':
   unittest.main()

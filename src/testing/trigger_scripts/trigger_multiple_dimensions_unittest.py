@@ -85,7 +85,8 @@ WIN10_NVIDIA = {
 class UnitTest(unittest.TestCase):
   def basic_win7_win10_setup(self, bot_statuses,
                              use_superclass_random_number_generator=False,
-                             first_random_number=1):
+                             first_random_number=1,
+                             shards=2):
     triggerer = FakeTriggerer(
       [
         WIN7_NVIDIA,
@@ -98,31 +99,28 @@ class UnitTest(unittest.TestCase):
     # Note: the contents of these JSON files don't accurately reflect
     # that produced by "swarming.py trigger". The unit tests only
     # verify that shard 0's JSON is preserved.
-    triggerer.set_files({
-      'base_trigger_dimensions0.json': {
-        'base_task_name': 'webgl_conformance_tests',
-        'request': {
+    file_map = {}
+    for i in xrange(shards):
+      file_name = 'base_trigger_dimensions%d.json' % i
+      result = {
+        'tasks': {
+          'webgl_conformance_tests on NVIDIA GPU on Windows': {
+            'task_id': hex(0xf000 + i)[2:]
+          },
+        },
+      }
+      if i == 0:
+        result['base_task_name'] = 'webgl_conformance_tests'
+        result['request'] = {
           'expiration_secs': 3600,
           'properties': {
             'execution_timeout_secs': 3600,
           },
-        },
-        'tasks': {
-          'webgl_conformance_tests on NVIDIA GPU on Windows': {
-            'task_id': 'f001',
-          },
-        },
-      },
-      'base_trigger_dimensions1.json': {
-        'tasks': {
-          'webgl_conformance_tests on NVIDIA GPU on Windows': {
-            'task_id': 'f002',
-          },
-        },
-      },
-    })
+        }
+      file_map[file_name] = result
+    triggerer.set_files(file_map)
     args = Args()
-    args.shards = 2
+    args.shards = shards
     args.dump_json = 'output.json'
     args.multiple_dimension_script_verbose = False
     triggerer.trigger_tasks(
@@ -325,6 +323,28 @@ class UnitTest(unittest.TestCase):
                         self.shard_runs_on_os(triggerer, 0, WIN10))
         num_runs += 1
     self.assertEqual(num_runs, 200)
+
+  def test_split_with_imbalanced_configs(self):
+    num_shards = 20
+    triggerer = self.basic_win7_win10_setup(
+      [
+        {
+          'total': 15,
+          'available': 1,
+        },
+        {
+          'total': 1,
+          'available': 1,
+        },
+      ],
+      shards=num_shards
+    )
+    # Because the second configuration (Win10) has so few machines --
+    # fewer than 10% of the total -- the triggerer should never
+    # schedule any shard on it.
+    for i in xrange(num_shards):
+      self.assertTrue(self.shard_runs_on_os(triggerer, i, WIN7))
+      self.assertFalse(self.shard_runs_on_os(triggerer, i, WIN10))
 
 if __name__ == '__main__':
   unittest.main()

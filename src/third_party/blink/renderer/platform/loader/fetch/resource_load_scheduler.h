@@ -297,6 +297,10 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // Largest number of running requests seen so far.
   unsigned maximum_running_requests_seen_ = 0;
 
+  // Holds a flag to omit repeating console messages. Will be reset on
+  // SchedulingLifecycleState changes.
+  bool omit_console_log_ = false;
+
   enum class ThrottlingHistory {
     kInitial,
     kThrottled,

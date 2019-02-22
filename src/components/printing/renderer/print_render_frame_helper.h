@@ -179,8 +179,8 @@ class PrintRenderFrameHelper
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;
-  void DidStartProvisionalLoad(
-      blink::WebDocumentLoader* document_loader) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
+                               bool is_content_initiated) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
@@ -453,6 +453,7 @@ class PrintRenderFrameHelper
     const blink::WebNode& prepared_node() const;
 
     int total_page_count() const;
+    const std::vector<int>& pages_to_render() const;
     MetafileSkia* metafile();
     int last_error() const;
 

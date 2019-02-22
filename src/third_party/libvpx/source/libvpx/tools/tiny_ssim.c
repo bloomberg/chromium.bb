@@ -121,11 +121,11 @@ static int open_input_file(const char *file_name, input_file_t *input, int w,
         input->w = w;
         input->h = h;
         // handle odd frame sizes
-        input->frame_size = w * h + ((w + 1) / 2 * (h + 1) / 2) * 2;
+        input->frame_size = w * h + ((w + 1) / 2) * ((h + 1) / 2) * 2;
         if (bit_depth > 8) {
           input->frame_size *= 2;
-          input->buf = malloc(input->frame_size);
         }
+        input->buf = malloc(input->frame_size);
         break;
     }
   }
@@ -156,12 +156,12 @@ static size_t read_input_file(input_file_t *in, unsigned char **y,
         r1 = fread(in->buf, in->frame_size, 1, in->file);
         *y = in->buf;
         *u = in->buf + in->w * in->h;
-        *v = *u + (1 + in->w) / 2 * (1 + in->h) / 2;
+        *v = *u + ((1 + in->w) / 2) * ((1 + in->h) / 2);
       } else {
         r1 = fread(in->buf, in->frame_size, 1, in->file);
         *y = in->buf;
         *u = in->buf + (in->w * in->h) * 2;
-        *v = *u + 2 * ((1 + in->w) / 2 * (1 + in->h) / 2);
+        *v = *u + 2 * ((1 + in->w) / 2) * ((1 + in->h) / 2);
       }
       break;
   }
@@ -605,7 +605,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (open_input_file(argv[1], &in[0], w, h, bit_depth) < 0) {
-    fprintf(stderr, "File %s can't be opened or parsed!\n", argv[2]);
+    fprintf(stderr, "File %s can't be opened or parsed!\n", argv[1]);
     goto clean_up;
   }
 
@@ -617,7 +617,7 @@ int main(int argc, char *argv[]) {
   }
   if (bit_depth == 10) peak = 1023.0;
 
-  if (bit_depth == 12) peak = 4095;
+  if (bit_depth == 12) peak = 4095.0;
 
   if (open_input_file(argv[2], &in[1], w, h, bit_depth) < 0) {
     fprintf(stderr, "File %s can't be opened or parsed!\n", argv[2]);

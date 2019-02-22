@@ -4,6 +4,6 @@
 
 typemaps = [
   "//third_party/blink/common/feature_policy/feature_policy.typemap",
-  "//third_party/blink/common/message_port/cloneable_message.typemap",
-  "//third_party/blink/common/message_port/transferable_message.typemap",
+  "//third_party/blink/common/messaging/cloneable_message.typemap",
+  "//third_party/blink/common/messaging/transferable_message.typemap",
 ]

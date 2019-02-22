@@ -115,6 +115,8 @@ class ExploreSitesStore {
     return initialization_status_;
   }
 
+  void SetInitializationStatusForTest(InitializationStatus status);
+
  private:
   using DatabaseUniquePtr =
       std::unique_ptr<sql::Database, base::OnTaskRunnerDeleter>;

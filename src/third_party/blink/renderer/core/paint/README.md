@@ -104,6 +104,13 @@ are treated in different ways during painting:
 *   Visual rect: the bounding box of all pixels that will be painted by a
     display item client.
 
+*   Isolation nodes/boundary: In certain situations, it is possible to put in
+    place a barrier that isolates a subtree from being affected by its
+    ancestors. This barrier is called an isolation boundary and is implemented
+    in the property trees as isolation nodes that serve as roots for any
+    descendant property nodes. Currently, the `contain: paint` css property
+    establishes an isolation boundary.
+
 ## Overview
 
 The primary responsibility of this module is to convert the outputs from layout
@@ -488,14 +495,14 @@ layout system when the computed first-line style changes through
 `InlineBox`es in the first line.
 
 ## PrePaint (Slimming paint invalidation/v2 only)
-[`PrePaintTreeWalk`](PrePaintTreeWalk.h)
+[`PrePaintTreeWalk`](pre_paint_tree_walk.h)
 
 During `InPrePaint` document lifecycle state, this class is called to walk the
 whole layout tree, beginning from the root FrameView, across frame boundaries.
 We do the following during the tree walk:
 
 ### Building paint property trees
-[`PaintPropertyTreeBuilder`](PaintPropertyTreeBuilder.h)
+[`PaintPropertyTreeBuilder`](paint_property_tree_builder.h)
 
 This class is responsible for building property trees
 (see [the platform paint README file](../../platform/graphics/paint/README.md)).
@@ -509,6 +516,92 @@ field points at the `TransformPaintPropertyNode` representing that transform.
 The `NeedsPaintPropertyUpdate`, `SubtreeNeedsPaintPropertyUpdate` and
 `DescendantNeedsPaintPropertyUpdate` dirty bits on `LayoutObject` control how
 much of the layout tree is traversed during each `PrePaintTreeWalk`.
+
+Additionally, some dirty bits are cleared at an isolation boundary. For example
+if the paint property tree topology has changed by adding or removing nodes
+for an element, we typically force a subtree walk for all descendants since
+the descendant nodes may now refer to new parent nodes. However, at an
+isolation boundary, we can reason that none of the descendants of an isolation
+element would be affected, since the highest node that the paint property nodes
+of an isolation element's subtree can reference are the isolation
+nodes established at this element itself.
+
+Implementation note: the isolation boundary is achieved using alias nodes, which
+are nodes that are put in place on an isolated element for clip, transform, and
+effect trees. These nodes do not themselves contribute to any painted output,
+but serve as parents to the subtree nodes. The alias nodes and isolation nodes
+are synonymous and are used interchangeably. Also note that these nodes are
+placed as children of the regular nodes of the element. This means that the
+element itself is not isolated against ancestor mutations; it only isolates the
+element's subtree.
+
+Example tree:
++----------------------+
+| 1. Root LayoutObject |
++----------------------+
+      |       |
+      |       +-----------------+
+      |                         |
+      v                         v
++-----------------+       +-----------------+
+| 2. LayoutObject |       | 3. LayoutObject |
++-----------------+       +-----------------+
+      |                         |
+      v                         |
++-----------------+             |
+| 4. LayoutObject |             |
++-----------------+             |
+                                |
+      +-------------------------+
+      |                         |
++-----------------+       +-----------------+
+| 5. LayoutObject |       | 6. LayoutObject |
++-----------------+       +-----------------+
+      |   |
+      |   +---------------------+
+      |                         |
+      v                         v
++-----------------+       +-----------------+
+| 7. LayoutObject |       | 8. LayoutObject |
++-----------------+       +-----------------+
+
+Suppose that element 3's style changes to include a transform (e.g.
+"transform: translateX(10px);").
+
+Typically, here is the order of the walk (depth first) and updates:
+*    Root element 1 is visited since some descendant needs updates
+*    Element 2 is visited since it is one of the descendants, but it doesn't
+     need updates.
+*    Element 4 is skipped since the above step didn't need to recurse.
+*    Element 3 is visited since it's a descendant of the root element, and its
+     property trees are updated to include a new transform. This causes a flag
+     to be flipped that all subtree nodes need an update.
+*    Elements are then visited in the depth order: 5, 7, 8, 6. Elements 5 and 6
+     reparent their transform nodes to point to the transform node of element 3.
+     Elements 7 and 8 are visited and updated but no changes occur.
+
+Now suppose that element 5 has "contain: paint" style, which establishes an
+isolation boundary. The walk changes in the following way:
+
+*    Root element 1 is visited since some descendant needs updates
+*    Element 2 is visited since it is one of the descendants, but it doesn't
+     need updates.
+*    Element 4 is skipped since the above step didn't need to recurse.
+*    Element 3 is visited since it's a descendant of the root element, and its
+     property trees are updated to include a new transform. This causes a flag
+     to be flipped that all subtree nodes need an update.
+*    Element 5 is visited and updated by reparenting the transform nodes.
+     However, now the element is an isolation boundary so elements 7 and 8 are
+     not visited (i.e. the forced subtree update flag is ignored).
+*    Element 6 is visited as before and is updated to reparent the transform
+     node.
+
+Note that there are subtleties when deciding whether we can skip the subtree
+walk. Specifically, not all subtree walks can be stopped at an isolation
+boundary. For more information, see
+[`PaintPropertyTreeBuilder`](paint_property_tree_builder.h) and its use of
+IsolationPiercing vs IsolationBlocked subtree update reasons.
+
 
 #### Fragments
 
@@ -527,15 +620,15 @@ Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and
 `LocalBordreBoxProperties` object.
 
-See [`LayoutMultiColumnFlowThread.h`](../layout/LayoutMultiColumnFlowThread.h)
+See [`LayoutMultiColumnFlowThread.h`](../layout/layout_multi_column_flow_thread.h)
 for a much more detail about multicolumn/pagination.
 
 ### Paint invalidation
-[`PaintInvalidator`](PaintInvalidator.h)
+[`PaintInvalidator`](paint_invalidator.h)
 
 This class replaces [`PaintInvalidationState`] for SlimmingPaintInvalidation.
 The main difference is that in PaintInvalidator, visual rects and locations
-are computed by `GeometryMapper`(../../platform/graphics/paint/GeometryMapper.h),
+are computed by `GeometryMapper`(../../platform/graphics/paint/geometry_mapper.h),
 based on paint properties produced by `PaintPropertyTreeBuilder`.
 
 TODO(wangxianzhu): Combine documentation of PaintInvalidation phase into here.
@@ -582,19 +675,6 @@ the paint phase.
 
 During painting, we check the flag before painting a paint phase and skip the
 tree walk if the flag is not set.
-
-It's hard to clear a `NeedsPaintPhaseXXX` flag when a layer no longer needs the
-paint phase, so we never clear the flags. Instead, we use another set of flags
-(`PreviousPaintPhaseXXXWasEmpty`) to record if a painting of a phase actually
-produced nothing. We'll skip the next painting of the phase if the flag is set,
-regardless of the corresponding `NeedsPaintPhaseXXX` flag. We will clear the
-`PreviousPaintPhaseXXXWasEmpty` flags when we paint with different clipping,
-scroll offset or interest rect from the previous paint.
-
-We don't clear the `PreviousPaintPhaseXXXWasEmpty` flags when the layer is
-marked `NeedsRepaint`. Instead we clear the flag when the corresponding
-`NeedsPaintPhaseXXX` is set. This ensures that we won't clear
-`PreviousPaintPhaseXXXWasEmpty` flags when unrelated things changed which won't
 
 When layer structure changes, and we are not invalidate paint of the changed
 subtree, we need to manually update the `NeedsPaintPhaseXXX` flags. For example,

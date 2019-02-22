@@ -43,27 +43,29 @@ void MediaStreamRegistry::RegisterURL(SecurityOrigin*,
                                       URLRegistrable* stream) {
   DCHECK(&stream->Registry() == this);
   DCHECK(IsMainThread());
-  stream_descriptors_.Set(url.GetString(),
-                          static_cast<MediaStream*>(stream)->Descriptor());
+  stream_descriptors_->Set(url.GetString(),
+                           static_cast<MediaStream*>(stream)->Descriptor());
 }
 
 void MediaStreamRegistry::UnregisterURL(const KURL& url) {
   DCHECK(IsMainThread());
-  stream_descriptors_.erase(url.GetString());
+  stream_descriptors_->erase(url.GetString());
 }
 
 bool MediaStreamRegistry::Contains(const String& url) {
   DCHECK(IsMainThread());
-  return stream_descriptors_.Contains(url);
+  return stream_descriptors_->Contains(url);
 }
 
 MediaStreamDescriptor* MediaStreamRegistry::LookupMediaStreamDescriptor(
     const String& url) {
   DCHECK(IsMainThread());
-  return stream_descriptors_.at(url);
+  return stream_descriptors_->at(url);
 }
 
-MediaStreamRegistry::MediaStreamRegistry() {
+MediaStreamRegistry::MediaStreamRegistry()
+    : stream_descriptors_(
+          new HeapHashMap<String, Member<MediaStreamDescriptor>>) {
   HTMLMediaElement::SetMediaStreamRegistry(this);
 }
 

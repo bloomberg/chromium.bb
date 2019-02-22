@@ -4,6 +4,7 @@
 
 #include "components/previews/core/previews_experiments.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -13,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 
 namespace previews {
 
@@ -35,6 +37,12 @@ const char kEffectiveConnectionTypeThreshold[] =
 // Inflation parameters for estimating NoScript data savings.
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
+
+// Inflation parameters for estimating ResourceLoadingHints data savings.
+const char kResourceLoadingHintsInflationPercent[] =
+    "ResourceLoadingHintsInflationPercent";
+const char kResourceLoadingHintsInflationBytes[] =
+    "ResourceLoadingHintsInflationBytes";
 
 size_t GetParamValueAsSizeT(const std::string& trial_name,
                             const std::string& param_name,
@@ -135,6 +143,13 @@ base::TimeDelta LitePagePreviewsSingleBypassDuration() {
       60 * 5));
 }
 
+base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
+  return base::TimeDelta::FromMilliseconds(
+      base::GetFieldTrialParamByFeatureAsInt(features::kLitePageServerPreviews,
+                                             "navigation_timeout_milliseconds",
+                                             30 * 1000));
+}
+
 std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
   const std::string csv = base::GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "blacklisted_path_suffixes");
@@ -142,6 +157,12 @@ std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
     return {};
   return base::SplitString(csv, ",", base::TRIM_WHITESPACE,
                            base::SPLIT_WANT_NONEMPTY);
+}
+
+int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "max_blacklist_byte_size",
+      250 * 1024 /* 250KB */);
 }
 
 int PreviewServerLoadshedMaxSeconds() {
@@ -156,6 +177,19 @@ bool LitePagePreviewsTriggerOnLocalhost() {
 }
 
 GURL GetLitePagePreviewsDomainURL() {
+  // Command line override takes priority.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kLitePageServerPreviewHost)) {
+    const std::string switch_value =
+        command_line->GetSwitchValueASCII(switches::kLitePageServerPreviewHost);
+    const GURL url(switch_value);
+    if (url.is_valid())
+      return url;
+    LOG(WARNING)
+        << "The following litepages previews host URL specified at the "
+        << "command-line is invalid: " << switch_value;
+  }
+
   std::string variable_host_str = GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "previews_host");
   if (!variable_host_str.empty()) {
@@ -199,6 +233,10 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
 
 bool ArePreviewsAllowed() {
   return base::FeatureList::IsEnabled(features::kPreviews);
+}
+
+bool IsPreviewsOmniboxUiEnabled() {
+  return base::FeatureList::IsEnabled(features::kAndroidOmniboxPreviewsBadge);
 }
 
 bool IsOfflinePreviewsEnabled() {
@@ -279,6 +317,17 @@ int NoScriptPreviewsInflationPercent() {
 int NoScriptPreviewsInflationBytes() {
   return GetFieldTrialParamByFeatureAsInt(features::kNoScriptPreviews,
                                           kNoScriptInflationBytes, 0);
+}
+
+int ResourceLoadingHintsPreviewsInflationPercent() {
+  return GetFieldTrialParamByFeatureAsInt(features::kResourceLoadingHints,
+                                          kResourceLoadingHintsInflationPercent,
+                                          20);
+}
+
+int ResourceLoadingHintsPreviewsInflationBytes() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kResourceLoadingHints, kResourceLoadingHintsInflationBytes, 0);
 }
 
 }  // namespace params

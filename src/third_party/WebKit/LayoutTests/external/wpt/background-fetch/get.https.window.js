@@ -26,6 +26,7 @@ promise_test(async test => {
 backgroundFetchTest(async (test, backgroundFetch) => {
   // The |id| parameter to the BackgroundFetchManager.get() method is required.
   await promise_rejects(test, new TypeError(), backgroundFetch.get());
+  await promise_rejects(test, new TypeError(), backgroundFetch.get(''));
 
   const registration = await backgroundFetch.get('my-id');
   assert_equals(registration, undefined);
@@ -41,8 +42,9 @@ backgroundFetchTest(async (test, backgroundFetch) => {
   assert_equals(registration.uploadTotal, 0);
   assert_equals(registration.uploaded, 0);
   assert_equals(registration.downloadTotal, 1234);
-  assert_equals(registration.state, "pending");
-  assert_equals(registration.failureReason, "");
+  assert_equals(registration.result, '');
+  assert_equals(registration.failureReason, '');
+  assert_true(registration.recordsAvailable);
   // Skip `downloaded`, as the transfer may have started already.
 
   const secondRegistration = await backgroundFetch.get(registrationId);
@@ -52,6 +54,8 @@ backgroundFetchTest(async (test, backgroundFetch) => {
   assert_equals(secondRegistration.uploadTotal, registration.uploadTotal);
   assert_equals(secondRegistration.uploaded, registration.uploaded);
   assert_equals(secondRegistration.downloadTotal, registration.downloadTotal);
+  assert_equals(secondRegistration.failureReason, registration.failureReason);
+  assert_equals(secondRegistration.recordsAvailable, registration.recordsAvailable);
 
   // While the transfer might have started, both BackgroundFetchRegistration
   // objects should have the latest progress values.

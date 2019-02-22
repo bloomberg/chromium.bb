@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -294,7 +293,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
         ProfileSyncServiceFactory::GetForBrowserState(browser_state);
     profile_sync_service->GetEncryptionObserverForTest()->OnPassphraseRequired(
         syncer::REASON_DECRYPTION,
-        syncer::KeyDerivationParams::CreateForPbkdf2("localhost", "dummy"),
+        syncer::KeyDerivationParams::CreateForPbkdf2(),
         sync_pb::EncryptedData());
     return l10n_util::GetNSString(IDS_IOS_SYNC_ENCRYPTION_DESCRIPTION);
   };

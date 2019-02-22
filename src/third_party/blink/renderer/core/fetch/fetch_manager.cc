@@ -192,7 +192,7 @@ class SRIBytesConsumer final : public BytesConsumer {
   }
 
  private:
-  Member<BytesConsumer> underlying_;
+  TraceWrapperMember<BytesConsumer> underlying_;
   Member<Client> client_;
   bool is_cancelled_ = false;
 };
@@ -596,16 +596,6 @@ void FetchManager::Loader::DidReceiveResponse(
 
   Response* r =
       Response::Create(resolver_->GetExecutionContext(), tainted_response);
-  if (response.Url().ProtocolIsData()) {
-    // An "Access-Control-Allow-Origin" header is added for data: URLs
-    // but no headers except for "Content-Type" should exist,
-    // according to the spec:
-    // https://fetch.spec.whatwg.org/#concept-scheme-fetch
-    // "... return a response whose header list consist of a single header
-    //  whose name is `Content-Type` and value is the MIME type and
-    //  parameters returned from obtaining a resource"
-    r->headers()->HeaderList()->Remove(HTTPNames::Access_Control_Allow_Origin);
-  }
   r->headers()->SetGuard(Headers::kImmutableGuard);
 
   if (fetch_request_data_->Integrity().IsEmpty()) {
@@ -637,15 +627,11 @@ void FetchManager::Loader::DidFail(const ResourceError& error) {
 }
 
 void FetchManager::Loader::DidFailRedirectCheck() {
-  Failed("Fetch API cannot load " + fetch_request_data_->Url().GetString() +
-         ". Redirect failed.");
+  Failed(String());
 }
 
 Document* FetchManager::Loader::GetDocument() const {
-  if (execution_context_->IsDocument()) {
-    return ToDocument(execution_context_);
-  }
-  return nullptr;
+  return DynamicTo<Document>(execution_context_.Get());
 }
 
 void FetchManager::Loader::LoadSucceeded() {
@@ -824,8 +810,10 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   // We use ResourceRequest class for HTTPRequest.
   // FIXME: Support body.
   ResourceRequest request(fetch_request_data_->Url());
+  request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetHTTPMethod(fetch_request_data_->Method());
+  request.SetFetchWindowId(fetch_request_data_->WindowId());
 
   switch (fetch_request_data_->Mode()) {
     case FetchRequestMode::kSameOrigin:
@@ -868,27 +856,9 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context_->GetSecurityContext().AddressSpace());
+  request.SetReferrerString(fetch_request_data_->ReferrerString());
+  request.SetReferrerPolicy(fetch_request_data_->GetReferrerPolicy());
 
-  // "2. Append `Referer`/empty byte sequence, if |HTTPRequest|'s |referrer|
-  // is none, and `Referer`/|HTTPRequest|'s referrer, serialized and utf-8
-  // encoded, otherwise, to HTTPRequest's header list.
-  //
-  // The following code also invokes "determine request's referrer" which is
-  // written in "Main fetch" operation.
-  const ReferrerPolicy referrer_policy =
-      fetch_request_data_->GetReferrerPolicy() == kReferrerPolicyDefault
-          ? execution_context_->GetReferrerPolicy()
-          : fetch_request_data_->GetReferrerPolicy();
-  const String referrer_string =
-      fetch_request_data_->ReferrerString() == Referrer::ClientReferrerString()
-          ? execution_context_->OutgoingReferrer()
-          : fetch_request_data_->ReferrerString();
-  // Note that generateReferrer generates |no-referrer| from |no-referrer|
-  // referrer string (i.e. String()).
-  // TODO(domfarolino): Can we use ResourceRequest's SetReferrerString() and
-  // SetReferrerPolicy() instead of calling SetHTTPReferrer()?
-  request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-      referrer_policy, fetch_request_data_->Url(), referrer_string));
   request.SetSkipServiceWorker(is_isolated_world_);
 
   if (fetch_request_data_->Keepalive()) {
@@ -919,7 +889,6 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.initiator_info.name = FetchInitiatorTypeNames::fetch;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
-  resource_loader_options.security_origin = fetch_request_data_->Origin().get();
   if (fetch_request_data_->URLLoaderFactory()) {
     network::mojom::blink::URLLoaderFactoryPtr factory_clone;
     fetch_request_data_->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
@@ -928,7 +897,6 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
         std::move(factory_clone));
   }
 
-  probe::willStartFetch(execution_context_, this);
   threadable_loader_ = new ThreadableLoader(*execution_context_, this,
                                             resource_loader_options);
   threadable_loader_->Start(request);
@@ -942,6 +910,7 @@ void FetchManager::Loader::PerformDataFetch() {
   DCHECK(fetch_request_data_->Url().ProtocolIsData());
 
   ResourceRequest request(fetch_request_data_->Url());
+  request.SetRequestorOrigin(fetch_request_data_->Origin());
   request.SetRequestContext(fetch_request_data_->Context());
   request.SetUseStreamOnResponse(true);
   request.SetHTTPMethod(fetch_request_data_->Method());
@@ -954,9 +923,7 @@ void FetchManager::Loader::PerformDataFetch() {
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
-  resource_loader_options.security_origin = fetch_request_data_->Origin().get();
 
-  probe::willStartFetch(execution_context_, this);
   threadable_loader_ = new ThreadableLoader(*execution_context_, this,
                                             resource_loader_options);
   threadable_loader_->Start(request);
@@ -1006,7 +973,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
     return promise;
   }
 
-  request->SetContext(WebURLRequest::kRequestContextFetch);
+  request->SetContext(mojom::RequestContextType::FETCH);
 
   Loader* loader =
       Loader::Create(GetExecutionContext(), this, resolver, request,

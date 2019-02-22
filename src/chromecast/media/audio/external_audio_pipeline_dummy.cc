@@ -52,6 +52,16 @@ void ExternalAudioPipelineShlib::RemoveExternalLoopbackAudioObserver(
   NOTREACHED();
 }
 
+void ExternalAudioPipelineShlib::AddExternalMediaMetadataChangeObserver(
+    ExternalMediaMetadataChangeObserver* observer) {
+  NOTREACHED();
+}
+
+void ExternalAudioPipelineShlib::RemoveExternalMediaMetadataChangeObserver(
+    ExternalMediaMetadataChangeObserver* observer) {
+  NOTREACHED();
+}
+
 std::unique_ptr<MixerOutputStream>
 ExternalAudioPipelineShlib::CreateMixerOutputStream() {
   NOTREACHED();

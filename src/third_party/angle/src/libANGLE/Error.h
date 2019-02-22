@@ -21,28 +21,6 @@
 
 namespace angle
 {
-template <typename ErrorT, typename ResultT, typename ErrorBaseT, ErrorBaseT NoErrorVal>
-class ANGLE_NO_DISCARD ErrorOrResultBase
-{
-  public:
-    ErrorOrResultBase(const ErrorT &error) : mError(error) {}
-    ErrorOrResultBase(ErrorT &&error) : mError(std::move(error)) {}
-
-    ErrorOrResultBase(ResultT &&result) : mError(NoErrorVal), mResult(std::forward<ResultT>(result))
-    {
-    }
-
-    ErrorOrResultBase(const ResultT &result) : mError(NoErrorVal), mResult(result) {}
-
-    bool isError() const { return mError.isError(); }
-    const ErrorT &getError() const { return mError; }
-    ResultT &&getResult() { return std::move(mResult); }
-
-  private:
-    ErrorT mError;
-    ResultT mResult;
-};
-
 template <typename ErrorT, typename ErrorBaseT, ErrorBaseT NoErrorVal, typename CodeT, CodeT EnumT>
 class ErrorStreamBase : angle::NonCopyable
 {
@@ -58,12 +36,6 @@ class ErrorStreamBase : angle::NonCopyable
     }
 
     operator ErrorT() { return ErrorT(EnumT, mID, mErrorStream.str()); }
-
-    template <typename ResultT>
-    operator ErrorOrResultBase<ErrorT, ResultT, ErrorBaseT, NoErrorVal>()
-    {
-        return static_cast<ErrorT>(*this);
-    }
 
   private:
     GLuint mID;
@@ -119,9 +91,6 @@ class ANGLE_NO_DISCARD Error final
     mutable std::unique_ptr<std::string> mMessage;
 };
 
-template <typename ResultT>
-using ErrorOrResult = angle::ErrorOrResultBase<Error, ResultT, GLenum, GL_NO_ERROR>;
-
 namespace priv
 {
 
@@ -144,9 +113,6 @@ inline Error NoError()
 {
     return Error::NoError();
 }
-
-using LinkResult = ErrorOrResult<bool>;
-
 }  // namespace gl
 
 namespace egl
@@ -187,9 +153,6 @@ class ANGLE_NO_DISCARD Error final
     EGLint mID;
     mutable std::unique_ptr<std::string> mMessage;
 };
-
-template <typename ResultT>
-using ErrorOrResult = angle::ErrorOrResultBase<Error, ResultT, EGLint, EGL_SUCCESS>;
 
 namespace priv
 {
@@ -242,25 +205,13 @@ inline Error NoError()
 
 // TODO(jmadill): Remove this once refactor is complete. http://anglebug.com/2491
 #define ANGLE_TRY_HANDLE(CONTEXT, EXPR)                \
-    \
-{                                               \
+    {                                                  \
         auto ANGLE_LOCAL_VAR = (EXPR);                 \
         if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
         {                                              \
             CONTEXT->handleError(ANGLE_LOCAL_VAR);     \
             return angle::Result::Stop();              \
         }                                              \
-    \
-}
-
-#define ANGLE_TRY_RESULT(EXPR, RESULT)                 \
-    {                                                  \
-        auto ANGLE_LOCAL_VAR = EXPR;                   \
-        if (ANGLE_UNLIKELY(ANGLE_LOCAL_VAR.isError())) \
-        {                                              \
-            return ANGLE_LOCAL_VAR.getError();         \
-        }                                              \
-        RESULT = ANGLE_LOCAL_VAR.getResult();          \
     }                                                  \
     ANGLE_EMPTY_STATEMENT
 
@@ -279,36 +230,48 @@ inline Error NoError()
 #undef ANGLE_CONCAT2
 #undef ANGLE_CONCAT1
 
+#define ANGLE_CHECK(CONTEXT, EXPR, MESSAGE, ERROR)                                    \
+    {                                                                                 \
+        if (ANGLE_UNLIKELY(!(EXPR)))                                                  \
+        {                                                                             \
+            CONTEXT->handleError(ERROR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
+            return angle::Result::Stop();                                             \
+        }                                                                             \
+    }
+
 namespace angle
 {
 // Result signals if calling code should continue running or early exit. A value of Stop() can
-// either indicate and Error or a non-Error early exit condition such as a detected no-op.
+// either indicate an Error or a non-Error early exit condition such as a detected no-op.  A few
+// other values exist to signal special cases that are neither success nor failure but require
+// special attention.
 class ANGLE_NO_DISCARD Result
 {
   public:
     // TODO(jmadill): Rename when refactor is complete. http://anglebug.com/2491
-    bool isError() const { return mStop; }
+    bool isError() const { return mValue == Value::Stop; }
 
-    static Result Stop() { return Result(true); }
-    static Result Continue() { return Result(false); }
+    static Result Stop() { return Result(Value::Stop); }
+    static Result Continue() { return Result(Value::Continue); }
+    static Result Incomplete() { return Result(Value::Incomplete); }
 
     // TODO(jmadill): Remove when refactor is complete. http://anglebug.com/2491
     operator gl::Error() const;
 
-    // TODO(jmadill): Remove when refactor is complete. http://anglebug.com/2491
-    template <typename T>
-    operator gl::ErrorOrResult<T>() const
-    {
-        return operator gl::Error();
-    }
+    bool operator==(Result other) const { return mValue == other.mValue; }
 
-    bool operator==(Result other) const { return mStop == other.mStop; }
-
-    bool operator!=(Result other) const { return mStop != other.mStop; }
+    bool operator!=(Result other) const { return mValue != other.mValue; }
 
   private:
-    Result(bool stop) : mStop(stop) {}
-    bool mStop;
+    enum class Value
+    {
+        Continue,
+        Stop,
+        Incomplete,
+    };
+
+    Result(Value value) : mValue(value) {}
+    Value mValue;
 };
 }  // namespace angle
 

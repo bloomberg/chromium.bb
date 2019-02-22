@@ -185,7 +185,6 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     aura::test::AuraTestBase::TearDown();
   }
 
-  KeyboardUI* ui() { return controller_.ui(); }
   KeyboardController& controller() { return controller_; }
   KeyboardLayoutDelegate* layout_delegate() { return layout_delegate_.get(); }
 
@@ -243,14 +242,14 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   }
 
   void SetFocus(ui::TextInputClient* client) {
-    ui::InputMethod* input_method = ui()->GetInputMethod();
+    ui::InputMethod* input_method = controller().GetInputMethodForTest();
     input_method->SetFocusedTextInputClient(client);
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
         client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE) {
       input_method->ShowVirtualKeyboardIfEnabled();
-      if (controller_.ui()->GetKeyboardWindow()->bounds().height() == 0) {
+      if (controller().GetKeyboardWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
-        controller_.ui()->GetKeyboardWindow()->SetBounds(
+        controller().GetKeyboardWindow()->SetBounds(
             KeyboardBoundsFromRootBounds(root_window()->bounds(),
                                          kDefaultVirtualKeyboardHeight));
         // Simulate the keyboard contents finish loading
@@ -262,9 +261,9 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
   bool WillHideKeyboard() { return controller_.WillHideKeyboard(); }
 
   bool ShouldEnableInsets(aura::Window* window) {
-    aura::Window* contents_window = controller_.ui()->GetKeyboardWindow();
+    aura::Window* contents_window = controller().GetKeyboardWindow();
     return (contents_window->GetRootWindow() == window->GetRootWindow() &&
-            keyboard::IsKeyboardOverscrollEnabled() &&
+            controller_.IsKeyboardOverscrollEnabled() &&
             contents_window->IsVisible() && controller_.IsKeyboardVisible());
   }
 
@@ -458,17 +457,17 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
   // Enable touch keyboard / overscroll mode to test insets.
-  EXPECT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
+  EXPECT_TRUE(controller().IsKeyboardOverscrollEnabled());
 
   SetFocus(&input_client);
   SetFocus(&no_input_client);
   // Insets should not be enabled for new windows while keyboard is in the
   // process of hiding when overscroll is enabled.
-  EXPECT_FALSE(ShouldEnableInsets(ui()->GetKeyboardWindow()));
+  EXPECT_FALSE(ShouldEnableInsets(controller().GetKeyboardWindow()));
   // Cancel keyboard hide.
   SetFocus(&input_client);
   // Insets should be enabled for new windows as hide was cancelled.
-  EXPECT_TRUE(ShouldEnableInsets(ui()->GetKeyboardWindow()));
+  EXPECT_TRUE(ShouldEnableInsets(controller().GetKeyboardWindow()));
 }
 
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
@@ -579,7 +578,7 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
   }
 
  protected:
-  aura::Window* keyboard_window() { return ui()->GetKeyboardWindow(); }
+  aura::Window* keyboard_window() { return controller().GetKeyboardWindow(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerAnimationTest);
@@ -711,7 +710,7 @@ TEST_F(KeyboardControllerAnimationTest,
   ShowKeyboard();
   RunAnimationForLayer(layer);
 
-  ASSERT_TRUE(controller().ui());
+  ASSERT_TRUE(keyboard_window());
 
   controller().DeactivateKeyboard();
 
@@ -795,7 +794,8 @@ TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
   EXPECT_TRUE(keyboard_window()->IsVisible());
 
   // Unfocus from the MockTextInputClient before destroying it.
-  ui()->GetInputMethod()->DetachTextInputClient(&mock_input_client);
+  controller().GetInputMethodForTest()->DetachTextInputClient(
+      &mock_input_client);
 }
 
 // Checks DisableKeyboard() doesn't clear the observer list.

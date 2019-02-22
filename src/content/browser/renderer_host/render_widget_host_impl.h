@@ -49,7 +49,6 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_widget_surface_properties.h"
-#include "content/common/view_message_enums.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -76,7 +75,7 @@
 
 class SkBitmap;
 struct FrameHostMsg_HittestData_Params;
-struct ViewHostMsg_SelectionBounds_Params;
+struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -188,6 +187,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void NotifyTextDirection() override;
   void Focus() override;
   void Blur() override;
+  void FlushForTesting() override;
   void SetActive(bool active) override;
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardWheelEvent(const blink::WebMouseWheelEvent& wheel_event) override;
@@ -611,10 +611,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
           render_frame_metadata_observer_client_request,
       mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer);
 
-  const viz::CompositorFrameMetadata& last_frame_metadata() {
-    return last_frame_metadata_;
-  }
-
   RenderFrameMetadataProviderImpl* render_frame_metadata_provider() {
     return &render_frame_metadata_provider_;
   }
@@ -762,7 +758,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HiddenPaint);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HideShowMessages);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartInputEventAckTimeout);
@@ -819,7 +815,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                    bool privileged);
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
-      const ViewHostMsg_SelectionBounds_Params& params);
+      const WidgetHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);
@@ -992,12 +988,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The observers watching us.
   base::ObserverList<RenderWidgetHostObserver>::Unchecked observers_;
 
-  // If true, then we should repaint when restoring even if we have a
-  // backingstore.  This flag is set to true if we receive a paint message
-  // while is_hidden_ to true.  Even though we tell the render widget to hide
-  // itself, a paint message could already be in flight at that point.
-  bool needs_repainting_on_restore_;
-
   // This is true if the renderer is currently unresponsive.
   bool is_unresponsive_;
 
@@ -1125,12 +1115,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   device::mojom::WakeLockPtr wake_lock_;
 #endif
 
-  // These information are used to verify that the renderer does not misbehave
-  // when it comes to allocating LocalSurfaceIds. If surface properties change,
-  // a new LocalSurfaceId must be created.
-  viz::LocalSurfaceId last_local_surface_id_;
-  RenderWidgetSurfaceProperties last_surface_properties_;
-
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_;
 
@@ -1138,17 +1122,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // we have a view. This is only used if |enable_viz_| is true.
   base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
 
-  viz::CompositorFrameMetadata last_frame_metadata_;
-
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
-
-  // If a CompositorFrame is submitted that references SharedBitmaps that don't
-  // exist yet, we keep it here until they are available.
-  struct {
-    viz::LocalSurfaceId local_surface_id;
-    viz::CompositorFrame frame;
-    base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  } saved_frame_;
 
   bool enable_surface_synchronization_ = false;
   bool enable_viz_ = false;
@@ -1184,7 +1158,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<FlingSchedulerBase> fling_scheduler_;
 
-  bool did_receive_first_frame_after_navigation_ = true;
+  bool sent_autoscroll_scroll_begin_ = false;
+  gfx::PointF autoscroll_start_position_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

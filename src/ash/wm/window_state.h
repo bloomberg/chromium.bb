@@ -17,6 +17,8 @@
 #include "base/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_owner.h"
+#include "ui/gfx/animation/tween.h"
 
 namespace gfx {
 class Rect;
@@ -394,7 +396,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Sets the window's |bounds| and transition to the new bounds with
   // a cross fade animation.
-  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
+  void SetBoundsDirectCrossFade(
+      const gfx::Rect& bounds,
+      gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
+
+  // Updates rounded corners for PIP window states. Removes rounded corners
+  // for non-PIP window states.
+  void UpdatePipRoundedCorners();
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -418,6 +426,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool autohide_shelf_when_maximized_or_fullscreen_;
   bool cached_always_on_top_;
   bool allow_set_bounds_direct_ = false;
+
+  // Mask layer for PIP windows.
+  std::unique_ptr<ui::LayerOwner> pip_mask_ = nullptr;
 
   // A property to save the ratio between snapped window width and display
   // workarea width. It is used to update snapped window width on

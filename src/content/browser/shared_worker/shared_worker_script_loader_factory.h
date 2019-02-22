@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
+#include "content/common/navigation_subresource_loader_params.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -17,6 +18,7 @@ namespace content {
 class AppCacheHost;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
+class SharedWorkerScriptLoader;
 class ResourceContext;
 
 // S13nServiceWorker:
@@ -28,7 +30,8 @@ class ResourceContext;
 //
 // This creates a SharedWorkerScriptLoader to load the script, which follows
 // redirects and sets the controller service worker on the shared worker if
-// needed.
+// needed. It's an error to call CreateLoaderAndStart() more than a total of one
+// time across this object or any of its clones.
 class SharedWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
@@ -56,12 +59,20 @@ class SharedWorkerScriptLoaderFactory
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
+  base::WeakPtr<SharedWorkerScriptLoader> GetScriptLoader() {
+    return script_loader_;
+  }
+
  private:
   const int process_id_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   base::WeakPtr<AppCacheHost> appcache_host_;
   ResourceContext* resource_context_ = nullptr;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+
+  // This is owned by StrongBinding associated with the given URLLoaderRequest,
+  // and invalidated after request completion or failure.
+  base::WeakPtr<SharedWorkerScriptLoader> script_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerScriptLoaderFactory);
 };

@@ -38,6 +38,11 @@ class StyleRuleViewport;
 class StyleSheetContents;
 class Element;
 
+enum class ParseSheetResult {
+  kSucceeded,
+  kHasUnallowedImportRule,
+};
+
 class CSSParserImpl {
   STACK_ALLOCATED();
 
@@ -60,9 +65,9 @@ class CSSParserImpl {
 
   // Represents the start and end offsets of a CSSParserTokenRange.
   struct RangeOffset {
-    size_t start, end;
+    wtf_size_t start, end;
 
-    RangeOffset(size_t start, size_t end) : start(start), end(end) {
+    RangeOffset(wtf_size_t start, wtf_size_t end) : start(start), end(end) {
       DCHECK(start <= end);
     }
 
@@ -95,10 +100,12 @@ class CSSParserImpl {
                                   const CSSParserContext*,
                                   StyleSheetContents*,
                                   AllowedRulesType);
-  static void ParseStyleSheet(const String&,
-                              const CSSParserContext*,
-                              StyleSheetContents*,
-                              bool defer_property_parsing = false);
+  static ParseSheetResult ParseStyleSheet(
+      const String&,
+      const CSSParserContext*,
+      StyleSheetContents*,
+      CSSDeferPropertyParsing = CSSDeferPropertyParsing::kNo,
+      bool allow_import_rules = true);
   static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 
@@ -116,7 +123,7 @@ class CSSParserImpl {
 
   static CSSPropertyValueSet* ParseDeclarationListForLazyStyle(
       const String&,
-      size_t offset,
+      wtf_size_t offset,
       const CSSParserContext*);
 
  private:

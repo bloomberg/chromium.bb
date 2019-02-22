@@ -8,11 +8,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -220,8 +220,8 @@ void DynamicModuleResolver::ResolveDynamically(
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
   modulator_->FetchTree(
-      url, new FetchClientSettingsObjectSnapshot(*execution_context),
-      WebURLRequest::kRequestContextScript, options,
+      url, execution_context->CreateFetchClientSettingsObjectSnapshot(),
+      mojom::RequestContextType::SCRIPT, options,
       ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 2.[5-8] are implemented at

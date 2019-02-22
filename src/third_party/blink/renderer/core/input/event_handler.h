@@ -96,8 +96,9 @@ class CORE_EXPORT EventHandler final
 
   void StopAutoscroll();
 
-  void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
-  void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
+  void MayUpdateHoverWhenContentUnderMouseChanged(
+      MouseEventManager::UpdateHoverReason);
+  void MayUpdateHoverAfterScroll(const FloatQuad&);
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
@@ -158,6 +159,13 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleMousePressEvent(const WebMouseEvent&);
   WebInputEventResult HandleMouseReleaseEvent(const WebMouseEvent&);
   WebInputEventResult HandleWheelEvent(const WebMouseWheelEvent&);
+
+  WebInputEventResult HandleTargetedMouseEvent(
+      Node* target,
+      const WebMouseEvent&,
+      const AtomicString& event_type,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const String& canvas_node_id = String());
 
   // Called on the local root frame exactly once per gesture event.
   WebInputEventResult HandleGestureEvent(const WebGestureEvent&);
@@ -381,6 +389,8 @@ class CORE_EXPORT EventHandler final
 
   bool RootFrameTouchPointerActiveInCurrentFrame(int pointer_id) const;
 
+  void CaptureMouseEventsToWidget(bool);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |EventHandler::clear()|.
 
@@ -397,6 +407,10 @@ class CORE_EXPORT EventHandler final
 
   Member<Node> capturing_mouse_events_node_;
   bool event_handler_will_reset_capturing_mouse_events_node_;
+
+  // Indicates whether the current widget is capturing mouse input.
+  // Only used for local frame root EventHandlers.
+  bool is_widget_capturing_mouse_events_ = false;
 
   Member<LocalFrame> last_mouse_move_event_subframe_;
   Member<Scrollbar> last_scrollbar_under_mouse_;

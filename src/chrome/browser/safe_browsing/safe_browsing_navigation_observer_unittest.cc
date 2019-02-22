@@ -23,8 +23,6 @@ namespace {
 
 const char kNavigationEventCleanUpHistogramName[] =
     "SafeBrowsing.NavigationObserver.NavigationEventCleanUpCount";
-const char kIPAddressCleanUpHistogramName[] =
-    "SafeBrowsing.NavigationObserver.IPAddressCleanUpCount";
 }  // namespace
 
 namespace safe_browsing {
@@ -276,7 +274,7 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleUserGestures) {
   // Verifies all stale and invalid user gestures are removed.
   ASSERT_EQ(1U, user_gesture_map()->size());
   EXPECT_NE(user_gesture_map()->end(), user_gesture_map()->find(content0));
-  EXPECT_EQ(now, user_gesture_map()->at(content0));
+  EXPECT_EQ(now, (*user_gesture_map())[content0]);
 }
 
 TEST_F(SBNavigationObserverTest, TestCleanUpStaleIPAddresses) {
@@ -291,17 +289,14 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleIPAddresses) {
   std::string host_1 = GURL("http://bar/1").host();
   host_to_ip_map()->insert(
       std::make_pair(host_0, std::vector<ResolvedIPAddress>()));
-  host_to_ip_map()->at(host_0).push_back(ResolvedIPAddress(now, "1.1.1.1"));
-  host_to_ip_map()->at(host_0).push_back(
+  (*host_to_ip_map())[host_0].push_back(ResolvedIPAddress(now, "1.1.1.1"));
+  (*host_to_ip_map())[host_0].push_back(
       ResolvedIPAddress(one_hour_ago, "2.2.2.2"));
   host_to_ip_map()->insert(
       std::make_pair(host_1, std::vector<ResolvedIPAddress>()));
-  host_to_ip_map()->at(host_1).push_back(
+  (*host_to_ip_map())[host_1].push_back(
       ResolvedIPAddress(in_an_hour, "3.3.3.3"));
   ASSERT_EQ(2U, host_to_ip_map()->size());
-
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kIPAddressCleanUpHistogramName, 0);
 
   // Cleans up host_to_ip_map()
   CleanUpIpAddresses();
@@ -309,10 +304,8 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleIPAddresses) {
   // Verifies all stale and invalid IP addresses are removed.
   ASSERT_EQ(1U, host_to_ip_map()->size());
   EXPECT_EQ(host_to_ip_map()->end(), host_to_ip_map()->find(host_1));
-  ASSERT_EQ(1U, host_to_ip_map()->at(host_0).size());
-  EXPECT_EQ(now, host_to_ip_map()->at(host_0).front().timestamp);
-  EXPECT_THAT(histograms.GetAllSamples(kIPAddressCleanUpHistogramName),
-              testing::ElementsAre(base::Bucket(2, 1)));
+  ASSERT_EQ(1U, (*host_to_ip_map())[host_0].size());
+  EXPECT_EQ(now, (*host_to_ip_map())[host_0].front().timestamp);
 }
 
 TEST_F(SBNavigationObserverTest, TestRecordHostToIpMapping) {
@@ -323,32 +316,32 @@ TEST_F(SBNavigationObserverTest, TestRecordHostToIpMapping) {
   std::string host_0 = GURL("http://foo/0").host();
   host_to_ip_map()->insert(
       std::make_pair(host_0, std::vector<ResolvedIPAddress>()));
-  host_to_ip_map()->at(host_0).push_back(ResolvedIPAddress(now, "1.1.1.1"));
-  host_to_ip_map()->at(host_0).push_back(
+  (*host_to_ip_map())[host_0].push_back(ResolvedIPAddress(now, "1.1.1.1"));
+  (*host_to_ip_map())[host_0].push_back(
       ResolvedIPAddress(one_hour_ago, "2.2.2.2"));
 
   // Record a host-IP pair, where host is already in the map, and IP has
   // never been seen before.
   RecordHostToIpMapping(host_0, "3.3.3.3");
   ASSERT_EQ(1U, host_to_ip_map()->size());
-  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
-  EXPECT_EQ("3.3.3.3", host_to_ip_map()->at(host_0).at(2).ip);
+  EXPECT_EQ(3U, (*host_to_ip_map())[host_0].size());
+  EXPECT_EQ("3.3.3.3", (*host_to_ip_map())[host_0][2].ip);
 
   // Record a host-IP pair which is already in the map. It should simply update
   // its timestamp.
-  ASSERT_EQ(now, host_to_ip_map()->at(host_0).at(0).timestamp);
+  ASSERT_EQ(now, (*host_to_ip_map())[host_0][0].timestamp);
   RecordHostToIpMapping(host_0, "1.1.1.1");
   ASSERT_EQ(1U, host_to_ip_map()->size());
-  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
-  EXPECT_LT(now, host_to_ip_map()->at(host_0).at(2).timestamp);
+  EXPECT_EQ(3U, (*host_to_ip_map())[host_0].size());
+  EXPECT_LT(now, (*host_to_ip_map())[host_0][2].timestamp);
 
   // Record a host-ip pair, neither of which has been seen before.
   std::string host_1 = GURL("http://bar/1").host();
   RecordHostToIpMapping(host_1, "9.9.9.9");
   ASSERT_EQ(2U, host_to_ip_map()->size());
-  EXPECT_EQ(3U, host_to_ip_map()->at(host_0).size());
-  EXPECT_EQ(1U, host_to_ip_map()->at(host_1).size());
-  EXPECT_EQ("9.9.9.9", host_to_ip_map()->at(host_1).at(0).ip);
+  EXPECT_EQ(3U, (*host_to_ip_map())[host_0].size());
+  EXPECT_EQ(1U, (*host_to_ip_map())[host_1].size());
+  EXPECT_EQ("9.9.9.9", (*host_to_ip_map())[host_1][0].ip);
 }
 
 TEST_F(SBNavigationObserverTest, TestContentSettingChange) {

@@ -164,6 +164,9 @@ TEST_P(BufferDataTest, RepeatedDrawWithDynamic)
 // DYNAMIC
 TEST_P(BufferDataTest, RepeatedDrawDynamicBug)
 {
+    // http://anglebug.com/2843: Seems to be an Intel driver bug.
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsIntel() && IsWindows());
+
     glUseProgram(mProgram);
 
     GLint positionLocation = glGetAttribLocation(mProgram, "position");
@@ -475,11 +478,13 @@ TEST_P(BufferDataTestES3, NoBufferInitDataCopyBug)
     ASSERT_GL_NO_ERROR();
 }
 
-// TODO(lucferron): Diagnose and fix the Vulkan backend to enable the BufferDataTest tests.
-// http://anglebug.com/2644
-
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
-ANGLE_INSTANTIATE_TEST(BufferDataTest, ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_OPENGLES());
+ANGLE_INSTANTIATE_TEST(BufferDataTest,
+                       ES2_D3D9(),
+                       ES2_D3D11(),
+                       ES2_OPENGL(),
+                       ES2_OPENGLES(),
+                       ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(BufferDataTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 ANGLE_INSTANTIATE_TEST(IndexedBufferCopyTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 

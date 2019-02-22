@@ -34,6 +34,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -105,7 +106,7 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
     DeviceManagementService* device_management_service,
     chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
     const EnrollmentConfig& enrollment_config,
-    const std::string& auth_token,
+    std::unique_ptr<DMAuth> dm_auth,
     const EnrollmentCallback& enrollment_callback) {
   DCHECK(is_initialized_);
   DCHECK(!enrollment_handler_);
@@ -115,8 +116,9 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,
       attestation_flow_.get(), CreateClient(device_management_service),
-      background_task_runner_, ad_join_delegate, enrollment_config, auth_token,
-      install_attributes_->GetDeviceId(), manager_->GetDeviceRequisition(),
+      background_task_runner_, ad_join_delegate, enrollment_config,
+      std::move(dm_auth), install_attributes_->GetDeviceId(),
+      manager_->GetDeviceRequisition(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
 }

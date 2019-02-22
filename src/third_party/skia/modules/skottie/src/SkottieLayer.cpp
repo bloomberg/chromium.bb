@@ -27,6 +27,7 @@
 #include "SkSGRect.h"
 #include "SkSGTransform.h"
 
+#include <algorithm>
 #include <vector>
 
 namespace skottie {
@@ -84,7 +85,7 @@ sk_sp<sksg::RenderNode> AttachMask(const skjson::ArrayValue* jmask,
 
         const skjson::StringValue* jmode = (*m)["mode"];
         if (!jmode || jmode->size() != 1) {
-            LogJSON((*m)["mode"], "!! Invalid mask mode");
+            abuilder->log(Logger::Level::kError, &(*m)["mode"], "Invalid mask mode.");
             continue;
         }
 
@@ -96,13 +97,13 @@ sk_sp<sksg::RenderNode> AttachMask(const skjson::ArrayValue* jmask,
 
         const auto* mask_info = GetMaskInfo(mode);
         if (!mask_info) {
-            LOG("?? Unsupported mask mode: '%c'\n", mode);
+            abuilder->log(Logger::Level::kWarning, nullptr, "Unsupported mask mode: '%c'.", mode);
             continue;
         }
 
         auto mask_path = abuilder->attachPath((*m)["pt"], ascope);
         if (!mask_path) {
-            LogJSON(*m, "!! Could not parse mask path");
+            abuilder->log(Logger::Level::kError, m, "Could not parse mask path.");
             continue;
         }
 
@@ -151,14 +152,23 @@ sk_sp<sksg::RenderNode> AttachMask(const skjson::ArrayValue* jmask,
         return sksg::ClipEffect::Make(std::move(childNode), std::move(clip_node), true);
     }
 
-    auto mask_group = sksg::Group::Make();
-    for (const auto& rec : mask_stack) {
-        mask_group->addChild(sksg::Draw::Make(std::move(rec.mask_path),
-                                              std::move(rec.mask_paint)));
+    sk_sp<sksg::RenderNode> maskNode;
+    if (mask_stack.count() == 1) {
+        // no group needed for single mask
+        maskNode = sksg::Draw::Make(std::move(mask_stack.front().mask_path),
+                                    std::move(mask_stack.front().mask_paint));
+    } else {
+        std::vector<sk_sp<sksg::RenderNode>> masks;
+        masks.reserve(SkToSizeT(mask_stack.count()));
+        for (const auto& rec : mask_stack) {
+            masks.push_back(sksg::Draw::Make(std::move(rec.mask_path),
+                                             std::move(rec.mask_paint)));
+        }
 
+        maskNode = sksg::Group::Make(std::move(masks));
     }
 
-    return sksg::MaskEffect::Make(std::move(childNode), std::move(mask_group));
+    return sksg::MaskEffect::Make(std::move(childNode), std::move(maskNode));
 }
 
 } // namespace
@@ -208,16 +218,16 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachNestedAnimation(const char* name
 
     const auto data = fResourceProvider->load("", name);
     if (!data) {
-        LOG("!! Could not load: %s\n", name);
+        this->log(Logger::Level::kError, nullptr, "Could not load: %s.", name);
         return nullptr;
     }
 
     auto animation = Animation::Builder()
             .setResourceProvider(fResourceProvider)
-            .setFontManager(fFontMgr)
+            .setFontManager(fLazyFontMgr.getMaybeNull())
             .make(static_cast<const char*>(data->data()), data->size());
     if (!animation) {
-        LOG("!! Could not parse nested animation: %s\n", name);
+        this->log(Logger::Level::kError, nullptr, "Could not parse nested animation: %s.", name);
         return nullptr;
     }
 
@@ -229,12 +239,12 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachNestedAnimation(const char* name
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachAssetRef(
     const skjson::ObjectValue& jlayer, AnimatorScope* ascope,
-    sk_sp<sksg::RenderNode>(AnimationBuilder::* attach_proc)(const skjson::ObjectValue& comp,
-                                                             AnimatorScope* ascope) const) const {
+    const std::function<sk_sp<sksg::RenderNode>(const skjson::ObjectValue&,
+                                                AnimatorScope*)>& func) const {
 
     const auto refId = ParseDefault<SkString>(jlayer["refId"], SkString());
     if (refId.isEmpty()) {
-        LOG("!! Layer missing refId\n");
+        this->log(Logger::Level::kError, nullptr, "Layer missing refId.");
         return nullptr;
     }
 
@@ -244,23 +254,25 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachAssetRef(
 
     const auto* asset_info = fAssets.find(refId);
     if (!asset_info) {
-        LOG("!! Asset not found: '%s'\n", refId.c_str());
+        this->log(Logger::Level::kError, nullptr, "Asset not found: '%s'.", refId.c_str());
         return nullptr;
     }
 
     if (asset_info->fIsAttaching) {
-        LOG("!! Asset cycle detected for: '%s'\n", refId.c_str());
+        this->log(Logger::Level::kError, nullptr,
+                  "Asset cycle detected for: '%s'", refId.c_str());
         return nullptr;
     }
 
     asset_info->fIsAttaching = true;
-    auto asset = (this->*attach_proc)(*asset_info->fAsset, ascope);
+    auto asset = func(*asset_info->fAsset, ascope);
     asset_info->fIsAttaching = false;
 
     return asset;
 }
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachSolidLayer(const skjson::ObjectValue& jlayer,
+                                                           const LayerInfo&,
                                                            AnimatorScope*) const {
     const auto size = SkSize::Make(ParseDefault<float>(jlayer["sw"], 0.0f),
                                    ParseDefault<float>(jlayer["sh"], 0.0f));
@@ -270,7 +282,7 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachSolidLayer(const skjson::ObjectV
         !hex_str ||
         *hex_str->begin() != '#' ||
         !SkParse::FindHex(hex_str->begin() + 1, &c)) {
-        LogJSON(jlayer, "!! Could not parse solid layer");
+        this->log(Logger::Level::kError, &jlayer, "Could not parse solid layer.");
         return nullptr;
     }
 
@@ -280,8 +292,8 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachSolidLayer(const skjson::ObjectV
                             sksg::Color::Make(color));
 }
 
-sk_sp<sksg::RenderNode> AnimationBuilder::attachImageAsset(const skjson::ObjectValue& jimage,
-                                                           AnimatorScope*) const {
+const AnimationBuilder::ImageAssetInfo*
+AnimationBuilder::loadImageAsset(const skjson::ObjectValue& jimage) const {
     const skjson::StringValue* name = jimage["p"];
     const skjson::StringValue* path = jimage["u"];
     if (!name) {
@@ -291,26 +303,91 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachImageAsset(const skjson::ObjectV
     const auto name_cstr = name->begin(),
                path_cstr = path ? path->begin() : "";
     const auto res_id = SkStringPrintf("%s|%s", path_cstr, name_cstr);
-    if (auto* attached_image = fAssetCache.find(res_id)) {
-        return *attached_image;
+    if (auto* cached_info = fImageAssetCache.find(res_id)) {
+        return cached_info;
     }
 
-    const auto data = fResourceProvider->load(path_cstr, name_cstr);
-    if (!data) {
-        LOG("!! Could not load image resource: %s/%s\n", path_cstr, name_cstr);
+    auto asset = fResourceProvider->loadImageAsset(path_cstr, name_cstr);
+    if (!asset) {
+        this->log(Logger::Level::kError, nullptr,
+                  "Could not load image asset: %s/%s.", path_cstr, name_cstr);
         return nullptr;
     }
 
-    // TODO: non-intrisic image sizing
-    return *fAssetCache.set(res_id, sksg::Image::Make(SkImage::MakeFromEncoded(data)));
+    const auto size = SkISize::Make(ParseDefault<int>(jimage["w"], 0),
+                                    ParseDefault<int>(jimage["h"], 0));
+    return fImageAssetCache.set(res_id, { std::move(asset), size });
+}
+
+sk_sp<sksg::RenderNode> AnimationBuilder::attachImageAsset(const skjson::ObjectValue& jimage,
+                                                           const LayerInfo& layer_info,
+                                                           AnimatorScope* ascope) const {
+    const auto* asset_info = this->loadImageAsset(jimage);
+    if (!asset_info) {
+        return nullptr;
+    }
+    SkASSERT(asset_info->fAsset);
+
+    auto image = asset_info->fAsset->getFrame(0);
+    if (!image) {
+        this->log(Logger::Level::kError, nullptr, "Could not load first image asset frame.");
+        return nullptr;
+    }
+
+    auto image_node = sksg::Image::Make(image);
+
+    if (asset_info->fAsset->isMultiFrame()) {
+        class MultiFrameAnimator final : public sksg::Animator {
+        public:
+            MultiFrameAnimator(sk_sp<ImageAsset> asset, sk_sp<sksg::Image> image_node,
+                               float time_bias, float time_scale)
+                : fAsset(std::move(asset))
+                , fImageNode(std::move(image_node))
+                , fTimeBias(time_bias)
+                , fTimeScale(time_scale) {}
+
+            void onTick(float t) override {
+                fImageNode->setImage(fAsset->getFrame((t + fTimeBias) * fTimeScale));
+            }
+
+        private:
+            sk_sp<ImageAsset>     fAsset;
+            sk_sp<sksg::Image>    fImageNode;
+            float                 fTimeBias,
+                                  fTimeScale;
+        };
+
+        ascope->push_back(skstd::make_unique<MultiFrameAnimator>(asset_info->fAsset,
+                                                                 image_node,
+                                                                 layer_info.fInPoint,
+                                                                 1 / fFrameRate));
+    }
+
+    const auto asset_size = SkISize::Make(
+            asset_info->fSize.width()  > 0 ? asset_info->fSize.width()  : image->width(),
+            asset_info->fSize.height() > 0 ? asset_info->fSize.height() : image->height());
+
+    if (asset_size == image->bounds().size()) {
+        // No resize needed.
+        return std::move(image_node);
+    }
+
+    return sksg::Transform::Make(std::move(image_node),
+        SkMatrix::MakeScale(static_cast<float>(asset_size.width())  / image->width(),
+                            static_cast<float>(asset_size.height()) / image->height()));
 }
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachImageLayer(const skjson::ObjectValue& jlayer,
+                                                           const LayerInfo& layer_info,
                                                            AnimatorScope* ascope) const {
-    return this->attachAssetRef(jlayer, ascope, &AnimationBuilder::attachImageAsset);
+    return this->attachAssetRef(jlayer, ascope,
+        [this, &layer_info] (const skjson::ObjectValue& jimage, AnimatorScope* ascope) {
+            return this->attachImageAsset(jimage, layer_info, ascope);
+        });
 }
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachNullLayer(const skjson::ObjectValue& layer,
+                                                          const LayerInfo&,
                                                           AnimatorScope*) const {
     // Null layers are used solely to drive dependent transforms,
     // but we use free-floating sksg::Matrices for that purpose.
@@ -384,7 +461,20 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachLayer(const skjson::ObjectValue*
                                                      AttachLayerContext* layerCtx) const {
     if (!jlayer) return nullptr;
 
+    const LayerInfo layer_info = {
+        ParseDefault<float>((*jlayer)["ip"], 0.0f),
+        ParseDefault<float>((*jlayer)["op"], 0.0f)
+    };
+    if (layer_info.fInPoint >= layer_info.fOutPoint) {
+        this->log(Logger::Level::kError, nullptr,
+                  "Invalid layer in/out points: %f/%f.", layer_info.fInPoint, layer_info.fOutPoint);
+        return nullptr;
+    }
+
+    const AutoPropertyTracker apt(this, *jlayer);
+
     using LayerAttacher = sk_sp<sksg::RenderNode> (AnimationBuilder::*)(const skjson::ObjectValue&,
+                                                                        const LayerInfo&,
                                                                         AnimatorScope*) const;
     static constexpr LayerAttacher gLayerAttachers[] = {
         &AnimationBuilder::attachPrecompLayer,  // 'ty': 0
@@ -403,7 +493,7 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachLayer(const skjson::ObjectValue*
     AnimatorScope layer_animators;
 
     // Layer content.
-    auto layer = (this->*(gLayerAttachers[type]))(*jlayer, &layer_animators);
+    auto layer = (this->*(gLayerAttachers[type]))(*jlayer, layer_info, &layer_animators);
 
     // Clip layers with explicit dimensions.
     float w = 0, h = 0;
@@ -462,14 +552,13 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachLayer(const skjson::ObjectValue*
     };
 
     auto controller_node = sksg::OpacityEffect::Make(std::move(layer));
-    const auto        in = ParseDefault<float>((*jlayer)["ip"], 0.0f),
-                     out = ParseDefault<float>((*jlayer)["op"], in);
-
-    if (in >= out || !controller_node)
+    if (!controller_node) {
         return nullptr;
+    }
 
     layerCtx->fScope->push_back(
-        skstd::make_unique<LayerController>(std::move(layer_animators), controller_node, in, out));
+        skstd::make_unique<LayerController>(std::move(layer_animators), controller_node,
+                                            layer_info.fInPoint, layer_info.fOutPoint));
 
     if (ParseDefault<bool>((*jlayer)["td"], false)) {
         // This layer is a matte.  We apply it as a mask to the next layer.
@@ -501,12 +590,13 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachComposition(const skjson::Object
     const skjson::ArrayValue* jlayers = comp["layers"];
     if (!jlayers) return nullptr;
 
-    SkSTArray<16, sk_sp<sksg::RenderNode>, true> layers;
-    AttachLayerContext                           layerCtx(*jlayers, scope);
+    std::vector<sk_sp<sksg::RenderNode>> layers;
+    AttachLayerContext                   layerCtx(*jlayers, scope);
 
+    layers.reserve(jlayers->size());
     for (const auto& l : *jlayers) {
-        if (auto layer_fragment = this->attachLayer(l, &layerCtx)) {
-            layers.push_back(std::move(layer_fragment));
+        if (auto layer = this->attachLayer(l, &layerCtx)) {
+            layers.push_back(std::move(layer));
         }
     }
 
@@ -515,12 +605,10 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachComposition(const skjson::Object
     }
 
     // Layers are painted in bottom->top order.
-    auto comp_group = sksg::Group::Make();
-    for (int i = layers.count() - 1; i >= 0; --i) {
-        comp_group->addChild(std::move(layers[i]));
-    }
+    std::reverse(layers.begin(), layers.end());
+    layers.shrink_to_fit();
 
-    return std::move(comp_group);
+    return sksg::Group::Make(std::move(layers));
 }
 
 } // namespace internal

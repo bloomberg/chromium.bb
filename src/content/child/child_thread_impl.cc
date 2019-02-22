@@ -84,7 +84,7 @@ namespace {
 const int kConnectionTimeoutS = 15;
 
 base::LazyInstance<base::ThreadLocalPointer<ChildThreadImpl>>::DestructorAtExit
-    g_lazy_tls = LAZY_INSTANCE_INITIALIZER;
+    g_lazy_child_thread_impl_tls = LAZY_INSTANCE_INITIALIZER;
 
 // This isn't needed on Windows because there the sandbox's job object
 // terminates child processes automatically. For unsandboxed processes (i.e.
@@ -179,44 +179,27 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 class QuitClosure {
  public:
   QuitClosure();
-  ~QuitClosure();
+  ~QuitClosure() = default;
 
-  void BindToMainThread();
-  void PostQuitFromNonMainThread();
+  void BindToMainThread(base::RepeatingClosure quit_closure);
+  void QuitFromNonMainThread();
 
  private:
-  static void PostClosure(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::Closure closure);
-
   base::Lock lock_;
   base::ConditionVariable cond_var_;
-  base::Closure closure_;
+  base::RepeatingClosure closure_;
 };
 
 QuitClosure::QuitClosure() : cond_var_(&lock_) {
 }
 
-QuitClosure::~QuitClosure() {
-}
-
-void QuitClosure::PostClosure(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::Closure closure) {
-  task_runner->PostTask(FROM_HERE, closure);
-}
-
-void QuitClosure::BindToMainThread() {
+void QuitClosure::BindToMainThread(base::RepeatingClosure quit_closure) {
   base::AutoLock lock(lock_);
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
-      base::ThreadTaskRunnerHandle::Get());
-  base::Closure quit_closure =
-      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated();
-  closure_ = base::Bind(&QuitClosure::PostClosure, task_runner, quit_closure);
+  closure_ = std::move(quit_closure);
   cond_var_.Signal();
 }
 
-void QuitClosure::PostQuitFromNonMainThread() {
+void QuitClosure::QuitFromNonMainThread() {
   base::AutoLock lock(lock_);
   while (closure_.is_null())
     cond_var_.Wait();
@@ -364,18 +347,14 @@ bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
   return handled;
 }
 
-ChildThreadImpl::ChildThreadImpl()
-    : route_provider_binding_(this),
-      router_(this),
-      channel_connected_factory_(
-          new base::WeakPtrFactory<ChildThreadImpl>(this)),
-      weak_factory_(this) {
-  Init(Options::Builder().Build());
-}
+ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure)
+    : ChildThreadImpl(std::move(quit_closure), Options::Builder().Build()) {}
 
-ChildThreadImpl::ChildThreadImpl(const Options& options)
+ChildThreadImpl::ChildThreadImpl(base::RepeatingClosure quit_closure,
+                                 const Options& options)
     : route_provider_binding_(this),
       router_(this),
+      quit_closure_(std::move(quit_closure)),
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
@@ -423,7 +402,7 @@ void ChildThreadImpl::ConnectChannel() {
 
 void ChildThreadImpl::Init(const Options& options) {
   TRACE_EVENT0("startup", "ChildThreadImpl::Init");
-  g_lazy_tls.Pointer()->Set(this);
+  g_lazy_child_thread_impl_tls.Pointer()->Set(this);
   on_channel_error_called_ = false;
   main_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -561,7 +540,7 @@ void ChildThreadImpl::Init(const Options& options) {
       base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)
-  g_quit_closure.Get().BindToMainThread();
+  g_quit_closure.Get().BindToMainThread(quit_closure_);
 #endif
 
   // In single-process mode, there is no need to synchronize trials to the
@@ -626,7 +605,7 @@ ChildThreadImpl::~ChildThreadImpl() {
   // automatically.  We used to watch the object handle on Windows to do this,
   // but it wasn't possible to do so on POSIX.
   channel_->ClearIPCTaskRunner();
-  g_lazy_tls.Pointer()->Set(nullptr);
+  g_lazy_child_thread_impl_tls.Pointer()->Set(nullptr);
 }
 
 void ChildThreadImpl::Shutdown() {}
@@ -644,7 +623,7 @@ void ChildThreadImpl::OnChannelError() {
   // If this thread runs in the browser process, only Thread::Stop should
   // stop its message loop. Otherwise, QuitWhenIdle could race Thread::Stop.
   if (!IsInBrowserProcess())
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    quit_closure_.Run();
 }
 
 bool ChildThreadImpl::Send(IPC::Message* msg) {
@@ -774,7 +753,7 @@ bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void ChildThreadImpl::ProcessShutdown() {
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  quit_closure_.Run();
 }
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -792,7 +771,7 @@ void ChildThreadImpl::OnChildControlRequest(
 }
 
 ChildThreadImpl* ChildThreadImpl::current() {
-  return g_lazy_tls.Pointer()->Get();
+  return g_lazy_child_thread_impl_tls.Pointer()->Get();
 }
 
 #if defined(OS_ANDROID)
@@ -801,7 +780,7 @@ ChildThreadImpl* ChildThreadImpl::current() {
 void ChildThreadImpl::ShutdownThread() {
   DCHECK(!ChildThreadImpl::current()) <<
       "this method should NOT be called from child thread itself";
-  g_quit_closure.Get().PostQuitFromNonMainThread();
+  g_quit_closure.Get().QuitFromNonMainThread();
 }
 #endif
 

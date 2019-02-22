@@ -31,7 +31,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/config.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
@@ -108,10 +108,7 @@ using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
 
 // Toast id and duration for voice interaction shortcuts
-const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
-const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
-const char kPolicyDisabledToastId[] = "voice_interaction_policy_disabled";
-const char kDemoModeToastId[] = "demo_mode";
+const char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
 const int kToastDurationMs = 2500;
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
@@ -313,9 +310,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   // keyboard, but there's no easy way to do so, thus we block Alt+Tab when the
   // virtual keyboard is showing, even if it came from a real keyboard. See
   // http://crbug.com/638269
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  return !(keyboard_controller->enabled() &&
-           keyboard_controller->IsKeyboardVisible());
+  return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
 }
 
 void HandleNextIme() {
@@ -685,7 +680,7 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   switch (Shell::Get()->voice_interaction_controller()->allowed_state()) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
-      ShowToast(kSecondaryUserToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE));
       return;
@@ -693,20 +688,27 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       // Show a toast if voice interaction is disabled due to unsupported
       // locales.
       ShowToast(
-          kUnsupportedLocaleToastId,
+          kVoiceInteractionErrorToastId,
           l10n_util::GetStringUTF16(
               IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_POLICY:
       // Show a toast if voice interaction is disabled due to enterprise policy.
-      ShowToast(kPolicyDisabledToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
       // Show a toast if voice interaction is disabled due to being in Demo
       // Mode.
-      ShowToast(kDemoModeToastId,
+      ShowToast(kVoiceInteractionErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
+      return;
+    case mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
+      // Show a toast if voice interaction is disabled due to being in Demo
+      // Mode.
+      ShowToast(kVoiceInteractionErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
@@ -753,8 +755,18 @@ void HandleCycleUser(CycleUserDirection direction) {
   Shell::Get()->session_controller()->CycleActiveUser(direction);
 }
 
-bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
-                             const ui::Accelerator& previous_accelerator) {
+bool CanHandleToggleCapsLock(
+    const ui::Accelerator& accelerator,
+    const ui::Accelerator& previous_accelerator,
+    const std::set<ui::KeyboardCode>& currently_pressed_keys) {
+  // Iterate the set of pressed keys. If any redundant key is pressed, CapsLock
+  // should not be triggered. Otherwise, CapsLock may be triggered accidentally.
+  // See issue 789283 (https://crbug.com/789283)
+  for (const auto& pressed_key : currently_pressed_keys) {
+    if (pressed_key != ui::VKEY_LWIN && pressed_key != ui::VKEY_MENU)
+      return false;
+  }
+
   // This shortcust is set to be trigger on release. Either the current
   // accelerator is a Search release or Alt release.
   if (accelerator.key_code() == ui::VKEY_LWIN &&
@@ -799,18 +811,11 @@ bool CanHandleToggleDictation() {
 
 void HandleToggleDictation() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
-  UserMetricsRecorder::RecordUserToggleDictation(
-      DictationToggleMethod::kToggleByKeyboard);
-  Shell::Get()->accessibility_controller()->ToggleDictation();
+  Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
+      mojom::DictationToggleSource::kKeyboard);
 }
 
 bool CanHandleToggleDockedMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    // TODO: Mash support for the Docked Magnifier https://crbug.com/814481.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   return features::IsDockedMagnifierEnabled();
 }
 
@@ -928,17 +933,6 @@ void HandleToggleHighContrast() {
   }
 }
 
-bool CanHandleToggleFullscreenMagnifier() {
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    // TODO: Mash support for the Fullscreen Magnifier
-    // https://crbug.com/821551.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  return true;
-}
-
 void HandleToggleFullscreenMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Fullscreen_Magnifier"));
 
@@ -1007,12 +1001,6 @@ bool CanHandleActiveMagnifierZoom() {
 
 // Change the scale of the active magnifier.
 void HandleActiveMagnifierZoom(int delta_index) {
-  // TODO(crbug.com/612331): Mash support.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
   if (Shell::Get()->magnification_controller()->IsEnabled()) {
     Shell::Get()->magnification_controller()->StepToNextScaleValue(delta_index);
     return;
@@ -1044,10 +1032,9 @@ void HandleTouchHudModeChange() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
-AcceleratorController::AcceleratorController(
-    ui::AcceleratorManagerDelegate* manager_delegate)
-    : accelerator_manager_(new ui::AcceleratorManager(manager_delegate)),
-      accelerator_history_(new ui::AcceleratorHistory) {
+AcceleratorController::AcceleratorController()
+    : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
+      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()) {
   Init();
 }
 
@@ -1283,6 +1270,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -1333,13 +1321,15 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_APP_LIST:
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
-      return CanHandleToggleCapsLock(accelerator, previous_accelerator);
+      return CanHandleToggleCapsLock(
+          accelerator, previous_accelerator,
+          accelerator_history_->currently_pressed_keys());
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
     case TOGGLE_DOCKED_MAGNIFIER:
       return CanHandleToggleDockedMagnifier();
     case TOGGLE_FULLSCREEN_MAGNIFIER:
-      return CanHandleToggleFullscreenMagnifier();
+      return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
       return CanHandleToggleMessageCenterBubble();
     case TOGGLE_MIRROR_MODE:
@@ -1445,6 +1435,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
+    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       debug::PerformDebugActionIfEnabled(action);

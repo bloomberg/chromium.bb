@@ -22,6 +22,7 @@
  *//*--------------------------------------------------------------------*/
 
 #include "vktRenderPassMultisampleResolveTests.hpp"
+#include "vktRenderPassTestsUtil.hpp"
 
 #include "vktTestCaseUtil.hpp"
 #include "vktTestGroupUtil.hpp"
@@ -59,6 +60,7 @@ using tcu::IVec4;
 using tcu::UVec2;
 using tcu::UVec4;
 using tcu::Vec2;
+using tcu::Vec3;
 using tcu::Vec4;
 
 using tcu::Maybe;
@@ -83,9 +85,18 @@ namespace vkt
 {
 namespace
 {
+
+using namespace renderpass;
+
 enum
 {
 	MAX_COLOR_ATTACHMENT_COUNT = 4u
+};
+
+enum RenderPassType
+{
+	RENDERPASS_TYPE_LEGACY = 0,
+	RENDERPASS_TYPE_RENDERPASS2,
 };
 
 template<typename T>
@@ -100,6 +111,31 @@ de::SharedPtr<T> safeSharedPtr (T* ptr)
 		delete ptr;
 		throw;
 	}
+}
+
+tcu::Vec4 getFormatThreshold (VkFormat format)
+{
+	const tcu::TextureFormat	tcuFormat		(mapVkFormat(format));
+	const deUint32				componentCount	(tcu::getNumUsedChannels(tcuFormat.order));
+
+	if (isSnormFormat(format))
+	{
+		return Vec4((componentCount >= 1) ? 1.5f * getRepresentableDiffSnorm(format, 0) : 0.0f,
+					(componentCount >= 2) ? 1.5f * getRepresentableDiffSnorm(format, 1) : 0.0f,
+					(componentCount >= 3) ? 1.5f * getRepresentableDiffSnorm(format, 2) : 0.0f,
+					(componentCount == 4) ? 1.5f * getRepresentableDiffSnorm(format, 3) : 0.0f);
+	}
+	else if (isUnormFormat(format))
+	{
+		return Vec4((componentCount >= 1) ? 1.5f * getRepresentableDiffUnorm(format, 0) : 0.0f,
+					(componentCount >= 2) ? 1.5f * getRepresentableDiffUnorm(format, 1) : 0.0f,
+					(componentCount >= 3) ? 1.5f * getRepresentableDiffUnorm(format, 2) : 0.0f,
+					(componentCount == 4) ? 1.5f * getRepresentableDiffUnorm(format, 3) : 0.0f);
+	}
+	else if (isFloatFormat(format))
+		return Vec4(0.00001f);
+	else
+		return Vec4(0.001f);
 }
 
 void bindBufferMemory (const DeviceInterface& vk, VkDevice device, VkBuffer buffer, VkDeviceMemory mem, VkDeviceSize memOffset)
@@ -404,65 +440,68 @@ std::vector<de::SharedPtr<Allocation> > createBufferMemory (const DeviceInterfac
 	return memory;
 }
 
+template<typename AttachmentDesc, typename AttachmentRef, typename SubpassDesc, typename SubpassDep, typename RenderPassCreateInfo>
 Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
 									 VkDevice				device,
 									 VkFormat				format,
 									 deUint32				sampleCount)
 {
-	const VkSampleCountFlagBits				samples						(sampleCountBitFromSampleCount(sampleCount));
-	std::vector<VkAttachmentDescription>	attachments;
-	std::vector<VkAttachmentReference>		colorAttachmentRefs;
-	std::vector<VkAttachmentReference>		resolveAttachmentRefs;
+	const VkSampleCountFlagBits		samples						(sampleCountBitFromSampleCount(sampleCount));
+	std::vector<AttachmentDesc>		attachments;
+	std::vector<AttachmentRef>		colorAttachmentRefs;
+	std::vector<AttachmentRef>		resolveAttachmentRefs;
 
 	for (size_t attachmentNdx = 0; attachmentNdx < 4; attachmentNdx++)
 	{
 		{
-			const VkAttachmentDescription multisampleAttachment =
-			{
-				0u,
-
-				format,
-				samples,
-
-				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				VK_ATTACHMENT_STORE_OP_DONT_CARE,
-
-				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				VK_ATTACHMENT_STORE_OP_DONT_CARE,
-
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-			};
-			const VkAttachmentReference attachmentRef =
-			{
-				(deUint32)attachments.size(),
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-			};
+			const AttachmentDesc multisampleAttachment		// VkAttachmentDescription										||  VkAttachmentDescription2KHR
+			(
+															//																||  VkStructureType						sType;
+				DE_NULL,									//																||  const void*							pNext;
+				0u,											//  VkAttachmentDescriptionFlags	flags;						||  VkAttachmentDescriptionFlags		flags;
+				format,										//  VkFormat						format;						||  VkFormat							format;
+				samples,									//  VkSampleCountFlagBits			samples;					||  VkSampleCountFlagBits				samples;
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,			//  VkAttachmentLoadOp				loadOp;						||  VkAttachmentLoadOp					loadOp;
+				VK_ATTACHMENT_STORE_OP_DONT_CARE,			//  VkAttachmentStoreOp				storeOp;					||  VkAttachmentStoreOp					storeOp;
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,			//  VkAttachmentLoadOp				stencilLoadOp;				||  VkAttachmentLoadOp					stencilLoadOp;
+				VK_ATTACHMENT_STORE_OP_DONT_CARE,			//  VkAttachmentStoreOp				stencilStoreOp;				||  VkAttachmentStoreOp					stencilStoreOp;
+				VK_IMAGE_LAYOUT_UNDEFINED,					//  VkImageLayout					initialLayout;				||  VkImageLayout						initialLayout;
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL		//  VkImageLayout					finalLayout;				||  VkImageLayout						finalLayout;
+			);
+			const AttachmentRef attachmentRef				//  VkAttachmentReference										||  VkAttachmentReference2KHR
+			(
+															//																||  VkStructureType						sType;
+				DE_NULL,									//																||  const void*							pNext;
+				(deUint32)attachments.size(),				//  deUint32						attachment;					||  deUint32							attachment;
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,	//  VkImageLayout					layout;						||  VkImageLayout						layout;
+				0u											//																||  VkImageAspectFlags					aspectMask;
+			);
 			colorAttachmentRefs.push_back(attachmentRef);
 			attachments.push_back(multisampleAttachment);
 		}
 		{
-			const VkAttachmentDescription singlesampleAttachment =
-			{
-				0u,
-
-				format,
-				VK_SAMPLE_COUNT_1_BIT,
-
-				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				VK_ATTACHMENT_STORE_OP_STORE,
-
-				VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-				VK_ATTACHMENT_STORE_OP_DONT_CARE,
-
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-			};
-			const VkAttachmentReference attachmentRef =
-			{
-				(deUint32)attachments.size(),
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-			};
+			const AttachmentDesc singlesampleAttachment		// VkAttachmentDescription										||  VkAttachmentDescription2KHR
+			(
+															//																||  VkStructureType						sType;
+				DE_NULL,									//																||  const void*							pNext;
+				0u,											//  VkAttachmentDescriptionFlags	flags;						||  VkAttachmentDescriptionFlags		flags;
+				format,										//  VkFormat						format;						||  VkFormat							format;
+				VK_SAMPLE_COUNT_1_BIT,						//  VkSampleCountFlagBits			samples;					||  VkSampleCountFlagBits				samples;
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,			//  VkAttachmentLoadOp				loadOp;						||  VkAttachmentLoadOp					loadOp;
+				VK_ATTACHMENT_STORE_OP_STORE,				//  VkAttachmentStoreOp				storeOp;					||  VkAttachmentStoreOp					storeOp;
+				VK_ATTACHMENT_LOAD_OP_DONT_CARE,			//  VkAttachmentLoadOp				stencilLoadOp;				||  VkAttachmentLoadOp					stencilLoadOp;
+				VK_ATTACHMENT_STORE_OP_DONT_CARE,			//  VkAttachmentStoreOp				stencilStoreOp;				||  VkAttachmentStoreOp					stencilStoreOp;
+				VK_IMAGE_LAYOUT_UNDEFINED,					//  VkImageLayout					initialLayout;				||  VkImageLayout						initialLayout;
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL		//  VkImageLayout					finalLayout;				||  VkImageLayout						finalLayout;
+			);
+			const AttachmentRef attachmentRef				//  VkAttachmentReference										||  VkAttachmentReference2KHR
+			(
+															//																||  VkStructureType						sType;
+				DE_NULL,									//																||  const void*							pNext;
+				(deUint32)attachments.size(),				//  deUint32						attachment;					||  deUint32							attachment;
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,	//  VkImageLayout					layout;						||  VkImageLayout						layout;
+				0u											//																||  VkImageAspectFlags					aspectMask;
+			);
 			resolveAttachmentRefs.push_back(attachmentRef);
 			attachments.push_back(singlesampleAttachment);
 		}
@@ -472,39 +511,55 @@ Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
 	DE_ASSERT(attachments.size() == colorAttachmentRefs.size() + resolveAttachmentRefs.size());
 
 	{
-		const VkSubpassDescription	subpass =
-		{
-			(VkSubpassDescriptionFlags)0,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
+		const SubpassDesc	subpass							//  VkSubpassDescription										||  VkSubpassDescription2KHR
+		(
+															//																||  VkStructureType						sType;
+			DE_NULL,										//																||  const void*							pNext;
+			(VkSubpassDescriptionFlags)0,					//  VkSubpassDescriptionFlags		flags;						||  VkSubpassDescriptionFlags			flags;
+			VK_PIPELINE_BIND_POINT_GRAPHICS,				//  VkPipelineBindPoint				pipelineBindPoint;			||  VkPipelineBindPoint					pipelineBindPoint;
+			0u,												//																||  deUint32							viewMask;
+			0u,												//  deUint32						inputAttachmentCount;		||  deUint32							inputAttachmentCount;
+			DE_NULL,										//  const VkAttachmentReference*	pInputAttachments;			||  const VkAttachmentReference2KHR*	pInputAttachments;
+			(deUint32)colorAttachmentRefs.size(),			//  deUint32						colorAttachmentCount;		||  deUint32							colorAttachmentCount;
+			&colorAttachmentRefs[0],						//  const VkAttachmentReference*	pColorAttachments;			||  const VkAttachmentReference2KHR*	pColorAttachments;
+			&resolveAttachmentRefs[0],						//  const VkAttachmentReference*	pResolveAttachments;		||  const VkAttachmentReference2KHR*	pResolveAttachments;
+			DE_NULL,										//  const VkAttachmentReference*	pDepthStencilAttachment;	||  const VkAttachmentReference2KHR*	pDepthStencilAttachment;
+			0u,												//  deUint32						preserveAttachmentCount;	||  deUint32							preserveAttachmentCount;
+			DE_NULL											//  const deUint32*					pPreserveAttachments;		||  const deUint32*						pPreserveAttachments;
+		);
+		const RenderPassCreateInfo	renderPassCreator		//  VkRenderPassCreateInfo										||  VkRenderPassCreateInfo2KHR
+		(
+															//  VkStructureType					sType;						||  VkStructureType						sType;
+			DE_NULL,										//  const void*						pNext;						||  const void*							pNext;
+			(VkRenderPassCreateFlags)0u,					//  VkRenderPassCreateFlags			flags;						||  VkRenderPassCreateFlags				flags;
+			(deUint32)attachments.size(),					//  deUint32						attachmentCount;			||  deUint32							attachmentCount;
+			&attachments[0],								//  const VkAttachmentDescription*	pAttachments;				||  const VkAttachmentDescription2KHR*	pAttachments;
+			1u,												//  deUint32						subpassCount;				||  deUint32							subpassCount;
+			&subpass,										//  const VkSubpassDescription*		pSubpasses;					||  const VkSubpassDescription2KHR*		pSubpasses;
+			0u,												//  deUint32						dependencyCount;			||  deUint32							dependencyCount;
+			DE_NULL,										//  const VkSubpassDependency*		pDependencies;				||  const VkSubpassDependency2KHR*		pDependencies;
+			0u,												//																||  deUint32							correlatedViewMaskCount;
+			DE_NULL											//																||  const deUint32*						pCorrelatedViewMasks;
+		);
 
-			0u,
-			DE_NULL,
+		return renderPassCreator.createRenderPass(vkd, device);
+	}
+}
 
-			(deUint32)colorAttachmentRefs.size(),
-			&colorAttachmentRefs[0],
-			&resolveAttachmentRefs[0],
-
-			DE_NULL,
-			0u,
-			DE_NULL
-		};
-		const VkRenderPassCreateInfo	createInfo	=
-		{
-			VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-			DE_NULL,
-			(VkRenderPassCreateFlags)0u,
-
-			(deUint32)attachments.size(),
-			&attachments[0],
-
-			1u,
-			&subpass,
-
-			0u,
-			DE_NULL
-		};
-
-		return createRenderPass(vkd, device, &createInfo);
+Move<VkRenderPass> createRenderPass (const DeviceInterface&	vkd,
+									 VkDevice				device,
+									 VkFormat				format,
+									 deUint32				sampleCount,
+									 const RenderPassType	renderPassType)
+{
+	switch (renderPassType)
+	{
+		case RENDERPASS_TYPE_LEGACY:
+			return createRenderPass<AttachmentDescription1, AttachmentReference1, SubpassDescription1, SubpassDependency1, RenderPassCreateInfo1>(vkd, device, format, sampleCount);
+		case RENDERPASS_TYPE_RENDERPASS2:
+			return createRenderPass<AttachmentDescription2, AttachmentReference2, SubpassDescription2, SubpassDependency2, RenderPassCreateInfo2>(vkd, device, format, sampleCount);
+		default:
+			TCU_THROW(InternalError, "Impossible");
 	}
 }
 
@@ -702,18 +757,21 @@ Move<VkPipeline> createRenderPipeline (const DeviceInterface&		vkd,
 
 struct TestConfig
 {
-				TestConfig		(VkFormat	format_,
-								 deUint32	sampleCount_,
-								 deUint32	layerCount_)
-		: format		(format_)
-		, sampleCount	(sampleCount_)
-		, layerCount	(layerCount_)
+				TestConfig		(VkFormat		format_,
+								 deUint32		sampleCount_,
+								 deUint32		layerCount_,
+								 RenderPassType	renderPassType_)
+		: format			(format_)
+		, sampleCount		(sampleCount_)
+		, layerCount		(layerCount_)
+		, renderPassType	(renderPassType_)
 	{
 	}
 
-	VkFormat	format;
-	deUint32	sampleCount;
-	deUint32	layerCount;
+	VkFormat		format;
+	deUint32		sampleCount;
+	deUint32		layerCount;
+	RenderPassType	renderPassType;
 };
 
 class MultisampleRenderPassTestInstance : public TestInstance
@@ -725,10 +783,16 @@ public:
 	tcu::TestStatus									iterate								(void);
 
 private:
+	template<typename RenderpassSubpass>
 	void											submit								(void);
+	void											submitSwitch						(RenderPassType						renderPassType);
 	void											verify								(void);
 	void											logImage							(const std::string&					name,
 																						 const tcu::ConstPixelBufferAccess&	image);
+
+	const bool										m_featuresSupported;
+	const bool										m_extensionSupported;
+	const RenderPassType							m_renderPassType;
 
 	const VkFormat									m_format;
 	const deUint32									m_sampleCount;
@@ -761,6 +825,9 @@ private:
 
 MultisampleRenderPassTestInstance::MultisampleRenderPassTestInstance (Context& context, TestConfig config)
 	: TestInstance				(context)
+	, m_featuresSupported		((config.layerCount > 1) && context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER))
+	, m_extensionSupported		((config.renderPassType == RENDERPASS_TYPE_RENDERPASS2) && context.requireDeviceExtension("VK_KHR_create_renderpass2"))
+	, m_renderPassType			(config.renderPassType)
 	, m_format					(config.format)
 	, m_sampleCount				(config.sampleCount)
 	, m_layerCount				(config.layerCount)
@@ -775,7 +842,7 @@ MultisampleRenderPassTestInstance::MultisampleRenderPassTestInstance (Context& c
 	, m_singlesampleImageMemory	(createImageMemory(context.getDeviceInterface(), context.getDevice(), context.getDefaultAllocator(), m_singlesampleImages))
 	, m_singlesampleImageViews	(createImageViews(context.getDeviceInterface(), context.getDevice(), m_singlesampleImages, m_format, VK_IMAGE_ASPECT_COLOR_BIT, m_layerCount))
 
-	, m_renderPass				(createRenderPass(context.getDeviceInterface(), context.getDevice(), m_format, m_sampleCount))
+	, m_renderPass				(createRenderPass(context.getDeviceInterface(), context.getDevice(), m_format, m_sampleCount, config.renderPassType))
 	, m_framebuffer				(createFramebuffer(context.getDeviceInterface(), context.getDevice(), *m_renderPass, m_multisampleImageViews, m_singlesampleImageViews, m_width, m_height, m_layerCount))
 
 	, m_renderPipelineLayout	(createRenderPipelineLayout(context.getDeviceInterface(), context.getDevice()))
@@ -788,16 +855,6 @@ MultisampleRenderPassTestInstance::MultisampleRenderPassTestInstance (Context& c
 	, m_sum						(tcu::TextureFormat(tcu::TextureFormat::RGBA, tcu::TextureFormat::FLOAT), m_width, m_height, m_layerCount)
 	, m_sampleMask				(0x0u)
 {
-	if (m_layerCount > 1)
-	{
-		const InstanceInterface&		vki			= context.getInstanceInterface();
-		const VkPhysicalDevice			physDevice	= context.getPhysicalDevice();
-		const VkPhysicalDeviceFeatures	features	= getPhysicalDeviceFeatures (vki, physDevice);
-
-		if (!features.geometryShader)
-			TCU_THROW(NotSupportedError, "Missing feature: geometryShader");
-	}
-
 	tcu::clear(m_sum.getAccess(), Vec4(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
@@ -818,11 +875,14 @@ void MultisampleRenderPassTestInstance::logImage (const std::string& name, const
 	}
 }
 
+template<typename RenderpassSubpass>
 void MultisampleRenderPassTestInstance::submit (void)
 {
-	const DeviceInterface&			vkd				(m_context.getDeviceInterface());
-	const VkDevice					device			(m_context.getDevice());
-	const Unique<VkCommandBuffer>	commandBuffer	(allocateCommandBuffer(vkd, device, *m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+	const DeviceInterface&								vkd					(m_context.getDeviceInterface());
+	const VkDevice										device				(m_context.getDevice());
+	const Unique<VkCommandBuffer>						commandBuffer		(allocateCommandBuffer(vkd, device, *m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+	const typename RenderpassSubpass::SubpassBeginInfo	subpassBeginInfo	(DE_NULL, VK_SUBPASS_CONTENTS_INLINE);
+	const typename RenderpassSubpass::SubpassEndInfo	subpassEndInfo		(DE_NULL);
 
 	beginCommandBuffer(vkd, *commandBuffer);
 
@@ -862,7 +922,25 @@ void MultisampleRenderPassTestInstance::submit (void)
 		vkd.cmdPipelineBarrier(*commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, (deUint32)barriers.size(), &barriers[0]);
 	}
 
-	beginRenderPass(vkd, *commandBuffer, *m_renderPass, *m_framebuffer, makeRect2D(0, 0, m_width, m_height));
+	{
+		const VkRenderPassBeginInfo beginInfo =
+		{
+			VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+			DE_NULL,
+
+			*m_renderPass,
+			*m_framebuffer,
+
+			{
+				{ 0u, 0u },
+				{ m_width, m_height }
+			},
+
+			0u,
+			DE_NULL
+		};
+		RenderpassSubpass::cmdBeginRenderPass(vkd, *commandBuffer, &beginInfo, &subpassBeginInfo);
+	}
 
 	// Clear everything to black
 	{
@@ -937,7 +1015,7 @@ void MultisampleRenderPassTestInstance::submit (void)
 		vkd.cmdDraw(*commandBuffer, 6u, 1u, 0u, 0u);
 	}
 
-	endRenderPass(vkd, *commandBuffer);
+	RenderpassSubpass::cmdEndRenderPass(vkd, *commandBuffer, &subpassEndInfo);
 
 	// Memory barriers between rendering and copies
 	{
@@ -1027,6 +1105,24 @@ void MultisampleRenderPassTestInstance::submit (void)
 	endCommandBuffer(vkd, *commandBuffer);
 
 	submitCommandsAndWait(vkd, device, m_context.getUniversalQueue(), *commandBuffer);
+
+	for (size_t memoryBufferNdx = 0; memoryBufferNdx < m_bufferMemory.size(); memoryBufferNdx++)
+		invalidateMappedMemoryRange(vkd, device, m_bufferMemory[memoryBufferNdx]->getMemory(), 0u, VK_WHOLE_SIZE);
+}
+
+void MultisampleRenderPassTestInstance::submitSwitch (RenderPassType renderPassType)
+{
+	switch (renderPassType)
+	{
+		case RENDERPASS_TYPE_LEGACY:
+			submit<RenderpassSubpass1>();
+			break;
+		case RENDERPASS_TYPE_RENDERPASS2:
+			submit<RenderpassSubpass2>();
+			break;
+		default:
+			TCU_THROW(InternalError, "Impossible");
+	}
 }
 
 void MultisampleRenderPassTestInstance::verify (void)
@@ -1116,8 +1212,7 @@ void MultisampleRenderPassTestInstance::verify (void)
 
 				{
 					const Vec4 old = m_sum.getAccess().getPixel(x, y, z);
-
-					m_sum.getAccess().setPixel(old + firstColor, x, y, z);
+					m_sum.getAccess().setPixel(old + (tcu::isSRGB(format) ? tcu::sRGBToLinear(firstColor) : firstColor), x, y, z);
 				}
 			}
 
@@ -1386,20 +1481,20 @@ tcu::TestStatus MultisampleRenderPassTestInstance::iterate (void)
 		}
 	}
 
-	submit();
+	submitSwitch(m_renderPassType);
 	verify();
 
 	if (m_sampleMask == ((0x1u << m_sampleCount) - 1u))
 	{
 		const tcu::TextureFormat		format			(mapVkFormat(m_format));
 		const tcu::TextureChannelClass	channelClass	(tcu::getTextureChannelClass(format.type));
+		const Vec4						threshold		(getFormatThreshold(m_format));
 		tcu::TestLog&					log				(m_context.getTestContext().getLog());
 
 		if (channelClass == tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT
 				|| channelClass == tcu::TEXTURECHANNELCLASS_SIGNED_FIXED_POINT
 				|| channelClass == tcu::TEXTURECHANNELCLASS_FLOATING_POINT)
 		{
-			const float			threshold		= 0.05f;
 			const int			componentCount	(tcu::getNumUsedChannels(format.order));
 			const Vec4			errorColor		(1.0f, 0.0f, 0.0f, 1.0f);
 			const Vec4			okColor			(0.0f, 1.0f, 0.0f, 1.0f);
@@ -1438,10 +1533,10 @@ tcu::TestStatus MultisampleRenderPassTestInstance::iterate (void)
 				m_sum.getAccess().setPixel(average, x, y, z);
 				errorMask.getAccess().setPixel(okColor, x, y, z);
 
-				if (diff[0] > threshold
-						|| diff[1] > threshold
-						|| diff[2] > threshold
-						|| diff[3] > threshold)
+				if (diff[0] > threshold.x()
+						|| diff[1] > threshold.y()
+						|| diff[2] > threshold.z()
+						|| diff[3] > threshold.w())
 				{
 					isOk	= false;
 					maxDiff	= tcu::max(maxDiff, diff);
@@ -1453,9 +1548,31 @@ tcu::TestStatus MultisampleRenderPassTestInstance::iterate (void)
 
 			if (!isOk)
 			{
+				std::stringstream	message;
+
 				m_context.getTestContext().getLog() << tcu::LogImage("ErrorMask", "ErrorMask", errorMask.getAccess());
 
-				log << TestLog::Message << "Average resolved values differ from expected average values by more than " << threshold << " max per component diff " << maxDiff << TestLog::EndMessage;
+				message << "Average resolved values differ from expected average values by more than ";
+
+				switch (componentCount)
+				{
+					case 1:
+						message << threshold.x();
+						break;
+					case 2:
+						message << "vec2" << Vec2(threshold.x(), threshold.y());
+						break;
+					case 3:
+						message << "vec3" << Vec3(threshold.x(), threshold.y(), threshold.z());
+						break;
+					default:
+						message << "vec4" << threshold;
+				}
+
+				message << ". Max diff " << maxDiff;
+				log << TestLog::Message << message.str() <<  TestLog::EndMessage;
+
+				m_resultCollector.fail("Average resolved values differ from expected average values");
 			}
 		}
 
@@ -1598,7 +1715,7 @@ std::string formatToName (VkFormat format)
 	return de::toLower(formatStr.substr(prefix.length()));
 }
 
-void initTests (tcu::TestCaseGroup* group)
+void initTests (tcu::TestCaseGroup* group, RenderPassType renderPassType)
 {
 	static const VkFormat	formats[]	=
 	{
@@ -1677,7 +1794,7 @@ void initTests (tcu::TestCaseGroup* group)
 			{
 				const deUint32		sampleCount	(sampleCounts[sampleCountNdx]);
 				const std::string	testName	("samples_" + de::toString(sampleCount));
-				const TestConfig	testConfig	(format, sampleCount, layerCount);
+				const TestConfig	testConfig	(format, sampleCount, layerCount, renderPassType);
 
 				// Skip this test as it is rather slow
 				if (layerCount == 6 && sampleCount == 8)
@@ -1701,7 +1818,12 @@ void initTests (tcu::TestCaseGroup* group)
 
 tcu::TestCaseGroup* createRenderPassMultisampleResolveTests (tcu::TestContext& testCtx)
 {
-	return createTestGroup(testCtx, "multisample_resolve", "Multisample render pass resolve tests", initTests);
+	return createTestGroup(testCtx, "multisample_resolve", "Multisample render pass resolve tests", initTests, RENDERPASS_TYPE_LEGACY);
+}
+
+tcu::TestCaseGroup* createRenderPass2MultisampleResolveTests (tcu::TestContext& testCtx)
+{
+	return createTestGroup(testCtx, "multisample_resolve", "Multisample render pass resolve tests", initTests, RENDERPASS_TYPE_RENDERPASS2);
 }
 
 } // vkt

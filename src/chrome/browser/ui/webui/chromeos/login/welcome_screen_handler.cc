@@ -147,18 +147,11 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
 
-  builder->Add("highContrastOptionOff", IDS_HIGH_CONTRAST_OPTION_OFF);
-  builder->Add("highContrastOptionOn", IDS_HIGH_CONTRAST_OPTION_ON);
+  builder->Add("a11ySettingToggleOptionOff",
+               IDS_A11Y_SETTING_TOGGLE_OPTION_OFF);
+  builder->Add("a11ySettingToggleOptionOn", IDS_A11Y_SETTING_TOGGLE_OPTION_ON);
   builder->Add("largeCursorOptionOff", IDS_LARGE_CURSOR_OPTION_OFF);
   builder->Add("largeCursorOptionOn", IDS_LARGE_CURSOR_OPTION_ON);
-  builder->Add("screenMagnifierOptionOff", IDS_SCREEN_MAGNIFIER_OPTION_OFF);
-  builder->Add("screenMagnifierOptionOn", IDS_SCREEN_MAGNIFIER_OPTION_ON);
-  builder->Add("spokenFeedbackOptionOff", IDS_SPOKEN_FEEDBACK_OPTION_OFF);
-  builder->Add("spokenFeedbackOptionOn", IDS_SPOKEN_FEEDBACK_OPTION_ON);
-  builder->Add("selectToSpeakOptionOff", IDS_SELECT_TO_SPEAK_OPTION_OFF);
-  builder->Add("selectToSpeakOptionOn", IDS_SELECT_TO_SPEAK_OPTION_ON);
-  builder->Add("virtualKeyboardOptionOff", IDS_VIRTUAL_KEYBOARD_OPTION_OFF);
-  builder->Add("virtualKeyboardOptionOn", IDS_VIRTUAL_KEYBOARD_OPTION_ON);
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);

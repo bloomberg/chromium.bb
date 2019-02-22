@@ -4,11 +4,13 @@
 
 #include "ui/compositor/host/host_context_factory_private.h"
 
+#include "base/command_line.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
@@ -23,6 +25,10 @@
 
 namespace ui {
 
+namespace {
+static const char* kBrowser = "Browser";
+}  // namespace
+
 HostContextFactoryPrivate::HostContextFactoryPrivate(
     uint32_t client_id,
     viz::HostFrameSinkManager* host_frame_sink_manager,
@@ -36,14 +42,14 @@ HostContextFactoryPrivate::HostContextFactoryPrivate(
 
 HostContextFactoryPrivate::~HostContextFactoryPrivate() = default;
 
+void HostContextFactoryPrivate::AddCompositor(Compositor* compositor) {
+  compositor_data_map_.try_emplace(compositor);
+}
+
 void HostContextFactoryPrivate::ConfigureCompositor(
-    base::WeakPtr<Compositor> compositor_weak_ptr,
+    Compositor* compositor,
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider) {
-  Compositor* compositor = compositor_weak_ptr.get();
-  if (!compositor)
-    return;
-
   bool gpu_compositing =
       !is_gpu_compositing_disabled_ && !compositor->force_software_compositor();
 
@@ -69,13 +75,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
       compositor_data.display_client->GetBoundPtr(resize_task_runner_)
           .PassInterface();
 
-#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  gpu::SurfaceHandle surface_handle = compositor->widget();
-#else
-  // TODO(kylechar): Fix this when we support macOS.
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-#endif
-
   // Initialize ExternalBeginFrameController client if enabled.
   compositor_data.external_begin_frame_controller_client.reset();
   if (compositor->external_begin_frames_enabled()) {
@@ -90,9 +89,15 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   }
 
   root_params->frame_sink_id = compositor->frame_sink_id();
-  root_params->widget = surface_handle;
+#if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
+  root_params->widget = compositor->widget();
+#endif
   root_params->gpu_compositing = gpu_compositing;
   root_params->renderer_settings = renderer_settings_;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
+    root_params->disable_frame_rate_limit = true;
 
   // Connects the viz process end of CompositorFrameSink message pipes. The
   // browser compositor may request a new CompositorFrameSink on context loss,
@@ -100,6 +105,8 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
   compositor_data.display_private->Resize(compositor->size());
+  compositor_data.display_private->SetOutputIsSecure(
+      compositor_data.output_is_secure);
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -113,7 +120,9 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   params.enable_surface_synchronization = true;
   params.hit_test_data_provider =
       std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          /*should_ask_for_child_region=*/false);
+          false /* should_ask_for_child_region */,
+          true /* root_accepts_events */);
+  params.client_name = kBrowser;
   compositor->SetLayerTreeFrameSink(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
@@ -122,8 +131,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
 void HostContextFactoryPrivate::UnconfigureCompositor(Compositor* compositor) {
 #if defined(OS_WIN)
-  // TODO(crbug.com/791660): Make sure that GpuProcessHost::SetChildSurface()
-  // doesn't crash the GPU process after parent is unregistered.
   gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
       compositor->widget());
 #endif
@@ -205,15 +212,6 @@ void HostContextFactoryPrivate::SetDisplayColorSpace(
                                                      output_color_space);
 }
 
-void HostContextFactoryPrivate::SetAuthoritativeVSyncInterval(
-    Compositor* compositor,
-    base::TimeDelta interval) {
-  auto iter = compositor_data_map_.find(compositor);
-  if (iter == compositor_data_map_.end() || !iter->second.display_private)
-    return;
-  iter->second.display_private->SetAuthoritativeVSyncInterval(interval);
-}
-
 void HostContextFactoryPrivate::SetDisplayVSyncParameters(
     Compositor* compositor,
     base::TimeTicks timebase,
@@ -239,9 +237,12 @@ void HostContextFactoryPrivate::IssueExternalBeginFrame(
 void HostContextFactoryPrivate::SetOutputIsSecure(Compositor* compositor,
                                                   bool secure) {
   auto iter = compositor_data_map_.find(compositor);
-  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+  if (iter == compositor_data_map_.end())
     return;
-  iter->second.display_private->SetOutputIsSecure(secure);
+  iter->second.output_is_secure = secure;
+
+  if (iter->second.display_private)
+    iter->second.display_private->SetOutputIsSecure(secure);
 }
 
 viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {

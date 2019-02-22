@@ -10,19 +10,41 @@
     async connectedCallback() {
       super.connectedCallback();
       if (this.autofocus) {
-        while (cp.getActiveElement() !== this.nativeInput) {
-          this.$.input.focus();
-          await cp.timeout(50);
-        }
+        this.focus();
       }
+      this.addEventListener('click', this.onClick_.bind(this));
+    }
+
+    async onClick_(event) {
+      this.focus();
     }
 
     get nativeInput() {
       return this.$.input;
     }
 
-    focus() {
+    async focus() {
       this.nativeInput.focus();
+      while (cp.getActiveElement() !== this.nativeInput) {
+        await cp.timeout(50);
+        this.nativeInput.focus();
+      }
+    }
+
+    async blur() {
+      this.nativeInput.blur();
+      while (cp.getActiveElement() === this.nativeInput) {
+        await cp.timeout(50);
+        this.nativeInput.blur();
+      }
+    }
+
+    async onFocus_(event) {
+      this.focused = true;
+    }
+
+    async onBlur_(event) {
+      this.focused = false;
     }
 
     async onKeyup_(event) {
@@ -32,8 +54,12 @@
 
   CpTextarea.properties = {
     autofocus: {type: Boolean},
+    focused: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+    label: {type: String},
     value: {type: String},
-    placeholder: {type: String},
   };
 
   customElements.define(CpTextarea.is, CpTextarea);

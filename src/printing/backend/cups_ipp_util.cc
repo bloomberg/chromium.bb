@@ -52,9 +52,20 @@ struct ColorMap {
   ColorModel model;
 };
 
+struct DuplexMap {
+  const char* name;
+  DuplexMode mode;
+};
+
 const ColorMap kColorList[]{
     {CUPS_PRINT_COLOR_MODE_COLOR, COLORMODE_COLOR},
     {CUPS_PRINT_COLOR_MODE_MONOCHROME, COLORMODE_MONOCHROME},
+};
+
+const DuplexMap kDuplexList[]{
+    {CUPS_SIDES_ONE_SIDED, SIMPLEX},
+    {CUPS_SIDES_TWO_SIDED_PORTRAIT, LONG_EDGE},
+    {CUPS_SIDES_TWO_SIDED_LANDSCAPE, SHORT_EDGE},
 };
 
 ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
@@ -67,29 +78,11 @@ ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
   return UNKNOWN_COLOR_MODEL;
 }
 
-bool PrinterSupportsValue(const CupsOptionProvider& printer,
-                          const char* name,
-                          const char* value) {
-  std::vector<base::StringPiece> values =
-      printer.GetSupportedOptionValueStrings(name);
-  return base::ContainsValue(values, value);
-}
-
-DuplexMode PrinterDefaultDuplex(const CupsOptionProvider& printer) {
-  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppDuplex);
-  if (!attr)
-    return UNKNOWN_DUPLEX_MODE;
-
-  const char* value = ippGetString(attr, 0, nullptr);
-  if (base::EqualsCaseInsensitiveASCII(value, CUPS_SIDES_ONE_SIDED))
-    return SIMPLEX;
-
-  if (base::EqualsCaseInsensitiveASCII(value, CUPS_SIDES_TWO_SIDED_PORTRAIT))
-    return LONG_EDGE;
-
-  if (base::EqualsCaseInsensitiveASCII(value, CUPS_SIDES_TWO_SIDED_LANDSCAPE))
-    return SHORT_EDGE;
-
+DuplexMode DuplexModeFromIpp(base::StringPiece ipp_duplex) {
+  for (const DuplexMap& entry : kDuplexList) {
+    if (base::EqualsCaseInsensitiveASCII(ipp_duplex, entry.name))
+      return entry.mode;
+  }
   return UNKNOWN_DUPLEX_MODE;
 }
 
@@ -190,6 +183,21 @@ void ExtractColor(const CupsOptionProvider& printer,
 
   // default color
   printer_info->color_default = DefaultColorModel(printer) == COLORMODE_COLOR;
+}
+
+void ExtractDuplexModes(const CupsOptionProvider& printer,
+                        PrinterSemanticCapsAndDefaults* printer_info) {
+  std::vector<base::StringPiece> duplex_modes =
+      printer.GetSupportedOptionValueStrings(kIppDuplex);
+  for (base::StringPiece duplex : duplex_modes) {
+    DuplexMode duplex_mode = DuplexModeFromIpp(duplex);
+    if (duplex_mode != UNKNOWN_DUPLEX_MODE)
+      printer_info->duplex_modes.push_back(duplex_mode);
+  }
+  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppDuplex);
+  printer_info->duplex_default =
+      attr ? DuplexModeFromIpp(ippGetString(attr, 0, nullptr))
+           : UNKNOWN_DUPLEX_MODE;
 }
 
 void ExtractCopies(const CupsOptionProvider& printer,
@@ -316,11 +324,6 @@ bool CollateDefault(const CupsOptionProvider& printer) {
 
 void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
                                 PrinterSemanticCapsAndDefaults* printer_info) {
-  // duplex
-  printer_info->duplex_default = PrinterDefaultDuplex(printer);
-  printer_info->duplex_capable =
-      PrinterSupportsValue(printer, kIppDuplex, CUPS_SIDES_TWO_SIDED_PORTRAIT);
-
   // collate
   printer_info->collate_default = CollateDefault(printer);
   printer_info->collate_capable = CollateCapable(printer);
@@ -331,6 +334,7 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
 
   ExtractCopies(printer, printer_info);
   ExtractColor(printer, printer_info);
+  ExtractDuplexModes(printer, printer_info);
   ExtractResolutions(printer, printer_info);
 }
 

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "apps/ui/views/app_window_frame_view.h"
-#include "ash/frame/non_client_frame_view_ash.h"
+#include "ash/frame/non_client_frame_view_ash.h"  // mash-ok
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -16,8 +16,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/wm/window_properties.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/window_state.h"  // mash-ok
 #include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,6 +35,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -69,9 +69,16 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   aura::Window* window = GetNativeWindow();
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CHROME_APP));
+  window->SetProperty(
+      ash::kImmersiveWindowType,
+      static_cast<int>(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP));
   // Fullscreen doesn't always imply immersive mode (see
   // ShouldEnableImmersive()).
   window->SetProperty(ash::kImmersiveImpliedByFullscreen, false);
+
+  observed_window_.Add(
+      features::IsUsingWindowService() ? window->GetRootWindow() : window);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,9 +97,6 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
                            : ash::kShellWindowId_LockActionHandlerContainer;
     ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
   }
-  init_params->mus_properties
-      [ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
   if (HasFrameColor()) {
     init_params
         ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
@@ -215,17 +219,12 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
 views::NonClientFrameView*
 ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     views::Widget* widget) {
-  observed_window_.Add(GetNativeWindow());
-
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
   if (features::IsUsingWindowService())
     return nullptr;
 
-  // TODO(estade): WindowState is not available in OopAsh, so observe changes to
-  // the window's kWindowStateTypeKey instead. This isn't possible in classic
-  // Ash; see comment in OnPostWindowStateTypeChange().
   observed_window_state_.Add(ash::wm::GetWindowState(GetNativeWindow()));
 
   ash::NonClientFrameViewAsh* custom_frame_view =
@@ -465,6 +464,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWidgetActivationChanged(
 void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType old_type) {
+  DCHECK(!features::IsUsingWindowService());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
   if (window_state->IsFullscreen() != app_window()->IsFullscreen()) {
     // Report OS-initiated state changes to |app_window()|. This is done in
@@ -483,22 +483,26 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (key == ash::kWindowStateTypeKey) {
-    ash::mojom::WindowStateType new_state =
-        window->GetProperty(ash::kWindowStateTypeKey);
+  if (key != aura::client::kShowStateKey)
+    return;
 
-    if (new_state != ash::mojom::WindowStateType::FULLSCREEN &&
-        new_state != ash::mojom::WindowStateType::MINIMIZED &&
-        app_window()->GetBaseWindow() &&
-        app_window()->GetBaseWindow()->IsFullscreenOrPending()) {
-      app_window()->Restore();
-      // Usually OnNativeWindowChanged() is called when the window bounds are
-      // changed as a result of a state type change. Because the change in
-      // state type has already occurred, we need to call
-      // OnNativeWindowChanged() explicitly.
-      app_window()->OnNativeWindowChanged();
-    }
+  auto new_state = window->GetProperty(aura::client::kShowStateKey);
+
+  if (new_state != ui::SHOW_STATE_FULLSCREEN &&
+      new_state != ui::SHOW_STATE_MINIMIZED && app_window()->IsFullscreen()) {
+    app_window()->Restore();
+  } else if (features::IsUsingWindowService() &&
+             new_state == ui::SHOW_STATE_FULLSCREEN &&
+             !app_window()->IsFullscreen()) {
+    app_window()->OSFullscreen();
   }
+
+  // Usually OnNativeWindowChanged() is called when the window bounds are
+  // changed as a result of a state type change. Because the change in
+  // state type has already occurred, we need to call
+  // OnNativeWindowChanged() explicitly.
+  app_window()->OnNativeWindowChanged();
+  UpdateImmersiveMode();
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(

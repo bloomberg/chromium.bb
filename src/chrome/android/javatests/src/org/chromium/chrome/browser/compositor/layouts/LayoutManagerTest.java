@@ -52,7 +52,7 @@ import org.chromium.ui.test.util.UiRestriction;
 public class LayoutManagerTest implements MockTabModelDelegate {
     private static final String TAG = "LayoutManagerTest";
 
-    private long mLastDownTime = 0;
+    private long mLastDownTime;
 
     private TabModelSelector mTabModelSelector;
     private LayoutManagerChrome mManager;

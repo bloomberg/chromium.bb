@@ -36,6 +36,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/navigation_params.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_frame_host.h"
@@ -77,12 +78,14 @@
 #include "net/url_request/url_request_simple_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler.h"
 #include "services/network/resource_scheduler_params_manager.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
@@ -118,8 +121,7 @@ static network::ResourceRequest CreateResourceRequest(const char* method,
 // This is used to create a filter matching a specified child id.
 class TestFilterSpecifyingChild : public ResourceMessageFilter {
  public:
-  explicit TestFilterSpecifyingChild(ResourceContext* resource_context,
-                                     int process_id)
+  TestFilterSpecifyingChild(BrowserContext* browser_context, int process_id)
       : ResourceMessageFilter(
             process_id,
             nullptr,
@@ -127,10 +129,11 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             nullptr,
             nullptr,
             nullptr,
+            BrowserContext::GetSharedCorsOriginAccessList(browser_context),
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
-        resource_context_(resource_context) {
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+        resource_context_(browser_context->GetResourceContext()) {
     InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
   }
@@ -161,9 +164,9 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
 
 class TestFilter : public TestFilterSpecifyingChild {
  public:
-  explicit TestFilter(ResourceContext* resource_context)
+  explicit TestFilter(BrowserContext* browser_context)
       : TestFilterSpecifyingChild(
-            resource_context,
+            browser_context,
             ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
   }
@@ -630,7 +633,12 @@ class ShareableFileReleaseWaiter {
   DISALLOW_COPY_AND_ASSIGN(ShareableFileReleaseWaiter);
 };
 
-class ResourceDispatcherHostTest : public testing::Test {
+enum class TestMode {
+  kWithoutOutOfBlinkCors,
+  kWithOutOfBlinkCors,
+};
+
+class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
  public:
   typedef ResourceDispatcherHostImpl::LoadInfo LoadInfo;
   typedef ResourceDispatcherHostImpl::LoadInfoList LoadInfoList;
@@ -644,6 +652,23 @@ class ResourceDispatcherHostTest : public testing::Test {
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {
+    switch (GetParam()) {
+      case TestMode::kWithoutOutOfBlinkCors:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {},
+            // Disabled features
+            {network::features::kOutOfBlinkCORS});
+        break;
+      case TestMode::kWithOutOfBlinkCors:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {network::features::kOutOfBlinkCORS,
+             blink::features::kServiceWorkerServicification},
+            // Disabled features
+            {});
+        break;
+    }
     host_.SetLoaderDelegate(&loader_delegate_);
     browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
@@ -676,12 +701,12 @@ class ResourceDispatcherHostTest : public testing::Test {
     web_contents_ =
         WebContents::Create(WebContents::CreateParams(browser_context_.get()));
     web_contents_filter_ = new TestFilterSpecifyingChild(
-        browser_context_->GetResourceContext(),
+        browser_context_.get(),
         web_contents_->GetMainFrame()->GetProcess()->GetID());
     child_ids_.insert(web_contents_->GetMainFrame()->GetProcess()->GetID());
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI));
+        base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI}));
   }
 
   void TearDown() override {
@@ -691,8 +716,7 @@ class ResourceDispatcherHostTest : public testing::Test {
     EXPECT_TRUE(URLRequestTestDelayedStartJob::DelayedStartQueueEmpty());
     URLRequestTestDelayedStartJob::ClearQueue();
 
-    for (std::set<int>::iterator it = child_ids_.begin();
-         it != child_ids_.end(); ++it) {
+    for (auto it = child_ids_.begin(); it != child_ids_.end(); ++it) {
       host_.CancelRequestsForProcess(*it);
     }
 
@@ -712,8 +736,7 @@ class ResourceDispatcherHostTest : public testing::Test {
   // Creates a new TestFilter and registers it with |child_ids_| so as not
   // to leak per-child state on test shutdown.
   scoped_refptr<TestFilter> MakeTestFilter() {
-    auto filter = base::MakeRefCounted<TestFilter>(
-        browser_context_->GetResourceContext());
+    auto filter = base::MakeRefCounted<TestFilter>(browser_context_.get());
     child_ids_.insert(filter->child_id());
     return filter;
   }
@@ -809,7 +832,8 @@ class ResourceDispatcherHostTest : public testing::Test {
     mojom::BeginNavigationParamsPtr begin_params =
         mojom::BeginNavigationParams::New(
             std::string() /* headers */, net::LOAD_NORMAL,
-            false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+            false /* skip_service_worker */,
+            blink::mojom::RequestContextType::LOCATION,
             blink::WebMixedContentContextType::kBlockable,
             false /* is_form_submission */, GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
@@ -840,6 +864,15 @@ class ResourceDispatcherHostTest : public testing::Test {
       return false;
     return request_info->detachable_handler() &&
            request_info->detachable_handler()->is_detached();
+  }
+
+  bool IsAborted(const network::TestURLLoaderClient& client) {
+    // TODO(toyoshim): Once NetworkService or OutOfBlinkCORS is enabled, these
+    // expectations below should be receiving a completion with ERR_ABORTED.
+    if (!client.has_received_completion())
+      return client.has_received_connection_error();
+
+    return client.completion_status().error_code == net::ERR_ABORTED;
   }
 
   void SetMaxDelayableRequests(size_t max_delayable_requests) {
@@ -874,6 +907,7 @@ class ResourceDispatcherHostTest : public testing::Test {
   RenderViewHostTestEnabler render_view_host_test_enabler_;
   bool auto_advance_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(
@@ -988,7 +1022,7 @@ void CheckSuccessfulRequest(network::TestURLLoaderClient* client,
 
 // Tests whether messages get canceled properly. We issue four requests,
 // cancel two of them, and make sure that each sent the proper notifications.
-TEST_F(ResourceDispatcherHostTest, Cancel) {
+TEST_P(ResourceDispatcherHostTest, Cancel) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
   network::TestURLLoaderClient client1, client2, client3, client4;
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1(),
@@ -1038,7 +1072,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
 
 // Shows that detachable requests will timeout if the request takes too long to
 // complete.
-TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
+TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
@@ -1058,6 +1092,7 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   loader = nullptr;
 
   // From the renderer's perspective, the request was cancelled.
+  content::RunAllTasksUntilIdle();
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 
@@ -1082,7 +1117,7 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 
 // If the filter has disappeared then detachable resources should continue to
 // load.
-TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
+TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
   network::mojom::URLLoaderPtr loader1;
   network::TestURLLoaderClient client1;
   base::test::ScopedFeatureList feature_list;
@@ -1102,8 +1137,8 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
   DCHECK_EQ(filter_.get(), info_prefetch->requester_info()->filter());
   filter_->OnChannelClosing();
 
-  client1.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client1.completion_status().error_code);
+  content::RunAllTasksUntilIdle();
+  DCHECK(IsAborted(client1));
 
   // But it continues detached.
   EXPECT_EQ(1, host_.pending_requests());
@@ -1123,7 +1158,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
 
 // If the filter has disappeared (original process dies) then detachable
 // resources should continue to load, even when redirected.
-TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
+TEST_P(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   network::ResourceRequest request = CreateResourceRequest(
@@ -1151,8 +1186,8 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   EXPECT_EQ(1u, url_request->url_chain().size());
 
   // From the renderer's perspective, the request was cancelled.
-  client.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+  content::RunAllTasksUntilIdle();
+  DCHECK(IsAborted(client));
 
   content::RunAllTasksUntilIdle();
   // Verify that a redirect was followed.
@@ -1171,7 +1206,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
   EXPECT_EQ(0, network_delegate()->error_count());
 }
 
-TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
+TEST_P(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   bool was_deleted = false;
@@ -1199,7 +1234,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   EXPECT_TRUE(was_deleted);
 }
 
-TEST_F(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
+TEST_P(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   bool was_deleted = false;
@@ -1244,7 +1279,7 @@ TEST_F(ResourceDispatcherHostTest, DetachWhileStartIsDeferred) {
 
 // Tests if cancel is called in ResourceThrottle::WillStartRequest, then the
 // URLRequest will not be started.
-TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
+TEST_P(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   TestResourceDispatcherHostDelegate delegate;
@@ -1266,7 +1301,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
   EXPECT_EQ(0, job_factory_->url_request_jobs_created_count());
 }
 
-TEST_F(ResourceDispatcherHostTest, PausedStartError) {
+TEST_P(ResourceDispatcherHostTest, PausedStartError) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   // Arrange to have requests deferred before processing response headers.
@@ -1286,7 +1321,7 @@ TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   EXPECT_EQ(0, host_.pending_requests());
 }
 
-TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
+TEST_P(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   // Arrange to have requests deferred before starting.
@@ -1323,7 +1358,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
 }
 
 // Tests that the delegate can cancel a request and provide a error code.
-TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
+TEST_P(ResourceDispatcherHostTest, CancelInDelegate) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   TestResourceDispatcherHostDelegate delegate;
@@ -1343,7 +1378,7 @@ TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
   EXPECT_EQ(net::ERR_ACCESS_DENIED, client.completion_status().error_code);
 }
 
-TEST_F(ResourceDispatcherHostTest, CancelRequestsForRoute) {
+TEST_P(ResourceDispatcherHostTest, CancelRequestsForRoute) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
   network::TestURLLoaderClient client1, client2, client3, client4;
   base::test::ScopedFeatureList feature_list;
@@ -1397,7 +1432,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForRoute) {
 }
 
 // Tests CancelRequestsForProcess
-TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
+TEST_P(ResourceDispatcherHostTest, TestProcessCancel) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4;
   network::TestURLLoaderClient client1, client2, client3, client4;
   scoped_refptr<TestFilter> test_filter = MakeTestFilter();
@@ -1471,7 +1506,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
 // Tests whether the correct requests get canceled when a RenderViewHost is
 // deleted.
-TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
+TEST_P(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
   network::TestURLLoaderClient client1, client2, client3, client4, client5;
   // Requests all hang once started.  This prevents requests from being
@@ -1529,7 +1564,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
   EXPECT_EQ(4, network_delegate_.canceled_requests());
 }
 
-TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
+TEST_P(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   MakeTestRequestWithResourceType(
@@ -1575,7 +1610,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
 }
 
 // Tests blocking and resuming requests.
-TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
+TEST_P(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5,
       loader6, loader7;
   network::TestURLLoaderClient client1, client2, client3, client4, client5,
@@ -1655,7 +1690,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 }
 
 // Tests blocking and canceling requests.
-TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
+TEST_P(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
   network::TestURLLoaderClient client1, client2, client3, client4, client5;
 
@@ -1689,9 +1724,9 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
 
   CheckSuccessfulRequest(&client1, net::URLRequestTestJob::test_data_1());
   CheckSuccessfulRequest(&client3, net::URLRequestTestJob::test_data_3());
-  EXPECT_FALSE(client2.has_received_completion());
-  EXPECT_FALSE(client4.has_received_completion());
-  EXPECT_FALSE(client5.has_received_completion());
+  EXPECT_FALSE(IsAborted(client2));
+  EXPECT_FALSE(IsAborted(client4));
+  EXPECT_FALSE(IsAborted(client5));
 
   // Cancel requests for RFH 11.
   host_.CancelBlockedRequestsForRoute(
@@ -1699,13 +1734,13 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   content::RunAllTasksUntilIdle();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_FALSE(client2.has_received_completion());
-  EXPECT_FALSE(client4.has_received_completion());
-  EXPECT_FALSE(client5.has_received_completion());
+  EXPECT_TRUE(IsAborted(client2));
+  EXPECT_TRUE(IsAborted(client4));
+  EXPECT_TRUE(IsAborted(client5));
 }
 
 // Tests that blocked requests are canceled if their associated process dies.
-TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
+TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5;
   network::TestURLLoaderClient client1, client2, client3, client4, client5;
   // This second filter is used to emulate a second process.
@@ -1744,9 +1779,9 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 
   CheckSuccessfulRequest(&client1, net::URLRequestTestJob::test_data_1());
   CheckSuccessfulRequest(&client3, net::URLRequestTestJob::test_data_3());
-  EXPECT_FALSE(client2.has_received_completion());
-  EXPECT_FALSE(client4.has_received_completion());
-  EXPECT_FALSE(client5.has_received_completion());
+  EXPECT_TRUE(IsAborted(client2));
+  EXPECT_TRUE(IsAborted(client4));
+  EXPECT_TRUE(IsAborted(client5));
 
   EXPECT_TRUE(host_.blocked_loaders_map_.empty());
   second_filter->OnChannelClosing();
@@ -1756,7 +1791,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 // away.  Note that we rely on Purify for finding the leaks if any.
 // If this test turns the Purify bot red, check the ResourceDispatcherHost
 // destructor to make sure the blocked requests are deleted.
-TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
+TEST_P(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   network::mojom::URLLoaderPtr loader1, loader2, loader3, loader4, loader5,
       loader6, loader7, loader8;
   network::TestURLLoaderClient client1, client2, client3, client4, client5,
@@ -1813,7 +1848,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 }
 
 // Test the private helper method "CalculateApproximateMemoryCost()".
-TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
+TEST_P(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> req(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
@@ -1843,7 +1878,7 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
 
 // Test that too much memory for outstanding requests for a particular
 // render_process_host_id causes requests to fail.
-TEST_F(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
+TEST_P(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
   // Expected cost of each request as measured by
   // ResourceDispatcherHost::CalculateApproximateMemoryCost().
   const int kMemoryCostOfTest2Req =
@@ -1927,7 +1962,7 @@ TEST_F(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
 // Test that when too many requests are outstanding for a particular
 // render_process_host_id, any subsequent request from it fails. Also verify
 // that the global limit is honored.
-TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
+TEST_P(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   // Tighten the bound on the ResourceDispatcherHost, to speed things up.
   constexpr size_t kMaxRequestsPerProcess = 2;
   host_.set_max_num_in_flight_requests_per_process(kMaxRequestsPerProcess);
@@ -1995,7 +2030,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
 }
 
 // Tests that we sniff the mime type for a simple request.
-TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
+TEST_P(ResourceDispatcherHostTest, MimeSniffed) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   std::string raw_headers("HTTP/1.1 200 OK\n\n");
@@ -2016,7 +2051,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
 }
 
 // Tests that we don't sniff the mime type when the server provides one.
-TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
+TEST_P(ResourceDispatcherHostTest, MimeNotSniffed) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   std::string raw_headers("HTTP/1.1 200 OK\n"
@@ -2038,7 +2073,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
 }
 
 // Tests that we don't sniff the mime type when there is no message body.
-TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
+TEST_P(ResourceDispatcherHostTest, MimeNotSniffed2) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 304 Not Modified\n\n");
@@ -2055,7 +2090,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   EXPECT_EQ("", client.response_head().mime_type);
 }
 
-TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
+TEST_P(ResourceDispatcherHostTest, MimeSniff204) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 204 No Content\n\n");
@@ -2072,7 +2107,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   EXPECT_EQ("text/plain", client.response_head().mime_type);
 }
 
-TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
+TEST_P(ResourceDispatcherHostTest, MimeSniffEmpty) {
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
   SetResponse("HTTP/1.1 200 OK\n\n");
@@ -2090,7 +2125,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
 }
 
 // Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
-TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
+TEST_P(ResourceDispatcherHostTest, ForbiddenDownload) {
   std::string raw_headers("HTTP/1.1 403 Forbidden\n"
                           "Content-disposition: attachment; filename=blah\n"
                           "Content-type: application/octet-stream\n\n");
@@ -2106,7 +2141,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
                                      expected_error_code);
 }
 
-TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
+TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
   EXPECT_EQ(0, host_.pending_requests());
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
@@ -2163,7 +2198,7 @@ class ExternalProtocolBrowserClient : public TestContentBrowserClient {
 // Verifies that if the embedder says that it didn't handle an unkonown protocol
 // the request is cancelled and net::ERR_ABORTED is returned. Otherwise it is
 // not aborted and net/ layer cancels it with net::ERR_UNKNOWN_URL_SCHEME.
-TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
+TEST_P(ResourceDispatcherHostTest, UnknownURLScheme) {
   EXPECT_EQ(0, host_.pending_requests());
 
   HandleScheme("http");
@@ -2182,7 +2217,7 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
 
 // Request a very large detachable resource and cancel part way. Some of the
 // data should have been sent to the renderer, but not all.
-TEST_F(ResourceDispatcherHostTest, DataSentBeforeDetach) {
+TEST_P(ResourceDispatcherHostTest, DataSentBeforeDetach) {
   EXPECT_EQ(0, host_.pending_requests());
 
   constexpr int render_view_id = 0;
@@ -2231,7 +2266,7 @@ WebContents* WebContentsBinder(WebContents* rv) { return rv; }
 
 // Tests GetLoadInfoForAllRoutes when there are 3 requests from the same
 // RenderView.  The second one is farthest along.
-TEST_F(ResourceDispatcherHostTest, LoadInfo) {
+TEST_P(ResourceDispatcherHostTest, LoadInfo) {
   std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
   LoadInfo info;
   WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
@@ -2264,7 +2299,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfo) {
 
 // Tests GetLoadInfoForAllRoutes when there are 2 requests with the same
 // priority.  The first one (Which will have the lowest ID) should be returned.
-TEST_F(ResourceDispatcherHostTest, LoadInfoSamePriority) {
+TEST_P(ResourceDispatcherHostTest, LoadInfoSamePriority) {
   std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
   LoadInfo info;
   WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
@@ -2291,7 +2326,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoSamePriority) {
 }
 
 // Tests GetLoadInfoForAllRoutes when a request is uploading a body.
-TEST_F(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
+TEST_P(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
   std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
   LoadInfo info;
   WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
@@ -2341,7 +2376,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoUploadProgress) {
 // Tests GetLoadInfoForAllRoutes when there are 4 requests from 2 different
 // RenderViews.  Also tests the case where the first / last requests are the
 // most interesting ones.
-TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
+TEST_P(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
   std::unique_ptr<LoadInfoList> infos(new LoadInfoList);
   LoadInfo info;
   WebContents* wc1 = reinterpret_cast<WebContents*>(0x1);
@@ -2392,7 +2427,7 @@ TEST_F(ResourceDispatcherHostTest, LoadInfoTwoRenderViews) {
 
 // Tests that a ResourceThrottle that needs to process the response before any
 // part of the body is read can do so.
-TEST_F(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
+TEST_P(ResourceDispatcherHostTest, ThrottleMustProcessResponseBeforeRead) {
   // Ensure all jobs will check that no read operation is called.
   job_factory_->SetMustNotReadJobGeneration(true);
   HandleScheme("http");
@@ -2507,5 +2542,13 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeInterceptResponse(
     net::NetworkDelegate* network_delegate) const {
   return nullptr;
 }
+
+INSTANTIATE_TEST_CASE_P(WithoutOutOfBlinkCors,
+                        ResourceDispatcherHostTest,
+                        ::testing::Values(TestMode::kWithoutOutOfBlinkCors));
+
+INSTANTIATE_TEST_CASE_P(WithOutOfBlinkCors,
+                        ResourceDispatcherHostTest,
+                        ::testing::Values(TestMode::kWithOutOfBlinkCors));
 
 }  // namespace content

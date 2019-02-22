@@ -50,6 +50,7 @@ class Timeseries2Test(testing_common.TestCase):
         improvement_direction=anomaly.DOWN,
         internal_only=internal_only,
         units='units')
+    test.UpdateSheriff()
     test.put()
 
     for i in xrange(1, 21, 2):
@@ -159,17 +160,18 @@ class Timeseries2Test(testing_common.TestCase):
         test_case='case', build_type='test',
         min_timestamp=datetime.datetime.utcfromtimestamp(5).isoformat(),
         max_timestamp=datetime.datetime.utcfromtimestamp(15).isoformat(),
-        columns='revision,revisions,avg,std,alert,diagnostics,histogram')
+        columns='timestamp,revision,revisions,avg,alert,diagnostics')
     self.assertEqual(6, len(response['data']))
     for i, datum in enumerate(response['data']):
-      self.assertEqual(7, len(datum))
-      self.assertEqual(5 + (2 * i), datum[0])
+      self.assertEqual(6, len(datum))
+      self.assertEqual(5 + (2 * i), datum[1])
 
   def testMixOldStyleRowsWithNewStyleRows(self):
     old_count_test = graph_data.TestMetadata(
         has_rows=True,
         id='master/bot/suite/measure_count/case',
         units='count')
+    old_count_test.UpdateSheriff()
     old_count_test.put()
 
     old_avg_test = graph_data.TestMetadata(
@@ -177,12 +179,14 @@ class Timeseries2Test(testing_common.TestCase):
         id='master/bot/suite/measure_avg/case',
         improvement_direction=anomaly.DOWN,
         units='units')
+    old_avg_test.UpdateSheriff()
     old_avg_test.put()
 
     old_std_test = graph_data.TestMetadata(
         has_rows=True,
         id='master/bot/suite/measure_std/case',
         units='units')
+    old_std_test.UpdateSheriff()
     old_std_test.put()
 
     for i in xrange(1, 21, 2):
@@ -195,6 +199,7 @@ class Timeseries2Test(testing_common.TestCase):
         id='master/bot/suite/measure/case',
         improvement_direction=anomaly.DOWN,
         units='units')
+    new_test.UpdateSheriff()
     new_test.put()
     for i in xrange(21, 41, 2):
       graph_data.Row(

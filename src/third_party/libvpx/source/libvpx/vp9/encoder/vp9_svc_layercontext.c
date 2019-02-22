@@ -1005,11 +1005,13 @@ void vp9_svc_constrain_inter_layer_pred(VP9_COMP *const cpi) {
       }
     }
   }
-  // Check for disabling inter-layer prediction if the reference for inter-layer
-  // prediction (the reference that is scaled) is not the previous spatial layer
-  // from the same superframe, then we disable inter-layer prediction.
-  // Only need to check when inter_layer prediction is not set to OFF mode.
-  if (svc->disable_inter_layer_pred != INTER_LAYER_PRED_OFF) {
+  // For fixed/non-flexible SVC: check for disabling inter-layer prediction.
+  // If the reference for inter-layer prediction (the reference that is scaled)
+  // is not the previous spatial layer from the same superframe, then we disable
+  // inter-layer prediction. Only need to check when inter_layer prediction is
+  // not set to OFF mode.
+  if (svc->temporal_layering_mode != VP9E_TEMPORAL_LAYERING_MODE_BYPASS &&
+      svc->disable_inter_layer_pred != INTER_LAYER_PRED_OFF) {
     // We only use LAST and GOLDEN for prediction in real-time mode, so we
     // check both here.
     MV_REFERENCE_FRAME ref_frame;
@@ -1045,7 +1047,7 @@ void vp9_svc_constrain_inter_layer_pred(VP9_COMP *const cpi) {
 
 void vp9_svc_assert_constraints_pattern(VP9_COMP *const cpi) {
   SVC *const svc = &cpi->svc;
-  // For fixed/non-flexible mode, the folllowing constraint are expected,
+  // For fixed/non-flexible mode, the following constraint are expected,
   // when inter-layer prediciton is on (default).
   if (svc->temporal_layering_mode != VP9E_TEMPORAL_LAYERING_MODE_BYPASS &&
       svc->disable_inter_layer_pred == INTER_LAYER_PRED_ON &&
@@ -1060,7 +1062,8 @@ void vp9_svc_assert_constraints_pattern(VP9_COMP *const cpi) {
         // Non-base temporal only predicts from lower temporal layer.
         assert(svc->fb_idx_temporal_layer_id[cpi->lst_fb_idx] <
                svc->temporal_layer_id);
-      if (svc->spatial_layer_id > 0) {
+      if (svc->spatial_layer_id > 0 && cpi->ref_frame_flags & VP9_GOLD_FLAG &&
+          svc->spatial_layer_id > svc->first_spatial_layer_to_encode) {
         // Non-base spatial only predicts from lower spatial layer with same
         // temporal_id.
         assert(svc->fb_idx_spatial_layer_id[cpi->gld_fb_idx] ==
@@ -1068,7 +1071,8 @@ void vp9_svc_assert_constraints_pattern(VP9_COMP *const cpi) {
         assert(svc->fb_idx_temporal_layer_id[cpi->gld_fb_idx] ==
                svc->temporal_layer_id);
       }
-    } else if (svc->spatial_layer_id > 0) {
+    } else if (svc->spatial_layer_id > 0 &&
+               svc->spatial_layer_id > svc->first_spatial_layer_to_encode) {
       // Only 1 reference for frame whose base is key; reference may be LAST
       // or GOLDEN, so we check both.
       if (cpi->ref_frame_flags & VP9_LAST_FLAG) {
@@ -1195,4 +1199,10 @@ void vp9_svc_update_ref_frame(VP9_COMP *const cpi) {
   // Copy flags from encoder to SVC struct.
   vp9_copy_flags_ref_update_idx(cpi);
   vp9_svc_update_ref_frame_buffer_idx(cpi);
+}
+
+void vp9_svc_adjust_frame_rate(VP9_COMP *const cpi) {
+  int64_t this_duration =
+      cpi->svc.timebase_fac * cpi->svc.duration[cpi->svc.spatial_layer_id];
+  vp9_new_framerate(cpi, 10000000.0 / this_duration);
 }

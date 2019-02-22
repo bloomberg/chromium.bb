@@ -41,7 +41,7 @@ ContentSettingsPattern ParseExtensionPattern(const std::string& pattern_str,
       URLPattern::SCHEME_FILE;
   URLPattern url_pattern(kAllowedSchemes);
   URLPattern::ParseResult result = url_pattern.Parse(pattern_str);
-  if (result != URLPattern::PARSE_SUCCESS) {
+  if (result != URLPattern::ParseResult::kSuccess) {
     *error = URLPattern::GetParseResultString(result);
     return ContentSettingsPattern();
   } else {

@@ -387,6 +387,20 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
+        <activity android:name="org.chromium.chrome.browser.customtabs.PaymentHandlerActivity"
+            android:theme="@style/TranslucentMainTheme"
+            android:exported="false"
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }}
+        >
+            {{ self.supports_vr() }}
+            {{ self.extra_web_rendering_activity_definitions() }}
+        </activity>
+        <!-- SeparateTaskCustomTabActivity is a wrapper of CustomTabActivity. It provides the
+             general feeling of supporting multi tasks, even for versions that did not fully support
+             it.
+             TODO(arthursonzogni, tedchoc): Enabled this only on Android < 21 after M74.
+        -->
         <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity"
             android:theme="@style/MainTheme"
             android:exported="false"
@@ -399,21 +413,23 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        {% for i in range(10) %}
-        <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
-            android:theme="@style/MainTheme"
-            android:icon="@mipmap/app_single_page_icon"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:persistableMode="persistNever"
-            android:taskAffinity=""
-            {{ self.chrome_activity_common() }}
-            {{ self.supports_video_persistence() }}
-        >
-            {{ self.supports_vr() }}
-            {{ self.extra_web_rendering_activity_definitions() }}
-        </activity>
-        {% endfor %}
+        {% if min_sdk_version|int < 21 %}
+          {% for i in range(10) %}
+            <activity android:name="org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity{{ i }}"
+                android:theme="@style/MainTheme"
+                android:icon="@mipmap/app_single_page_icon"
+                android:exported="false"
+                android:launchMode="singleTask"
+                android:persistableMode="persistNever"
+                android:taskAffinity=""
+                {{ self.chrome_activity_common() }}
+                {{ self.supports_video_persistence() }}
+            >
+                {{ self.supports_vr() }}
+                {{ self.extra_web_rendering_activity_definitions() }}
+            </activity>
+          {% endfor %}
+        {% endif %}
 
         <activity android:name="org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity"
           android:theme="@style/FullscreenTransparentActivityTheme"
@@ -637,6 +653,7 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTop"
             android:documentLaunchMode="intoExisting"
+            android:exported="false"
             android:persistableMode="persistNever"
             {{ self.supports_video_persistence() }}
             {{ self.chrome_activity_common() }}
@@ -655,6 +672,7 @@ by a child template that "extends" this file.
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"
+            android:exported="false"
             android:persistableMode="persistNever"
             android:taskAffinity="{{ manifest_package }}.webapps.WebappActivity{{ i }}"
             {{ self.supports_video_persistence() }}
@@ -675,6 +693,7 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTop"
             android:documentLaunchMode="intoExisting"
+            android:exported="false"
             android:persistableMode="persistNever"
             {{ self.supports_video_persistence() }}
             {{ self.chrome_activity_common() }}
@@ -688,6 +707,7 @@ by a child template that "extends" this file.
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"
+            android:exported="false"
             android:persistableMode="persistNever"
             android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
             {{ self.supports_video_persistence() }}
@@ -774,6 +794,16 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
+        <!-- Components for Trusted Web Activities -->
+        <receiver android:name="org.chromium.chrome.browser.browserservices.ClearDataBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <data android:scheme="package" />
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Service for decoding images in a sandboxed process. -->
         <service
             android:description="@string/decoder_description"
@@ -797,12 +827,6 @@ by a child template that "extends" this file.
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
-        </provider>
-
-        <provider android:name="org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider"
-            android:authorities="{{ manifest_package }}.SupervisedUserProvider"
-            android:permission="android.permission.INTERNET"
-            android:exported="true">
         </provider>
 
         <!-- Sync adapter for browser invalidation. -->
@@ -1104,39 +1128,6 @@ android:value="true" />
 
         <meta-data android:name="org.chromium.content.browser.SMART_CLIP_PROVIDER"
             android:value="org.chromium.content_public.browser.SmartClipProvider"/>
-
-        {% set enable_leakcanary = enable_leakcanary|default(0) %}
-        {% if enable_leakcanary == "true" %}
-        {# Entries for LeakCanary copied from (and then tweaked):
-               //third_party/leakcanary/src/leakcanary-android/src/main/AndroidManifest.xml #}
-          <service
-              android:name="com.squareup.leakcanary.internal.HeapAnalyzerService"
-              android:process=":leakcanary"
-              android:enabled="false" />
-          <activity
-              android:theme="@style/leak_canary_LeakCanary.Base"
-              android:name="com.squareup.leakcanary.internal.DisplayLeakActivity"
-              android:process=":leakcanary2"  {# Added to avoid StrictMode violations crashing the activity #}
-              android:label="@string/app_name"  {# Changed from "string/leak_canary_display_activity_label" to help distinguaish when multiple apps include leakcanary. #}
-              android:icon="@drawable/leak_canary_icon"
-              android:taskAffinity=".com.squareup.leakcanary">  {# Added leading "." for multi-app case. #}
-            <intent-filter>
-              <action android:name="android.intent.action.MAIN" />
-              <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-          </activity>
-          <service
-              android:name="com.squareup.leakcanary.DisplayLeakService"
-              android:process=":leakcanary2"  {# Added to minimize interaction with browser process. #}
-              android:enabled="false" />
-          <activity  {# This is just a toast-like overlay, so leaving in browser process #}
-              android:theme="@style/leak_canary_Theme.Transparent"
-              android:name="com.squareup.leakcanary.internal.RequestStoragePermissionActivity"
-              android:taskAffinity="com.squareup.leakcanary"
-              android:enabled="false"
-              android:icon="@drawable/leak_canary_icon"
-              android:label="@string/leak_canary_storage_permission_activity_label" />
-        {% endif %}
 
         {% block extra_application_definitions %}
 

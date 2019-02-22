@@ -13,10 +13,6 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromeos {
 namespace assistant {
 
@@ -28,13 +24,15 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
   using InitCB =
       base::OnceCallback<void(const assistant_client::OutputStreamFormat&)>;
 
-  AudioStreamHandler(service_manager::Connector* connector,
-                     scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit AudioStreamHandler(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~AudioStreamHandler() override;
 
   // Called on main thread.
-  void StartAudioDecoder(assistant_client::AudioOutput::Delegate* delegate,
-                         InitCB start_device_owner_on_main_thread);
+  void StartAudioDecoder(
+      mojom::AssistantAudioDecoderFactory* audio_decoder_factory,
+      assistant_client::AudioOutput::Delegate* delegate,
+      InitCB start_device_owner_on_main_thread);
 
   // mojom::AssistantAudioDecoderClient overrides:
   // Called by |audio_decoder_| on utility thread.
@@ -53,13 +51,14 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
  private:
   // Calls AudioDeviceOwner to start on main thread.
   void OnDecoderInitialized(bool success,
-                            int bytes_per_sample,
-                            int samples_per_second,
-                            int channels);
+                            uint32_t bytes_per_sample,
+                            uint32_t samples_per_second,
+                            uint32_t channels);
   void OnDecoderInitializedOnThread(bool success,
-                                    int bytes_per_sample,
-                                    int samples_per_second,
-                                    int channels);
+                                    uint32_t bytes_per_sample,
+                                    uint32_t samples_per_second,
+                                    uint32_t channels);
+  void StopDelegate();
 
   // Called by |FillBuffer()| to fill available data. If no available data, it
   // will call |DecodeOnThread()| to get more data.
@@ -72,11 +71,9 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
   // Calls |audio_decoder_| to decode on main thread.
   void DecodeOnThread();
 
-  service_manager::Connector* connector_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   assistant_client::AudioOutput::Delegate* delegate_;
 
-  mojom::AssistantAudioDecoderFactoryPtr audio_decoder_factory_ptr_;
   mojo::Binding<mojom::AssistantAudioDecoderClient> client_binding_;
   std::unique_ptr<AudioMediaDataSource> media_data_source_;
   mojom::AssistantAudioDecoderPtr audio_decoder_;
@@ -86,6 +83,8 @@ class AudioStreamHandler : public mojom::AssistantAudioDecoderClient,
   // True if |Decode()| called and not all decoded buffers are received, e.g.
   // |buffers_to_receive_| != 0.
   bool is_decoding_ = false;
+  // True after |OnStopped()| called.
+  bool stopped_ = false;
 
   // Temporary storage of |buffer| passed by |FillBuffer|.
   void* buffer_to_copy_ = nullptr;

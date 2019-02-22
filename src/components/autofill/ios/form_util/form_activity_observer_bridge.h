@@ -12,25 +12,18 @@
 
 @protocol FormActivityObserver<NSObject>
 @optional
-// Invoked by WebStateObserverBridge::FormActivity.
-// TODO(crbug.com/823285): during the transition from CRWWebStateObserver
-// to FormActivityObserver, some class will implement from both protocols
-// so the method need to use a different name. Once the transition is
-// complete and the methods removed from CRWWebStateObserver, this method
-// will be renamed to didRegisterFormActivity.
+// Invoked by FormActivityObserverBridge::FormActivity.
 - (void)webState:(web::WebState*)webState
-    registeredFormActivity:(const web::FormActivityParams&)params;
+    didRegisterFormActivity:(const autofill::FormActivityParams&)params
+                    inFrame:(web::WebFrame*)frame;
 
-// Invoked by WebStateObserverBridge::DidSubmitDocument.
-// TODO(crbug.com/823285): during the transition from CRWWebStateObserver
-// to FormActivityObserver, some class will implement from both protocols
-// so the method need to use a different name. Once the transition is
-// complete and the methods removed from CRWWebStateObserver, this method
-// will be renamed to didSubmitDocumentWithFormNamed.
+// Invoked by FormActivityObserverBridge::DidSubmitDocument.
 - (void)webState:(web::WebState*)webState
-    submittedDocumentWithFormNamed:(const std::string&)formName
+    didSubmitDocumentWithFormNamed:(const std::string&)formName
+                          withData:(const std::string&)formData
                     hasUserGesture:(BOOL)hasUserGesture
-                   formInMainFrame:(BOOL)formInMainFrame;
+                   formInMainFrame:(BOOL)formInMainFrame
+                           inFrame:(web::WebFrame*)frame;
 
 @end
 
@@ -51,11 +44,14 @@ class FormActivityObserverBridge : public FormActivityObserver {
   ~FormActivityObserverBridge() override;
 
   // FormActivityObserver overrides:
-  void OnFormActivity(web::WebState* web_state,
-                      const web::FormActivityParams& params) override;
+  void FormActivityRegistered(web::WebState* web_state,
+                              web::WebFrame* sender_frame,
+                              const FormActivityParams& params) override;
 
-  void DidSubmitDocument(web::WebState* web_state,
+  void DocumentSubmitted(web::WebState* web_state,
+                         web::WebFrame* sender_frame,
                          const std::string& form_name,
+                         const std::string& form_data,
                          bool has_user_gesture,
                          bool form_in_main_frame) override;
 

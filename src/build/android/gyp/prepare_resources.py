@@ -140,7 +140,7 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
                      '--auto-add-overlay',
                      '--no-version-vectors',
                     ]
-  for j in options.android_sdk_jars:
+  for j in options.include_resources:
     package_command += ['-I', j]
 
   package_command += [
@@ -268,7 +268,7 @@ def main(args):
     options.aapt_path,
     options.android_manifest,
   ]
-  possible_input_paths += options.android_sdk_jars
+  possible_input_paths += options.include_resources
   input_paths = [x for x in possible_input_paths if x]
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(options.extra_r_text_files)

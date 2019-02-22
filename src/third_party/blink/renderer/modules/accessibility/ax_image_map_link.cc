@@ -68,13 +68,13 @@ AXObject* AXImageMapLink::ComputeParent() const {
   return AXObjectCache().GetOrCreate(MapElement()->GetLayoutObject());
 }
 
-AccessibilityRole AXImageMapLink::RoleValue() const {
+ax::mojom::Role AXImageMapLink::RoleValue() const {
   const AtomicString& aria_role =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (!aria_role.IsEmpty())
     return AXObject::AriaRoleToWebCoreRole(aria_role);
 
-  return kLinkRole;
+  return ax::mojom::Role::kLink;
 }
 
 bool AXImageMapLink::ComputeAccessibilityIsIgnored(

@@ -24,8 +24,10 @@ interface NewWindowClient {
   // Invoked when the user uses Ctrl+T to open a new tab.
   NewTab();
 
-  // Opens a new tab with the specified URL.
-  NewTabWithUrl(url.mojom.Url url);
+  // Opens a new tab with the specified URL. If the |from_user_interaction|
+  // is true then the page will load with a user activation. This means the
+  // page will be able to autoplay media without restriction.
+  NewTabWithUrl(url.mojom.Url url, bool from_user_interaction);
 
   // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
   NewWindow(bool incognito);

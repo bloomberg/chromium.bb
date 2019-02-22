@@ -168,7 +168,7 @@ class ProcessManager : public KeyedService,
   // EventPageTracker implementation.
   bool IsEventPageSuspended(const std::string& extension_id) override;
   bool WakeEventPage(const std::string& extension_id,
-                     const base::Callback<void(bool)>& callback) override;
+                     base::OnceCallback<void(bool)> callback) override;
 
   // Sets the time in milliseconds that an extension event page can
   // be idle before it is shut down; must be > 0.

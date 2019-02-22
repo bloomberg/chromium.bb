@@ -12,8 +12,6 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
-class BrowserDistribution;
-
 namespace base {
 class CommandLine;
 class FilePath;
@@ -23,7 +21,6 @@ namespace installer {
 
 class InstallationState;
 class InstallerState;
-class Product;
 
 enum DeleteResult {
   DELETE_SUCCEEDED,
@@ -44,7 +41,6 @@ DeleteResult DeleteChromeDirectoriesIfEmpty(
 // |root| is the registry root (HKLM|HKCU) and |browser_entry_suffix| is the
 // suffix for default browser entry name in the registry (optional).
 bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
-                                  BrowserDistribution* dist,
                                   HKEY root,
                                   const base::string16& browser_entry_suffix,
                                   InstallStatus* exit_code);
@@ -52,8 +48,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 // Removes any legacy registry keys from earlier versions of Chrome that are no
 // longer needed. This is used during autoupdate since we don't do full
 // uninstalls/reinstalls to update.
-void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
-                                    const base::FilePath& chrome_exe);
+void RemoveChromeLegacyRegistryKeys(const base::FilePath& chrome_exe);
 
 // This function uninstalls a product.  Hence we came up with this awesome
 // name for it.
@@ -63,7 +58,6 @@ void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
 // setup_exe: The path to the currently running setup.exe. It and its containing
 //     directories are left in-place if it is within the target directory of
 //     the product being uninstalled.
-// dist: Represents the distribution to be uninstalled.
 // remove_all: Remove all shared files, registry entries as well.
 // force_uninstall: Uninstall without prompting for user confirmation or
 //                  any checks for Chrome running.
@@ -73,7 +67,6 @@ installer::InstallStatus UninstallProduct(
     const InstallationState& original_state,
     const InstallerState& installer_state,
     const base::FilePath& setup_exe,
-    const Product& dist,
     bool remove_all,
     bool force_uninstall,
     const base::CommandLine& cmd_line);

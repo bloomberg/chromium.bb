@@ -93,7 +93,6 @@ static void PositionPadding(scoped_refptr<cc::SolidColorLayer> padding_layer,
 
 void TabLayer::SetProperties(int id,
                              bool can_use_live_layer,
-                             bool modern_design_enabled,
                              int toolbar_resource_id,
                              int close_button_resource_id,
                              int shadow_resource_id,
@@ -225,19 +224,13 @@ void TabLayer::SetProperties(int id,
   //--------------------------------------------------------------------------
 
   // TODO(kkimlabs): Tab switcher doesn't show the progress bar.
-  toolbar_layer_->PushResource(toolbar_resource_id,
-                               toolbar_background_color,
-                               anonymize_toolbar,
-                               toolbar_textbox_background_color,
-                               toolbar_textbox_resource_id,
-                               toolbar_textbox_alpha,
-                               view_height,
-                               // TODO(mdjones): Feels odd to pass 0 here when
-                               // we have access to toolbar_y_offset.
-                               0,
-                               false,
-                               false,
-                               modern_design_enabled);
+  toolbar_layer_->PushResource(
+      toolbar_resource_id, toolbar_background_color, anonymize_toolbar,
+      toolbar_textbox_background_color, toolbar_textbox_resource_id,
+      toolbar_textbox_alpha, view_height,
+      // TODO(mdjones): Feels odd to pass 0 here when
+      // we have access to toolbar_y_offset.
+      0, false, false);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
   float toolbar_impact_height = 0;
@@ -496,7 +489,7 @@ void TabLayer::SetProperties(int id,
     transform.Translate(toolbar_position.x(), toolbar_position.y());
     toolbar_layer_->layer()->SetTransformOrigin(gfx::Point3F(0.f, 0.f, 0.f));
     toolbar_layer_->layer()->SetTransform(transform);
-    toolbar_layer_->layer()->SetOpacity(toolbar_alpha);
+    toolbar_layer_->SetOpacity(toolbar_alpha);
 
     toolbar_layer_->layer()->SetMasksToBounds(
         toolbar_layer_->layer()->bounds() != toolbar_size);

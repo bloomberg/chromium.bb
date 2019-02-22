@@ -50,7 +50,9 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // displays.  Tearing is only used if vsync is also disabled via command line.
   static bool IsSwapChainTearingSupported();
 
-  static void EnableScaledOverlaysForTesting();
+  static void SetScaledOverlaysSupportedForTesting(bool value);
+
+  static int GetNumFramesBeforeSwapChainResizeForTesting();
 
   bool InitializeNativeWindow();
 

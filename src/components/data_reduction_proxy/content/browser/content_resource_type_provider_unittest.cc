@@ -84,8 +84,9 @@ class ContentResourceProviderTest : public testing::Test {
 
     context_.set_client_socket_factory(&mock_socket_factory_);
     context_.set_network_delegate(data_reduction_proxy_network_delegate_.get());
-    context_.set_proxy_delegate(test_context_->io_data()->proxy_delegate());
     context_.Init();
+    context_.proxy_resolution_service()->SetProxyDelegate(
+        test_context_->io_data()->proxy_delegate());
 
     test_context_->DisableWarmupURLFetch();
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();

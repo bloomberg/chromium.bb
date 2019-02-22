@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -472,6 +473,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               ReplacedWillBeRemoved("document.registerElement",
                                     "window.customElements.define", kM73,
                                     "4642138092470272")};
+    case WebFeature::kCSSSelectorPseudoUnresolved:
+      return {
+          "CSSSelectorPseudoUnresolved", kM73,
+          ReplacedWillBeRemoved(":unresolved pseudo selector", ":not(:defined)",
+                                kM73, "4642138092470272")};
 
     case WebFeature::
         kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe:
@@ -509,9 +515,9 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kPresentationRequestStartInsecureOrigin:
     case WebFeature::kPresentationReceiverInsecureOrigin:
       return {
-          "PresentationInsecureOrigin", kM71,
+          "PresentationInsecureOrigin", kM72,
           String("Using the Presentation API on insecure origins is "
-                 "deprecated and will be removed in M71. You should consider "
+                 "deprecated and will be removed in M72. You should consider "
                  "switching your application to a secure origin, such as "
                  "HTTPS. See "
                  "https://goo.gl/rStTGz for more details.")};
@@ -520,12 +526,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"LocalCSSFileExtensionRejected", kM64,
               String("CSS cannot be loaded from `file:` URLs unless they end "
                      "in a `.css` file extension.")};
-
-    case WebFeature::kCreateObjectURLMediaStream:
-      return {"CreateObjectURLMediaStreamDeprecated", kM71,
-              ReplacedWillBeRemoved("URL.createObjectURL with media streams",
-                                    "HTMLMediaElement.srcObject", kM71,
-                                    "5618491470118912")};
 
     case WebFeature::kChromeLoadTimesRequestTime:
     case WebFeature::kChromeLoadTimesStartLoadTime:
@@ -554,12 +554,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               ReplacedWillBeRemoved(
                   "Using unescaped '#' characters in a data URI body", "'%23'",
                   kM71, "5656049583390720")};
-
-    case WebFeature::kDocumentOrigin:
-      return {"DocumentOrigin", kM70,
-              ReplacedWillBeRemoved("document.origin",
-                                    "self.origin (window.origin)", kM70,
-                                    "5701042356355072")};
 
     case WebFeature::kMediaElementSourceOnOfflineContext:
       return {"MediaElementAudioSourceNode", kM71,
@@ -596,9 +590,13 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                              "6708326821789696 for more details.",
                              MilestoneString(kM70))};
     case WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay:
-      return {"TextToSpeech_DisallowedByAutoplay", kM71,
-              WillBeRemoved("speechSynthesis.speak() without user activation",
-                            kM71, "5687444770914304")};
+      return {
+          "TextToSpeech_DisallowedByAutoplay", kM71,
+          String::Format("speechSynthesis.speak() without user activation is "
+                         "no longer allowed since %s. See "
+                         "https://www.chromestatus.com/feature/"
+                         "5687444770914304 for more details",
+                         MilestoneString(kM71))};
 
     case WebFeature::kPPAPIWebSocket:
       // TODO(ricea): Update once we have an expected release date for M74.
@@ -606,11 +604,23 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "The Native Client Pepper WebSocket API is deprecated and will "
               "be disabled in M74, mid-2019"};
 
-    case WebFeature::kServiceWorkerImportScriptNotInstalled:
-      return {"ServiceWorkerImportScriptNotInstalled", kM71,
-              WillBeRemoved("importScripts() of new scripts after service "
-                            "worker installation",
-                            kM71, "5748516353736704")};
+    case WebFeature::kCacheStorageAddAllSuccessWithDuplicate:
+      return {"CacheStorageAddAllSuccessWithDuplicate", kM72,
+              WillBeRemoved("Cache.addAll() with duplicate requests", kM72,
+                            "5622587912617984")};
+
+    case WebFeature::kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics:
+      return {"RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics", kM72,
+              String::Format(
+                  "\"Complex\" Plan B SDP detected! Chrome will switch the "
+                  "default sdpSemantics in %s from 'plan-b' to the "
+                  "standardized 'unified-plan' format and this peer connection "
+                  "is relying on the default sdpSemantics. This SDP is not "
+                  "compatible with Unified Plan and will be rejected by "
+                  "clients expecting Unified Plan. For more information about "
+                  "how to prepare for the switch, see "
+                  "https://webrtc.org/web-apis/chrome/unified-plan/.",
+                  MilestoneString(kM72))};
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
@@ -701,12 +711,13 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
                                    WebFeature feature) {
   if (!context)
     return;
-  if (context->IsDocument()) {
-    Deprecation::CountDeprecation(*ToDocument(context), feature);
+  // TODO(dcheng): Maybe this should be a virtual on ExecutionContext?
+  if (auto* document = DynamicTo<Document>(context)) {
+    Deprecation::CountDeprecation(*document, feature);
     return;
   }
-  if (context->IsWorkerOrWorkletGlobalScope())
-    ToWorkerOrWorkletGlobalScope(context)->CountDeprecation(feature);
+  if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context))
+    scope->CountDeprecation(feature);
 }
 
 void Deprecation::CountDeprecation(const Document& document,
@@ -757,7 +768,7 @@ void Deprecation::CountDeprecationFeaturePolicy(
     return;
 
   // If the feature is allowed, don't log a warning.
-  if (frame->IsFeatureEnabled(feature))
+  if (document.IsFeatureEnabled(feature))
     return;
 
   // If the feature is disabled, log a warning but only if the request is from a

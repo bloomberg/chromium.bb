@@ -12,6 +12,8 @@
 
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/test/fake_host_frame_sink_client.h"
 #include "services/ws/event_test_utils.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -36,6 +38,9 @@
 
 namespace ws {
 namespace {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kTestPropertyKey, nullptr);
+const char kTestPropertyServerKey[] = "test-property-server";
 
 // Passed to Embed() to give the default behavior (see kEmbedFlag* in mojom for
 // details).
@@ -304,6 +309,30 @@ TEST(WindowTreeTest, SetBoundsAtEmbedWindow) {
   EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change.type);
   EXPECT_EQ(bounds2, bounds_change.bounds2);
   EXPECT_EQ(local_surface_id, bounds_change.local_surface_id);
+  embedding_helper->window_tree_client.tracker()->changes()->clear();
+
+  // Set the bounds from the parent, only updating the LocalSurfaceId (bounds
+  // remains the same). The client should be notified.
+  base::Optional<viz::LocalSurfaceId> local_surface_id2(
+      viz::LocalSurfaceId(1, 3, base::UnguessableToken::Create()));
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
+      window, bounds2, local_surface_id2));
+  EXPECT_EQ(bounds2, window->bounds());
+  ASSERT_EQ(1u,
+            embedding_helper->window_tree_client.tracker()->changes()->size());
+  const Change bounds_change2 =
+      (*(embedding_helper->window_tree_client.tracker()->changes()))[0];
+  EXPECT_EQ(CHANGE_TYPE_NODE_BOUNDS_CHANGED, bounds_change2.type);
+  EXPECT_EQ(bounds2, bounds_change2.bounds2);
+  EXPECT_EQ(local_surface_id2, bounds_change2.local_surface_id);
+  embedding_helper->window_tree_client.tracker()->changes()->clear();
+
+  // Try again with the same values. This should succeed, but not notify the
+  // client.
+  EXPECT_TRUE(setup.window_tree_test_helper()->SetWindowBounds(
+      window, bounds2, local_surface_id2));
+  EXPECT_TRUE(
+      embedding_helper->window_tree_client.tracker()->changes()->empty());
 }
 
 // Tests the ability of the client to change properties on the server.
@@ -349,6 +378,55 @@ TEST(WindowTreeTest, WindowToWindowData) {
   EXPECT_EQ(aura::PropertyConverter::PrimitiveType(true),
             mojo::ConvertTo<aura::PropertyConverter::PrimitiveType>(
                 data->properties[mojom::WindowManager::kAlwaysOnTop_Property]));
+}
+
+TEST(WindowTreeTest, SetWindowPointerProperty) {
+  WindowServiceTestSetup setup;
+  setup.service()->property_converter()->RegisterWindowPtrProperty(
+      kTestPropertyKey, kTestPropertyServerKey);
+
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level1 = helper->NewTopLevelWindow();
+  aura::Window* top_level2 = helper->NewTopLevelWindow();
+  Id id1 = helper->TransportIdForWindow(top_level1);
+  Id id2 = helper->TransportIdForWindow(top_level2);
+
+  base::Optional<std::vector<uint8_t>> value =
+      mojo::ConvertTo<std::vector<uint8_t>>(id2);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id1, kTestPropertyServerKey, value);
+  EXPECT_EQ(top_level2, top_level1->GetProperty(kTestPropertyKey));
+
+  value.reset();
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id1, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level1->GetProperty(kTestPropertyKey));
+}
+
+TEST(WindowTreeTest, SetWindowPointerPropertyWithInvalidValues) {
+  WindowServiceTestSetup setup;
+  setup.service()->property_converter()->RegisterWindowPtrProperty(
+      kTestPropertyKey, kTestPropertyServerKey);
+
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level = helper->NewTopLevelWindow();
+  Id id = helper->TransportIdForWindow(top_level);
+  base::Optional<std::vector<uint8_t>> value =
+      mojo::ConvertTo<std::vector<uint8_t>>(kInvalidTransportId);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
+
+  value = mojo::ConvertTo<std::vector<uint8_t>>(10);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
+
+  value->clear();
+  value->push_back(1);
+  setup.window_tree_test_helper()->window_tree()->SetWindowProperty(
+      1, id, kTestPropertyServerKey, value);
+  EXPECT_FALSE(top_level->GetProperty(kTestPropertyKey));
 }
 
 TEST(WindowTreeTest, OnWindowInputEventAck) {
@@ -525,22 +603,22 @@ TEST(WindowTreeTest, MovePressDragRelease) {
 
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  EXPECT_EQ("POINTER_MOVED 40,40",
+  EXPECT_EQ("MOUSE_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.PressLeftButton();
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("MOUSE_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.MoveMouseTo(0, 0);
-  EXPECT_EQ("POINTER_MOVED -10,-10",
+  EXPECT_EQ("MOUSE_DRAGGED -10,-10",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.ReleaseLeftButton();
-  EXPECT_EQ("POINTER_UP -10,-10",
+  EXPECT_EQ("MOUSE_RELEASED -10,-10",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 }
@@ -571,17 +649,17 @@ TEST(WindowTreeTest, TouchPressDragRelease) {
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.set_current_location(gfx::Point(50, 51));
   event_generator.PressTouch();
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("ET_TOUCH_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.MoveTouch(gfx::Point(5, 6));
-  EXPECT_EQ("POINTER_MOVED -5,-5",
+  EXPECT_EQ("ET_TOUCH_MOVED -5,-5",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
   event_generator.ReleaseTouch();
-  EXPECT_EQ("POINTER_UP -5,-5",
+  EXPECT_EQ("ET_TOUCH_RELEASED -5,-5",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 }
@@ -635,7 +713,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
 
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 50);
-  EXPECT_EQ("POINTER_MOVED 40,40",
+  EXPECT_EQ("MOUSE_MOVED 40,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -648,7 +726,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
   // Move the mouse over the non-client area.
   // The event is still sent to the client, and the delegate.
   event_generator.MoveMouseTo(15, 16);
-  EXPECT_EQ("POINTER_MOVED 5,6",
+  EXPECT_EQ("MOUSE_MOVED 5,6",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -678,7 +756,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
             EventToEventType(window_delegate.PopEvent().get()));
 
   event_generator.MoveMouseTo(26, 50);
-  EXPECT_EQ("POINTER_MOVED 16,40",
+  EXPECT_EQ("MOUSE_MOVED 16,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -688,7 +766,7 @@ TEST(WindowTreeTest, MoveFromClientToNonClient) {
 
   // Press in client area. Only the client should get the event.
   event_generator.PressLeftButton();
-  EXPECT_EQ("POINTER_DOWN 16,40",
+  EXPECT_EQ("MOUSE_PRESSED 16,40",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
 
@@ -721,7 +799,7 @@ TEST(WindowTreeTest, MouseDownInNonClientWithChildWindow) {
   // should get the event.
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(15, 16);
-  EXPECT_EQ("POINTER_MOVED 5,6",
+  EXPECT_EQ("MOUSE_MOVED 5,6",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
   EXPECT_TRUE(window_tree_client->input_events().empty());
@@ -773,7 +851,7 @@ TEST(WindowTreeTest, MouseDownInNonClientDragToClientWithChildWindow) {
   EXPECT_TRUE(window_tree_client->input_events().empty());
 }
 
-TEST(WindowTreeTest, SetHitTestMask) {
+TEST(WindowTreeTest, SetHitTestInsets) {
   EventRecordingWindowDelegate window_delegate;
   WindowServiceTestSetup setup;
   setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
@@ -787,19 +865,19 @@ TEST(WindowTreeTest, SetHitTestMask) {
   window_tree_client->ClearInputEvents();
   window_delegate.ClearEvents();
 
-  // Set a hit test mask in the window's bounds that excludes the top half.
-  setup.window_tree_test_helper()->SetHitTestMask(top_level,
-                                                  gfx::Rect(0, 50, 100, 50));
+  // Set the hit test insets in the window's bounds that excludes the top half.
+  setup.window_tree_test_helper()->SetHitTestInsets(
+      top_level, gfx::Insets(50, 0, 0, 0), gfx::Insets(50, 0, 0, 0));
 
-  // Events outside the hit test mask are not seen by the delegate or client.
+  // Events outside the hit test insets are not seen by the delegate or client.
   ui::test::EventGenerator event_generator(setup.root());
   event_generator.MoveMouseTo(50, 30);
   EXPECT_TRUE(window_tree_client->input_events().empty());
   EXPECT_TRUE(window_delegate.events().empty());
 
-  // Events in the hit test mask are seen by the delegate and client.
+  // Events in the hit test insets are seen by the delegate and client.
   event_generator.MoveMouseTo(50, 80);
-  EXPECT_EQ("POINTER_MOVED 40,70",
+  EXPECT_EQ("MOUSE_MOVED 40,70",
             LocatedEventToEventTypeAndLocation(
                 window_tree_client->PopInputEvent().event.get()));
   EXPECT_EQ("MOUSE_ENTERED 40,70", LocatedEventToEventTypeAndLocation(
@@ -814,10 +892,6 @@ TEST(WindowTreeTest, PointerWatcher) {
   aura::Window* top_level =
       setup.window_tree_test_helper()->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
-  setup.window_tree_test_helper()->SetEventTargetingPolicy(
-      top_level, mojom::EventTargetingPolicy::NONE);
-  EXPECT_EQ(mojom::EventTargetingPolicy::NONE,
-            top_level->event_targeting_policy());
   // Start the pointer watcher only for pointer down/up.
   setup.window_tree_test_helper()->window_tree()->StartPointerWatcher(false);
 
@@ -877,7 +951,7 @@ TEST(WindowTreeTest, MatchesPointerWatcherSet) {
   TestWindowTreeClient::InputEvent press_input =
       window_tree_client->PopInputEvent();
   ASSERT_TRUE(press_input.event);
-  EXPECT_EQ("POINTER_DOWN 40,40",
+  EXPECT_EQ("MOUSE_PRESSED 40,40",
             LocatedEventToEventTypeAndLocation(press_input.event.get()));
   EXPECT_TRUE(press_input.matches_pointer_watcher);
   // Because the event matches a pointer event there should be no observed
@@ -906,6 +980,21 @@ TEST(WindowTreeTest, Capture) {
   window->Show();
   EXPECT_TRUE(setup.window_tree_test_helper()->SetCapture(window));
   EXPECT_TRUE(setup.window_tree_test_helper()->ReleaseCapture(window));
+}
+
+TEST(WindowTreeTest, CaptureDisallowedWhenEmbedderInterceptsEvents) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
+  top_level->AddChild(window);
+  window->Show();
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(window, mojom::kEmbedFlagEmbedderInterceptsEvents);
+  ASSERT_TRUE(embedding_helper);
+  EXPECT_FALSE(embedding_helper->window_tree_test_helper->SetCapture(window));
 }
 
 TEST(WindowTreeTest, TransferCaptureToClient) {
@@ -938,7 +1027,7 @@ TEST(WindowTreeTest, TransferCaptureToClient) {
   event_generator.MoveMouseTo(8, 8);
   // Now the event should go to the client and not local.
   EXPECT_TRUE(window_delegate.events().empty());
-  EXPECT_EQ("POINTER_MOVED",
+  EXPECT_EQ("MOUSE_MOVED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
@@ -974,7 +1063,7 @@ TEST(WindowTreeTest, TransferCaptureBetweenParentAndChild) {
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
   EXPECT_TRUE(window_delegate.events().empty());
   EXPECT_EQ(
-      "POINTER_MOVED",
+      "MOUSE_MOVED",
       EventToEventType(
           embedding_helper->window_tree_client.PopInputEvent().event.get()));
   EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
@@ -982,7 +1071,7 @@ TEST(WindowTreeTest, TransferCaptureBetweenParentAndChild) {
   // Set capture from the parent, only the parent should get the event now.
   EXPECT_TRUE(setup.window_tree_test_helper()->SetCapture(top_level));
   event_generator.MoveMouseTo(8, 8);
-  EXPECT_EQ("POINTER_MOVED",
+  EXPECT_EQ("MOUSE_MOVED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
@@ -1108,54 +1197,8 @@ TEST(WindowTreeTest, EventsGoToCaptureWindow) {
   auto drag_event = setup.window_tree_client()->PopInputEvent();
   EXPECT_EQ(setup.window_tree_test_helper()->TransportIdForWindow(window),
             drag_event.window_id);
-  EXPECT_EQ("POINTER_MOVED -4,-4",
+  EXPECT_EQ("MOUSE_DRAGGED -4,-4",
             LocatedEventToEventTypeAndLocation(drag_event.event.get()));
-}
-
-TEST(WindowTreeTest, InterceptEventsOnEmbeddedWindowWithCapture) {
-  EventRecordingWindowDelegate window_delegate;
-  WindowServiceTestSetup setup;
-  aura::Window* window = setup.window_tree_test_helper()->NewWindow();
-  ASSERT_TRUE(window);
-  setup.delegate()->set_delegate_for_next_top_level(&window_delegate);
-  aura::Window* top_level =
-      setup.window_tree_test_helper()->NewTopLevelWindow();
-  ASSERT_TRUE(top_level);
-  top_level->AddChild(window);
-  top_level->Show();
-  window->Show();
-
-  // Create an embedding, and a new window in the embedding.
-  std::unique_ptr<EmbeddingHelper> embedding_helper =
-      setup.CreateEmbedding(window, mojom::kEmbedFlagEmbedderInterceptsEvents);
-  ASSERT_TRUE(embedding_helper);
-  aura::Window* window_in_child =
-      embedding_helper->window_tree_test_helper->NewWindow();
-  ASSERT_TRUE(window_in_child);
-  window_in_child->Show();
-  window->AddChild(window_in_child);
-  EXPECT_TRUE(
-      embedding_helper->window_tree_test_helper->SetCapture(window_in_child));
-
-  // Do an initial move (which generates some additional events) and clear
-  // everything out.
-  ui::test::EventGenerator event_generator(setup.root());
-  event_generator.MoveMouseTo(5, 5);
-  setup.window_tree_client()->ClearInputEvents();
-  window_delegate.ClearEvents();
-  embedding_helper->window_tree_client.ClearInputEvents();
-
-  // Move the mouse. Even though the window in the embedding has capture, the
-  // event should go to the parent client (setup.window_tree_client()), because
-  // the embedding was created such that the embedder (parent) intercepts the
-  // events.
-  event_generator.MoveMouseTo(6, 6);
-  EXPECT_TRUE(window_delegate.events().empty());
-  EXPECT_EQ("POINTER_MOVED",
-            EventToEventType(
-                setup.window_tree_client()->PopInputEvent().event.get()));
-  EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
-  EXPECT_TRUE(embedding_helper->window_tree_client.input_events().empty());
 }
 
 TEST(WindowTreeTest, PointerDownResetOnCaptureChange) {
@@ -2019,10 +2062,10 @@ TEST(WindowTreeTest, DontSendGestures) {
   // never be forwarded to the client, as it's assumed the client runs its own
   // gesture recognizer.
   event_generator.GestureTapAt(gfx::Point(10, 10));
-  EXPECT_EQ("POINTER_DOWN",
+  EXPECT_EQ("ET_TOUCH_PRESSED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
-  EXPECT_EQ("POINTER_UP",
+  EXPECT_EQ("ET_TOUCH_RELEASED",
             EventToEventType(
                 setup.window_tree_client()->PopInputEvent().event.get()));
   EXPECT_TRUE(setup.window_tree_client()->input_events().empty());
@@ -2056,6 +2099,49 @@ TEST(WindowTreeTest, DeactivateWindow) {
   setup.window_tree_test_helper()->window_tree()->DeactivateWindow(
       setup.window_tree_test_helper()->TransportIdForWindow(top_level2));
   EXPECT_TRUE(wm::IsActiveWindow(top_level1));
+}
+
+TEST(WindowTreeTest, AttachFrameSinkId) {
+  // Create two top-levels and focuses (activates) the second.
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+
+  aura::Window* child_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(child_window);
+  viz::FrameSinkId test_frame_sink_id(101, 102);
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      child_window->env()->context_factory_private()->GetHostFrameSinkManager();
+
+  // Attach a frame sink to |child_window|. This shouldn't immediately register.
+  setup.window_tree_test_helper()->window_tree()->AttachFrameSinkId(
+      setup.window_tree_test_helper()->TransportIdForWindow(child_window),
+      test_frame_sink_id);
+  EXPECT_FALSE(
+      host_frame_sink_manager->IsFrameSinkIdRegistered(test_frame_sink_id));
+
+  // Add the window to a parent, which should trigger registering the hierarchy.
+  viz::FakeHostFrameSinkClient test_host_frame_sink_client;
+  host_frame_sink_manager->RegisterFrameSinkId(test_frame_sink_id,
+                                               &test_host_frame_sink_client);
+  EXPECT_EQ(test_frame_sink_id,
+            ServerWindow::GetMayBeNull(child_window)->attached_frame_sink_id());
+  top_level->AddChild(child_window);
+  EXPECT_TRUE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
+      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      test_frame_sink_id));
+
+  // Removing the window should remove the association.
+  top_level->RemoveChild(child_window);
+  EXPECT_FALSE(host_frame_sink_manager->IsFrameSinkHierarchyRegistered(
+      ServerWindow::GetMayBeNull(top_level)->frame_sink_id(),
+      test_frame_sink_id));
+
+  setup.window_tree_test_helper()->DeleteWindow(child_window);
+
+  host_frame_sink_manager->InvalidateFrameSinkId(test_frame_sink_id);
 }
 
 }  // namespace

@@ -45,8 +45,8 @@ VideoFrameCompositor::VideoFrameCompositor(
   background_rendering_timer_.SetTaskRunner(task_runner_);
   if (submitter_.get()) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoFrameCompositor::InitializeSubmitter,
-                              weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&VideoFrameCompositor::InitializeSubmitter,
+                                  weak_ptr_factory_.GetWeakPtr()));
     update_submission_state_callback_ = media::BindToLoop(
         task_runner_,
         base::BindRepeating(&VideoFrameCompositor::UpdateSubmissionState,
@@ -192,8 +192,8 @@ void VideoFrameCompositor::Start(RenderCallback* callback) {
   DCHECK(!callback_);
   callback_ = callback;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
-                            base::Unretained(this), true));
+      FROM_HERE, base::BindOnce(&VideoFrameCompositor::OnRendererStateUpdate,
+                                base::Unretained(this), true));
 }
 
 void VideoFrameCompositor::Stop() {
@@ -204,8 +204,8 @@ void VideoFrameCompositor::Stop() {
   DCHECK(callback_);
   callback_ = nullptr;
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoFrameCompositor::OnRendererStateUpdate,
-                            base::Unretained(this), false));
+      FROM_HERE, base::BindOnce(&VideoFrameCompositor::OnRendererStateUpdate,
+                                base::Unretained(this), false));
 }
 
 void VideoFrameCompositor::PaintSingleFrame(
@@ -276,7 +276,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
 
   SetCurrentFrame(frame);
 
-  if (!new_processed_frame_cb_.is_null())
+  if (new_processed_frame_cb_)
     std::move(new_processed_frame_cb_).Run(base::TimeTicks::Now());
 
   return true;

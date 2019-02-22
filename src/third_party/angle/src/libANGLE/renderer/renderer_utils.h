@@ -153,7 +153,7 @@ struct PackPixelsParams
     PackPixelsParams(const gl::Rectangle &area,
                      const angle::Format &destFormat,
                      GLuint outputPitch,
-                     const gl::PixelPackState &pack,
+                     bool reverseRowOrderIn,
                      gl::Buffer *packBufferIn,
                      ptrdiff_t offset);
 
@@ -161,7 +161,7 @@ struct PackPixelsParams
     const angle::Format *destFormat;
     GLuint outputPitch;
     gl::Buffer *packBuffer;
-    gl::PixelPackState pack;
+    bool reverseRowOrder;
     ptrdiff_t offset;
 };
 
@@ -208,15 +208,18 @@ bool ShouldUseVirtualizedContexts(const egl::AttributeMap &attribs, bool default
 void CopyImageCHROMIUM(const uint8_t *sourceData,
                        size_t sourceRowPitch,
                        size_t sourcePixelBytes,
+                       size_t sourceDepthPitch,
                        PixelReadFunction pixelReadFunction,
                        uint8_t *destData,
                        size_t destRowPitch,
                        size_t destPixelBytes,
+                       size_t destDepthPitch,
                        PixelWriteFunction pixelWriteFunction,
                        GLenum destUnsizedFormat,
                        GLenum destComponentType,
                        size_t width,
                        size_t height,
+                       size_t depth,
                        bool unpackFlipY,
                        bool unpackPremultiplyAlpha,
                        bool unpackUnmultiplyAlpha);

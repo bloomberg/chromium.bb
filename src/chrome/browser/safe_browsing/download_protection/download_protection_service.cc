@@ -18,18 +18,19 @@
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;
@@ -176,8 +177,8 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, callback, ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
 }
 
@@ -400,8 +401,7 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
   std::string hashed = base::SHA1HashString(std::string(
       net::x509_util::CryptoBufferAsStringPiece(issuer.cert_buffer())));
   std::string issuer_fp = base::HexEncode(hashed.data(), hashed.size());
-  for (std::set<std::string>::iterator it = paths_to_check.begin();
-       it != paths_to_check.end(); ++it) {
+  for (auto it = paths_to_check.begin(); it != paths_to_check.end(); ++it) {
     whitelist_strings->push_back("cert/" + issuer_fp + *it);
   }
 }
@@ -492,11 +492,11 @@ void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(
 void DownloadProtectionService::OnDangerousDownloadOpened(
     const download::DownloadItem* item,
     Profile* profile) {
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile);
-  std::string username =
-      signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
-                     : std::string();
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfileIfExists(profile);
+  std::string username = identity_manager
+                             ? identity_manager->GetPrimaryAccountInfo().email
+                             : std::string();
 
   std::string raw_digest_sha256 = item->GetHash();
   extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
@@ -504,6 +504,19 @@ void DownloadProtectionService::OnDangerousDownloadOpened(
           item->GetURL(), item->GetTargetFilePath().AsUTF8Unsafe(),
           base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
           username);
+}
+
+bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
+    Profile* profile,
+    download::DownloadItem* download,
+    DownloadCommands::Command download_command) {
+  PrefService* prefs = profile->GetPrefs();
+  if (!profile->IsOffTheRecord() && ExtendedReportingPrefExists(*prefs) &&
+      IsExtendedReportingEnabled(*prefs)) {
+    feedback_service_->BeginFeedbackForDownload(download, download_command);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace safe_browsing

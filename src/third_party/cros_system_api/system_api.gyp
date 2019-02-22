@@ -8,11 +8,11 @@
         'proto_out_dir': 'include/system_api/proto_bindings',
       },
       'sources': [
-        '<(proto_in_dir)/mtp_storage_info.proto',
-        '<(proto_in_dir)/mtp_file_entry.proto',
         '<(proto_in_dir)/field_trial_list.proto',
+        '<(proto_in_dir)/mtp_file_entry.proto',
+        '<(proto_in_dir)/mtp_storage_info.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-protos',
@@ -22,10 +22,10 @@
         'system_api-protos-gen',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/include/system_api/proto_bindings/mtp_storage_info.pb.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/include/system_api/proto_bindings/mtp_file_entry.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/system_api/proto_bindings/field_trial_list.pb.cc',
-      ]
+        '<(SHARED_INTERMEDIATE_DIR)/include/system_api/proto_bindings/mtp_file_entry.pb.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/include/system_api/proto_bindings/mtp_storage_info.pb.cc',
+      ],
     },
     {
       'target_name': 'system_api-power_manager-protos-gen',
@@ -44,7 +44,7 @@
         '<(proto_in_dir)/suspend.proto',
         '<(proto_in_dir)/switch_states.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-power_manager-protos',
@@ -62,7 +62,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/power_supply_properties.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/suspend.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/switch_states.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-cryptohome-protos-gen',
@@ -76,7 +76,7 @@
         '<(proto_in_dir)/rpc.proto',
         '<(proto_in_dir)/signed_secret.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-cryptohome-protos',
@@ -89,7 +89,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/include/cryptohome/proto_bindings/key.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/cryptohome/proto_bindings/rpc.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/cryptohome/proto_bindings/signed_secret.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-authpolicy-protos-gen',
@@ -101,7 +101,7 @@
       'sources': [
         '<(proto_in_dir)/active_directory_info.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-authpolicy-protos',
@@ -112,7 +112,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/authpolicy/proto_bindings/active_directory_info.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-biod-protos-gen',
@@ -125,7 +125,7 @@
         '<(proto_in_dir)/constants.proto',
         '<(proto_in_dir)/messages.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-biod-protos',
@@ -137,7 +137,7 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/biod/proto_bindings/constants.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/biod/proto_bindings/messages.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-login_manager-protos-gen',
@@ -150,7 +150,7 @@
         '<(proto_in_dir)/arc.proto',
         '<(proto_in_dir)/policy_descriptor.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-login_manager-protos',
@@ -162,7 +162,7 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/login_manager/proto_bindings/arc.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/login_manager/proto_bindings/policy_descriptor.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-chaps-protos-gen',
@@ -174,7 +174,7 @@
       'sources': [
         '<(proto_in_dir)/ck_structs.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-chaps-protos',
@@ -189,7 +189,30 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/chaps/proto_bindings/ck_structs.pb.cc',
-      ]
+      ],
+    },
+    {
+      'target_name': 'system_api-metrics_event-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/metrics_event',
+        'proto_out_dir': 'include/metrics_event/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/metrics_event.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-metrics_event-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-metrics_event-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/metrics_event/proto_bindings/metrics_event.pb.cc',
+      ],
     },
     {
       'target_name': 'system_api-smbprovider-protos-gen',
@@ -201,7 +224,7 @@
       'sources': [
         '<(proto_in_dir)/directory_entry.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-smbprovider-protos',
@@ -212,7 +235,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/smbprovider/proto_bindings/directory_entry.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-vm_cicerone-protos-gen',
@@ -224,7 +247,7 @@
       'sources': [
         '<(proto_in_dir)/cicerone_service.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-vm_cicerone-goprotos-gen',
@@ -237,7 +260,7 @@
       'sources': [
         '<(proto_in_dir)/cicerone_service.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-vm_cicerone-protos',
@@ -248,7 +271,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/vm_cicerone/proto_bindings/cicerone_service.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-vm_concierge-protos-gen',
@@ -260,7 +283,7 @@
       'sources': [
         '<(proto_in_dir)/service.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-vm_concierge-goprotos-gen',
@@ -273,7 +296,7 @@
       'sources': [
         '<(proto_in_dir)/service.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-vm_concierge-protos',
@@ -284,7 +307,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/vm_concierge/proto_bindings/service.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-vm_applications-protos-gen',
@@ -296,7 +319,7 @@
       'sources': [
         '<(proto_in_dir)/apps.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-vm_applications-protos',
@@ -307,7 +330,7 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/vm_applications/proto_bindings/apps.pb.cc',
-      ]
+      ],
     },
     {
       'target_name': 'system_api-seneschal-protos-gen',
@@ -319,7 +342,7 @@
       'sources': [
         '<(proto_in_dir)/seneschal_service.proto',
       ],
-      'includes': ['../../platform2/common-mk/protoc.gypi'],
+      'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-seneschal-protos',
@@ -330,7 +353,76 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/seneschal/proto_bindings/seneschal_service.pb.cc',
-      ]
+      ],
+    },
+    {
+      'target_name': 'system_api-oobe_config-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/oobe_config',
+        'proto_out_dir': 'include/oobe_config/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/oobe_config.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-oobe_config-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-oobe_config-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/oobe_config/proto_bindings/oobe_config.pb.cc',
+      ],
+    },
+    {
+      'target_name': 'system_api-update_engine-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/update_engine',
+        'proto_out_dir': 'include/update_engine/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/update_engine.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-update_engine-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-update_engine-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/update_engine/proto_bindings/update_engine.pb.cc',
+      ],
+    },
+    {
+      'target_name': 'system_api-bootlockbox-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/bootlockbox',
+        'proto_out_dir': 'include/bootlockbox/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/boot_lockbox_rpc.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-bootlockbox-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-bootlockbox-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/bootlockbox/proto_bindings/boot_lockbox_rpc.pb.cc',
+      ],
     },
   ],
 }

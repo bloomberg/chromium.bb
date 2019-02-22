@@ -94,7 +94,7 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
                                  include_borders);
        iter; ++iter) {
     TileMapKey key(iter.index());
-    TileMap::iterator find = tiles_.find(key);
+    auto find = tiles_.find(key);
     if (find != tiles_.end())
       continue;
 
@@ -552,7 +552,7 @@ gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
 }
 
 std::unique_ptr<Tile> PictureLayerTiling::TakeTileAt(int i, int j) {
-  TileMap::iterator found = tiles_.find(TileMapKey(i, j));
+  auto found = tiles_.find(TileMapKey(i, j));
   if (found == tiles_.end())
     return nullptr;
   std::unique_ptr<Tile> result = std::move(found->second);
@@ -976,7 +976,7 @@ void PictureLayerTiling::AsValueInto(
 
 size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   size_t amount = 0;
-  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+  for (auto it = tiles_.begin(); it != tiles_.end(); ++it) {
     const Tile* tile = it->second.get();
     amount += tile->GPUMemoryUsageInBytes();
   }

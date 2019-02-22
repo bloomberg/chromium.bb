@@ -140,8 +140,8 @@ PrefProvider::PrefProvider(PrefService* prefs,
     for (const auto& pref : content_settings_prefs_)
       num_exceptions += pref.second->GetNumExceptions();
 
-    UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
-                         num_exceptions);
+    UMA_HISTOGRAM_COUNTS_1M("ContentSettings.NumberOfExceptions",
+                            num_exceptions);
   }
 }
 

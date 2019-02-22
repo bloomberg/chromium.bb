@@ -11,8 +11,6 @@ net::TLS13Variant MojoTLS13VariantToNetTLS13Variant(
   switch (tls13_variant) {
     case network::mojom::TLS13Variant::kDraft23:
       return net::kTLS13VariantDraft23;
-    case network::mojom::TLS13Variant::kDraft28:
-      return net::kTLS13VariantDraft28;
     case network::mojom::TLS13Variant::kFinal:
       return net::kTLS13VariantFinal;
   }

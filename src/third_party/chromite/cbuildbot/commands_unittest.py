@@ -270,7 +270,7 @@ FAKE OUTPUT. Will be filled in later.
                  '--tags=priority:%s' % priority,
                  '--tags=build:test-build',
                  '--tags=task_name:test-build-test-suite',
-                 '--tags=luci_project:chromiumos',
+                 '--tags=luci_project:chromeos',
                  '--tags=suite:test-suite',
                  '--tags=board:test-board',
                  '--', commands.SKYLAB_RUN_SUITE_PATH,
@@ -769,7 +769,6 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     self._board = 'test-board'
     self._buildroot = self.tempdir
-    self._overlays = ['%s/src/third_party/chromiumos-overlay' % self._buildroot]
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
 
@@ -790,13 +789,14 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testUprevPackagesMin(self):
     """See if we can generate the minimal cros_mark_as_stable commandline."""
-    commands.UprevPackages(self._buildroot, [self._board], self._overlays)
+    commands.UprevPackages(self._buildroot, [self._board],
+                           constants.PUBLIC_OVERLAYS)
     self.assertCommandContains([
         'commit', '--all',
         '--boards=%s' % self._board,
         '--drop_file=%s' % self._dropfile,
         '--buildroot', self._buildroot,
-        '--overlays', self._overlays[0],
+        '--overlay-type', 'public',
     ])
 
   def testUprevPackagesMax(self):
@@ -814,11 +814,11 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testUprevPushMin(self):
     """See if we can generate the minimal cros_mark_as_stable commandline."""
-    commands.UprevPush(self._buildroot, self._overlays)
+    commands.UprevPush(self._buildroot, overlay_type=constants.PUBLIC_OVERLAYS)
     self.assertCommandContains([
         'push',
         '--buildroot', self._buildroot,
-        '--overlays', self._overlays[0],
+        '--overlay-type', 'public',
         '--dryrun',
     ])
 
@@ -862,7 +862,6 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     """Base case where Build is called with minimal options."""
     kwargs.setdefault('build_autotest', default)
     kwargs.setdefault('usepkg', default)
-    kwargs.setdefault('chrome_binhost_only', default)
     kwargs.setdefault('skip_chroot_upgrade', default)
 
     kwargs.setdefault('event_file',

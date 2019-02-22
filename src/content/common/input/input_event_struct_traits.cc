@@ -8,6 +8,7 @@
 #include "content/common/input_messages.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {
@@ -134,8 +135,6 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
         default:
           break;
         case blink::WebInputEvent::Type::kGestureTapDown:
-        case blink::WebInputEvent::Type::kGestureTapUnconfirmed:
-        case blink::WebInputEvent::Type::kGestureDoubleTap:
           gesture_event->data.tap_down.width =
               gesture_data->contact_size->width();
           gesture_event->data.tap_down.height =
@@ -148,10 +147,13 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
               gesture_data->contact_size->height();
           break;
         case blink::WebInputEvent::Type::kGestureTap:
+        case blink::WebInputEvent::Type::kGestureTapUnconfirmed:
+        case blink::WebInputEvent::Type::kGestureDoubleTap:
           gesture_event->data.tap.width = gesture_data->contact_size->width();
           gesture_event->data.tap.height = gesture_data->contact_size->height();
           break;
         case blink::WebInputEvent::Type::kGestureLongPress:
+        case blink::WebInputEvent::Type::kGestureLongTap:
           gesture_event->data.long_press.width =
               gesture_data->contact_size->width();
           gesture_event->data.long_press.height =
@@ -330,6 +332,9 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
         wheel_event->has_precise_scrolling_deltas =
             wheel_data->has_precise_scrolling_deltas;
         wheel_event->dispatch_type = wheel_data->cancelable;
+        wheel_event->event_action =
+            static_cast<blink::WebMouseWheelEvent::EventAction>(
+                wheel_data->event_action);
       }
     }
 
@@ -381,7 +386,8 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::pointer_data(
         wheel_event->acceleration_ratio_y, wheel_event->resending_plugin_id,
         wheel_event->phase, wheel_event->momentum_phase,
         wheel_event->scroll_by_page, wheel_event->has_precise_scrolling_deltas,
-        wheel_event->dispatch_type);
+        wheel_event->dispatch_type,
+        static_cast<uint8_t>(wheel_event->event_action));
   }
 
   return PointerDataFromPointerProperties(
@@ -429,6 +435,7 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::gesture_data(
           content::mojom::TapData::New(gesture_event->data.tap.tap_count);
       break;
     case blink::WebInputEvent::Type::kGestureLongPress:
+    case blink::WebInputEvent::Type::kGestureLongTap:
       gesture_data->contact_size =
           gfx::Size(gesture_event->data.long_press.width,
                     gesture_event->data.long_press.height);

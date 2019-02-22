@@ -45,6 +45,37 @@ CustomElementDefinition* CustomElement::DefinitionForElement(
   return DefinitionForElementWithoutCheck(*element);
 }
 
+Vector<AtomicString>& CustomElement::EmbedderCustomElementNames() {
+  DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());
+  return names;
+}
+
+void CustomElement::AddEmbedderCustomElementName(const AtomicString& name) {
+  DCHECK_EQ(name, name.LowerASCII());
+  DCHECK(Document::IsValidName(name)) << name;
+  DCHECK_EQ(HTMLElementType::kHTMLUnknownElement, htmlElementTypeForTag(name))
+      << name;
+  DCHECK(!IsValidName(name, false)) << name;
+
+  if (EmbedderCustomElementNames().Contains(name))
+    return;
+  EmbedderCustomElementNames().push_back(name);
+}
+
+void CustomElement::AddEmbedderCustomElementNameForTesting(
+    const AtomicString& name,
+    ExceptionState& exception_state) {
+  if (name != name.LowerASCII() || !Document::IsValidName(name) ||
+      HTMLElementType::kHTMLUnknownElement != htmlElementTypeForTag(name) ||
+      IsValidName(name, false)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "Name cannot be used");
+    return;
+  }
+
+  AddEmbedderCustomElementName(name);
+}
+
 bool CustomElement::IsHyphenatedSpecElementName(const AtomicString& name) {
   // Even if Blink does not implement one of the related specs, (for
   // example annotation-xml is from MathML, which Blink does not
@@ -230,7 +261,8 @@ void CustomElement::EnqueueAttributeChangedCallback(
                                                 new_value);
 }
 
-void CustomElement::TryToUpgrade(Element* element) {
+void CustomElement::TryToUpgrade(Element* element,
+                                 bool upgrade_invisible_elements) {
   // Try to upgrade an element
   // https://html.spec.whatwg.org/multipage/scripting.html#concept-try-upgrade
 
@@ -244,7 +276,7 @@ void CustomElement::TryToUpgrade(Element* element) {
           registry->DefinitionFor(CustomElementDescriptor(
               is_value.IsNull() ? element->localName() : is_value,
               element->localName())))
-    definition->EnqueueUpgradeReaction(element);
+    definition->EnqueueUpgradeReaction(element, upgrade_invisible_elements);
   else
     registry->AddCandidate(element);
 }

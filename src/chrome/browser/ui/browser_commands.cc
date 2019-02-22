@@ -552,6 +552,7 @@ void OpenCurrentURL(Browser* browser) {
   // opener.
   params.tabstrip_add_types =
       TabStripModel::ADD_FORCE_INDEX | TabStripModel::ADD_INHERIT_OPENER;
+  params.input_start = location_bar->GetMatchSelectionTimestamp();
   Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1250,14 +1251,6 @@ bool CanViewSource(const Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents()->GetController().
           CanViewSource();
 }
-
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-void ToggleConfirmToQuitOption(Browser* browser) {
-  PrefService* pref_service = browser->profile()->GetPrefs();
-  bool enabled = pref_service->GetBoolean(prefs::kConfirmToQuitEnabled);
-  pref_service->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
-}
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,

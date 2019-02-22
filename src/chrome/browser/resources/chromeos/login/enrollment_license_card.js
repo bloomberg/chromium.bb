@@ -10,7 +10,7 @@
 Polymer({
   is: 'enrollment-license-card',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
     /**
@@ -49,8 +49,12 @@ Polymer({
     },
   },
 
-  get submitButton() {
-    return this.$.submitButton;
+  show: function() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+    this.$['license-selection-prompt-card'].show();
   },
 
   buttonClicked_: function() {

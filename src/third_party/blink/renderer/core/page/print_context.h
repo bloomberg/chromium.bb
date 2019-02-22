@@ -71,8 +71,8 @@ class CORE_EXPORT PrintContext
       const FloatSize& page_size_in_pixels);
 
   // These are only valid after page rects are computed.
-  size_t PageCount() const { return page_rects_.size(); }
-  const IntRect& PageRect(size_t page_number) const {
+  wtf_size_t PageCount() const { return page_rects_.size(); }
+  const IntRect& PageRect(wtf_size_t page_number) const {
     return page_rects_[page_number];
   }
   const Vector<IntRect>& PageRects() const { return page_rects_; }

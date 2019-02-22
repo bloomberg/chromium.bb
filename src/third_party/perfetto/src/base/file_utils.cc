@@ -16,10 +16,16 @@
 
 #include <sys/stat.h>
 
+#include "perfetto/base/build_config.h"
 #include "perfetto/base/file_utils.h"
-
 #include "perfetto/base/logging.h"
 #include "perfetto/base/scoped_file.h"
+
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+#include <unistd.h>
+#else
+#include <corecrt_io.h>
+#endif
 
 namespace perfetto {
 namespace base {
@@ -27,16 +33,12 @@ namespace {
 constexpr size_t kBufSize = 2048;
 }
 
-bool ReadFile(const std::string& path, std::string* out) {
+bool ReadFileDescriptor(int fd, std::string* out) {
   // Do not override existing data in string.
   size_t i = out->size();
 
-  base::ScopedFile fd = base::OpenFile(path.c_str(), O_RDONLY);
-  if (!fd)
-    return false;
-
   struct stat buf {};
-  if (fstat(*fd, &buf) != -1) {
+  if (fstat(fd, &buf) != -1) {
     if (buf.st_size > 0)
       out->resize(i + static_cast<size_t>(buf.st_size));
   }
@@ -46,7 +48,7 @@ bool ReadFile(const std::string& path, std::string* out) {
     if (out->size() < i + kBufSize)
       out->resize(out->size() + kBufSize);
 
-    bytes_read = PERFETTO_EINTR(read(fd.get(), &((*out)[i]), kBufSize));
+    bytes_read = PERFETTO_EINTR(read(fd, &((*out)[i]), kBufSize));
     if (bytes_read > 0) {
       i += static_cast<size_t>(bytes_read);
     } else {
@@ -54,6 +56,28 @@ bool ReadFile(const std::string& path, std::string* out) {
       return bytes_read == 0;
     }
   }
+}
+
+bool ReadFile(const std::string& path, std::string* out) {
+  base::ScopedFile fd = base::OpenFile(path, O_RDONLY);
+  if (!fd)
+    return false;
+
+  return ReadFileDescriptor(*fd, out);
+}
+
+ssize_t WriteAll(int fd, const void* buf, size_t count) {
+  size_t written = 0;
+  while (written < count) {
+    ssize_t wr = PERFETTO_EINTR(
+        write(fd, static_cast<const char*>(buf) + written, count - written));
+    if (wr == 0)
+      break;
+    if (wr < 0)
+      return wr;
+    written += static_cast<size_t>(wr);
+  }
+  return static_cast<ssize_t>(written);
 }
 
 }  // namespace base

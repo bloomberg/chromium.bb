@@ -68,10 +68,10 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
  public:
   ProfileDataRemover(Profile* profile,
                      bool all_data,
-                     const base::Closure& callback)
+                     base::OnceClosure callback)
       : profile_(profile),
         all_data_(all_data),
-        callback_(callback),
+        callback_(std::move(callback)),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
         remover_(content::BrowserContext::GetBrowsingDataRemover(profile)) {
     remover_->AddObserver(this);
@@ -113,14 +113,14 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
       ClearLastSignedInUserForProfile(profile_);
     }
 
-    origin_runner_->PostTask(FROM_HERE, callback_);
+    origin_runner_->PostTask(FROM_HERE, std::move(callback_));
     origin_runner_->DeleteSoon(FROM_HERE, this);
   }
 
  private:
   Profile* profile_;
   bool all_data_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_runner_;
   content::BrowsingDataRemover* remover_;
 
@@ -212,12 +212,14 @@ void SigninManagerAndroid::OnSignInCompleted(
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
-  // TODO(bauerb): This is not only called for a user-triggered signout.
-  // We should pass the reason in here from Java.
-  SigninManagerFactory::GetForProfile(profile_)
-      ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                signin_metrics::SignoutDelete::IGNORE_METRIC);
+                                   const JavaParamRef<jobject>& obj,
+                                   jint signoutReason) {
+  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+      static_cast<signin_metrics::ProfileSignout>(signoutReason),
+      // Always use IGNORE_METRIC for the profile deletion argument. Chrome
+      // Android has just a single-profile which is never deleted upon
+      // sign-out.
+      signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
 base::android::ScopedJavaLocalRef<jstring>
@@ -238,28 +240,19 @@ SigninManagerAndroid::GetManagementDomain(JNIEnv* env,
   return domain;
 }
 
-void SigninManagerAndroid::WipeProfileData(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& callback) {
-  base::android::ScopedJavaGlobalRef<jobject> java_callback;
-  java_callback.Reset(env, callback);
-
+void SigninManagerAndroid::WipeProfileData(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
   WipeData(profile_, true /* all data */,
            base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr(), java_callback));
+                      weak_factory_.GetWeakPtr()));
 }
 
 void SigninManagerAndroid::WipeGoogleServiceWorkerCaches(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& callback) {
-  base::android::ScopedJavaGlobalRef<jobject> java_callback;
-  java_callback.Reset(env, callback);
-
+    const JavaParamRef<jobject>& obj) {
   WipeData(profile_, false /* only Google service worker caches */,
            base::Bind(&SigninManagerAndroid::OnBrowsingDataRemoverDone,
-                      weak_factory_.GetWeakPtr(), java_callback));
+                      weak_factory_.GetWeakPtr()));
 }
 
 void SigninManagerAndroid::OnPolicyRegisterDone(
@@ -288,10 +281,9 @@ void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
       base::android::AttachCurrentThread(), java_signin_manager_);
 }
 
-void SigninManagerAndroid::OnBrowsingDataRemoverDone(
-    const base::android::ScopedJavaGlobalRef<jobject>& callback) {
+void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
   Java_SigninManager_onProfileDataWiped(base::android::AttachCurrentThread(),
-                                        java_signin_manager_, callback);
+                                        java_signin_manager_);
 }
 
 void SigninManagerAndroid::ClearLastSignedInUser(
@@ -334,13 +326,6 @@ jboolean SigninManagerAndroid::IsSignedInOnNative(
   return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
 }
 
-void SigninManagerAndroid::ProhibitSignout(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj,
-                                           jboolean prohibit_signout) {
-  SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(
-      prohibit_signout);
-}
-
 void SigninManagerAndroid::GoogleSigninFailed(
     const GoogleServiceAuthError& error) {}
 
@@ -363,9 +348,9 @@ void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
 // static
 void SigninManagerAndroid::WipeData(Profile* profile,
                                     bool all_data,
-                                    const base::Closure& callback) {
+                                    base::OnceClosure callback) {
   // The ProfileDataRemover deletes itself once done.
-  new ProfileDataRemover(profile, all_data, callback);
+  new ProfileDataRemover(profile, all_data, std::move(callback));
 }
 
 static jlong JNI_SigninManager_Init(JNIEnv* env,

@@ -13,22 +13,29 @@
 
 module chromeos.machine_learning.mojom;
 
-// Corresponds to tensorflow.BytesList protobuf:
 struct StringList {
   array<string> value;
 };
 
-// Corresponds to tensorflow.FloatList protobuf:
-struct FloatList  {
+struct FloatList {
   array<double> value;
 };
 
-// Corresponds to tensorflow.Int64List protobuf:
 struct Int64List {
   array<int64> value;
 };
 
-// Corresponds to tensorflow.Feature protobuf:
+// The union of all supported tensor types. Supporting a new type comprises the
+// following:
+//  - Adding a new struct above (e.g. BoolList),
+//  - Adding this new struct to the union below,
+//  - Adding template specializations for the new type to
+//    platform2/ml/tensor_view.{h,cc}.
+//  - Updating platform2/ml/graph_executor_impl.cc to use a TensorView of the
+//    new type.
+//
+// TODO(chromium:836098): add new types (e.g. uint8, bool) as they become
+//                        useful.
 union ValueList {
   StringList string_list;
   FloatList float_list;

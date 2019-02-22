@@ -58,7 +58,7 @@ class WallpaperPrivateGetSyncSettingFunction
   void CheckProfileSyncServiceStatus();
 
   // The retry number to check to profile sync service status.
-  int retry_number = 0;
+  int retry_number_ = 0;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction

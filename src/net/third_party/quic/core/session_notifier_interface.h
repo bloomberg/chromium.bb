@@ -35,7 +35,7 @@ class QUIC_EXPORT_PRIVATE SessionNotifierInterface {
   virtual bool IsFrameOutstanding(const QuicFrame& frame) const = 0;
 
   // Returns true if crypto stream is waiting for acks.
-  virtual bool HasPendingCryptoData() const = 0;
+  virtual bool HasUnackedCryptoData() const = 0;
 };
 
 }  // namespace quic

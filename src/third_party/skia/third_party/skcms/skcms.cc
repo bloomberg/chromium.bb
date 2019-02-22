@@ -1750,8 +1750,6 @@ bool skcms_ApproximateCurve(const skcms_Curve* curve,
 // ~~~~ Impl. of skcms_Transform() ~~~~
 
 typedef enum {
-    Op_noop,
-
     Op_load_a8,
     Op_load_g8,
     Op_load_4444,
@@ -1759,8 +1757,10 @@ typedef enum {
     Op_load_888,
     Op_load_8888,
     Op_load_1010102,
-    Op_load_161616,
-    Op_load_16161616,
+    Op_load_161616LE,
+    Op_load_16161616LE,
+    Op_load_161616BE,
+    Op_load_16161616BE,
     Op_load_hhh,
     Op_load_hhhh,
     Op_load_fff,
@@ -1807,8 +1807,10 @@ typedef enum {
     Op_store_888,
     Op_store_8888,
     Op_store_1010102,
-    Op_store_161616,
-    Op_store_16161616,
+    Op_store_161616LE,
+    Op_store_16161616LE,
+    Op_store_161616BE,
+    Op_store_16161616BE,
     Op_store_hhh,
     Op_store_hhhh,
     Op_store_fff,
@@ -1873,17 +1875,27 @@ namespace baseline {
     using  U8 = Vec<N,uint8_t>;
 #endif
 
-    #define ATTR
     #include "src/Transform_inl.h"
     #undef N
-    #undef ATTR
 }
 
 // Now, instantiate any other versions of run_program() we may want for runtime detection.
-#if !defined(SKCMS_PORTABLE) && (defined(__clang__) || defined(__GNUC__)) \
-        && defined(__x86_64__) && !defined(__AVX2__)
+#if !defined(SKCMS_PORTABLE) &&                           \
+        (( defined(__clang__) && __clang_major__ >= 5) || \
+         (!defined(__clang__) && defined(__GNUC__)))      \
+     && defined(__x86_64__) && !defined(__AVX2__)
+
+    #if defined(__clang__)
+        #pragma clang attribute push(__attribute__((target("avx2,f16c"))), apply_to=function)
+    #elif defined(__GNUC__)
+        #pragma GCC push_options
+        #pragma GCC target("avx2,f16c")
+    #endif
 
     namespace hsw {
+        #define USING_AVX
+        #define USING_AVX_F16C
+        #define USING_AVX2
         #define N 8
         using   F = Vec<N,float>;
         using I32 = Vec<N,int32_t>;
@@ -1892,41 +1904,17 @@ namespace baseline {
         using U16 = Vec<N,uint16_t>;
         using  U8 = Vec<N,uint8_t>;
 
-        #define ATTR __attribute__((target("avx2,f16c")))
-
-        // We check these guards to see if we have support for these features.
-        // They're likely _not_ defined here in our baseline build config.
-        #ifndef __AVX__
-            #define __AVX__ 1
-            #define UNDEF_AVX
-        #endif
-        #ifndef __F16C__
-            #define __F16C__ 1
-            #define UNDEF_F16C
-        #endif
-        #ifndef __AVX2__
-            #define __AVX2__ 1
-            #define UNDEF_AVX2
-        #endif
-
         #include "src/Transform_inl.h"
 
+        // src/Transform_inl.h will undefine USING_* for us.
         #undef N
-        #undef ATTR
-
-        #ifdef UNDEF_AVX
-            #undef __AVX__
-            #undef UNDEF_AVX
-        #endif
-        #ifdef UNDEF_F16C
-            #undef __F16C__
-            #undef UNDEF_F16C
-        #endif
-        #ifdef UNDEF_AVX2
-            #undef __AVX2__
-            #undef UNDEF_AVX2
-        #endif
     }
+
+    #if defined(__clang__)
+        #pragma clang attribute pop
+    #elif defined(__GNUC__)
+        #pragma GCC pop_options
+    #endif
 
     #define TEST_FOR_HSW
 
@@ -1990,9 +1978,11 @@ static OpAndArg select_curve_op(const skcms_Curve* curve, int channel) {
         { Op_tf_a, Op_table_8_a, Op_table_16_a },
     };
 
+    const OpAndArg noop = { Op_load_a8/*doesn't matter*/, nullptr };
+
     if (curve->table_entries == 0) {
         return is_identity_tf(&curve->parametric)
-            ? OpAndArg{ Op_noop, nullptr }
+            ? noop
             : OpAndArg{ ops[channel].parametric, &curve->parametric };
     } else if (curve->table_8) {
         return OpAndArg{ ops[channel].table_8,  curve };
@@ -2001,24 +1991,26 @@ static OpAndArg select_curve_op(const skcms_Curve* curve, int channel) {
     }
 
     assert(false);
-    return OpAndArg{Op_noop,nullptr};
+    return noop;
 }
 
 static size_t bytes_per_pixel(skcms_PixelFormat fmt) {
     switch (fmt >> 1) {   // ignore rgb/bgr
-        case skcms_PixelFormat_A_8           >> 1: return  1;
-        case skcms_PixelFormat_G_8           >> 1: return  1;
-        case skcms_PixelFormat_ABGR_4444     >> 1: return  2;
-        case skcms_PixelFormat_RGB_565       >> 1: return  2;
-        case skcms_PixelFormat_RGB_888       >> 1: return  3;
-        case skcms_PixelFormat_RGBA_8888     >> 1: return  4;
-        case skcms_PixelFormat_RGBA_1010102  >> 1: return  4;
-        case skcms_PixelFormat_RGB_161616    >> 1: return  6;
-        case skcms_PixelFormat_RGBA_16161616 >> 1: return  8;
-        case skcms_PixelFormat_RGB_hhh       >> 1: return  6;
-        case skcms_PixelFormat_RGBA_hhhh     >> 1: return  8;
-        case skcms_PixelFormat_RGB_fff       >> 1: return 12;
-        case skcms_PixelFormat_RGBA_ffff     >> 1: return 16;
+        case skcms_PixelFormat_A_8             >> 1: return  1;
+        case skcms_PixelFormat_G_8             >> 1: return  1;
+        case skcms_PixelFormat_ABGR_4444       >> 1: return  2;
+        case skcms_PixelFormat_RGB_565         >> 1: return  2;
+        case skcms_PixelFormat_RGB_888         >> 1: return  3;
+        case skcms_PixelFormat_RGBA_8888       >> 1: return  4;
+        case skcms_PixelFormat_RGBA_1010102    >> 1: return  4;
+        case skcms_PixelFormat_RGB_161616LE    >> 1: return  6;
+        case skcms_PixelFormat_RGBA_16161616LE >> 1: return  8;
+        case skcms_PixelFormat_RGB_161616BE    >> 1: return  6;
+        case skcms_PixelFormat_RGBA_16161616BE >> 1: return  8;
+        case skcms_PixelFormat_RGB_hhh         >> 1: return  6;
+        case skcms_PixelFormat_RGBA_hhhh       >> 1: return  8;
+        case skcms_PixelFormat_RGB_fff         >> 1: return 12;
+        case skcms_PixelFormat_RGBA_ffff       >> 1: return 16;
     }
     assert(false);
     return 0;
@@ -2068,10 +2060,9 @@ bool skcms_Transform(const void*             src,
     }
 
     // We can't transform in place unless the PixelFormats are the same size.
-    if (dst == src && (dstFmt >> 1) != (srcFmt >> 1)) {
+    if (dst == src && dst_bpp != src_bpp) {
         return false;
     }
-    // TODO: this check lazilly disallows U16 <-> F16, but that would actually be fine.
     // TODO: more careful alias rejection (like, dst == src + 1)?
 
     Op          program  [32];
@@ -2085,19 +2076,21 @@ bool skcms_Transform(const void*             src,
 
     switch (srcFmt >> 1) {
         default: return false;
-        case skcms_PixelFormat_A_8           >> 1: *ops++ = Op_load_a8;       break;
-        case skcms_PixelFormat_G_8           >> 1: *ops++ = Op_load_g8;       break;
-        case skcms_PixelFormat_ABGR_4444     >> 1: *ops++ = Op_load_4444;     break;
-        case skcms_PixelFormat_RGB_565       >> 1: *ops++ = Op_load_565;      break;
-        case skcms_PixelFormat_RGB_888       >> 1: *ops++ = Op_load_888;      break;
-        case skcms_PixelFormat_RGBA_8888     >> 1: *ops++ = Op_load_8888;     break;
-        case skcms_PixelFormat_RGBA_1010102  >> 1: *ops++ = Op_load_1010102;  break;
-        case skcms_PixelFormat_RGB_161616    >> 1: *ops++ = Op_load_161616;   break;
-        case skcms_PixelFormat_RGBA_16161616 >> 1: *ops++ = Op_load_16161616; break;
-        case skcms_PixelFormat_RGB_hhh       >> 1: *ops++ = Op_load_hhh;      break;
-        case skcms_PixelFormat_RGBA_hhhh     >> 1: *ops++ = Op_load_hhhh;     break;
-        case skcms_PixelFormat_RGB_fff       >> 1: *ops++ = Op_load_fff;      break;
-        case skcms_PixelFormat_RGBA_ffff     >> 1: *ops++ = Op_load_ffff;     break;
+        case skcms_PixelFormat_A_8             >> 1: *ops++ = Op_load_a8;         break;
+        case skcms_PixelFormat_G_8             >> 1: *ops++ = Op_load_g8;         break;
+        case skcms_PixelFormat_ABGR_4444       >> 1: *ops++ = Op_load_4444;       break;
+        case skcms_PixelFormat_RGB_565         >> 1: *ops++ = Op_load_565;        break;
+        case skcms_PixelFormat_RGB_888         >> 1: *ops++ = Op_load_888;        break;
+        case skcms_PixelFormat_RGBA_8888       >> 1: *ops++ = Op_load_8888;       break;
+        case skcms_PixelFormat_RGBA_1010102    >> 1: *ops++ = Op_load_1010102;    break;
+        case skcms_PixelFormat_RGB_161616LE    >> 1: *ops++ = Op_load_161616LE;   break;
+        case skcms_PixelFormat_RGBA_16161616LE >> 1: *ops++ = Op_load_16161616LE; break;
+        case skcms_PixelFormat_RGB_161616BE    >> 1: *ops++ = Op_load_161616BE;   break;
+        case skcms_PixelFormat_RGBA_16161616BE >> 1: *ops++ = Op_load_16161616BE; break;
+        case skcms_PixelFormat_RGB_hhh         >> 1: *ops++ = Op_load_hhh;        break;
+        case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_load_hhhh;       break;
+        case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_load_fff;        break;
+        case skcms_PixelFormat_RGBA_ffff       >> 1: *ops++ = Op_load_ffff;       break;
     }
     if (srcFmt & 1) {
         *ops++ = Op_swap_rb;
@@ -2125,11 +2118,7 @@ bool skcms_Transform(const void*             src,
         *ops++ = Op_unpremul;
     }
 
-    // TODO: We can skip this work if both srcAlpha and dstAlpha are PremulLinear, and the profiles
-    // are the same. Also, if dstAlpha is PremulLinear, and SrcAlpha is Opaque.
-    if (dstProfile != srcProfile ||
-        srcAlpha == skcms_AlphaFormat_PremulLinear ||
-        dstAlpha == skcms_AlphaFormat_PremulLinear) {
+    if (dstProfile != srcProfile) {
 
         if (!prep_for_destination(dstProfile,
                                   &from_xyz, &inv_dst_tf_r, &inv_dst_tf_b, &inv_dst_tf_g)) {
@@ -2140,7 +2129,7 @@ bool skcms_Transform(const void*             src,
             if (srcProfile->A2B.input_channels) {
                 for (int i = 0; i < (int)srcProfile->A2B.input_channels; i++) {
                     OpAndArg oa = select_curve_op(&srcProfile->A2B.input_curves[i], i);
-                    if (oa.op != Op_noop) {
+                    if (oa.arg) {
                         *ops++  = oa.op;
                         *args++ = oa.arg;
                     }
@@ -2158,7 +2147,7 @@ bool skcms_Transform(const void*             src,
             if (srcProfile->A2B.matrix_channels == 3) {
                 for (int i = 0; i < 3; i++) {
                     OpAndArg oa = select_curve_op(&srcProfile->A2B.matrix_curves[i], i);
-                    if (oa.op != Op_noop) {
+                    if (oa.arg) {
                         *ops++  = oa.op;
                         *args++ = oa.arg;
                     }
@@ -2178,7 +2167,7 @@ bool skcms_Transform(const void*             src,
             if (srcProfile->A2B.output_channels == 3) {
                 for (int i = 0; i < 3; i++) {
                     OpAndArg oa = select_curve_op(&srcProfile->A2B.output_curves[i], i);
-                    if (oa.op != Op_noop) {
+                    if (oa.arg) {
                         *ops++  = oa.op;
                         *args++ = oa.arg;
                     }
@@ -2192,20 +2181,13 @@ bool skcms_Transform(const void*             src,
         } else if (srcProfile->has_trc && srcProfile->has_toXYZD50) {
             for (int i = 0; i < 3; i++) {
                 OpAndArg oa = select_curve_op(&srcProfile->trc[i], i);
-                if (oa.op != Op_noop) {
+                if (oa.arg) {
                     *ops++  = oa.op;
                     *args++ = oa.arg;
                 }
             }
         } else {
             return false;
-        }
-
-        // At this point our source colors are linear, either RGB (XYZ-type profiles)
-        // or XYZ (A2B-type profiles). Unpremul is a linear operation (multiply by a
-        // constant 1/a), so either way we can do it now if needed.
-        if (srcAlpha == skcms_AlphaFormat_PremulLinear) {
-            *ops++ = Op_unpremul;
         }
 
         // A2B sources should already be in XYZD50 at this point.
@@ -2228,10 +2210,6 @@ bool skcms_Transform(const void*             src,
             from_xyz = skcms_Matrix3x3_concat(&from_xyz, to_xyz);
             *ops++  = Op_matrix_3x3;
             *args++ = &from_xyz;
-        }
-
-        if (dstAlpha == skcms_AlphaFormat_PremulLinear) {
-            *ops++ = Op_premul;
         }
 
         // Encode back to dst RGB using its parametric transfer functions.
@@ -2258,19 +2236,21 @@ bool skcms_Transform(const void*             src,
     }
     switch (dstFmt >> 1) {
         default: return false;
-        case skcms_PixelFormat_A_8           >> 1: *ops++ = Op_store_a8;       break;
-        case skcms_PixelFormat_G_8           >> 1: *ops++ = Op_store_g8;       break;
-        case skcms_PixelFormat_ABGR_4444     >> 1: *ops++ = Op_store_4444;     break;
-        case skcms_PixelFormat_RGB_565       >> 1: *ops++ = Op_store_565;      break;
-        case skcms_PixelFormat_RGB_888       >> 1: *ops++ = Op_store_888;      break;
-        case skcms_PixelFormat_RGBA_8888     >> 1: *ops++ = Op_store_8888;     break;
-        case skcms_PixelFormat_RGBA_1010102  >> 1: *ops++ = Op_store_1010102;  break;
-        case skcms_PixelFormat_RGB_161616    >> 1: *ops++ = Op_store_161616;   break;
-        case skcms_PixelFormat_RGBA_16161616 >> 1: *ops++ = Op_store_16161616; break;
-        case skcms_PixelFormat_RGB_hhh       >> 1: *ops++ = Op_store_hhh;      break;
-        case skcms_PixelFormat_RGBA_hhhh     >> 1: *ops++ = Op_store_hhhh;     break;
-        case skcms_PixelFormat_RGB_fff       >> 1: *ops++ = Op_store_fff;      break;
-        case skcms_PixelFormat_RGBA_ffff     >> 1: *ops++ = Op_store_ffff;     break;
+        case skcms_PixelFormat_A_8             >> 1: *ops++ = Op_store_a8;         break;
+        case skcms_PixelFormat_G_8             >> 1: *ops++ = Op_store_g8;         break;
+        case skcms_PixelFormat_ABGR_4444       >> 1: *ops++ = Op_store_4444;       break;
+        case skcms_PixelFormat_RGB_565         >> 1: *ops++ = Op_store_565;        break;
+        case skcms_PixelFormat_RGB_888         >> 1: *ops++ = Op_store_888;        break;
+        case skcms_PixelFormat_RGBA_8888       >> 1: *ops++ = Op_store_8888;       break;
+        case skcms_PixelFormat_RGBA_1010102    >> 1: *ops++ = Op_store_1010102;    break;
+        case skcms_PixelFormat_RGB_161616LE    >> 1: *ops++ = Op_store_161616LE;   break;
+        case skcms_PixelFormat_RGBA_16161616LE >> 1: *ops++ = Op_store_16161616LE; break;
+        case skcms_PixelFormat_RGB_161616BE    >> 1: *ops++ = Op_store_161616BE;   break;
+        case skcms_PixelFormat_RGBA_16161616BE >> 1: *ops++ = Op_store_16161616BE; break;
+        case skcms_PixelFormat_RGB_hhh         >> 1: *ops++ = Op_store_hhh;        break;
+        case skcms_PixelFormat_RGBA_hhhh       >> 1: *ops++ = Op_store_hhhh;       break;
+        case skcms_PixelFormat_RGB_fff         >> 1: *ops++ = Op_store_fff;        break;
+        case skcms_PixelFormat_RGBA_ffff       >> 1: *ops++ = Op_store_ffff;       break;
     }
 
     auto run = baseline::run_program;

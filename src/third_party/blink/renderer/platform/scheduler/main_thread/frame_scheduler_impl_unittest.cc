@@ -160,6 +160,14 @@ class FrameSchedulerImplStopNonTimersInBackgroundEnabledTest
                                {}) {}
 };
 
+class FrameSchedulerImplStopNonTimersInBackgroundDisabledTest
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplStopNonTimersInBackgroundDisabledTest()
+      : FrameSchedulerImplTest({},
+                               {blink::features::kStopNonTimersInBackground}) {}
+};
+
 namespace {
 
 class MockLifecycleObserver final : public FrameScheduler::Observer {
@@ -337,15 +345,15 @@ TEST_F(FrameSchedulerImplTest, FrameVisible_CrossOrigin_LazyInit) {
 
 TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   int counter = 0;
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
+  ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
+  DeferrableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
+  PausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
+  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   frame_scheduler_->SetPaused(true);
@@ -364,15 +372,15 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
 TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
        PageFreezeAndUnfreezeFlagEnabled) {
   int counter = 0;
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
+  ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
+  DeferrableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
+  PausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
+  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   page_scheduler_->SetPageVisible(false);
@@ -391,17 +399,18 @@ TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
+TEST_F(FrameSchedulerImplStopNonTimersInBackgroundDisabledTest,
+       PageFreezeAndUnfreezeFlagDisabled) {
   int counter = 0;
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
+  ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
+  DeferrableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
+  PausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
+  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   page_scheduler_->SetPageVisible(false);
@@ -422,17 +431,17 @@ TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
 
 TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
   std::vector<std::string> tasks;
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
-  ThrottleableTaskQueue()->PostTask(
+  ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RecordQueueName, ThrottleableTaskQueue(), &tasks));
-  DeferrableTaskQueue()->PostTask(
+  DeferrableTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RecordQueueName, DeferrableTaskQueue(), &tasks));
-  PausableTaskQueue()->PostTask(
+  PausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RecordQueueName, PausableTaskQueue(), &tasks));
-  UnpausableTaskQueue()->PostTask(
+  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&RecordQueueName, UnpausableTaskQueue(), &tasks));
 
@@ -450,7 +459,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
                          std::string(UnpausableTaskQueue()->GetName())));
 
   tasks.clear();
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
 
   EXPECT_THAT(tasks, UnorderedElementsAre());
@@ -460,7 +469,7 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
               UnorderedElementsAre(std::string(LoadingTaskQueue()->GetName())));
 
   tasks.clear();
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RecordQueueName, LoadingTaskQueue(), &tasks));
   // KeepActive is false when Service Worker stops.
   page_scheduler_->SetKeepActive(false);
@@ -480,15 +489,15 @@ TEST_F(FrameSchedulerImplTest, PageFreezeWithKeepActive) {
 TEST_F(FrameSchedulerImplStopNonTimersInBackgroundEnabledTest,
        PageFreezeAndPageVisible) {
   int counter = 0;
-  LoadingTaskQueue()->PostTask(
+  LoadingTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  ThrottleableTaskQueue()->PostTask(
+  ThrottleableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  DeferrableTaskQueue()->PostTask(
+  DeferrableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  PausableTaskQueue()->PostTask(
+  PausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  UnpausableTaskQueue()->PostTask(
+  UnpausableTaskQueue()->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   page_scheduler_->SetPageVisible(false);
@@ -1612,6 +1621,8 @@ class ThrottleableAndFreezableTaskTypesTest
 };
 
 TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 
@@ -1627,7 +1638,6 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
       task_queue->GetQueueTraits(),
       MainThreadTaskQueue::QueueTraits().SetCanBeFrozen(true).SetCanBePaused(
           true));
-
   task_queue = GetTaskQueue(TaskType::kDatabaseAccess);
   EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits()
                                               .SetCanBeThrottled(true)
@@ -1669,6 +1679,9 @@ class FreezableOnlyTaskTypesTest
 };
 
 TEST_F(FreezableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
+
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 
@@ -1726,6 +1739,9 @@ class ThrottleableOnlyTaskTypesTest
 };
 
 TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
+  if (base::FeatureList::IsEnabled(blink::features::kStopNonTimersInBackground))
+    return;
+
   // These tests will start to fail if the default task queues or queue traits
   // change for these task types.
 

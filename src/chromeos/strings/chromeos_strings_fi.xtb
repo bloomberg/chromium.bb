@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1510238584712386396">Käynnistysohjelma</translation>
+<translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
+<translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Ei tuloksia näytöllä</translation>
+<translation id="2338501278241028356">Löydä lähellä olevat laitteet ottamalla ensin Bluetooth käyttöön.</translation>
+<translation id="2805756323405976993">Sovellukset</translation>
+<translation id="2872961005593481000">Sammuta</translation>
+<translation id="3147142846278915599">Käynnistysohjelma (synkronoidaan sovelluksia…)</translation>
 <translation id="5212543919916444558">En löydä näytöltä mitään, minkä kanssa voisin auttaa sinua.
 Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
-<translation id="6674412557034343536">pysäytä ajastin</translation>
-<translation id="8626219642120025691">Ajastin valmis</translation>
+<translation id="5222676887888702881">Kirjaudu ulos</translation>
+<translation id="5457599981699367932">Selaa vierailijana</translation>
+<translation id="54609108002486618">Hallinnoitu</translation>
+<translation id="5832805196449965646">Lisää henkilö</translation>
+<translation id="5895138241574237353">Käynnistä uudelleen</translation>
+<translation id="7222902781030499995">Pysäytä ajastin</translation>
+<translation id="7658239707568436148">Peruuta</translation>
+<translation id="7837740436429729974">Aika loppui</translation>
 <translation id="8898978413391960553">00.00 s</translation>
+<translation id="9111102763498581341">Poista lukitus</translation>
 </translationbundle>

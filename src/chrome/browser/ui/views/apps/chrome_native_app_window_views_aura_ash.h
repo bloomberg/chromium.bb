@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/wm/window_state_observer.h"
+#include "ash/wm/window_state_observer.h"  // mash-ok
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"

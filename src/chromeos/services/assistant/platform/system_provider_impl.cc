@@ -66,14 +66,5 @@ void SystemProviderImpl::FlushForTesting() {
   battery_monitor_.FlushForTesting();
 }
 
-void SystemProviderImpl::ProcessTpm(TpmProcessingType type,
-                                    const std::string& data,
-                                    TpmCallback on_done) {
-  // This method is used for processing data from the TPM chip. This is inorder
-  // to access secure storage. The work is currently not complete (b:111559586).
-  // The default implementation by other platforms is to call on_done for now.
-  on_done(data);
-}
-
 }  // namespace assistant
 }  // namespace chromeos

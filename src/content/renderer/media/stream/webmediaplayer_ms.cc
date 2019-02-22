@@ -174,13 +174,17 @@ class WebMediaPlayerMS::FrameDeliverer {
   void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
-    base::TimeTicks render_time;
-    if (frame->metadata()->GetTimeTicks(
-            media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-      TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
-                   render_time.ToInternalValue());
-    } else {
-      TRACE_EVENT0("media", "EnqueueFrame");
+    bool tracing_enabled = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &tracing_enabled);
+    if (tracing_enabled) {
+      base::TimeTicks render_time;
+      if (frame->metadata()->GetTimeTicks(
+              media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+        TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
+                     render_time.ToInternalValue());
+      } else {
+        TRACE_EVENT0("media", "EnqueueFrame");
+      }
     }
 
     const bool is_opaque = media::IsOpaque(frame->format());
@@ -265,7 +269,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
     media::GpuVideoAcceleratorFactories* gpu_factories,
     const blink::WebString& sink_id,
     CreateSurfaceLayerBridgeCB create_bridge_callback,
-    bool surface_layer_for_video_enabled)
+    std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
+    blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode)
     : frame_(frame),
       network_state_(WebMediaPlayer::kNetworkStateEmpty),
       ready_state_(WebMediaPlayer::kReadyStateHaveNothing),
@@ -287,7 +292,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       volume_multiplier_(1.0),
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
-      surface_layer_for_video_enabled_(surface_layer_for_video_enabled) {
+      submitter_(std::move(submitter)),
+      surface_layer_mode_(surface_layer_mode) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);
@@ -307,7 +313,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   // Destruct compositor resources in the proper order.
   get_client()->SetCcLayer(nullptr);
   if (video_layer_) {
-    DCHECK(!surface_layer_for_video_enabled_);
+    DCHECK(surface_layer_mode_ !=
+           blink::WebMediaPlayer::SurfaceLayerMode::kAlways);
     video_layer_->StopUsingProvider();
   }
 
@@ -345,7 +352,8 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
     web_stream_.AddObserver(this);
 
   compositor_ = new WebMediaPlayerMSCompositor(
-      compositor_task_runner_, io_task_runner_, web_stream_, AsWeakPtr());
+      compositor_task_runner_, io_task_runner_, web_stream_,
+      std::move(submitter_), surface_layer_mode_, AsWeakPtr());
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -371,8 +379,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   if (frame) {
     // Report UMA and RAPPOR metrics.
-    media::ReportMetrics(load_type, url, frame_->GetSecurityOrigin(),
-                         media_log_.get());
+    media::ReportMetrics(load_type, url, *frame_, media_log_.get());
     routing_id = frame->GetRoutingID();
   }
 
@@ -442,8 +449,15 @@ void WebMediaPlayerMS::UnregisterContentsLayer(cc::Layer* layer) {
 }
 
 void WebMediaPlayerMS::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
-  // TODO(apacible): Add implementation. See http://crbug/746182.
-  NOTIMPLEMENTED();
+  // TODO(726619): Handle the behavior when Picture-in-Picture mode is
+  // disabled.
+  // The viz::SurfaceId may be updated when the video begins playback or when
+  // the size of the video changes.
+  if (client_ && IsInPictureInPicture() && !client_->IsInAutoPIP()) {
+    delegate_->DidPictureInPictureSurfaceChange(
+        delegate_id_, surface_id, NaturalSize(),
+        false /* show_play_pause_button */);
+  }
 }
 
 void WebMediaPlayerMS::TrackAdded(const blink::WebMediaStreamTrack& track) {
@@ -655,36 +669,42 @@ void WebMediaPlayerMS::SetVolume(double volume) {
 
 void WebMediaPlayerMS::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowOpenedCallback callback) {
-  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
-  std::move(callback).Run(this->NaturalSize());
+  if (!bridge_)
+    ActivateSurfaceLayerForVideo();
 
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  DCHECK(bridge_);
+
+  const viz::SurfaceId& surface_id = bridge_->GetSurfaceId();
+  DCHECK(surface_id.is_valid());
+
+  // Notifies the browser process that the player should now be in
+  // Picture-in-Picture mode.
+  delegate_->DidPictureInPictureModeStart(delegate_id_, surface_id,
+                                          NaturalSize(), std::move(callback),
+                                          false /* show_play_pause_button */);
 }
 
 void WebMediaPlayerMS::ExitPictureInPicture(
     blink::WebMediaPlayer::PipWindowClosedCallback callback) {
-  // TODO(crbug.com/806249): Run callback when Picture-in-Picture window closes.
-  std::move(callback).Run();
+  // Notifies the browser process that Picture-in-Picture has ended. It will
+  // clear out the states and close the window.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
 
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  // Internal cleanups.
+  OnPictureInPictureModeEnded();
 }
 
 void WebMediaPlayerMS::SetPictureInPictureCustomControls(
     const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+  delegate_->DidSetPictureInPictureCustomControls(delegate_id_, controls);
 }
 
 void WebMediaPlayerMS::RegisterPictureInPictureWindowResizeCallback(
-    blink::WebMediaPlayer::PipWindowResizedCallback) {
-  NOTIMPLEMENTED();
-  // TODO(apacible): Implement after video in surfaces is supported for
-  // WebMediaPlayerMS. See http://crbug/746182.
+    blink::WebMediaPlayer::PipWindowResizedCallback callback) {
+  DCHECK(IsInPictureInPicture() && !client_->IsInAutoPIP());
+
+  delegate_->RegisterPictureInPictureWindowResizeCallback(delegate_id_,
+                                                          std::move(callback));
 }
 
 void WebMediaPlayerMS::SetSinkId(
@@ -780,6 +800,11 @@ blink::WebMediaPlayer::ReadyState WebMediaPlayerMS::GetReadyState() const {
   return ready_state_;
 }
 
+blink::WebMediaPlayer::SurfaceLayerMode
+WebMediaPlayerMS::GetVideoSurfaceLayerMode() const {
+  return surface_layer_mode_;
+}
+
 blink::WebString WebMediaPlayerMS::GetErrorMessage() const {
   return blink::WebString::FromUTF8(media_log_->GetErrorMessage());
 }
@@ -811,6 +836,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
       compositor_->GetCurrentFrameWithoutUpdatingStatistics();
 
   media::Context3D context_3d;
+  gpu::ContextSupport* context_support = nullptr;
   if (frame && frame->HasTextures()) {
     auto* provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
@@ -818,26 +844,16 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
     if (!provider)
       return;
     context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-    DCHECK(context_3d.gl);
+    context_support = provider->ContextSupport();
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
   video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
-                        context_3d);
+                        context_3d, context_support);
 }
 
-bool WebMediaPlayerMS::DidGetOpaqueResponseFromServiceWorker() const {
+bool WebMediaPlayerMS::WouldTaintOrigin() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return false;
-}
-
-bool WebMediaPlayerMS::HasSingleSecurityOrigin() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
-}
-
-bool WebMediaPlayerMS::DidPassCORSAccessCheck() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
 }
 
 double WebMediaPlayerMS::MediaTimeForTimeValue(double timeValue) const {
@@ -954,7 +970,12 @@ void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
 }
 
 void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
-  NOTIMPLEMENTED();
+  // It is possible for this method to be called when the player is no longer in
+  // Picture-in-Picture mode.
+  if (!client_ || !IsInPictureInPicture())
+    return;
+
+  client_->PictureInPictureStopped();
 }
 
 void WebMediaPlayerMS::OnPictureInPictureControlClicked(
@@ -993,8 +1014,8 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      context_3d, provider->ContextSupport(), gl, video_frame.get(), target,
+      texture, internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
@@ -1075,17 +1096,59 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   return false;
 }
 
+void WebMediaPlayerMS::OnFrameSinkDestroyed() {
+  bridge_->ClearSurfaceId();
+}
+
+void WebMediaPlayerMS::ActivateSurfaceLayerForVideo() {
+  // Note that we might or might not already be in VideoLayer mode.
+  DCHECK(!bridge_);
+
+  // If we're in VideoLayer mode, then get rid of the layer.
+  if (video_layer_) {
+    client_->SetCcLayer(nullptr);
+    video_layer_ = nullptr;
+  }
+
+  bridge_ = std::move(create_bridge_callback_)
+                .Run(this, compositor_->GetUpdateSubmissionStateCallback());
+  bridge_->CreateSurfaceLayer();
+  bridge_->SetContentsOpaque(opaque_);
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebMediaPlayerMSCompositor::EnableSubmission, compositor_,
+          bridge_->GetSurfaceId(), video_rotation_, IsInPictureInPicture(),
+          opaque_,
+          media::BindToCurrentLoop(base::BindRepeating(
+              &WebMediaPlayerMS::OnFrameSinkDestroyed, AsWeakPtr()))));
+
+  // If the element is already in Picture-in-Picture mode, it means that it
+  // was set in this mode prior to this load, with a different
+  // WebMediaPlayerImpl. The new player needs to send its id, size and
+  // surface id to the browser process to make sure the states are properly
+  // updated.
+  // TODO(872056): the surface should be activated but for some reason, it
+  // does not. It is possible that this will no longer be needed after 872056
+  // is fixed.
+  if (client_->DisplayType() ==
+      WebMediaPlayer::DisplayType::kPictureInPicture) {
+    OnSurfaceIdUpdated(bridge_->GetSurfaceId());
+  }
+}
+
 void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (surface_layer_for_video_enabled_) {
-    DCHECK(!bridge_);
-
-    bridge_ = std::move(create_bridge_callback_)
-                  .Run(this, compositor_->GetUpdateSubmissionStateCallback());
-    bridge_->CreateSurfaceLayer();
+  if (surface_layer_mode_ == blink::WebMediaPlayer::SurfaceLayerMode::kAlways ||
+      (surface_layer_mode_ ==
+           blink::WebMediaPlayer::SurfaceLayerMode::kOnDemand &&
+       client_->DisplayType() ==
+           WebMediaPlayer::DisplayType::kPictureInPicture)) {
+    ActivateSurfaceLayerForVideo();
   }
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
@@ -1108,6 +1171,9 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
     DCHECK(bridge_);
 
     bridge_->SetContentsOpaque(opaque_);
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateIsOpaque,
+                                  compositor_, opaque_));
   }
 }
 
@@ -1128,10 +1194,18 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
     get_client()->SetCcLayer(new_video_layer.get());
 
     video_layer_ = std::move(new_video_layer);
-  } else if (bridge_->GetCcLayer()) {
-    // TODO(lethalantidote): Handle rotation.
-    bridge_->SetContentsOpaque(opaque_);
+  } else {
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositor::UpdateRotation,
+                                  compositor_, video_rotation));
   }
+}
+
+bool WebMediaPlayerMS::IsInPictureInPicture() const {
+  DCHECK(client_);
+  return (!client_->IsInAutoPIP() &&
+          client_->DisplayType() ==
+              WebMediaPlayer::DisplayType::kPictureInPicture);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
@@ -1181,6 +1255,19 @@ void WebMediaPlayerMS::SetGpuMemoryBufferVideoForTesting(
     media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool) {
   CHECK(frame_deliverer_);
   frame_deliverer_->gpu_memory_buffer_pool_.reset(gpu_memory_buffer_pool);
+}
+
+void WebMediaPlayerMS::OnDisplayTypeChanged(
+    WebMediaPlayer::DisplayType display_type) {
+  if (!bridge_)
+    return;
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WebMediaPlayerMSCompositor::SetForceSubmit,
+          base::Unretained(compositor_.get()),
+          display_type == WebMediaPlayer::DisplayType::kPictureInPicture));
 }
 
 }  // namespace content

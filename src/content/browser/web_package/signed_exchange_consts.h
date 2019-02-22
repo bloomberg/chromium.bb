@@ -10,7 +10,7 @@ namespace content {
 constexpr char kAcceptHeaderSignedExchangeSuffix[] =
     ",application/signed-exchange;v=b2";
 
-enum class SignedExchangeVersion { kB2 };
+enum class SignedExchangeVersion { kUnknown, kB2 };
 
 // Field names defined in the application/signed-exchange content type:
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange

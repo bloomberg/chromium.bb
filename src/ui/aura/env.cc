@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
@@ -20,6 +21,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_target_iterator.h"
@@ -113,19 +115,8 @@ std::unique_ptr<WindowPort> Env::CreateWindowPort(Window* window) {
     return std::make_unique<WindowPortForShutdown>();
 
   DCHECK(window_tree_client_);
-  WindowMusType window_mus_type;
-  switch (window->GetProperty(aura::client::kEmbedType)) {
-    case aura::client::WindowEmbedType::NONE:
-      window_mus_type = WindowMusType::LOCAL;
-      break;
-    case aura::client::WindowEmbedType::EMBED_IN_OWNER:
-      window_mus_type = WindowMusType::EMBED_IN_OWNER;
-      break;
-    default:
-      NOTREACHED();
-  }
-  // Use LOCAL as all other cases are created by WindowTreeClient explicitly.
-  return std::make_unique<WindowPortMus>(window_tree_client_, window_mus_type);
+  return std::make_unique<WindowPortMus>(window_tree_client_,
+                                         WindowMusType::LOCAL);
 }
 
 void Env::AddObserver(EnvObserver* observer) {
@@ -194,6 +185,17 @@ void Env::ScheduleEmbed(
   DCHECK_EQ(Mode::MUS, mode_);
   DCHECK(window_tree_client_);
   window_tree_client_->ScheduleEmbed(std::move(client), std::move(callback));
+}
+
+WindowOcclusionTracker* Env::GetWindowOcclusionTracker() {
+  // TODO(https://crbug.com/867150): DCHECK to ensure LOCAL aura after mus
+  //     code path is wired up.
+  if (!window_occlusion_tracker_) {
+    // Use base::WrapUnique + new because of the constructor is private.
+    window_occlusion_tracker_ = base::WrapUnique(new WindowOcclusionTracker());
+  }
+
+  return window_occlusion_tracker_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

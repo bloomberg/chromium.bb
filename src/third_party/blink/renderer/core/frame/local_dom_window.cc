@@ -30,7 +30,6 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/site_engagement.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
+#include "third_party/blink/renderer/core/dom/scripted_task_queue_controller.h"
 #include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -101,8 +102,9 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -188,17 +190,19 @@ static void UpdateSuddenTerminationStatus(
         added_listener, disabler_type);
 }
 
-using DOMWindowSet = PersistentHeapHashCountedSet<WeakMember<LocalDOMWindow>>;
+using DOMWindowSet = HeapHashCountedSet<WeakMember<LocalDOMWindow>>;
 
 static DOMWindowSet& WindowsWithUnloadEventListeners() {
-  DEFINE_STATIC_LOCAL(DOMWindowSet, windows_with_unload_event_listeners, ());
-  return windows_with_unload_event_listeners;
+  DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
+                      windows_with_unload_event_listeners, (new DOMWindowSet));
+  return *windows_with_unload_event_listeners;
 }
 
 static DOMWindowSet& WindowsWithBeforeUnloadEventListeners() {
-  DEFINE_STATIC_LOCAL(DOMWindowSet, windows_with_before_unload_event_listeners,
-                      ());
-  return windows_with_before_unload_event_listeners;
+  DEFINE_STATIC_LOCAL(Persistent<DOMWindowSet>,
+                      windows_with_before_unload_event_listeners,
+                      (new DOMWindowSet));
+  return *windows_with_before_unload_event_listeners;
 }
 
 static void TrackUnloadEventListener(LocalDOMWindow* dom_window) {
@@ -489,7 +493,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
   // potentially interfering with others.
   HeapVector<Member<LocalFrame>> frames;
   frames.push_back(GetFrame());
-  for (size_t i = 0; i < frames.size(); i++) {
+  for (wtf_size_t i = 0; i < frames.size(); i++) {
     for (Frame* child = frames[i]->Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {
       if (child->IsLocalFrame())
@@ -622,7 +626,7 @@ void LocalDOMWindow::PostMessageTimerFired(PostMessageTimer* timer) {
   if (!RuntimeEnabledFeatures::UserActivationV2Enabled() && token &&
       token->HasGestures() && document()) {
     gesture_indicator =
-        Frame::NotifyUserActivation(document()->GetFrame(), token);
+        LocalFrame::NotifyUserActivation(document()->GetFrame(), token);
   }
 
   event->EntangleMessagePorts(document());
@@ -731,27 +735,6 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
     return;
   }
 
-  switch (document()->GetEngagementLevel()) {
-    case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementNone);
-      break;
-    case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementMinimal);
-      break;
-    case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementLow);
-      break;
-    case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementMedium);
-      break;
-    case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementHigh);
-      break;
-    case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), WebFeature::kAlertEngagementMax);
-      break;
-  }
-
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
     UseCounter::Count(document(), WebFeature::kDuring_Microtask_Alert);
   }
@@ -779,27 +762,6 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
-  }
-
-  switch (document()->GetEngagementLevel()) {
-    case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementNone);
-      break;
-    case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementMinimal);
-      break;
-    case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementLow);
-      break;
-    case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementMedium);
-      break;
-    case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementHigh);
-      break;
-    case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), WebFeature::kConfirmEngagementMax);
-      break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
@@ -831,27 +793,6 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return String();
-  }
-
-  switch (document()->GetEngagementLevel()) {
-    case mojom::blink::EngagementLevel::NONE:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementNone);
-      break;
-    case mojom::blink::EngagementLevel::MINIMAL:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementMinimal);
-      break;
-    case mojom::blink::EngagementLevel::LOW:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementLow);
-      break;
-    case mojom::blink::EngagementLevel::MEDIUM:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementMedium);
-      break;
-    case mojom::blink::EngagementLevel::HIGH:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementHigh);
-      break;
-    case mojom::blink::EngagementLevel::MAX:
-      UseCounter::Count(document(), WebFeature::kPromptEngagementMax);
-      break;
   }
 
   if (v8::MicrotasksScope::IsRunningMicrotasks(script_state->GetIsolate())) {
@@ -909,9 +850,11 @@ int LocalDOMWindow::outerHeight() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Height() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Height() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Height();
 }
 
@@ -924,10 +867,11 @@ int LocalDOMWindow::outerWidth() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Width() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
-
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Width() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Width();
 }
 
@@ -984,9 +928,11 @@ int LocalDOMWindow::screenX() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().X() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().X() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().X();
 }
 
@@ -999,9 +945,11 @@ int LocalDOMWindow::screenY() const {
     return 0;
 
   ChromeClient& chrome_client = page->GetChromeClient();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk())
-    return lroundf(chrome_client.RootWindowRect().Y() *
-                   chrome_client.GetScreenInfo().device_scale_factor);
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    return static_cast<int>(
+        lroundf(chrome_client.RootWindowRect().Y() *
+                chrome_client.GetScreenInfo().device_scale_factor));
+  }
   return chrome_client.RootWindowRect().Y();
 }
 
@@ -1097,6 +1045,13 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
   return promise;
 }
 
+ScriptedTaskQueueController* LocalDOMWindow::taskQueue() const {
+  if (Document* document = this->document()) {
+    return ScriptedTaskQueueController::From(*document);
+  }
+  return nullptr;
+}
+
 double LocalDOMWindow::devicePixelRatio() const {
   if (!GetFrame())
     return 0.0;
@@ -1124,17 +1079,6 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   Page* page = GetFrame()->GetPage();
   if (!page)
     return;
-
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetFrame()->Loader().GetDocumentLoader()) {
-    GetFrame()
-        ->Loader()
-        .GetDocumentLoader()
-        ->GetInitialScrollState()
-        .was_scrolled_by_js = true;
-  }
 
   double x = 0.0;
   double y = 0.0;
@@ -1185,17 +1129,6 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   Page* page = GetFrame()->GetPage();
   if (!page)
     return;
-
-  // TODO(810510): Move this logic inside "ScrollableArea::SetScrollOffset" and
-  // rely on ScrollType to detect js scrolls and set the flag. This requires
-  // adding new scroll type to enable this.
-  if (GetFrame()->Loader().GetDocumentLoader()) {
-    GetFrame()
-        ->Loader()
-        .GetDocumentLoader()
-        ->GetInitialScrollState()
-        .was_scrolled_by_js = true;
-  }
 
   // It is only necessary to have an up-to-date layout if the position may be
   // clamped, which is never the case for (0, 0).
@@ -1323,6 +1256,12 @@ int LocalDOMWindow::webkitRequestAnimationFrame(
 void LocalDOMWindow::cancelAnimationFrame(int id) {
   if (Document* document = this->document())
     document->CancelAnimationFrame(id);
+}
+
+void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
+  Microtask::EnqueueMicrotask(WTF::Bind(
+      &V8PersistentCallbackFunction<V8VoidFunction>::InvokeAndReportException,
+      WrapPersistent(ToV8PersistentCallbackFunction(callback)), nullptr));
 }
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
@@ -1537,27 +1476,11 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
 DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
                                 LocalDOMWindow* current_window,
                                 LocalDOMWindow* entered_window,
-                                const String& url,
-                                const AtomicString& target,
-                                const String& features,
-                                ExceptionState& exception_state) {
-  if (document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
-  }
-  return openFromString(executionContext, current_window, entered_window, url,
-                        target, features, exception_state);
-}
-
-DOMWindow* LocalDOMWindow::open(ExecutionContext* executionContext,
-                                LocalDOMWindow* current_window,
-                                LocalDOMWindow* entered_window,
                                 const USVStringOrTrustedURL& stringOrUrl,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
   if (!exception_state.HadException()) {
     return openFromString(executionContext, current_window, entered_window, url,
                           target, features, exception_state);
@@ -1586,28 +1509,13 @@ DOMWindow* LocalDOMWindow::openFromString(ExecutionContext* executionContext,
                         exception_state);
 }
 
-DOMWindow* LocalDOMWindow::open(const String& url,
-                                const AtomicString& frame_name,
-                                const String& window_features_string,
-                                LocalDOMWindow* calling_window,
-                                LocalDOMWindow* entered_window,
-                                ExceptionState& exception_state) {
-  if (document_->RequireTrustedTypes()) {
-    exception_state.ThrowTypeError(
-        "This document requires `TrustedURL` assignment.");
-    return nullptr;
-  }
-  return openFromString(url, frame_name, window_features_string, calling_window,
-                        entered_window, exception_state);
-}
-
 DOMWindow* LocalDOMWindow::open(const USVStringOrTrustedURL& stringOrUrl,
                                 const AtomicString& frame_name,
                                 const String& window_features_string,
                                 LocalDOMWindow* calling_window,
                                 LocalDOMWindow* entered_window,
                                 ExceptionState& exception_state) {
-  String url = TrustedURL::GetString(stringOrUrl, document_, exception_state);
+  String url = GetStringFromTrustedURL(stringOrUrl, document_, exception_state);
   if (!exception_state.HadException()) {
     return openFromString(url, frame_name, window_features_string,
                           calling_window, entered_window, exception_state);
@@ -1663,7 +1571,8 @@ DOMWindow* LocalDOMWindow::openFromString(const String& url_string,
     if (url_string.IsEmpty())
       return target_frame->DomWindow();
 
-    target_frame->ScheduleNavigation(*active_document, completed_url, false,
+    target_frame->ScheduleNavigation(*active_document, completed_url,
+                                     WebFrameLoadType::kStandard,
                                      UserGestureStatus::kNone);
     return target_frame->DomWindow();
   }

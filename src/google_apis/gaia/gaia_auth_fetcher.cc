@@ -46,16 +46,6 @@ const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
 
 const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
-bool CookiePartsContains(const std::vector<std::string>& parts,
-                         const char* part) {
-  for (std::vector<std::string>::const_iterator it = parts.begin();
-       it != parts.end(); ++it) {
-    if (base::LowerCaseEqualsASCII(*it, part))
-      return true;
-  }
-  return false;
-}
-
 std::unique_ptr<const GaiaAuthConsumer::ClientOAuthResult>
 ExtractOAuth2TokenPairResponse(const std::string& data) {
   std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
@@ -135,9 +125,6 @@ const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
     "service=%s&"
     "Session=%s";
 // static
-const char GaiaAuthFetcher::kClientLoginToOAuth2URLFormat[] =
-    "?scope=%s&client_id=%s";
-// static
 const char GaiaAuthFetcher::kOAuth2CodeToTokenPairBodyFormat[] =
     "scope=%s&"
     "grant_type=authorization_code&"
@@ -201,19 +188,6 @@ const char GaiaAuthFetcher::kOAuthMultiBearerHeaderFormat[] =
 // static
 const char GaiaAuthFetcher::kOAuth2BearerHeaderFormat[] =
     "Authorization: Bearer %s";
-// static
-const char GaiaAuthFetcher::kDeviceIdHeaderFormat[] = "X-Device-ID: %s";
-// static
-const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartSecure[] = "secure";
-// static
-const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartHttpOnly[] =
-    "httponly";
-// static
-const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix[] =
-    "oauth_code=";
-// static
-const int GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefixLength =
-    arraysize(GaiaAuthFetcher::kClientLoginToOAuth2CookiePartCodePrefix) - 1;
 
 GaiaAuthFetcher::GaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
@@ -234,9 +208,8 @@ GaiaAuthFetcher::GaiaAuthFetcher(
           GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
       logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source)),
       get_check_connection_info_url_(
-          GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(source)),
-      deprecated_client_login_to_oauth2_gurl_(
-          GaiaUrls::GetInstance()->deprecated_client_login_to_oauth2_url()) {}
+          GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
+              source)) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
@@ -254,6 +227,11 @@ void GaiaAuthFetcher::CancelRequest() {
   fetch_pending_ = false;
 }
 
+bool GaiaAuthFetcher::IsMultiloginUrl(const GURL& url) {
+  return base::StartsWith(url.spec(), oauth_multilogin_gurl_.spec(),
+                          base::CompareCase::SENSITIVE);
+}
+
 void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
     const std::string& body,
     const std::string& headers,
@@ -265,6 +243,12 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = gaia_gurl;
   original_url_ = gaia_gurl;
+
+  if (!(load_flags & net::LOAD_DO_NOT_SEND_COOKIES)) {
+    DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url(), gaia_gurl.GetOrigin())
+        << gaia_gurl;
+    resource_request->site_for_cookies = GaiaUrls::GetInstance()->gaia_url();
+  }
 
   if (!body.empty())
     resource_request->method = "POST";
@@ -461,43 +445,6 @@ void GaiaAuthFetcher::ParseClientLoginFailure(const std::string& data,
   }
 }
 
-// static
-bool GaiaAuthFetcher::ParseClientLoginToOAuth2Response(
-    const net::ResponseCookies& cookies,
-    std::string* auth_code) {
-  DCHECK(auth_code);
-  net::ResponseCookies::const_iterator iter;
-  for (iter = cookies.begin(); iter != cookies.end(); ++iter) {
-    if (ParseClientLoginToOAuth2Cookie(*iter, auth_code))
-      return true;
-  }
-  return false;
-}
-
-// static
-bool GaiaAuthFetcher::ParseClientLoginToOAuth2Cookie(const std::string& cookie,
-                                                     std::string* auth_code) {
-  std::vector<std::string> parts = base::SplitString(
-      cookie, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  // Per documentation, the cookie should have Secure and HttpOnly.
-  if (!CookiePartsContains(parts, kClientLoginToOAuth2CookiePartSecure) ||
-      !CookiePartsContains(parts, kClientLoginToOAuth2CookiePartHttpOnly)) {
-    return false;
-  }
-
-  std::vector<std::string>::const_iterator iter;
-  for (iter = parts.begin(); iter != parts.end(); ++iter) {
-    const std::string& part = *iter;
-    if (base::StartsWith(part, kClientLoginToOAuth2CookiePartCodePrefix,
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      auth_code->assign(part.substr(
-          kClientLoginToOAuth2CookiePartCodePrefixLength));
-      return true;
-    }
-  }
-  return false;
-}
-
 void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -528,86 +475,6 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_revoke_gurl_,
                             kLoadFlagsIgnoreCookies, traffic_annotation);
-}
-
-void GaiaAuthFetcher::DeprecatedStartCookieForOAuthLoginTokenExchange(
-    const std::string& session_index) {
-  DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(session_index,
-                                                              std::string());
-}
-
-void GaiaAuthFetcher::
-    DeprecatedStartCookieForOAuthLoginTokenExchangeWithDeviceId(
-        const std::string& session_index,
-        const std::string& device_id) {
-  DeprecatedStartCookieForOAuthLoginTokenExchange(
-      true, session_index, GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-      device_id);
-}
-
-void GaiaAuthFetcher::DeprecatedStartCookieForOAuthLoginTokenExchange(
-    bool fetch_token_from_auth_code,
-    const std::string& session_index,
-    const std::string& client_id,
-    const std::string& device_id) {
-  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
-
-  VLOG(1) << "Starting OAuth login token fetch with cookie jar";
-
-  std::string encoded_scope = net::EscapeUrlEncodedData(
-      GaiaConstants::kOAuth1LoginScope, true);
-  std::string encoded_client_id = net::EscapeUrlEncodedData(client_id, true);
-  std::string query_string =
-      base::StringPrintf(kClientLoginToOAuth2URLFormat, encoded_scope.c_str(),
-                         encoded_client_id.c_str());
-  if (!device_id.empty())
-    query_string += "&device_type=chrome";
-  if (!session_index.empty())
-    query_string += "&authuser=" + session_index;
-
-  std::string device_id_header;
-  if (!device_id.empty()) {
-    device_id_header =
-        base::StringPrintf(kDeviceIdHeaderFormat, device_id.c_str());
-  }
-
-  fetch_token_from_auth_code_ = fetch_token_from_auth_code;
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("gaia_auth_exchange_cookies", R"(
-        semantics {
-          sender: "Chrome - Google authentication API"
-          description:
-            "This request exchanges the cookies of a Google signed-in user "
-            "session for an OAuth 2.0 refresh token."
-          trigger:
-            "This request is part of Gaia Auth API, and may be triggered at "
-            "the end of the Chrome sign-in flow."
-          data:
-            "The Google console client ID of the Chrome application, the ID of "
-            "the device, and the index of the session in the Google "
-            "authentication cookies."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "This feature cannot be disabled in settings, but if the user "
-            "signs out of Chrome, this request would not be made."
-          chrome_policy {
-            SigninAllowed {
-              policy_options {mode: MANDATORY}
-              SigninAllowed: false
-            }
-          }
-        })");
-
-  base::RecordAction(base::UserMetricsAction(
-      "Signin_UseDeprecatedCookieToOAuth2TokenEndpoint"));
-  CreateAndStartGaiaFetcher(
-      std::string(), device_id_header,
-      deprecated_client_login_to_oauth2_gurl_.Resolve(query_string),
-      net::LOAD_NORMAL, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
@@ -1031,30 +898,6 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
-void GaiaAuthFetcher::OnClientLoginToOAuth2Fetched(
-    const std::string& data,
-    const net::ResponseCookies& cookies,
-    net::Error net_error,
-    int response_code) {
-  if (net_error == net::OK && response_code == net::HTTP_OK) {
-    std::string auth_code;
-    if (ParseClientLoginToOAuth2Response(cookies, &auth_code)) {
-      if (fetch_token_from_auth_code_)
-        StartAuthCodeForOAuth2TokenExchange(auth_code);
-      else
-        consumer_->OnClientOAuthCode(auth_code);
-    } else {
-      GoogleServiceAuthError auth_error(
-          GoogleServiceAuthError::FromUnexpectedServiceResponse(
-              "ClientLogin response cookies didn't contain an auth code"));
-      consumer_->OnClientOAuthFailure(auth_error);
-    }
-  } else {
-    GoogleServiceAuthError auth_error(GenerateAuthError(data, net_error));
-    consumer_->OnClientOAuthFailure(auth_error);
-  }
-}
-
 void GaiaAuthFetcher::OnOAuth2TokenPairFetched(const std::string& data,
                                                net::Error net_error,
                                                int response_code) {
@@ -1211,19 +1054,18 @@ void GaiaAuthFetcher::OnOAuthMultiloginFetched(const std::string& data,
   GoogleServiceAuthError auth_error = GoogleServiceAuthError::AuthErrorNone();
   if (net_error == net::Error::OK && response_code == net::HTTP_OK) {
     OAuthMultiloginResult result;
-    if (!OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(
-            data, &result)) {
-      consumer_->OnOAuthMultiloginFailure(GoogleServiceAuthError(
-          GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
-    } else
+    const GoogleServiceAuthError error =
+        OAuthMultiloginResult::CreateOAuthMultiloginResultFromString(data,
+                                                                     &result);
+    if (error.state() != GoogleServiceAuthError::State::NONE) {
+      consumer_->OnOAuthMultiloginFailure(error);
+    } else {
       consumer_->OnOAuthMultiloginSuccess(result);
+    }
   } else {
     auth_error = GenerateAuthError(data, net_error);
     consumer_->OnOAuthMultiloginFailure(auth_error);
   }
-  UMA_HISTOGRAM_ENUMERATION("Gaia.AuthFetcher.Multilogin.AuthErrors",
-                            auth_error.state(),
-                            GoogleServiceAuthError::NUM_STATES);
 }
 
 void GaiaAuthFetcher::OnURLLoadComplete(
@@ -1267,11 +1109,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     const net::ResponseCookies& cookies,
     net::Error net_error,
     int response_code) {
-  if (base::StartsWith(url.spec(),
-                       deprecated_client_login_to_oauth2_gurl_.spec(),
-                       base::CompareCase::SENSITIVE)) {
-    OnClientLoginToOAuth2Fetched(data, cookies, net_error, response_code);
-  } else if (url == oauth2_token_gurl_) {
+  if (url == oauth2_token_gurl_) {
     OnOAuth2TokenPairFetched(data, net_error, response_code);
   } else if (url == get_user_info_gurl_) {
     OnGetUserInfoFetched(data, net_error, response_code);
@@ -1282,8 +1120,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
     OnUberAuthTokenFetch(data, net_error, response_code);
   } else if (url == oauth_login_gurl_) {
     OnOAuthLoginFetched(data, net_error, response_code);
-  } else if (base::StartsWith(url.spec(), oauth_multilogin_gurl_.spec(),
-                              base::CompareCase::SENSITIVE)) {
+  } else if (IsMultiloginUrl(url)) {
     OnOAuthMultiloginFetched(data, net_error, response_code);
   } else if (url == oauth2_revoke_gurl_) {
     OnOAuth2RevokeTokenFetched(data, net_error, response_code);
@@ -1294,7 +1131,7 @@ void GaiaAuthFetcher::DispatchFetchedRequest(
   } else if (url == get_check_connection_info_url_) {
     OnGetCheckConnectionInfoFetched(data, net_error, response_code);
   } else {
-    NOTREACHED();
+    NOTREACHED() << "Unknown url: '" << url << "'";
   }
 }
 

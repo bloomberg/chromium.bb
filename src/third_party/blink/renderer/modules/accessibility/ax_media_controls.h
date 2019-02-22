@@ -42,22 +42,20 @@ class AccessibilityMediaControl : public AXLayoutObject {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaControl() override = default;
 
-  AccessibilityRole RoleValue() const override;
+  ax::mojom::Role RoleValue() const override;
 
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
-  bool OnNativeScrollToGlobalPointAction(const IntPoint&) const override;
-  bool OnNativeScrollToMakeVisibleAction() const override;
-  bool OnNativeScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&) const override;
+  bool InternalSetAccessibilityFocusAction() override;
+  bool InternalClearAccessibilityFocusAction() override;
 
  protected:
   AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
@@ -72,8 +70,8 @@ class AccessibilityMediaTimeline final : public AXSlider {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeline() override = default;
 
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
  private:
@@ -82,21 +80,41 @@ class AccessibilityMediaTimeline final : public AXSlider {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaTimeline);
 };
 
+class AccessibilityMediaVolumeSlider final : public AXSlider {
+ public:
+  static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
+  ~AccessibilityMediaVolumeSlider() override = default;
+
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
+                     AXObjectVector* description_objects) const override;
+
+  bool InternalSetAccessibilityFocusAction() override;
+  bool InternalClearAccessibilityFocusAction() override;
+
+ private:
+  AccessibilityMediaVolumeSlider(LayoutObject*, AXObjectCacheImpl&);
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityMediaVolumeSlider);
+};
+
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXMediaControlsContainer() override = default;
 
-  AccessibilityRole RoleValue() const override { return kToolbarRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kToolbar;
+  }
 
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
-  String Description(AXNameFrom,
-                     AXDescriptionFrom&,
+  String Description(ax::mojom::NameFrom,
+                     ax::mojom::DescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
  private:
@@ -111,13 +129,15 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AccessibilityMediaTimeDisplay() override = default;
 
-  AccessibilityRole RoleValue() const override { return kStaticTextRole; }
+  ax::mojom::Role RoleValue() const override {
+    return ax::mojom::Role::kStaticText;
+  }
 
   String StringValue() const override;
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
                          AXObjectSet& visited,
-                         AXNameFrom&,
+                         ax::mojom::NameFrom&,
                          AXRelatedObjectVector*,
                          NameSources*) const override;
 

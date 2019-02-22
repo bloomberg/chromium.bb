@@ -596,8 +596,13 @@ void LayoutBlockFlow::LayoutChildren(bool relayout_children,
   ResetLayout();
 
   LayoutUnit before_edge = BorderBefore() + PaddingBefore();
-  LayoutUnit after_edge =
-      BorderAfter() + PaddingAfter() + ScrollbarLogicalHeight();
+  LayoutUnit after_edge = BorderAfter() + PaddingAfter();
+
+  if (HasFlippedBlocksWritingMode())
+    before_edge += ScrollbarLogicalHeight();
+  else
+    after_edge += ScrollbarLogicalHeight();
+
   SetLogicalHeight(before_edge);
 
   if (ChildrenInline())
@@ -671,8 +676,7 @@ DISABLE_CFI_PERF
 void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
   LayoutUnit start_position = BorderStart() + PaddingStart();
   LayoutUnit initial_start_position = start_position;
-  if (ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-    start_position -= VerticalScrollbarWidthClampedToContentBox();
+  start_position -= LogicalLeftScrollbarWidth();
   LayoutUnit total_available_logical_width =
       BorderAndPaddingLogicalWidth() + AvailableLogicalWidth();
 
@@ -2505,36 +2509,50 @@ EBreakBetween LayoutBlockFlow::BreakAfter() const {
                     : EBreakBetween::kAuto;
 }
 
-void LayoutBlockFlow::AddOverflowFromFloats() {
+void LayoutBlockFlow::AddVisualOverflowFromFloats() {
   if (!floating_objects_)
     return;
 
-  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
-  FloatingObjectSetIterator end = floating_object_set.end();
-  for (FloatingObjectSetIterator it = floating_object_set.begin(); it != end;
-       ++it) {
-    const FloatingObject& floating_object = *it->get();
-    if (floating_object.IsDescendant())
-      AddOverflowFromChild(
-          *floating_object.GetLayoutObject(),
-          LayoutSize(XPositionForFloatIncludingMargin(floating_object),
-                     YPositionForFloatIncludingMargin(floating_object)));
+  for (auto& floating_object : floating_objects_->Set()) {
+    if (floating_object->IsDescendant()) {
+      AddVisualOverflowFromChild(
+          *floating_object->GetLayoutObject(),
+          LayoutSize(XPositionForFloatIncludingMargin(*floating_object),
+                     YPositionForFloatIncludingMargin(*floating_object)));
+    }
+  }
+}
+
+void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
+  if (!floating_objects_)
+    return;
+
+  for (auto& floating_object : floating_objects_->Set()) {
+    if (floating_object->IsDescendant()) {
+      AddLayoutOverflowFromChild(
+          *floating_object->GetLayoutObject(),
+          LayoutSize(XPositionForFloatIncludingMargin(*floating_object),
+                     YPositionForFloatIncludingMargin(*floating_object)));
+    }
   }
 }
 
 scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
     const NGConstraintSpace&,
-    NGBreakToken*) const {
+    const NGBreakToken*) const {
   return nullptr;
 }
 
-scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResultForTesting() {
+scoped_refptr<const NGLayoutResult>
+LayoutBlockFlow::CachedLayoutResultForTesting() {
   return nullptr;
 }
 
 void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
-                                            NGBreakToken*,
-                                            scoped_refptr<NGLayoutResult>) {}
+                                            const NGBreakToken*,
+                                            const NGLayoutResult&) {}
+
+void LayoutBlockFlow::ClearCachedLayoutResult() {}
 
 void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
                                        scoped_refptr<const NGPhysicalFragment>,
@@ -2545,12 +2563,24 @@ void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
     scoped_refptr<const NGPhysicalFragment>,
     NGPhysicalOffset) {}
 
-void LayoutBlockFlow::ComputeOverflow(LayoutUnit old_client_after_edge,
-                                      bool recompute_floats) {
-  LayoutBlock::ComputeOverflow(old_client_after_edge, recompute_floats);
+void LayoutBlockFlow::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  LayoutBlock::ComputeVisualOverflow(previous_visual_overflow_rect,
+                                     recompute_floats);
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())
-    AddOverflowFromFloats();
+    AddVisualOverflowFromFloats();
+}
+
+void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
+                                            bool recompute_floats) {
+  LayoutBlock::ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
+  // TODO(chrishtr): why does it check for a self-painting layer? That should
+  // only apply to visual overflow.
+  if (recompute_floats || CreatesNewFormattingContext() ||
+      HasSelfPaintingLayer())
+    AddLayoutOverflowFromFloats();
 }
 
 void LayoutBlockFlow::ComputeSelfHitTestRects(
@@ -2630,6 +2660,8 @@ RootInlineBox* LayoutBlockFlow::CreateAndAppendRootInlineBox() {
   return root_box;
 }
 
+// Note: When this function is called from |LayoutInline::SplitFlow()|, some
+// fragments point to destroyed |LayoutObject|.
 void LayoutBlockFlow::DeleteLineBoxTree() {
   if (ContainsFloats())
     floating_objects_->ClearLineBoxTreePointers();
@@ -3131,7 +3163,8 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
         after_child->AddChild(new_child);
         return;
       }
-      LayoutInline* new_wrapper = LayoutInline::CreateAnonymous(&GetDocument());
+      LayoutInline* new_wrapper =
+          LayoutInline::CreateAnonymousForFirstLine(&GetDocument());
       new_wrapper->SetStyle(ComputedStyle::CreateAnonymousStyleWithDisplay(
           StyleRef(), EDisplay::kInline));
       LayoutBox::AddChild(new_wrapper, before_child);
@@ -4124,11 +4157,18 @@ void LayoutBlockFlow::AddOverhangingFloats(LayoutBlockFlow* child,
 
       // Since the float doesn't overhang, it didn't get put into our list. We
       // need to go ahead and add its overflow in to the child now.
-      if (floating_object.IsDescendant())
-        child->AddOverflowFromChild(
+      if (floating_object.IsDescendant()) {
+        // TODO(chrishtr): this looks weird, is it correct? Also, do we need
+        // both types of overflow?
+        child->AddVisualOverflowFromChild(
             *floating_object.GetLayoutObject(),
             LayoutSize(XPositionForFloatIncludingMargin(floating_object),
                        YPositionForFloatIncludingMargin(floating_object)));
+        child->AddLayoutOverflowFromChild(
+            *floating_object.GetLayoutObject(),
+            LayoutSize(XPositionForFloatIncludingMargin(floating_object),
+                       YPositionForFloatIncludingMargin(floating_object)));
+      }
     }
   }
 }
@@ -4183,9 +4223,13 @@ bool LayoutBlockFlow::HitTestChildren(
                                   ? accumulated_offset - ScrolledContentOffset()
                                   : accumulated_offset);
 
-  if (hit_test_action == kHitTestFloat &&
-      HitTestFloats(result, location_in_container, scrolled_offset))
-    return true;
+  if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
+    // Hit-test the floats using the FloatingObjects list if we're in legacy
+    // layout. LayoutNG, on the other hand, just hit-tests floats in regular
+    // tree order.
+    if (HitTestFloats(result, location_in_container, scrolled_offset))
+      return true;
+  }
 
   if (ChildrenInline()) {
     if (line_boxes_.HitTest(LineLayoutBoxModel(this), result,
@@ -4428,9 +4472,9 @@ void LayoutBlockFlow::PositionSpannerDescendant(
 DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
-      IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
-      IsFieldset() || IsCustomItem() || IsDocumentElement() || IsGridItem() ||
-      IsWritingModeRoot() || StyleRef().Display() == EDisplay::kFlowRoot ||
+      IsFlexItemIncludingDeprecated() || IsCustomItem() ||
+      IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
+      StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
       StyleRef().SpecifiesColumns() ||
       StyleRef().GetColumnSpan() == EColumnSpan::kAll) {
@@ -4438,39 +4482,8 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
     return true;
   }
 
-  // The remaining checks here are not covered by any spec, but we still need to
-  // establish new formatting contexts in some cases, for various reasons.
-
-  if (IsRubyText()) {
-    // Ruby text objects are pushed around after layout, to become flush with
-    // the associated ruby base. As such, we cannot let floats leak out from
-    // ruby text objects.
-    return true;
-  }
-
-  if (IsLayoutFlowThread()) {
-    // The spec requires multicol containers to establish new formatting
-    // contexts. Blink uses an anonymous flow thread child of the multicol
-    // container to actually perform layout inside. Therefore we need to
-    // propagate the BFCness down to the flow thread, so that floats are fully
-    // contained by the flow thread, and thereby the multicol container.
-    return true;
-  }
-
   if (IsRenderedLegend())
     return true;
-
-  if (IsTextControl()) {
-    // INPUT and other replaced elements rendered by Blink itself should be
-    // completely contained.
-    return true;
-  }
-
-  if (IsSVGForeignObject()) {
-    // This is the root of a foreign object. Don't let anything inside it escape
-    // to our ancestors.
-    return true;
-  }
 
   return false;
 }
@@ -4625,7 +4638,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   }
 }
 
-bool LayoutBlockFlow::RecalcInlineChildrenOverflowAfterStyleChange() {
+bool LayoutBlockFlow::RecalcInlineChildrenOverflow() {
   DCHECK(ChildrenInline());
   bool children_overflow_changed = false;
   ListHashSet<RootInlineBox*> line_boxes;
@@ -4813,7 +4826,7 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
 void LayoutBlockFlow::AddOutlineRects(
     Vector<LayoutRect>& rects,
     const LayoutPoint& additional_offset,
-    IncludeBlockVisualOverflowOrNot include_block_overflows) const {
+    NGOutlineType include_block_overflows) const {
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
   // them to form a single irregular shape).
@@ -4843,7 +4856,7 @@ void LayoutBlockFlow::AddOutlineRects(
   LayoutBlock::AddOutlineRects(rects, additional_offset,
                                include_block_overflows);
 
-  if (include_block_overflows == kIncludeBlockVisualOverflow &&
+  if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {
     for (RootInlineBox* curr = FirstRootBox(); curr;
          curr = curr->NextRootBox()) {

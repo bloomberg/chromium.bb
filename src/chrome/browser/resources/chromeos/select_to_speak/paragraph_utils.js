@@ -23,11 +23,12 @@ ParagraphUtils.getFirstBlockAncestor = function(node) {
     if (parent == root) {
       return parent;
     }
-    if (parent.role == RoleType.PARAGRAPH) {
+    if (parent.role == RoleType.PARAGRAPH || parent.role == RoleType.SVG_ROOT) {
       return parent;
     }
     if (parent.display !== undefined && parent.display != 'inline' &&
-        parent.role != RoleType.STATIC_TEXT) {
+        parent.role != RoleType.STATIC_TEXT &&
+        (parent.parent && parent.parent.role != RoleType.SVG_ROOT)) {
       return parent;
     }
     parent = parent.parent;
@@ -64,16 +65,55 @@ ParagraphUtils.inSameParagraph = function(first, second) {
 
 /**
  * Determines whether a string is only whitespace.
- * @param { string } name A string to test
- * @return { boolean } whether the string is only whitespace
+ * @param {string|undefined} name A string to test
+ * @return {boolean} whether the string is only whitespace
  */
 ParagraphUtils.isWhitespace = function(name) {
-  if (name.length == 0) {
+  if (name === undefined || name.length == 0) {
     return true;
   }
   // Search for one or more whitespace characters
   let re = /^\s+$/;
   return re.exec(name) != null;
+};
+
+/**
+ * Gets the text to be read aloud for a particular node.
+ * @param {!AutomationNode} node
+ * @return {string} The text to read for this node.
+ */
+ParagraphUtils.getNodeName = function(node) {
+  if (node.role === RoleType.TEXT_FIELD &&
+      (node.children === undefined || node.children.length === 0) &&
+      node.value) {
+    // A text field with no children should use its value instead of
+    // the name element, this is the contents of the text field.
+    // This occurs in native UI such as the omnibox.
+    return node.value;
+  } else if (
+      node.role === RoleType.CHECK_BOX ||
+      node.role === RoleType.MENU_ITEM_CHECK_BOX) {
+    let stateString = chrome.i18n.getMessage(
+        'select_to_speak_checkbox_' +
+        (node.checked === 'true' ?
+             'checked' :
+             (node.checked === 'mixed' ? 'mixed' : 'unchecked')));
+    return !ParagraphUtils.isWhitespace(node.name) ?
+        node.name + ' ' + stateString :
+        stateString;
+  } else if (
+      node.role === RoleType.RADIO_BUTTON ||
+      node.role === RoleType.MENU_ITEM_RADIO) {
+    let stateString = chrome.i18n.getMessage(
+        'select_to_speak_radiobutton_' +
+        (node.checked === 'true' ?
+             'selected' :
+             (node.checked === 'mixed' ? 'mixed' : 'unselected')));
+    return !ParagraphUtils.isWhitespace(node.name) ?
+        node.name + ' ' + stateString :
+        stateString;
+  }
+  return node.name ? node.name : '';
 };
 
 /**
@@ -125,7 +165,7 @@ ParagraphUtils.findInlineTextNodeByCharacterIndex = function(
  * Builds information about nodes in a group until it reaches the end of the
  * group. It may return a NodeGroup with a single node, or a large group
  * representing a paragraph of inline nodes.
- * @param {Array<AutomationNode>} nodes List of automation nodes to use.
+ * @param {Array<!AutomationNode>} nodes List of automation nodes to use.
  * @param {number} index The index into nodes at which to start.
  * @return {ParagraphUtils.NodeGroup} info about the node group
  */
@@ -143,8 +183,8 @@ ParagraphUtils.buildNodeGroup = function(nodes, index) {
   // While next node is in the same paragraph as this node AND is
   // a text type node, continue building the paragraph.
   while (index < nodes.length) {
-    if ((node.name !== undefined && !ParagraphUtils.isWhitespace(node.name)) ||
-        (node.role == RoleType.TEXT_FIELD && node.value !== undefined)) {
+    let name = ParagraphUtils.getNodeName(node);
+    if (!ParagraphUtils.isWhitespace(name)) {
       let newNode;
       if (node.role == RoleType.INLINE_TEXT_BOX && node.parent !== undefined) {
         if (node.parent.role == RoleType.STATIC_TEXT) {
@@ -166,24 +206,18 @@ ParagraphUtils.buildNodeGroup = function(nodes, index) {
               new ParagraphUtils.NodeGroupItem(node, result.text.length, false);
         }
       } else {
-        // Not an inlineTextBox node. Add it directly.
+        // Not an inlineTextBox node. Add it directly, as each node in this list
+        // is relevant.
         newNode =
             new ParagraphUtils.NodeGroupItem(node, result.text.length, false);
       }
       if (newNode) {
-        if (newNode.node.role == RoleType.TEXT_FIELD &&
-            newNode.node.children.length == 0 && newNode.node.value) {
-          // A text field with no children should use its value instead of
-          // the name element, this is the contents of the text field.
-          // This occurs in native UI such as the omnibox.
-          result.text += newNode.node.value + ' ';
-        } else {
-          result.text += newNode.node.name + ' ';
-        }
+        result.text += ParagraphUtils.getNodeName(newNode.node) + ' ';
         result.nodes.push(newNode);
       }
     }
-    if (!ParagraphUtils.inSameParagraph(node, next)) {
+    if (index + 1 >= nodes.length ||
+        !ParagraphUtils.inSameParagraph(node, next)) {
       break;
     }
     index += 1;
@@ -238,7 +272,7 @@ ParagraphUtils.NodeGroup = function(blockParent) {
  * total text, as well as the original AutomationNode it was associated
  * with.
  *
- * @param {AutomationNode} node The AutomationNode associated with this item
+ * @param {!AutomationNode} node The AutomationNode associated with this item
  * @param {number} startChar The index into the NodeGroup's text string where
  *     this item begins.
  * @param {boolean=} opt_hasInlineText If this NodeGroupItem has inlineText
@@ -247,7 +281,7 @@ ParagraphUtils.NodeGroup = function(blockParent) {
  */
 ParagraphUtils.NodeGroupItem = function(node, startChar, opt_hasInlineText) {
   /**
-   * @type {AutomationNode}
+   * @type {!AutomationNode}
    */
   this.node = node;
 

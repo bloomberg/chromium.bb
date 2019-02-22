@@ -19,11 +19,18 @@ InputTargetClientImpl::~InputTargetClientImpl() {}
 void InputTargetClientImpl::BindToRequest(
     viz::mojom::InputTargetClientRequest request) {
   DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+  binding_.Bind(std::move(request), render_frame_->GetTaskRunner(
+                                        blink::TaskType::kInternalDefault));
 }
 
 void InputTargetClientImpl::FrameSinkIdAt(const gfx::Point& point,
+                                          const uint64_t trace_id,
                                           FrameSinkIdAtCallback callback) {
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Event.Pipeline",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "FrameSinkIdAt");
+
   gfx::PointF local_point;
   viz::FrameSinkId id = render_frame_->GetRenderWidget()->GetFrameSinkIdAtPoint(
       point, &local_point);

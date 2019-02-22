@@ -793,6 +793,10 @@ std::unique_ptr<GrDrawOp> GrDashOp::MakeDashLineOp(GrContext* context,
     // Scale corrections of intervals and stroke from view matrix
     calc_dash_scaling(&lineData.fParallelScale, &lineData.fPerpendicularScale, viewMatrix,
                       lineData.fPtsRot);
+    if (SkScalarNearlyZero(lineData.fParallelScale) ||
+        SkScalarNearlyZero(lineData.fPerpendicularScale)) {
+        return nullptr;
+    }
 
     SkScalar offInterval = intervals[1] * lineData.fParallelScale;
     SkScalar strokeWidth = lineData.fSrcStrokeWidth * lineData.fPerpendicularScale;
@@ -863,9 +867,12 @@ private:
     bool                fUsesLocalCoords;
     AAMode              fAAMode;
 
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInDashParams = {"inDashParams", kHalf3_GrVertexAttribType};
-    static constexpr Attribute kInCircleParams = {"inCircleParams", kHalf2_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInDashParams =
+            {"inDashParams", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
+    static constexpr Attribute kInCircleParams =
+            {"inCircleParams", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
 
     GR_DECLARE_GEOMETRY_PROCESSOR_TEST
 
@@ -1073,9 +1080,12 @@ private:
     bool                fUsesLocalCoords;
     AAMode              fAAMode;
 
-    static constexpr Attribute kInPosition = {"inPosition", kFloat2_GrVertexAttribType};
-    static constexpr Attribute kInDashParams = {"inDashParams", kHalf3_GrVertexAttribType};
-    static constexpr Attribute kInRectParams = {"inRect", kHalf4_GrVertexAttribType};
+    static constexpr Attribute kInPosition =
+            {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+    static constexpr Attribute kInDashParams =
+            {"inDashParams", kFloat3_GrVertexAttribType, kHalf3_GrSLType};
+    static constexpr Attribute kInRectParams =
+            {"inRect", kFloat4_GrVertexAttribType, kHalf4_GrSLType};
 
     GR_DECLARE_GEOMETRY_PROCESSOR_TEST
 

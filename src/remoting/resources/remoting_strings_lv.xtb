@@ -102,7 +102,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="3171922709365450819">Šis klients neatbalsta šo ierīci, jo ierīcei ir nepieciešama trešās puses autentifikācija.</translation>
 <translation id="3194245623920924351">Chrome attālā darbvirsma</translation>
 <translation id="3197730452537982411">Attālā darbvirsma</translation>
-<translation id="3212472844831225214">• Pievienots Android 9.0 Pie atbalsts.</translation>
 <translation id="324272851072175193">Sūtīt šos norādījumus pa e-pastu</translation>
 <translation id="3258789396564295715">Varat izveidot drošu savienojumu ar šo datoru, izmantojot Chrome attālo darbvirsmu.</translation>
 <translation id="3286521253923406898">Chrome saites saimniekdatora kontrolleris</translation>
@@ -331,6 +330,8 @@ dators</translation>
 <translation id="8525306231823319788">Pilnekrāna režīms</translation>
 <translation id="8548209692293300397">Iepriekš bijāt pierakstījies kā <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Lai piekļūtu datoriem šajā kontā, <ph name="LINK_BEGIN" />pierakstieties pārlūkā Google Chrome<ph name="LINK_END" />, izmantojot šo kontu, un atkārtoti instalējiet Chrome attālo darbvirsmu.</translation>
 <translation id="8642984861538780905">viduvējs</translation>
+<translation id="8705151241155781642">• Pievienots Android 9.0 Pie atbalsts.
+• Atbalsts attālās darbvirsmas izšķirtspējas lieluma mainīšanai, lai tas atbilstu jūsu Android ierīces ekrānam.</translation>
 <translation id="8712909229180978490">Google diskā neredzu savus tiešsaistē saglabātos failus.</translation>
 <translation id="8743328882720071828">Vai atļausiet lietotājam <ph name="CLIENT_USERNAME" /> skatīt un pārvaldīt jūsu datoru?</translation>
 <translation id="8747048596626351634">Sesija avarēja, vai neizdevās to sākt. Ja attālajā datorā pastāv sesija ~/.chrome-remote-desktop-session, tai ir jāsāk ilgstošs priekšplāna process, piemēram, darbvirsmas vide vai logu pārvaldnieks.</translation>

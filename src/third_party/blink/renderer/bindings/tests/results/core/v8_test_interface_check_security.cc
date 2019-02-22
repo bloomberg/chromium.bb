@@ -14,13 +14,13 @@
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_cross_origin_setter_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/v8_cross_origin_setter_info.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
@@ -36,7 +36,7 @@ namespace blink {
 const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapperTypeInfo = {
     gin::kEmbedderBlink,
     V8TestInterfaceCheckSecurity::domTemplate,
-    nullptr,
+    V8TestInterfaceCheckSecurity::InstallConditionalFeatures,
     "TestInterfaceCheckSecurity",
     nullptr,
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
@@ -433,6 +433,24 @@ static void doNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8:
   }
 }
 
+static void secureContextRuntimeEnabledMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceCheckSecurity", "secureContextRuntimeEnabledMethod");
+
+  TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  V8StringResource<> arg;
+  arg = info[0];
+  if (!arg.Prepare())
+    return;
+
+  impl->secureContextRuntimeEnabledMethod(arg);
+}
+
 static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
   if (!name->IsString())
     return;
@@ -607,6 +625,12 @@ void V8TestInterfaceCheckSecurity::doNotCheckSecurityVoidOverloadMethodOriginSaf
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityVoidOverloadMethod_OriginSafeMethodGetter");
 
   TestInterfaceCheckSecurityV8Internal::doNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(info);
+}
+
+void V8TestInterfaceCheckSecurity::secureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_secureContextRuntimeEnabledMethod");
+
+  TestInterfaceCheckSecurityV8Internal::secureContextRuntimeEnabledMethodMethod(info);
 }
 
 void V8TestInterfaceCheckSecurity::TestInterfaceCheckSecurityOriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
@@ -814,6 +838,37 @@ TestInterfaceCheckSecurity* NativeValueTraits<TestInterfaceCheckSecurity>::Nativ
         "TestInterfaceCheckSecurity"));
   }
   return nativeValue;
+}
+
+void V8TestInterfaceCheckSecurity::InstallConditionalFeatures(
+    v8::Local<v8::Context> context,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instanceObject,
+    v8::Local<v8::Object> prototypeObject,
+    v8::Local<v8::Function> interfaceObject,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+  CHECK(!interfaceTemplate.IsEmpty());
+  DCHECK((!prototypeObject.IsEmpty() && !interfaceObject.IsEmpty()) ||
+         !instanceObject.IsEmpty());
+
+  v8::Isolate* isolate = context->GetIsolate();
+
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+  ExecutionContext* executionContext = ToExecutionContext(context);
+  DCHECK(executionContext);
+  bool isSecureContext = (executionContext && executionContext->IsSecureContext());
+
+  if (!instanceObject.IsEmpty()) {
+    if (isSecureContext) {
+      if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
+        const V8DOMConfiguration::MethodConfiguration secureContextRuntimeEnabledMethodMethodConfiguration[] = {
+          {"secureContextRuntimeEnabledMethod", V8TestInterfaceCheckSecurity::secureContextRuntimeEnabledMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
+        };
+        for (const auto& methodConfig : secureContextRuntimeEnabledMethodMethodConfiguration)
+          V8DOMConfiguration::InstallMethod(isolate, world, instanceObject, prototypeObject, interfaceObject, signature, methodConfig);
+      }
+    }
+  }
 }
 
 }  // namespace blink

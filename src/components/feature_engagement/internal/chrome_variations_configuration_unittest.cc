@@ -22,12 +22,12 @@ namespace feature_engagement {
 
 namespace {
 
-const base::Feature kTestFeatureFoo{"test_foo",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureBar{"test_bar",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kTestFeatureQux{"test_qux",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeTestFeatureFoo{"test_foo",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeTestFeatureBar{"test_bar",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeTestFeatureQux{"test_qux",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kFooTrialName[] = "FooTrial";
 const char kBarTrialName[] = "BarTrial";
@@ -52,25 +52,28 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
         base::FieldTrialList::CreateFieldTrial(kBarTrialName, kGroupName);
     base::FieldTrial* qux_trial =
         base::FieldTrialList::CreateFieldTrial(kQuxTrialName, kGroupName);
-    trials_[kTestFeatureFoo.name] = foo_trial;
-    trials_[kTestFeatureBar.name] = bar_trial;
-    trials_[kTestFeatureQux.name] = qux_trial;
+    trials_[kChromeTestFeatureFoo.name] = foo_trial;
+    trials_[kChromeTestFeatureBar.name] = bar_trial;
+    trials_[kChromeTestFeatureQux.name] = qux_trial;
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->RegisterFieldTrialOverride(
-        kTestFeatureFoo.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        kChromeTestFeatureFoo.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         foo_trial);
     feature_list->RegisterFieldTrialOverride(
-        kTestFeatureBar.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        kChromeTestFeatureBar.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         bar_trial);
     feature_list->RegisterFieldTrialOverride(
-        kTestFeatureQux.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        kChromeTestFeatureQux.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         qux_trial);
 
     scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-    EXPECT_EQ(foo_trial, base::FeatureList::GetFieldTrial(kTestFeatureFoo));
-    EXPECT_EQ(bar_trial, base::FeatureList::GetFieldTrial(kTestFeatureBar));
-    EXPECT_EQ(qux_trial, base::FeatureList::GetFieldTrial(kTestFeatureQux));
+    EXPECT_EQ(foo_trial,
+              base::FeatureList::GetFieldTrial(kChromeTestFeatureFoo));
+    EXPECT_EQ(bar_trial,
+              base::FeatureList::GetFieldTrial(kChromeTestFeatureBar));
+    EXPECT_EQ(qux_trial,
+              base::FeatureList::GetFieldTrial(kChromeTestFeatureQux));
   }
 
   void TearDown() override {
@@ -96,12 +99,12 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
     foo_params["event_used"] = "name:u;comparator:any;window:0;storage:1";
     foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
     foo_params["event_0"] = event_config;
-    SetFeatureParams(kTestFeatureFoo, foo_params);
+    SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-    std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+    std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
     configuration_.ParseFeatureConfigs(features);
 
-    FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+    FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
     EXPECT_FALSE(foo.valid);
   }
 
@@ -120,15 +123,16 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
 TEST_F(ChromeVariationsConfigurationTest,
        DisabledFeatureShouldHaveInvalidConfig) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({}, {kTestFeatureFoo});
+  scoped_feature_list.InitWithFeatures({}, {kChromeTestFeatureFoo});
 
   FeatureVector features;
-  features.push_back(&kTestFeatureFoo);
+  features.push_back(&kChromeTestFeatureFoo);
   base::HistogramTester histogram_tester;
 
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo_config = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo_config =
+      configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo_config.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -148,13 +152,13 @@ TEST_F(ChromeVariationsConfigurationTest, ParseSingleFeature) {
       "name:user_opened_app_menu;comparator:<=0;window:120;storage:180";
   foo_params["event_3"] =
       "name:user_opened_downloads_home;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -179,13 +183,13 @@ TEST_F(ChromeVariationsConfigurationTest, ParseSingleFeature) {
 TEST_F(ChromeVariationsConfigurationTest, MissingUsedIsInvalid) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -200,13 +204,13 @@ TEST_F(ChromeVariationsConfigurationTest, MissingUsedIsInvalid) {
 TEST_F(ChromeVariationsConfigurationTest, MissingTriggerIsInvalid) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -223,13 +227,13 @@ TEST_F(ChromeVariationsConfigurationTest, OnlyTriggerAndUsedIsValid) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -253,10 +257,10 @@ void RunSessionRateImpactTest(ChromeVariationsConfigurationTest* test,
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["session_rate_impact"] = session_rate_impact_param_value;
-  test->SetFeatureParams(kTestFeatureFoo, foo_params);
+  test->SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   configuration->ParseFeatureConfigs(features);
-  FeatureConfig foo = configuration->GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration->GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_EQ(is_valid, foo.valid);
 
   FeatureConfig expected_foo;
@@ -270,8 +274,8 @@ void RunSessionRateImpactTest(ChromeVariationsConfigurationTest* test,
 
 TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactAll) {
   base::HistogramTester histogram_tester;
-  RunSessionRateImpactTest(this, &configuration_, {&kTestFeatureFoo}, "all",
-                           SessionRateImpact(), true /* is_valid */);
+  RunSessionRateImpactTest(this, &configuration_, {&kChromeTestFeatureFoo},
+                           "all", SessionRateImpact(), true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -283,8 +287,8 @@ TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactNone) {
   base::HistogramTester histogram_tester;
   SessionRateImpact impact;
   impact.type = SessionRateImpact::Type::NONE;
-  RunSessionRateImpactTest(this, &configuration_, {&kTestFeatureFoo}, "none",
-                           impact, true /* is_valid */);
+  RunSessionRateImpactTest(this, &configuration_, {&kChromeTestFeatureFoo},
+                           "none", impact, true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -295,8 +299,8 @@ TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactNone) {
 TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitSelf) {
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
-      this, &configuration_, {&kTestFeatureFoo}, "test_foo",
-      CreateSessionRateImpactExplicit({kTestFeatureFoo.name}),
+      this, &configuration_, {&kChromeTestFeatureFoo}, "test_foo",
+      CreateSessionRateImpactExplicit({kChromeTestFeatureFoo.name}),
       true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -308,8 +312,8 @@ TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitSelf) {
 TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitOther) {
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
-      this, &configuration_, {&kTestFeatureFoo, &kTestFeatureBar}, "test_bar",
-      CreateSessionRateImpactExplicit({kTestFeatureBar.name}),
+      this, &configuration_, {&kChromeTestFeatureFoo, &kChromeTestFeatureBar},
+      "test_bar", CreateSessionRateImpactExplicit({kChromeTestFeatureBar.name}),
       true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -326,10 +330,10 @@ TEST_F(ChromeVariationsConfigurationTest, SessionRateImpactExplicitMultiple) {
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
       this, &configuration_,
-      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      {&kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux},
       "test_bar,test_qux",
       CreateSessionRateImpactExplicit(
-          {kTestFeatureBar.name, kTestFeatureQux.name}),
+          {kChromeTestFeatureBar.name, kChromeTestFeatureQux.name}),
       true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -347,10 +351,10 @@ TEST_F(ChromeVariationsConfigurationTest,
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
       this, &configuration_,
-      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      {&kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux},
       "test_foo,no_feature",
       CreateSessionRateImpactExplicit(
-          {kTestFeatureBar.name, kTestFeatureQux.name}),
+          {kChromeTestFeatureBar.name, kChromeTestFeatureQux.name}),
       true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -373,9 +377,10 @@ TEST_F(ChromeVariationsConfigurationTest,
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
       this, &configuration_,
-      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux}, "test_foo, ",
+      {&kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux},
+      "test_foo, ",
       CreateSessionRateImpactExplicit(
-          {kTestFeatureBar.name, kTestFeatureQux.name}),
+          {kChromeTestFeatureBar.name, kChromeTestFeatureQux.name}),
       true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -397,7 +402,7 @@ void TestInvalidSessionRateImpactParamValue(
   base::HistogramTester histogram_tester;
   RunSessionRateImpactTest(
       test, configuration,
-      {&kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux},
+      {&kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux},
       session_rate_impact_param_value, SessionRateImpact(),
       false /* is_valid */);
 
@@ -520,14 +525,14 @@ TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
   foo_params["event_6"] = "name:e6;comparator:\n<=7;window:9;storage:400";
   foo_params["event_7"] = "name:e7;comparator:<=8\n;window:10;storage:410";
   foo_params["session_rate_impact"] = " test_bar, test_qux ";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
   std::vector<const base::Feature*> features = {
-      &kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux};
+      &kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -551,7 +556,7 @@ TEST_F(ChromeVariationsConfigurationTest, WhitespaceIsValid) {
   expected_foo.event_configs.insert(
       EventConfig("e7", Comparator(LESS_THAN_OR_EQUAL, 8), 10, 410));
   expected_foo.session_rate_impact = CreateSessionRateImpactExplicit(
-      {kTestFeatureBar.name, kTestFeatureQux.name});
+      {kChromeTestFeatureBar.name, kChromeTestFeatureQux.name});
   EXPECT_EQ(expected_foo, foo);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -571,12 +576,12 @@ TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidConfigKeys) {
   foo_params["not_there_yet"] = "bogus value";                // Unrecognized.
   foo_params["still_not_there"] = "another bogus value";      // Unrecognized.
   foo_params["x_this_is_ignored"] = "this value is ignored";  // Ignored.
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -597,12 +602,12 @@ TEST_F(ChromeVariationsConfigurationTest, IgnoresInvalidEventConfigTokens) {
       "name:eu;comparator:any;window:0;storage:360;somethingelse:1";
   foo_params["event_trigger"] =
       "yesway:0;noway:1;name:et;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -663,13 +668,13 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["event_used"] = "name:eu;comparator:any;window:1;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["session_rate"] = "bogus value";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -687,13 +692,13 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["availability"] = "bogus value";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -709,13 +714,13 @@ TEST_F(ChromeVariationsConfigurationTest, InvalidUsedCausesInvalidConfig) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "bogus value";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -734,13 +739,13 @@ TEST_F(ChromeVariationsConfigurationTest, InvalidTriggerCausesInvalidConfig) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "bogus value";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   histogram_tester.ExpectBucketCount(
       kConfigParseEventName,
@@ -763,12 +768,12 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["event_used_0"] = "bogus value";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
 }
 
@@ -778,13 +783,13 @@ TEST_F(ChromeVariationsConfigurationTest,
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["tracking_only"] = "bogus value";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   base::HistogramTester histogram_tester;
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_FALSE(foo.valid);
   EXPECT_FALSE(foo.tracking_only);
   histogram_tester.ExpectBucketCount(
@@ -807,10 +812,10 @@ void RunTrackingOnlyTest(ChromeVariationsConfigurationTest* test,
   foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
   foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
   foo_params["tracking_only"] = tracking_only_definition;
-  test->SetFeatureParams(kTestFeatureFoo, foo_params);
+  test->SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   configuration->ParseFeatureConfigs(features);
-  FeatureConfig foo = configuration->GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration->GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_EQ(is_valid, foo.valid);
 
   FeatureConfig expected_foo;
@@ -823,7 +828,7 @@ void RunTrackingOnlyTest(ChromeVariationsConfigurationTest* test,
 
 TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsTrue) {
   base::HistogramTester histogram_tester;
-  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "true",
+  RunTrackingOnlyTest(this, &configuration_, {&kChromeTestFeatureFoo}, "true",
                       true /* expected_value */, true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -835,7 +840,7 @@ TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsTrue) {
 TEST_F(ChromeVariationsConfigurationTest,
        TrackingOnlyReturnsTrueCaseInsensitive) {
   base::HistogramTester histogram_tester;
-  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "tRUe",
+  RunTrackingOnlyTest(this, &configuration_, {&kChromeTestFeatureFoo}, "tRUe",
                       true /* expected_value */, true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -846,7 +851,7 @@ TEST_F(ChromeVariationsConfigurationTest,
 
 TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsFalse) {
   base::HistogramTester histogram_tester;
-  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "false",
+  RunTrackingOnlyTest(this, &configuration_, {&kChromeTestFeatureFoo}, "false",
                       false /* expected_value */, true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -858,7 +863,7 @@ TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsFalse) {
 TEST_F(ChromeVariationsConfigurationTest,
        TrackingOnlyReturnsFalseCaseInsensitive) {
   base::HistogramTester histogram_tester;
-  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "fALSe",
+  RunTrackingOnlyTest(this, &configuration_, {&kChromeTestFeatureFoo}, "fALSe",
                       false /* expected_value */, true /* is_valid */);
 
   histogram_tester.ExpectBucketCount(
@@ -878,12 +883,12 @@ TEST_F(ChromeVariationsConfigurationTest, AllComparatorTypesWork) {
   foo_params["event_6"] = "name:e6;comparator:!=6;window:26;storage:36";
   foo_params["session_rate"] = "!=6";
   foo_params["availability"] = ">=1";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -913,12 +918,12 @@ TEST_F(ChromeVariationsConfigurationTest, MultipleEventsWithSameName) {
   foo_params["event_3"] = "name:foo;comparator:<=3;window:23;storage:33";
   foo_params["session_rate"] = "any";
   foo_params["availability"] = ">1";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
-  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  std::vector<const base::Feature*> features = {&kChromeTestFeatureFoo};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
 
   FeatureConfig expected_foo;
@@ -942,11 +947,11 @@ TEST_F(ChromeVariationsConfigurationTest, ParseMultipleFeatures) {
       "name:foo_trigger;comparator:<1;window:21;storage:31";
   foo_params["session_rate"] = "==10";
   foo_params["availability"] = "<0";
-  SetFeatureParams(kTestFeatureFoo, foo_params);
+  SetFeatureParams(kChromeTestFeatureFoo, foo_params);
 
   std::map<std::string, std::string> bar_params;
   bar_params["event_used"] = "name:bar_used;comparator:ANY;window:0;storage:0";
-  SetFeatureParams(kTestFeatureBar, bar_params);
+  SetFeatureParams(kChromeTestFeatureBar, bar_params);
 
   std::map<std::string, std::string> qux_params;
   qux_params["event_used"] =
@@ -961,13 +966,13 @@ TEST_F(ChromeVariationsConfigurationTest, ParseMultipleFeatures) {
   qux_params["event_5"] = "name:q5;comparator:!=15;window:25;storage:35";
   qux_params["session_rate"] = "!=13";
   qux_params["availability"] = "==0";
-  SetFeatureParams(kTestFeatureQux, qux_params);
+  SetFeatureParams(kChromeTestFeatureQux, qux_params);
 
   std::vector<const base::Feature*> features = {
-      &kTestFeatureFoo, &kTestFeatureBar, &kTestFeatureQux};
+      &kChromeTestFeatureFoo, &kChromeTestFeatureBar, &kChromeTestFeatureQux};
   configuration_.ParseFeatureConfigs(features);
 
-  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  FeatureConfig foo = configuration_.GetFeatureConfig(kChromeTestFeatureFoo);
   EXPECT_TRUE(foo.valid);
   FeatureConfig expected_foo;
   expected_foo.valid = true;
@@ -978,10 +983,10 @@ TEST_F(ChromeVariationsConfigurationTest, ParseMultipleFeatures) {
   expected_foo.availability = Comparator(LESS_THAN, 0);
   EXPECT_EQ(expected_foo, foo);
 
-  FeatureConfig bar = configuration_.GetFeatureConfig(kTestFeatureBar);
+  FeatureConfig bar = configuration_.GetFeatureConfig(kChromeTestFeatureBar);
   EXPECT_FALSE(bar.valid);
 
-  FeatureConfig qux = configuration_.GetFeatureConfig(kTestFeatureQux);
+  FeatureConfig qux = configuration_.GetFeatureConfig(kChromeTestFeatureQux);
   EXPECT_TRUE(qux.valid);
   FeatureConfig expected_qux;
   expected_qux.valid = true;

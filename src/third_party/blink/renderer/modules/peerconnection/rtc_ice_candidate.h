@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ICE_CANDIDATE_H_
 
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -43,7 +44,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-class RTCIceCandidate final : public ScriptWrappable {
+class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

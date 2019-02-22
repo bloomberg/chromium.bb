@@ -61,6 +61,14 @@ const char kShippingMode[] = "shipping";
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
 const int kMinCommonNamePrefixLength = 16;
 
+// Returns true if the scheme given by |url| is one for which autfill is allowed
+// to activate. By default this only returns true for HTTP and HTTPS.
+bool HasAllowedScheme(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() ||
+         base::FeatureList::IsEnabled(
+             features::kAutofillAllowNonHttpActivation);
+}
+
 // Helper for |EncodeUploadRequest()| that creates a bit field corresponding to
 // |available_field_types| and returns the hex representation as a string.
 std::string EncodeFieldTypes(const ServerFieldTypeSet& available_field_types) {
@@ -344,7 +352,6 @@ FormStructure::FormStructure(const FormData& form)
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
-      is_signin_upload_(false),
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
       developer_engagement_metrics_(0) {
@@ -439,13 +446,19 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
-  if (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE) {
-    DCHECK(submission_event_ != PasswordForm::SubmissionIndicatorEvent::
-                                    SUBMISSION_INDICATOR_EVENT_COUNT);
-    upload->set_submission_event(
-        static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
-            submission_event_));
-  }
+
+  auto triggering_event =
+      (submission_event_ != PasswordForm::SubmissionIndicatorEvent::NONE)
+          ? submission_event_
+          : ToSubmissionIndicatorEvent(submission_source_);
+
+  DCHECK_LT(
+      submission_event_,
+      PasswordForm::SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+  upload->set_submission_event(
+      static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
+          triggering_event));
+
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
                                  password_length_vote_, upload);
@@ -685,13 +698,17 @@ void FormStructure::UpdateAutofillCount() {
 }
 
 bool FormStructure::ShouldBeParsed() const {
+  // Exclude URLs not on the web via HTTP(S).
+  if (!HasAllowedScheme(source_url_))
+    return false;
+
   size_t min_required_fields =
       std::min({MinRequiredFieldsForHeuristics(), MinRequiredFieldsForQuery(),
                 MinRequiredFieldsForUpload()});
   if (active_field_count() < min_required_fields &&
       (!all_fields_are_passwords() ||
        active_field_count() < kRequiredFieldsForFormsWithOnlyPasswordFields) &&
-      !is_signin_upload_ && !has_author_specified_types_) {
+      !has_author_specified_types_) {
     return false;
   }
 
@@ -713,6 +730,7 @@ bool FormStructure::ShouldBeParsed() const {
 
 bool FormStructure::ShouldRunHeuristics() const {
   return active_field_count() >= MinRequiredFieldsForHeuristics() &&
+         HasAllowedScheme(source_url_) &&
          (is_form_tag_ || is_formless_checkout_ ||
           !base::FeatureList::IsEnabled(
               features::kAutofillRestrictUnownedFieldsToFormlessCheckout));
@@ -1589,6 +1607,17 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
 
     for (const auto& field_type : field->possible_types()) {
       added_field->add_autofill_type(field_type);
+    }
+
+    field->NormalizePossibleTypesValidities();
+
+    for (const auto& field_type_validities :
+         field->possible_types_validities()) {
+      auto* type_validities = added_field->add_autofill_type_validities();
+      type_validities->set_type(field_type_validities.first);
+      for (const auto& validity : field_type_validities.second) {
+        type_validities->add_validity(validity);
+      }
     }
 
     if (field->generation_type()) {

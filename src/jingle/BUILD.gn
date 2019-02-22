@@ -197,6 +197,7 @@ test("jingle_unittests") {
     "//base/test:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

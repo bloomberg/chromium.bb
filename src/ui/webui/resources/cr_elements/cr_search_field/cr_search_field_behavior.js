@@ -32,6 +32,9 @@ var CrSearchFieldBehavior = {
     },
   },
 
+  /** @private {number} */
+  searchDelayTimer_: -1,
+
   /**
    * @return {!HTMLInputElement} The input field element the behavior should
    *     use.
@@ -59,6 +62,26 @@ var CrSearchFieldBehavior = {
     this.onValueChanged_(value, !!opt_noEvent);
   },
 
+  /** @private */
+  scheduleSearch_: function() {
+    if (this.searchDelayTimer_ >= 0)
+      clearTimeout(this.searchDelayTimer_);
+    // Dispatch 'search' event after:
+    //    0ms if the value is empty
+    //  500ms if the value length is 1
+    //  400ms if the value length is 2
+    //  300ms if the value length is 3
+    //  200ms if the value length is 4 or greater.
+    // The logic here was copied from WebKit's native 'search' event.
+    var length = this.getValue().length;
+    var timeoutMs = length > 0 ? (500 - 100 * (Math.min(length, 4) - 1)) : 0;
+    this.searchDelayTimer_ = setTimeout(() => {
+      this.getSearchInput().dispatchEvent(
+          new CustomEvent('search', {composed: true, detail: this.getValue()}));
+      this.searchDelayTimer_ = -1;
+    }, timeoutMs);
+  },
+
   onSearchTermSearch: function() {
     this.onValueChanged_(this.getValue(), false);
   },
@@ -70,6 +93,7 @@ var CrSearchFieldBehavior = {
    */
   onSearchTermInput: function() {
     this.hasSearchText = this.$.searchInput.value != '';
+    this.scheduleSearch_();
   },
 
   /**

@@ -89,7 +89,9 @@ int UtilityMain(const MainFunctionParams& parameters) {
 #endif
 
   ChildProcess utility_process;
-  utility_process.set_main_thread(new UtilityThreadImpl());
+  base::RunLoop run_loop;
+  utility_process.set_main_thread(
+      new UtilityThreadImpl(run_loop.QuitClosure()));
 
   // Both utility process and service utility process would come
   // here, but the later is launched without connection to service manager, so
@@ -123,7 +125,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  base::RunLoop().Run();
+  run_loop.Run();
 
 #if defined(LEAK_SANITIZER)
   // Invoke LeakSanitizer before shutting down the utility thread, to avoid

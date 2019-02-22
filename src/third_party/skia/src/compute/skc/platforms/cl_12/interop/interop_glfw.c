@@ -349,25 +349,25 @@ skc_interop_create()
 
   *interop = (struct skc_interop)
     {
-     .fb            = { .type        = SKC_FRAMEBUFFER_CL_GL_RENDERBUFFER,
-                        .mem         = NULL,
-                        .interop     = interop,
-                        .post_render = skc_interop_blit },
+      .fb            = { .type        = SKC_FRAMEBUFFER_CL_GL_RENDERBUFFER,
+                         .mem         = NULL,
+                         .interop     = interop,
+                         .post_render = skc_interop_blit },
 
-     .is_msecs      = false,
-     .is_srgb       = true,
-     .is_vsync_on   = false,
-     .is_fullscreen = false,
-     .is_iconified  = false,
-     .is_resized    = true,
-     .is_spinning   = false,
-     .is_transform  = true,
+      .is_msecs      = false,
+      .is_srgb       = true,
+      .is_vsync_on   = false,
+      .is_fullscreen = false,
+      .is_iconified  = false,
+      .is_resized    = true,
+      .is_spinning   = false,
+      .is_transform  = true,
 
-     .scale         = 1.0f,
-     .translate     = { 0.0f, 0.0f },
-     .rotate_theta  = 0.0f,
+      .scale         = 1.0f,
+      .translate     = { 0.0f, 0.0f },
+      .rotate_theta  = 0.0f,
 
-     .key           = 0
+      .key           = 0
     };
 
   //
@@ -506,34 +506,44 @@ skc_interop_get_wgl_dc()
 #define SKC_ROTATE_STEP ((float)(M_PI / 180.0))
 
 void
-skc_interop_transform(struct skc_interop         * interop,
-                      struct skc_transform_stack * ts)
+skc_interop_transform(struct skc_interop        * interop,
+                      struct ts_transform_stack * ts)
 {
-  // OpenGL'ism
-  skc_transform_stack_push_affine(ts,
-                                  1.0f, 0.0f,0.0f,
-                                  0.0f,-1.0f,(float)interop->height);
+#if 1
+  // move the origin from the lower left to the top left
+  ts_transform_stack_push_affine(ts,
+                                 1.0f, 0.0f,0.0f,
+                                 0.0f,-1.0f,(float)interop->height);
   // multiply
-  skc_transform_stack_concat(ts);
+  ts_transform_stack_concat(ts);
+#endif
+
+#if 0
+  ts_transform_stack_push_matrix(ts,
+                                 0.87004626f, -0.35519487f,   72.14745f,
+                                 0.0f,         0.2600208f,    86.16314f,
+                                 0.0f,        -0.0029599573f, 1.0f);
+  ts_transform_stack_concat(ts);
+#endif
 
   // spinner...
   if (interop->is_spinning)
     interop->rotate_theta = fmodf(interop->rotate_theta + SKC_ROTATE_STEP,(float)(M_PI*2.0));
 
   // always rotate and scale around surface center point
-  skc_transform_stack_push_rotate_scale_xy(ts,
-                                           interop->rotate_theta,
-                                           interop->scale,
-                                           interop->scale,
-                                           0.5f*interop->width,
-                                           0.5f*interop->height);
-  skc_transform_stack_concat(ts);
+  ts_transform_stack_push_rotate_scale_xy(ts,
+                                          interop->rotate_theta,
+                                          interop->scale,
+                                          interop->scale,
+                                          0.5f*interop->width,
+                                          0.5f*interop->height);
+  ts_transform_stack_concat(ts);
 
   // where did the mouse take us?
-  skc_transform_stack_push_translate(ts,
-                                     interop->translate.x,
-                                     interop->translate.y);
-  skc_transform_stack_concat(ts);
+  ts_transform_stack_push_translate(ts,
+                                    interop->translate.x,
+                                    interop->translate.y);
+  ts_transform_stack_concat(ts);
 }
 
 //

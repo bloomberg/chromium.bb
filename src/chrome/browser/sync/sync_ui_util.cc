@@ -22,9 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync/driver/sync_error_controller.h"
+#include "chrome/browser/signin/signin_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 using browser_sync::ProfileSyncService;
@@ -50,7 +48,7 @@ base::string16 GetSyncedStateStatusLabel(const ProfileSyncService* service,
     // User is signed in, but sync has been stopped.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
   }
-  if (!service->IsSyncActive()) {
+  if (!service->IsSyncFeatureActive()) {
     // User is not signed in, or sync is still initializing.
     return base::string16();
   }
@@ -115,7 +113,7 @@ void GetStatusForUnrecoverableError(Profile* profile,
     status_label->assign(l10n_util::GetStringUTF16(
         IDS_SYNC_STATUS_UNRECOVERABLE_ERROR));
     // The message for managed accounts is the same as that of the cros.
-    if (SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited()) {
+    if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
       status_label->assign(l10n_util::GetStringUTF16(
           IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT));
     }
@@ -353,7 +351,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     service->QueryDetailedSyncStatus(&status);
     if (status.sync_protocol_error.action != syncer::UPGRADE_CLIENT) {
       // Display different messages and buttons for managed accounts.
-      if (SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited()) {
+      if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
         // For a managed user, the user is directed to the signout
         // confirmation dialogue in the settings page.
         *content_string_id = IDS_SYNC_ERROR_USER_MENU_SIGNOUT_MESSAGE;
@@ -398,9 +396,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     }
 
     // Check for a sync passphrase error.
-    const syncer::SyncErrorController* sync_error_controller =
-        service->sync_error_controller();
-    if (sync_error_controller && sync_error_controller->HasError()) {
+    if (ShouldShowPassphraseError(service)) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
       *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
       return PASSPHRASE_ERROR;
@@ -425,6 +421,11 @@ MessageType GetStatus(Profile* profile,
   ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, signin, WITH_HTML, nullptr, nullptr,
                        &action_type);
+}
+
+bool ShouldShowPassphraseError(const ProfileSyncService* service) {
+  return service->IsFirstSetupComplete() && service->IsPassphraseRequired() &&
+         service->IsPassphraseRequiredForDecryption();
 }
 
 }  // namespace sync_ui_util

@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1010,9 +1011,6 @@ class HoldPointerOnScrollHandler : public ui::test::TestEventHandler {
 // Tests that touch-move events don't contribute to an in-progress scroll
 // gesture if touch-move events are being held by the dispatcher.
 TEST_P(WindowEventDispatcherTest, TouchMovesHeldOnScroll) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
-  if (GetParam() == Env::Mode::MUS)
-    return;
   EventFilterRecorder recorder;
   root_window()->AddPreTargetHandler(&recorder);
   test::TestWindowDelegate delegate;
@@ -2179,6 +2177,77 @@ TEST_P(WindowEventDispatcherTest, CaptureWindowDestroyed) {
   EXPECT_EQ(NULL, capture_window_tracker.capture_window());
 }
 
+namespace {
+
+class RunLoopHandler : public ui::EventHandler {
+ public:
+  explicit RunLoopHandler(aura::Window* target)
+      : run_loop_(base::RunLoop::Type::kNestableTasksAllowed), target_(target) {
+    target_->AddPreTargetHandler(this);
+  }
+  ~RunLoopHandler() override { target_->RemovePreTargetHandler(this); }
+  int num_scroll_updates() const { return num_scroll_updates_; }
+
+ private:
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() != ui::ET_GESTURE_SCROLL_UPDATE)
+      return;
+    num_scroll_updates_++;
+    if (running_) {
+      run_loop_.QuitWhenIdle();
+    } else {
+      running_ = true;
+      run_loop_.Run();
+    }
+  }
+
+  base::RunLoop run_loop_;
+  bool running_ = false;
+  int num_scroll_updates_ = 0;
+
+  aura::Window* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunLoopHandler);
+};
+
+}  // namespace
+
+TEST_P(WindowEventDispatcherTest, HeldTouchMoveWithRunLoop) {
+  RunLoopHandler handler(root_window());
+
+  host()->dispatcher()->HoldPointerMoves();
+
+  gfx::Point point = root_window()->GetBoundsInScreen().CenterPoint();
+  ui::TouchEvent ev0(ui::ET_TOUCH_PRESSED, point, ui::EventTimeForNow(),
+                     ui::PointerDetails());
+  DispatchEventUsingWindowDispatcher(&ev0);
+
+  point.Offset(10, 10);
+  ui::TouchEvent ev1(ui::ET_TOUCH_MOVED, point, ui::EventTimeForNow(),
+                     ui::PointerDetails());
+  DispatchEventUsingWindowDispatcher(&ev1);
+  // The move event is held, so SCROLL_UPDATE does not happen yet.
+  EXPECT_EQ(0, handler.num_scroll_updates());
+
+  // ReleasePointerMoves() will post DispatchHeldEvent() asynchronously.
+  host()->dispatcher()->ReleasePointerMoves();
+  point.Offset(10, 10);
+  // Schedule another move event which should cause another SCROLL_UPDATE and
+  // quit the run_loop within the handler.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        ui::TouchEvent ev2(ui::ET_TOUCH_MOVED, point, base::TimeTicks::Now(),
+                           ui::PointerDetails());
+        DispatchEventUsingWindowDispatcher(&ev2);
+      }));
+  // Wait for both DispatchHeldEvent() and dispatch of |ev2|.
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+
+  // Makes sure that the run_loop ran and then ended.
+  EXPECT_EQ(2, handler.num_scroll_updates());
+}
+
 class ExitMessageLoopOnMousePress : public ui::test::TestEventHandler {
  public:
   ExitMessageLoopOnMousePress() {}
@@ -2282,7 +2351,9 @@ class WindowEventDispatcherTestInHighDPI : public WindowEventDispatcherTest {
 };
 
 TEST_P(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
 
@@ -2322,9 +2393,12 @@ TEST_P(WindowEventDispatcherTestInHighDPI, EventLocationTransform) {
 }
 
 TEST_P(WindowEventDispatcherTestInHighDPI, TouchMovesHeldOnScroll) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
+
   EventFilterRecorder recorder;
   root_window()->AddPreTargetHandler(&recorder);
   test::TestWindowDelegate delegate;
@@ -2394,9 +2468,12 @@ class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
 // correctly.
 TEST_P(WindowEventDispatcherTestInHighDPI,
        EventsTransformedInRepostedEventTriggeredNestedLoop) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
+
   std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), NULL));
   // Make sure the window is visible.
   RunAllPendingInMessageLoop();
@@ -2851,7 +2928,9 @@ TEST_P(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
 // cursor's position in root coordinates has changed (e.g. when the displays's
 // scale factor changed). Test that hover effects are properly updated.
 TEST_P(WindowEventDispatcherTest, OnCursorMovedToRootLocationUpdatesHover) {
-  // TODO(sky): fails with mus. https://crbug.com/866502
+  // This test is only applicable to LOCAL mode as it's setting a device scale
+  // factor and expecting events to be transformed while routing the event
+  // directly through host(). In MUS mode the window-service does the scaling.
   if (GetParam() == Env::Mode::MUS)
     return;
 

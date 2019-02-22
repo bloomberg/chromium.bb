@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

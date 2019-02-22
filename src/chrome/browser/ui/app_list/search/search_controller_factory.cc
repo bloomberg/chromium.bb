@@ -33,7 +33,11 @@ namespace app_list {
 namespace {
 
 // Maximum number of results to show in each mixer group.
-constexpr size_t kMaxAppsGroupResults = 6;
+
+// Some app results may be blacklisted(e.g. continue reading) for rendering
+// in some UI, so we need to allow returning more results than actual maximum
+// number of results to be displayed in UI.
+constexpr size_t kMaxAppsGroupResults = 7;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxLauncherSearchResults = 2;
@@ -91,7 +95,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         webstore_group_id,
         std::make_unique<WebstoreProvider>(profile, list_controller));
   }
-  if (features::IsAnswerCardEnabled()) {
+  if (app_list_features::IsAnswerCardEnabled()) {
     controller->AddProvider(
         answer_card_group_id,
         std::make_unique<AnswerCardSearchProvider>(
@@ -110,7 +114,7 @@ std::unique_ptr<SearchController> CreateSearchController(
                             std::make_unique<LauncherSearchProvider>(profile));
   }
 
-  if (features::IsPlayStoreAppSearchEnabled()) {
+  if (app_list_features::IsPlayStoreAppSearchEnabled()) {
     // Set same boost as apps group since Play store results are placed
     // with apps.
     size_t playstore_api_group_id =
@@ -127,7 +131,7 @@ std::unique_ptr<SearchController> CreateSearchController(
                           std::make_unique<ArcAppDataSearchProvider>(
                               kMaxAppDataResults, list_controller));
 
-  if (features::IsSettingsShortcutSearchEnabled()) {
+  if (app_list_features::IsSettingsShortcutSearchEnabled()) {
     size_t settings_shortcut_group_id = controller->AddGroup(
         kMaxSettingsShortcutResults, 1.0, kBoostOfSettingsShortcut);
     controller->AddProvider(
@@ -135,7 +139,7 @@ std::unique_ptr<SearchController> CreateSearchController(
         std::make_unique<SettingsShortcutProvider>(profile));
   }
 
-  if (features::IsAppShortcutSearchEnabled() &&
+  if (app_list_features::IsAppShortcutSearchEnabled() &&
       arc::IsArcAllowedForProfile(profile)) {
     size_t app_shortcut_group_id =
         controller->AddGroup(kMaxAppShortcutResults, 1.0, kBoostOfApps);

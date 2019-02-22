@@ -9,12 +9,13 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/elapsed_timer.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
-#include "media/gpu/android/avda_codec_allocator.h"
+#include "media/gpu/android/codec_allocator.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/surface_chooser_helper.h"
@@ -48,14 +49,14 @@ struct PendingDecode {
 // playbacks that need them.
 // TODO: Lazy initialization should be handled at a higher layer of the media
 // stack for both simplicity and cross platform support.
-class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
-    : public VideoDecoder,
-      public AVDACodecAllocatorClient {
+class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
+                                                public CodecAllocatorClient {
  public:
   MediaCodecVideoDecoder(
       const gpu::GpuPreferences& gpu_preferences,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
       DeviceInfo* device_info,
-      AVDACodecAllocator* codec_allocator,
+      CodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       AndroidOverlayMojoFactoryCB overlay_factory_cb,
       RequestOverlayInfoCB request_overlay_info_cb,
@@ -141,7 +142,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Creates a codec asynchronously.
   void CreateCodec();
 
-  // AVDACodecAllocatorClient implementation.
+  // CodecAllocatorClient implementation.
   void OnCodecConfigured(
       std::unique_ptr<MediaCodecBridge> media_codec,
       scoped_refptr<AVDASurfaceBundle> surface_bundle) override;
@@ -234,7 +235,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   std::unique_ptr<CodecWrapper> codec_;
   base::ElapsedTimer idle_timer_;
   base::RepeatingTimer pump_codec_timer_;
-  AVDACodecAllocator* codec_allocator_;
+  CodecAllocator* codec_allocator_;
 
   // The current target surface that |codec_| should be rendering to. It
   // reflects the latest surface choice by |surface_chooser_|. If the codec is
@@ -251,6 +252,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
 
   // The current overlay info, which possibly specifies an overlay to render to.
   OverlayInfo overlay_info_;
+
+  // Set to true if the display compositor swap is done using SurfaceControl.
+  const bool is_surface_control_enabled_;
 
   // The helper which manages our surface chooser for us.
   SurfaceChooserHelper surface_chooser_helper_;

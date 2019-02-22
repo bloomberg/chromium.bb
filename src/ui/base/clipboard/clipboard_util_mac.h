@@ -9,9 +9,14 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
+
+// A publicly-used UTI for the name of a URL. It really should be in a system
+// header but isn't.
+UI_BASE_EXPORT extern NSString* const kUTTypeURLName;
 
 class UI_BASE_EXPORT UniquePasteboard
     : public base::RefCounted<UniquePasteboard> {
@@ -64,6 +69,9 @@ class UI_BASE_EXPORT ClipboardUtil {
   static bool URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
                                           NSArray** urls,
                                           NSArray** titles);
+
+  // Gets the NSPasteboard specified from the clipboard type.
+  static NSPasteboard* PasteboardFromType(ui::ClipboardType type);
 };
 }
 

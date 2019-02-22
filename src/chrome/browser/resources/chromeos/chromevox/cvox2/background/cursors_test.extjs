@@ -323,7 +323,7 @@ TEST_F('CursorsTest', 'IsInWebRange', function() {
   });
 });
 
-TEST_F('CursorsTest', 'DISABLED_SingleDocSelection', function() {
+TEST_F('CursorsTest', 'SingleDocSelection', function() {
   this.runWithLoadedTree(function() {/*!
     <span>start</span>
     <p><a href="google.com">google home page</a></p>

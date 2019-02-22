@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 
+API_AVAILABLE(macos(10.12.2))
 @interface MockWebTextfieldTouchBarController : WebTextfieldTouchBarController {
   // Counter for the number of times invalidateTouchBar is called.
   int numInvalidations_;
@@ -50,6 +51,7 @@
 
 @end
 
+API_AVAILABLE(macos(10.12.2))
 @interface MockTextSuggestionsTouchBarController
     : TextSuggestionsTouchBarController
 - (NSString*)firstSuggestion;
@@ -78,12 +80,14 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    web_textfield_controller_.reset(
-        [[MockWebTextfieldTouchBarController alloc] init]);
-    [web_textfield_controller_ resetNumInvalidations];
-    touch_bar_controller_.reset([[MockTextSuggestionsTouchBarController alloc]
-        initWithWebContents:GetActiveWebContents()
-                 controller:web_textfield_controller_]);
+    if (@available(macOS 10.12.2, *)) {
+      web_textfield_controller_.reset(
+          [[MockWebTextfieldTouchBarController alloc] init]);
+      [web_textfield_controller_ resetNumInvalidations];
+      touch_bar_controller_.reset([[MockTextSuggestionsTouchBarController alloc]
+          initWithWebContents:GetActiveWebContents()
+                   controller:web_textfield_controller_]);
+    }
   }
 
   void FocusTextfield() {
@@ -104,8 +108,11 @@ class TextSuggestionsTouchBarControllerTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<MockWebTextfieldTouchBarController>
       web_textfield_controller_;
+
+  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<MockTextSuggestionsTouchBarController>
       touch_bar_controller_;
   base::test::ScopedFeatureList feature_list_;
@@ -140,54 +147,47 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, MakeTouchBar) {
 // Tests that a change in text selection is handled properly.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
                        UpdateTextSelection) {
-  NSString* const kText = @"text";
-  NSString* const kEmptyText = @"";
-  const gfx::Range kRange = gfx::Range(0, 4);
-  const gfx::Range kEmptyRange = gfx::Range();
-
-  // If not in a textfield,
-  //  1. Textfield text should not be saved.
-  //  2. Selected range should not be saved.
-  //  3. Touch bar should be invalidated (if on MacOS 10.12.2 or later).
-  UnfocusTextfield();
-  [touch_bar_controller_ setText:kEmptyText];
-  [touch_bar_controller_ setSelectionRange:kEmptyRange];
-  [web_textfield_controller_ resetNumInvalidations];
-
-  [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
-                                       range:kRange
-                                      offset:0];
-  EXPECT_STREQ(kEmptyText.UTF8String, [touch_bar_controller_ text].UTF8String);
-  EXPECT_EQ(kEmptyRange, [touch_bar_controller_ selectionRange]);
-  if (@available(macOS 10.12.2, *))
-    EXPECT_EQ(1, [web_textfield_controller_ numInvalidations]);
-  else
-    EXPECT_EQ(0, [web_textfield_controller_ numInvalidations]);
-
-  // If in a textfield and on MacOS 10.12.2 or later,
-  //   1. Textfield text should be saved.
-  //   2. Selected range should be saved.
-  //   3. Suggestions should be generated based on text selection.
-  //   4. Touch bar should be invalidated.
-  FocusTextfield();
-  [touch_bar_controller_ setText:kEmptyText];
-  [touch_bar_controller_ setSelectionRange:kEmptyRange];
-  [web_textfield_controller_ resetNumInvalidations];
-
-  [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
-                                       range:kRange
-                                      offset:0];
   if (@available(macOS 10.12.2, *)) {
+    NSString* const kText = @"text";
+    NSString* const kEmptyText = @"";
+    const gfx::Range kRange = gfx::Range(0, 4);
+    const gfx::Range kEmptyRange = gfx::Range();
+
+    // If not in a textfield,
+    //  1. Textfield text should not be saved.
+    //  2. Selected range should not be saved.
+    //  3. Touch bar should be invalidated (if on MacOS 10.12.2 or later).
+    UnfocusTextfield();
+    [touch_bar_controller_ setText:kEmptyText];
+    [touch_bar_controller_ setSelectionRange:kEmptyRange];
+    [web_textfield_controller_ resetNumInvalidations];
+
+    [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
+                                         range:kRange
+                                        offset:0];
+    EXPECT_STREQ(kEmptyText.UTF8String,
+                 [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(kEmptyRange, [touch_bar_controller_ selectionRange]);
+    EXPECT_EQ(1, [web_textfield_controller_ numInvalidations]);
+
+    // If in a textfield and on MacOS 10.12.2 or later,
+    //   1. Textfield text should be saved.
+    //   2. Selected range should be saved.
+    //   3. Suggestions should be generated based on text selection.
+    //   4. Touch bar should be invalidated.
+    FocusTextfield();
+    [touch_bar_controller_ setText:kEmptyText];
+    [touch_bar_controller_ setSelectionRange:kEmptyRange];
+    [web_textfield_controller_ resetNumInvalidations];
+
+    [touch_bar_controller_ updateTextSelection:base::SysNSStringToUTF16(kText)
+                                         range:kRange
+                                        offset:0];
     EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
     EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
     EXPECT_STREQ(kText.UTF8String,
                  [touch_bar_controller_ firstSuggestion].UTF8String);
     EXPECT_EQ(1, [web_textfield_controller_ numInvalidations]);
-  } else {
-    EXPECT_STREQ(kEmptyText.UTF8String,
-                 [touch_bar_controller_ text].UTF8String);
-    EXPECT_EQ(kEmptyRange, [touch_bar_controller_ selectionRange]);
-    EXPECT_EQ(0, [web_textfield_controller_ numInvalidations]);
   }
 }
 
@@ -195,49 +195,48 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
 // to empty.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
                        RangeOutOfTextBounds) {
-  FocusTextfield();
-  [touch_bar_controller_ setText:@""];
-  [touch_bar_controller_ setSelectionRange:gfx::Range()];
+  if (@available(macOS 10.12.2, *)) {
+    FocusTextfield();
+    [touch_bar_controller_ setText:@""];
+    [touch_bar_controller_ setSelectionRange:gfx::Range()];
 
-  [touch_bar_controller_
-      updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
-                    range:gfx::Range(4, 5)
-                   offset:0];
-  EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
-  EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+    [touch_bar_controller_
+        updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
+                      range:gfx::Range(4, 5)
+                     offset:0];
+    EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
 
-  [touch_bar_controller_
-      updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
-                    range:gfx::Range(2, 5)
-                   offset:0];
-  EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
-  EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+    [touch_bar_controller_
+        updateTextSelection:base::string16(base::ASCIIToUTF16("text"))
+                      range:gfx::Range(2, 5)
+                     offset:0];
+    EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+  }
 }
 
 // Tests that a change in WebContents is handled properly.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
-  NSString* const kText = @"text";
-  const gfx::Range kRange = gfx::Range(1, 1);
-
-  FocusTextfield();
-
-  // A null-pointer should not break the controller.
-  [touch_bar_controller_ setWebContents:nullptr];
-  EXPECT_FALSE([touch_bar_controller_ webContents]);
-
-  [touch_bar_controller_ setText:kText];
-  [touch_bar_controller_ setSelectionRange:kRange];
-
-  // The text selection should change on MacOS 10.12.2 and later if the
-  // WebContents pointer is not null.
-  [touch_bar_controller_ setWebContents:GetActiveWebContents()];
-  EXPECT_EQ(GetActiveWebContents(), [touch_bar_controller_ webContents]);
   if (@available(macOS 10.12.2, *)) {
+    NSString* const kText = @"text";
+    const gfx::Range kRange = gfx::Range(1, 1);
+
+    FocusTextfield();
+
+    // A null-pointer should not break the controller.
+    [touch_bar_controller_ setWebContents:nullptr];
+    EXPECT_FALSE([touch_bar_controller_ webContents]);
+
+    [touch_bar_controller_ setText:kText];
+    [touch_bar_controller_ setSelectionRange:kRange];
+
+    // The text selection should change on MacOS 10.12.2 and later if the
+    // WebContents pointer is not null.
+    [touch_bar_controller_ setWebContents:GetActiveWebContents()];
+    EXPECT_EQ(GetActiveWebContents(), [touch_bar_controller_ webContents]);
     EXPECT_STRNE(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
     EXPECT_NE(kRange, [touch_bar_controller_ selectionRange]);
-  } else {
-    EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
-    EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
   }
 }
 
@@ -245,88 +244,84 @@ IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, SetWebContents) {
 // suggestion is ignored.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest,
                        IgnoreReplacementSelection) {
-  NSString* const kText = @"text";
-  const base::string16 kEmptyText = base::string16();
-  const gfx::Range kRange = gfx::Range(0, 4);
-  const gfx::Range kEmptyRange = gfx::Range();
-
-  FocusTextfield();
-  [touch_bar_controller_ setText:kText];
-  [touch_bar_controller_ setSelectionRange:kRange];
-
-  // If ignoreReplacementSelection is YES and new selection range is equal to
-  // editing word range, ignore text selection update.
-  [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
-  [touch_bar_controller_ setEditingWordRange:kEmptyRange offset:0];
-  [touch_bar_controller_ updateTextSelection:kEmptyText
-                                       range:kEmptyRange
-                                      offset:0];
-  EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
-  EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
-
-  // If ignoreReplacementSelection is YES but new selection range is not equal
-  // to editing word range, do not ignore text selection update.
-  [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
-  [touch_bar_controller_ setEditingWordRange:kRange offset:0];
-  [touch_bar_controller_ updateTextSelection:kEmptyText
-                                       range:kEmptyRange
-                                      offset:0];
   if (@available(macOS 10.12.2, *)) {
-    EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
-    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
-  } else {
+    NSString* const kText = @"text";
+    const base::string16 kEmptyText = base::string16();
+    const gfx::Range kRange = gfx::Range(0, 4);
+    const gfx::Range kEmptyRange = gfx::Range();
+
+    FocusTextfield();
+    [touch_bar_controller_ setText:kText];
+    [touch_bar_controller_ setSelectionRange:kRange];
+
+    // If ignoreReplacementSelection is YES and new selection range is equal to
+    // editing word range, ignore text selection update.
+    [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
+    [touch_bar_controller_ setEditingWordRange:kEmptyRange offset:0];
+    [touch_bar_controller_ updateTextSelection:kEmptyText
+                                         range:kEmptyRange
+                                        offset:0];
     EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
     EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
-  }
 
-  [touch_bar_controller_ setText:kText];
-  [touch_bar_controller_ setSelectionRange:kRange];
-
-  // If ignoreReplacementSelection is NO and new selection range is equal to
-  // editing word range, do not ignore text selection update.
-  [touch_bar_controller_ setShouldIgnoreReplacementSelection:NO];
-  [touch_bar_controller_ setEditingWordRange:kEmptyRange offset:0];
-  [touch_bar_controller_ updateTextSelection:kEmptyText
-                                       range:kEmptyRange
-                                      offset:0];
-  if (@available(macOS 10.12.2, *)) {
+    // If ignoreReplacementSelection is YES but new selection range is not equal
+    // to editing word range, do not ignore text selection update.
+    [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
+    [touch_bar_controller_ setEditingWordRange:kRange offset:0];
+    [touch_bar_controller_ updateTextSelection:kEmptyText
+                                         range:kEmptyRange
+                                        offset:0];
     EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
     EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
-  } else {
-    EXPECT_STREQ(kText.UTF8String, [touch_bar_controller_ text].UTF8String);
-    EXPECT_EQ(kRange, [touch_bar_controller_ selectionRange]);
+
+    [touch_bar_controller_ setText:kText];
+    [touch_bar_controller_ setSelectionRange:kRange];
+
+    // If ignoreReplacementSelection is NO and new selection range is equal to
+    // editing word range, do not ignore text selection update.
+    [touch_bar_controller_ setShouldIgnoreReplacementSelection:NO];
+    [touch_bar_controller_ setEditingWordRange:kEmptyRange offset:0];
+    [touch_bar_controller_ updateTextSelection:kEmptyText
+                                         range:kEmptyRange
+                                        offset:0];
+    EXPECT_STREQ("", [touch_bar_controller_ text].UTF8String);
+    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
   }
 }
 
 // Tests that offsets are properly handled.
 IN_PROC_BROWSER_TEST_F(TextSuggestionsTouchBarControllerTest, Offset) {
-  const base::string16 kText =
-      base::string16(base::ASCIIToUTF16("hello world"));
-  const gfx::Range kRange = gfx::Range(3, 3);
-  const size_t kOffset = 1;
-  const gfx::Range kOffsetRange =
-      gfx::Range(kRange.start() - kOffset, kRange.end() - kOffset);
+  if (@available(macOS 10.12.2, *)) {
+    const base::string16 kText =
+        base::string16(base::ASCIIToUTF16("hello world"));
+    const gfx::Range kRange = gfx::Range(3, 3);
+    const size_t kOffset = 1;
+    const gfx::Range kOffsetRange =
+        gfx::Range(kRange.start() - kOffset, kRange.end() - kOffset);
 
-  FocusTextfield();
-  [touch_bar_controller_ setSelectionRange:gfx::Range()];
+    FocusTextfield();
+    [touch_bar_controller_ setSelectionRange:gfx::Range()];
 
-  // |selectionRange_| should include offset.
-  [touch_bar_controller_ updateTextSelection:kText range:kRange offset:kOffset];
-  if (@available(macOS 10.12.2, *))
-    EXPECT_EQ(kOffsetRange, [touch_bar_controller_ selectionRange]);
-  else
-    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+    // |selectionRange_| should include offset.
+    [touch_bar_controller_ updateTextSelection:kText
+                                         range:kRange
+                                        offset:kOffset];
+    if (@available(macOS 10.12.2, *))
+      EXPECT_EQ(kOffsetRange, [touch_bar_controller_ selectionRange]);
+    else
+      EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
 
-  // The check for ignoring text selection updates should still work with
-  // offsets.
-  [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
-  [touch_bar_controller_ updateTextSelection:kText
-                                       range:gfx::Range(1, 7)
-                                      offset:kOffset];
-  if (@available(macOS 10.12.2, *))
-    EXPECT_EQ(gfx::Range(0, 6), [touch_bar_controller_ selectionRange]);
-  else
-    EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+    // The check for ignoring text selection updates should still work with
+    // offsets.
+    [touch_bar_controller_ setShouldIgnoreReplacementSelection:YES];
+    [touch_bar_controller_ updateTextSelection:kText
+                                         range:gfx::Range(1, 7)
+                                        offset:kOffset];
+    if (@available(macOS 10.12.2, *))
+      EXPECT_EQ(gfx::Range(0, 6), [touch_bar_controller_ selectionRange]);
+    else
+      EXPECT_EQ(gfx::Range(), [touch_bar_controller_ selectionRange]);
+  }
 }
 
 }  // namespace

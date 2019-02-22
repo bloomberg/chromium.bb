@@ -16,18 +16,6 @@ from chromite.lib.paygen import utils
 class TestUtils(cros_test_lib.TempDirTestCase):
   """Test utils methods."""
 
-  def testCreateTmpInvalidPath(self):
-    """Test that we create a tmp eventually even with invalid paths."""
-    tmps = ['/usr/local/nope', '/tmp']
-    tmp = utils.CreateTmpDir(tmps=tmps)
-    self.assertTrue(tmp.startswith('/tmp'))
-    os.rmdir(tmp)
-
-  def testCreateTmpRaiseException(self):
-    """Test that we raise an exception when we do not have enough space."""
-    self.assertRaises(utils.UnableToCreateTmpDir, utils.CreateTmpDir,
-                      minimum_size=2 ** 50)
-
   def testCreateTempFileWithContents(self):
     """Verify that we create a temp file with the right message in it."""
 

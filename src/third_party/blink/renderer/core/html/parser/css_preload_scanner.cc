@@ -182,8 +182,8 @@ inline void CSSPreloadScanner::Tokenize(UChar c,
 }
 
 static String ParseCSSStringOrURL(const String& string) {
-  size_t offset = 0;
-  size_t reduced_length = string.length();
+  wtf_size_t offset = 0;
+  wtf_size_t reduced_length = string.length();
 
   while (reduced_length && IsHTMLSpace<UChar>(string[offset])) {
     ++offset;
@@ -234,7 +234,7 @@ void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
         TextPosition(source.CurrentLine(), source.CurrentColumn());
     auto request = PreloadRequest::CreateIfNeeded(
         FetchInitiatorTypeNames::css, position, url,
-        *predicted_base_element_url_, Resource::kCSSStyleSheet,
+        *predicted_base_element_url_, ResourceType::kCSSStyleSheet,
         referrer_policy_, PreloadRequest::kBaseUrlIsReferrer,
         ResourceFetcher::kImageNotImageSet);
     if (request) {

@@ -17,6 +17,7 @@ source_set("google") {
     "//components/google/core/browser",
     "//components/keyed_service/ios",
     "//components/prefs",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/distribution",

@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
@@ -25,34 +26,32 @@ TCPClientSocket::TCPClientSocket(
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     net::NetLog* net_log,
     const net::NetLogSource& source)
-    : socket_performance_watcher_(socket_performance_watcher.get()),
-      socket_(new TCPSocket(std::move(socket_performance_watcher),
-                            net_log,
-                            source)),
-      addresses_(addresses),
-      current_address_index_(-1),
-      next_connect_state_(CONNECT_STATE_NONE),
-      previously_disconnected_(false),
-      total_received_bytes_(0),
-      was_ever_used_(false) {}
+    : TCPClientSocket(
+          std::make_unique<TCPSocket>(std::move(socket_performance_watcher),
+                                      net_log,
+                                      source),
+          addresses,
+          -1 /* current_address_index */,
+          nullptr /* bind_address */) {}
 
 TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
                                  const IPEndPoint& peer_address)
-    : socket_performance_watcher_(nullptr),
-      socket_(std::move(connected_socket)),
-      addresses_(AddressList(peer_address)),
-      current_address_index_(0),
-      next_connect_state_(CONNECT_STATE_NONE),
-      previously_disconnected_(false),
-      total_received_bytes_(0),
-      was_ever_used_(false) {
-  DCHECK(socket_);
-
-  socket_->SetDefaultOptionsForClient();
-}
+    : TCPClientSocket(std::move(connected_socket),
+                      AddressList(peer_address),
+                      0 /* current_address_index */,
+                      nullptr /* bind_address */) {}
 
 TCPClientSocket::~TCPClientSocket() {
   Disconnect();
+}
+
+std::unique_ptr<TCPClientSocket> TCPClientSocket::CreateFromBoundSocket(
+    std::unique_ptr<TCPSocket> bound_socket,
+    const AddressList& addresses,
+    const IPEndPoint& bound_address) {
+  return base::WrapUnique(new TCPClientSocket(
+      std::move(bound_socket), addresses, -1 /* current_address_index */,
+      std::make_unique<IPEndPoint>(bound_address)));
 }
 
 int TCPClientSocket::Bind(const IPEndPoint& address) {
@@ -77,6 +76,20 @@ int TCPClientSocket::Bind(const IPEndPoint& address) {
   return OK;
 }
 
+bool TCPClientSocket::SetKeepAlive(bool enable, int delay) {
+  return socket_->SetKeepAlive(enable, delay);
+}
+
+bool TCPClientSocket::SetNoDelay(bool no_delay) {
+  return socket_->SetNoDelay(no_delay);
+}
+
+void TCPClientSocket::SetBeforeConnectCallback(
+    const BeforeConnectCallback& before_connect_callback) {
+  DCHECK_EQ(CONNECT_STATE_NONE, next_connect_state_);
+  before_connect_callback_ = before_connect_callback;
+}
+
 int TCPClientSocket::Connect(CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
 
@@ -99,6 +112,23 @@ int TCPClientSocket::Connect(CompletionOnceCallback callback) {
   }
 
   return rv;
+}
+
+TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> socket,
+                                 const AddressList& addresses,
+                                 int current_address_index,
+                                 std::unique_ptr<IPEndPoint> bind_address)
+    : socket_(std::move(socket)),
+      bind_address_(std::move(bind_address)),
+      addresses_(addresses),
+      current_address_index_(-1),
+      next_connect_state_(CONNECT_STATE_NONE),
+      previously_disconnected_(false),
+      total_received_bytes_(0),
+      was_ever_used_(false) {
+  DCHECK(socket_);
+  if (socket_->IsValid())
+    socket_->SetDefaultOptionsForClient();
 }
 
 int TCPClientSocket::ReadCommon(IOBuffer* buf,
@@ -179,10 +209,17 @@ int TCPClientSocket::DoConnect() {
     }
   }
 
+  if (before_connect_callback_) {
+    int result = before_connect_callback_.Run();
+    DCHECK_NE(ERR_IO_PENDING, result);
+    if (result != net::OK)
+      return result;
+  }
+
   // Notify |socket_performance_watcher_| only if the |socket_| is reused to
   // connect to a different IP Address.
-  if (socket_performance_watcher_ && current_address_index_ != 0)
-    socket_performance_watcher_->OnConnectionChanged();
+  if (socket_->socket_performance_watcher() && current_address_index_ != 0)
+    socket_->socket_performance_watcher()->OnConnectionChanged();
 
   // |socket_| is owned by this class and the callback won't be run once
   // |socket_| is gone. Therefore, it is safe to use base::Unretained() here.
@@ -321,12 +358,8 @@ int TCPClientSocket::SetSendBufferSize(int32_t size) {
     return socket_->SetSendBufferSize(size);
 }
 
-bool TCPClientSocket::SetKeepAlive(bool enable, int delay) {
-  return socket_->SetKeepAlive(enable, delay);
-}
-
-bool TCPClientSocket::SetNoDelay(bool no_delay) {
-  return socket_->SetNoDelay(no_delay);
+SocketDescriptor TCPClientSocket::SocketDescriptorForTesting() const {
+  return socket_->SocketDescriptorForTesting();
 }
 
 void TCPClientSocket::GetConnectionAttempts(ConnectionAttempts* out) const {

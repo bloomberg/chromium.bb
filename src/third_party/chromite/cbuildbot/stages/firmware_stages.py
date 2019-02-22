@@ -11,6 +11,7 @@ related to how build artifacts are generated and published.
 
 from __future__ import print_function
 
+import datetime
 import json
 import os
 
@@ -19,9 +20,14 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
+
+
+class UnsafeBuildForPushImage(Exception):
+  """Raised if push_image is run against a non-signable build."""
 
 
 class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
@@ -39,18 +45,15 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
   a dummy version of metadata.json.
   """
 
-  def __init__(self, builder_run, build_root, workspace_branch, **kwargs):
+  def __init__(self, builder_run, build_root, **kwargs):
     """Initializer.
 
     Args:
       builder_run: BuilderRun object.
       build_root: Fully qualified path to use as a string.
-      workspace_branch: branch to sync into the workspace.
     """
     super(FirmwareArchiveStage, self).__init__(
-        builder_run, build_root, **kwargs)
-
-    self.workspace_branch = workspace_branch
+        builder_run, build_root=build_root, **kwargs)
 
     self.dummy_firmware_config = None
     self.workspace_version_info = None
@@ -65,6 +68,14 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
   def firmware_name(self):
     """Uniqify the name across boards."""
     return '%s_%s' % (self._current_board, constants.FIRMWARE_ARCHIVE_NAME)
+
+  @property
+  def dummy_archive_url(self):
+    """Uniqify the name across boards."""
+    return os.path.join(
+        config_lib.GetConfig().params.ARCHIVE_URL,
+        self.dummy_firmware_config,
+        self.firmware_version)
 
   def CreateBoardFirmwareArchive(self):
     """Create/publish the firmware build artifact for the current board."""
@@ -84,15 +95,31 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     # Use the metadata for the main build, with selected fields modified.
     board_metadata = self._run.attrs.metadata.GetDict()
     board_metadata['boards'] = [self._current_board]
-    board_metadata['branch'] = self.workspace_branch
+    board_metadata['branch'] = self._run.config.workspace_branch
     board_metadata['version_full'] = self.firmware_version
     board_metadata['version_milestone'] = \
         self.workspace_version_info.chrome_branch
     board_metadata['version_platform'] = \
         self.workspace_version_info.VersionString()
+    board_metadata['version'] = {
+        'platform': self.workspace_version_info.VersionString(),
+        'full': self.firmware_version,
+        'milestone': self.workspace_version_info.chrome_branch,
+    }
+
+    current_time = datetime.datetime.now()
+    current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
+
+    # We report the build as passing, since we can't get here if isn't.
+    board_metadata['status'] = {
+        'status': 'pass',
+        'summary': '',
+        'current-time': current_time_stamp,
+    }
 
     logging.info('Writing firmware metadata to %s.', board_metadata_path)
-    osutils.WriteFile(board_metadata_path, json.dumps(board_metadata),
+    osutils.WriteFile(board_metadata_path, json.dumps(board_metadata,
+                                                      indent=2, sort_keys=True),
                       atomic=True, makedirs=True)
 
     self.UploadArtifact(self.metadata_name, archive=False)
@@ -106,22 +133,36 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     firmware_path = os.path.join(self.archive_path, self.firmware_name)
     metadata_path = os.path.join(self.archive_path, self.metadata_name)
 
-    dummy_archive_url = os.path.join(
-        config_lib.GetConfig().params.ARCHIVE_URL,
-        self.dummy_firmware_config,
-        self.firmware_version)
-
     gs_context = gs.GSContext(acl=self.acl, dry_run=self._run.options.debug)
-    gs_context.CopyInto(firmware_path, dummy_archive_url,
+    gs_context.CopyInto(firmware_path, self.dummy_archive_url,
                         filename=constants.FIRMWARE_ARCHIVE_NAME)
-    gs_context.CopyInto(metadata_path, dummy_archive_url,
+    gs_context.CopyInto(metadata_path, self.dummy_archive_url,
                         filename=constants.METADATA_JSON)
 
-    dummy_http_url = gs.GsUrlToHttp(dummy_archive_url,
+    dummy_http_url = gs.GsUrlToHttp(self.dummy_archive_url,
                                     public=False, directory=True)
 
-    label = '%s Firmware' % self._current_board
+    label = '%s firmware [%s]' % (self._current_board, self.firmware_version)
     logging.PrintBuildbotLink(label, dummy_http_url)
+
+  def PushBoardImage(self):
+    """Helper method to run push_image against the dummy boards artifacts."""
+    # This helper script is only available on internal manifests currently.
+    if not self._run.config['internal']:
+      raise UnsafeBuildForPushImage("Can't use push_image on external builds.")
+
+    logging.info('Use pushimage to publish signing artifacts for: %s',
+                 self._current_board)
+
+    # Push build artifacts to gs://chromeos-releases for signing and release.
+    # This runs TOT pushimage against the build artifacts for the branch.
+    commands.PushImages(
+        board=self._current_board,
+        archive_url=self.dummy_archive_url,
+        dryrun=self._run.options.debug or not self._run.config['push_image'],
+        profile=self._run.options.profile or self._run.config['profile'],
+        sign_types=self._run.config['sign_types'] or [],
+        buildroot=self._build_root)
 
   def PerformStage(self):
     """Archive and publish the firmware build artifacts."""
@@ -147,3 +188,4 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     self.CreateBoardFirmwareArchive()
     self.CreateBoardMetadataJson()
     self.CreateBoardBuildResult()
+    self.PushBoardImage()

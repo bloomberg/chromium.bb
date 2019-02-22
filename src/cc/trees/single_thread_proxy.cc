@@ -442,12 +442,14 @@ void SingleThreadProxy::DidReceiveCompositorFrameAckOnImplThread() {
                "SingleThreadProxy::DidReceiveCompositorFrameAckOnImplThread");
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->DidReceiveCompositorFrameAck();
-  // We do a PostTask here because freeing resources in some cases (such as in
-  // TextureLayer) is PostTasked and we want to make sure ack is received after
-  // resources are returned.
-  task_runner_provider_->MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&SingleThreadProxy::DidReceiveCompositorFrameAck,
-                            frame_sink_bound_weak_ptr_));
+  if (layer_tree_host_->GetSettings().send_compositor_frame_ack) {
+    // We do a PostTask here because freeing resources in some cases (such as in
+    // TextureLayer) is PostTasked and we want to make sure ack is received
+    // after resources are returned.
+    task_runner_provider_->MainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&SingleThreadProxy::DidReceiveCompositorFrameAck,
+                              frame_sink_bound_weak_ptr_));
+  }
 }
 
 void SingleThreadProxy::OnDrawForLayerTreeFrameSink(
@@ -773,10 +775,7 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
-  layer_tree_host_->RequestMainFrameUpdate(
-      begin_frame_args.animate_only
-          ? LayerTreeHost::VisualStateUpdate::kPrePaint
-          : LayerTreeHost::VisualStateUpdate::kAll);
+  layer_tree_host_->RequestMainFrameUpdate();
 }
 
 void SingleThreadProxy::DoPainting() {

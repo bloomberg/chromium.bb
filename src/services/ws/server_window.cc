@@ -8,9 +8,12 @@
 
 #include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "services/ws/client_root.h"
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "services/ws/window_tree.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -36,10 +39,22 @@ bool IsLocationInNonClientArea(const aura::Window* window,
   if (!server_window || !server_window->IsTopLevel())
     return false;
 
-  // Locations outside the bounds, assume it's in extended hit test area, which
-  // is non-client area.
-  if (!gfx::Rect(window->bounds().size()).Contains(location))
-    return true;
+  // Locations inside bounds but within the resize insets count as non-client
+  // area. Locations outside the bounds, assume it's in extended hit test area,
+  // which is non-client area.
+  ui::WindowShowState window_state =
+      window->GetProperty(aura::client::kShowStateKey);
+  if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+       ws::mojom::kResizeBehaviorCanResize) &&
+      (window_state != ui::WindowShowState::SHOW_STATE_MAXIMIZED) &&
+      (window_state != ui::WindowShowState::SHOW_STATE_FULLSCREEN)) {
+    int resize_handle_size =
+        window->GetProperty(aura::client::kResizeHandleInset);
+    gfx::Rect non_handle_area(window->bounds().size());
+    non_handle_area.Inset(gfx::Insets(resize_handle_size));
+    if (!non_handle_area.Contains(location))
+      return true;
+  }
 
   gfx::Rect client_area(window->bounds().size());
   client_area.Inset(server_window->client_area());
@@ -434,7 +449,11 @@ void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
 
 }  // namespace
 
-ServerWindow::~ServerWindow() = default;
+ServerWindow::~ServerWindow() {
+  // WindowTree/ClientRoot should have reset |attached_frame_sink_id_| before
+  // the Window is destroyed.
+  DCHECK(!attached_frame_sink_id_.is_valid());
+}
 
 // static
 ServerWindow* ServerWindow::Create(aura::Window* window,
@@ -480,13 +499,16 @@ void ServerWindow::SetClientArea(
 
   additional_client_areas_ = additional_client_areas;
   client_area_ = insets;
+  ClientRoot* client_root =
+      owning_window_tree_ ? owning_window_tree_->GetClientRootForWindow(window_)
+                          : nullptr;
+  if (client_root)
+    client_root->SetClientAreaInsets(insets);
 }
 
-void ServerWindow::SetHitTestMask(const base::Optional<gfx::Rect>& mask) {
-  gfx::Insets insets;
-  if (mask)
-    insets = gfx::Rect(window_->bounds().size()).InsetsFrom(mask.value());
-  window_targeter_->SetInsets(insets);
+void ServerWindow::SetHitTestInsets(const gfx::Insets& mouse,
+                                    const gfx::Insets& touch) {
+  window_targeter_->SetInsets(mouse, touch);
 }
 
 void ServerWindow::SetCaptureOwner(WindowTree* owner) {

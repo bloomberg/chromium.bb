@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
-#include "chrome/chrome_cleaner/logging/logging_definitions.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
 #include "chrome/chrome_cleaner/logging/scoped_timed_task_logger.h"

@@ -74,7 +74,7 @@ void CdmPromiseAdapter::Clear() {
 std::unique_ptr<CdmPromise> CdmPromiseAdapter::TakePromise(
     uint32_t promise_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  PromiseMap::iterator it = promises_.find(promise_id);
+  auto it = promises_.find(promise_id);
   if (it == promises_.end())
     return nullptr;
   std::unique_ptr<CdmPromise> result = std::move(it->second);

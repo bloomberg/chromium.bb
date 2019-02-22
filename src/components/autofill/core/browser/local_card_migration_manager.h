@@ -50,9 +50,6 @@ class MigratableCreditCard {
 
   CreditCard credit_card() const { return credit_card_; }
 
-  bool is_chosen() const { return is_chosen_; }
-  void ToggleChosen() { is_chosen_ = !is_chosen(); }
-
   MigrationStatus migration_status() const { return migration_status_; }
   void set_migration_status(MigrationStatus migration_status) {
     migration_status_ = migration_status;
@@ -61,10 +58,6 @@ class MigratableCreditCard {
  private:
   // The main card information of the current migratable card.
   CreditCard credit_card_;
-
-  // Whether the user has decided to migrate the this card; shown as a checkbox
-  // in the UI.
-  bool is_chosen_ = true;
 
   // Migration status for this card.
   MigrationStatus migration_status_ = MigrationStatus::UNKNOWN;
@@ -99,9 +92,12 @@ class LocalCardMigrationManager {
   virtual void OnUserAcceptedIntermediateMigrationDialog();
 
   // Callback function when user confirms migration on the main migration
-  // dialog. Sets |user_accepted_main_migration_dialog_| and sends the migration
-  // request once risk data is available. Exposed for testing.
-  virtual void OnUserAcceptedMainMigrationDialog();
+  // dialog. Removes any MigratableCreditCard of which the guid is not in
+  // |selected_card_guids| from |migratable_credit_cards_|. Sets
+  // |user_accepted_main_migration_dialog_| and sends the migration request
+  // once risk data is available. Exposed for testing.
+  virtual void OnUserAcceptedMainMigrationDialog(
+      const std::vector<std::string>& selected_card_guids);
 
   // Check that the user is signed in, syncing, and the proper experiment
   // flags are enabled. Override in the test class.
@@ -147,6 +143,8 @@ class LocalCardMigrationManager {
                            MigrateCreditCard_MigrationTemporaryFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationSuccess);
+  FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
+                           MigrateCreditCard_ToggleIsChosen);
 
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
@@ -172,7 +170,10 @@ class LocalCardMigrationManager {
   // Collected information about a pending migration request.
   payments::PaymentsClient::MigrationRequestDetails migration_request_;
 
-  // The local credit cards to be uploaded.
+  // The local credit cards to be uploaded. Owned by LocalCardMigrationManager.
+  // The order of cards should not be changed.
+  // TODO(crbug.com/867194): Currently we will not handle the case of local
+  // cards added/deleted during migration.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
 
   // |true| if the user has accepted migrating their local cards to Google Pay

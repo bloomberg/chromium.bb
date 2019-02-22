@@ -80,25 +80,6 @@ static inline GLenum GetTexInternalFormat(const GLVersionInfo* version,
     }
   }
 
-  if (type == GL_FLOAT && version->is_angle && version->is_es &&
-      version->major_version == 2) {
-    // It's possible that the texture is using a sized internal format, and
-    // ANGLE exposing GLES2 API doesn't support those.
-    // TODO(oetuaho@nvidia.com): Remove these conversions once ANGLE has the
-    // support.
-    // http://code.google.com/p/angleproject/issues/detail?id=556
-    switch (format) {
-      case GL_RGBA:
-        gl_internal_format = GL_RGBA;
-        break;
-      case GL_RGB:
-        gl_internal_format = GL_RGB;
-        break;
-      default:
-        break;
-    }
-  }
-
   if (version->IsAtLeastGL(2, 1) || version->IsAtLeastGLES(3, 0)) {
     switch (internal_format) {
       case GL_SRGB_EXT:

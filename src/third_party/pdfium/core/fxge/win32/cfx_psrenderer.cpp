@@ -64,7 +64,7 @@ void PSCompressData(int PSLevel,
       *filter = "/FlateDecode filter ";
     }
   } else {
-    if (pEncoders->GetBasicModule()->RunLengthEncode(src_buf, src_size,
+    if (pEncoders->GetBasicModule()->RunLengthEncode({src_buf, src_size},
                                                      &dest_buf, &dest_size)) {
       *filter = "/RunLengthDecode filter ";
     }
@@ -311,13 +311,10 @@ void CFX_PSRenderer::SetGraphState(const CFX_GraphStateData* pGraphState) {
     buf << pGraphState->m_LineCap << " J\n";
   }
   if (!m_bGraphStateSet ||
-      m_CurGraphState.m_DashCount != pGraphState->m_DashCount ||
-      memcmp(m_CurGraphState.m_DashArray, pGraphState->m_DashArray,
-             sizeof(float) * m_CurGraphState.m_DashCount)) {
+      m_CurGraphState.m_DashArray != pGraphState->m_DashArray) {
     buf << "[";
-    for (int i = 0; i < pGraphState->m_DashCount; ++i)
-      buf << pGraphState->m_DashArray[i] << " ";
-
+    for (const auto& dash : pGraphState->m_DashArray)
+      buf << dash << " ";
     buf << "]" << pGraphState->m_DashPhase << " d\n";
   }
   if (!m_bGraphStateSet ||
@@ -332,7 +329,7 @@ void CFX_PSRenderer::SetGraphState(const CFX_GraphStateData* pGraphState) {
       m_CurGraphState.m_MiterLimit != pGraphState->m_MiterLimit) {
     buf << pGraphState->m_MiterLimit << " M\n";
   }
-  m_CurGraphState.Copy(*pGraphState);
+  m_CurGraphState = *pGraphState;
   m_bGraphStateSet = true;
   WriteToStream(&buf);
 }
@@ -689,8 +686,8 @@ void CFX_PSRenderer::WritePSBinary(const uint8_t* data, int len) {
   uint8_t* dest_buf;
   uint32_t dest_size;
   CCodec_ModuleMgr* pEncoders = CPDF_ModuleMgr::Get()->GetCodecModule();
-  if (pEncoders->GetBasicModule()->A85Encode(data, len, &dest_buf,
-                                             &dest_size)) {
+  if (pEncoders->GetBasicModule()->A85Encode({data, static_cast<size_t>(len)},
+                                             &dest_buf, &dest_size)) {
     m_pStream->WriteBlock(dest_buf, dest_size);
     FX_Free(dest_buf);
   } else {

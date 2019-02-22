@@ -617,7 +617,11 @@ ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }
 
-void LayerTreeImpl::AddToElementLayerList(ElementId element_id) {
+void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
+                                          LayerImpl* layer) {
+  DCHECK(layer);
+  DCHECK(layer->element_id() == element_id);
+
   if (!element_id)
     return;
 
@@ -636,6 +640,9 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id) {
 
   host_impl_->mutator_host()->RegisterElement(element_id,
                                               GetElementTypeForAnimation());
+
+  if (layer->scrollable())
+    AddScrollableLayer(layer);
 }
 
 void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
@@ -650,6 +657,19 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
                                                 GetElementTypeForAnimation());
 
   elements_in_layer_list_.erase(element_id);
+  element_id_to_scrollable_layer_.erase(element_id);
+}
+
+void LayerTreeImpl::AddScrollableLayer(LayerImpl* layer) {
+  DCHECK(layer);
+  DCHECK(layer->scrollable());
+
+  if (!layer->element_id())
+    return;
+
+  DCHECK(!element_id_to_scrollable_layer_.count(layer->element_id()));
+  element_id_to_scrollable_layer_.insert(
+      std::make_pair(layer->element_id(), layer));
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,
@@ -1216,7 +1236,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           base::StringPrintf(
               "Compositing.%s.LayerTreeImpl.CalculateDrawPropertiesUs",
               client_name),
@@ -1382,8 +1402,14 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) const {
-  LayerImplMap::const_iterator iter = layer_id_map_.find(id);
+  auto iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : nullptr;
+}
+
+LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
+    ElementId element_id) const {
+  auto iter = element_id_to_scrollable_layer_.find(element_id);
+  return iter != element_id_to_scrollable_layer_.end() ? iter->second : nullptr;
 }
 
 void LayerTreeImpl::SetSurfaceRanges(
@@ -1404,21 +1430,14 @@ void LayerTreeImpl::ClearSurfaceRanges() {
 
 void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   DCHECK(!IsActiveTree()) << "The active tree does not push layer properties";
+  // TODO(crbug.com/303943): PictureLayerImpls always push properties so should
+  // not go into this set or we'd push them twice.
+  DCHECK(!base::ContainsValue(picture_layers_, layer));
   layers_that_should_push_properties_.insert(layer);
 }
 
-void LayerTreeImpl::RemoveLayerShouldPushProperties(LayerImpl* layer) {
-  layers_that_should_push_properties_.erase(layer);
-}
-
-std::unordered_set<LayerImpl*>&
-LayerTreeImpl::LayersThatShouldPushProperties() {
-  return layers_that_should_push_properties_;
-}
-
-bool LayerTreeImpl::LayerNeedsPushPropertiesForTesting(LayerImpl* layer) {
-  return layers_that_should_push_properties_.find(layer) !=
-         layers_that_should_push_properties_.end();
+void LayerTreeImpl::ClearLayersThatShouldPushProperties() {
+  layers_that_should_push_properties_.clear();
 }
 
 void LayerTreeImpl::RegisterLayer(LayerImpl* layer) {
@@ -1815,8 +1834,7 @@ void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
 }
 
 void LayerTreeImpl::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
-  std::vector<PictureLayerImpl*>::iterator it =
-      std::find(picture_layers_.begin(), picture_layers_.end(), layer);
+  auto it = std::find(picture_layers_.begin(), picture_layers_.end(), layer);
   DCHECK(it != picture_layers_.end());
   picture_layers_.erase(it);
 }
@@ -2090,19 +2108,21 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-struct FindScrollingLayerOrDrawnScrollbarFunctor {
+struct FindScrollingLayerOrScrollbarFunctor {
   bool operator()(LayerImpl* layer) const {
-    return layer->scrollable() || layer->IsDrawnScrollbar();
+    return layer->scrollable() || layer->is_scrollbar();
   }
 };
 
-LayerImpl*
-LayerTreeImpl::FindFirstScrollingLayerOrDrawnScrollbarThatIsHitByPoint(
+LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
     const gfx::PointF& screen_space_point) {
+  if (layer_list_.empty())
+    return nullptr;
+
   FindClosestMatchingLayerState state;
-  LayerImpl* root_layer = layer_list_.empty() ? nullptr : layer_list_[0];
+  LayerImpl* root_layer = layer_list_[0];
   FindClosestMatchingLayer(screen_space_point, root_layer,
-                           FindScrollingLayerOrDrawnScrollbarFunctor(), &state);
+                           FindScrollingLayerOrScrollbarFunctor(), &state);
   return state.closest_match;
 }
 

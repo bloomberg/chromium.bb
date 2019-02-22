@@ -75,7 +75,7 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     this._boundBlur = this._onBlur.bind(this);
     this._textEditor.element.addEventListener('focusout', this._boundBlur, false);
     this._boundWheel = event => {
-      if (UI.KeyboardShortcut.eventHasCtrlOrMeta(event))
+      if (this._executionLocation && UI.KeyboardShortcut.eventHasCtrlOrMeta(event))
         event.preventDefault();
     };
     this._textEditor.element.addEventListener('wheel', this._boundWheel, true);
@@ -732,7 +732,8 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
     const functionLocation = callFrame.functionLocation();
     if (localScope && functionLocation) {
       Sources.SourceMapNamesResolver.resolveScopeInObject(localScope)
-          .getAllProperties(false, false, this._prepareScopeVariables.bind(this, callFrame));
+          .getAllProperties(false, false)
+          .then(this._prepareScopeVariables.bind(this, callFrame));
     }
   }
 
@@ -913,10 +914,10 @@ Sources.DebuggerPlugin = class extends Sources.UISourceCodeFrame.Plugin {
 
   /**
    * @param {!SDK.DebuggerModel.CallFrame} callFrame
-   * @param {?Array.<!SDK.RemoteObjectProperty>} properties
-   * @param {?Array.<!SDK.RemoteObjectProperty>} internalProperties
+   * @param {!SDK.GetPropertiesResult} allProperties
    */
-  _prepareScopeVariables(callFrame, properties, internalProperties) {
+  _prepareScopeVariables(callFrame, allProperties) {
+    const properties = allProperties.properties;
     this._clearValueWidgets();
     if (!properties || !properties.length || properties.length > 500 || !this._textEditor.isShowing())
       return;

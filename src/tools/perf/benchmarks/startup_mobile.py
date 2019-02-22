@@ -13,7 +13,6 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.util import wpr_modes
 from telemetry.web_perf import timeline_based_measurement
 from telemetry import benchmark
-from telemetry import decorators
 from telemetry import story as story_module
 
 # The import error below is mysterious: it produces no detailed error message,
@@ -22,26 +21,13 @@ from devil.android.sdk import intent # pylint: disable=import-error
 
 # Chrome Startup Benchmarks for mobile devices (running Android).
 #
-# This set of benchmarks (experimental.startup.mobile) aims to replace
-# the benchmark experimental.startup.android.coldish. It brings two
-# improvements:
-# 1. a name that is more aligned with the end state :)
-# 2. uses the new shared state pattern as recommended by:
-#    third_party/catapult/telemetry/examples/benchmarks/android_go_benchmark.py
-# The shared state allows starting the browser multiple times during a
-# benchmark, properly evicting caches, populating caches, running as many
-# iterations as needed without being affected by pageset-repeat being set by
-# bisect/Pinpoint.
-#
-# Note: this benchmark is not yet ready for FYI bots. When we ensure that
-# evicting OS pagecache happens at proper times, we will replace
-# 'experimental.startup.android.coldish' with 'experimental.startup.mobile'.
-# After adding warm starts the resulting benchmark can replace the
-# 'start_with_url.*' family that has aged quite a bit.
+# It uses specifics of AndroidPlatform and hardcodes sending Android intents. It
+# should be disabled on non-Android to avoid failures at
+# benchmark_smoke_unittest.BenchmarkSmokeTest.
 #
 # The recommended way to run this benchmark is:
 # shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/run_benchmark \
-#   -v experimental.startup.mobile --browser=android-chrome \
+#   -v startup.mobile --browser=android-chrome \
 #   --output-dir=/tmp/avoid-polluting-chrome-tree
 
 class _MobileStartupSharedState(story_module.SharedState):
@@ -79,12 +65,11 @@ class _MobileStartupSharedState(story_module.SharedState):
     self.platform.network_controller.Close()
     self.platform.SetFullPerformanceModeEnabled(False)
 
-  def LaunchBrowser(self, url):
-    self.platform.FlushDnsCache()
-    # TODO(crbug.com/811244): Determine whether this ensures the page cache is
-    # cleared after |FlushOsPageCaches()| returns.
-    self._possible_browser.FlushOsPageCaches()
-    self.platform.WaitForBatteryTemperature(35)
+  def LaunchBrowser(self, url, flush_caches):
+    if flush_caches:
+      self.platform.FlushDnsCache()
+      self._possible_browser.FlushOsPageCaches()
+    self.platform.WaitForBatteryTemperature(32)
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
                       activity=self._possible_browser.settings.activity,
@@ -136,21 +121,32 @@ class _MobileStartupSharedState(story_module.SharedState):
     return True
 
 
+def _DriveMobileStartupWithIntent(state, flush_caches):
+  for _ in xrange(10):
+    # TODO(pasko): Find a way to fail the benchmark when WPR is set up
+    # incorrectly and error pages get loaded.
+    state.LaunchBrowser('http://bbc.co.uk', flush_caches)
+    with state.FindBrowser() as browser:
+      action_runner = browser.foreground_tab.action_runner
+      action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+
 class _MobileStartupWithIntentStory(story_module.Story):
   def __init__(self):
     super(_MobileStartupWithIntentStory, self).__init__(
         _MobileStartupSharedState, name='intent:coldish:bbc')
-    self._action_runner = None
 
   def Run(self, state):
-    """Drives the benchmark with repetitions."""
-    # TODO(pasko): Find a way to fail the benchmark when WPR is set up
-    # incorrectly and error pages get loaded.
-    for _ in xrange(10):
-      state.LaunchBrowser('http://bbc.co.uk')
-      with state.FindBrowser() as browser:
-        action_runner = browser.foreground_tab.action_runner
-        action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+    _DriveMobileStartupWithIntent(state, flush_caches=True)
+
+
+class _MobileStartupWithIntentStoryWarm(story_module.Story):
+  def __init__(self):
+    super(_MobileStartupWithIntentStoryWarm, self).__init__(
+        _MobileStartupSharedState, name='intent:warm:bbc')
+
+  def Run(self, state):
+    _DriveMobileStartupWithIntent(state, flush_caches=False)
 
 
 class _MobileStartupStorySet(story_module.StorySet):
@@ -159,15 +155,14 @@ class _MobileStartupStorySet(story_module.StorySet):
           archive_data_file='../page_sets/data/startup_pages.json',
           cloud_storage_bucket=story_module.PARTNER_BUCKET)
     self.AddStory(_MobileStartupWithIntentStory())
+    self.AddStory(_MobileStartupWithIntentStoryWarm())
 
 
-# The mobile startup benchmark uses specifics of AndroidPlatform and hardcodes
-# sending Android intents. The benchmark is disabled on non-Android to avoid
-# failure at benchmark_smoke_unittest.BenchmarkSmokeTest.
 @benchmark.Info(emails=['pasko@chromium.org',
-                         'chrome-android-perf-status@chromium.org'])
-@decorators.Disabled('linux', 'mac', 'win')
+                        'chrome-android-perf-status@chromium.org'],
+                component='Speed>Metrics>SystemHealthRegressions')
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
+  SUPPORTED_PLATFORMS = [story_module.expectations.ANDROID_NOT_WEBVIEW]
 
   # Set |pageset_repeat| to 1 to control the amount of iterations from the
   # stories. This would avoid setting per-story pageset_repeat at bisect time.
@@ -180,6 +175,7 @@ class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
 
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
+    options.config.enable_atrace_trace = True
     options.SetTimelineBasedMetrics([
         'tracingMetric',
         'androidStartupMetric',
@@ -191,4 +187,4 @@ class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'experimental.startup.mobile'
+    return 'startup.mobile'

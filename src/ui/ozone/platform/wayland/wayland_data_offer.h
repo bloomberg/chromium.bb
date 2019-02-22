@@ -23,8 +23,6 @@ namespace ui {
 // The offer describes the different mime types that the data can be
 // converted to and provides the mechanism for transferring the data
 // directly from the source client.
-//
-// TODO(tonikitoo,msisov): Add drag&drop support.
 class WaylandDataOffer {
  public:
   // Takes ownership of data_offer.
@@ -42,20 +40,36 @@ class WaylandDataOffer {
   // list of provided mime types so that Chrome clipboard's machinery
   // works fine.
   void EnsureTextMimeTypeIfNeeded();
+  void SetAction(uint32_t dnd_actions, uint32_t preferred_action);
+  void Accept(uint32_t serial, const std::string& mime_type);
+  void Reject(uint32_t serial);
 
   // Creates a pipe (read & write FDs), passing the write-end of to pipe
   // to the compositor (via wl_data_offer_receive) and returning the
   // read-end to the pipe.
   base::ScopedFD Receive(const std::string& mime_type);
+  void FinishOffer();
+  uint32_t source_actions() const;
+  uint32_t dnd_action() const;
 
  private:
   // wl_data_offer_listener callbacks.
   static void OnOffer(void* data,
                       wl_data_offer* data_offer,
                       const char* mime_type);
+  // Notifies the source-side available actions
+  static void OnSourceAction(void* data,
+                             wl_data_offer* offer,
+                             uint32_t source_actions);
+  // Notifies the selected action
+  static void OnAction(void* data, wl_data_offer* offer, uint32_t dnd_action);
 
   wl::Object<wl_data_offer> data_offer_;
   std::vector<std::string> mime_types_;
+  // Actions offered by the data source
+  uint32_t source_actions_;
+  // Action selected by the compositor
+  uint32_t dnd_action_;
 
   bool text_plain_mime_type_inserted_ = false;
 

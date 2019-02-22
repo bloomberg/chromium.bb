@@ -253,7 +253,7 @@ class TwoClientUssSyncTest : public SyncTest {
   }
 
  protected:
-  std::unique_ptr<syncer::SyncClient> CreateSyncClient(Profile* profile) {
+  std::unique_ptr<ChromeSyncClient> CreateSyncClient(Profile* profile) {
     if (number_of_clients_ignored_ > 0) {
       --number_of_clients_ignored_;
       return std::make_unique<ChromeSyncClient>(profile);

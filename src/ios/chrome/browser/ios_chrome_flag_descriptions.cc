@@ -34,11 +34,24 @@ const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
     "When enabled, shows the Google Pay logo animation when showing payments"
     "credit card suggestions in downstream keyboard accessory";
 
+extern const char kBreakpadNoDelayInitialUploadName[] =
+    "Remove delay on initial crash upload";
+extern const char kBreakpadNoDelayInitialUploadDescription[] =
+    "When enabled, the initial crash uploading will not be delayed. When "
+    "disabled, initial upload is delayed until deferred initialization. This "
+    "does not affect recovery mode.";
+
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
     "Enable updated prompt explanation when offering credit card upload";
 const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
     "If enabled, changes the server save card prompt's explanation to mention "
     "the saving of the billing address.";
+
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
+    "Enable limit on offering to save the same credit card repeatedly";
+const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
+    "If enabled, prevents popping up the credit card offer-to-save prompt if "
+    "it has repeatedly been ignored, declined, or failed.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
@@ -98,10 +111,15 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
-const char kAutofillManualFallbackName[] = "Enable autofill manual fallback";
+const char kAutofillManualFallbackName[] = "Enable Autofill Manual Fallback";
 const char kAutofillManualFallbackDescription[] =
     "When enabled, it shows the autofill UI with manual fallback when filling "
     "forms.";
+
+const char kAutofillManualFallbackPhaseTwoName[] = "Enable Addresses and Cards";
+const char kAutofillManualFallbackPhaseTwoDescription[] =
+    "When enabled, it shows the credit cards and addresses buttons in manual "
+    "fallback.";
 
 const char kAutofillShowAllSuggestionsOnPrefilledFormsName[] =
     "Enable showing all suggestions when focusing prefilled field";
@@ -158,6 +176,11 @@ const char kNewClearBrowsingDataUIDescription[] =
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 
+const char kFCMInvalidationsName[] =
+    "Enable invalidations delivery via new FCM based protocol";
+const char kFCMInvalidationsDescription[] =
+    "Use the new FCM-based protocol for deliveling invalidations";
+
 const char kFullscreenViewportAdjustmentExperimentName[] =
     "Fullscreen Viewport Adjustment Mode";
 const char kFullscreenViewportAdjustmentExperimentDescription[] =
@@ -204,6 +227,17 @@ const char kNewPasswordFormParsingDescription[] =
     "currently under development. WARNING: when enabled Password Manager might "
     "stop working";
 
+const char kOmniboxPopupShortcutIconsInZeroStateName[] =
+    "Show zero-state omnibox shortcuts";
+const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
+    "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
+    "in the omnibox popup.";
+
+const char kOmniboxTabSwitchSuggestionsName[] =
+    "Enable 'switch to this tab' option";
+const char kOmniboxTabSwitchSuggestionsDescription[] =
+    "Enable the 'switch to this tab' options in the omnibox suggestions.";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
@@ -215,18 +249,14 @@ const char kOutOfWebFullscreenDescription[] =
     "Use the fullscreen implementation living outside of web. Disable the one "
     "in web.";
 
-const char kPasswordExportName[] = "Password Export";
-const char kPasswordExportDescription[] =
-    "Enables password exporting functionality in password settings.";
-
 const char kPhysicalWeb[] = "Physical Web";
 const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
-const char kInfobarsUIRebootName[] = "Infobars UI Reboot";
-const char kInfobarsUIRebootDescription[] =
-    "When enabled, Infobars will use the new UI Reboot layout.";
+const char kSearchIconToggleName[] = "Change the icon for the search button";
+const char kSearchIconToggleDescription[] =
+    "Different icons for the search button.";
 
 const char kSlimNavigationManagerName[] = "Use Slim Navigation Manager";
 const char kSlimNavigationManagerDescription[] =
@@ -245,31 +275,24 @@ const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
 
-const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
-const char kTabSwitcherPresentsBVCDescription[] =
-    "When enabled, the tab switcher will present the BVC, so that when the "
-    "BVC is visible, the tab switcher will remain in the VC hierarchy "
-    "underneath it.";
+const char kSSOWithWKWebViewName[] = "SSO with WKWebView";
+const char kSSOWithWKWebViewDescription[] =
+    "Using WKWebView instead of UIWebView in SSO";
 
-const char kUIRefreshLocationBarName[] = "UI Refresh Location Bar";
-const char kUIRefreshLocationBarDescription[] =
-    "When enabled, the UI Refresh location bar with a custom steady-state will "
-    "be displayed.";
-
-const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
-const char kUIRefreshPhase1Description[] =
-    "When enabled, the first phase of the iOS UI refresh will be displayed.";
-
-const char kToolbarContainerCustomViewName[] =
-    "Use custom toolbar container view.";
-const char kToolbarContainerCustomViewDescription[] =
-    "Use the custom toolbar container view fix for crbug.com/889884.";
+const char kToolbarContainerName[] = "Use Toolbar Containers";
+const char kToolbarContainerDescription[] =
+    "When enabled, the toolbars and their fullscreen animations will be "
+    "managed by the toolbar container coordinator rather than BVC.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
     "Enables a unified management of user consent for privacy-related "
     "features. This includes new confirmation screens and improved settings "
     "pages.";
+
+const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
+const char kUseMultiloginEndpointDescription[] =
+    "Use Gaia OAuth multilogin for identity consistency.";
 
 const char kForceUnifiedConsentBumpName[] = "Force Unified Consent Bump";
 const char kForceUnifiedConsentBumpDescription[] =
@@ -291,18 +314,17 @@ const char kWebPageTextAccessibilityDescription[] =
     "When enabled, text in web pages will respect the user's Dynamic Type "
     "setting.";
 
-const char kWebPaymentsName[] = "Web Payments";
-const char kWebPaymentsDescription[] =
-    "Enable Payment Request API integration, a JavaScript API for merchants.";
-
-const char kWebPaymentsNativeAppsName[] = "Web Payments Native Apps";
-const char kWebPaymentsNativeAppsDescription[] =
-    "Enable third party iOS native apps as payments methods within Payment "
-    "Request.";
-
 const char kWKHTTPSystemCookieStoreName[] = "Use WKHTTPSystemCookieStore.";
 const char kWKHTTPSystemCookieStoreDescription[] =
     "Use WKHTTPCookieStore backed store for main context URL requests.";
+
+const char kWKWebViewSnapshotsName[] = "WKWebView Snapshots";
+const char kWKWebViewSnapshotsDescription[] =
+    "When enabled, the WKWebView snapshotting API is used for iOS 11+.";
+
+const char kCustomSearchEnginesName[] = "Custom Search Engines";
+const char kCustomSearchEnginesDescription[] =
+    "When enabled, user can add custom search engines in settings.";
 
 // Please insert your name/description above in alphabetical order.
 

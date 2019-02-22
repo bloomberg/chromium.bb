@@ -405,8 +405,8 @@ void V4UpdateProtocolManager::OnURLLoaderCompleteInternal(
     }
     request_.reset();
 
-    UMA_HISTOGRAM_COUNTS("SafeBrowsing.V4Update.ResponseSizeKB",
-                         data.size() / 1024);
+    UMA_HISTOGRAM_COUNTS_1M("SafeBrowsing.V4Update.ResponseSizeKB",
+                            data.size() / 1024);
 
     // The caller should update its state now, based on parsed_server_response.
     // The callback must call ScheduleNextUpdate() at the end to resume

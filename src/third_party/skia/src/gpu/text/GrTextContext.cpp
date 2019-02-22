@@ -15,14 +15,12 @@
 #include "SkDistanceFieldGen.h"
 #include "SkDraw.h"
 #include "SkDrawProcs.h"
-#include "SkFindAndPlaceGlyph.h"
 #include "SkGlyphRun.h"
 #include "SkGr.h"
 #include "SkGraphics.h"
 #include "SkMakeUnique.h"
 #include "SkMaskFilterBase.h"
 #include "SkPaintPriv.h"
-#include "SkTextMapStateProc.h"
 #include "SkTo.h"
 #include "ops/GrMeshDrawOp.h"
 
@@ -201,78 +199,6 @@ void GrTextContext::InitDistanceFieldPaint(GrTextBlob* blob,
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-void GrTextContext::FallbackGlyphRunHelper::appendGlyph(
-        const SkGlyph& glyph, SkGlyphID glyphID, SkPoint glyphPos) {
-    SkScalar maxDim = SkTMax(glyph.fWidth, glyph.fHeight)*fTextRatio;
-    if (SkScalarNearlyZero(maxDim)) return;
-
-    if (!fUseTransformedFallback) {
-        if (!fViewMatrix.isScaleTranslate() || maxDim*fMaxScale > fMaxTextSize) {
-            fUseTransformedFallback = true;
-            fMaxTextSize -= 2;    // Subtract 2 to account for the bilerp pad around the glyph
-        }
-    }
-
-    fFallbackTxt.push_back(glyphID);
-    if (fUseTransformedFallback) {
-        // If there's a glyph in the font that's particularly large, it's possible
-        // that fScaledFallbackTextSize may end up minimizing too much. We'd rather skip
-        // that glyph than make the others blurry, so we set a minimum size of half the
-        // maximum text size to avoid this case.
-        SkScalar glyphTextSize =
-                SkTMax(SkScalarFloorToScalar(fTextSize * fMaxTextSize/maxDim), 0.5f*fMaxTextSize);
-        fTransformedFallbackTextSize = SkTMin(glyphTextSize, fTransformedFallbackTextSize);
-    }
-    fFallbackPos.push_back(glyphPos);
-}
-
-void GrTextContext::FallbackGlyphRunHelper::drawGlyphs(
-        GrTextBlob* blob, int runIndex, GrGlyphCache* glyphCache, const SkSurfaceProps& props,
-        const SkPaint& paint, GrColor filteredColor, SkScalerContextFlags scalerContextFlags) {
-    if (!fFallbackTxt.empty()) {
-        blob->initOverride(runIndex);
-        blob->setHasBitmap();
-        blob->setSubRunHasW(runIndex, fViewMatrix.hasPerspective());
-        const SkPaint& skPaint = paint;
-        SkColor textColor = filteredColor;
-
-        SkScalar textRatio = SK_Scalar1;
-        SkPaint fallbackPaint(skPaint);
-        SkMatrix matrix = fViewMatrix;
-        this->initializeForDraw(&fallbackPaint, &textRatio, &matrix);
-        SkExclusiveStrikePtr cache =
-                blob->setupCache(runIndex, props, scalerContextFlags, fallbackPaint, &matrix);
-
-        sk_sp<GrTextStrike> currStrike;
-        auto glyphPos = fFallbackPos.begin();
-        for (auto glyphID : fFallbackTxt) {
-            const SkGlyph& glyph = cache->getGlyphIDMetrics(glyphID);
-            if (!fUseTransformedFallback) {
-                fViewMatrix.mapPoints(&*glyphPos, 1);
-                glyphPos->fX = SkScalarFloorToScalar(glyphPos->fX);
-                glyphPos->fY = SkScalarFloorToScalar(glyphPos->fY);
-            }
-            GrTextContext::AppendGlyph(blob, runIndex, glyphCache, &currStrike,
-                                          glyph, GrGlyph::kCoverage_MaskStyle,
-                                          glyphPos->fX, glyphPos->fY, textColor,
-                                          cache.get(), textRatio, fUseTransformedFallback);
-            glyphPos++;
-        }
-    }
-}
-
-void GrTextContext::FallbackGlyphRunHelper::initializeForDraw(
-        SkPaint* paint, SkScalar* textRatio, SkMatrix* matrix) const {
-    if (!fUseTransformedFallback) return;
-
-    paint->setTextSize(fTransformedFallbackTextSize);
-    *textRatio = fTextSize / fTransformedFallbackTextSize;
-    *matrix = SkMatrix::I();
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 #if GR_TEST_UTILS
 

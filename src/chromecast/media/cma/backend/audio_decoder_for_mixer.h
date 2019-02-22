@@ -58,6 +58,11 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   bool SetVolume(float multiplier) override;
   RenderingDelay GetRenderingDelay() override;
 
+  // This allows for very small changes in the rate of audio playback that are
+  // (supposedly) imperceptible.
+  float SetAvSyncPlaybackRate(float rate);
+  void RestartPlaybackAt(int64_t pts, int64_t timestamp);
+
  private:
   friend class MockAudioDecoderForMixer;
   friend class AvSyncTest;
@@ -78,12 +83,15 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   void OnAudioReadyForPlayback() override;
 
   void CleanUpPcm();
+  void ResetMixerInputForNewSampleRate(int sample_rate);
   void CreateDecoder();
   void CreateRateShifter(int samples_per_second);
+
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
-                       const scoped_refptr<DecoderBufferBase>& decoded);
+                       const AudioConfig& config,
+                       scoped_refptr<DecoderBufferBase> decoded);
   void CheckBufferComplete();
   void PushRateShifted();
   void PushMorePcm();

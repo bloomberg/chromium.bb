@@ -105,7 +105,7 @@ set alltests [test_set $alltests -exclude {
   all.test        async.test         quick.test  veryquick.test
   memleak.test    permutations.test  soak.test   fts3.test
   mallocAll.test  rtree.test         full.test   extraquick.test
-  session.test
+  session.test    rbu.test
 }]
 
 set allquicktests [test_set $alltests -exclude {
@@ -122,7 +122,7 @@ set allquicktests [test_set $alltests -exclude {
   vtab_err.test walslow.test walcrash.test walcrash3.test
   walthread.test rtree3.test indexfault.test securedel2.test
   sort3.test sort4.test fts4growth.test fts4growth2.test
-  bigsort.test rbu.test walprotocol.test mmap4.test fuzzer2.test
+  bigsort.test walprotocol.test mmap4.test fuzzer2.test
   walcrash2.test e_fkey.test backup.test
 
   fts4merge.test fts4merge2.test fts4merge4.test fts4check.test
@@ -255,6 +255,7 @@ test_suite "fts3" -prefix "" -description {
   fts3am.test fts3an.test fts3ao.test fts3atoken.test
   fts3auto.test fts3aux1.test fts3aux2.test fts3b.test
   fts3comp1.test fts3conf.test fts3corrupt2.test fts3corrupt.test
+  fts3corrupt4.test
   fts3cov.test fts3c.test fts3defer2.test fts3defer3.test
   fts3defer.test fts3drop.test fts3d.test fts3e.test
   fts3expr2.test fts3expr3.test fts3expr4.test fts3expr5.test
@@ -281,6 +282,18 @@ test_suite "fts5-light" -prefix "" -description {
   test_set \
       [glob -nocomplain $::testdir/../ext/fts5/test/*.test] \
       -exclude *corrupt* *fault* *big* *fts5aj*
+]
+
+test_suite "window" -prefix "" -description {
+  All window function related tests .
+} -files [
+  test_set [glob -nocomplain $::testdir/window*.test]
+]
+
+test_suite "alter" -prefix "" -description {
+  All ALTER function related tests .
+} -files [
+  test_set [glob -nocomplain $::testdir/alter*.test]
 ]
 
 test_suite "lsm1" -prefix "" -description {

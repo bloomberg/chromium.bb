@@ -79,7 +79,7 @@ chrome.fileManagerPrivate = {
     // Returns chrome.fileManagerPrivate.FileTask[].
     var results = [];
     // Support for view-in-browser on single text file used by QuickView.
-    if (entries.length == 1 &&
+    if (entries.length == 1 && entries[0].metadata &&
         entries[0].metadata.contentMimeType == 'text/plain') {
       results.push({
         taskId: 'hhaomjibdihmijegdhdafkllkbggdgoj|file|view-in-browser',
@@ -88,6 +88,10 @@ chrome.fileManagerPrivate = {
       });
     }
     setTimeout(callback, 0, results);
+  },
+  getCrostiniSharedPaths: (callback) => {
+    // Returns Entry[].
+    setTimeout(callback, 0, []);
   },
   getPreferences: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);
@@ -134,12 +138,12 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0, false);
   },
   // Simulate startup of vm and container by taking 1s.
-  mountCrostiniContainerDelay_: 1000,
-  mountCrostiniContainer: (callback) => {
+  mountCrostiniDelay_: 1000,
+  mountCrostini: (callback) => {
     setTimeout(() => {
       test.mountCrostini();
       callback();
-    }, chrome.fileManagerPrivate.mountCrostiniContainerDelay_);
+    }, chrome.fileManagerPrivate.mountCrostiniDelay_);
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
@@ -175,6 +179,9 @@ chrome.fileManagerPrivate = {
     // chrome.fileManagerPrivate.SearchResult { entry: Entry,
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
+  },
+  sharePathWithCrostini: (entry, callback) => {
+    setTimeout(callback, 0);
   },
   nextCopyId_: 0,
   startCopy: (entry, parentEntry, newName, callback) => {
@@ -236,9 +243,15 @@ chrome.mediaGalleries = {
  */
 chrome.fileSystem = {
   requestFileSystem: (options, callback) => {
-    var volume =
-        mockVolumeManager.volumeInfoList.findByVolumeId(options.volumeId);
-    setTimeout(callback, 0, volume ? volume.fileSystem : null);
+    let fs = null;
+    for (let i = 0; i < mockVolumeManager.volumeInfoList.length; i++) {
+      const volume = mockVolumeManager.volumeInfoList.item(i);
+      if (volume.volumeId === options.volumeId) {
+        fs = volume.fileSystem;
+        break;
+      }
+    }
+    setTimeout(callback, 0, fs);
   },
 };
 
@@ -264,8 +277,9 @@ var webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
       }
     }
   }
-  var error =
-      new Error('webkitResolveLocalFileSystemURL not found: [' + url + ']');
+  const message = `webkitResolveLocalFileSystemURL not found: ${url}`;
+  console.warn(message);
+  const error = new DOMException(message, 'NotFoundError');
   if (errorCallback) {
     setTimeout(errorCallback, 0, error);
   } else {

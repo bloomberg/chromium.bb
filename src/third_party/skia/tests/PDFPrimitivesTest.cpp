@@ -15,7 +15,6 @@
 #include "SkClusterator.h"
 #include "SkData.h"
 #include "SkDeflate.h"
-#include "SkDocument.h"
 #include "SkGlyphRun.h"
 #include "SkImageEncoder.h"
 #include "SkImageFilterPriv.h"
@@ -23,6 +22,7 @@
 #include "SkMatrix.h"
 #include "SkPDFCanon.h"
 #include "SkPDFDevice.h"
+#include "SkPDFDocument.h"
 #include "SkPDFFont.h"
 #include "SkPDFTypes.h"
 #include "SkPDFUtils.h"
@@ -165,7 +165,7 @@ static void TestObjectRef(skiatest::Reporter* reporter) {
 // and there is no assert on input data in Debug mode.
 static void test_issue1083() {
     SkDynamicMemoryWStream outStream;
-    sk_sp<SkDocument> doc(SkDocument::MakePDF(&outStream));
+    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&outStream));
     SkCanvas* canvas = doc->beginPage(100.0f, 100.0f);
     SkPaint paint;
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
@@ -394,7 +394,7 @@ sk_sp<SkFlattenable> DummyImageFilter::CreateProc(SkReadBuffer& buffer) {
 DEF_TEST(SkPDF_ImageFilter, reporter) {
     REQUIRE_PDF_DOCUMENT(SkPDF_ImageFilter, reporter);
     SkDynamicMemoryWStream stream;
-    sk_sp<SkDocument> doc(SkDocument::MakePDF(&stream));
+    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
     SkCanvas* canvas = doc->beginPage(100.0f, 100.0f);
 
     sk_sp<DummyImageFilter> filter(DummyImageFilter::Make());
@@ -492,7 +492,7 @@ DEF_TEST(SkPDF_Primitives_Color, reporter) {
 static SkGlyphRun make_run(size_t len, const SkGlyphID* glyphs, SkPoint* pos,
                            SkPaint paint, const uint32_t* clusters,
                            size_t utf8TextByteLength, const char* utf8Text) {
-    return SkGlyphRun(std::move(paint),
+    return SkGlyphRun(paint, SkRunFont{paint},
                       SkSpan<const uint16_t>{},  // No dense indices for now.
                       SkSpan<const SkPoint>{pos, len},
                       SkSpan<const SkGlyphID>{glyphs, len},

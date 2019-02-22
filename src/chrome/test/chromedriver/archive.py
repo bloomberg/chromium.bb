@@ -46,15 +46,16 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
   """
   def GetZipName(revision):
     if util.IsWindows():
-      return revision + '/chrome-win32.zip'
+      return revision + (
+          '/chrome-win.zip' if int(revision) > 591478 else '/chrome-win32.zip')
     elif util.IsMac():
       return revision + '/chrome-mac.zip'
     elif util.IsLinux():
       return revision + '/chrome-linux.zip'
 
-  def GetDirName():
+  def GetDirName(revision):
     if util.IsWindows():
-      return 'chrome-win32'
+      return 'chrome-win' if int(revision) > 591478 else 'chrome-win32'
     elif util.IsMac():
       return 'chrome-mac'
     elif util.IsLinux():
@@ -74,7 +75,8 @@ def DownloadChrome(revision, dest_dir, site=Site.CHROMIUM_SNAPSHOT):
     print 'Downloading', url, '...'
     urllib.urlretrieve(url, zip_path)
   util.Unzip(zip_path, dest_dir)
-  return os.path.join(dest_dir, GetDirName(), GetChromePathFromPackage())
+  return os.path.join(dest_dir, GetDirName(revision),
+                      GetChromePathFromPackage())
 
 
 def _GetDownloadPlatform():

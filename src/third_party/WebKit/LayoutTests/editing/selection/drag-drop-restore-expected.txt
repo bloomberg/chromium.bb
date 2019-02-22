@@ -10,4 +10,3 @@ TEST COMPLETE
 PASS oldValue is ""
 PASS src.value is "abc"
 PASS dst.value is "abc"
-

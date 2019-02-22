@@ -31,6 +31,7 @@ class ConfigSet;
 
 namespace gl
 {
+class ErrorSet;
 class FramebufferState;
 class InfoLog;
 class Texture;
@@ -102,25 +103,15 @@ class Context : angle::NonCopyable
     \
 }
 
-#define ANGLE_CHECK_HR(CONTEXT, EXPR, MESSAGE, ERROR)                                 \
-                                                                                      \
-    {                                                                                 \
-        if (ANGLE_UNLIKELY(!(EXPR)))                                                  \
-        {                                                                             \
-            CONTEXT->handleError(ERROR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                             \
-        }                                                                             \
-    }
-
 #define ANGLE_CHECK_HR_ALLOC(context, result) \
-    ANGLE_CHECK_HR(context, result, "Failed to allocate host memory", E_OUTOFMEMORY)
+    ANGLE_CHECK(context, result, "Failed to allocate host memory", E_OUTOFMEMORY)
 
 #define ANGLE_CHECK_HR_MATH(context, result) \
-    ANGLE_CHECK_HR(context, result, "Integer overflow.", E_FAIL)
+    ANGLE_CHECK(context, result, "Integer overflow.", E_FAIL)
 
 #define ANGLE_HR_UNREACHABLE(context) \
     UNREACHABLE();                    \
-    ANGLE_CHECK_HR(context, false, "Unreachble code reached.", E_FAIL)
+    ANGLE_CHECK(context, false, "Unreachble code reached.", E_FAIL)
 
 // Check if the device is lost every 10 failures to get the query data
 constexpr unsigned int kPollingD3DDeviceLostCheckFrequency = 10;
@@ -232,7 +223,8 @@ class RendererD3D : public BufferFactoryD3D
     virtual angle::Result copyTexture(const gl::Context *context,
                                       const gl::Texture *source,
                                       GLint sourceLevel,
-                                      const gl::Rectangle &sourceRect,
+                                      gl::TextureTarget srcTarget,
+                                      const gl::Box &sourceBox,
                                       GLenum destFormat,
                                       GLenum destType,
                                       const gl::Offset &destOffset,
@@ -260,22 +252,22 @@ class RendererD3D : public BufferFactoryD3D
                                                  RenderTargetD3D **outRT) = 0;
 
     // Shader operations
-    virtual angle::Result loadExecutable(const gl::Context *context,
+    virtual angle::Result loadExecutable(d3d::Context *context,
                                          const uint8_t *function,
                                          size_t length,
                                          gl::ShaderType type,
                                          const std::vector<D3DVarying> &streamOutVaryings,
                                          bool separatedOutputBuffers,
-                                         ShaderExecutableD3D **outExecutable)       = 0;
-    virtual angle::Result compileToExecutable(const gl::Context *context,
+                                         ShaderExecutableD3D **outExecutable)      = 0;
+    virtual angle::Result compileToExecutable(d3d::Context *context,
                                               gl::InfoLog &infoLog,
                                               const std::string &shaderHLSL,
                                               gl::ShaderType type,
                                               const std::vector<D3DVarying> &streamOutVaryings,
                                               bool separatedOutputBuffers,
                                               const angle::CompilerWorkaroundsD3D &workarounds,
-                                              ShaderExecutableD3D **outExectuable)  = 0;
-    virtual angle::Result ensureHLSLCompilerInitialized(const gl::Context *context) = 0;
+                                              ShaderExecutableD3D **outExectuable) = 0;
+    virtual angle::Result ensureHLSLCompilerInitialized(d3d::Context *context)     = 0;
 
     virtual UniformStorageD3D *createUniformStorage(size_t storageSize) = 0;
 
@@ -290,7 +282,7 @@ class RendererD3D : public BufferFactoryD3D
     virtual angle::Result copyImage(const gl::Context *context,
                                     ImageD3D *dest,
                                     ImageD3D *source,
-                                    const gl::Rectangle &sourceRect,
+                                    const gl::Box &sourceBox,
                                     const gl::Offset &destOffset,
                                     bool unpackFlipY,
                                     bool unpackPremultiplyAlpha,
@@ -329,7 +321,14 @@ class RendererD3D : public BufferFactoryD3D
                                                               GLsizei height,
                                                               int levels,
                                                               int samples,
-                                                              bool fixedSampleLocations) = 0;
+                                                              bool fixedSampleLocations)      = 0;
+    virtual TextureStorage *createTextureStorage2DMultisampleArray(GLenum internalformat,
+                                                                   GLsizei width,
+                                                                   GLsizei height,
+                                                                   GLsizei depth,
+                                                                   int levels,
+                                                                   int samples,
+                                                                   bool fixedSampleLocations) = 0;
 
     // Buffer-to-texture and Texture-to-buffer copies
     virtual bool supportsFastCopyBufferToTexture(GLenum internalFormat) const = 0;

@@ -163,6 +163,27 @@ TEST_F(MasterParserTest, Empty) {
   ParseAndVerify();
 }
 
+TEST_F(MasterParserTest, DefaultActionIsRead) {
+  SetReaderData({
+      0xEC,  // ID = 0xEC (Void).
+      0x80,  // Size = 0.
+  });
+
+  {
+    InSequence dummy;
+
+    const ElementMetadata metadata = {Id::kVoid, 2, 0, 0};
+
+    // This intentionally does not set the action and relies on the parser using
+    // a default action value of kRead.
+    EXPECT_CALL(callback_, OnElementBegin(metadata, NotNull()))
+        .WillOnce(Return(Status(Status::kOkCompleted)));
+    EXPECT_CALL(callback_, OnVoid(metadata, NotNull(), NotNull())).Times(1);
+  }
+
+  ParseAndVerify();
+}
+
 // Unrecognized children should be skipped over.
 TEST_F(MasterParserTest, UnknownChildren) {
   SetReaderData({

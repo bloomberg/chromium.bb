@@ -174,6 +174,7 @@ void PaymentRequestState::OnSpecUpdated() {
       invalid_shipping_profile_ = selected_shipping_profile;
       selected_shipping_profile_ = nullptr;
     }
+
     if (spec_->has_payer_error() && selected_contact_profile) {
       invalid_contact_profile_ = selected_contact_profile;
       selected_contact_profile_ = nullptr;
@@ -185,6 +186,9 @@ void PaymentRequestState::OnSpecUpdated() {
   } else {
     selected_shipping_option_error_profile_ = selected_shipping_profile;
     selected_shipping_profile_ = nullptr;
+    if (spec_->has_shipping_address_error() && selected_shipping_profile) {
+      invalid_shipping_profile_ = selected_shipping_profile;
+    }
   }
 
   is_waiting_for_merchant_validation_ = false;
@@ -374,6 +378,10 @@ void PaymentRequestState::SetSelectedContactProfile(
   invalid_contact_profile_ = nullptr;
 
   UpdateIsReadyToPayAndNotifyObservers();
+
+  if (IsPaymentAppInvoked()) {
+    delegate_->OnPayerInfoSelected(response_helper_->GeneratePayerDetail());
+  }
 }
 
 void PaymentRequestState::SetSelectedInstrument(PaymentInstrument* instrument) {

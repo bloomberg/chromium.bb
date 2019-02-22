@@ -93,7 +93,7 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
 
   std::unique_ptr<IFWL_AdapterTimerMgr> NewTimerMgr() override;
 
- protected:
+ private:
   friend class CPDFXFA_DocEnvironment;
 
   int GetOriginalPageCount() const { return m_nPageCount; }
@@ -107,12 +107,11 @@ class CPDFXFA_Context final : public CPDF_Document::Extension,
     return &m_XFAPageList;
   }
 
- private:
   CJS_Runtime* GetCJSRuntime() const;
   void CloseXFADoc();
 
   FormType m_FormType = FormType::kNone;
-  UnownedPtr<CPDF_Document> m_pPDFDoc;
+  UnownedPtr<CPDF_Document> const m_pPDFDoc;
   std::unique_ptr<CXFA_FFDoc> m_pXFADoc;
   Observable<CPDFSDK_FormFillEnvironment>::ObservedPtr m_pFormFillEnv;
   UnownedPtr<CXFA_FFDocView> m_pXFADocView;

@@ -34,7 +34,13 @@ enum ConnectionAttemptFailureReason {
   REMOTE_DEVICE_INVALID_PSK,
 
   // Timeouts occurred trying to contact the remote device.
-  TIMEOUT_FINDING_DEVICE
+  TIMEOUT_FINDING_DEVICE,
+
+  // The local Bluetooth adapter is disabled (turned off).
+  ADAPTER_DISABLED,
+
+  // The local Bluetooth adapter is not present.
+  ADAPTER_NOT_PRESENT
 };
 
 enum ConnectionCreationDetail {

@@ -3,9 +3,9 @@
   "display_name": "Foo",
   "options": {
     "instance_sharing": "singleton",
-    "allow_other_user_ids": true,
-    "allow_other_instance_names": true,
-    "instance_for_client_process": true
+    "can_connect_to_other_services_as_any_user": true,
+    "can_connect_to_other_services_with_any_instance_name": true,
+    "can_create_other_service_instances": true
   },
   "interface_provider_specs": { }
 }

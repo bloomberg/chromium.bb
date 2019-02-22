@@ -7,7 +7,7 @@ PASS Testing 'alignment-baseline'.
 FAIL Testing 'baseline-shift'. assert_equals: Default value. expected "baseline" but got "0px"
 PASS Testing 'clip-rule'.
 PASS Testing 'color'.
-FAIL Testing 'color-interpolation-filters'. assert_equals: Default value. expected "" but got "linearRGB"
+FAIL Testing 'color-interpolation-filters'. assert_equals: Default value. expected "" but got "linearrgb"
 PASS Testing 'cursor'.
 PASS Testing 'direction'.
 PASS Testing 'display'.

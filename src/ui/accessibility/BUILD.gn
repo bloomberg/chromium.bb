@@ -4,6 +4,7 @@
 
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -28,7 +29,7 @@ mojom("ax_enums_mojo") {
   ]
 }
 
-component("accessibility") {
+jumbo_component("accessibility") {
   sources = [
     "ax_action_data.cc",
     "ax_action_data.h",
@@ -41,6 +42,8 @@ component("accessibility") {
     "ax_export.h",
     "ax_host_delegate.cc",
     "ax_host_delegate.h",
+    "ax_mode.h",
+    "ax_mode_observer.h",
     "ax_node.cc",
     "ax_node.h",
     "ax_node_data.cc",
@@ -65,6 +68,8 @@ component("accessibility") {
     "ax_tree_combiner.h",
     "ax_tree_data.cc",
     "ax_tree_data.h",
+    "ax_tree_id.cc",
+    "ax_tree_id.h",
     "ax_tree_id_registry.cc",
     "ax_tree_id_registry.h",
     "ax_tree_serializer.cc",
@@ -75,6 +80,8 @@ component("accessibility") {
     "platform/ax_android_constants.h",
     "platform/ax_platform_node.cc",
     "platform/ax_platform_node.h",
+    "platform/ax_platform_node_test_helper.cc",
+    "platform/ax_platform_node_test_helper.h",
     "platform/ax_unique_id.cc",
     "platform/ax_unique_id.h",
   ]
@@ -199,6 +206,7 @@ test("accessibility_unittests") {
     "mojom/ax_event_mojom_traits_unittest.cc",
     "mojom/ax_node_data_mojom_traits_unittest.cc",
     "mojom/ax_tree_data_mojom_traits_unittest.cc",
+    "mojom/ax_tree_id_mojom_traits_unittest.cc",
     "mojom/ax_tree_update_mojom_traits_unittest.cc",
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",

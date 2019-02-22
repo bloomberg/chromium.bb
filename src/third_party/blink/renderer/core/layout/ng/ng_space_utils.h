@@ -40,7 +40,7 @@ CORE_EXPORT bool AdjustToClearance(LayoutUnit clearance_offset,
 // determined, we will resort to using a fallback later on, such as the initial
 // containing block size. Spec:
 // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
-scoped_refptr<NGConstraintSpace> CreateExtrinsicConstraintSpaceForChild(
+NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
     const NGConstraintSpace& container_constraint_space,
     LayoutUnit container_extrinsic_block_size,
     NGLayoutInputNode child);

@@ -280,28 +280,6 @@ SignedExchangeSignatureHeaderField::ParseSignature(
   return signatures;
 }
 
-// static
-bool SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
-    base::StringPiece content_type,
-    base::Optional<SignedExchangeVersion>* version_param) {
-  DCHECK(version_param);
-  StructuredHeaderParser parser(content_type);
-  ParameterisedIdentifier parameterised_identifier;
-  parser.ParseParameterisedIdentifier(&parameterised_identifier);
-  if (!parser.ParsedSuccessfully())
-    return false;
-  const auto it = parameterised_identifier.params.find("v");
-  if (it == parameterised_identifier.params.end()) {
-    *version_param = base::nullopt;
-  } else {
-    if (it->second == "b2")
-      *version_param = SignedExchangeVersion::kB2;
-    else
-      return false;
-  }
-  return true;
-}
-
 SignedExchangeSignatureHeaderField::Signature::Signature() = default;
 SignedExchangeSignatureHeaderField::Signature::Signature(
     const Signature& other) = default;

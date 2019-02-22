@@ -1080,6 +1080,59 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoplayPolicy) {
       << message_;
 }
 
+// This test exercises the webview spatial navigation API
+// This test is disabled due to being flaky. http://crbug.com/884306
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_SpatialNavigationJavascriptAPI) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableSpatialNavigation);
+
+  LoadAndLaunchPlatformApp("web_view/spatial_navigation_state_api",
+                           "WebViewTest.LAUNCHED");
+
+  ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
+  next_step_listener.set_failure_message("TEST_STEP_FAILED");
+
+  // Check that spatial navigation is initialized in the beginning
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+
+  // Spatial navigation enabled at this point, moves focus one element
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Check that focus has moved one element
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Moves focus again
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Check that focus has moved one element
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Check that spatial navigation was manually disabled
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+  next_step_listener.Reset();
+
+  // Spatial navigation disabled at this point, RIGHT key has no effect
+  content::SimulateKeyPress(embedder, ui::DomKey::ARROW_RIGHT,
+                            ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false,
+                            false, false, false);
+
+  // Move focus one element to the left via SHIFT+TAB
+  content::SimulateKeyPress(embedder, ui::DomKey::TAB, ui::DomCode::TAB,
+                            ui::VKEY_TAB, false, true, false, false);
+
+  // Check that focus has moved to the left
+  ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
+}
+
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
 IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
@@ -3240,7 +3293,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestFindAPI_findupdate) {
   TestHelper("testFindAPI_findupdate", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_testFindInMultipleWebViews) {
+// TODO(crbug.com/892085): Disabled on Windows due to flakiness. Re-enable.
+#if defined(OS_WIN)
+#define MAYBE_Shim_testFindInMultipleWebViews \
+  DISABLED_Shim_testFindInMultipleWebViews
+#else
+#define MAYBE_Shim_testFindInMultipleWebViews Shim_testFindInMultipleWebViews
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_testFindInMultipleWebViews) {
   TestHelper("testFindInMultipleWebViews", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -3976,97 +4036,6 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
 
   guest_frame_observer.WaitForScrollOffset(default_offset);
 }
-
-#if defined(USE_AURA)
-class WebViewGuestTouchFocusBrowserPluginSpecificTest
-    : public WebViewBrowserPluginSpecificTest {
- public:
-  WebViewGuestTouchFocusBrowserPluginSpecificTest() {}
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebViewBrowserPluginSpecificTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitchASCII(
-        switches::kTouchEventFeatureDetection,
-        switches::kTouchEventFeatureDetectionEnabled);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewGuestTouchFocusBrowserPluginSpecificTest);
-};
-
-class FocusChangeWaiter {
- public:
-  explicit FocusChangeWaiter(content::WebContents* web_contents,
-                             bool expected_focus)
-      : web_contents_(web_contents), expected_focus_(expected_focus) {}
-  ~FocusChangeWaiter() {}
-
-  void WaitForFocusChange() {
-    while (expected_focus_ !=
-           IsWebContentsBrowserPluginFocused(web_contents_)) {
-      base::RunLoop().RunUntilIdle();
-    }
-  }
-
- private:
-  content::WebContents* web_contents_;
-  bool expected_focus_;
-};
-
-IN_PROC_BROWSER_TEST_F(WebViewGuestTouchFocusBrowserPluginSpecificTest,
-                       TouchFocusesBrowserPluginInEmbedder) {
-  // This test is only relevant for non-OOPIF WebView.
-  ASSERT_FALSE(
-      base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
-
-  LoadAppWithGuest("web_view/guest_focus_test");
-
-  // Lookup relevant information about guest and embedder.
-  content::WebContents* embedder_contents = GetEmbedderWebContents();
-
-  std::vector<content::WebContents*> guest_web_contents_list;
-  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
-  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
-  ASSERT_EQ(1u, guest_web_contents_list.size());
-
-  content::WebContents* guest_contents = guest_web_contents_list[0];
-
-  gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
-  gfx::Rect guest_rect = guest_contents->GetContainerBounds();
-
-  guest_rect.set_x(guest_rect.x() - embedder_rect.x());
-  guest_rect.set_y(guest_rect.y() - embedder_rect.y());
-  embedder_rect.set_x(0);
-  embedder_rect.set_y(0);
-
-  // Don't send events that need to be routed until we know the child's surface
-  // is ready for hit testing.
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
-
-  // 1) BrowserPlugin should not be focused at start.
-  EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));
-
-  // 2) Send touch event to guest, now BrowserPlugin should get focus.
-  {
-    gfx::Point point = guest_rect.CenterPoint();
-    FocusChangeWaiter focus_waiter(guest_contents, true);
-    SendRoutedTouchTapSequence(embedder_contents, point);
-    SendRoutedGestureTapSequence(embedder_contents, point);
-    focus_waiter.WaitForFocusChange();
-    EXPECT_TRUE(IsWebContentsBrowserPluginFocused(guest_contents));
-  }
-
-  // 3) Send touch start to embedder, now BrowserPlugin should lose focus.
-  {
-    gfx::Point point(10, 10);
-    FocusChangeWaiter focus_waiter(guest_contents, false);
-    SendRoutedTouchTapSequence(embedder_contents, point);
-    SendRoutedGestureTapSequence(embedder_contents, point);
-    focus_waiter.WaitForFocusChange();
-    EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));
-  }
-}
-#endif
 
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
                         WebViewGuestScrollTouchTest,

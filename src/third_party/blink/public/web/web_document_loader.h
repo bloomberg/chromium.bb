@@ -133,6 +133,9 @@ class BLINK_EXPORT WebDocumentLoader {
   // IsArchive returns false.
   virtual WebArchiveInfo GetArchiveInfo() const = 0;
 
+  // Whether this load was started with a user gesture.
+  virtual bool HadUserGesture() const = 0;
+
  protected:
   ~WebDocumentLoader() = default;
 };

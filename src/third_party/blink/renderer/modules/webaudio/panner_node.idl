@@ -61,10 +61,10 @@ enum DistanceModelType {
 
     [RaisesException=Setter] attribute double refDistance;
     [RaisesException=Setter] attribute double maxDistance;
-    attribute double rolloffFactor;
+    [RaisesException=Setter] attribute double rolloffFactor;
 
     // Directional sound cone
     attribute double coneInnerAngle;
     attribute double coneOuterAngle;
-    attribute double coneOuterGain;
+    [RaisesException=Setter] attribute double coneOuterGain;
 };

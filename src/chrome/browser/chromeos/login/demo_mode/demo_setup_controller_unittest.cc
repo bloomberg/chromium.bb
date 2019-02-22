@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,6 +128,7 @@ class DemoSetupControllerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ScopedTestingLocalState testing_local_state_;
   ScopedStubInstallAttributes test_install_attributes_;
+  system::ScopedFakeStatisticsProvider statistics_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupControllerTest);
 };

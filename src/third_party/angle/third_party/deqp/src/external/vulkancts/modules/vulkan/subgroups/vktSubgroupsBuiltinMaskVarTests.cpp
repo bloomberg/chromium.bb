@@ -274,7 +274,7 @@ std::string subgroupMask (const CaseDefinition& caseDef)
 
 void initFrameBufferPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 {
-	const vk::SpirVAsmBuildOptions	buildOptionsSpr	(vk::SPIRV_VERSION_1_3);
+	const vk::SpirVAsmBuildOptions	buildOptionsSpr	(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3);
 	const string					comparison		= subgroupComparison(caseDef);
 	const string					mask			= varSubgroupMask(caseDef);
 
@@ -1274,7 +1274,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 			<< "}\n";
 
 		programCollection.glslSources.add("comp")
-				<< glu::ComputeSource(src.str()) << vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u);
+				<< glu::ComputeSource(src.str()) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 	}
 	else
 	{
@@ -1297,7 +1297,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 				"  gl_PointSize = 1.0f;\n"
 				"}\n";
 			programCollection.glslSources.add("vert")
-				<< glu::VertexSource(vertex) << vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u);
+				<< glu::VertexSource(vertex) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 		}
 
 		{
@@ -1322,7 +1322,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 				"  gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;\n"
 				"}\n";
 			programCollection.glslSources.add("tesc")
-					<< glu::TessellationControlSource(tesc) << vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u);
+					<< glu::TessellationControlSource(tesc) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 		}
 
 		{
@@ -1344,7 +1344,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 				"}\n";
 
 			programCollection.glslSources.add("tese")
-					<< glu::TessellationEvaluationSource(tese) << vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u);
+					<< glu::TessellationEvaluationSource(tese) << vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 		}
 
 		{
@@ -1367,7 +1367,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 				"  EndPrimitive();\n"
 				"}\n";
 
-			subgroups::addGeometryShadersFromTemplate(geometry, vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u),
+			subgroups::addGeometryShadersFromTemplate(geometry, vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u),
 													  programCollection.glslSources);
 		}
 
@@ -1383,7 +1383,7 @@ void initPrograms(SourceCollections& programCollection, CaseDefinition caseDef)
 				"}\n";
 
 			programCollection.glslSources.add("fragment")
-				<< glu::FragmentSource(fragment)<< vk::ShaderBuildOptions(vk::SPIRV_VERSION_1_3, 0u);
+				<< glu::FragmentSource(fragment)<< vk::ShaderBuildOptions(programCollection.usedVulkanVersion, vk::SPIRV_VERSION_1_3, 0u);
 		}
 
 		subgroups::addNoSubgroupShader(programCollection);
@@ -1476,8 +1476,12 @@ tcu::TestStatus test(Context& context, const CaseDefinition caseDef)
 
 tcu::TestCaseGroup* createSubgroupsBuiltinMaskVarTests(tcu::TestContext& testCtx)
 {
-	de::MovePtr<tcu::TestCaseGroup> group(new tcu::TestCaseGroup(
-			testCtx, "builtin_mask_var", "Subgroup builtin mask variable tests"));
+de::MovePtr<tcu::TestCaseGroup> graphicGroup(new tcu::TestCaseGroup(
+		testCtx, "graphics", "Subgroup builtin mask category	tests: graphics"));
+	de::MovePtr<tcu::TestCaseGroup> computeGroup(new tcu::TestCaseGroup(
+		testCtx, "compute", "Subgroup builtin mask category tests: compute"));
+	de::MovePtr<tcu::TestCaseGroup> framebufferGroup(new tcu::TestCaseGroup(
+		testCtx, "framebuffer", "Subgroup builtin mask category tests: framebuffer"));
 
 	const char* const all_stages_vars[] =
 	{
@@ -1504,28 +1508,34 @@ tcu::TestCaseGroup* createSubgroupsBuiltinMaskVarTests(tcu::TestContext& testCtx
 
 		{
 			const CaseDefinition caseDef = {"gl_" + var, VK_SHADER_STAGE_ALL_GRAPHICS};
-			addFunctionCaseWithPrograms(group.get(),
-										varLower + "_graphic" , "",
+			addFunctionCaseWithPrograms(graphicGroup.get(),
+										varLower, "",
 										supportedCheck, initPrograms, test, caseDef);
 		}
 
 		{
 			const CaseDefinition caseDef = {"gl_" + var, VK_SHADER_STAGE_COMPUTE_BIT};
-			addFunctionCaseWithPrograms(group.get(),
-										varLower + "_" +
-										getShaderStageName(caseDef.shaderStage), "",
+			addFunctionCaseWithPrograms(computeGroup.get(),
+										varLower, "",
 										supportedCheck, initPrograms, test, caseDef);
 		}
 
 		for (int stageIndex = 0; stageIndex < DE_LENGTH_OF_ARRAY(stages); ++stageIndex)
 		{
 			const CaseDefinition caseDef = {"gl_" + var, stages[stageIndex]};
-			addFunctionCaseWithPrograms(group.get(),
+			addFunctionCaseWithPrograms(framebufferGroup.get(),
 						varLower + "_" +
-						getShaderStageName(caseDef.shaderStage)+"_framebuffer", "",
+						getShaderStageName(caseDef.shaderStage), "",
 						supportedCheck, initFrameBufferPrograms, noSSBOtest, caseDef);
 		}
 	}
+
+	de::MovePtr<tcu::TestCaseGroup> group(new tcu::TestCaseGroup(
+		testCtx, "builtin_mask_var", "Subgroup builtin mask variable tests"));
+
+	group->addChild(graphicGroup.release());
+	group->addChild(computeGroup.release());
+	group->addChild(framebufferGroup.release());
 
 	return group.release();
 }

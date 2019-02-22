@@ -57,6 +57,7 @@ WebViewPersonalDataManagerFactory::BuildServiceInstanceFor(
   service->Init(
       autofill_db, nullptr, browser_state->GetPrefs(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
+      /*client_profile_validator=*/nullptr, /*history_service=*/nullptr,
       browser_state->IsOffTheRecord());
   return service;
 }

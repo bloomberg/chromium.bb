@@ -19,10 +19,6 @@
 
 namespace content {
 
-// See OnScreenReaderHoneyPotQueried, below.
-bool g_screen_reader_honeypot_queried = false;
-bool g_acc_name_called = false;
-
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     const ui::AXTreeUpdate& initial_tree,
@@ -44,7 +40,6 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
       load_complete_pending_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
-  ui::GetIAccessible2UsageObserverList().AddObserver(this);
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
@@ -52,7 +47,6 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
   // destructor, otherwise our overrides of functions like
   // OnNodeWillBeDeleted won't be called.
   tree_.reset(NULL);
-  ui::GetIAccessible2UsageObserverList().RemoveObserver(this);
 }
 
 // static
@@ -74,38 +68,6 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
   if (!delegate)
     return NULL;
   return delegate->AccessibilityGetAcceleratedWidget();
-}
-
-void BrowserAccessibilityManagerWin::OnIAccessible2Used() {
-  // When IAccessible2 APIs have been used elsewhere in the codebase,
-  // enable basic web accessibility support. (Full screen reader support is
-  // detected later when specific more advanced APIs are accessed.)
-  BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-      ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
-}
-
-void BrowserAccessibilityManagerWin::OnScreenReaderHoneyPotQueried() {
-  // We used to trust this as a signal that a screen reader is running,
-  // but it's been abused. Now only enable accessibility if we also
-  // detect a call to get_accName.
-  if (g_screen_reader_honeypot_queried)
-    return;
-  g_screen_reader_honeypot_queried = true;
-  if (g_acc_name_called) {
-    BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
-  }
-}
-
-void BrowserAccessibilityManagerWin::OnAccNameCalled() {
-  // See OnScreenReaderHoneyPotQueried, above.
-  if (g_acc_name_called)
-    return;
-  g_acc_name_called = true;
-  if (g_screen_reader_honeypot_queried) {
-    BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
-  }
 }
 
 void BrowserAccessibilityManagerWin::UserIsReloading() {
@@ -217,6 +179,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case Event::INVALID_STATUS_CHANGED:
     case Event::LIVE_REGION_CREATED:
     case Event::LIVE_REGION_NODE_CHANGED:
+    case Event::LOAD_START:
     case Event::MENU_ITEM_SELECTED:
     case Event::NAME_CHANGED:
     case Event::OTHER_ATTRIBUTE_CHANGED:
@@ -235,6 +198,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
 void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     LONG win_event_type,
     BrowserAccessibility* node) {
+  if (!node->CanFireEvents())
+    return;
+
   // If there's no root delegate, this may be a new frame that hasn't
   // yet been swapped in or added to the frame tree. Suppress firing events
   // until then.

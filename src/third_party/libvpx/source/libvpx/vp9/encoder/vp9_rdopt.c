@@ -701,17 +701,18 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                       blk_row, blk_col, plane_bsize, tx_bsize);
       dist = (int64_t)tmp * 16;
     }
-  } else if (max_txsize_lookup[plane_bsize] == tx_size) {
-    if (x->skip_txfm[(plane << 2) + (block >> (tx_size << 1))] ==
-        SKIP_TXFM_NONE) {
+  } else {
+    int skip_txfm_flag = SKIP_TXFM_NONE;
+    if (max_txsize_lookup[plane_bsize] == tx_size)
+      skip_txfm_flag = x->skip_txfm[(plane << 2) + (block >> (tx_size << 1))];
+    if (skip_txfm_flag == SKIP_TXFM_NONE) {
       // full forward transform and quantization
       vp9_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, tx_size);
       if (x->block_qcoeff_opt)
         vp9_optimize_b(x, plane, block, tx_size, coeff_ctx);
       dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
                  tx_size, &dist, &sse);
-    } else if (x->skip_txfm[(plane << 2) + (block >> (tx_size << 1))] ==
-               SKIP_TXFM_AC_ONLY) {
+    } else if (skip_txfm_flag == SKIP_TXFM_AC_ONLY) {
       // compute DC coefficient
       tran_low_t *const coeff = BLOCK_OFFSET(x->plane[plane].coeff, block);
       tran_low_t *const dqcoeff = BLOCK_OFFSET(xd->plane[plane].dqcoeff, block);
@@ -738,13 +739,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
       sse = x->bsse[(plane << 2) + (block >> (tx_size << 1))] << 4;
       dist = sse;
     }
-  } else {
-    // full forward transform and quantization
-    vp9_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, tx_size);
-    if (x->block_qcoeff_opt)
-      vp9_optimize_b(x, plane, block, tx_size, coeff_ctx);
-    dist_block(args->cpi, x, plane, plane_bsize, block, blk_row, blk_col,
-               tx_size, &dist, &sse);
   }
 
   rd = RDCOST(x->rdmult, x->rddiv, 0, dist);
@@ -1826,7 +1820,7 @@ static void joint_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       bestsme = cpi->find_fractional_mv_step(
           x, &tmp_mv, &ref_mv[id].as_mv, cpi->common.allow_high_precision_mv,
           x->errorperbit, &cpi->fn_ptr[bsize], 0,
-          cpi->sf.mv.subpel_iters_per_step, NULL, x->nmvjointcost, x->mvcost,
+          cpi->sf.mv.subpel_search_level, NULL, x->nmvjointcost, x->mvcost,
           &dis, &sse, second_pred, pw, ph);
     }
 
@@ -2015,7 +2009,7 @@ static int64_t rd_pick_best_sub8x8_mode(
             cpi->find_fractional_mv_step(
                 x, new_mv, &bsi->ref_mv[0]->as_mv, cm->allow_high_precision_mv,
                 x->errorperbit, &cpi->fn_ptr[bsize], sf->mv.subpel_force_stop,
-                sf->mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+                sf->mv.subpel_search_level, cond_cost_list(cpi, cost_list),
                 x->nmvjointcost, x->mvcost, &distortion,
                 &x->pred_sse[mi->ref_frame[0]], NULL, 0, 0);
 
@@ -2457,7 +2451,7 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     cpi->find_fractional_mv_step(
         x, &tmp_mv->as_mv, &ref_mv, cm->allow_high_precision_mv, x->errorperbit,
         &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
-        cpi->sf.mv.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
+        cpi->sf.mv.subpel_search_level, cond_cost_list(cpi, cost_list),
         x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], NULL, 0, 0);
   }
   *rate_mv = vp9_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmvjointcost,
@@ -3356,6 +3350,10 @@ void vp9_rd_pick_inter_mode_sb(VP9_COMP *cpi, TileDataEnc *tile_data,
     if (comp_pred) {
       if (!cpi->allow_comp_inter_inter) continue;
 
+      if (cm->ref_frame_sign_bias[ref_frame] ==
+          cm->ref_frame_sign_bias[second_ref_frame])
+        continue;
+
       // Skip compound inter modes if ARF is not available.
       if (!(cpi->ref_frame_flags & flag_list[second_ref_frame])) continue;
 
@@ -3941,7 +3939,8 @@ void vp9_rd_pick_inter_mode_sub8x8(VP9_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_BETTER_HW_COMPATIBILITY
     // forbid 8X4 and 4X8 partitions if any reference frame is scaled.
     if (bsize == BLOCK_8X4 || bsize == BLOCK_4X8) {
-      int ref_scaled = vp9_is_scaled(&cm->frame_refs[ref_frame - 1].sf);
+      int ref_scaled = ref_frame > INTRA_FRAME &&
+                       vp9_is_scaled(&cm->frame_refs[ref_frame - 1].sf);
       if (second_ref_frame > INTRA_FRAME)
         ref_scaled += vp9_is_scaled(&cm->frame_refs[second_ref_frame - 1].sf);
       if (ref_scaled) continue;
@@ -3987,6 +3986,11 @@ void vp9_rd_pick_inter_mode_sub8x8(VP9_COMP *cpi, TileDataEnc *tile_data,
     comp_pred = second_ref_frame > INTRA_FRAME;
     if (comp_pred) {
       if (!cpi->allow_comp_inter_inter) continue;
+
+      if (cm->ref_frame_sign_bias[ref_frame] ==
+          cm->ref_frame_sign_bias[second_ref_frame])
+        continue;
+
       if (!(cpi->ref_frame_flags & flag_list[second_ref_frame])) continue;
       // Do not allow compound prediction if the segment level reference frame
       // feature is in use as in this case there can only be one reference.

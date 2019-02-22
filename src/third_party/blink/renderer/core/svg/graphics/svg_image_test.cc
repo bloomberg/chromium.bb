@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
@@ -63,7 +64,7 @@ class SVGImageTest : public testing::Test {
     bool ShouldPauseAnimation(const Image*) override { return should_pause_; }
     void AnimationAdvanced(const Image*) override {}
 
-    void ChangedInRect(const Image*, const IntRect&) override {}
+    void Changed(const Image*) override {}
 
     void AsyncLoadCompleted(const blink::Image*) override {}
 

@@ -13,10 +13,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
+#include "ui/ozone/platform/wayland/wayland_util.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -130,6 +132,17 @@ class WaylandWindowTest : public WaylandTest {
 
     EXPECT_TRUE(window->Initialize(std::move(properties)));
     return window;
+  }
+
+  void InitializeWithSupportedHitTestValues(std::vector<int>* hit_tests) {
+    hit_tests->push_back(static_cast<int>(HTBOTTOM));
+    hit_tests->push_back(static_cast<int>(HTBOTTOMLEFT));
+    hit_tests->push_back(static_cast<int>(HTBOTTOMRIGHT));
+    hit_tests->push_back(static_cast<int>(HTLEFT));
+    hit_tests->push_back(static_cast<int>(HTRIGHT));
+    hit_tests->push_back(static_cast<int>(HTTOP));
+    hit_tests->push_back(static_cast<int>(HTTOPLEFT));
+    hit_tests->push_back(static_cast<int>(HTTOPRIGHT));
   }
 
   wl::MockXdgSurface* xdg_surface_;
@@ -647,6 +660,25 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
   EXPECT_FALSE(nested_menu_window->CanDispatchEvent(&test_mouse_event_));
 
   Sync();
+}
+
+TEST_P(WaylandWindowTest, DispatchWindowMove) {
+  EXPECT_CALL(*GetXdgSurface(), Move(_));
+  window_->DispatchHostWindowDragMovement(HTCAPTION, gfx::Point());
+}
+
+// Makes sure hit tests are converted into right edges.
+TEST_P(WaylandWindowTest, DispatchWindowResize) {
+  std::vector<int> hit_test_values;
+  InitializeWithSupportedHitTestValues(&hit_test_values);
+
+  for (const int value : hit_test_values) {
+    {
+      uint32_t direction = wl::IdentifyDirection(*(connection_.get()), value);
+      EXPECT_CALL(*GetXdgSurface(), Resize(_, Eq(direction)));
+      window_->DispatchHostWindowDragMovement(value, gfx::Point());
+    }
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,

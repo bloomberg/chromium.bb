@@ -37,11 +37,9 @@ class CORE_EXPORT FetchHeaderList final
   size_t size() const;
   void Remove(const String&);
   bool Get(const String&, String&) const;
-  void GetAll(const String&, Vector<String>&) const;
   bool Has(const String&) const;
   void ClearList();
 
-  bool ContainsNonCORSSafelistedHeader() const;
   Vector<Header> SortAndCombine() const;
 
   const std::multimap<String, String, ByteCaseInsensitiveCompare>& List()
@@ -67,8 +65,7 @@ class CORE_EXPORT FetchHeaderList final
   // This would cause FetchHeaderList::size() to have to manually
   // iterate through all keys and vectors in the HashMap. Similarly,
   // list() would require callers to manually iterate through the
-  // HashMap's keys and value vector, and so would
-  // ContainsNonCORSSafelistedHeader().
+  // HashMap's keys and value vector.
   std::multimap<String, String, ByteCaseInsensitiveCompare> header_list_;
 };
 

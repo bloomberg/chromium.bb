@@ -86,8 +86,7 @@ class TestWebState : public WebState {
   void DidChangeVisibleSecurityState() override {}
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
-  void TakeSnapshot(SnapshotCallback callback,
-                    CGSize target_size) const override;
+  void TakeSnapshot(CGRect rect, SnapshotCallback callback) override;
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
@@ -104,6 +103,9 @@ class TestWebState : public WebState {
   void SetIsEvicted(bool value);
   void SetWebViewProxy(CRWWebViewProxyType web_view_proxy);
   void ClearLastExecutedJavascript();
+  void CreateWebFramesManager();
+  void AddWebFrame(std::unique_ptr<web::WebFrame> frame);
+  void RemoveWebFrame(std::string frame_id);
 
   // Getters for test data.
   CRWContentView* GetTransientContentView();

@@ -24,7 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -42,6 +42,7 @@
 #include "chromeos/login/login_state.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
@@ -113,7 +114,7 @@ void DecodeFileAndCopyToClipboard(
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
   if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
     LOG(ERROR) << "Failed to read the screenshot file: "
@@ -121,8 +122,8 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
 }
 
@@ -532,8 +533,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     return;
 
   if (result != ScreenshotResult::SUCCESS) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
             weak_factory_.GetWeakPtr(), result, screenshot_path, gfx::Image()));
@@ -550,8 +551,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     if (!file_system) {
       LOG(ERROR) << "Failed to get file system of current profile";
 
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
               weak_factory_.GetWeakPtr(), result, screenshot_path,
@@ -564,8 +565,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
             &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive,
             weak_factory_.GetWeakPtr(), screenshot_path));
   } else {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
             weak_factory_.GetWeakPtr(), screenshot_path, screenshot_path));
@@ -592,16 +593,16 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive(
   if (error != drive::FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to read the screenshot path on drive: "
                << drive::FileErrorToString(error);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
             weak_factory_.GetWeakPtr(), ScreenshotResult::SUCCESS,
             screenshot_path, gfx::Image()));
     return;
   }
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
           weak_factory_.GetWeakPtr(), screenshot_path, screenshot_cache_path));

@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_UTILS_H_
 #define COMPONENTS_UPDATE_CLIENT_UTILS_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/update_client.h"
 
@@ -45,7 +45,8 @@ using LoadCompleteCallback =
 // expected to contain XML data. The caller owns the returned object.
 std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
     const GURL& url,
-    const std::map<std::string, std::string>& protocol_request_extra_headers,
+    const base::flat_map<std::string, std::string>&
+        protocol_request_extra_headers,
     const std::string& protocol_request,
     LoadCompleteCallback callback,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);

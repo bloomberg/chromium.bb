@@ -76,7 +76,7 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
     window->Show();
     parent = parent ? parent : root_window();
     parent->AddChild(window);
-    WindowOcclusionTracker::Track(window);
+    window->TrackOcclusionState();
     return window;
   }
 
@@ -958,9 +958,8 @@ TEST_F(WindowOcclusionTrackerTest, ResizeChildFromObserver) {
 }
 
 // Verify that the bounds of windows are changed multiple times within the scope
-// of a ScopedPauseOcclusionTracking, occlusion states are updated once at the
-// end of the scope.
-TEST_F(WindowOcclusionTrackerTest, ScopedPauseOcclusionTracking) {
+// of a ScopedPause, occlusion states are updated once at the end of the scope.
+TEST_F(WindowOcclusionTrackerTest, ScopedPause) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
@@ -977,8 +976,8 @@ TEST_F(WindowOcclusionTrackerTest, ScopedPauseOcclusionTracking) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPauseOcclusionTracking
-        pause_occlusion_tracking;
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(
+        root_window()->env());
     window_b->SetBounds(window_a->bounds());
     window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     window_b->SetBounds(window_a->bounds());
@@ -988,8 +987,8 @@ TEST_F(WindowOcclusionTrackerTest, ScopedPauseOcclusionTracking) {
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
-// Same as the previous test, but with nested ScopedPauseOcclusionTracking.
-TEST_F(WindowOcclusionTrackerTest, NestedScopedPauseOcclusionTracking) {
+// Same as the previous test, but with nested ScopedPause.
+TEST_F(WindowOcclusionTrackerTest, NestedScopedPause) {
   // Create window a. Expect it to be non-occluded.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
@@ -1006,22 +1005,22 @@ TEST_F(WindowOcclusionTrackerTest, NestedScopedPauseOcclusionTracking) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPauseOcclusionTracking
-        pause_occlusion_tracking_a;
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_a(
+        root_window()->env());
 
     {
-      WindowOcclusionTracker::ScopedPauseOcclusionTracking
-          pause_occlusion_tracking_b;
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_b(
+          root_window()->env());
       window_b->SetBounds(window_a->bounds());
     }
     {
-      WindowOcclusionTracker::ScopedPauseOcclusionTracking
-          pause_occlusion_tracking_c;
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_c(
+          root_window()->env());
       window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     }
     {
-      WindowOcclusionTracker::ScopedPauseOcclusionTracking
-          pause_occlusion_tracking_d;
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_d(
+          root_window()->env());
       window_b->SetBounds(window_a->bounds());
     }
 
@@ -1451,7 +1450,7 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 // Verify that if a window changes its visibility every time it is notified that
 // its occlusion state changed, a DCHECK occurs.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
-  test::WindowOcclusionTrackerTestApi test_api;
+  test::WindowOcclusionTrackerTestApi test_api(root_window()->env());
 
   // Create 2 superposed tracked windows.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
@@ -1651,7 +1650,7 @@ class WindowDelegateAddingAndHidingChild : public MockWindowDelegate {
 // to be recomputed.
 TEST_F(WindowOcclusionTrackerTest,
        HideWindowWithHiddenParentOnOcclusionChange) {
-  test::WindowOcclusionTrackerTestApi test_api;
+  test::WindowOcclusionTrackerTestApi test_api(root_window()->env());
 
   auto* delegate_a = new WindowDelegateAddingAndHidingChild(this);
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);

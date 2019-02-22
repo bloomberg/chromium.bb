@@ -39,7 +39,6 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
 
     // Ignore these for metrics collection:
     case metrics_util::CLICKED_MANAGE:
-    case metrics_util::CLICKED_BRAND_NAME:
     case metrics_util::CLICKED_PASSWORDS_DASHBOARD:
     case metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT:
       break;
@@ -50,6 +49,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
     case metrics_util::CLICKED_UNBLACKLIST_OBSOLETE:
     case metrics_util::CLICKED_CREDENTIAL_OBSOLETE:
     case metrics_util::AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE:
+    case metrics_util::CLICKED_BRAND_NAME_OBSOLETE:
     case metrics_util::NUM_UI_RESPONSES:
       NOTREACHED();
       break;
@@ -147,6 +147,12 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   if (showed_manual_fallback_for_saving_) {
     ukm_entry_builder_.SetSaving_ShowedManualFallbackForSaving(
         showed_manual_fallback_for_saving_.value());
+  }
+
+  if (form_changes_bitmask_) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.DynamicFormChanges",
+                              *form_changes_bitmask_,
+                              static_cast<uint32_t>(kMaxFormDifferencesValue));
   }
 
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
@@ -283,11 +289,31 @@ void PasswordFormMetricsRecorder::RecordParsingsComparisonResult(
       static_cast<uint64_t>(comparison_result));
 }
 
+void PasswordFormMetricsRecorder::RecordParsingOnSavingDifference(
+    uint64_t comparison_result) {
+  ukm_entry_builder_.SetParsingOnSavingDifference(comparison_result);
+}
+
+void PasswordFormMetricsRecorder::RecordReadonlyWhenFilling(uint64_t value) {
+  ukm_entry_builder_.SetReadonlyWhenFilling(value);
+}
+
+void PasswordFormMetricsRecorder::RecordReadonlyWhenSaving(uint64_t value) {
+  ukm_entry_builder_.SetReadonlyWhenSaving(value);
+}
+
 void PasswordFormMetricsRecorder::RecordShowManualFallbackForSaving(
     bool has_generated_password,
     bool is_update) {
   showed_manual_fallback_for_saving_ =
       1 + (has_generated_password ? 2 : 0) + (is_update ? 4 : 0);
+}
+
+void PasswordFormMetricsRecorder::RecordFormChangeBitmask(uint32_t bitmask) {
+  if (!form_changes_bitmask_)
+    form_changes_bitmask_ = bitmask;
+  else
+    *form_changes_bitmask_ |= bitmask;
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {

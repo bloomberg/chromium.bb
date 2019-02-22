@@ -5,7 +5,7 @@
 /**
  * Manages actions for the current selection.
  *
- * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!VolumeManager} volumeManager
  * @param {!MetadataModel} metadataModel
  * @param {!DirectoryModel} directoryModel
  * @param {!FolderShortcutsDataModel} shortcutsModel

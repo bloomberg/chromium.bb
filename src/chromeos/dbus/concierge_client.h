@@ -72,13 +72,6 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
       const vm_tools::concierge::StopVmRequest& request,
       DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback) = 0;
 
-  // Starts a Container inside an existing Termina VM.
-  // |callback| is called after the method call finishes.
-  virtual void StartContainer(
-      const vm_tools::concierge::StartContainerRequest& request,
-      DBusMethodCallback<vm_tools::concierge::StartContainerResponse>
-          callback) = 0;
-
   // Registers |callback| to run when the Concierge service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

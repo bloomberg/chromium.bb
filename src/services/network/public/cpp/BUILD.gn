@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-component("cpp") {
+jumbo_component("cpp") {
   output_name = "network_cpp"
 
   sources = [
@@ -58,6 +59,8 @@ component("cpp") {
     ]
   }
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     ":cpp_base",
     "//net",
@@ -75,12 +78,14 @@ component("cpp") {
   defines = [ "IS_NETWORK_CPP_IMPL" ]
 }
 
-component("cpp_base") {
+jumbo_component("cpp_base") {
   output_name = "network_cpp_base"
 
   sources = [
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
+    "cors/preflight_timing_info.cc",
+    "cors/preflight_timing_info.h",
     "data_element.cc",
     "data_element.h",
     "http_raw_request_response_info.cc",
@@ -111,6 +116,17 @@ component("cpp_base") {
     "url_request_mojom_traits.cc",
     "url_request_mojom_traits.h",
   ]
+  jumbo_excluded_sources = [
+    # IPC/Params code generators are based on macros and multiple
+    # inclusion of headers using those macros. That is not
+    # compatible with jumbo compiling all source, generators and
+    # users, together, so exclude those files from jumbo compilation.
+    "network_ipc_param_traits.cc",
+    "p2p_param_traits.cc",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [
     "//services/network/public/mojom:data_pipe_interfaces",
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",

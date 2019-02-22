@@ -31,29 +31,7 @@ class Accelerator;
 
 namespace libgtkui {
 
-// Default frame tints
 extern const color_utils::HSL kDefaultTintFrameIncognito;
-extern const color_utils::HSL kDefaultTintFrameIncognitoInactive;
-
-// Default background tab tints
-extern const color_utils::HSL kDefaultTintBackgroundTab;
-extern const color_utils::HSL kDefaultTintBackgroundTabIncognito;
-
-extern const SkColor kInvalidColorIdColor;
-extern const SkColor kURLTextColor;
-
-// Generates the normal URL color, a green color used in unhighlighted URL
-// text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
-// selected text color, it is more important to match the qualities of the
-// foreground typeface color instead of taking the background into account.
-SkColor NormalURLColor(SkColor foreground);
-
-// Generates the selected URL color, a green color used on URL text in the
-// currently highlighted entry in the autocomplete popup. It's a mix of
-// |kURLTextColor|, the current text color, and the background color (the
-// select highlight). It is more important to contrast with the background
-// saturation than to look exactly like the foreground color.
-SkColor SelectedURLColor(SkColor foreground, SkColor background);
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line);
 
@@ -74,6 +52,12 @@ void TurnButtonBlue(GtkWidget* button);
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
 // it above |parent|. Do nothing if |parent| is nullptr.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
+
+// Gets the transient parent aura window for |dialog|.
+aura::Window* GetAuraTransientParent(GtkWidget* dialog);
+
+// Clears the transient parent for |dialog|.
+void ClearAuraTransientParent(GtkWidget* dialog);
 
 // Parses |button_string| into |leading_buttons| and
 // |trailing_buttons|.  The string is of the format

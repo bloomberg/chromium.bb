@@ -60,7 +60,7 @@ class VP8Encoder : public AcceleratedVideoEncoder {
     // it. Returns true on success.
     virtual bool SubmitFrameParameters(
         EncodeJob* job,
-        const media::VP8Encoder::EncodeParams& encode_params,
+        const VP8Encoder::EncodeParams& encode_params,
         scoped_refptr<VP8Picture> pic,
         const Vp8ReferenceFrameVector& ref_frames) = 0;
 
@@ -72,10 +72,7 @@ class VP8Encoder : public AcceleratedVideoEncoder {
   ~VP8Encoder() override;
 
   // AcceleratedVideoEncoder implementation.
-  bool Initialize(const gfx::Size& visible_size,
-                  VideoCodecProfile profile,
-                  uint32_t initial_bitrate,
-                  uint32_t initial_framerate) override;
+  bool Initialize(const VideoEncodeAccelerator::Config& config) override;
   bool UpdateRates(const VideoBitrateAllocation& bitrate_allocation,
                    uint32_t framerate) override;
   gfx::Size GetCodedSize() const override;

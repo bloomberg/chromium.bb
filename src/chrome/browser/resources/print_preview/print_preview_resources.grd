@@ -363,26 +363,14 @@
                  file="new/print_preview_shared_css.html"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_BUTTON_CSS_HTML"
-                 file="new/button_css.html"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_SELECT_CSS_HTML"
-                 file="new/select_css.html"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_CHECKBOX_RADIO_CSS_HTML"
-                 file="new/checkbox_radio_css.html"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_INPUT_CSS_HTML"
-                 file="new/input_css.html"
-                 type="chrome_html"/>
       <structure name="IDR_PRINT_PREVIEW_NEW_THROBBER_CSS_HTML"
                  file="new/throbber_css.html"
                  type="chrome_html"/>
-      <structure name="IDR_PRINT_PREVIEW_NEW_SEARCH_DIALOG_CSS_HTML"
-                 file="new/search_dialog_css.html"
-                 type="chrome_html"/>
       <structure name="IDR_PRINT_PREVIEW_NEW_STRINGS_HTML"
                  file="new/strings.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_ICONS_HTML"
+                 file="icons.html"
                  type="chrome_html" />
     </structures>
   </release>

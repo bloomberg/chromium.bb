@@ -22,10 +22,7 @@ Polymer({
       reflectToAttribute: true,
     },
 
-    invalid: {
-      type: Boolean,
-      reflectToAttribute: true,
-    },
+    invalid: Boolean,
 
     invisible: {
       type: Boolean,
@@ -74,7 +71,7 @@ Polymer({
     'input-change': 'onInputChange_',
   },
 
-  /** @return {!HTMLInputElement} The input element for InputBehavior. */
+  /** @return {!CrInputElement} The cr-input element for InputBehavior. */
   getInput: function() {
     return this.$.textbox;
   },

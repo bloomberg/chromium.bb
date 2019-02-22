@@ -435,7 +435,7 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // - chrome:-scheme pages.
   // - Other extension's pages.
   // - data: URLs (which don't have a defined underlying origin).
-  // TODO(devlin): Include the Webstore in this list?
+  // - The Chrome Web Store.
   bool allowed_with_active_tab =
       origin_url.SchemeIs(content::kChromeUIScheme) ||
       origin_url.SchemeIs(kExtensionScheme) ||

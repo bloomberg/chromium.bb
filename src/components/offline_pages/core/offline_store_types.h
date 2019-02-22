@@ -60,6 +60,13 @@ class StoreUpdateResult {
   explicit StoreUpdateResult(StoreState state) : store_state(state) {}
   ~StoreUpdateResult() {}
 
+  // Move-only to avoid accidental copies.
+  StoreUpdateResult(const StoreUpdateResult& other) = delete;
+  StoreUpdateResult(StoreUpdateResult&& other) = default;
+
+  StoreUpdateResult& operator=(const StoreUpdateResult&) = delete;
+  StoreUpdateResult& operator=(StoreUpdateResult&&) = default;
+
   // List of Offline ID to item action status mappings.
   // It is meant to be consumed by the original caller of the operation.
   MultipleItemStatuses item_statuses;

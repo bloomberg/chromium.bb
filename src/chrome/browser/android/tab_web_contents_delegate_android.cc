@@ -26,6 +26,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
@@ -41,7 +42,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/infobars/core/infobar.h"
+#include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/security_state/content/content_utils.h"
+#include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -51,7 +54,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -61,8 +63,8 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using blink::mojom::FileChooserParams;
 using content::BluetoothChooser;
-using content::FileChooserParams;
 using content::WebContents;
 
 namespace {
@@ -123,13 +125,16 @@ TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
 
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
+    std::unique_ptr<content::FileSelectListener> listener,
     const FileChooserParams& params) {
   if (vr::VrTabHelper::IsUiSuppressedInVr(
           WebContents::FromRenderFrameHost(render_frame_host),
           vr::UiSuppressedElement::kFileChooser)) {
+    listener->FileSelectionCanceled();
     return;
   }
-  FileSelectHelper::RunFileChooser(render_frame_host, params);
+  FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
+                                   params);
 }
 
 std::unique_ptr<BluetoothChooser>
@@ -273,10 +278,6 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          source, vr::UiSuppressedElement::kJavascriptDialog)) {
-    return nullptr;
-  }
   if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog) ||
       vr::VrTabHelper::IsInVr(source)) {
     return JavaScriptDialogTabHelper::FromWebContents(source);
@@ -296,12 +297,6 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback) {
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          web_contents, vr::UiSuppressedElement::kMediaPermission)) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
-    return;
-  }
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
       web_contents, request, std::move(callback), nullptr);
 }
@@ -454,6 +449,33 @@ void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {
   ShowFramebustBlockInfobarInternal(web_contents, url);
+}
+
+void TabWebContentsDelegateAndroid::UpdateUserGestureCarryoverInfo(
+    content::WebContents* web_contents) {
+  auto* intercept_navigation_delegate =
+      navigation_interception::InterceptNavigationDelegate::Get(web_contents);
+  if (intercept_navigation_delegate)
+    intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
+}
+
+std::unique_ptr<content::WebContents>
+TabWebContentsDelegateAndroid::SwapWebContents(
+    content::WebContents* old_contents,
+    std::unique_ptr<content::WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  // TODO(crbug.com/836409): TabLoadTracker should not rely on being notified
+  // directly about tab contents swaps.
+  resource_coordinator::TabLoadTracker::Get()->SwapTabContents(
+      old_contents, new_contents.get());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TabWebContentsDelegateAndroid_swapWebContents(
+      env, GetJavaDelegate(env), new_contents->GetJavaWebContents(),
+      did_start_load, did_finish_load);
+  new_contents.release();
+  return base::WrapUnique(old_contents);
 }
 
 }  // namespace android

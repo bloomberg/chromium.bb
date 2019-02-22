@@ -111,7 +111,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
 
   SkPath::Iter iter(path, false);
   SkPoint points[4];
-  size_t count = 0;
+  wtf_size_t count = 0;
   for (SkPath::Verb verb = iter.next(points, false); verb != SkPath::kDone_Verb;
        verb = iter.next(points, false)) {
     if (verb != SkPath::kLine_Verb)
@@ -163,7 +163,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
   // edge.
   int adjacent_width_start = first_adjacent_width;
   int adjacent_width_end;
-  for (size_t i = 0; i < count; ++i) {
+  for (wtf_size_t i = 0; i < count; ++i) {
     OutlineEdgeInfo& edge = edges[i];
     adjacent_width_end = i == count - 1
                              ? first_adjacent_width

@@ -70,7 +70,7 @@ AFDO_ALLOWED_STALE_DAYS = 14
 AFDO_ALLOWED_STALE_BUILDS = 7
 
 # How old can the Kernel AFDO data be? (in days).
-KERNEL_ALLOWED_STALE_DAYS = 28
+KERNEL_ALLOWED_STALE_DAYS = 42
 
 # How old can the Kernel AFDO data be before sheriff got noticed? (in days).
 KERNEL_WARN_STALE_DAYS = 14

@@ -76,7 +76,7 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   // LayoutSVGBlock subclasses should use GetElement() instead.
   void GetNode() const = delete;
 
-  LayoutRect AbsoluteVisualRect() const final;
+  LayoutRect VisualRectInDocument() const final;
 
   void AbsoluteRects(Vector<IntRect>&,
                      const LayoutPoint& accumulated_offset) const final;

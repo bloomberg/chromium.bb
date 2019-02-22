@@ -96,9 +96,7 @@ rietveld_instances = [
 
 gerrit_instances = [
   {
-    'url': 'chromium-review.googlesource.com',
-    'shorturl': 'crrev.com/c',
-    'short_url_protocol': 'https',
+    'url': 'android-review.googlesource.com',
   },
   {
     'url': 'chrome-internal-review.googlesource.com',
@@ -106,13 +104,15 @@ gerrit_instances = [
     'short_url_protocol': 'https',
   },
   {
-    'url': 'android-review.googlesource.com',
-  },
-  {
-    'url': 'review.coreboot.org',
+    'url': 'chromium-review.googlesource.com',
+    'shorturl': 'crrev.com/c',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'pdfium-review.googlesource.com',
+  },
+  {
+    'url': 'skia-review.googlesource.com',
   },
 ]
 
@@ -372,9 +372,12 @@ class MyActivity(object):
 
   def gerrit_search(self, instance, owner=None, reviewer=None):
     max_age = datetime.today() - self.modified_after
-    max_age = max_age.days * 24 * 3600 + max_age.seconds
-    user_filter = 'owner:%s' % owner if owner else 'reviewer:%s' % reviewer
-    filters = ['-age:%ss' % max_age, user_filter]
+    filters = ['-age:%ss' % (max_age.days * 24 * 3600 + max_age.seconds)]
+    if owner:
+      assert not reviewer
+      filters.append('owner:%s' % owner)
+    else:
+      filters.extend(('-owner:%s' % reviewer, 'reviewer:%s' % reviewer))
     # TODO(cjhopman): Should abandoned changes be filtered out when
     # merged_only is not enabled?
     if self.options.merged_only:
@@ -436,7 +439,10 @@ class MyActivity(object):
     auth_config = auth.extract_auth_config_from_options(self.options)
     authenticator = auth.get_authenticator_for_host(
         'bugs.chromium.org', auth_config)
-    return authenticator.authorize(httplib2.Http())
+    # Manually use a long timeout (10m); for some users who have a
+    # long history on the issue tracker, whatever the default timeout
+    # is is reached.
+    return authenticator.authorize(httplib2.Http(timeout=600))
 
   def filter_modified_monorail_issue(self, issue):
     """Precisely checks if an issue has been modified in the time range.
@@ -521,6 +527,7 @@ class MyActivity(object):
 
   def monorail_issue_search(self, project):
     epoch = datetime.utcfromtimestamp(0)
+    # TODO(tandrii): support non-chromium email, too.
     user_str = '%s@chromium.org' % self.user
 
     issues = self.monorail_query_issues(project, {
@@ -529,6 +536,13 @@ class MyActivity(object):
       'publishedMax': '%d' % (self.modified_before - epoch).total_seconds(),
       'updatedMin': '%d' % (self.modified_after - epoch).total_seconds(),
     })
+
+    if self.options.completed_issues:
+      return [
+          issue for issue in issues
+          if (self.match(issue['owner']) and
+              issue['status'].lower() in ('verified', 'fixed'))
+      ]
 
     return [
         issue for issue in issues
@@ -694,7 +708,6 @@ class MyActivity(object):
           gerrit_instances)
       rietveld_reviews = itertools.chain.from_iterable(rietveld_reviews.get())
       gerrit_reviews = itertools.chain.from_iterable(gerrit_reviews.get())
-      gerrit_reviews = [r for r in gerrit_reviews if not self.match(r['owner'])]
       self.reviews = list(rietveld_reviews) + list(gerrit_reviews)
 
   def print_reviews(self):
@@ -964,6 +977,13 @@ def main():
       dest='merged_only',
       default=False,
       help='Shows only changes that have been merged.')
+  parser.add_option(
+      '-C', '--completed-issues',
+      action='store_true',
+      dest='completed_issues',
+      default=False,
+      help='Shows only monorail issues that have completed (Fixed|Verified) '
+           'by the user.')
   parser.add_option(
       '-o', '--output', metavar='<file>',
       help='Where to output the results. By default prints to stdout.')

@@ -4,6 +4,7 @@
 
 #include "services/tracing/perfetto/json_trace_exporter.h"
 
+#include <unordered_map>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -23,17 +24,36 @@
 using TraceEvent = base::trace_event::TraceEvent;
 
 namespace {
+const char* GetStringFromStringTable(
+    const std::unordered_map<int, std::string>& string_table,
+    int index) {
+  auto it = string_table.find(index);
+  DCHECK(it != string_table.end());
+
+  return it->second.c_str();
+}
 
 void OutputJSONFromTraceEventProto(
     const perfetto::protos::ChromeTraceEvent& event,
-    std::string* out) {
+    std::string* out,
+    const std::unordered_map<int, std::string>& string_table) {
   char phase = static_cast<char>(event.phase());
+  const char* name =
+      event.has_name_index()
+          ? GetStringFromStringTable(string_table, event.name_index())
+          : event.name().c_str();
+  const char* category_group_name =
+      event.has_category_group_name_index()
+          ? GetStringFromStringTable(string_table,
+                                     event.category_group_name_index())
+          : event.category_group_name().c_str();
+
   base::StringAppendF(out,
                       "{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
                       ",\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
                       event.process_id(), event.thread_id(), event.timestamp(),
-                      phase, event.category_group_name().c_str());
-  base::EscapeJSONString(event.name(), true, out);
+                      phase, category_group_name);
+  base::EscapeJSONString(name, true, out);
 
   if (event.has_duration()) {
     base::StringAppendF(out, ",\"dur\":%" PRId64, event.duration());
@@ -126,7 +146,9 @@ void OutputJSONFromTraceEventProto(
     }
 
     *out += "\"";
-    *out += arg.name();
+    *out += arg.has_name_index()
+                ? GetStringFromStringTable(string_table, arg.name_index())
+                : arg.name();
     *out += "\":";
 
     TraceEvent::TraceValue value;
@@ -244,19 +266,24 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
       continue;
     }
 
-    const perfetto::protos::ChromeEventBundle& bundle = packet.chrome_events();
-    for (const perfetto::protos::ChromeTraceEvent& event :
-         bundle.trace_events()) {
+    auto& bundle = packet.chrome_events();
+
+    std::unordered_map<int, std::string> string_table;
+    for (auto& string_table_entry : bundle.string_table()) {
+      string_table[string_table_entry.index()] = string_table_entry.value();
+    }
+
+    for (auto& event : bundle.trace_events()) {
       if (has_output_first_event_) {
         out += ",";
       } else {
         has_output_first_event_ = true;
       }
 
-      OutputJSONFromTraceEventProto(event, &out);
+      OutputJSONFromTraceEventProto(event, &out, string_table);
     }
 
-    for (const perfetto::protos::ChromeMetadata& metadata : bundle.metadata()) {
+    for (auto& metadata : bundle.metadata()) {
       if (metadata.has_string_value()) {
         metadata_->SetString(metadata.name(), metadata.string_value());
       } else if (metadata.has_int_value()) {

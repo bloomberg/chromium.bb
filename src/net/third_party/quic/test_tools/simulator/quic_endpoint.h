@@ -89,6 +89,7 @@ class QuicEndpoint : public Endpoint,
   void OnBlockedFrame(const QuicBlockedFrame& frame) override {}
   void OnRstStream(const QuicRstStreamFrame& frame) override {}
   void OnGoAway(const QuicGoAwayFrame& frame) override {}
+  void OnMessageReceived(QuicStringPiece message) override {}
   void OnConnectionClosed(QuicErrorCode error,
                           const std::string& error_details,
                           ConnectionCloseSource source) override {}
@@ -116,7 +117,7 @@ class QuicEndpoint : public Endpoint,
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
-  bool HasPendingCryptoData() const override;
+  bool HasUnackedCryptoData() const override;
   // End SessionNotifierInterface implementation.
 
  private:
@@ -138,7 +139,8 @@ class QuicEndpoint : public Endpoint,
         const QuicSocketAddress& peer_address) const override;
     bool SupportsReleaseTime() const override;
     bool IsBatchMode() const override;
-    char* GetNextWriteLocation() const override;
+    char* GetNextWriteLocation(const QuicIpAddress& self_address,
+                               const QuicSocketAddress& peer_address) override;
     WriteResult Flush() override;
 
    private:
@@ -151,10 +153,10 @@ class QuicEndpoint : public Endpoint,
   // verified by the receiver.
   class DataProducer : public QuicStreamFrameDataProducer {
    public:
-    bool WriteStreamData(QuicStreamId id,
-                         QuicStreamOffset offset,
-                         QuicByteCount data_length,
-                         QuicDataWriter* writer) override;
+    WriteStreamDataResult WriteStreamData(QuicStreamId id,
+                                          QuicStreamOffset offset,
+                                          QuicByteCount data_length,
+                                          QuicDataWriter* writer) override;
   };
 
   // Write stream data until |bytes_to_transfer_| is zero or the connection is

@@ -242,7 +242,7 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ExecutionContext* context = ExecutionContext::From(script_state);
-  Document* doc = ToDocumentOrNull(context);
+  Document* doc = DynamicTo<Document>(context);
 
   // Should move this permission check to browser process.
   // Please see http://crbug.com/795929
@@ -250,7 +250,8 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
       ->RequestPermission(
           CreatePermissionDescriptor(
               mojom::blink::PermissionName::PAYMENT_HANDLER),
-          Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
+          LocalFrame::HasTransientUserActivation(doc ? doc->GetFrame()
+                                                     : nullptr),
           WTF::Bind(&PaymentInstruments::OnRequestPermission,
                     WrapPersistent(this), WrapPersistent(resolver),
                     instrument_key,

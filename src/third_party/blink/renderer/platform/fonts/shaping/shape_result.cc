@@ -648,6 +648,167 @@ void ShapeResult::GetRunFontData(Vector<RunFontData>* font_data) const {
   }
 }
 
+float ShapeResult::ForEachGlyph(float initial_advance,
+                                GlyphCallback glyph_callback,
+                                void* context) const {
+  auto total_advance = initial_advance;
+
+  for (const auto& run : runs_) {
+    bool is_horizontal = HB_DIRECTION_IS_HORIZONTAL(run->direction_);
+    for (const auto& glyph_data : run->glyph_data_) {
+      glyph_callback(context, run->start_index_ + glyph_data.character_index,
+                     glyph_data.glyph, glyph_data.offset, total_advance,
+                     is_horizontal, run->canvas_rotation_,
+                     run->font_data_.get());
+      total_advance += glyph_data.advance;
+    }
+  }
+
+  return total_advance;
+}
+
+float ShapeResult::ForEachGlyph(float initial_advance,
+                                unsigned from,
+                                unsigned to,
+                                unsigned index_offset,
+                                GlyphCallback glyph_callback,
+                                void* context) const {
+  auto total_advance = initial_advance;
+
+  for (const auto& run : runs_) {
+    unsigned run_start = run->start_index_ + index_offset;
+    bool is_horizontal = HB_DIRECTION_IS_HORIZONTAL(run->direction_);
+    const SimpleFontData* font_data = run->font_data_.get();
+
+    if (!run->Rtl()) {  // Left-to-right
+      for (const auto& glyph_data : run->glyph_data_) {
+        const unsigned character_index = run_start + glyph_data.character_index;
+        if (character_index >= to)
+          break;
+        if (character_index >= from) {
+          glyph_callback(context, character_index, glyph_data.glyph,
+                         glyph_data.offset, total_advance, is_horizontal,
+                         run->canvas_rotation_, font_data);
+        }
+        total_advance += glyph_data.advance;
+      }
+
+    } else {  // Right-to-left
+      for (const auto& glyph_data : run->glyph_data_) {
+        const unsigned character_index = run_start + glyph_data.character_index;
+        if (character_index < from)
+          break;
+        if (character_index < to) {
+          glyph_callback(context, character_index, glyph_data.glyph,
+                         glyph_data.offset, total_advance, is_horizontal,
+                         run->canvas_rotation_, font_data);
+        }
+        total_advance += glyph_data.advance;
+      }
+    }
+  }
+  return total_advance;
+}
+
+namespace {
+
+inline unsigned CountGraphemesInCluster(const UChar* str,
+                                        unsigned str_length,
+                                        uint16_t start_index,
+                                        uint16_t end_index) {
+  if (start_index > end_index)
+    std::swap(start_index, end_index);
+  uint16_t length = end_index - start_index;
+  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
+  TextBreakIterator* cursor_pos_iterator =
+      CursorMovementIterator(&str[start_index], length);
+
+  int cursor_pos = cursor_pos_iterator->current();
+  int num_graphemes = -1;
+  while (0 <= cursor_pos) {
+    cursor_pos = cursor_pos_iterator->next();
+    num_graphemes++;
+  }
+  return std::max(0, num_graphemes);
+}
+
+}  // anonymous namespace
+
+float ShapeResult::ForEachGraphemeClusters(const StringView& text,
+                                           float initial_advance,
+                                           unsigned from,
+                                           unsigned to,
+                                           unsigned index_offset,
+                                           GraphemeClusterCallback callback,
+                                           void* context) const {
+  unsigned run_offset = index_offset;
+  float advance_so_far = initial_advance;
+  for (const auto& run : runs_) {
+    unsigned graphemes_in_cluster = 1;
+    float cluster_advance = 0;
+
+    // FIXME: should this be run->direction_?
+    bool rtl = Direction() == TextDirection::kRtl;
+
+    // A "cluster" in this context means a cluster as it is used by HarfBuzz:
+    // The minimal group of characters and corresponding glyphs, that cannot be
+    // broken down further from a text shaping point of view.  A cluster can
+    // contain multiple glyphs and grapheme clusters, with mutually overlapping
+    // boundaries.
+    uint16_t cluster_start = static_cast<uint16_t>(
+        rtl ? run->start_index_ + run->num_characters_ + run_offset
+            : run->GlyphToCharacterIndex(0) + run_offset);
+
+    const unsigned num_glyphs = run->glyph_data_.size();
+    for (unsigned i = 0; i < num_glyphs; ++i) {
+      const HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
+      uint16_t current_character_index =
+          run->start_index_ + glyph_data.character_index + run_offset;
+      bool is_run_end = (i + 1 == num_glyphs);
+      bool is_cluster_end =
+          is_run_end || (run->GlyphToCharacterIndex(i + 1) + run_offset !=
+                         current_character_index);
+
+      if ((rtl && current_character_index >= to) ||
+          (!rtl && current_character_index < from)) {
+        advance_so_far += glyph_data.advance;
+        rtl ? --cluster_start : ++cluster_start;
+        continue;
+      }
+
+      cluster_advance += glyph_data.advance;
+
+      if (text.Is8Bit()) {
+        callback(context, current_character_index, advance_so_far, 1,
+                 glyph_data.advance, run->canvas_rotation_);
+
+        advance_so_far += glyph_data.advance;
+      } else if (is_cluster_end) {
+        uint16_t cluster_end;
+        if (rtl) {
+          cluster_end = current_character_index;
+        } else {
+          cluster_end = static_cast<uint16_t>(
+              is_run_end ? run->start_index_ + run->num_characters_ + run_offset
+                         : run->GlyphToCharacterIndex(i + 1) + run_offset);
+        }
+        graphemes_in_cluster = CountGraphemesInCluster(
+            text.Characters16(), text.length(), cluster_start, cluster_end);
+        if (!graphemes_in_cluster || !cluster_advance)
+          continue;
+
+        callback(context, current_character_index, advance_so_far,
+                 graphemes_in_cluster, cluster_advance, run->canvas_rotation_);
+        advance_so_far += cluster_advance;
+
+        cluster_start = cluster_end;
+        cluster_advance = 0;
+      }
+    }
+  }
+  return advance_so_far;
+}
+
 // TODO(kojii): VC2015 fails to explicit instantiation of a member function.
 // Typed functions + this private function are to instantiate instances.
 template <typename TextContainerType>
@@ -662,7 +823,7 @@ void ShapeResult::ApplySpacingImpl(
       continue;
     unsigned run_start_index = run->start_index_ + text_start_offset;
     float total_space_for_run = 0;
-    for (size_t i = 0; i < run->glyph_data_.size(); i++) {
+    for (wtf_size_t i = 0; i < run->glyph_data_.size(); i++) {
       HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
 
       // Skip if it's not a grapheme cluster boundary.
@@ -989,13 +1150,13 @@ void ShapeResult::ComputeGlyphBounds(const ShapeResult::RunInfo& run) {
   Vector<Glyph, 256> glyphs(num_glyphs);
   for (unsigned i = 0; i < num_glyphs; i++)
     glyphs[i] = run.glyph_data_[i].glyph;
-  Vector<FloatRect, 256> bounds_list(num_glyphs);
+  Vector<SkRect, 256> bounds_list(num_glyphs);
   current_font_data.BoundsForGlyphs(glyphs, &bounds_list);
 
   GlyphBoundsAccumulator bounds(width_);
   for (unsigned i = 0; i < num_glyphs; i++) {
     const HarfBuzzRunGlyphData& glyph_data = run.glyph_data_[i];
-    bounds.Unite<is_horizontal_run>(glyph_data, bounds_list[i]);
+    bounds.Unite<is_horizontal_run>(glyph_data, FloatRect(bounds_list[i]));
     bounds.origin += glyph_data.advance;
   }
 #endif
@@ -1035,14 +1196,14 @@ void ShapeResult::InsertRun(std::unique_ptr<ShapeResult::RunInfo> run) {
   // start index. For RTL, we place the run before the next run with a lower
   // character index. Otherwise, for both directions, at the end.
   if (HB_DIRECTION_IS_FORWARD(run->direction_)) {
-    for (size_t pos = 0; pos < runs_.size(); ++pos) {
+    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
       if (runs_.at(pos)->start_index_ > run->start_index_) {
         runs_.insert(pos, std::move(run));
         break;
       }
     }
   } else {
-    for (size_t pos = 0; pos < runs_.size(); ++pos) {
+    for (wtf_size_t pos = 0; pos < runs_.size(); ++pos) {
       if (runs_.at(pos)->start_index_ < run->start_index_) {
         runs_.insert(pos, std::move(run));
         break;
@@ -1629,6 +1790,55 @@ unsigned ShapeResult::CharacterPositionData::PreviousSafeToBreakOffset(
 
   // Previous safe break is at the start of the run.
   return 0;
+}
+
+namespace {
+
+void AddRunInfoRanges(const ShapeResult::RunInfo& run_info,
+                      float offset,
+                      Vector<CharacterRange>* ranges) {
+  Vector<float> character_widths(run_info.num_characters_);
+  for (const auto& glyph : run_info.glyph_data_)
+    character_widths[glyph.character_index] += glyph.advance;
+
+  if (run_info.Rtl())
+    offset += run_info.width_;
+
+  for (unsigned character_index = 0; character_index < run_info.num_characters_;
+       character_index++) {
+    float start = offset;
+    offset += character_widths[character_index] * (run_info.Rtl() ? -1 : 1);
+    float end = offset;
+
+    // To match getCharacterRange we flip ranges to ensure start <= end.
+    if (end < start)
+      ranges->push_back(CharacterRange(end, start, 0, 0));
+    else
+      ranges->push_back(CharacterRange(start, end, 0, 0));
+  }
+}
+
+}  // anonymous namespace
+
+float ShapeResult::IndividualCharacterRanges(Vector<CharacterRange>* ranges,
+                                             float start_x) const {
+  DCHECK(ranges);
+  float current_x = start_x;
+
+  if (Rtl()) {
+    unsigned run_count = runs_.size();
+    for (int index = run_count - 1; index >= 0; index--) {
+      current_x -= runs_[index]->width_;
+      AddRunInfoRanges(*runs_[index], current_x, ranges);
+    }
+  } else {
+    for (const auto& run : runs_) {
+      AddRunInfoRanges(*run, current_x, ranges);
+      current_x += run->width_;
+    }
+  }
+
+  return current_x;
 }
 
 }  // namespace blink

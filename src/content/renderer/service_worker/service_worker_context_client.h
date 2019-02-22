@@ -45,23 +45,19 @@ class TaskRunner;
 }
 
 namespace blink {
-class WebDataConsumerHandle;
-struct WebServiceWorkerClientQueryOptions;
+struct PlatformNotificationData;
 class WebServiceWorkerContextProxy;
-class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
 class WebURLResponse;
 }
 
 namespace content {
 
-struct PlatformNotificationData;
 class EmbeddedWorkerInstanceClientImpl;
 class HostChildURLLoaderFactoryBundle;
 class ServiceWorkerNetworkProvider;
 class ServiceWorkerProviderContext;
 class ServiceWorkerTimeoutTimer;
-class WebServiceWorkerImpl;
 class WebWorkerFetchContext;
 
 // ServiceWorkerContextClient is a "client" of a service worker execution
@@ -105,36 +101,15 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
 
-  // Returns the service worker object described by |info|. Creates a new object
-  // if needed, or else returns the existing one.
-  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
-      blink::mojom::ServiceWorkerObjectInfoPtr info);
-
   // WebServiceWorkerContextClient overrides.
-  void GetClient(
-      const blink::WebString& client_id,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void GetClients(
-      const blink::WebServiceWorkerClientQueryOptions&,
-      std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>) override;
-  void OpenNewTab(
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void OpenPaymentHandlerWindow(
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void SetCachedMetadata(const blink::WebURL&,
-                         const char* data,
-                         size_t size) override;
-  void ClearCachedMetadata(const blink::WebURL&) override;
   void WorkerReadyForInspection() override;
   void WorkerContextFailedToStart() override;
   void FailedToLoadInstalledScript() override;
   void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
-  void WillEvaluateClassicScript() override;
-  void DidEvaluateClassicScript(bool success) override;
+  void WillEvaluateScript() override;
+  void DidEvaluateScript(bool success) override;
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
   void WorkerContextDestroyed() override;
@@ -150,99 +125,90 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                             const blink::WebString& source_url) override;
   void DidHandleActivateEvent(int request_id,
                               blink::mojom::ServiceWorkerEventStatus status,
-                              double dispatch_event_time) override;
+                              base::TimeTicks event_dispatch_time) override;
   void DidHandleBackgroundFetchAbortEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleBackgroundFetchClickEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleBackgroundFetchFailEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleBackgroundFetchSuccessEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleCookieChangeEvent(int request_id,
                                   blink::mojom::ServiceWorkerEventStatus status,
-                                  double dispatch_event_time) override;
+                                  base::TimeTicks event_dispatch_time) override;
   void DidHandleExtendableMessageEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleInstallEvent(int event_id,
                              blink::mojom::ServiceWorkerEventStatus status,
-                             double event_dispatch_time) override;
-  void RespondToFetchEventWithNoResponse(int fetch_event_id,
-                                         double event_dispatch_time) override;
+                             base::TimeTicks event_dispatch_time) override;
+  void RespondToFetchEventWithNoResponse(
+      int fetch_event_id,
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) override;
   void RespondToFetchEvent(int fetch_event_id,
                            const blink::WebServiceWorkerResponse& response,
-                           double event_dispatch_time) override;
+                           base::TimeTicks event_dispatch_time,
+                           base::TimeTicks respond_with_settled_time) override;
   void RespondToFetchEventWithResponseStream(
       int fetch_event_id,
       const blink::WebServiceWorkerResponse& response,
       blink::WebServiceWorkerStreamHandle* web_body_as_stream,
-      double event_dispatch_time) override;
+      base::TimeTicks event_dispatch_time,
+      base::TimeTicks respond_with_settled_time) override;
   void DidHandleFetchEvent(int fetch_event_id,
                            blink::mojom::ServiceWorkerEventStatus status,
-                           double dispatch_event_time) override;
+                           base::TimeTicks event_dispatch_time) override;
   void DidHandleNotificationClickEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleNotificationCloseEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandlePushEvent(int request_id,
                           blink::mojom::ServiceWorkerEventStatus status,
-                          double dispatch_event_time) override;
+                          base::TimeTicks event_dispatch_time) override;
   void DidHandleSyncEvent(int request_id,
                           blink::mojom::ServiceWorkerEventStatus status,
-                          double dispatch_event_time) override;
+                          base::TimeTicks event_dispatch_time) override;
   void RespondToAbortPaymentEvent(int event_id,
                                   bool payment_aborted,
-                                  double dispatch_event_time) override;
+                                  base::TimeTicks event_dispatch_time) override;
   void DidHandleAbortPaymentEvent(int event_id,
                                   blink::mojom::ServiceWorkerEventStatus status,
-                                  double dispatch_event_time) override;
-  void RespondToCanMakePaymentEvent(int event_id,
-                                    bool can_make_payment,
-                                    double dispatch_event_time) override;
+                                  base::TimeTicks event_dispatch_time) override;
+  void RespondToCanMakePaymentEvent(
+      int event_id,
+      bool can_make_payment,
+      base::TimeTicks event_dispatch_time) override;
   void DidHandleCanMakePaymentEvent(
       int event_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void RespondToPaymentRequestEvent(
       int payment_request_id,
       const blink::WebPaymentHandlerResponse& response,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   void DidHandlePaymentRequestEvent(
       int payment_request_id,
       blink::mojom::ServiceWorkerEventStatus status,
-      double dispatch_event_time) override;
+      base::TimeTicks event_dispatch_time) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
   std::unique_ptr<blink::WebWorkerFetchContext> CreateServiceWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
-  std::unique_ptr<blink::WebServiceWorkerProvider> CreateServiceWorkerProvider()
-      override;
-  void PostMessageToClient(const blink::WebString& uuid,
-                           blink::TransferableMessage message) override;
-  void Focus(const blink::WebString& uuid,
-             std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void Navigate(
-      const blink::WebString& uuid,
-      const blink::WebURL&,
-      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
-  void SkipWaiting(std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>
-                       callbacks) override;
-  void Claim(std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>
-                 callbacks) override;
 
   // Dispatches the fetch event if the worker is running normally, and queues it
   // instead if the worker has already requested to be terminated by the
@@ -262,7 +228,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   class NavigationPreloadRequest;
   friend class ControllerServiceWorkerImpl;
   friend class ServiceWorkerContextClientTest;
-  friend class WebServiceWorkerImpl;
   FRIEND_TEST_ALL_PREFIXES(
       ServiceWorkerContextClientTest,
       DispatchOrQueueFetchEvent_RequestedTerminationAndDie);
@@ -311,13 +276,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchFetchEventCallback callback) override;
   void DispatchNotificationClickEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::Optional<base::string16>& reply,
       DispatchNotificationClickEventCallback callback) override;
   void DispatchNotificationCloseEvent(
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       DispatchNotificationCloseEventCallback callback) override;
   void DispatchPushEvent(const base::Optional<std::string>& payload,
                          DispatchPushEventCallback callback) override;
@@ -346,13 +311,13 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OnNotificationClickEvent(
       int request_id,
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data,
+      const blink::PlatformNotificationData& notification_data,
       int action_index,
       const base::NullableString16& reply);
   void OnNotificationCloseEvent(
       int request_id,
       const std::string& notification_id,
-      const PlatformNotificationData& notification_data);
+      const blink::PlatformNotificationData& notification_data);
 
   void OnFocusClientResponse(
       int request_id,
@@ -365,7 +330,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<blink::WebURLResponse> response,
-      std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
+      mojo::ScopedDataPipeConsumerHandle data_pipe);
   // Called when the navigation preload request completed. Either
   // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be
   // called to release the preload related resources.
@@ -397,11 +362,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Stops the worker context. Called on the main thread.
   void StopWorker();
-
-  // Keeps the mapping from version id to ServiceWorker object.
-  void AddServiceWorkerObject(int64_t version_id, WebServiceWorkerImpl* worker);
-  void RemoveServiceWorkerObject(int64_t version_id);
-  bool ContainsServiceWorkerObjectForTesting(int64_t version_id);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

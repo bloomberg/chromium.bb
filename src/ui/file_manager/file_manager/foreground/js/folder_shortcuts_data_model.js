@@ -13,7 +13,7 @@ var STORED_DRIVE_MOUNT_PATH = '/drive';
  * object with additional methods for the folder shortcut feature.
  * This uses chrome.storage as backend. Items are always sorted by URL.
  *
- * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
+ * @param {!FilteredVolumeManager} volumeManager Volume manager instance.
  * @constructor
  * @extends {cr.EventTarget}
  */

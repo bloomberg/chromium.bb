@@ -32,6 +32,7 @@ include(GNUInstallDirs)
 include(cmake/setup_build.cmake)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_STANDARD 11)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
   add_definitions(-DSPIRV_LINUX)
@@ -210,10 +211,6 @@ if (${SPIRV_CHECK_CONTEXT})
 endif()
 
 add_subdirectory(external)
-
-if (TARGET effcee)
-  add_definitions(-DSPIRV_EFFCEE)
-endif()
 
 add_subdirectory(source)
 add_subdirectory(tools)

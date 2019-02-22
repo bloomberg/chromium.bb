@@ -17,7 +17,7 @@
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 
 class GURL;
 
@@ -40,6 +40,7 @@ class MockSharedWorker : public mojom::SharedWorker {
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
   void BindDevToolsAgent(
+      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   mojo::Binding<mojom::SharedWorker> binding_;
@@ -74,8 +75,10 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
           service_worker_provider_info,
       int appcache_host_id,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          script_loader_factory_ptr_info,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+          main_script_loader_factory,
+      blink::mojom::SharedWorkerMainScriptLoadParamsPtr main_script_load_params,
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
+      mojom::ControllerServiceWorkerInfoPtr controller_info,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;

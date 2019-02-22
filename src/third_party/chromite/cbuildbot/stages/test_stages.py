@@ -212,8 +212,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     if self.suite_config.suite == constants.HWTEST_AFDO_SUITE:
       arch = self._GetPortageEnvVar('ARCH', self._current_board)
-      cpv = portage_util.BestVisible(constants.CHROME_CP,
-                                     buildroot=self._build_root)
+      cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
+                                             cwd=self._build_root)
       if afdo.CheckAFDOPerfData(cpv, arch, gs.GSContext()):
         logging.info('AFDO profile already generated for arch %s '
                      'and Chrome %s. Not generating it again',

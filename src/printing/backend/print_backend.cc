@@ -25,7 +25,6 @@ PrinterSemanticCapsAndDefaults::PrinterSemanticCapsAndDefaults()
     : collate_capable(false),
       collate_default(false),
       copies_capable(false),
-      duplex_capable(false),
       duplex_default(UNKNOWN_DUPLEX_MODE),
       color_changeable(false),
       color_default(false),

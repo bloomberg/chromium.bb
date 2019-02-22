@@ -129,13 +129,6 @@ This file contains the strings for ash.
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
 
-      <!-- TODO(zork): Only include these in Aura builds -->
-      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
-        Launcher
-      </message>
-      <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE" desc="The title used for the Ash Launcher in the Shelf to indicate loading/syncinc apps.">
-        Launcher (syncing apps...)
-      </message>
       <message name="IDS_ASH_SHELF_BACK_BUTTON_TITLE" desc="The title used for the back button on the Shelf, which is avaliable in tablet mode.">
         Back
       </message>
@@ -146,7 +139,7 @@ This file contains the strings for ash.
         Autohide shelf
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALWAYS_SHOW_SHELF" desc="Title of the menu item in the context menu for always showing the shelf">
-        Always Show Shelf
+        Always show shelf
       </message>
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_POSITION" desc="Title of the menu item in the context menu for aligning the shelf">
         Shelf position
@@ -162,32 +155,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SHELF_ACCESSIBLE_NAME" desc="The accessible name of the shelf.">
         Shelf
-      </message>
-
-      <!-- Shelf buttons -->
-      <message name="IDS_ASH_SHELF_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/lock screen.">
-        Shut down
-      </message>
-      <message name="IDS_ASH_SHELF_RESTART_BUTTON" desc="Text shown on restart button on login/lock screen.">
-        Restart
-      </message>
-      <message name="IDS_ASH_SHELF_UNLOCK_BUTTON" desc="Text shown on unlock button on lock screen.">
-        Unlock
-      </message>
-      <message name="IDS_ASH_SHELF_SIGN_OUT_BUTTON" desc="Text shown on sign out button on lock screen.">
-        Sign out
-      </message>
-      <message name="IDS_ASH_SHELF_CANCEL_BUTTON" desc="Text shown on cancel button on add user screen.">
-        Cancel
-      </message>
-      <message name="IDS_ASH_BROWSE_AS_GUEST_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
-        Browse as Guest
-      </message>
-      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
-        Add Person
-      </message>
-      <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
-        Apps
       </message>
 
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">
@@ -238,8 +205,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_EXIT_PUBLIC" desc="The label used for the button in the status tray to terminate a public account session. If the label is long, indicate where it may be broken into two lines by inserting \n instead of a whitespace.">
         Exit session
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a public account session.">
-        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a public session managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_PUBLIC_LABEL" desc="Text of the the ash system bubble's user card when the current session is a managed session.">
+        <ph name="DISPLAY_NAME">$1<ex>Internet kiosk</ex></ph> is a managed session managed by <ph name="DOMAIN">$2<ex>yourdomain.com</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
@@ -312,6 +279,17 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_STOP" desc="The label used in the tray popup to stop casting.">
         Stop
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP" desc="The tooltip text for the status area icon to tell do-not-disturb mode is currently on.">
+        Do Not Disturb is on
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INDICATOR_IME_TOOLTIP" desc="The tooltip text for the status area icon to tell the type of keyboard or input method engine.">
+        Using <ph name="IME_NAME">$1<ex>US keyboard</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP" desc="The tooltip text for a status area icon to describe number of notifications. [ICU Syntax]">
+        {NUM_NOTIFICATIONS, plural,
+         =1 {1 notification}
+         other {# notifications}}
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
@@ -570,17 +548,6 @@ This file contains the strings for ash.
         Do not disturb
       </message>
 
-      <!-- Status tray enterprise management. -->
-      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY" desc="Text for notifications showing that this device is enterpise managed. Used when the organization's domain name is available.">
-        This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
-      </message>
-      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED" desc="Text for notifications showing that this device is enterprise managed. Used when the organization's domain name is not available (e.g. Active Directory).">
-        This device is enterprise managed
-      </message>
-      <message name="IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT" desc="Short text showing that the device is enterprise managed.">
-        Managed
-      </message>
-
       <!-- Status tray supervised users. -->
       <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">
          Supervised user
@@ -593,6 +560,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_CHILD_USER_IS_MANAGED_BY_TWO_PARENTS_NOTICE" desc="Text for notifications showing that this user is managed by two parents' accounts.">
         Account managed by <ph name="FIRST_PARENT_EMAIL">$1<ex>first@example.com</ex></ph> and <ph name="SECOND_PARENT_EMAIL">$2<ex>second@example.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FAMILY_LINK_LABEL" desc="Tooltip of the status area icon indicating that the session is managed by Family Link.">
+         This account is managed by Family Link
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
@@ -652,6 +622,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a demo session, which does not support voice interaction.">
         The Google Assistant is not available in a demo session.
+      </message>
+      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_PUBLIC_SESSION_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a public session, which does not support voice interaction.">
+        The Google Assistant is not available in a public session.
       </message>
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">
@@ -821,6 +794,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP" desc="The tooltip text used when network is not connected.">
         Disconnected
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y" desc="The message used by accessibility for telling that currently the device is not connected to a network.">
+        Not connected to netowrk
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_TOOLTIP" desc="The tooltip text used when network is connecting.">
         Connecting to <ph name="NETWORK_NAME">$1<ex>public wifi</ex></ph>
       </message>
@@ -974,7 +950,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED" desc="The label used in the tray to show that the current status is extended.">
         Extending screen to <ph name="DISPLAY_NAME">$1</ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED" desc="The text of the notification to show when a display is removed.">
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED" desc="The text of the notification to show when a display is disconnected from the device.">
         Removed display <ph name="DISPLAY_NAME">$1</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING_NO_INTERNAL" desc="The label used in the tray to show that the current status is mirroring and the device doesn't have the internal display.">
@@ -1219,9 +1195,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLED" desc="The message to display in the network list when mobile data is turned off.">
         Mobile data is turned off.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
-        Turn on Bluetooth to discover nearby devices
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
         VPN disconnected
       </message>
@@ -1436,7 +1409,7 @@ This file contains the strings for ash.
         PIN or password
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER" desc="Text to display as placeholder in the password field when the user can click/tap their profile picture to unlock.">
-        Click your photo
+        Select your photo
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password couldn't be verified. Please try again.
@@ -1492,7 +1465,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
         Your internet session will be cleared when you sign out. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
       </message>
-      <message name="IDS_ASH_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT" desc="Link in public session pod that shows a section which allows the user to change the UI language and keyboard layout.">
+      <message name="IDS_ASH_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT" desc="Link in managed session pod that shows a section which allows the user to change the UI language and keyboard layout.">
         Choose language and keyboard
       </message>
       <message name="IDS_ASH_LOGIN_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
@@ -1504,17 +1477,47 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_MESSAGE" desc="Text shown in the user pod to remind user that fingerprint unlock is supported">
         Unlock with fingerprint
       </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AGE_AUTH_SUCCESS" desc="Text shown in the user pod that fingerprint unlock succeeded">
+        Signing in
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_TIMEOUT_MESSAGE" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
+        To sign back in, enter your password
+      </message>
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_FAILED_MESSAGE" desc="Text shown in the user pod to tell user that couldn't unlock because finger is not recognized">
         Not recognized
       </message>
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_MESSAGE" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
         Too many attempts
       </message>
-      <message name="IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because the time limit of using the device has reached.">
+      <message name="IDS_ASH_LOGIN_TAKE_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because their parent locked it for the day.">
         Take a break!
+      </message>
+      <message name="IDS_ASH_LOGIN_LOCKED_ALL_DAY_MESSAGE" desc="Message shown to user indicating that their parent locked the device for the day.">
+        Your parent locked your device for the day
+      </message>
+      <message name="IDS_ASH_LOGIN_TIME_IS_UP_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because the screen time limit has been reached.">
+        Time is up
+      </message>
+      <message name="IDS_ASH_LOGIN_SCREEN_TIME_USED_MESSAGE" desc="Message shown to user indicating that their parent locked the device for the day.">
+        You used this device for <ph name="USED_TIME">$1<ex>1 hr and 15 min</ex></ph> today
+      </message>
+      <message name="IDS_ASH_LOGIN_TIME_FOR_BED_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because the bedtime is active.">
+        Time for bed
       </message>
       <message name="IDS_ASH_LOGIN_COME_BACK_MESSAGE" desc="Message shown to user indicating a future time when the user is allowed to use the device again.">
         Come back at <ph name="COME_BACK_TIME">$1<ex>7:30 AM</ex></ph>.
+      </message>
+      <message name="IDS_ASH_LOGIN_COME_BACK_TOMORROW_MESSAGE" desc="Message shown to user indicating a future time when the user is allowed to use the device again.">
+        Come back tomorrow at <ph name="COME_BACK_TIME">$1<ex>7:30 AM</ex></ph>.
+      </message>
+      <message name="IDS_ASH_LOGIN_COME_BACK_DAY_OF_WEEK_MESSAGE" desc="Message shown to user indicating a future time when the user is allowed to use the device again.">
+        Come back <ph name="COME_BACK_DAY_OF_WEEK">$1<ex>Thursday</ex></ph> at <ph name="COME_BACK_TIME">$2<ex>7:30 AM</ex></ph>.
+      </message>
+      <message name="IDS_ASH_LOGIN_TIME_FOR_A_BREAK_MESSAGE" desc="Message shown to user when unlocking the device is not allowed because their parent locked the device.">
+        Time for a break
+      </message>
+      <message name="IDS_ASH_LOGIN_MANUAL_LOCK_MESSAGE" desc="Message shown to user indicating that their parent locked the device.">
+        Your parent locked this device
       </message>
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         The admin of this device has the ability to:
@@ -1553,10 +1556,10 @@ This file contains the strings for ash.
         <ph name="DEVICE_NAME">$1<ex>Pixel XL</ex></ph> added
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new phone is replacing the phone they currently have set up to connect to their Chromebook.">
-        Better Together switched to a new phone
+        Chromebook connected to a new phone
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
-        Better Together is on
+        Connected to <ph name="DEVICE_NAME">$1<ex>Pixel XL</ex></ph>
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled.">
         This Chromebook and your phone will connect automatically
@@ -1635,15 +1638,8 @@ This file contains the strings for ash.
         </message>
       </if>
 
-      <!-- Window Control -->
-      <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_BACK" desc="The accessible name for the back button on the window frame.">
-        Back button
-      </message>
       <message name="IDS_ASH_DIALOG_DONT_SHOW_AGAIN" desc="Label for checkbox dismissing show of a dialog.">
         Don't show again
-      </message>
-      <message name="IDS_ASH_WINDOW_CONTROL_ACCNAME_CLOSE" desc="The accessible name for a close button on a window frame.">
-        Close
       </message>
 
       <!-- Power off menu  -->
@@ -1677,28 +1673,6 @@ This file contains the strings for ash.
         To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.
       </message>
 
-      <!-- Mojo service names (displayed in task manager) -->
-      <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
-        Window manager
-      </message>
-      <!-- TODO(jamescook): Move next to font service code. -->
-      <message name="IDS_ASH_FONT_SERVICE_NAME" desc="Name of the internal software service that provides fonts. Appears in the task manager.">
-        Font service
-      </message>
-      <message name="IDS_ASH_QUICK_LAUNCH_APP_NAME" desc="Name of the app used to launch other apps by typing an app name. Appears in the task manager.">
-        Quick launch
-      </message>
-      <message name="IDS_ASH_SHORTCUT_VIEWER_APP_NAME" desc="Name of the app that shows the list of keyboard shortcuts. Appears in the task manager.">
-        Shortcut viewer
-      </message>
-      <message name="IDS_ASH_TAP_VISUALIZER_APP_NAME" desc="Name of the app that displays touch tap points on the screen. Appears in the task manager.">
-        Show taps
-      </message>
-      <!-- TODO(jamescook): Remove when mash switches to ws2. -->
-      <message name="IDS_ASH_UI_SERVICE_NAME" desc="Name of the internal software service that manages the user interface (UI). Appears in the task manager.">
-        UI service
-      </message>
-
       <!-- Assistant -->
       <message name="IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT" desc="Message shown as a placeholder in Assistant's input textfield when empty.">
         Type a message
@@ -1723,18 +1697,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_ASSISTANT_NOTIFICATION_DISPLAY_SOURCE" desc="The name for the source of the assistant notification.">
         Assistant
-      </message>
-      <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_TITLE" desc="The title of options to change the behavior of notifications on the lock screen.">
-        On the lock screen
-      </message>
-      <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_SHOW" desc="One of options of the lock screen notification mode to show all the notifications and its contents on the lock screen.">
-        Show all notification content
-      </message>
-      <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE" desc="One of options of the lock screen notification mode to hide all the notifications on the lock screen.">
-        Don't show notifications at all
-      </message>
-      <message name="IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE_SENSITIVE" desc="One of options of the lock screen notification mode to hide sensitive contents and show the others on the lock screen.">
-        Hide sensitive content
       </message>
       <message name="IDS_ASH_ASSISTANT_OPT_IN_UNLOCK_MORE_FEATURES" desc="Message shown in Assistant UI when the user is opted out to promote an opted in experience.">
         Unlock more Assistant features.

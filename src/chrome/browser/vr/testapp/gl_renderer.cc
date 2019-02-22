@@ -9,7 +9,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "ui/gl/gl_bindings.h"
@@ -35,20 +34,22 @@ GlRenderer::GlRenderer() : weak_ptr_factory_(this) {}
 GlRenderer::~GlRenderer() {}
 
 bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
-  if (!BaseCompositorDelegate::Initialize(surface))
+  if (!BaseGraphicsDelegate::Initialize(surface))
     return false;
   PostRenderFrameTask();
   return true;
 }
 
 // TODO(acondor): Provide actual implementation for the methods.
+void GlRenderer::OnResume() {}
 FovRectangles GlRenderer::GetRecommendedFovs() {
   return {{}, {}};
 }
 float GlRenderer::GetZNear() {
   return 0;
 }
-RenderInfo GlRenderer::GetRenderInfo(FrameType frame_type) {
+RenderInfo GlRenderer::GetRenderInfo(FrameType frame_type,
+                                     const gfx::Transform& head_pose) {
   return {};
 }
 RenderInfo GlRenderer::GetOptimizedRenderInfoForFovs(
@@ -72,15 +73,10 @@ void GlRenderer::BufferBoundsChanged(const gfx::Size& content_buffer_size,
 void GlRenderer::GetContentQuadDrawParams(Transform* uv_transform,
                                           float* border_x,
                                           float* border_y) {}
-void GlRenderer::SubmitFrame(FrameType frame_type) {}
-void GlRenderer::SetUiInterface(CompositorUiInterface* ui) {}
-void GlRenderer::SetShowingVrDialog(bool showing) {}
 int GlRenderer::GetContentBufferWidth() {
   return 0;
 }
-void GlRenderer::ConnectPresentingService(
-    device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::XRRuntimeSessionOptionsPtr options) {}
+void GlRenderer::SetFrameDumpFilepathBase(std::string& filepath_base) {}
 
 void GlRenderer::RenderFrame() {
   // Checking and clearing GL errors can be expensive, but we can afford to do

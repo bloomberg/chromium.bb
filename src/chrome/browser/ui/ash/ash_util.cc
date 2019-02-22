@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"

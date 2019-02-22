@@ -90,23 +90,6 @@ TEST(FetchHeaderListTest, Combine) {
   EXPECT_EQ("text/plain, application/xml, foo", combinedValue);
 }
 
-// This is going to be removed: see crbug.com/645492.
-TEST(FetchHeaderListTest, GetAll) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
-  headerList->Append("ConTenT-TyPe", "text/plain");
-  headerList->Append("content-type", "application/xml");
-  headerList->Append("CONTENT-type", "foo");
-  headerList->Append("X-Foo", "bar");
-  Vector<String> combinedValues;
-  headerList->GetAll("content-TYPE", combinedValues);
-  EXPECT_EQ(Vector<String>({"text/plain", "application/xml", "foo"}),
-            combinedValues);
-  headerList->GetAll("x-foo", combinedValues);
-  EXPECT_EQ(Vector<String>({"bar"}), combinedValues);
-  headerList->GetAll("Host", combinedValues);
-  EXPECT_TRUE(combinedValues.IsEmpty());
-}
-
 TEST(FetchHeaderListTest, Contains) {
   FetchHeaderList* headerList = FetchHeaderList::Create();
   headerList->Append("ConTenT-TyPe", "text/plain");
@@ -115,26 +98,6 @@ TEST(FetchHeaderListTest, Contains) {
   EXPECT_TRUE(headerList->Has("CONTENT-TYPE"));
   EXPECT_TRUE(headerList->Has("X-Foo"));
   EXPECT_FALSE(headerList->Has("X-Bar"));
-}
-
-TEST(FetchHeaderListTest, ContainsNonCORSSafelistedHeader) {
-  FetchHeaderList* headerList = FetchHeaderList::Create();
-  EXPECT_FALSE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->Append("Host", "foobar");
-  headerList->Append("X-Foo", "bar");
-  EXPECT_TRUE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->ClearList();
-  headerList->Append("ConTenT-TyPe", "text/plain");
-  headerList->Append("content-type", "application/xml");
-  headerList->Append("X-Foo", "bar");
-  EXPECT_TRUE(headerList->ContainsNonCORSSafelistedHeader());
-
-  headerList->ClearList();
-  headerList->Append("ConTenT-TyPe", "multipart/form-data");
-  headerList->Append("Accept", "xyz");
-  EXPECT_FALSE(headerList->ContainsNonCORSSafelistedHeader());
 }
 
 TEST(FetchHeaderListTest, SortAndCombine) {

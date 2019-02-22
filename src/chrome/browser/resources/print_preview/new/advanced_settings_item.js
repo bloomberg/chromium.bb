@@ -40,7 +40,7 @@ Polymer({
         this.currentValue_ = value;
     } else {
       this.currentValue_ = value;
-      this.$$('input[type="text"]').value = this.currentValue_;
+      this.$$('cr-input').value = this.currentValue_;
     }
   },
 

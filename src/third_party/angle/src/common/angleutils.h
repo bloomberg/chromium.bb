@@ -150,14 +150,15 @@ inline bool IsMaskFlagSet(T mask, T flag)
 
 inline const char *MakeStaticString(const std::string &str)
 {
-    static std::set<std::string> strings;
-    std::set<std::string>::iterator it = strings.find(str);
-    if (it != strings.end())
+    // On the heap so that no destructor runs on application exit.
+    static std::set<std::string> *strings = new std::set<std::string>;
+    std::set<std::string>::iterator it = strings->find(str);
+    if (it != strings->end())
     {
         return it->c_str();
     }
 
-    return strings.insert(str).first->c_str();
+    return strings->insert(str).first->c_str();
 }
 
 std::string ArrayString(unsigned int i);
@@ -250,24 +251,15 @@ std::string ToString(const T &value)
 #define GL_RGB10_A2_SSCALED_ANGLEX 0x6AEC
 #define GL_RGB10_A2_USCALED_ANGLEX 0x6AED
 
-// TODO(jmadill): Clean this up at some point.
-#define EGL_PLATFORM_ANGLE_PLATFORM_METHODS_ANGLEX 0x9999
-
 // This internal enum is used to filter internal errors that are already handled.
 // TODO(jmadill): Remove this when refactor is done. http://anglebug.com/2491
 #define GL_INTERNAL_ERROR_ANGLEX 0x6AEE
 
-#define ANGLE_TRY_CHECKED_MATH(result)                     \
-    if (!result)                                           \
-    {                                                      \
-        return gl::InternalError() << "Integer overflow."; \
-    }
+#define ANGLE_CHECK_GL_ALLOC(context, result) \
+    ANGLE_CHECK(context, result, "Failed to allocate host memory", GL_OUT_OF_MEMORY)
 
-#define ANGLE_TRY_ALLOCATION(result)                                       \
-    if (!result)                                                           \
-    {                                                                      \
-        return gl::OutOfMemory() << "Failed to allocate internal buffer."; \
-    }
+#define ANGLE_CHECK_GL_MATH(context, result) \
+    ANGLE_CHECK(context, result, "Integer overflow.", GL_INVALID_OPERATION)
 
 // The below inlining code lifted from V8.
 #if defined(__clang__) || (defined(__GNUC__) && defined(__has_attribute))

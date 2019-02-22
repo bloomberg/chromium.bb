@@ -5,8 +5,5 @@
 // The set of scripts to be injected into the web view as early as possible.
 goog.provide('__crWeb.chromeBundleMainFrame');
 
-goog.require('__crWeb.autofill');
-goog.require('__crWeb.fill');
-goog.require('__crWeb.passwords');
-goog.require('__crWeb.print');
 goog.require('__crWeb.imageFetch');
+goog.require('__crWeb.passwords');

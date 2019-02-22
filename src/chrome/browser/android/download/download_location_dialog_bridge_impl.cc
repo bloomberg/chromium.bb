@@ -67,11 +67,10 @@ void DownloadLocationDialogBridgeImpl::OnComplete(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& returned_path) {
-  std::string path_string(
+  base::FilePath path(
       base::android::ConvertJavaStringToUTF8(env, returned_path));
 
-  CompleteLocationSelection(DownloadLocationDialogResult::USER_CONFIRMED,
-                            base::FilePath(FILE_PATH_LITERAL(path_string)));
+  CompleteLocationSelection(DownloadLocationDialogResult::USER_CONFIRMED, path);
 
   is_dialog_showing_ = false;
 }

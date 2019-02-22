@@ -36,6 +36,9 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
       Document&,
       const CreateElementFlags = CreateElementFlags());
 
+  // Returns attributes that should be checked against Trusted Types
+  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+
   bool IsExposed() const;
 
  private:

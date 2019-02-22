@@ -22,6 +22,7 @@
 #include "components/update_client/url_loader_post_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using std::string;
 
@@ -123,13 +124,22 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos,
-              interceptor->GetRequestBody(0).find(
-                  "<app appid=\"abc\">"
-                  "<event eventtype=\"3\" eventresult=\"1\" "
-                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
-        << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos, interceptor->GetRequestBody(0).find(" sessionid="));
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<\?xml version="1\.0" encoding="UTF-8"\?>)"
+        R"(<request protocol="3\.1" )"
+        R"(dedup="cr" acceptformat="crx2,crx3" )"
+        R"(sessionid="{[-\w]{36}}" requestid="{[-\w]{36}}" )"
+        R"(updater="fake_prodid" updaterversion="30\.0" prodversion="30\.0" )"
+        R"(lang="fake_lang" updaterchannel="fake_channel_string" )"
+        R"(prodchannel="fake_channel_string" )"
+        R"(os="\w+" arch="\w+" nacl_arch="[-\w]+"( wow64="1")?>)"
+        R"(<hw physmemory="\d+"/>)"
+        R"(<os platform="Fake Operating System" arch="[,-.\w]+" )"
+        R"(version="[-.\w]+"( sp="[\s\w]+")?/>)"
+        R"(<app appid="abc"><event eventtype="3" eventresult="1" )"
+        R"(previousversion="1\.0" nextversion="2\.0"/></app></request>)";
+    EXPECT_TRUE(RE2::FullMatch(msg, regex)) << msg;
 
     // Check the ping request does not carry the specific extra request headers.
     EXPECT_FALSE(std::get<1>(interceptor->GetRequests()[0])
@@ -157,12 +167,11 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos,
-              interceptor->GetRequestBody(0).find(
-                  "<app appid=\"abc\">"
-                  "<event eventtype=\"3\" eventresult=\"0\" "
-                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
-        << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<app appid="abc"><event eventtype="3" eventresult="0" )"
+        R"(previousversion="1\.0" nextversion="2\.0"/></app>)";
+    EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
     interceptor->Reset();
   }
 
@@ -190,16 +199,16 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos,
-              interceptor->GetRequestBody(0).find(
-                  "<app appid=\"abc\">"
-                  "<event eventtype=\"3\" eventresult=\"0\" errorcat=\"1\" "
-                  "errorcode=\"2\" extracode1=\"-1\" diffresult=\"0\" "
-                  "differrorcat=\"4\" "
-                  "differrorcode=\"20\" diffextracode1=\"-10\" "
-                  "previousfp=\"prev fp\" nextfp=\"next fp\" "
-                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
-        << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<app appid="abc">)"
+        R"(<event eventtype="3" eventresult="0" errorcat="1" )"
+        R"(errorcode="2" extracode1="-1" diffresult="0" )"
+        R"(differrorcat="4" differrorcode="20" diffextracode1="-10" )"
+        R"(previousfp="prev fp" nextfp="next fp" )"
+        R"(previousversion="1\.0" nextversion="2\.0"/></app>)";
+    EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
+
     interceptor->Reset();
   }
 
@@ -218,11 +227,12 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos,
-              interceptor->GetRequestBody(0).find(
-                  "<app appid=\"abc\"><event eventtype=\"3\" eventresult=\"0\" "
-                  "previousversion=\"1.0\"/></app>"))
-        << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<app appid="abc"><event eventtype="3" eventresult="0" )"
+        R"(previousversion="1\.0"/></app>)";
+    EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
+
     interceptor->Reset();
   }
 
@@ -239,12 +249,12 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(string::npos,
-              interceptor->GetRequestBody(0).find(
-                  "<app appid=\"abc\">"
-                  "<event eventtype=\"4\" eventresult=\"1\" "
-                  "previousversion=\"1.2.3.4\" nextversion=\"0\"/></app>"))
-        << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<app appid="abc"><event eventtype="4" eventresult="1" )"
+        R"(previousversion="1\.2\.3\.4" nextversion="0"/></app>)";
+    EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
+
     interceptor->Reset();
   }
 
@@ -282,21 +292,21 @@ TEST_F(PingManagerTest, SendPing) {
     RunThreads();
 
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
-    EXPECT_NE(
-        string::npos,
-        interceptor->GetRequestBody(0).find(
-            "<app appid=\"abc\">"
-            "<event eventtype=\"3\" eventresult=\"1\" previousversion=\"1.0\" "
-            "nextversion=\"2.0\"/>"
-            "<event eventtype=\"14\" eventresult=\"0\" downloader=\"direct\" "
-            "errorcode=\"-1\" url=\"http://host1/path1\" downloaded=\"123\" "
-            "total=\"456\" download_time_ms=\"987\" previousversion=\"1.0\" "
-            "nextversion=\"2.0\"/>"
-            "<event eventtype=\"14\" eventresult=\"1\" downloader=\"bits\" "
-            "url=\"http://host2/path2\" downloaded=\"1230\" total=\"4560\" "
-            "download_time_ms=\"9870\" previousversion=\"1.0\" "
-            "nextversion=\"2.0\"/></app>"))
-        << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+    constexpr char regex[] =
+        R"(<app appid="abc">)"
+        R"(<event eventtype="3" eventresult="1" )"
+        R"(previousversion="1\.0" nextversion="2\.0"/>)"
+        R"(<event eventtype="14" eventresult="0" downloader="direct" )"
+        R"(errorcode="-1" url="http://host1/path1" downloaded="123" )"
+        R"(total="456" download_time_ms="987" previousversion="1\.0" )"
+        R"(nextversion="2\.0"/>)"
+        R"(<event eventtype="14" eventresult="1" downloader="bits" )"
+        R"(url="http://host2/path2" downloaded="1230" total="4560" )"
+        R"(download_time_ms="9870" previousversion="1\.0" )"
+        R"(nextversion="2\.0"/></app>)";
+    EXPECT_TRUE(RE2::PartialMatch(msg, regex)) << msg;
+
     interceptor->Reset();
   }
 }

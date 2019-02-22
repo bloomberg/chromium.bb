@@ -80,11 +80,6 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus() {
   return static_cast<WhatsNewPromoStatus>(status);
 }
 
-bool IsLRUSnapshotCacheEnabled() {
-  // TODO(crbug.com/751553): Remove this function and its associated code.
-  return NO;
-}
-
 bool IsMemoryDebuggingEnabled() {
 // Always return true for Chromium builds, but check the user default for
 // official builds because memory debugging should never be enabled on stable.
@@ -126,20 +121,8 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
   return base::FeatureList::IsEnabled(kEnableThirdPartyKeyboardWorkaround);
 }
 
-bool IsRecentTabsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
-}
-
 bool IsBookmarksUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
-}
-
-bool IsReadingListUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
-}
-
-bool IsSettingsUIRebootEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshPhase1);
+  return true;
 }
 
 }  // namespace experimental_flags

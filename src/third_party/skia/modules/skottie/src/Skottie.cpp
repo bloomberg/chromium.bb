@@ -27,6 +27,7 @@
 #include "SkottieAdapter.h"
 #include "SkottieJson.h"
 #include "SkottiePriv.h"
+#include "SkottieProperty.h"
 #include "SkottieValue.h"
 
 #include <cmath>
@@ -37,9 +38,26 @@ namespace skottie {
 
 namespace internal {
 
-void LogJSON(const skjson::Value& json, const char msg[]) {
-    const auto dump = json.toString();
-    LOG("%s: %s\n", msg, dump.c_str());
+void AnimationBuilder::log(Logger::Level lvl, const skjson::Value* json,
+                           const char fmt[], ...) const {
+    if (!fLogger) {
+        return;
+    }
+
+    char buff[1024];
+    va_list va;
+    va_start(va, fmt);
+    const auto len = vsprintf(buff, fmt, va);
+    va_end(va);
+
+    if (len < 0 || len >= SkToInt(sizeof(buff))) {
+        SkDebugf("!! Could not format log message !!\n");
+        return;
+    }
+
+    SkString jsonstr = json ? json->toString() : SkString();
+
+    fLogger->log(lvl, buff, jsonstr.c_str());
 }
 
 sk_sp<sksg::Matrix> AnimationBuilder::attachMatrix(const skjson::ObjectValue& t,
@@ -83,7 +101,9 @@ sk_sp<sksg::Matrix> AnimationBuilder::attachMatrix(const skjson::ObjectValue& t,
                 adapter->setSkewAxis(sa);
             }, 0.0f);
 
-    return bound ? matrix : parentMatrix;
+    const auto dispatched = this->dispatchTransformProperty(adapter);
+
+    return (bound || dispatched) ? matrix : parentMatrix;
 }
 
 sk_sp<sksg::RenderNode> AnimationBuilder::attachOpacity(const skjson::ObjectValue& jtransform,
@@ -94,16 +114,15 @@ sk_sp<sksg::RenderNode> AnimationBuilder::attachOpacity(const skjson::ObjectValu
 
     auto opacityNode = sksg::OpacityEffect::Make(childNode);
 
-    if (!this->bindProperty<ScalarValue>(jtransform["o"], ascope,
+    const auto bound = this->bindProperty<ScalarValue>(jtransform["o"], ascope,
         [opacityNode](const ScalarValue& o) {
             // BM opacity is [0..100]
             opacityNode->setOpacity(o * 0.01f);
-        }, 100.0f)) {
-        // We can ignore static full opacity.
-        return childNode;
-    }
+        }, 100.0f);
+    const auto dispatched = this->dispatchOpacityProperty(opacityNode);
 
-    return std::move(opacityNode);
+    // We can ignore constant full opacity.
+    return (bound || dispatched) ? std::move(opacityNode) : childNode;
 }
 
 sk_sp<sksg::Path> AnimationBuilder::attachPath(const skjson::Value& jpath,
@@ -124,24 +143,33 @@ sk_sp<sksg::Color> AnimationBuilder::attachColor(const skjson::ObjectValue& jcol
                                                  AnimatorScope* ascope,
                                                  const char prop_name[]) const {
     auto color_node = sksg::Color::Make(SK_ColorBLACK);
+
     this->bindProperty<VectorValue>(jcolor[prop_name], ascope,
         [color_node](const VectorValue& c) {
             color_node->setColor(ValueTraits<VectorValue>::As<SkColor>(c));
         });
+    this->dispatchColorProperty(color_node);
 
     return color_node;
 }
 
 AnimationBuilder::AnimationBuilder(sk_sp<ResourceProvider> rp, sk_sp<SkFontMgr> fontmgr,
+                                   sk_sp<PropertyObserver> pobserver, sk_sp<Logger> logger,
+                                   sk_sp<AnnotationObserver> aobserver,
                                    Animation::Builder::Stats* stats,
                                    float duration, float framerate)
     : fResourceProvider(std::move(rp))
-    , fFontMgr(std::move(fontmgr))
+    , fLazyFontMgr(std::move(fontmgr))
+    , fPropertyObserver(std::move(pobserver))
+    , fLogger(std::move(logger))
+    , fAnnotationObserver(std::move(aobserver))
     , fStats(stats)
     , fDuration(duration)
     , fFrameRate(framerate) {}
 
 std::unique_ptr<sksg::Scene> AnimationBuilder::parse(const skjson::ObjectValue& jroot) {
+    this->dispatchAnnotations(jroot["annotations"]);
+
     this->parseAssets(jroot["assets"]);
     this->parseFonts(jroot["fonts"], jroot["chars"]);
 
@@ -165,7 +193,88 @@ void AnimationBuilder::parseAssets(const skjson::ArrayValue* jassets) {
     }
 }
 
+void AnimationBuilder::dispatchAnnotations(const skjson::ObjectValue* jannotations) const {
+    if (!fAnnotationObserver || !jannotations) {
+        return;
+    }
+
+    for (const auto& a : *jannotations) {
+        if (const skjson::StringValue* value = a.fValue) {
+            fAnnotationObserver->onAnnotation(a.fKey.begin(), value->begin());
+        } else {
+            this->log(Logger::Level::kWarning, &a.fValue, "Ignoring unexpected annotation value.");
+        }
+    }
+}
+
+bool AnimationBuilder::dispatchColorProperty(const sk_sp<sksg::Color>& c) const {
+    bool dispatched = false;
+
+    if (fPropertyObserver) {
+        fPropertyObserver->onColorProperty(fPropertyObserverContext,
+            [&]() {
+                dispatched = true;
+                return std::unique_ptr<ColorPropertyHandle>(new ColorPropertyHandle(c));
+            });
+    }
+
+    return dispatched;
+}
+
+bool AnimationBuilder::dispatchOpacityProperty(const sk_sp<sksg::OpacityEffect>& o) const {
+    bool dispatched = false;
+
+    if (fPropertyObserver) {
+        fPropertyObserver->onOpacityProperty(fPropertyObserverContext,
+            [&]() {
+                dispatched = true;
+                return std::unique_ptr<OpacityPropertyHandle>(new OpacityPropertyHandle(o));
+            });
+    }
+
+    return dispatched;
+}
+
+bool AnimationBuilder::dispatchTransformProperty(const sk_sp<TransformAdapter>& t) const {
+    bool dispatched = false;
+
+    if (fPropertyObserver) {
+        fPropertyObserver->onTransformProperty(fPropertyObserverContext,
+            [&]() {
+                dispatched = true;
+                return std::unique_ptr<TransformPropertyHandle>(new TransformPropertyHandle(t));
+            });
+    }
+
+    return dispatched;
+}
+
+void AnimationBuilder::AutoPropertyTracker::updateContext(PropertyObserver* observer,
+                                                          const skjson::ObjectValue& obj) {
+
+    const skjson::StringValue* name = obj["nm"];
+
+    fBuilder->fPropertyObserverContext = name ? name->begin() : nullptr;
+}
+
 } // namespace internal
+
+sk_sp<SkData> ResourceProvider::load(const char[], const char[]) const {
+    return nullptr;
+}
+
+sk_sp<ImageAsset> ResourceProvider::loadImageAsset(const char path[], const char name[]) const {
+    return nullptr;
+}
+
+sk_sp<SkData> ResourceProvider::loadFont(const char[], const char[]) const {
+    return nullptr;
+}
+
+void Logger::log(Level, const char[], const char*) {}
+
+Animation::Builder::Builder()  = default;
+Animation::Builder::~Builder() = default;
 
 Animation::Builder& Animation::Builder::setResourceProvider(sk_sp<ResourceProvider> rp) {
     fResourceProvider = std::move(rp);
@@ -177,16 +286,35 @@ Animation::Builder& Animation::Builder::setFontManager(sk_sp<SkFontMgr> fmgr) {
     return *this;
 }
 
+Animation::Builder& Animation::Builder::setPropertyObserver(sk_sp<PropertyObserver> pobserver) {
+    fPropertyObserver = std::move(pobserver);
+    return *this;
+}
+
+Animation::Builder& Animation::Builder::setLogger(sk_sp<Logger> logger) {
+    fLogger = std::move(logger);
+    return *this;
+}
+
+Animation::Builder& Animation::Builder::setAnnotationObserver(sk_sp<AnnotationObserver> aobserver) {
+    fAnnotationObserver = std::move(aobserver);
+    return *this;
+}
+
 sk_sp<Animation> Animation::Builder::make(SkStream* stream) {
     if (!stream->hasLength()) {
         // TODO: handle explicit buffering?
-        LOG("!! cannot parse streaming content\n");
+        if (fLogger) {
+            fLogger->log(Logger::Level::kError, "Cannot parse streaming content.\n");
+        }
         return nullptr;
     }
 
     auto data = SkData::MakeFromStream(stream, stream->getLength());
     if (!data) {
-        SkDebugf("!! Failed to read the input stream.\n");
+        if (fLogger) {
+            fLogger->log(Logger::Level::kError, "Failed to read the input stream.\n");
+        }
         return nullptr;
     }
 
@@ -200,8 +328,6 @@ sk_sp<Animation> Animation::Builder::make(const char* data, size_t data_len) {
     };
     auto resolvedProvider = fResourceProvider
             ? fResourceProvider : sk_make_sp<NullResourceProvider>();
-    auto resolvedFontMgr  = fFontMgr
-            ? fFontMgr : SkFontMgr::RefDefault();
 
     memset(&fStats, 0, sizeof(struct Stats));
 
@@ -211,7 +337,9 @@ sk_sp<Animation> Animation::Builder::make(const char* data, size_t data_len) {
     const skjson::DOM dom(data, data_len);
     if (!dom.root().is<skjson::ObjectValue>()) {
         // TODO: more error info.
-        SkDebugf("!! Failed to parse JSON input.\n");
+        if (fLogger) {
+            fLogger->log(Logger::Level::kError, "Failed to parse JSON input.\n");
+        }
         return nullptr;
     }
     const auto& json = dom.root().as<skjson::ObjectValue>();
@@ -225,19 +353,25 @@ sk_sp<Animation> Animation::Builder::make(const char* data, size_t data_len) {
     const auto fps      = ParseDefault<float>(json["fr"], -1.0f),
                inPoint  = ParseDefault<float>(json["ip"], 0.0f),
                outPoint = SkTMax(ParseDefault<float>(json["op"], SK_ScalarMax), inPoint),
-               duration = (outPoint - inPoint) / fps;
+               duration = sk_ieee_float_divide(outPoint - inPoint, fps);
 
     if (size.isEmpty() || version.isEmpty() || fps <= 0 ||
         !SkScalarIsFinite(inPoint) || !SkScalarIsFinite(outPoint) || !SkScalarIsFinite(duration)) {
-        LOG("!! invalid animation params (version: %s, size: [%f %f], frame rate: %f, "
-            "in-point: %f, out-point: %f)\n",
-            version.c_str(), size.width(), size.height(), fps, inPoint, outPoint);
+        if (fLogger) {
+            const auto msg = SkStringPrintf(
+                         "Invalid animation params (version: %s, size: [%f %f], frame rate: %f, "
+                         "in-point: %f, out-point: %f)\n",
+                         version.c_str(), size.width(), size.height(), fps, inPoint, outPoint);
+            fLogger->log(Logger::Level::kError, msg.c_str());
+        }
         return nullptr;
     }
 
     SkASSERT(resolvedProvider);
-    SkASSERT(resolvedFontMgr);
-    internal::AnimationBuilder builder(std::move(resolvedProvider), std::move(resolvedFontMgr),
+    internal::AnimationBuilder builder(std::move(resolvedProvider), fFontMgr,
+                                       std::move(fPropertyObserver),
+                                       std::move(fLogger),
+                                       std::move(fAnnotationObserver),
                                        &fStats, duration, fps);
     auto scene = builder.parse(json);
 
@@ -245,8 +379,8 @@ sk_sp<Animation> Animation::Builder::make(const char* data, size_t data_len) {
     fStats.fSceneParseTimeMS = t2 - t1;
     fStats.fTotalLoadTimeMS  = t2 - t0;
 
-    if (!scene) {
-        LOG("!! could not parse animation.\n");
+    if (!scene && fLogger) {
+        fLogger->log(Logger::Level::kError, "Could not parse animation.\n");
     }
 
     return sk_sp<Animation>(

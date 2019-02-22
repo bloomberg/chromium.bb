@@ -13,7 +13,8 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_data_retriever.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,7 +60,7 @@ BookmarkAppInstallationTask::BookmarkAppInstallationTask(
     : profile_(profile),
       app_info_(std::move(app_info)),
       helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
-      data_retriever_(std::make_unique<BookmarkAppDataRetriever>()),
+      data_retriever_(std::make_unique<web_app::WebAppDataRetriever>()),
       installer_(std::make_unique<BookmarkAppInstaller>(profile)) {}
 
 BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
@@ -82,7 +83,7 @@ void BookmarkAppInstallationTask::SetBookmarkAppHelperFactoryForTesting(
 }
 
 void BookmarkAppInstallationTask::SetDataRetrieverForTesting(
-    std::unique_ptr<BookmarkAppDataRetriever> data_retriever) {
+    std::unique_ptr<web_app::WebAppDataRetriever> data_retriever) {
   data_retriever_ = std::move(data_retriever);
 }
 
@@ -107,29 +108,39 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
                                 WebappInstallSource::MENU_BROWSER_TAB);
 
   switch (app_info_.launch_container) {
-    case web_app::PendingAppManager::LaunchContainer::kDefault:
+    case web_app::LaunchContainer::kDefault:
       break;
-    case web_app::PendingAppManager::LaunchContainer::kTab:
+    case web_app::LaunchContainer::kTab:
       helper_->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
       break;
-    case web_app::PendingAppManager::LaunchContainer::kWindow:
+    case web_app::LaunchContainer::kWindow:
       helper_->set_forced_launch_type(LAUNCH_TYPE_WINDOW);
       break;
   }
 
-  switch (app_info_.installation_flag) {
-    case web_app::PendingAppManager::InstallationFlag::kNone:
-      break;
-    case web_app::PendingAppManager::InstallationFlag::kDefaultApp:
+  switch (app_info_.install_source) {
+    // TODO(nigeltao/ortuno): should these two cases lead to different
+    // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
+    case web_app::InstallSource::kInternal:
+    case web_app::InstallSource::kExternalDefault:
       helper_->set_is_default_app();
       break;
-    case web_app::PendingAppManager::InstallationFlag::kFromPolicy:
+    case web_app::InstallSource::kExternalPolicy:
       helper_->set_is_policy_installed_app();
+      break;
+    case web_app::InstallSource::kSystemInstalled:
+      helper_->set_is_system_app();
       break;
   }
 
   if (!app_info_.create_shortcuts)
     helper_->set_skip_shortcut_creation();
+
+  if (app_info_.bypass_service_worker_check)
+    helper_->set_bypass_service_worker_check();
+
+  if (app_info_.require_manifest)
+    helper_->set_require_manifest();
 
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),

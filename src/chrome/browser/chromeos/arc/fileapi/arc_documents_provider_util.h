@@ -75,6 +75,14 @@ std::vector<base::FilePath::StringType> GetExtensionsForArcMimeType(
 base::FilePath::StringType GetFileNameForDocument(
     const mojom::DocumentPtr& document);
 
+// Returns the provided MIME type without the subtype component.
+std::string StripMimeSubType(const std::string& mime_type);
+
+// Finds the first matching mime type with |ext| as a valid extension from the
+// internal list of Android mime types. On success, the first matching MIME type
+// is returned. On failure, nullptr is returned.
+std::string FindArcMimeTypeFromExtension(const std::string& ext);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_UTIL_H_

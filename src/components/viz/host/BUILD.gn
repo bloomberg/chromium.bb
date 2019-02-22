@@ -80,6 +80,7 @@ viz_source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/viz/test:test_support",
+    "//gpu",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//services/viz/privileged/interfaces",

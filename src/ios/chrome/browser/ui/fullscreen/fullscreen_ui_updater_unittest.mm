@@ -35,15 +35,7 @@
   _enabled = enabled;
 }
 
-- (void)finishFullscreenScrollWithAnimator:(FullscreenAnimator*)animator {
-  _animator = animator;
-}
-
-- (void)scrollFullscreenToTopWithAnimator:(FullscreenAnimator*)animator {
-  _animator = animator;
-}
-
-- (void)showToolbarWithAnimator:(FullscreenAnimator*)animator {
+- (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
   _animator = animator;
 }
 
@@ -92,6 +84,6 @@ TEST_F(FullscreenUIUpdaterTest, ScrollEnd) {
   FullscreenAnimator* const kAnimator = [[FullscreenAnimator alloc]
       initWithStartProgress:0.0
                       style:FullscreenAnimatorStyle::ENTER_FULLSCREEN];
-  observer()->FullscreenScrollEventEnded(nullptr, kAnimator);
+  observer()->FullscreenWillAnimate(nullptr, kAnimator);
   EXPECT_EQ(element().animator, kAnimator);
 }

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_behavior.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -44,6 +45,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -130,15 +132,9 @@ VisiblePositionInFlatTree VisiblePositionOfHitTestResult(
 
 DocumentMarker* SpellCheckMarkerAtPosition(
     DocumentMarkerController& document_marker_controller,
-    const Position& position) {
-  const Node* const node = position.ComputeContainerNode();
-  if (!node->IsTextNode())
-    return nullptr;
-
-  const unsigned offset = position.ComputeOffsetInContainerNode();
-  return document_marker_controller.FirstMarkerIntersectingOffsetRange(
-      *ToText(node), offset, offset,
-      DocumentMarker::MarkerTypes::Misspelling());
+    const PositionInFlatTree& position) {
+  return document_marker_controller.FirstMarkerAroundPosition(
+      position, DocumentMarker::MarkerTypes::Misspelling());
 }
 
 }  // namespace
@@ -556,7 +552,7 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
       return false;
   }
 
-  // |dispatchSelectStart()| can change document hosted by |m_frame|.
+  // |DispatchSelectStart()| can change document hosted by |frame_|.
   if (!this->Selection().IsAvailable())
     return false;
 
@@ -673,9 +669,8 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
 
   const PositionInFlatTree& marker_position =
       pos.DeepEquivalent().ParentAnchoredEquivalent();
-  const DocumentMarker* const marker =
-      SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
-                                 ToPositionInDOMTree(marker_position));
+  const DocumentMarker* const marker = SpellCheckMarkerAtPosition(
+      inner_node->GetDocument().Markers(), marker_position);
   if (!marker) {
     UpdateSelectionForMouseDownDispatchingSelectStart(
         inner_node, SelectionInFlatTree(),
@@ -887,8 +882,8 @@ bool SelectionController::HandleDoubleClick(
   if (Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange()) {
     // A double-click when range is already selected
     // should not change the selection.  So, do not call
-    // selectClosestWordFromMouseEvent, but do set
-    // m_beganSelectingText to prevent handleMouseReleaseEvent
+    // SelectClosestWordFromMouseEvent, but do set
+    // began_selecting_text_ to prevent HandleMouseReleaseEvent
     // from setting caret selection.
     selection_state_ = SelectionState::kExtendedSelection;
     return true;
@@ -1167,10 +1162,13 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
       inner_node->GetLayoutObject()->PositionForPoint(result.LocalPoint()));
   if (pos.IsNull())
     return false;
-  const Position& marker_position =
+  // TODO(xiaochengh): Don't use |ParentAnchoredEquivalent()|.
+  const Position marker_position =
       pos.DeepEquivalent().ParentAnchoredEquivalent();
+  if (!SpellChecker::IsSpellCheckingEnabledAt(marker_position))
+    return false;
   return SpellCheckMarkerAtPosition(inner_node->GetDocument().Markers(),
-                                    marker_position);
+                                    ToPositionInFlatTree(marker_position));
 }
 
 void SelectionController::SendContextMenuEvent(
@@ -1280,12 +1278,27 @@ bool IsLinkSelection(const MouseEventWithHitTestResults& event) {
          event.IsOverLink();
 }
 
+bool IsUserNodeDraggable(const MouseEventWithHitTestResults& event) {
+  Node* inner_node = event.InnerNode();
+
+  // TODO(huangdarwin): event.InnerNode() should never be nullptr, but unit
+  // tests WebFrameTest.FrameWidgetTest and WebViewTest.ClientTapHandling fail
+  // without a nullptr check, as they don't set the InnerNode() appropriately.
+  // Remove the if statement nullptr check when those tests are fixed.
+  if (!inner_node)
+    return false;
+
+  const ComputedStyle* kStyle = inner_node->GetComputedStyle();
+  return kStyle && kStyle->UserDrag() == EUserDrag::kElement;
+}
+
 bool IsExtendingSelection(const MouseEventWithHitTestResults& event) {
   bool is_mouse_down_on_link_or_image =
       event.IsOverLink() || event.GetHitTestResult().GetImage();
+
   return (event.Event().GetModifiers() & WebInputEvent::Modifiers::kShiftKey) !=
              0 &&
-         !is_mouse_down_on_link_or_image;
+         !is_mouse_down_on_link_or_image && !IsUserNodeDraggable(event);
 }
 
 }  // namespace blink

@@ -34,11 +34,6 @@ interface WindowManager {
   // Type: int32_t.
   const string kContainerId_InitProperty = "init:container_id";
 
-  // Disables the window manager from handling immersive fullscreen for the
-  // window. This is typically done if the client wants to handle immersive
-  // themselves. Type: bool.
-  const string kDisableImmersive_InitProperty = "init:disable_immersive";
-
   // The id of the display (display::Display::id()) to create the window on.
   // Type: int64.
   const string kDisplayId_InitProperty = "init:display_id";
@@ -77,6 +72,14 @@ interface WindowManager {
   // The Android Java-style package name for an ARC++ window, such as
   // "com.google.Photos". Type: mojom::String.
   const string kArcPackageName_Property = "prop:arc-package-name";
+
+  // The accessibility ui::AXTreeID for a views::Widget.
+  // TODO(dmazzoni): Convert to base::UnguessableToken. https://crbug.com/881986
+  // Type: mojom::String
+  const string kChildAXTreeID_Property = "prop:child-ax-tree-id";
+
+  // The modal parent of a child modal window. Type: window Id.
+  const string kChildModalParent_Property = "prop:child-modal-parent";
 
   // Whether the window is trying to draw attention to itself (e.g. pulsing its
   // shelf icon). Type: bool.
@@ -157,6 +160,27 @@ interface WindowManager {
 
   // A boolean determining whether to show the window's title.
   const string kWindowTitleShown_Property = "prop:window-title-shown";
+
+  // Duration of an animation, as a TimeDelta. This maps to
+  // kWindowVisibilityAnimationDuration.
+  const string kWindowVisibilityAnimationDuration_Property =
+      "prop:window-visibility-animation-duration";
+
+  // When the animation should be used. This is an int, and maps to
+  // WindowVisibilityAnimationTransition (which is a bitmask).
+  const string kWindowVisibilityAnimationTransition_Property =
+      "prop:window-visibility-animation-transition";
+
+  // Type of animation for the window. This is an int, and maps to
+  // WindowVisibilityAnimationType (which allows for any int value as well).
+  const string kWindowVisibilityAnimationType_Property =
+      "prop:window-visibility-animation-type";
+
+  // Distance to translate a window during an animation of type
+  // WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL. This is a float, and maps to
+  // kWindowVisibilityAnimationVerticalPositionKey.
+  const string kWindowVisibilityAnimationVerticalPosition_Property =
+      "prop:window-visibility-animation-vertical-position";
 
   // End long lived properties. ------------------------------------------------
 };

@@ -565,7 +565,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
                              output_buffer->mapped_size());
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
-  image._timeStamp = rtp_timestamp.value();
+  image.SetTimestamp(rtp_timestamp.value());
   image.capture_time_ms_ = capture_timestamp_ms.value();
   image._frameType =
       (metadata.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);

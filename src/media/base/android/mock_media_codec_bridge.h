@@ -80,6 +80,9 @@ class MockMediaCodecBridge : public MediaCodecBridge,
   // Set an optional WaitableEvent that we'll signal on destruction.
   void SetCodecDestroyedEvent(base::WaitableEvent* event);
 
+  // Return true if the codec is already drained.
+  bool IsDrained() const;
+
   static std::unique_ptr<MediaCodecBridge> CreateVideoDecoder(
       VideoCodec codec,
       CodecType codec_type,
@@ -95,6 +98,8 @@ class MockMediaCodecBridge : public MediaCodecBridge,
 
  private:
   base::WaitableEvent* destruction_event_ = nullptr;
+  // Is the codec in the drained state?
+  bool is_drained_ = true;
 };
 
 }  // namespace media

@@ -7,7 +7,7 @@
 
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -19,14 +19,14 @@ class SensorProxy;
 // 'SensorProxy' instances.
 class SensorProviderProxy final
     : public GarbageCollectedFinalized<SensorProviderProxy>,
-      public Supplement<LocalFrame> {
+      public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
   WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
 
  public:
   static const char kSupplementName[];
 
-  static SensorProviderProxy* From(LocalFrame*);
+  static SensorProviderProxy* From(Document*);
 
   ~SensorProviderProxy();
 
@@ -50,7 +50,7 @@ class SensorProviderProxy final
   const SensorsSet& sensor_proxies() const { return sensor_proxies_; }
 
   // For SensorProviderProxy personal use.
-  explicit SensorProviderProxy(LocalFrame&);
+  explicit SensorProviderProxy(Document&);
   void InitializeIfNeeded();
   bool IsInitialized() const { return sensor_provider_.is_bound(); }
   void OnSensorProviderConnectionError();

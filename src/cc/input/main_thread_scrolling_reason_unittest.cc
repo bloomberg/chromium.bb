@@ -31,7 +31,9 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Not scrollable,"
       "Continuing main thread scroll,"
       "Non-invertible transform,"
-      "Page-based scrolling",
+      "Page-based scrolling,"
+      "Wheel event handler region,"
+      "Touch event handler region",
       MainThreadScrollingReason::AsText(0xffffffffu));
 }
 

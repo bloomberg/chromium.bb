@@ -26,6 +26,7 @@ namespace chromeos {
 class SlowTraceSource : public content::URLDataSource {
  public:
   SlowTraceSource();
+  ~SlowTraceSource() override;
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
@@ -37,8 +38,6 @@ class SlowTraceSource : public content::URLDataSource {
   bool AllowCaching() const override;
 
  private:
-  ~SlowTraceSource() override;
-
   void OnGetTraceData(const content::URLDataSource::GotDataCallback& callback,
                       scoped_refptr<base::RefCountedString> trace_data);
 

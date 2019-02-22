@@ -18,7 +18,10 @@ Polymer({
   ],
 
   properties: {
-    /** @type {?SettingsRoutes} */
+    /**
+     * Alias for allowing Polymer bindings to settings.routes.
+     * @type {?SettingsRoutes}
+     */
     routes: {
       type: Object,
       value: settings.routes,
@@ -41,19 +44,6 @@ Polymer({
       type: Array,
       value: () => ['settings-multidevice-tether-item'],
     },
-
-    // TODO(jordynass): Once the service provides this data via pageContentData,
-    // replace this property with that path.
-    /**
-     * If SMS Connect requires setup, it displays a paper button prompting the
-     * setup flow. If it is already set up, it displays a regular toggle for the
-     * feature.
-     * @private {boolean}
-     */
-    androidMessagesRequiresSetup_: {
-      type: Boolean,
-      value: true,
-    },
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -65,18 +55,13 @@ Polymer({
   },
 
   /** @private */
+  handleVerifyButtonClick_: function(event) {
+    this.browserProxy_.retryPendingHostSetup();
+  },
+
+  /** @private */
   handleAndroidMessagesButtonClick_: function() {
     this.browserProxy_.setUpAndroidSms();
-  },
-
-  listeners: {
-    'show-networks': 'onShowNetworks_',
-  },
-
-  onShowNetworks_: function() {
-    settings.navigateTo(
-        settings.routes.INTERNET_NETWORKS,
-        new URLSearchParams('type=' + CrOnc.Type.TETHER));
   },
 
   /**
@@ -84,6 +69,26 @@ Polymer({
    * @private
    */
   shouldShowIndividualFeatures_: function() {
+    return this.pageContentData.mode ===
+        settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowVerifyButton_: function() {
+    return [
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+      settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+    ].includes(this.pageContentData.mode);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSuiteToggle_: function() {
     return this.pageContentData.mode ===
         settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
@@ -108,8 +113,23 @@ Polymer({
    * @return {string}
    * @private
    */
-  getStatusText_: function() {
+  getStatusInnerHtml_: function() {
+    if ([
+          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER,
+          settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
+        ].includes(this.pageContentData.mode)) {
+      return this.i18nAdvanced('multideviceVerificationText');
+    }
     return this.isSuiteOn() ? this.i18n('multideviceEnabled') :
                               this.i18n('multideviceDisabled');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  doesAndroidMessagesRequireSetup_: function() {
+    return this.getFeatureState(settings.MultiDeviceFeature.MESSAGES) ==
+        settings.MultiDeviceFeatureState.FURTHER_SETUP_REQUIRED;
   },
 });

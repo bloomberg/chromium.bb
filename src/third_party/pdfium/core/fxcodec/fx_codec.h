@@ -11,7 +11,6 @@
 #include <memory>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "core/fxcodec/fx_codec_def.h"
 #include "core/fxcrt/fx_coordinates.h"
@@ -152,13 +151,6 @@ std::tuple<uint8_t, uint8_t, uint8_t> AdobeCMYK_to_sRGB1(uint8_t c,
                                                          uint8_t m,
                                                          uint8_t y,
                                                          uint8_t k);
-void FaxG4Decode(const uint8_t* src_buf,
-                 uint32_t src_size,
-                 int* pbitpos,
-                 uint8_t* dest_buf,
-                 int width,
-                 int height,
-                 int pitch);
 
 FX_SAFE_UINT32 CalculatePitch8(uint32_t bpc, uint32_t components, int width);
 FX_SAFE_UINT32 CalculatePitch32(int bpp, int width);

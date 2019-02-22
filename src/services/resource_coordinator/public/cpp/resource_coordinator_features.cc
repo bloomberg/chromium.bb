@@ -18,10 +18,6 @@ constexpr char kMainThreadTaskLoadLowThresholdParameterName[] =
 
 namespace features {
 
-// Globally enable the GRC.
-const base::Feature kGlobalResourceCoordinator{
-    "GlobalResourceCoordinator", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPageAlmostIdle{"PageAlmostIdle",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -32,10 +28,6 @@ const base::Feature kPerformanceMeasurement{"PerformanceMeasurement",
 }  // namespace features
 
 namespace resource_coordinator {
-
-bool IsResourceCoordinatorEnabled() {
-  return base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator);
-}
 
 bool IsPageAlmostIdleSignalEnabled() {
   return base::FeatureList::IsEnabled(features::kPageAlmostIdle);

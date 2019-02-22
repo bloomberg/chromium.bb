@@ -10,10 +10,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
-
-#if !defined(OS_IOS)
 #include "services/network/proxy_service_mojo.h"
-#endif
 
 namespace network {
 
@@ -43,7 +40,6 @@ URLRequestContextBuilderMojo::CreateProxyResolutionService(
   DCHECK(url_request_context);
   DCHECK(host_resolver);
 
-#if !defined(OS_IOS)
   if (mojo_proxy_resolver_factory_) {
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher =
         dhcp_fetcher_factory_->Create(url_request_context);
@@ -63,7 +59,6 @@ URLRequestContextBuilderMojo::CreateProxyResolutionService(
         std::move(dhcp_pac_file_fetcher), host_resolver, net_log,
         network_delegate);
   }
-#endif
 
   return net::URLRequestContextBuilder::CreateProxyResolutionService(
       std::move(proxy_config_service), url_request_context, host_resolver,

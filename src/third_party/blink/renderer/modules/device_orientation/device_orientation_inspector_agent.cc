@@ -20,7 +20,8 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() = default;
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames),
-      sensor_agent_(new SensorInspectorAgent(inspected_frames->Root())),
+      sensor_agent_(
+          new SensorInspectorAgent(inspected_frames->Root()->GetDocument())),
       enabled_(&agent_state_, /*default_value=*/false),
       alpha_(&agent_state_, /*default_value=*/0.0),
       beta_(&agent_state_, /*default_value=*/0.0),
@@ -79,6 +80,7 @@ void DeviceOrientationInspectorAgent::DidCommitLoadForLocalFrame(
   if (frame == inspected_frames_->Root()) {
     // New document in main frame - apply override there.
     // No need to cleanup previous one, as it's already gone.
+    sensor_agent_->DidCommitLoadForLocalFrame(frame);
     Restore();
   }
 }

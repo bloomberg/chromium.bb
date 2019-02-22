@@ -273,17 +273,33 @@ foreach(table, spvtools_vendor_tables) {
   }
 }
 
-config("spvtools_config") {
+config("spvtools_public_config") {
+  include_dirs = [ "include" ]
+}
+
+config("spvtools_internal_config") {
   include_dirs = [
     ".",
-    "include",
     "$target_gen_dir",
     "${spirv_headers}/include",
   ]
 
+  configs = [ ":spvtools_public_config" ]
+
   if (is_clang) {
     cflags = [ "-Wno-implicit-fallthrough" ]
   }
+}
+
+source_set("spvtools_headers") {
+  sources = [
+    "include/spirv-tools/libspirv.h",
+    "include/spirv-tools/libspirv.hpp",
+    "include/spirv-tools/linker.hpp",
+    "include/spirv-tools/optimizer.hpp",
+  ]
+
+  public_configs = [ ":spvtools_public_config" ]
 }
 
 static_library("spvtools") {
@@ -330,6 +346,8 @@ static_library("spvtools") {
     "source/spirv_definition.h",
     "source/spirv_endian.cpp",
     "source/spirv_endian.h",
+    "source/spirv_optimizer_options.cpp",
+    "source/spirv_optimizer_options.h",
     "source/spirv_target_env.cpp",
     "source/spirv_target_env.h",
     "source/spirv_validator_options.cpp",
@@ -356,9 +374,15 @@ static_library("spvtools") {
     "source/util/timer.h",
   ]
 
-  public_configs = [ ":spvtools_config" ]
+  public_deps = [
+    ":spvtools_headers",
+  ]
+
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":spvtools_internal_config",
+  ]
 }
 
 static_library("spvtools_val") {
@@ -406,10 +430,15 @@ static_library("spvtools_val") {
   deps = [
     ":spvtools",
   ]
+  public_deps = [
+    ":spvtools_headers",
+  ]
 
-  public_configs = [ ":spvtools_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":spvtools_internal_config",
+  ]
 }
 
 static_library("spvtools_opt") {
@@ -570,6 +599,8 @@ static_library("spvtools_opt") {
     "source/opt/strip_debug_info_pass.h",
     "source/opt/strip_reflect_info_pass.cpp",
     "source/opt/strip_reflect_info_pass.h",
+    "source/opt/struct_cfg_analysis.cpp",
+    "source/opt/struct_cfg_analysis.h",
     "source/opt/tree_iterator.h",
     "source/opt/type_manager.cpp",
     "source/opt/type_manager.h",
@@ -584,13 +615,19 @@ static_library("spvtools_opt") {
     "source/opt/workaround1209.cpp",
     "source/opt/workaround1209.h",
   ]
+
   deps = [
     ":spvtools",
   ]
+  public_deps = [
+    ":spvtools_headers",
+  ]
 
-  public_configs = [ ":spvtools_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":spvtools_internal_config",
+  ]
 }
 
 group("SPIRV-Tools") {
@@ -638,12 +675,6 @@ if (!build_with_chromium) {
       "${googletest_dir}/googlemock/src/gmock-all.cc",
     ]
     public_configs = [ ":gmock_config" ]
-  }
-}
-
-config("spvtools_test_config") {
-  if (is_clang) {
-    cflags = [ "-Wno-self-assign" ]
   }
 }
 
@@ -728,10 +759,11 @@ test("spvtools_test") {
     sources += [ "${googletest_dir}/googletest/src/gtest_main.cc" ]
   }
 
-  configs += [
-    ":spvtools_config",
-    ":spvtools_test_config",
-  ]
+  if (is_clang) {
+    cflags_cc = [ "-Wno-self-assign" ]
+  }
+
+  configs += [ ":spvtools_internal_config" ]
 }
 
 if (spirv_tools_standalone) {
@@ -752,5 +784,5 @@ executable("spirv-as") {
     ":spvtools",
     ":spvtools_build_version",
   ]
-  configs += [ ":spvtools_config" ]
+  configs += [ ":spvtools_internal_config" ]
 }

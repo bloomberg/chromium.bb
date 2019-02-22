@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 mojom = "//chrome/chrome_cleaner/interfaces/windows_handle.mojom"
 public_headers = []
@@ -9,5 +11,7 @@ sources = [
   "//chrome/chrome_cleaner/interfaces/typemaps/windows_handle_mojom_traits.cc",
 ]
 
-type_mappings =
-    [ "chrome_cleaner.mojom.WindowsHandle=HANDLE[copyable_pass_by_value]" ]
+type_mappings = [
+  "chrome_cleaner.mojom.PredefinedHandle=HANDLE[copyable_pass_by_value]",
+  "chrome_cleaner.mojom.WindowsHandle=HANDLE[copyable_pass_by_value]",
+]

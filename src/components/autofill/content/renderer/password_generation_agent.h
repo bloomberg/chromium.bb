@@ -67,6 +67,13 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Returns true if the newly focused node caused the generation UI to show.
   bool FocusedNodeHasChanged(const blink::WebNode& node);
 
+  // Event forwarded by AutofillAgent from WebAutofillClient, informing that
+  // the text field editing has ended, which means that the field is not
+  // focused anymore. This is required for Android, where moving focus
+  // to a non-focusable element doesn't result in |FocusedNodeHasChanged|
+  // being called.
+  void DidEndTextFieldEditing(const blink::WebInputElement& element);
+
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
 
@@ -102,8 +109,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
 
   // RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_new_navigation,
-                                bool is_same_document_navigation) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void OnDestruct() override;

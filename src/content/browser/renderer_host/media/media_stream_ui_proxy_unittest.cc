@@ -7,11 +7,12 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_render_frame_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,9 +66,7 @@ class MockStopStreamHandler {
 
 class MediaStreamUIProxyTest : public testing::Test {
  public:
-  MediaStreamUIProxyTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+  MediaStreamUIProxyTest() {
     proxy_ = MediaStreamUIProxy::CreateForTests(&delegate_);
   }
 
@@ -77,9 +76,7 @@ class MediaStreamUIProxyTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  TestBrowserThread ui_thread_;
-  TestBrowserThread io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 
   MockRenderFrameHostDelegate delegate_;
   MockResponseCallback response_callback_;
@@ -324,8 +321,8 @@ class MediaStreamUIProxyFeaturePolicyTest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
             base::Unretained(this), std::move(request)));
@@ -376,8 +373,8 @@ class MediaStreamUIProxyFeaturePolicyTest
                                    MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     proxy_.reset();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
                        base::Unretained(this), devices, result));
   }

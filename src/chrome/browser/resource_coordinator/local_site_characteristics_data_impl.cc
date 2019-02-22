@@ -146,10 +146,12 @@ void LocalSiteCharacteristicsDataImpl::NotifyUsesNotificationsInBackground() {
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyLoadTimePerformanceMeasurement(
+    base::TimeDelta load_duration,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
   is_dirty_ = true;
 
+  load_duration_.AppendDatum(load_duration.InMicroseconds());
   cpu_usage_estimate_.AppendDatum(cpu_usage_estimate.InMicroseconds());
   private_footprint_kb_estimate_.AppendDatum(private_footprint_kb_estimate);
 }
@@ -169,7 +171,8 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
     const url::Origin& origin,
     OnDestroyDelegate* delegate,
     LocalSiteCharacteristicsDatabase* database)
-    : cpu_usage_estimate_(kSampleWeightFactor),
+    : load_duration_(kSampleWeightFactor),
+      cpu_usage_estimate_(kSampleWeightFactor),
       private_footprint_kb_estimate_(kSampleWeightFactor),
       origin_(origin),
       loaded_tabs_count_(0U),
@@ -181,7 +184,6 @@ LocalSiteCharacteristicsDataImpl::LocalSiteCharacteristicsDataImpl(
       weak_factory_(this) {
   DCHECK(database_);
   DCHECK(delegate_);
-  DCHECK(!site_characteristics_.IsInitialized());
 
   database_->ReadSiteCharacteristicsFromDB(
       origin_, base::BindOnce(&LocalSiteCharacteristicsDataImpl::OnInitCallback,
@@ -202,19 +204,19 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
 
   // TODO(sebmarchand): Some data might be lost here if the read operation has
   // not completed, add some metrics to measure if this is really an issue.
-  if (is_dirty_ && fully_initialized_) {
-    DCHECK(site_characteristics_.IsInitialized());
+  if (is_dirty_ && fully_initialized_)
     database_->WriteSiteCharacteristicsIntoDB(origin_, FlushStateToProto());
-  }
 }
 
 base::TimeDelta LocalSiteCharacteristicsDataImpl::FeatureObservationDuration(
     const SiteCharacteristicsFeatureProto& feature_proto) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Get the current observation duration value, this'll be equal to 0 for
-  // features that have been observed.
-  base::TimeDelta observation_time_for_feature =
-      InternalRepresentationToTimeDelta(feature_proto.observation_duration());
+  // Get the current observation duration value if available.
+  base::TimeDelta observation_time_for_feature;
+  if (feature_proto.has_observation_duration()) {
+    observation_time_for_feature =
+        InternalRepresentationToTimeDelta(feature_proto.observation_duration());
+  }
 
   // If this site is still in background and the feature isn't in use then the
   // observation time since load needs to be added.
@@ -243,36 +245,6 @@ void LocalSiteCharacteristicsDataImpl::IncrementFeatureObservationDuration(
   }
 }
 
-// static:
-void LocalSiteCharacteristicsDataImpl::
-    InitSiteCharacteristicsFeatureProtoWithDefaultValues(
-        SiteCharacteristicsFeatureProto* proto) {
-  DCHECK_NE(nullptr, proto);
-  static const auto zero_interval =
-      LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
-          base::TimeDelta());
-  proto->set_observation_duration(zero_interval);
-  proto->set_use_timestamp(zero_interval);
-}
-
-void LocalSiteCharacteristicsDataImpl::InitWithDefaultValues(
-    bool only_init_uninitialized_fields) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Initialize the feature elements with the default value, this is required
-  // because some fields might otherwise never be initialized.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_)) {
-    if (!only_init_uninitialized_fields || !iter->IsInitialized())
-      InitSiteCharacteristicsFeatureProtoWithDefaultValues(iter);
-  }
-
-  if (!only_init_uninitialized_fields ||
-      !site_characteristics_.has_last_loaded()) {
-    site_characteristics_.set_last_loaded(
-        LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
-            base::TimeDelta()));
-  }
-}
-
 void LocalSiteCharacteristicsDataImpl::
     ClearObservationsAndInvalidateReadOperation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -282,7 +254,7 @@ void LocalSiteCharacteristicsDataImpl::
   weak_factory_.InvalidateWeakPtrs();
 
   // Reset all the observations.
-  InitWithDefaultValues(false);
+  site_characteristics_.Clear();
 
   // Clear the performance estimates, both the local state and the proto.
   cpu_usage_estimate_.Clear();
@@ -309,16 +281,11 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
       "ResourceCoordinator.LocalDB.ReadHasCompletedBeforeQuery",
       fully_initialized_);
 
-  if (!feature_proto.IsInitialized())
-    return SiteFeatureUsage::kSiteFeatureUsageUnknown;
-
   // Checks if this feature has already been observed.
   // TODO(sebmarchand): Check the timestamp and reset features that haven't been
   // observed in a long time, https://crbug.com/826446.
-  if (!InternalRepresentationToTimeDelta(feature_proto.use_timestamp())
-           .is_zero()) {
+  if (feature_proto.has_use_timestamp())
     return SiteFeatureUsage::kSiteFeatureInUse;
-  }
 
   if (FeatureObservationDuration(feature_proto) >= min_obs_time)
     return SiteFeatureUsage::kSiteFeatureNotInUse;
@@ -345,11 +312,9 @@ void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(
         base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(1), 100);
   }
 
+  feature_proto->Clear();
   feature_proto->set_use_timestamp(
       TimeDeltaToInternalRepresentation(GetTickDeltaSinceEpoch()));
-  feature_proto->set_observation_duration(
-      LocalSiteCharacteristicsDataImpl::TimeDeltaToInternalRepresentation(
-          base::TimeDelta()));
 }
 
 void LocalSiteCharacteristicsDataImpl::OnInitCallback(
@@ -372,31 +337,17 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
       if (!(*this_features_iter)->has_use_timestamp()) {
         if ((*db_features_iter)->has_use_timestamp() &&
             (*db_features_iter)->use_timestamp() != 0) {
+          (*this_features_iter)->Clear();
           // Keep the use timestamp from the database, if any.
           (*this_features_iter)
               ->set_use_timestamp((*db_features_iter)->use_timestamp());
-          (*this_features_iter)
-              ->set_observation_duration(
-                  LocalSiteCharacteristicsDataImpl::
-                      TimeDeltaToInternalRepresentation(base::TimeDelta()));
         } else {
           // Else, add the observation duration from the database to the
           // in-memory observation duration.
-          if (!(*this_features_iter)->has_observation_duration()) {
-            (*this_features_iter)
-                ->set_observation_duration(
-                    LocalSiteCharacteristicsDataImpl::
-                        TimeDeltaToInternalRepresentation(base::TimeDelta()));
-          }
           IncrementFeatureObservationDuration(
               (*this_features_iter),
               InternalRepresentationToTimeDelta(
                   (*db_features_iter)->observation_duration()));
-          // Makes sure that the |use_timestamp| field gets initialized.
-          (*this_features_iter)
-              ->set_use_timestamp(
-                  LocalSiteCharacteristicsDataImpl::
-                      TimeDeltaToInternalRepresentation(base::TimeDelta()));
         }
       }
     }
@@ -406,10 +357,11 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
       site_characteristics_.set_last_loaded(
           db_site_characteristics->last_loaded());
     }
-
     // If there was on-disk data, update the in-memory performance averages.
     if (db_site_characteristics->has_load_time_estimates()) {
       const auto& estimates = db_site_characteristics->load_time_estimates();
+      if (estimates.has_avg_load_duration_us())
+        load_duration_.PrependDatum(estimates.avg_load_duration_us());
       if (estimates.has_avg_cpu_usage_us())
         cpu_usage_estimate_.PrependDatum(estimates.avg_cpu_usage_us());
       if (estimates.has_avg_footprint_kb()) {
@@ -417,13 +369,9 @@ void LocalSiteCharacteristicsDataImpl::OnInitCallback(
             estimates.avg_footprint_kb());
       }
     }
-  } else {
-    // Init all the fields that haven't been initialized with a default value.
-    InitWithDefaultValues(true /* only_init_uninitialized_fields */);
   }
 
   fully_initialized_ = true;
-  DCHECK(site_characteristics_.IsInitialized());
 }
 
 void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
@@ -432,24 +380,19 @@ void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
   loaded_tabs_in_background_count_--;
   // Only update the observation durations if there's no more backgounded
   // instance of this origin.
-  if (loaded_tabs_in_background_count_ > 0U)
-    return;
-
-  DCHECK(!background_session_begin_.is_null());
-  base::TimeDelta extra_observation_duration =
-      NowTicks() - background_session_begin_;
-
-  // Update the observation duration fields.
-  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
-    IncrementFeatureObservationDuration(iter, extra_observation_duration);
+  if (loaded_tabs_in_background_count_ == 0U)
+    FlushFeaturesObservationDurationToProto();
 }
 
 const SiteCharacteristicsProto&
 LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update the proto with the most current performance measurement averages.
   if (cpu_usage_estimate_.num_datums() ||
       private_footprint_kb_estimate_.num_datums()) {
     auto* estimates = site_characteristics_.mutable_load_time_estimates();
+    if (load_duration_.num_datums())
+      estimates->set_avg_load_duration_us(load_duration_.value());
     if (cpu_usage_estimate_.num_datums())
       estimates->set_avg_cpu_usage_us(cpu_usage_estimate_.value());
     if (private_footprint_kb_estimate_.num_datums()) {
@@ -457,7 +400,25 @@ LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
     }
   }
 
+  if (loaded_tabs_in_background_count_ > 0U)
+    FlushFeaturesObservationDurationToProto();
+
   return site_characteristics_;
+}
+
+void LocalSiteCharacteristicsDataImpl::
+    FlushFeaturesObservationDurationToProto() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!background_session_begin_.is_null());
+
+  base::TimeTicks now = NowTicks();
+
+  base::TimeDelta extra_observation_duration = now - background_session_begin_;
+  background_session_begin_ = now;
+
+  // Update the observation duration fields.
+  for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
+    IncrementFeatureObservationDuration(iter, extra_observation_duration);
 }
 
 }  // namespace internal

@@ -9,6 +9,8 @@
 goog.provide('Panel');
 
 goog.require('BrailleCommandData');
+goog.require('EventSourceType');
+goog.require('GestureCommandData');
 goog.require('ISearchUI');
 goog.require('Msgs');
 goog.require('PanelCommand');
@@ -343,6 +345,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
 
   // Insert items from the bindings into the menus.
   var sawBindingSet = {};
+  var gestures = Object.keys(GestureCommandData.GESTURE_COMMAND_MAP);
   sortedBindings.forEach(goog.bind(function(binding) {
     var command = binding.command;
     if (sawBindingSet[command])
@@ -350,10 +353,26 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
     sawBindingSet[command] = true;
     var category = cvox.CommandStore.categoryForCommand(binding.command);
     var menu = category ? categoryToMenu[category] : null;
+    var eventSource = bkgnd['EventSourceState']['get']();
     if (binding.title && menu) {
+      var keyText;
+      var brailleText;
+      var gestureText;
+      if (eventSource == EventSourceType.TOUCH_GESTURE) {
+        for (var i = 0, gesture; gesture = gestures[i]; i++) {
+          var data = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
+          if (data && data.command == command) {
+            gestureText = Msgs.getMsg(data.msgId);
+            break;
+          }
+        }
+      } else {
+        keyText = binding.keySeq;
+        brailleText = BrailleCommandData.getDotShortcut(binding.command, true);
+      }
+
       menu.addMenuItem(
-          binding.title, binding.keySeq,
-          BrailleCommandData.getDotShortcut(binding.command, true), function() {
+          binding.title, keyText, brailleText, gestureText, function() {
             var CommandHandler =
                 chrome.extension.getBackgroundPage()['CommandHandler'];
             CommandHandler['onCommand'](binding.command);
@@ -371,13 +390,13 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
             title += ' ' + Msgs.getMsg('active_tab');
           tabsMenu.addMenuItem(
-              title, '', '', (function(win, tab) {
-                               bkgnd.chrome.windows.update(
-                                   win.id, {focused: true}, function() {
-                                     bkgnd.chrome.tabs.update(
-                                         tab.id, {active: true});
-                                   });
-                             }).bind(this, windows[i], tabs[j]));
+              title, '', '', '', (function(win, tab) {
+                                   bkgnd.chrome.windows.update(
+                                       win.id, {focused: true}, function() {
+                                         bkgnd.chrome.tabs.update(
+                                             tab.id, {active: true});
+                                       });
+                                 }).bind(this, windows[i], tabs[j]));
         }
       }
     });
@@ -385,7 +404,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
 
   // Add a menu item that disables / closes ChromeVox.
   chromevoxMenu.addMenuItem(
-      Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', function() {
+      Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', '', function() {
         Panel.onClose();
       });
 
@@ -417,6 +436,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
       var actionDesc = Msgs.getMsg(actionMsg);
       actionsMenu.addMenuItem(
           actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
+          '' /* gesture */,
           node.performStandardAction.bind(node, standardAction));
     }
   }
@@ -426,7 +446,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
       var customAction = node.customActions[i];
       actionsMenu.addMenuItem(
           customAction.description, '' /* menuItemShortcut */,
-          '' /* menuItemBraille */,
+          '' /* menuItemBraille */, '' /* gesture */,
           node.performCustomAction.bind(node, customAction.id));
     }
   }
@@ -827,12 +847,18 @@ Panel.closeMenusAndRestoreFocus = function() {
     // Watch for a blur on the panel.
     var pendingCallback = Panel.pendingCallback_;
     Panel.pendingCallback_ = null;
-    var onBlur = function(evt) {
-      if (evt.target.docUrl != location.href)
+    var onFocus = function(evt) {
+      if (evt.target.docUrl == location.href)
         return;
 
       desktop.removeEventListener(
-          chrome.automation.EventType.BLUR, onBlur, true);
+          chrome.automation.EventType.FOCUS, onFocus, true);
+
+      // Clears focus on the page by focusing the root explicitly. This makes
+      // sure we don't get future focus events as a result of giving this entire
+      // page focus and that would have interfered with with our desired range.
+      if (evt.target.root)
+        evt.target.root.focus();
 
       setTimeout(function() {
         if (pendingCallback)
@@ -840,7 +866,7 @@ Panel.closeMenusAndRestoreFocus = function() {
       }, 0);
     };
 
-    desktop.addEventListener(chrome.automation.EventType.BLUR, onBlur, true);
+    desktop.addEventListener(chrome.automation.EventType.FOCUS, onFocus, true);
 
     // Make sure all menus are cleared to avoid bogous output when we re-open.
     Panel.clearMenus();

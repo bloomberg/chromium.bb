@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
 #include "media/base/media_switches.h"
@@ -37,7 +36,7 @@ const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
 
 namespace content {
 
-class MediaSourceTest : public content::MediaBrowserTest {
+class MediaSourceTest : public MediaBrowserTest {
  public:
   void TestSimplePlayback(const std::string& media_file,
                           const std::string& media_type,
@@ -48,15 +47,6 @@ class MediaSourceTest : public content::MediaBrowserTest {
     RunMediaTestPage("media_source_player.html", query_params, expectation,
                      false);
   }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        switches::kAutoplayPolicy,
-        switches::autoplay::kNoUserGestureRequiredPolicy);
-  }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {

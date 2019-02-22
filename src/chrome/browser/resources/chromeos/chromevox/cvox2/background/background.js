@@ -12,6 +12,7 @@ goog.provide('Background');
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
 goog.require('BackgroundKeyboardHandler');
+goog.require('BackgroundMouseHandler');
 goog.require('BrailleCommandData');
 goog.require('BrailleCommandHandler');
 goog.require('ChromeVoxState');
@@ -121,6 +122,13 @@ Background = function() {
   /** @type {!BackgroundKeyboardHandler} @private */
   this.keyboardHandler_ = new BackgroundKeyboardHandler();
 
+  /** @type {!BackgroundMouseHandler} @private */
+  this.mouseHandler_ = new BackgroundMouseHandler();
+
+  if (localStorage['speakTextUnderMouse'] == String(true)) {
+    chrome.accessibilityPrivate.enableChromeVoxMouseEvents(true);
+  }
+
   /** @type {!LiveRegions} @private */
   this.liveRegions_ = new LiveRegions(this);
 
@@ -138,11 +146,6 @@ Background = function() {
    * @private
    */
   this.focusRecoveryMap_ = new WeakMap();
-
-  chrome.automation.getDesktop(function(desktop) {
-    /** @type {string} */
-    this.chromeChannel_ = desktop.chromeChannel;
-  }.bind(this));
 
   CommandHandler.init();
   FindHandler.init();
@@ -178,30 +181,35 @@ Background.prototype = {
     // the user navigates.
     cvox.ChromeVox.braille.thaw();
 
-    if (newRange && !newRange.isValid())
+    if (newRange && !newRange.isValid()) {
+      chrome.accessibilityPrivate.setFocusRing([]);
       return;
+    }
 
     this.currentRange_ = newRange;
     ChromeVoxState.observers.forEach(function(observer) {
       observer.onCurrentRangeChanged(newRange);
     });
 
-    if (this.currentRange_) {
-      var start = this.currentRange_.start.node;
-      start.makeVisible();
-
-      var root = AutomationUtil.getTopLevelRoot(start);
-      if (!root || root.role == RoleType.DESKTOP || root == start)
-        return;
-
-      var position = {};
-      var loc = start.unclippedLocation;
-      position.x = loc.left + loc.width / 2;
-      position.y = loc.top + loc.height / 2;
-      var url = root.docUrl;
-      url = url.substring(0, url.indexOf('#')) || url;
-      cvox.ChromeVox.position[url] = position;
+    if (!this.currentRange_) {
+      chrome.accessibilityPrivate.setFocusRing([]);
+      return;
     }
+
+    var start = this.currentRange_.start.node;
+    start.makeVisible();
+
+    var root = AutomationUtil.getTopLevelRoot(start);
+    if (!root || root.role == RoleType.DESKTOP || root == start)
+      return;
+
+    var position = {};
+    var loc = start.unclippedLocation;
+    position.x = loc.left + loc.width / 2;
+    position.y = loc.top + loc.height / 2;
+    var url = root.docUrl;
+    url = url.substring(0, url.indexOf('#')) || url;
+    cvox.ChromeVox.position[url] = position;
   },
 
   /**
@@ -293,8 +301,16 @@ Background.prototype = {
     for (var prop in opt_speechProps)
       o.format('!' + prop);
 
-    if (!skipOutput)
+    if (!skipOutput) {
       o.go();
+
+      if (range.start.node) {
+        // Update the DesktopAutomationHandler's state as well to ensure event
+        // handlers don't repeat this output.
+        DesktopAutomationHandler.instance.updateLastAttributeState(
+            range.start.node, o);
+      }
+    }
   },
 
   /**
@@ -454,7 +470,7 @@ Background.prototype = {
     // the next or previous focusable node from |start|.
     if (!start.state[StateType.OFFSCREEN])
       start.setSequentialFocusNavigationStartingPoint();
-  }
+  },
 };
 
 /**

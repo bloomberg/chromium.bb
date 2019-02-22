@@ -97,7 +97,6 @@ void TabListSceneLayer::PutTabLayer(JNIEnv* env,
                                     jint border_resource_id,
                                     jint border_inner_shadow_resource_id,
                                     jboolean can_use_live_layer,
-                                    jboolean modern_design_enabled,
                                     jint tab_background_color,
                                     jint back_logo_color,
                                     jboolean incognito,
@@ -158,25 +157,23 @@ void TabListSceneLayer::PutTabLayer(JNIEnv* env,
   used_tints_.insert(toolbar_background_color);
   used_tints_.insert(close_button_color);
   used_tints_.insert(default_theme_color);
-  if (modern_design_enabled) {
-    used_tints_.insert(toolbar_textbox_background_color);
-  }
+  used_tints_.insert(toolbar_textbox_background_color);
 
   DCHECK(layer);
   if (layer) {
     layer->SetProperties(
-        id, can_use_live_layer, modern_design_enabled, toolbar_resource_id,
-        close_button_resource_id, shadow_resource_id, contour_resource_id,
-        back_logo_resource_id, border_resource_id,
-        border_inner_shadow_resource_id, tab_background_color, back_logo_color,
-        close_button_on_right, x, y, width, height, shadow_x, shadow_y,
-        shadow_width, shadow_height, pivot_x, pivot_y, rotation_x, rotation_y,
-        alpha, border_alpha, border_inner_shadow_alpha, contour_alpha,
-        shadow_alpha, close_alpha, border_scale, saturation, brightness,
-        close_btn_width, static_to_view_blend, content_width, content_height,
-        content_width, visible_content_height, show_toolbar,
-        default_theme_color, toolbar_background_color, close_button_color,
-        anonymize_toolbar, show_tab_title, toolbar_textbox_resource_id,
+        id, can_use_live_layer, toolbar_resource_id, close_button_resource_id,
+        shadow_resource_id, contour_resource_id, back_logo_resource_id,
+        border_resource_id, border_inner_shadow_resource_id,
+        tab_background_color, back_logo_color, close_button_on_right, x, y,
+        width, height, shadow_x, shadow_y, shadow_width, shadow_height, pivot_x,
+        pivot_y, rotation_x, rotation_y, alpha, border_alpha,
+        border_inner_shadow_alpha, contour_alpha, shadow_alpha, close_alpha,
+        border_scale, saturation, brightness, close_btn_width,
+        static_to_view_blend, content_width, content_height, content_width,
+        visible_content_height, show_toolbar, default_theme_color,
+        toolbar_background_color, close_button_color, anonymize_toolbar,
+        show_tab_title, toolbar_textbox_resource_id,
         toolbar_textbox_background_color, toolbar_textbox_alpha, toolbar_alpha,
         toolbar_y_offset, side_border_scale, inset_border);
   }

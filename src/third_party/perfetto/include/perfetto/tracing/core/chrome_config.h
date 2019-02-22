@@ -69,4 +69,5 @@ class PERFETTO_EXPORT ChromeConfig {
 };
 
 }  // namespace perfetto
+
 #endif  // INCLUDE_PERFETTO_TRACING_CORE_CHROME_CONFIG_H_

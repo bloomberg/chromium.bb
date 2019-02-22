@@ -321,15 +321,6 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& resource_id,
       const google_apis::FileResourceCallback& callback) = 0;
 
-  // Fetches an url for the sharing dialog for a single entry with id
-  // |resource_id|, to be embedded in a webview or an iframe with origin
-  // |embed_origin|. The url is returned via |callback| with results on the
-  // calling thread. |callback| must not be null.
-  virtual google_apis::CancelCallback GetShareUrl(
-      const std::string& resource_id,
-      const GURL& embed_origin,
-      const google_apis::GetShareUrlCallback& callback) = 0;
-
   // Gets the about resource information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
@@ -344,12 +335,6 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
       const google_apis::StartPageTokenCallback& callback) = 0;
-
-  // Gets the application information from the server.
-  // Upon completion, invokes |callback| with results on the calling thread.
-  // |callback| must not be null.
-  virtual google_apis::CancelCallback GetAppList(
-      const google_apis::AppListCallback& callback) = 0;
 
   // Permanently deletes a resource identified by its |resource_id|.
   // If |etag| is not empty and did not match, the deletion fails with
@@ -491,19 +476,6 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const GURL& upload_url,
       int64_t content_length,
       const google_apis::drive::UploadRangeCallback& callback) = 0;
-
-  // Authorizes a Drive app with the id |app_id| to open the given file.
-  // Upon completion, invokes |callback| with the link to open the file with
-  // the provided app. |callback| must not be null.
-  virtual google_apis::CancelCallback AuthorizeApp(
-      const std::string& resource_id,
-      const std::string& app_id,
-      const google_apis::AuthorizeAppCallback& callback) = 0;
-
-  // Uninstalls a Drive app with the id |app_id|. |callback| must not be null.
-  virtual google_apis::CancelCallback UninstallApp(
-      const std::string& app_id,
-      const google_apis::EntryActionCallback& callback) = 0;
 
   // Authorizes the account |email| to access |resource_id| as a |role|.
   // |callback| must not be null.

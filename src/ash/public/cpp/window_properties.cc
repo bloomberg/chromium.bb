@@ -5,6 +5,7 @@
 #include "ash/public/cpp/window_properties.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -13,12 +14,14 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/unguessable_token.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
+#include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/wm/core/window_properties.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
@@ -26,10 +29,16 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowStateType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::BackdropWindowMode)
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
-                                       ash::FrameBackButtonState)
 
 namespace ash {
+namespace {
+
+bool IsValidWindowVisibilityAnimationTransition(int64_t value) {
+  return value == wm::ANIMATE_SHOW || value == wm::ANIMATE_HIDE ||
+         value == wm::ANIMATE_BOTH || value == wm::ANIMATE_NONE;
+}
+
+}  // namespace
 
 void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterStringProperty(
@@ -44,44 +53,29 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterRectProperty(
-      kCaptionButtonBoundsKey, mojom::kCaptionButtonBounds_Property);
-  property_converter->RegisterPrimitiveProperty(
-      kFrameBackButtonStateKey,
-      ws::mojom::WindowManager::kFrameBackButtonState_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterStringProperty(
+      ui::kChildAXTreeID, ws::mojom::WindowManager::kChildAXTreeID_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameActiveColorKey,
       ws::mojom::WindowManager::kFrameActiveColor_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageActive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageInactiveKey, mojom::kFrameImageInactive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageOverlayActive_Property);
-  property_converter->RegisterUnguessableTokenProperty(
-      kFrameImageActiveKey, mojom::kFrameImageOverlayInactive_Property);
-  property_converter->RegisterPrimitiveProperty(
-      kFrameImageYInsetKey, mojom::kFrameImageYInset_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
-      kHideCaptionButtonsInTabletModeKey,
-      mojom::kHideCaptionButtonsInTabletMode_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
       ws::mojom::WindowManager::kFrameInactiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      kFrameIsThemedByHostedAppKey, mojom::kFrameIsThemedByHostedApp_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
-      kFrameTextColorKey, mojom::kFrameTextColor_Property,
-      aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kImmersiveImpliedByFullscreen,
+      mojom::kImmersiveImpliedByFullscreen_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      kImmersiveIsActive, mojom::kImmersiveIsActive_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterRectProperty(
+      kImmersiveTopContainerBoundsInScreen,
+      mojom::kImmersiveTopContainerBoundsInScreen_Property);
   property_converter->RegisterPrimitiveProperty(
       kIsDeferredTabDraggingTargetWindowKey,
       mojom::kIsDeferredTabDraggingTargetWindow_Property,
@@ -103,6 +97,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kShelfItemTypeKey, ws::mojom::WindowManager::kShelfItemType_Property,
       base::BindRepeating(&IsValidShelfItemType));
   property_converter->RegisterPrimitiveProperty(
+      aura::client::kTopViewInset, mojom::kTopViewInset_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kWindowStateTypeKey, mojom::kWindowStateType_Property,
       base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
@@ -120,8 +117,29 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       mojom::kRestoreWindowStateTypeOverride_Property,
       base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
+      kTabDroppedWindowStateTypeKey, mojom::kTabDroppedWindowStateType_Property,
+      base::BindRepeating(&IsValidWindowStateType));
+  property_converter->RegisterPrimitiveProperty(
       aura::client::kTitleShownKey,
       ws::mojom::WindowManager::kWindowTitleShown_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterWindowPtrProperty(
+      kTabDraggingSourceWindowKey, mojom::kTabDraggingSourceWindow_Property);
+  property_converter->RegisterTimeDeltaProperty(
+      wm::kWindowVisibilityAnimationDurationKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationDuration_Property);
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationTransitionKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationTransition_Property,
+      base::BindRepeating(&IsValidWindowVisibilityAnimationTransition));
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationTypeKey,
+      ws::mojom::WindowManager::kWindowVisibilityAnimationType_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
+      wm::kWindowVisibilityAnimationVerticalPositionKey,
+      ws::mojom::WindowManager::
+          kWindowVisibilityAnimationVerticalPosition_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 
@@ -132,24 +150,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kCaptionButtonBoundsKey, nullptr);
-DEFINE_UI_CLASS_PROPERTY_KEY(FrameBackButtonState,
-                             kFrameBackButtonStateKey,
-                             FrameBackButtonState::kNone);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageActiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageInactiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageOverlayActiveKey,
-                                   nullptr);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
-                                   kFrameImageOverlayInactiveKey,
-                                   nullptr);
-DEFINE_UI_CLASS_PROPERTY_KEY(int, kFrameImageYInsetKey, 0);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideCaptionButtonsInTabletModeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveImpliedByFullscreen, true);
@@ -157,6 +157,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveIsActive, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kImmersiveTopContainerBoundsInScreen,
                                    nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(
+    int,
+    kImmersiveWindowType,
+    ImmersiveFullscreenController::WindowType::WINDOW_TYPE_OTHER);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool,
                              kIsDeferredTabDraggingTargetWindowKey,
                              false);
@@ -176,15 +180,14 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
                              kTabDraggingSourceWindowKey,
                              nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
+                             kTabDroppedWindowStateTypeKey,
+                             mojom::WindowStateType::DEFAULT);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
                              kDefaultFrameColor);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kFrameIsThemedByHostedAppKey, false);
-DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
-                             kFrameTextColorKey,
-                             gfx::kPlaceholderColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);

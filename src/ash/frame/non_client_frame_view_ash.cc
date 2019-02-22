@@ -8,18 +8,17 @@
 #include <memory>
 #include <vector>
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
-#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
-#include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
@@ -51,20 +50,17 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
                                              public TabletModeObserver {
  public:
   NonClientFrameViewAshImmersiveHelper(views::Widget* widget,
-                                       NonClientFrameViewAsh* custom_frame_view,
-                                       bool control_immersive)
+                                       NonClientFrameViewAsh* custom_frame_view)
       : widget_(widget),
         window_state_(wm::GetWindowState(widget->GetNativeWindow())) {
     window_state_->window()->AddObserver(this);
     window_state_->AddObserver(this);
 
-    if (!control_immersive)
-      return;
-
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
     immersive_fullscreen_controller_ =
-        std::make_unique<ImmersiveFullscreenController>();
+        std::make_unique<ImmersiveFullscreenController>(
+            Shell::Get()->immersive_context());
     custom_frame_view->InitImmersiveFullscreenControllerForView(
         immersive_fullscreen_controller_.get());
   }
@@ -234,19 +230,12 @@ bool NonClientFrameViewAsh::OverlayView::DoesIntersectRect(
 // static
 const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 
-NonClientFrameViewAsh::NonClientFrameViewAsh(
-    views::Widget* frame,
-    ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    bool control_immersive,
-    mojom::WindowStyle window_style,
-    std::unique_ptr<CaptionButtonModel> model)
+NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     : frame_(frame),
-      header_view_(new HeaderView(frame, window_style, std::move(model))),
-      overlay_view_(new OverlayView(header_view_)),
-      immersive_delegate_(immersive_delegate ? immersive_delegate
-                                             : header_view_) {
+      header_view_(new HeaderView(frame)),
+      overlay_view_(new OverlayView(header_view_)) {
   aura::Window* frame_window = frame->GetNativeWindow();
-  wm::InstallResizeHandleWindowTargeterForWindow(frame_window, nullptr);
+  wm::InstallResizeHandleWindowTargeterForWindow(frame_window);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
@@ -256,8 +245,8 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(
   // such as ARC++, and in some tests.
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
-    immersive_helper_ = std::make_unique<NonClientFrameViewAshImmersiveHelper>(
-        frame, this, control_immersive);
+    immersive_helper_ =
+        std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
@@ -271,8 +260,7 @@ NonClientFrameViewAsh::~NonClientFrameViewAsh() {
 
 void NonClientFrameViewAsh::InitImmersiveFullscreenControllerForView(
     ImmersiveFullscreenController* immersive_fullscreen_controller) {
-  immersive_fullscreen_controller->Init(immersive_delegate_, frame_,
-                                        header_view_);
+  immersive_fullscreen_controller->Init(header_view_, frame_, header_view_);
 }
 
 void NonClientFrameViewAsh::SetFrameColors(SkColor active_frame_color,

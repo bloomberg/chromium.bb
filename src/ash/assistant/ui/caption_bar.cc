@@ -47,6 +47,24 @@ CaptionBar::CaptionBar() {
 
 CaptionBar::~CaptionBar() = default;
 
+const char* CaptionBar::GetClassName() const {
+  return "CaptionBar";
+}
+
+bool CaptionBar::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  switch (accelerator.key_code()) {
+    case ui::VKEY_BROWSER_BACK:
+      HandleButton(CaptionButtonId::kBack);
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  // Don't let DialogClientView handle the accelerator.
+  return true;
+}
+
 gfx::Size CaptionBar::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
@@ -55,11 +73,22 @@ int CaptionBar::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
+void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  auto id = static_cast<CaptionButtonId>(sender->id());
+  HandleButton(id);
+}
+
+void CaptionBar::SetButtonVisible(CaptionButtonId id, bool visible) {
+  views::View* button = GetViewByID(static_cast<int>(id));
+  if (button)
+    button->SetVisible(visible);
+}
+
 void CaptionBar::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kSpacingDip));
+          views::BoxLayout::Orientation::kHorizontal,
+          gfx::Insets(0, kSpacingDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -87,10 +116,13 @@ void CaptionBar::InitLayout() {
       CreateCaptionButton(kWindowControlCloseIcon, IDS_APP_ACCNAME_CLOSE, this);
   close_button->set_id(static_cast<int>(CaptionButtonId::kClose));
   AddChildView(close_button);
+
+  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
 }
 
-void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  CaptionButtonId id = static_cast<CaptionButtonId>(sender->id());
+void CaptionBar::HandleButton(CaptionButtonId id) {
+  if (!GetViewByID(static_cast<int>(id))->visible())
+    return;
 
   // If the delegate returns |true| it has handled the event and wishes to
   // prevent default behavior from being performed.
@@ -107,12 +139,6 @@ void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
       NOTIMPLEMENTED();
       break;
   }
-}
-
-void CaptionBar::SetButtonVisible(CaptionButtonId id, bool visible) {
-  views::View* button = GetViewByID(static_cast<int>(id));
-  if (button)
-    button->SetVisible(visible);
 }
 
 }  // namespace ash

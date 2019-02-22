@@ -84,11 +84,11 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
             : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
                   media_element_->currentSrc().GetString());
     DCHECK(descriptor);
-    for (size_t i = 0; i < descriptor->NumberOfAudioComponents(); i++) {
+    for (unsigned i = 0; i < descriptor->NumberOfAudioComponents(); i++) {
       media_stream_->AddTrackByComponentAndFireEvents(
           descriptor->AudioComponent(i));
     }
-    for (size_t i = 0; i < descriptor->NumberOfVideoComponents(); i++) {
+    for (unsigned i = 0; i < descriptor->NumberOfVideoComponents(); i++) {
       media_stream_->AddTrackByComponentAndFireEvents(
           descriptor->VideoComponent(i));
     }

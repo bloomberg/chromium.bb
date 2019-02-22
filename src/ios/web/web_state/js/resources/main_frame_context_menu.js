@@ -37,19 +37,6 @@ __gCrWeb['findElementAtPoint'] =
     };
 
 /**
- * Suppresses the next click such that they are not handled by JS click
- * event handlers.
- * @type {void}
- */
-__gCrWeb['suppressNextClick'] = function() {
-  var suppressNextClick = function(evt) {
-    evt.preventDefault();
-    document.removeEventListener('click', suppressNextClick, false);
-  };
-  document.addEventListener('click', suppressNextClick);
-};
-
-/**
  * Returns the margin in points around touchable elements (e.g. links for
  * custom context menu).
  * @type {number}

@@ -29,10 +29,11 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
       kTraceEventPpapiBrokerProcessSortIndex);
 
   ChildProcess ppapi_broker_process;
-  ppapi_broker_process.set_main_thread(
-      new PpapiThread(parameters.command_line, true));  // Broker.
+  base::RunLoop run_loop;
+  ppapi_broker_process.set_main_thread(new PpapiThread(
+      run_loop.QuitClosure(), parameters.command_line, true /* Broker */));
 
-  base::RunLoop().Run();
+  run_loop.Run();
   DVLOG(1) << "PpapiBrokerMain exiting";
   return 0;
 }

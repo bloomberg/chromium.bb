@@ -344,8 +344,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     gfx::Rect left_highlight_bounds(hightlight_padding_point, highlight_size);
     gfx::Rect right_highlight_bounds(right_bottom_origin, highlight_size);
     if (!landscape) {
-      TransposeRect(&left_highlight_bounds);
-      TransposeRect(&right_highlight_bounds);
+      left_highlight_bounds.Transpose();
+      right_highlight_bounds.Transpose();
     }
     const bool preview_left =
         (indicator_state_ == IndicatorState::kPreviewAreaLeft);
@@ -368,7 +368,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
           kHighlightScreenEdgePaddingDp, kOtherHighlightLengthDp,
           display_height - 2 * kHighlightScreenEdgePaddingDp);
       if (!landscape)
-        TransposeRect(&other_bounds);
+        other_bounds.Transpose();
 
       if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
         left_highlight_bounds = preview_area_bounds;

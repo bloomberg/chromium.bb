@@ -21,6 +21,7 @@ class ScreenPositionClient;
 
 namespace chromecast {
 
+class CastTouchEventGate;
 class CastFocusClientAura;
 class CastGestureHandler;
 class CastSystemGestureEventHandler;
@@ -75,12 +76,18 @@ class CastWindowManagerAura : public CastWindowManager,
 
   CastGestureHandler* GetGestureHandler() const;
 
+  void SetTouchInputDisabled(bool disabled) override;
+  void AddTouchActivityObserver(CastTouchActivityObserver* observer) override;
+  void RemoveTouchActivityObserver(
+      CastTouchActivityObserver* observer) override;
+
  private:
   const bool enable_input_;
   std::unique_ptr<CastWindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
+  std::unique_ptr<CastTouchEventGate> event_gate_;
   std::unique_ptr<CastSystemGestureDispatcher> system_gesture_dispatcher_;
   std::unique_ptr<CastSystemGestureEventHandler> system_gesture_event_handler_;
   std::unique_ptr<SideSwipeDetector> side_swipe_detector_;

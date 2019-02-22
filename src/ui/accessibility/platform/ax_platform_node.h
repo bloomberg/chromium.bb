@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_mode_observer.h"
-#include "ui/accessibility/ax_modes.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {

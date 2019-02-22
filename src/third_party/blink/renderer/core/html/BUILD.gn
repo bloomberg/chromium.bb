@@ -489,6 +489,8 @@ blink_core_sources("html") {
     "media/media_custom_controls_fullscreen_detector.h",
     "media/media_document.cc",
     "media/media_document.h",
+    "media/media_element_parser_helpers.cc",
+    "media/media_element_parser_helpers.h",
     "media/media_error.h",
     "media/media_fragment_uri_parser.cc",
     "media/media_fragment_uri_parser.h",
@@ -571,6 +573,7 @@ blink_core_sources("html") {
 
   deps = [
     "//services/metrics/public/cpp:metrics_cpp",
+    "//skia:skcms",
     "//third_party/blink/renderer/core/html/parser:parser",
   ]
 }

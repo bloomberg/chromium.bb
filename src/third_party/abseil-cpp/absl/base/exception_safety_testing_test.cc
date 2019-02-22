@@ -179,7 +179,7 @@ TEST(ThrowingValueTest, ThrowingStreamOps) {
 }
 
 // Tests the operator<< of ThrowingValue by forcing ConstructorTracker to emit
-// a nonfatal failure that contains the std::string representation of the Thrower
+// a nonfatal failure that contains the string representation of the Thrower
 TEST(ThrowingValueTest, StreamOpsOutput) {
   using ::testing::TypeSpec;
   exceptions_internal::ConstructorTracker ct(exceptions_internal::countdown);
@@ -931,8 +931,8 @@ TEST(ThrowingValueTraitsTest, RelationalOperators) {
 }
 
 TEST(ThrowingAllocatorTraitsTest, Assignablility) {
-  EXPECT_TRUE(std::is_move_assignable<ThrowingAllocator<int>>::value);
-  EXPECT_TRUE(std::is_copy_assignable<ThrowingAllocator<int>>::value);
+  EXPECT_TRUE(absl::is_move_assignable<ThrowingAllocator<int>>::value);
+  EXPECT_TRUE(absl::is_copy_assignable<ThrowingAllocator<int>>::value);
   EXPECT_TRUE(std::is_nothrow_move_assignable<ThrowingAllocator<int>>::value);
   EXPECT_TRUE(std::is_nothrow_copy_assignable<ThrowingAllocator<int>>::value);
 }

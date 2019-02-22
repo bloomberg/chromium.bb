@@ -27,6 +27,8 @@ struct RootCompositorFrameSinkParams {
   bool gpu_compositing = true;
   RendererSettings renderer_settings;
   bool send_swap_size_notifications = false;
+  // Disables begin frame rate limiting for the display compositor.
+  bool disable_frame_rate_limit = false;
 
   associated CompositorFrameSink& compositor_frame_sink;
   CompositorFrameSinkClient compositor_frame_sink_client;
@@ -111,16 +113,6 @@ interface FrameSinkManager {
   UnregisterFrameSinkHierarchy(FrameSinkId parent_frame_sink_id,
                                FrameSinkId child_frame_sink_id);
 
-  // Assigns the temporary reference for |surface_id| to FrameSinkId |owner|.
-  // If |owner| is invalidated before it converts the temporary reference to a
-  // surface reference then the temporary reference will be dropped.
-  AssignTemporaryReference(SurfaceId surface_id,
-                           FrameSinkId owner);
-
-  // Drops the temporary reference for |surface_id|. This will get called when
-  // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.
-  DropTemporaryReference(SurfaceId surface_id);
-
   // Requests viz to notify |observer| whenever video activity is detected in
   // one of the clients. See viz::VideoDetector.
   AddVideoDetectorObserver(VideoDetectorObserver observer);
@@ -142,9 +134,6 @@ interface FrameSinkManager {
 // compositor. The frame sink manager host is either the browser process in
 // Chrome or the window server process.
 interface FrameSinkManagerClient {
-  // Called by the frame sink manager when a new Surface is created.
-  OnSurfaceCreated(SurfaceId surface_id);
-
   // Called by the frame sink manager when a CompositorFrame with a new
   // SurfaceId activates for the first time.
   OnFirstSurfaceActivation(SurfaceInfo surface_info);

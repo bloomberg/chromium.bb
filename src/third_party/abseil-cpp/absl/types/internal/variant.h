@@ -37,6 +37,8 @@
 #include "absl/types/bad_variant_access.h"
 #include "absl/utility/utility.h"
 
+#if !defined(ABSL_HAVE_STD_VARIANT)
+
 namespace absl {
 
 template <class... Types>
@@ -1227,23 +1229,23 @@ using VariantCopyBase = absl::conditional_t<
 // Base that is dependent on whether or not the move-assign can be trivial.
 template <class... T>
 using VariantMoveAssignBase = absl::conditional_t<
-    absl::disjunction<absl::conjunction<std::is_move_assignable<Union<T...>>,
+    absl::disjunction<absl::conjunction<absl::is_move_assignable<Union<T...>>,
                                         std::is_move_constructible<Union<T...>>,
                                         std::is_destructible<Union<T...>>>,
                       absl::negation<absl::conjunction<
                           std::is_move_constructible<T>...,
-                          std::is_move_assignable<T>...>>>::value,
+                          absl::is_move_assignable<T>...>>>::value,
     VariantCopyBase<T...>, VariantMoveAssignBaseNontrivial<T...>>;
 
 // Base that is dependent on whether or not the copy-assign can be trivial.
 template <class... T>
 using VariantCopyAssignBase = absl::conditional_t<
-    absl::disjunction<absl::conjunction<std::is_copy_assignable<Union<T...>>,
+    absl::disjunction<absl::conjunction<absl::is_copy_assignable<Union<T...>>,
                                         std::is_copy_constructible<Union<T...>>,
                                         std::is_destructible<Union<T...>>>,
                       absl::negation<absl::conjunction<
                           std::is_copy_constructible<T>...,
-                          std::is_copy_assignable<T>...>>>::value,
+                          absl::is_copy_assignable<T>...>>>::value,
     VariantMoveAssignBase<T...>, VariantCopyAssignBaseNontrivial<T...>>;
 
 template <class... T>
@@ -1612,4 +1614,5 @@ struct VariantHashBase<Variant,
 }  // namespace variant_internal
 }  // namespace absl
 
+#endif  // !defined(ABSL_HAVE_STD_VARIANT)
 #endif  // ABSL_TYPES_variant_internal_H_

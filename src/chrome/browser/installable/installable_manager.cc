@@ -403,7 +403,7 @@ void InstallableManager::WorkOnTask() {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
                           GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);
   } else if (params.valid_manifest && !valid_manifest_->fetched) {
-    CheckManifestValid();
+    CheckManifestValid(params.check_webapp_manifest_display);
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
   } else if (params.valid_badge_icon && !IsIconFetched(IconPurpose::BADGE)) {
@@ -459,17 +459,20 @@ void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
   WorkOnTask();
 }
 
-void InstallableManager::CheckManifestValid() {
+void InstallableManager::CheckManifestValid(
+    bool check_webapp_manifest_display) {
   DCHECK(!valid_manifest_->fetched);
   DCHECK(!manifest().IsEmpty());
 
-  valid_manifest_->is_valid = IsManifestValidForWebApp(manifest());
+  valid_manifest_->is_valid =
+      IsManifestValidForWebApp(manifest(), check_webapp_manifest_display);
   valid_manifest_->fetched = true;
   WorkOnTask();
 }
 
 bool InstallableManager::IsManifestValidForWebApp(
-    const blink::Manifest& manifest) {
+    const blink::Manifest& manifest,
+    bool check_webapp_manifest_display) {
   if (manifest.IsEmpty()) {
     valid_manifest_->error = MANIFEST_EMPTY;
     return false;
@@ -486,7 +489,8 @@ bool InstallableManager::IsManifestValidForWebApp(
     return false;
   }
 
-  if (manifest.display != blink::kWebDisplayModeStandalone &&
+  if (check_webapp_manifest_display &&
+      manifest.display != blink::kWebDisplayModeStandalone &&
       manifest.display != blink::kWebDisplayModeFullscreen &&
       manifest.display != blink::kWebDisplayModeMinimalUi) {
     valid_manifest_->error = MANIFEST_DISPLAY_NOT_SUPPORTED;

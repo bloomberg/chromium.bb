@@ -42,8 +42,15 @@ namespace base {
 class FilePath;
 }
 
+namespace blink {
+namespace mojom {
+class FileChooserParams;
+}
+}  // namespace blink
+
 namespace content {
 class ColorChooser;
+class FileSelectListener;
 class JavaScriptDialogManager;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -53,7 +60,6 @@ class SiteInstance;
 class WebContentsImpl;
 struct ContextMenuParams;
 struct DropData;
-struct FileChooserParams;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct SecurityStyleExplanations;
@@ -319,6 +325,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
+  // Notifies the embedder that a Portal WebContents was created.
+  virtual void PortalWebContentsCreated(WebContents* portal_web_contents) {}
+
   // Notification that one of the frames in the WebContents is hung. |source| is
   // the WebContents that is hung, and |render_widget_host| is the
   // RenderWidgetHost that, while routing events to it, discovered the hang.
@@ -361,15 +370,20 @@ class CONTENT_EXPORT WebContentsDelegate {
       const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions);
 
   // Called when a file selection is to be done.
+  // This function is responsible for calling listener->FileSelected() or
+  // listener->FileSelectionCanceled().
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
-                              const FileChooserParams& params) {}
+                              std::unique_ptr<FileSelectListener> listener,
+                              const blink::mojom::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
   // chooser in directory-enumeration mode and having the user select the given
   // directory.
+  // This function is responsible for calling listener->FileSelected() or
+  // listener->FileSelectionCanceled().
   virtual void EnumerateDirectory(WebContents* web_contents,
-                                  int request_id,
-                                  const base::FilePath& path) {}
+                                  std::unique_ptr<FileSelectListener> listener,
+                                  const base::FilePath& path);
 
   // Shows a chooser for the user to select a nearby Bluetooth device. The
   // observer must live at least as long as the returned chooser object.
@@ -551,6 +565,9 @@ class CONTENT_EXPORT WebContentsDelegate {
                                                  const url::Origin& origin,
                                                  const GURL& resource_url);
 
+  virtual void SetTopControlsShownRatio(WebContents* web_contents,
+                                        float ratio) {}
+
   // Requests to get browser controls info such as the height of the top/bottom
   // controls, and whether they will shrink the Blink's view size.
   // Note that they are not complete in the sense that there is no API to tell
@@ -558,7 +575,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   // needed by embedder because it's always accompanied by view size change.
   virtual int GetTopControlsHeight() const;
   virtual int GetBottomControlsHeight() const;
-  virtual bool DoBrowserControlsShrinkBlinkSize() const;
+  virtual bool DoBrowserControlsShrinkRendererSize(
+      const WebContents* web_contents) const;
+
+  // Propagates to the browser that gesture scrolling has changed state. This is
+  // used by the browser to assist in controlling the behavior of sliding the
+  // top controls as a result of page gesture scrolling while in tablet mode.
+  virtual void SetTopControlsGestureScrollInProgress(bool in_progress);
 
   // Give WebContentsDelegates the opportunity to adjust the previews state.
   virtual void AdjustPreviewsStateForNavigation(
@@ -586,6 +609,26 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.
   virtual void ExitPictureInPicture();
+
+#if defined(OS_ANDROID)
+  // Updates information to determine whether a user gesture should carryover to
+  // future navigations. This is needed so navigations within a certain
+  // timeframe of a request initiated by a gesture will be treated as if they
+  // were initiated by a gesture too, otherwise the navigation may be blocked.
+  virtual void UpdateUserGestureCarryoverInfo(WebContents* web_contents) {}
+#endif
+
+  // Requests the delegate to replace |old_contents| with |new_contents| in the
+  // container that holds |old_contents|. If the  delegate successfully replaces
+  // |old_contents|, the return parameter passes ownership of |old_contents|.
+  // Otherwise, |new_contents| is returned.
+  // |did_finish_load| is true if WebContentsObserver::DidFinishLoad() has
+  // already been called for |new_contents|.
+  virtual std::unique_ptr<content::WebContents> SwapWebContents(
+      content::WebContents* old_contents,
+      std::unique_ptr<content::WebContents> new_contents,
+      bool did_start_load,
+      bool did_finish_load);
 
  protected:
   virtual ~WebContentsDelegate();

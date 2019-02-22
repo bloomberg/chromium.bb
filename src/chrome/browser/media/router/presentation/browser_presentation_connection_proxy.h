@@ -40,8 +40,6 @@ class BrowserPresentationConnectionProxy
     : public blink::mojom::PresentationConnection,
       public RouteMessageObserver {
  public:
-  using OnMessageCallback = base::OnceCallback<void(bool)>;
-
   // |router|: media router instance not owned by this class;
   // |route_id|: underlying media route. |target_connection_ptr_| sends message
   // to media route with |route_id|;
@@ -57,17 +55,15 @@ class BrowserPresentationConnectionProxy
   ~BrowserPresentationConnectionProxy() override;
 
   // blink::mojom::PresentationConnection implementation
-  void OnMessage(blink::mojom::PresentationConnectionMessagePtr message,
-                 OnMessageCallback on_message_callback) override;
+  void OnMessage(
+      blink::mojom::PresentationConnectionMessagePtr message) override;
 
   // Underlying media route is always connected. Media route class does not
   // support state change.
   void DidChangeState(
       blink::mojom::PresentationConnectionState state) override {}
-
-  // Underlying media route is always connected. Media route class does not
-  // support state change.
-  void RequestClose() override {}
+  void DidClose(
+      blink::mojom::PresentationConnectionCloseReason reason) override;
 
   // RouteMessageObserver implementation.
   void OnMessagesReceived(

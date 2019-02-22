@@ -11,16 +11,15 @@
 // Handling of certificates and keypairs for SSLStreamAdapter's peer mode.
 #include "rtc_base/sslidentity.h"
 
+#include <string.h>  // for strspn
 #include <ctime>
 #include <string>
-#include <utility>
 
-#include "absl/memory/memory.h"
-#include "rtc_base/checks.h"
-#include "rtc_base/logging.h"
-#include "rtc_base/opensslidentity.h"
-#include "rtc_base/sslfingerprint.h"
-#include "rtc_base/third_party/base64/base64.h"
+#include "rtc_base/checks.h"                     // for FatalLogCall, RTC_DC...
+#include "rtc_base/opensslidentity.h"            // for OpenSSLIdentity
+#include "rtc_base/strings/string_builder.h"     // for StringBuilder
+#include "rtc_base/third_party/base64/base64.h"  // for Base64, Base64::DO_P...
+#include "rtc_base/timeutils.h"                  // for TmToSeconds
 
 namespace rtc {
 
@@ -116,7 +115,7 @@ bool SSLIdentity::PemToDer(const std::string& pem_type,
 std::string SSLIdentity::DerToPem(const std::string& pem_type,
                                   const unsigned char* data,
                                   size_t length) {
-  std::stringstream result;
+  rtc::StringBuilder result;
 
   result << "-----BEGIN " << pem_type << "-----\n";
 
@@ -135,7 +134,7 @@ std::string SSLIdentity::DerToPem(const std::string& pem_type,
 
   result << "-----END " << pem_type << "-----\n";
 
-  return result.str();
+  return result.Release();
 }
 
 // static
