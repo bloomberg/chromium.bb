@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -22,11 +23,12 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   bool IsFrameView() const override { return true; }
 };
 
-DEFINE_TYPE_CASTS(FrameView,
-                  EmbeddedContentView,
-                  embedded_content_view,
-                  embedded_content_view->IsFrameView(),
-                  embedded_content_view.IsFrameView());
+template <>
+struct DowncastTraits<FrameView> {
+  static bool AllowFrom(const EmbeddedContentView& embedded_content_view) {
+    return embedded_content_view.IsFrameView();
+  }
+};
 
 }  // namespace blink
 
