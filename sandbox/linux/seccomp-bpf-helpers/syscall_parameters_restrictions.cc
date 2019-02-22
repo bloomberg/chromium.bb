@@ -34,7 +34,13 @@
 #if !defined(OS_NACL_NONSFI)
 #include <sys/ioctl.h>
 #include <sys/ptrace.h>
-#endif
+#if !defined(PTRACE_GET_THREAD_AREA) && defined(OS_LINUX) && \
+    !defined(OS_CHROMEOS)
+// Also include asm/ptrace-abi.h since ptrace.h in older libc (for instance
+// the one in Ubuntu 16.04 LTS) is missing PTRACE_GET_THREAD_AREA.
+#include <asm/ptrace-abi.h>
+#endif  // !PTRACE_GET_THREAD_AREA && OS_LINUX && !OS_CHROMEOS
+#endif  // !OS_NACL_NONSFI
 
 #if defined(OS_ANDROID)
 
