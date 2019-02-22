@@ -1,0 +1,31 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Pin resolved versions in the repo, to reduce trust in the CIPD backend.
+$ResolvedVersions cipd_manifest.versions
+
+# Fully supported plaforms.
+$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
+
+# Platform with best-effort support: we have some binaries cross-compiled for
+# them, but we do not test they work. They also may not have all necessary
+# vpython packages.
+$VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
+$VerifiedPlatform linux-arm64 linux-armv6l
+$VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
+
+# vpython.
+infra/tools/luci/vpython/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
+
+# LUCI editor
+infra/tools/luci/led/${platform} git_revision:364409bad34a43aaaeab8d3d92d8f890fb96d572
+
+# Mac toolchain installer
+infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
+
+# LUCI rpc command line tool
+infra/tools/prpc/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
+
+# LUCI authentication command line tool
+infra/tools/luci-auth/${platform} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
