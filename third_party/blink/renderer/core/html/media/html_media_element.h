@@ -97,6 +97,8 @@ class CORE_EXPORT HTMLMediaElement
   // Returns attributes that should be checked against Trusted Types
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
+  bool IsMediaElement() const override { return true; }
+
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
 
   enum class RecordMetricsBehavior { kDoNotRecord, kDoRecord };

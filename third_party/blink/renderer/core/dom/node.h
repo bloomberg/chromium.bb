@@ -308,6 +308,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual bool IsMediaControlElement() const { return false; }
   virtual bool IsMediaControls() const { return false; }
+  virtual bool IsMediaElement() const { return false; }
   virtual bool IsTextTrackContainer() const { return false; }
   virtual bool IsVTTElement() const { return false; }
   virtual bool IsAttributeNode() const { return false; }

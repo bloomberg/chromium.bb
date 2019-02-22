@@ -1957,6 +1957,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityVideo) {
 
 // TODO(crbug.com/916003): Fix race condition.
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityNoSourceVideo) {
+  RunHtmlTest(FILE_PATH_LITERAL("no-source-video.html"));
+}
+
+// TODO(crbug.com/916003): Fix race condition.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityVideoControls) {
   RunHtmlTest(FILE_PATH_LITERAL("video-controls.html"));
 }

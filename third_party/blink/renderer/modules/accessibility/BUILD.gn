@@ -22,6 +22,8 @@ blink_modules_sources("accessibility") {
     "ax_list_box_option.h",
     "ax_media_controls.cc",
     "ax_media_controls.h",
+    "ax_media_element.cc",
+    "ax_media_element.h",
     "ax_menu_list.cc",
     "ax_menu_list.h",
     "ax_menu_list_option.cc",
