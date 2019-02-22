@@ -674,8 +674,10 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
 
-  if (web_contents->GetMainFrame() && web_contents->GetMainFrame()->GetView())
+  if (web_contents && web_contents->GetMainFrame() &&
+      web_contents->GetMainFrame()->GetView()) {
     focused_ = web_contents->GetMainFrame()->GetView()->HasFocus();
+  }
 
   RebuildAndNotifyMetadataChanged();
 }
