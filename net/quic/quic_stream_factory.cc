@@ -1006,6 +1006,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
+    int retransmittable_on_wire_timeout_milliseconds,
     int max_time_before_crypto_handshake_seconds,
     int max_idle_time_before_crypto_handshake_seconds,
     bool migrate_sessions_on_network_change_v2,
@@ -1056,6 +1057,8 @@ QuicStreamFactory::QuicStreamFactory(
       ping_timeout_(quic::QuicTime::Delta::FromSeconds(quic::kPingTimeoutSecs)),
       reduced_ping_timeout_(
           quic::QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
+      retransmittable_on_wire_timeout_(quic::QuicTime::Delta::FromMilliseconds(
+          retransmittable_on_wire_timeout_milliseconds)),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
@@ -1825,8 +1828,8 @@ int QuicStreamFactory::CreateSession(
       clock_, transport_security_state_, ssl_config_service_,
       std::move(server_info), key.session_key(), require_confirmation,
       migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
-      default_network_, idle_session_migration_period_,
-      max_time_on_non_default_network_,
+      default_network_, retransmittable_on_wire_timeout_,
+      idle_session_migration_period_, max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_write_error_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_, go_away_on_path_degrading_,

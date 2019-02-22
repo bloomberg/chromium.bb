@@ -276,6 +276,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
         test_params_.mark_quic_broken_when_network_blackholes,
         test_params_.quic_idle_connection_timeout_seconds,
         test_params_.quic_reduced_ping_timeout_seconds,
+        test_params_.quic_retransmittable_on_wire_timeout_milliseconds,
         test_params_.quic_max_time_before_crypto_handshake_seconds,
         test_params_.quic_max_idle_time_before_crypto_handshake_seconds,
         test_params_.quic_migrate_sessions_on_network_change_v2,
@@ -2610,7 +2611,7 @@ TEST_P(QuicStreamFactoryTest, MigratedToBlockedSocketAfterProbing) {
 // available):
 // - default network disconnected is delivered: session attempts connection
 //   migration but found not alternate network. Session waits for a new network
-//   comes up in the next kWaitTimeForNewNetworkSecs seonds.
+//   comes up in the next kWaitTimeForNewNetworkSecs seconds.
 // - no new network is connected, migration times out. Session is closed.
 TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
   InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});

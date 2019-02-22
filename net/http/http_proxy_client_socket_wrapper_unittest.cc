@@ -139,6 +139,8 @@ class HttpProxyClientSocketWrapperTest
         /*goaway_sessions_on_ip_change=*/false,
         /*mark_quic_broken_when_network_blackholes=*/false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
+        /*retransmittable_on_wire_timeout_milliseconds=*/
+        kDefaultRetransmittableOnWireTimeoutMillisecs,
         /*max_time_before_crypto_handshake_seconds=*/
         quic::kMaxTimeForCryptoHandshakeSecs,
         /*max_idle_time_before_crypto_handshake_seconds=*/
