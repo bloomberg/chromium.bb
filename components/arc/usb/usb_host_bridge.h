@@ -53,6 +53,9 @@ class ArcUsbHostBridge : public KeyedService,
                          const std::string& package,
                          bool interactive,
                          RequestPermissionCallback callback) override;
+  void OpenDeviceDeprecated(const std::string& guid,
+                            const base::Optional<std::string>& package,
+                            OpenDeviceCallback callback) override;
   void OpenDevice(const std::string& guid,
                   const base::Optional<std::string>& package,
                   OpenDeviceCallback callback) override;
