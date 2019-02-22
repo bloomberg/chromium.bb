@@ -15,6 +15,20 @@ _ATTACH_MAX_RETRIES = 10
 _ATTACH_RETRY_INTERVAL = 1
 
 
+class _MapRemoteDataPathForPackage:
+  """Callable object which remaps /data paths to their package-specific
+     locations."""
+
+  def __init__(self, package_name, package_version):
+    self.data_path = '/data/r/sys/fuchsia.com:{0}:{1}#meta:{0}.cmx'.format(
+        package_name, package_version)
+
+  def __call__(self, path):
+    if path[:5] == '/data':
+      return self.data_path + path[5:]
+    return path
+
+
 class FuchsiaTargetException(Exception):
   def __init__(self, message):
     super(FuchsiaTargetException, self).__init__(message)
@@ -92,44 +106,65 @@ class Target(object):
     return self.GetCommandRunner().RunCommand(command, silent,
                                               timeout_secs=timeout_secs)
 
-  def PutFile(self, source, dest, recursive=False):
+  def EnsurePackageDataDirectoryExists(self, package_name):
+    """Ensures that the specified package's isolated /data directory exists."""
+    return self.RunCommand(
+      ['mkdir','-p',_MapRemoteDataPathForPackage(package_name, 0)('/data')])
+
+  def PutFile(self, source, dest, recursive=False, for_package=None):
     """Copies a file from the local filesystem to the target filesystem.
 
     source: The path of the file being copied.
     dest: The path on the remote filesystem which will be copied to.
-    recursive: If true, performs a recursive copy."""
+    recursive: If true, performs a recursive copy.
+    for_package: If specified, /data in the |dest| is mapped to the package's
+                 isolated /data location.
+    """
 
     assert type(source) is str
-    self.PutFiles([source], dest, recursive)
+    self.PutFiles([source], dest, recursive, for_package)
 
-  def PutFiles(self, sources, dest, recursive=False):
+  def PutFiles(self, sources, dest, recursive=False, for_package=None):
     """Copies files from the local filesystem to the target filesystem.
 
     sources: List of local file paths to copy from, or a single path.
     dest: The path on the remote filesystem which will be copied to.
-    recursive: If true, performs a recursive copy."""
+    recursive: If true, performs a recursive copy.
+    for_package: If specified, /data in the |dest| is mapped to the package's
+                 isolated /data location.
+    """
 
     assert type(sources) is tuple or type(sources) is list
+    if for_package:
+      self.EnsurePackageDataDirectoryExists(for_package)
+      dest = _MapRemoteDataPathForPackage(for_package, 0)(dest)
     logging.debug('copy local:%s => remote:%s' % (sources, dest))
     self.GetCommandRunner().RunScp(sources, dest, remote_cmd.COPY_TO_TARGET,
                                    recursive)
 
-  def GetFile(self, source, dest):
+  def GetFile(self, source, dest, for_package=None):
     """Copies a file from the target filesystem to the local filesystem.
 
     source: The path of the file being copied.
-    dest: The path on the local filesystem which will be copied to."""
+    dest: The path on the local filesystem which will be copied to.
+    for_package: If specified, /data in paths in |sources| is mapped to the
+                 package's isolated /data location.
+    """
     assert type(source) is str
-    self.GetFiles([source], dest)
+    self.GetFiles([source], dest, for_package)
 
-  def GetFiles(self, sources, dest):
+  def GetFiles(self, sources, dest, for_package=None):
     """Copies files from the target filesystem to the local filesystem.
 
     sources: List of remote file paths to copy.
-    dest: The path on the local filesystem which will be copied to."""
+    dest: The path on the local filesystem which will be copied to.
+    for_package: If specified, /data in paths in |sources| is mapped to the
+                 package's isolated /data location.
+    """
     assert type(sources) is tuple or type(sources) is list
     self._AssertIsStarted()
-    host, port = self._GetEndpoint()
+    if for_package:
+      sources = map(_MapRemoteDataPathForPackage(for_package, 0), sources)
     logging.debug('copy remote:%s => local:%s' % (sources, dest))
     return self.GetCommandRunner().RunScp(sources, dest,
                                           remote_cmd.COPY_FROM_TARGET)

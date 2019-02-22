@@ -1,6 +1,6 @@
 {
   "features": [
-      "deprecated-global-persistent-storage",
+      "isolated-persistent-storage",
       "root-ssl-certificates",
       "system-temp",
       "vulkan" ],
