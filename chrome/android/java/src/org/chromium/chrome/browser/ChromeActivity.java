@@ -1389,7 +1389,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
         }
 
-        mTabThemeColorProvider.destroy();
+        if (mTabThemeColorProvider != null) {
+            mTabThemeColorProvider.destroy();
+            mTabThemeColorProvider = null;
+        }
+
         mActivityTabProvider.destroy();
 
         mComponent = null;
