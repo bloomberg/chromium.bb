@@ -265,8 +265,4 @@ specific_include_rules = {
     # The following is used to build FakeSigninManager instances for testing.
     "+components/signin/core/browser/fake_signin_manager.h",
   ],
-  # To share values of UMA enums between product code and tests.
-  "translate_manager_browsertest.cc": [
-    "+services/network/initiator_lock_compatibility.h",
-  ],
 }
