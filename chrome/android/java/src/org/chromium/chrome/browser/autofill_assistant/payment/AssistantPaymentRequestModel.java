@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.payment;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -20,8 +21,12 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AssistantPaymentRequestOptions> OPTIONS =
             new WritableObjectPropertyKey<>();
 
+    /** The web contents the payment request is associated to. */
+    public static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
+            new WritableObjectPropertyKey<>();
+
     public AssistantPaymentRequestModel() {
-        super(DELEGATE, OPTIONS);
+        super(DELEGATE, OPTIONS, WEB_CONTENTS);
     }
 
     @CalledByNative
@@ -32,6 +37,11 @@ public class AssistantPaymentRequestModel extends PropertyModel {
                 new AssistantPaymentRequestOptions(requestPayerName, requestPayerEmail,
                         requestPayerPhone, requestShipping, supportedBasicCardNetworks,
                         defaultEmail));
+    }
+
+    @CalledByNative
+    private void setWebContents(WebContents webContents) {
+        set(WEB_CONTENTS, webContents);
     }
 
     @CalledByNative

@@ -29,20 +29,32 @@ namespace autofill_assistant {
 // changes to the UI model.
 class UiControllerAndroid : public UiController {
  public:
+  static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
+      content::WebContents* web_contents);
+
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
   // this instance.
   //
   // Pointer to |ui_delegate| must remain valid for the lifetime of this
   // instance or until WillShutdown is called.
-  UiControllerAndroid(content::WebContents* web_contents,
-                      Client* client,
-                      UiDelegate* ui_delegate);
+  UiControllerAndroid(JNIEnv* env,
+                      const base::android::JavaRef<jobject>& jactivity);
   ~UiControllerAndroid() override;
+
+  // Attaches the UI to the given client, its web contents and delegate.
+  //
+  // |web_contents| and |client| must remain valid for the lifetime of this
+  // instance or until Attach() is called again, with different pointers.
+  //
+  // |ui_delegate| must remain valid for the lifetime of this instance or until
+  // either Attach() or WillShutdown() are called.
+  void Attach(content::WebContents* web_contents,
+              Client* client,
+              UiDelegate* ui_delegate);
 
   // Called by ClientAndroid.
   void ShowOnboarding(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& on_accept);
-  void Destroy();
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -77,7 +89,6 @@ class UiControllerAndroid : public UiController {
   void Stop(JNIEnv* env,
             const base::android::JavaParamRef<jobject>& obj,
             int reason);
-  void DestroyUI(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnFatalError(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& message,
@@ -87,11 +98,11 @@ class UiControllerAndroid : public UiController {
       const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
-  Client* const client_;
+  // A pointer to the client. nullptr until Attach() is called.
+  Client* client_ = nullptr;
 
-  // A pointer to the Autofill Assistant Controller. It can become nullptr after
-  // WillShutdown() has been called.
-  UiDelegate* ui_delegate_;
+  // A pointer to the ui_delegate. nullptr until Attach() is called.
+  UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
@@ -113,6 +124,7 @@ class UiControllerAndroid : public UiController {
   void SetProgressPulsingEnabled(bool enabled);
   void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
+  void DestroySelf();
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.

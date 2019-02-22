@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.PostTask;
@@ -12,6 +14,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -28,51 +31,82 @@ import org.chromium.content_public.browser.WebContents;
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
 class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
-    private static final int GRACEFUL_SHUTDOWN_DELAY_MS = 5_000;
-
     private long mNativeUiController;
 
     private final ChromeActivity mActivity;
     private final AssistantCoordinator mCoordinator;
     private final ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
+    private WebContents mWebContents;
+    private SnackbarController mSnackbarController;
 
+    /**
+     * Finds an activity to which a AA UI can be added.
+     *
+     * <p>The activity must not already have an AA UI installed.
+     */
     @CalledByNative
-    private static AutofillAssistantUiController createAndStartUi(
-            WebContents webContents, long nativeUiController) {
-        return new AutofillAssistantUiController(
-                ChromeActivity.fromWebContents(webContents), webContents, nativeUiController);
+    @Nullable
+    private static ChromeActivity findAppropriateActivity(WebContents webContents) {
+        ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+        if (activity != null && AssistantCoordinator.isActive(activity)) {
+            return null;
+        }
+
+        return activity;
     }
 
-    private AutofillAssistantUiController(
-            ChromeActivity activity, WebContents webContents, long nativeUiController) {
+    @CalledByNative
+    private static AutofillAssistantUiController create(
+            ChromeActivity activity, long nativeUiController) {
+        assert activity != null;
+        return new AutofillAssistantUiController(activity, nativeUiController);
+    }
+
+    private AutofillAssistantUiController(ChromeActivity activity, long nativeUiController) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, webContents, this);
+        mCoordinator = new AssistantCoordinator(activity, this);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
                     protected void onObservingDifferentTab(Tab tab) {
-                        // A null tab indicates that there's no selected tab; We're in the process
-                        // of selecting a new tab. TODO(crbug/925947): Hide AssistantCoordinator
-                        // instead of destroying it, in case the tab that's eventually selected also
-                        // has AutofillAssistant enabled or is the same tab.
-                        if (tab == null || tab.getWebContents() != webContents) {
-                            safeNativeDestroyUI();
+                        if (mWebContents == null) return;
+
+                        // Get rid of any undo snackbars right away before switching tabs, to avoid
+                        // confusion.
+                        dismissSnackbar();
+
+                        AssistantModel model = getModel();
+                        if (tab == null) {
+                            // A null tab indicates that there's no selected tab; Most likely, we're
+                            // in the process of selecting a new tab. Hide the UI for possible reuse
+                            // later.
+                            getModel().setVisible(false);
+                        } else if (tab.getWebContents() == mWebContents) {
+                            // The original tab was re-selected. Show it again
+                            model.setVisible(true);
+                        } else {
+                            // A new tab was selected. If Autofill Assistant is running on it,
+                            // attach the UI to that other instance, otherwise destroy the UI.
+                            AutofillAssistantClient.fromWebContents(mWebContents)
+                                    .transferUiTo(tab.getWebContents());
                         }
                     }
 
                     @Override
                     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                        if (!isAttached && tab.getWebContents() == webContents) {
-                            safeNativeDestroyUI();
+                        if (mWebContents == null) return;
+
+                        if (!isAttached && tab.getWebContents() == mWebContents) {
+                            AutofillAssistantClient.fromWebContents(mWebContents).destroyUi();
                         }
                     }
                 };
 
-        initForCustomTab(activity, webContents);
+        initForCustomTab(activity);
     }
 
-    private void initForCustomTab(ChromeActivity activity, WebContents webContents) {
+    private void initForCustomTab(ChromeActivity activity) {
         if (!(activity instanceof CustomTabActivity)) {
             return;
         }
@@ -83,7 +117,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 // Shutdown the Autofill Assistant if the user switches to another tab.
-                if (tab.getWebContents() != webContents) {
+                if (tab.getWebContents() != mWebContents) {
                     currentTabModel.removeObserver(this);
                     safeNativeOnFatalError(activity.getString(R.string.autofill_assistant_give_up),
                             DropOutReason.TAB_CHANGED);
@@ -109,6 +143,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     // is to avoid boilerplate.
 
     @CalledByNative
+    private void setWebContents(@Nullable WebContents webContents) {
+        mWebContents = webContents;
+    }
+
+    @CalledByNative
     private AssistantModel getModel() {
         return mCoordinator.getModel();
     }
@@ -116,19 +155,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     @CalledByNative
     private void clearNativePtr() {
         mNativeUiController = 0;
-    }
-
-    /** Destroys this instance and {@link AssistantCoordinator}. */
-    @CalledByNative
-    private void destroy(boolean delayed) {
         mActivityTabObserver.destroy();
-
-        if (delayed) {
-            // Give some time to the user to read any error message.
-            PostTask.postDelayedTask(
-                    UiThreadTaskTraits.DEFAULT, mCoordinator::destroy, GRACEFUL_SHUTDOWN_DELAY_MS);
-            return;
-        }
         mCoordinator.destroy();
     }
 
@@ -160,7 +187,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     @CalledByNative
     private void showSnackbar(String message) {
-        AssistantSnackbar.show(mActivity, message, this::safeSnackbarResult);
+        mSnackbarController = AssistantSnackbar.show(mActivity, message, this::safeSnackbarResult);
+    }
+
+    private void dismissSnackbar() {
+        if (mSnackbarController != null) {
+            mActivity.getSnackbarManager().dismissSnackbars(mSnackbarController);
+            mSnackbarController = null;
+        }
     }
 
     // Native methods.
@@ -173,11 +207,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         if (mNativeUiController != 0) nativeStop(mNativeUiController, reason);
     }
     private native void nativeStop(long nativeUiControllerAndroid, @DropOutReason int reason);
-
-    private void safeNativeDestroyUI() {
-        if (mNativeUiController != 0) nativeDestroyUI(mNativeUiController);
-    }
-    private native void nativeDestroyUI(long nativeUiControllerAndroid);
 
     private void safeNativeOnFatalError(String message, @DropOutReason int reason) {
         if (mNativeUiController != 0) nativeOnFatalError(mNativeUiController, message, reason);

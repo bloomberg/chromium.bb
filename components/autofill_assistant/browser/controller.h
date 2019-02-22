@@ -48,6 +48,9 @@ class Controller : public ScriptExecutorDelegate,
   Controller(content::WebContents* web_contents, Client* client);
   ~Controller() override;
 
+  // Returns true if the controller is in a state where UI is necessary.
+  bool NeedsUI() const;
+
   // Called when autofill assistant can start executing scripts.
   void Start(const GURL& initialUrl,
              const std::map<std::string, std::string>& parameters);

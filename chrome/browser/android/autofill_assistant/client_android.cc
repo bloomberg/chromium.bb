@@ -120,6 +120,38 @@ void ClientAndroid::Start(JNIEnv* env,
   controller_->Start(initial_url, parameters);
 }
 
+void ClientAndroid::DestroyUI(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  DestroyUI();
+}
+
+void ClientAndroid::TransferUITo(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jobject>& jother_web_contents) {
+  if (!ui_controller_android_)
+    return;
+
+  auto ui_ptr = std::move(ui_controller_android_);
+  // From this point on, the UIController, in ui_ptr, is either transferred or
+  // deleted.
+
+  if (!jother_web_contents)
+    return;
+
+  auto* other_web_contents =
+      content::WebContents::FromJavaWebContents(jother_web_contents);
+  DCHECK_NE(other_web_contents, web_contents_);
+
+  ClientAndroid* other_client =
+      ClientAndroid::FromWebContents(other_web_contents);
+  if (!other_client || !other_client->NeedsUI())
+    return;
+
+  other_client->SetUI(std::move(ui_ptr));
+}
+
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
@@ -147,16 +179,14 @@ void ClientAndroid::ShowUI() {
     // onboarding.
   }
   if (!ui_controller_android_) {
-    ui_controller_android_ = std::make_unique<UiControllerAndroid>(
-        web_contents_, /* client= */ this, controller_.get());
+    std::unique_ptr<UiControllerAndroid> ui_ptr =
+        UiControllerAndroid::CreateFromWebContents(web_contents_);
+    if (ui_ptr)
+      SetUI(std::move(ui_ptr));
   }
 }
 
 void ClientAndroid::DestroyUI() {
-  if (!ui_controller_android_)
-    return;
-
-  ui_controller_android_->Destroy();
   ui_controller_android_.reset();
 }
 
@@ -221,7 +251,6 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
     // done.
     return;
   }
-  ui_controller_android_.reset();
 
   Metrics::RecordDropOut(reason);
   controller_.reset();
@@ -248,6 +277,16 @@ void ClientAndroid::CreateController() {
     return;
   }
   controller_ = std::make_unique<Controller>(web_contents_, /* client= */ this);
+}
+
+bool ClientAndroid::NeedsUI() {
+  return !ui_controller_android_ && controller_ && controller_->NeedsUI();
+}
+
+void ClientAndroid::SetUI(
+    std::unique_ptr<UiControllerAndroid> ui_controller_android) {
+  ui_controller_android_ = std::move(ui_controller_android);
+  ui_controller_android_->Attach(web_contents_, this, controller_.get());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid);

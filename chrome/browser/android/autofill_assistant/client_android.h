@@ -48,6 +48,13 @@ class ClientAndroid : public Client,
              const base::android::JavaParamRef<jstring>& jinitial_url,
              const base::android::JavaParamRef<jobjectArray>& parameterNames,
              const base::android::JavaParamRef<jobjectArray>& parameterValues);
+  void DestroyUI(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& jcaller);
+  void TransferUITo(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jother_web_contents);
+
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -79,6 +86,8 @@ class ClientAndroid : public Client,
 
   explicit ClientAndroid(content::WebContents* web_contents);
   void CreateController();
+  bool NeedsUI();
+  void SetUI(std::unique_ptr<UiControllerAndroid> ui_controller_android);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
