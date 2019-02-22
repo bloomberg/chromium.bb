@@ -39,12 +39,15 @@ void ElementArea::SetFromProto(const ElementAreaProto& proto) {
   for (const auto& rectangle_proto : proto.rectangles()) {
     rectangles_.emplace_back();
     Rectangle& rectangle = rectangles_.back();
+    rectangle.full_width = rectangle_proto.full_width();
+    DVLOG(3) << "Touchable Rectangle"
+             << (rectangle.full_width ? " (full_width)" : "") << ":";
     for (const auto& element_proto : rectangle_proto.elements()) {
       rectangle.positions.emplace_back();
       ElementPosition& position = rectangle.positions.back();
       position.selector = Selector(element_proto);
+      DVLOG(3) << "  " << position.selector;
     }
-    rectangle.full_width = rectangle_proto.full_width();
   }
   ReportUpdate();
 
