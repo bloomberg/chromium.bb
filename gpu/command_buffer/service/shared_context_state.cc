@@ -74,6 +74,8 @@ void SharedContextState::InitializeGrContext(
     GrContextOptions::PersistentCache* cache,
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
+  progress_reporter_ = progress_reporter;
+
   if (!use_vulkan_gr_context_) {
     DCHECK(context_->IsCurrent(nullptr));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(

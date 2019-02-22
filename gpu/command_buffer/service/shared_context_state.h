@@ -79,6 +79,7 @@ class GPU_GLES2_EXPORT SharedContextState
   viz::VulkanContextProvider* vk_context_provider() {
     return vk_context_provider_;
   }
+  gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
   gles2::ContextState* context_state() const { return context_state_.get(); }
@@ -143,6 +144,7 @@ class GPU_GLES2_EXPORT SharedContextState
   // raster decoders and display compositor share this context_state_.
   std::unique_ptr<gles2::ContextState> context_state_;
 
+  gl::ProgressReporter* progress_reporter_ = nullptr;
   sk_sp<GrContext> owned_gr_context_;
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
   size_t glyph_cache_max_texture_bytes_ = 0u;
