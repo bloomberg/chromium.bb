@@ -171,7 +171,7 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   // the Lite Page mechanism should redirect to the original URL. Either way,
   // set the allowed PreviewsState.
   if (IsLitePageRedirectPreviewURL(url)) {
-    return previews_state = content::LITE_PAGE_REDIRECT_ON;
+    return content::LITE_PAGE_REDIRECT_ON;
   }
 
   // Record whether the hint cache has a matching entry for this pre-commit URL.
