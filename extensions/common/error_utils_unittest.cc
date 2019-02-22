@@ -50,15 +50,24 @@ TEST(ErrorUtils, FormatErrorMessage_Death) {
   } cases[] = {{"Hello * Bye * *", "arg1", "arg2", "More placeholders"},
                {"Hello * Bye", "arg1", "arg2", "Fewer placeholders"}};
 
+  auto get_death_regex = [](const char* death_message_regex) {
+// String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+    return "";
+#else
+    return death_message_regex;
+#endif
+  };
+
   for (const auto& test_case : cases) {
     SCOPED_TRACE(test_case.format);
 
     EXPECT_DEATH(ErrorUtils::FormatErrorMessage(test_case.format, test_case.s1,
                                                 test_case.s2),
-                 test_case.death_message_regex);
+                 get_death_regex(test_case.death_message_regex));
     EXPECT_DEATH(ErrorUtils::FormatErrorMessageUTF16(
                      test_case.format, test_case.s1, test_case.s2),
-                 test_case.death_message_regex);
+                 get_death_regex(test_case.death_message_regex));
   }
 }
 #endif  // defined(GTEST_HAS_DEATH_TEST)
