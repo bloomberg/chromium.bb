@@ -98,7 +98,7 @@ class MinidumpLocation {
       (MinidumpGenerator::UniqueNameInDirectory(dump_path, &next_minidump_id));
 
     strlcpy(minidump_id_, next_minidump_id.c_str(), sizeof(minidump_id_));
-  };
+  }
 
   const char *GetPath() { return minidump_dir_path_; }
   const char *GetID() { return minidump_id_; }
@@ -111,7 +111,7 @@ class MinidumpLocation {
 //=============================================================================
 class Inspector {
  public:
-  Inspector() {};
+  Inspector() {}
 
   // given a bootstrap service name, receives mach messages
   // from a crashed process, then inspects it, creates a minidump file

@@ -236,7 +236,7 @@ class MachMessage {
 //==============================================================================
 class MachReceiveMessage : public MachMessage {
  public:
-  MachReceiveMessage() : MachMessage() {};
+  MachReceiveMessage() : MachMessage() {}
 };
 
 //==============================================================================

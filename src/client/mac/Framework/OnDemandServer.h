@@ -127,7 +127,7 @@ class OnDemandServer {
   // This is the port we need to send a mach message to after calling
   // LaunchOnDemand().  Sending a message causing an immediate launch
   // of the server
-  mach_port_t GetServicePort() { return service_port_; };
+  mach_port_t GetServicePort() { return service_port_; }
 
  private:
   // Disallow copy constructor

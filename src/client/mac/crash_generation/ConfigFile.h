@@ -44,10 +44,10 @@ class ConfigFile {
     config_file_ = -1;
     config_file_path_[0] = 0;
     has_created_file_ = false;
-  };
+  }
 
   ~ConfigFile() {
-  };
+  }
 
   void WriteFile(const char* directory,
                  const SimpleStringDictionary *configurationParameters,
