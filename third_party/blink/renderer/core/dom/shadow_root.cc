@@ -167,8 +167,7 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
   if (!insertion_point.isConnected())
     return kInsertionDone;
 
-  if (HasAdoptedStyleSheets())
-    GetDocument().GetStyleEngine().SetNeedsActiveStyleUpdate(*this);
+  GetDocument().GetStyleEngine().ShadowRootInsertedToDocument(*this);
 
   GetDocument().GetSlotAssignmentEngine().Connected(*this);
 

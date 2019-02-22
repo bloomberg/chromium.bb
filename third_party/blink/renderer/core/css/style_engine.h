@@ -217,6 +217,7 @@ class CORE_EXPORT StyleEngine final
 
   void ResetCSSFeatureFlags(const RuleFeatureSet&);
 
+  void ShadowRootInsertedToDocument(ShadowRoot&);
   void ShadowRootRemovedFromDocument(ShadowRoot*);
   void AddTreeBoundaryCrossingScope(const TreeScope&);
   const TreeOrderedList& TreeBoundaryCrossingScopes() const {
