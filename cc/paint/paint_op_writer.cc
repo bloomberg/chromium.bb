@@ -676,7 +676,7 @@ void PaintOpWriter::Write(const RecordPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const MergePaintFilter& filter) {
-  WriteSimple(filter.input_count());
+  WriteSize(filter.input_count());
   for (size_t i = 0; i < filter.input_count(); ++i)
     Write(filter.input_at(i));
 }
