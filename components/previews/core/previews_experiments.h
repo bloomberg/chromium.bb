@@ -123,9 +123,6 @@ size_t LitePageRedirectPreviewMaxNavigationRestarts();
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
-// The experimental config to send to the previews server.
-std::string LitePageRedirectPreviewExperiment();
-
 // Returns true if we should only report metrics and not trigger when the Lite
 // Page Redirect preview is enabled.
 bool IsInLitePageRedirectControl();
