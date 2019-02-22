@@ -136,22 +136,7 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     EXPECT_EQ(change_observer.captured_event().title, kTitle);
   }
 
-  chromium::web::CreateContextParams2 BuildCreateContextParams() {
-    zx::channel client_channel;
-    zx::channel server_channel;
-    zx_status_t result =
-        zx::channel::create(0, &client_channel, &server_channel);
-    ZX_CHECK(result == ZX_OK, result) << "zx_channel_create()";
-    result = fdio_service_connect("/svc/.", server_channel.release());
-    ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
-
-    chromium::web::CreateContextParams2 output;
-    output.set_service_directory(std::move(client_channel));
-    return output;
-  }
-
-  // TODO(crbug.com/931831): Remove this method once the transition is complete.
-  chromium::web::CreateContextParams BuildDeprecatedCreateContextParams() {
+  chromium::web::CreateContextParams BuildCreateContextParams() {
     zx::channel client_channel;
     zx::channel server_channel;
     zx_status_t result =
@@ -214,18 +199,7 @@ class ContextProviderImplTest : public base::MultiProcessTest {
 TEST_F(ContextProviderImplTest, LaunchContext) {
   // Connect to a new context process.
   fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams2 create_params =
-      BuildCreateContextParams();
-  provider_ptr_->Create2(std::move(create_params), context.NewRequest());
-  CheckContextResponsive(&context);
-}
-
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-TEST_F(ContextProviderImplTest, DeprecatedLaunchContext) {
-  // Connect to a new context process.
-  fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams create_params =
-      BuildDeprecatedCreateContextParams();
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
   provider_ptr_->Create(std::move(create_params), context.NewRequest());
   CheckContextResponsive(&context);
 }
@@ -235,13 +209,13 @@ TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
   chromium::web::ContextProviderPtr provider_1_ptr;
   provider_->Bind(provider_1_ptr.NewRequest());
   chromium::web::ContextPtr context_1;
-  provider_1_ptr->Create2(BuildCreateContextParams(), context_1.NewRequest());
+  provider_1_ptr->Create(BuildCreateContextParams(), context_1.NewRequest());
 
   // Do the same on another Provider connection.
   chromium::web::ContextProviderPtr provider_2_ptr;
   provider_->Bind(provider_2_ptr.NewRequest());
   chromium::web::ContextPtr context_2;
-  provider_2_ptr->Create2(BuildCreateContextParams(), context_2.NewRequest());
+  provider_2_ptr->Create(BuildCreateContextParams(), context_2.NewRequest());
 
   CheckContextResponsive(&context_1);
   CheckContextResponsive(&context_2);
@@ -249,7 +223,7 @@ TEST_F(ContextProviderImplTest, MultipleConcurrentClients) {
   // Ensure that the initial ContextProvider connection is still usable, by
   // creating and verifying another Context from it.
   chromium::web::ContextPtr context_3;
-  provider_2_ptr->Create2(BuildCreateContextParams(), context_3.NewRequest());
+  provider_2_ptr->Create(BuildCreateContextParams(), context_3.NewRequest());
   CheckContextResponsive(&context_3);
 }
 
@@ -258,40 +232,7 @@ TEST_F(ContextProviderImplTest, WithProfileDir) {
 
   // Connect to a new context process.
   fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams2 create_params =
-      BuildCreateContextParams();
-
-  // Setup data dir.
-  EXPECT_TRUE(profile_temp_dir.CreateUniqueTempDir());
-  ASSERT_EQ(
-      base::WriteFile(profile_temp_dir.GetPath().AppendASCII(kTestDataFileIn),
-                      nullptr, 0),
-      0);
-
-  // Pass a handle data dir to the context.
-  create_params.set_data_directory(
-      zx::channel(base::fuchsia::GetHandleFromFile(
-                      base::File(profile_temp_dir.GetPath(),
-                                 base::File::FLAG_OPEN | base::File::FLAG_READ))
-                      .release()));
-
-  provider_ptr_->Create2(std::move(create_params), context.NewRequest());
-
-  CheckContextResponsive(&context);
-
-  // Verify that the context process can write to the data dir.
-  EXPECT_TRUE(base::PathExists(
-      profile_temp_dir.GetPath().AppendASCII(kTestDataFileOut)));
-}
-
-// TODO(crbug.com/931831): Remove this test once the transition is complete.
-TEST_F(ContextProviderImplTest, DeprecatedWithProfileDir) {
-  base::ScopedTempDir profile_temp_dir;
-
-  // Connect to a new context process.
-  fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams create_params =
-      BuildDeprecatedCreateContextParams();
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
 
   // Setup data dir.
   EXPECT_TRUE(profile_temp_dir.CreateUniqueTempDir());
@@ -321,17 +262,16 @@ TEST_F(ContextProviderImplTest, FailsDataDirectoryIsFile) {
 
   // Connect to a new context process.
   fidl::InterfacePtr<chromium::web::Context> context;
-  chromium::web::CreateContextParams2 create_params =
-      BuildCreateContextParams();
+  chromium::web::CreateContextParams create_params = BuildCreateContextParams();
 
   // Pass in a handle to a file instead of a directory.
   CHECK(base::CreateTemporaryFile(&temp_file_path));
   base::File temp_file(temp_file_path,
                        base::File::FLAG_OPEN | base::File::FLAG_READ);
-  create_params.set_data_directory(zx::channel(
-      base::fuchsia::GetHandleFromFile(std::move(temp_file)).release()));
+  create_params.data_directory.reset(
+      base::fuchsia::GetHandleFromFile(std::move(temp_file)).release());
 
-  provider_ptr_->Create2(std::move(create_params), context.NewRequest());
+  provider_ptr_->Create(std::move(create_params), context.NewRequest());
 
   CheckContextUnresponsive(&context);
 }
@@ -361,7 +301,7 @@ TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
 
   // Create a Context and verify that it is functional.
   chromium::web::ContextPtr context;
-  provider->Create2(BuildCreateContextParams(), context.NewRequest());
+  provider->Create(BuildCreateContextParams(), context.NewRequest());
   CheckContextResponsive(&context);
 
   // Verify that there is at least one job under our default job.
