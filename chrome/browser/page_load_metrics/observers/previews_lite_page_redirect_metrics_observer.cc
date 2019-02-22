@@ -36,7 +36,7 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
 
   previews::PreviewsUserData::ServerLitePageInfo* info =
       previews_data->server_lite_page_info();
-  if (!info)
+  if (!info || info->status == previews::ServerLitePageStatus::kUnknown)
     return STOP_OBSERVING;
 
   // Past this point, we know this navigation is a preview or at least attempted
