@@ -49,6 +49,8 @@ abstract class AnswerText {
     AnswerText(Context context) {
         mContext = context;
         mDensity = context.getResources().getDisplayMetrics().density;
+        mText = new SpannableStringBuilder();
+        mMaxLines = 1;
     }
 
     /**
@@ -58,16 +60,14 @@ abstract class AnswerText {
      * @param delegate Callback converting AnswerTextType to an array of TextAppearanceSpan objects.
      */
     protected void build(SuggestionAnswer.ImageLine line) {
-        mText = new SpannableStringBuilder();
-        mMaxLines = 1;
-
         // This method also computes height of the entire text span.
         // Ensure we're not rebuilding or appending once AnswerText has been constructed.
         assert mHeightSp == 0;
 
         List<SuggestionAnswer.TextField> textFields = line.getTextFields();
         for (int i = 0; i < textFields.size(); i++) {
-            appendAndStyleText(textFields.get(i));
+            appendAndStyleText(
+                    textFields.get(i).getText(), getAppearanceForText(textFields.get(i).getType()));
             if (textFields.get(i).hasNumLines()) {
                 mMaxLines = Math.max(mMaxLines, Math.min(3, textFields.get(i).getNumLines()));
             }
@@ -75,22 +75,24 @@ abstract class AnswerText {
 
         if (line.hasAdditionalText()) {
             mText.append("  ");
-            appendAndStyleText(line.getAdditionalText());
+            appendAndStyleText(line.getAdditionalText().getText(),
+                    getAppearanceForText(line.getAdditionalText().getType()));
         }
         if (line.hasStatusText()) {
             mText.append("  ");
-            appendAndStyleText(line.getStatusText());
+            appendAndStyleText(line.getStatusText().getText(),
+                    getAppearanceForText(line.getStatusText().getType()));
         }
     }
 
     /**
      * Append the styled text in textField to the supplied builder.
      *
-     * @param textField The text field (with text and type) to append.
+     * @param text Text to be appended.
+     * @param styles Styles to be applied to appended text.
      */
     @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
-    private void appendAndStyleText(SuggestionAnswer.TextField textField) {
-        MetricAffectingSpan[] styles = getAppearanceForText(textField.getType());
+    protected void appendAndStyleText(String text, MetricAffectingSpan[] styles) {
         // Determine the maximum height of the TextAppearanceSpans that are applied for this field.
         for (MetricAffectingSpan style : styles) {
             if (!(style instanceof TextAppearanceSpan)) continue;
@@ -100,7 +102,7 @@ abstract class AnswerText {
         }
 
         // Unescape HTML entities (e.g. "&quot;", "&gt;").
-        String text = Html.fromHtml(textField.getText()).toString();
+        text = Html.fromHtml(text).toString();
 
         // Append as HTML (answer responses contain simple markup).
         int start = mText.length();

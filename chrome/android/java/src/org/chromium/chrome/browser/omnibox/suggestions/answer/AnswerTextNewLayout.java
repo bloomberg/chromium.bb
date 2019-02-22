@@ -11,6 +11,8 @@ import android.text.style.TextAppearanceSpan;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.components.omnibox.AnswerTextType;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
@@ -27,17 +29,24 @@ class AnswerTextNewLayout extends AnswerText {
      * content.
      *
      * @param context Current context.
-     * @param answer Specifies answer to be converted.
+     * @param suggestion Suggestion to be converted.
+     * @param query Query that triggered the suggestion.
      * @return array of AnswerText elements to use to construct suggestion item.
      */
-    static AnswerText[] from(Context context, SuggestionAnswer answer) {
+    static AnswerText[] from(Context context, OmniboxSuggestion suggestion, String query) {
         AnswerText[] result = new AnswerText[2];
 
-        if (answer.getType() == AnswerType.DICTIONARY) {
+        SuggestionAnswer answer = suggestion.getAnswer();
+        if (answer == null) {
+            // As an exception, we handle calculation suggestions, too, considering them an Answer,
+            // even if these are not one.
+            assert suggestion.getType() == OmniboxSuggestionType.CALCULATOR;
+            result[0] = new AnswerTextNewLayout(context, suggestion.getFillIntoEdit(), true);
+            result[1] = new AnswerTextNewLayout(context, query, false);
+        } else if (answer.getType() == AnswerType.DICTIONARY) {
             result[0] = new AnswerTextNewLayout(context, answer.getFirstLine(), true);
             result[1] = new AnswerTextNewLayout(context, answer.getSecondLine(), false);
             result[0].mMaxLines = 1;
-
         } else {
             result[0] = new AnswerTextNewLayout(context, answer.getSecondLine(), true);
             result[1] = new AnswerTextNewLayout(context, answer.getFirstLine(), false);
@@ -48,16 +57,28 @@ class AnswerTextNewLayout extends AnswerText {
     }
 
     /**
-     * Create new instance of AnswerTextNewLayout.
+     * Create new instance of AnswerTextNewLayout for answer suggestions.
      *
      * @param context Current context.
      * @param line Suggestion line that will be converted to Answer Text.
-     * @param isAnswerLine True, whether this instance holds answer.
+     * @param isAnswerLine True, if this instance holds answer.
      */
     AnswerTextNewLayout(Context context, SuggestionAnswer.ImageLine line, boolean isAnswerLine) {
         super(context);
         mIsAnswer = isAnswerLine;
         build(line);
+    }
+
+    /**
+     * Create new instance of AnswerTextNewLayout for non-answer suggestions.
+     * @param context Current context.
+     * @param text Suggestion text.
+     * @param isAnswerLine True, if this instance holds answer.
+     */
+    AnswerTextNewLayout(Context context, String text, boolean isAnswerLine) {
+        super(context);
+        mIsAnswer = isAnswerLine;
+        appendAndStyleText(text, getAppearanceForText(AnswerTextType.SUGGESTION));
     }
 
     /**

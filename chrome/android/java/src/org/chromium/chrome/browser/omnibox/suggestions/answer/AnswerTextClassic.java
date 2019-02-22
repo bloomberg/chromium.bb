@@ -13,6 +13,8 @@ import android.text.style.TextAppearanceSpan;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.components.omnibox.AnswerTextType;
 import org.chromium.components.omnibox.SuggestionAnswer;
 
@@ -27,14 +29,22 @@ class AnswerTextClassic extends AnswerText {
      * content.
      *
      * @param context Current context.
-     * @param answer Specifies answer to be converted.
+     * @param suggestion Suggestion to be converted.
      * @return array of AnswerText elements to use to construct suggestion item.
      */
-    static AnswerText[] from(Context context, SuggestionAnswer answer) {
+    static AnswerText[] from(Context context, OmniboxSuggestion suggestion) {
         AnswerText[] result = new AnswerText[2];
-
-        result[0] = new AnswerTextClassic(context, answer.getFirstLine());
-        result[1] = new AnswerTextClassic(context, answer.getSecondLine());
+        SuggestionAnswer answer = suggestion.getAnswer();
+        if (answer == null) {
+            // As an exception, we handle calculation suggestions, too, considering them an Answer,
+            // even if these are not one.
+            assert suggestion.getType() == OmniboxSuggestionType.CALCULATOR;
+            result[0] = new AnswerTextClassic(context, suggestion.getDisplayText());
+            result[1] = null;
+        } else {
+            result[0] = new AnswerTextClassic(context, answer.getFirstLine());
+            result[1] = new AnswerTextClassic(context, answer.getSecondLine());
+        }
 
         // Trim number of presented query lines.
         result[0].mMaxLines = 1;
@@ -43,7 +53,7 @@ class AnswerTextClassic extends AnswerText {
     }
 
     /**
-     * Create new instance of AnswerTextClassic.
+     * Create new instance of AnswerTextClassic for answer suggestions.
      *
      * @param context Current context.
      * @param line Suggestion line that will be converted to Answer Text.
@@ -51,6 +61,17 @@ class AnswerTextClassic extends AnswerText {
     AnswerTextClassic(Context context, SuggestionAnswer.ImageLine line) {
         super(context);
         build(line);
+    }
+
+    /**
+     * Create new instance of AnswerTextClassic for non-answer suggestions.
+     *
+     * @param context Current context.
+     * @param text Suggestion text.
+     */
+    AnswerTextClassic(Context context, String text) {
+        super(context);
+        appendAndStyleText(text, getAppearanceForText(AnswerTextType.SUGGESTION));
     }
 
     /**

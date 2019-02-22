@@ -145,9 +145,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, SuggestionH
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
         mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
+        mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
         mEditUrlProcessor = new EditUrlSuggestionProcessor(
                 delegate, (suggestion) -> onSelection(suggestion, 0));
-        mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this);
     }
 
     /**
