@@ -684,6 +684,7 @@ FileManager.prototype = /** @struct */ {
         this.enableTouchMode_ = true;
       }
     }.bind(this));
+    console.warn('Files app sync startup finished.');
   };
 
   /**
@@ -842,6 +843,7 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.initGeneral_ = function() {
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
+    console.warn('Files app starting up.');
     if (window.appState) {
       var params = {};
       for (var name in window.appState) {
@@ -1477,14 +1479,20 @@ FileManager.prototype = /** @struct */ {
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
     if (directoryEntry) {
+      const entryDescription = util.entryDebugString(directoryEntry);
+      console.warn(
+          'Files app start up: changing to directory: ' + entryDescription);
       this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
-
+        console.warn(
+            'Files app start up: finished changing to directory: ' +
+            entryDescription);
         this.ui_.addLoadedAttribute();
       }.bind(this));
     } else {
+      console.warn('No entry for finishSetupCurrentDirectory_');
       this.ui_.addLoadedAttribute();
     }
 
