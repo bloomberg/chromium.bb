@@ -506,11 +506,6 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                               TRACE_ID_WITH_SCOPE("scope", context_id));
     TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call",
                               TRACE_ID_WITH_SCOPE("scope", context_id));
-    TRACE_EVENT_SCOPED_CONTEXT("disabled-by-default-cat",
-                               "TRACE_EVENT_SCOPED_CONTEXT disabled call",
-                               context_id);
-    TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
-                               context_id);
 
     TRACE_LINK_IDS("all", "TRACE_LINK_IDS simple call", 0x1000, 0x2000);
     TRACE_LINK_IDS("all", "TRACE_LINK_IDS scoped call",
@@ -939,33 +934,6 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     std::string id;
     EXPECT_TRUE((item && item->GetString("scope", &scope)));
     EXPECT_EQ("scope", scope);
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x20151021", id);
-  }
-
-  std::vector<const DictionaryValue*> scoped_context_calls =
-      FindTraceEntries(trace_parsed, "TRACE_EVENT_SCOPED_CONTEXT call");
-  EXPECT_EQ(2u, scoped_context_calls.size());
-  {
-    item = scoped_context_calls[0];
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("(", ph);
-
-    std::string id;
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x20151021", id);
-  }
-
-  {
-    item = scoped_context_calls[1];
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ(")", ph);
-
-    std::string id;
-    EXPECT_FALSE((item && item->HasKey("scope")));
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
   }
