@@ -997,7 +997,7 @@ UnzoomedLength StyleBuilderConverter::ConvertUnzoomedLength(
     const StyleResolverState& state,
     const CSSValue& value) {
   return UnzoomedLength(ToCSSPrimitiveValue(value).ConvertToLength(
-      state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0f)));
+      state.UnzoomedLengthConversionData()));
 }
 
 Length StyleBuilderConverter::ConvertLengthOrAuto(

@@ -97,6 +97,7 @@ class CORE_EXPORT StyleResolverState {
     return css_to_length_conversion_data_;
   }
   CSSToLengthConversionData FontSizeConversionData() const;
+  CSSToLengthConversionData UnzoomedLengthConversionData() const;
 
   void SetConversionFontSizes(
       const CSSToLengthConversionData::FontSizes& font_sizes) {
@@ -193,6 +194,9 @@ class CORE_EXPORT StyleResolverState {
       const CSSPendingSubstitutionValue&) const;
 
  private:
+  CSSToLengthConversionData UnzoomedLengthConversionData(
+      const ComputedStyle* font_style) const;
+
   ElementResolveContext element_context_;
   Member<Document> document_;
 
