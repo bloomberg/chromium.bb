@@ -684,6 +684,51 @@
       }
     ]
   },
+  "android-go_webview-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-webview-google",
+          "--upload-results",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk",
+          "--test-shard-map-filename=android-go_webview-perf_map.json"
+        ],
+        "isolate_name": "performance_webview_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_webview_test_suite",
+        "override_compile_targets": [
+          "performance_webview_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "O",
+              "device_os_flavor": "google",
+              "device_type": "gobo",
+              "os": "Android",
+              "pool": "chrome.tests.perf-webview"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 25
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "android-nexus5x-perf": {
     "isolated_scripts": [
       {
