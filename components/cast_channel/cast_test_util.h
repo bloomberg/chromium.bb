@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -164,9 +165,10 @@ class MockCastMessageHandler : public CastMessageHandler {
                     const std::string&,
                     base::TimeDelta,
                     LaunchSessionCallback callback));
-  MOCK_METHOD3(StopSession,
+  MOCK_METHOD4(StopSession,
                void(int channel_id,
                     const std::string& session_id,
+                    const base::Optional<std::string>& client_id,
                     ResultCallback callback));
   MOCK_METHOD2(SendAppMessage,
                Result(int channel_id, const CastMessage& message));

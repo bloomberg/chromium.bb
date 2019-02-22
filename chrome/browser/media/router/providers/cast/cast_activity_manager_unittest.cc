@@ -31,6 +31,7 @@ using testing::_;
 using testing::IsEmpty;
 using testing::Not;
 using testing::Return;
+using testing::WithArg;
 
 namespace media_router {
 
@@ -179,10 +180,9 @@ class CastActivityManagerTest : public testing::Test {
     // A launch session request is sent to the sink.
     EXPECT_CALL(message_handler_,
                 LaunchSession(kChannelId, "ABCDEFGH", kDefaultLaunchTimeout, _))
-        .WillOnce(
-            [this](auto chanel_id, auto app_id, auto timeout, auto callback) {
-              launch_session_callback_ = std::move(callback);
-            });
+        .WillOnce(WithArg<3>([this](auto callback) {
+          launch_session_callback_ = std::move(callback);
+        }));
 
     auto source = CastMediaSource::FromMediaSourceId(kSource1);
     ASSERT_TRUE(source);
@@ -245,10 +245,11 @@ class CastActivityManagerTest : public testing::Test {
   void TerminateSession(cast_channel::Result result) {
     cast_channel::ResultCallback stop_session_callback;
 
-    EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId", _))
-        .WillOnce([&](auto channel_id, auto session_id, auto callback) {
+    EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId",
+                                              base::Optional<std::string>(), _))
+        .WillOnce(WithArg<3>([&](auto callback) {
           stop_session_callback = std::move(callback);
-        });
+        }));
     manager_->TerminateSession(
         route_->media_route_id(),
         base::BindOnce(
@@ -267,7 +268,7 @@ class CastActivityManagerTest : public testing::Test {
   // not called.
   void TerminateNoSession() {
     // Stop session message not sent because session has not launched yet.
-    EXPECT_CALL(message_handler_, StopSession(_, _, _)).Times(0);
+    EXPECT_CALL(message_handler_, StopSession(_, _, _, _)).Times(0);
     manager_->TerminateSession(
         route_->media_route_id(),
         base::BindOnce(&CastActivityManagerTest::ExpectTerminateResultSuccess,
@@ -299,13 +300,12 @@ class CastActivityManagerTest : public testing::Test {
   void ExpectSingleRouteUpdate(MediaRoute* route_ptr = nullptr) {
     EXPECT_CALL(mock_router_, OnRoutesUpdated(MediaRouteProviderId::CAST,
                                               Not(IsEmpty()), _, _))
-        .WillOnce([=](auto provider_id, auto routes, auto media_source,
-                      auto joinable_route_ids) {
+        .WillOnce(WithArg<1>([=](auto routes) {
           EXPECT_EQ(1u, routes.size());
           if (route_ptr) {
             *route_ptr = routes[0];
           }
-        });
+        }));
   }
 
   // Expect a call to OnRoutesUpdated() with no routes.
@@ -369,10 +369,10 @@ TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
 
   // Existing session will be terminated.
   cast_channel::ResultCallback stop_session_callback;
-  EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId", _))
-      .WillOnce([&](auto channel_id, auto session_id, auto callback) {
-        stop_session_callback = std::move(callback);
-      });
+  EXPECT_CALL(message_handler_, StopSession(kChannelId, "theSessionId",
+                                            base::Optional<std::string>(), _))
+      .WillOnce(WithArg<3>(
+          [&](auto callback) { stop_session_callback = std::move(callback); }));
 
   // Launch a new session on the same sink.
   auto source = CastMediaSource::FromMediaSourceId(kSource2);
@@ -642,8 +642,7 @@ TEST_F(CastActivityManagerTest, SendVolumeCommandToReceiver) {
   EXPECT_CALL(message_handler_,
               SendSetVolumeRequest(kChannelId, IsJson(expected_message),
                                    "theClientId", _))
-      .WillOnce([&](int channel_id, const base::Value& message,
-                    const std::string& client_id, auto callback) {
+      .WillOnce(WithArg<3>([&](auto callback) {
         // Check message created by CastSessionClient::SendResultResponse().
         EXPECT_CALL(*client_connection_, OnMessage(IsCastMessage(R"({
                     "clientId": "theClientId",
@@ -654,7 +653,7 @@ TEST_F(CastActivityManagerTest, SendVolumeCommandToReceiver) {
                   })")));
         std::move(callback).Run(cast_channel::Result::kOk);
         return cast_channel::Result::kOk;
-      });
+      }));
   client_connection_->SendMessageToMediaRouter(
       blink::mojom::PresentationConnectionMessage::NewMessage(R"({
         "type": "v2_message",

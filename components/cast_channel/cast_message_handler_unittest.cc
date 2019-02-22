@@ -144,7 +144,7 @@ class CastMessageHandlerTest : public testing::Test {
                   R"({"sessionId": "theSessionId", "type": "SET_VOLUME"})"),
               "theSourceId", set_volume_callback_.Get()));
     }
-    handler_.StopSession(channel_id_, "theSessionId",
+    handler_.StopSession(channel_id_, "theSessionId", "theSourceId",
                          stop_session_callback_.Get());
   }
 
