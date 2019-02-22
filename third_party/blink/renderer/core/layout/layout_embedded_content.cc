@@ -88,12 +88,7 @@ LayoutEmbeddedContent::~LayoutEmbeddedContent() {
 }
 
 FrameView* LayoutEmbeddedContent::ChildFrameView() const {
-  EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
-
-  if (embedded_content_view && embedded_content_view->IsFrameView())
-    return ToFrameView(embedded_content_view);
-
-  return nullptr;
+  return DynamicTo<FrameView>(GetEmbeddedContentView());
 }
 
 WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
