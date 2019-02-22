@@ -57,6 +57,13 @@ constexpr int kIconSelectedCornerRadius = 4;
 // Icon selected color, Google Grey 900 8%.
 constexpr int kIconSelectedColor = SkColorSetA(gfx::kGoogleGrey900, 0x14);
 
+// Offset for centering star rating when there is no price.
+constexpr int kSearchRatingCenteringOffset =
+    ((kSearchTileWidth -
+      (kSearchRatingSize + kSearchRatingStarHorizontalSpacing +
+       kSearchRatingStarSize)) /
+     2);
+
 constexpr SkColor kSearchTitleColor = gfx::kGoogleGrey900;
 constexpr SkColor kSearchAppRatingColor = gfx::kGoogleGrey700;
 constexpr SkColor kSearchAppPriceColor = gfx::kGoogleGreen600;
@@ -526,9 +533,16 @@ void SearchResultTileItemView::Layout() {
     rect.set_height(title_->GetPreferredSize().height());
     title_->SetBoundsRect(rect);
 
+    // If there is no price set, we center the rating.
+    const bool center_rating =
+        rating_ && rating_star_ && price_ && price_->text().empty();
+    const int rating_horizontal_offset =
+        center_rating ? kSearchRatingCenteringOffset : 0;
+
     if (rating_) {
       gfx::Rect rating_rect(rect);
-      rating_rect.Inset(0, title_->GetPreferredSize().height(), 0, 0);
+      rating_rect.Inset(rating_horizontal_offset,
+                        title_->GetPreferredSize().height(), 0, 0);
       rating_rect.set_size(rating_->GetPreferredSize());
       rating_rect.set_width(kSearchRatingSize);
       rating_->SetBoundsRect(rating_rect);
@@ -536,11 +550,11 @@ void SearchResultTileItemView::Layout() {
 
     if (rating_star_) {
       gfx::Rect rating_star_rect(rect);
-      rating_star_rect.Inset(
-          kSearchRatingSize + kSearchRatingStarHorizontalSpacing,
-          title_->GetPreferredSize().height() +
-              kSearchRatingStarVerticalSpacing,
-          0, 0);
+      rating_star_rect.Inset(rating_horizontal_offset + kSearchRatingSize +
+                                 kSearchRatingStarHorizontalSpacing,
+                             title_->GetPreferredSize().height() +
+                                 kSearchRatingStarVerticalSpacing,
+                             0, 0);
       rating_star_rect.set_size(rating_star_->GetPreferredSize());
       rating_star_->SetBoundsRect(rating_star_rect);
     }
