@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "google_apis/drive/drive_api_error_codes.h"
@@ -90,7 +89,7 @@ class FileManagerPrivateSetPreferencesFunction
 // Implements the chrome.fileManagerPrivate.zipSelection method.
 // Creates a zip file for the selected files.
 class FileManagerPrivateInternalZipSelectionFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.zipSelection",
                              FILEMANAGERPRIVATEINTERNAL_ZIPSELECTION)
@@ -100,8 +99,8 @@ class FileManagerPrivateInternalZipSelectionFunction
  protected:
   ~FileManagerPrivateInternalZipSelectionFunction() override;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 
   // Receives the result from ZipFileCreator.
   void OnZipDone(bool success);
@@ -124,7 +123,7 @@ class FileManagerPrivateZoomFunction : public UIThreadExtensionFunction {
 };
 
 class FileManagerPrivateRequestWebStoreAccessTokenFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.requestWebStoreAccessToken",
                              FILEMANAGERPRIVATE_REQUESTWEBSTOREACCESSTOKEN)
@@ -134,14 +133,15 @@ class FileManagerPrivateRequestWebStoreAccessTokenFunction
  protected:
   ~FileManagerPrivateRequestWebStoreAccessTokenFunction() override;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<google_apis::AuthServiceInterface> auth_service_;
 
   void OnAccessTokenFetched(google_apis::DriveApiErrorCode code,
                             const std::string& access_token);
+  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class FileManagerPrivateGetProfilesFunction : public UIThreadExtensionFunction {
@@ -184,7 +184,7 @@ class FileManagerPrivateOpenSettingsSubpageFunction
 
 // Implements the chrome.fileManagerPrivate.getMimeType method.
 class FileManagerPrivateInternalGetMimeTypeFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getMimeType",
                              FILEMANAGERPRIVATEINTERNAL_GETMIMETYPE)
@@ -194,8 +194,8 @@ class FileManagerPrivateInternalGetMimeTypeFunction
  protected:
   ~FileManagerPrivateInternalGetMimeTypeFunction() override;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 
   void OnGetMimeType(const std::string& mimeType);
 };
@@ -284,7 +284,7 @@ class FileManagerPrivateIsCrostiniEnabledFunction
 // Implements the chrome.fileManagerPrivate.mountCrostini method.
 // Starts and mounts crostini container.
 class FileManagerPrivateMountCrostiniFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.mountCrostini",
                              FILEMANAGERPRIVATE_MOUNTCROSTINI)
@@ -293,7 +293,7 @@ class FileManagerPrivateMountCrostiniFunction
  protected:
   ~FileManagerPrivateMountCrostiniFunction() override;
 
-  bool RunAsync() override;
+  ResponseAction Run() override;
   void RestartCallback(crostini::CrostiniResult);
 
  private:

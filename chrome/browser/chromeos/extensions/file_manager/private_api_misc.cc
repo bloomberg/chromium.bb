@@ -248,41 +248,45 @@ FileManagerPrivateInternalZipSelectionFunction::
 FileManagerPrivateInternalZipSelectionFunction::
     ~FileManagerPrivateInternalZipSelectionFunction() = default;
 
-bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalZipSelectionFunction::Run() {
   using extensions::api::file_manager_private_internal::ZipSelection::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // First param is the parent directory URL.
   if (params->parent_url.empty())
-    return false;
+    return RespondNow(Error("Empty parent URL."));
 
+  const ChromeExtensionFunctionDetails chrome_details(this);
   base::FilePath src_dir = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), GetProfile(), GURL(params->parent_url));
+      render_frame_host(), chrome_details.GetProfile(),
+      GURL(params->parent_url));
   if (src_dir.empty())
-    return false;
+    return RespondNow(Error("Invalid source dir."));
 
   // Second param is the list of selected file URLs to be zipped.
   if (params->urls.empty())
-    return false;
+    return RespondNow(Error("No files selected to be zipped."));
 
   std::vector<base::FilePath> files;
   for (size_t i = 0; i < params->urls.size(); ++i) {
     base::FilePath path = file_manager::util::GetLocalPathFromURL(
-        render_frame_host(), GetProfile(), GURL(params->urls[i]));
+        render_frame_host(), chrome_details.GetProfile(),
+        GURL(params->urls[i]));
     if (path.empty())
-      return false;
+      return RespondNow(Error("Invalid selected file path."));
     files.push_back(path);
   }
 
   // Third param is the name of the output zip file.
   if (params->dest_name.empty())
-    return false;
+    return RespondNow(Error("Empty output file name."));
 
   // Check if the dir path is under Drive mount point.
   // TODO(hshi): support create zip file on Drive (crbug.com/158690).
   if (drive::util::IsUnderDriveMountPoint(src_dir))
-    return false;
+    return RespondNow(Error("Unable to zip Drive files."));
 
   base::FilePath dest_file = src_dir.Append(params->dest_name);
   std::vector<base::FilePath> src_relative_paths;
@@ -292,7 +296,7 @@ bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
     // Obtain the relative path of |file_path| under |src_dir|.
     base::FilePath relative_path;
     if (!src_dir.AppendRelativePath(file_path, &relative_path))
-      return false;
+      return RespondNow(Error("Invalid selected file path."));
     src_relative_paths.push_back(relative_path);
   }
 
@@ -302,12 +306,11 @@ bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
        src_dir, src_relative_paths, dest_file))
       ->Start(
           content::ServiceManagerConnection::GetForProcess()->GetConnector());
-  return true;
+  return RespondLater();
 }
 
 void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
-  SetResult(std::make_unique<base::Value>(success));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>(success)));
 }
 
 ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
@@ -335,27 +338,29 @@ ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
 }
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
-    FileManagerPrivateRequestWebStoreAccessTokenFunction() = default;
+    FileManagerPrivateRequestWebStoreAccessTokenFunction()
+    : chrome_details_(this) {}
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
     ~FileManagerPrivateRequestWebStoreAccessTokenFunction() = default;
 
-bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
   std::vector<std::string> scopes;
   scopes.emplace_back(kCWSScope);
 
   identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(GetProfile());
+      IdentityManagerFactory::GetForProfile(chrome_details_.GetProfile());
 
   if (!identity_manager) {
-    drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+    drive::EventLogger* logger =
+        file_manager::util::GetLogger(chrome_details_.GetProfile());
     if (logger) {
       logger->Log(logging::LOG_ERROR,
                   "CWS Access token fetch failed. IdentityManager can't "
                   "be retrieved.");
     }
-    SetResult(std::make_unique<base::Value>());
-    return false;
+    return RespondNow(Error("Unable to fetch token."));
   }
 
   auth_service_ = std::make_unique<google_apis::AuthService>(
@@ -368,29 +373,28 @@ bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
           OnAccessTokenFetched,
       this));
 
-  return true;
+  return RespondLater();
 }
 
 void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     google_apis::DriveApiErrorCode code,
     const std::string& access_token) {
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
+  drive::EventLogger* logger =
+      file_manager::util::GetLogger(chrome_details_.GetProfile());
 
   if (code == google_apis::HTTP_SUCCESS) {
     DCHECK(auth_service_->HasAccessToken());
     DCHECK(access_token == auth_service_->access_token());
     if (logger)
       logger->Log(logging::LOG_INFO, "CWS OAuth token fetch succeeded.");
-    SetResult(std::make_unique<base::Value>(access_token));
-    SendResponse(true);
+    Respond(OneArgument(std::make_unique<base::Value>(access_token)));
   } else {
     if (logger) {
       logger->Log(logging::LOG_ERROR,
                   "CWS OAuth token fetch failed. (DriveApiErrorCode: %s)",
                   google_apis::DriveApiErrorCodeToString(code).c_str());
     }
-    SetResult(std::make_unique<base::Value>());
-    SendResponse(false);
+    Respond(Error("Token fetch failed."));
   }
 }
 
@@ -468,31 +472,32 @@ FileManagerPrivateInternalGetMimeTypeFunction::
 FileManagerPrivateInternalGetMimeTypeFunction::
     ~FileManagerPrivateInternalGetMimeTypeFunction() = default;
 
-bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalGetMimeTypeFunction::Run() {
   using extensions::api::file_manager_private_internal::GetMimeType::Params;
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // Convert file url to local path.
+  const ChromeExtensionFunctionDetails chrome_details(this);
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          GetProfile(), render_frame_host());
+          chrome_details.GetProfile(), render_frame_host());
 
   storage::FileSystemURL file_system_url(
       file_system_context->CrackURL(GURL(params->url)));
 
   app_file_handler_util::GetMimeTypeForLocalPath(
-      GetProfile(), file_system_url.path(),
+      chrome_details.GetProfile(), file_system_url.path(),
       base::Bind(&FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType,
                  this));
 
-  return true;
+  return RespondLater();
 }
 
 void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
     const std::string& mimeType) {
-  SetResult(std::make_unique<base::Value>(mimeType));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>(mimeType)));
 }
 
 ExtensionFunction::ResponseAction
@@ -642,7 +647,8 @@ FileManagerPrivateMountCrostiniFunction::
 FileManagerPrivateMountCrostiniFunction::
     ~FileManagerPrivateMountCrostiniFunction() = default;
 
-bool FileManagerPrivateMountCrostiniFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+FileManagerPrivateMountCrostiniFunction::Run() {
   // Use OriginalProfile since using crostini in incognito such as saving
   // files into Linux files should still work.
   Profile* profile =
@@ -652,7 +658,7 @@ bool FileManagerPrivateMountCrostiniFunction::RunAsync() {
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
                      this));
-  return true;
+  return RespondLater();
 }
 
 void FileManagerPrivateMountCrostiniFunction::RestartCallback(
