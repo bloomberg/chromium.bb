@@ -1343,11 +1343,39 @@ class Changelist(object):
     remote, _ = self.GetRemoteBranch()
     url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
-    # If URL is pointing to a local directory, it is probably a git cache.
-    if os.path.isdir(url):
-      url = RunGit(['config', 'remote.%s.url' % remote],
-                   error_ok=True,
-                   cwd=url).strip()
+    # Check if the remote url can be parsed as an URL.
+    host = urlparse.urlparse(url).netloc
+    if host:
+      self._cached_remote_url = (True, url)
+      return url
+
+    # If it cannot be parsed as an url, assume it is a local directory, probably
+    # a git cache.
+    logging.warning('"%s" doesn\'t appear to point to a git host. '
+                    'Interpreting it as a local directory.', url)
+    if not os.path.isdir(url):
+      logging.error(
+          'Remote "%s" for branch "%s" points to "%s", but it doesn\'t exist.',
+          remote, url, self.GetBranch())
+      return None
+
+    cache_path = url
+    url = RunGit(['config', 'remote.%s.url' % remote],
+                 error_ok=True,
+                 cwd=url).strip()
+
+    host = urlparse.urlparse(url).netloc
+    if not host:
+      logging.error(
+          'Remote "%(remote)s" for branch "%(branch)s" points to '
+          '"%(cache_path)s", but it is misconfigured.\n'
+          '"%(cache_path)s" must be a git repo and must have a remote named '
+          '"%(remote)s" pointing to the git host.', {
+              'remote': remote,
+              'cache_path': cache_path,
+              'branch': self.GetBranch()})
+      return None
+
     self._cached_remote_url = (True, url)
     return url
 
@@ -1863,7 +1891,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def _GetGitHost(self):
     """Returns git host to be used when uploading change to Gerrit."""
-    return urlparse.urlparse(self.GetRemoteUrl()).netloc
+    remote_url = self.GetRemoteUrl()
+    if not remote_url:
+      return None
+    return urlparse.urlparse(remote_url).netloc
 
   def GetCodereviewServer(self):
     if not self._gerrit_server:
@@ -1941,7 +1972,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
-    assert self._gerrit_server and self._gerrit_host
+    assert self._gerrit_server and self._gerrit_host and git_host
 
     gerrit_auth = cookie_auth.get_auth_header(self._gerrit_host)
     git_auth = cookie_auth.get_auth_header(git_host)

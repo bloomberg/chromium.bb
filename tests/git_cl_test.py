@@ -3050,6 +3050,64 @@ class TestGitCl(TestCase):
     self.assertEqual(cl.GetRemoteUrl(), url)
     self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
 
+  def test_get_remote_url_non_existing_mirror(self):
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-doesnt-exist':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+    self.mock(logging, 'error',
+              lambda fmt, *a: self._mocked_call('logging.error', fmt % a))
+
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       '/cache/this-dir-doesnt-exist'),
+      (('os.path.isdir', '/cache/this-dir-doesnt-exist'),
+       False),
+      (('logging.error',
+        'Remote "origin" for branch "/cache/this-dir-doesnt-exist" points to'
+        ' "master", but it doesn\'t exist.'), None),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertIsNone(cl.GetRemoteUrl())
+
+  def test_get_remote_url_misconfigured_mirror(self):
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-exists':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+    self.mock(logging, 'error',
+              lambda *a: self._mocked_call('logging.error', *a))
+
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       '/cache/this-dir-exists'),
+      (('os.path.isdir', '/cache/this-dir-exists'), True),
+      # Runs in /cache/this-dir-exists.
+      ((['git', 'config', 'remote.origin.url'],), ''),
+      (('logging.error',
+        'Remote "%(remote)s" for branch "%(branch)s" points to '
+        '"%(cache_path)s", but it is misconfigured.\n'
+        '"%(cache_path)s" must be a git repo and must have a remote named '
+        '"%(remote)s" pointing to the git host.', {
+              'remote': 'origin',
+              'cache_path': '/cache/this-dir-exists',
+              'branch': 'master'}
+        ), None),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertIsNone(cl.GetRemoteUrl())
+
+
   def test_gerrit_change_identifier_with_project(self):
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
