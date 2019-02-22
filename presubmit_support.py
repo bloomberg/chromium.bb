@@ -1032,7 +1032,11 @@ class Change(object):
   def BugsFromDescription(self):
     """Returns all bugs referenced in the commit description."""
     tags = [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
-    footers = git_footers.parse_footers(self._full_description).get('Bug', [])
+    footers = []
+    unsplit_footers = git_footers.parse_footers(self._full_description).get(
+        'Bug', [])
+    for unsplit_footer in unsplit_footers:
+      footers += [b.strip() for b in unsplit_footer.split(',')]
     return sorted(set(tags + footers))
 
   def ReviewersFromDescription(self):
