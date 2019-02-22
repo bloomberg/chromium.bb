@@ -2008,8 +2008,8 @@
   },
   {
     "name": "enable-zero-state-suggestions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "jennyz", "xiyuan" ],
+    "expiry_milestone": 75
   },
   {
     "name": "enable-zero-suggest-redirect-to-chrome",
