@@ -6001,3 +6001,9 @@ crbug.com/933346 [ Debug ] external/wpt/orientation-sensor/RelativeOrientationSe
 
 # Sheriff 2019-02-21
 crbug.com/934278 [ Mac ] virtual/video-surface-layer/media/video-object-fit.html [ Failure Pass ]
+
+# Sheriff 2019-02-22
+crbug.com/934636 http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
+crbug.com/934636 virtual/feature-policy-for-sandbox/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
+crbug.com/934636 virtual/outofblink-cors/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
+crbug.com/934636 virtual/outofblink-cors-ns/http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
