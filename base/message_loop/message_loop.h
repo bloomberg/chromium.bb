@@ -24,6 +24,10 @@
 
 namespace base {
 
+namespace internal {
+class MessageLoopTaskEnvironment;
+}  // namespace internal
+
 class MessageLoopImpl;
 
 namespace sequence_manager {
@@ -321,6 +325,7 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
+  friend class internal::MessageLoopTaskEnvironment;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
@@ -333,6 +338,8 @@ class BASE_EXPORT MessageLoop {
   // Before BindToCurrentThread() is called, only Post*Task() functions can
   // be called on the message loop.
   static std::unique_ptr<MessageLoop> CreateUnbound(Type type);
+  static std::unique_ptr<MessageLoop> CreateUnbound(
+      std::unique_ptr<MessagePump> pump);
 
   scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue();
 
