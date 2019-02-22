@@ -30,6 +30,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "jni/AwCookieManager_jni.h"
@@ -94,6 +95,38 @@ class BoolCookieCallbackHolder {
 };
 
 namespace {
+
+// Copied from net/cookies/cookie_util.h for consistency and backwards
+// compatibility.
+const int kVlogSetCookies = 7;
+
+// TODO(ntfschr): see if we can turn this into OnceCallback.
+// http://crbug.com/932535.
+void MaybeRunCookieCallback(base::RepeatingCallback<void(bool)> callback,
+                            const bool& result) {
+  if (callback)
+    std::move(callback).Run(result);
+}
+
+GURL MaybeFixUpSchemeForSecureCookie(const GURL& host,
+                                     const std::string& value) {
+  // Log message for catching strict secure cookies related bugs.
+  // TODO(sgurun) temporary. Add UMA stats to monitor, and remove afterwards.
+  // http://crbug.com/933981.
+  if (host.is_valid() &&
+      (!host.has_scheme() || host.SchemeIs(url::kHttpScheme))) {
+    net::ParsedCookie parsed_cookie(value);
+    if (parsed_cookie.IsValid() && parsed_cookie.IsSecure()) {
+      LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
+                      "secure cookie for "
+                   << host.spec();
+      GURL::Replacements replace_host;
+      replace_host.SetSchemeStr("https");
+      return host.ReplaceComponents(replace_host);
+    }
+  }
+  return host;
+}
 
 // Construct a closure which signals a waitable event if and when the closure
 // is called the waitable event must still exist.
@@ -308,26 +341,63 @@ void CookieManager::SetCookieHelper(
   net::CookieOptions options;
   options.set_include_httponly();
 
-  // Log message for catching strict secure cookies related bugs.
-  // TODO(sgurun) temporary. Add UMA stats to monitor, and remove afterwards.
-  if (host.is_valid() &&
-      (!host.has_scheme() || host.SchemeIs(url::kHttpScheme))) {
-    net::ParsedCookie parsed_cookie(value);
-    if (parsed_cookie.IsValid() && parsed_cookie.IsSecure()) {
-      LOG(WARNING) << "Strict Secure Cookie policy does not allow setting a "
-                      "secure cookie for "
-                   << host.spec();
-      GURL::Replacements replace_host;
-      replace_host.SetSchemeStr("https");
-      GURL new_host = host.ReplaceComponents(replace_host);
-      GetCookieStore()->SetCookieWithOptionsAsync(new_host, value, options,
-                                                  StatusToBool(callback));
-      return;
-    }
+  const GURL& new_host = MaybeFixUpSchemeForSecureCookie(host, value);
+
+  // The below is copied from net::CookieMonster::SetCookieWithOptions. We do
+  // this because we have strict requirements to keep behavior identical across
+  // WebView versions.
+
+  // If this scheme is not cookieable, then we should not set a cookie for it.
+  // Instead, invoke the callback and indicate failure.
+  if (!HasCookieableScheme(new_host)) {
+    MaybeRunCookieCallback(std::move(callback), false);
+    return;
   }
 
-  GetCookieStore()->SetCookieWithOptionsAsync(host, value, options,
-                                              StatusToBool(callback));
+  VLOG(kVlogSetCookies) << "SetCookie() line: " << value;
+
+  net::CanonicalCookie::CookieInclusionStatus status;
+
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      new_host, value, base::Time::Now(), options, &status));
+
+  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    DCHECK(!cc);
+    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
+    MaybeRunCookieCallback(std::move(callback), false);
+    return;
+  }
+
+  DCHECK(cc);
+
+  // Note: CookieStore and network::CookieManager have different signatures: one
+  // accepts a boolean callback while the other (recently) changed to accept a
+  // CookieInclusionStatus callback. WebView only cares about boolean success,
+  // which is why we use StatusToBool. This is temporary technical debt until we
+  // fully launch the Network Service code path.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // *cc.get() is safe, because network::CookieManager::SetCanonicalCookie
+    // will make a copy before our smart pointer goes out of scope.
+    GetCookieManagerWrapper()->SetCanonicalCookie(
+        *cc.get(), new_host.SchemeIsCryptographic(),
+        !options.exclude_httponly(), std::move(callback));
+  } else {
+    GetCookieStore()->SetCanonicalCookieAsync(
+        std::move(cc), new_host.SchemeIsCryptographic(),
+        !options.exclude_httponly(), StatusToBool(callback));
+  }
+}
+
+bool CookieManager::HasCookieableScheme(const GURL& host) {
+  for (int i = 0; i < net::CookieMonster::kDefaultCookieableSchemesCount; ++i) {
+    if (host.SchemeIs(net::CookieMonster::kDefaultCookieableSchemes[i])) {
+      return true;
+    }
+  }
+  if (host.SchemeIsFile() && AllowFileSchemeCookies()) {
+    return true;
+  }
+  return false;
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
