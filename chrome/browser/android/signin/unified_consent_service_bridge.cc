@@ -39,5 +39,5 @@ JNI_UnifiedConsentServiceBridge_SetUrlKeyedAnonymizedDataCollectionEnabled(
   Profile* profile = ProfileAndroid::FromProfileAndroid(profileAndroid);
   auto* unifiedConsentService =
       UnifiedConsentServiceFactory::GetForProfile(profile);
-  unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
+  unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(enabled);
 }
