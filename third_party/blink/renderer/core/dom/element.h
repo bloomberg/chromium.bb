@@ -1279,7 +1279,7 @@ inline bool Element::HasClass() const {
 inline UniqueElementData& Element::EnsureUniqueElementData() {
   if (!GetElementData() || !GetElementData()->IsUnique())
     CreateUniqueElementData();
-  return ToUniqueElementData(*element_data_);
+  return To<UniqueElementData>(*element_data_);
 }
 
 inline void Element::InvalidateStyleAttribute() {
