@@ -40,7 +40,7 @@ public class GridTabSwitcherCoordinator implements Destroyable {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager, compositorViewHolder);
+                tabModelSelector, tabContentManager, compositorViewHolder, true);
 
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);

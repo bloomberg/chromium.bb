@@ -35,7 +35,7 @@ public class BottomTabGridCoordinator implements Destroyable {
             BottomSheetController bottomSheetController, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, ActivityLifecycleDispatcher lifecycleDispatcher) {
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
-                tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet());
+                tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false);
 
         mMediator = new BottomTabGridMediator(bottomSheetController, this::resetWithTabModel);
 

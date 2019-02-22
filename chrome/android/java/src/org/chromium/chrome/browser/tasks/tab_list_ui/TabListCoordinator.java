@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
@@ -43,7 +44,8 @@ public class TabListCoordinator implements Destroyable {
     private final TabListRecyclerView mRecyclerView;
 
     TabListCoordinator(@TabListMode int mode, Context context, TabModelSelector tabModelSelector,
-            TabContentManager tabContentManager, ViewGroup parentView) {
+            TabContentManager tabContentManager, @NonNull ViewGroup parentView,
+            boolean attachToParent) {
         TabListModel tabListModel = new TabListModel();
 
         RecyclerViewAdapter adapter;
@@ -64,7 +66,7 @@ public class TabListCoordinator implements Destroyable {
                     "Attempting to create a tab list UI with invalid mode");
         }
 
-        if (parentView != null) {
+        if (!attachToParent) {
             mRecyclerView = (TabListRecyclerView) LayoutInflater.from(context).inflate(
                     R.layout.tab_list_recycler_view_layout, parentView, false);
         } else {
