@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -36,6 +37,7 @@
 #include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
@@ -319,7 +321,8 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
   std::string experiment_id =
-      previews::params::LitePageRedirectPreviewExperiment();
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment);
   std::string experiment_query;
   if (!experiment_id.empty()) {
     experiment_query =
