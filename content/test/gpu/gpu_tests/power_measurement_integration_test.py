@@ -93,32 +93,6 @@ _VIDEO_TEST_SCRIPT = r"""
     return _video_element.currentTime > 0;
   }
 
-  function startFullscreenModeAlt() {
-    // Call requestFullscreen() on video's parent element, so we could put
-    // a colored box on top of the video to emulate underlay mode.
-    _setupVideoElement();
-    if (!_video_element)
-      return;
-    _video_element.style.width = "100%";
-    _video_element.style.height = "100%";
-    var container = _video_element.parentNode;
-    if (container.requestFullscreen) {
-      container.addEventListener("fullscreenchange", function() {
-        _video_in_fullscreen = true;
-      });
-      container.requestFullscreen();
-    } else if (container.webkitRequestFullscreen) {
-      container.addEventListener("webkitfullscreenchange", function() {
-        _video_in_fullscreen = true;
-      });
-      container.webkitRequestFullscreen();
-    }
-  }
-
-  function isVideoInFullscreen() {
-    return _video_in_fullscreen;
-  }
-
   function startUnderlayMode() {
     _setupVideoElement();
     if (!_video_element)
@@ -184,31 +158,49 @@ _VIDEO_TEST_SCRIPT = r"""
     return _locateButton(["full screen", "fullscreen"]);
   }
 
+  function _addFullscreenChangeListener(node) {
+    if (!node)
+      return;
+    node.addEventListener("fullscreenchange", function() {
+      _video_in_fullscreen = true;
+    });
+    node.addEventListener("webkitfullscreenchange", function() {
+      _video_in_fullscreen = true;
+    });
+  }
+
+  function isVideoInFullscreen() {
+    return _video_in_fullscreen;
+  }
+
   function startFullscreenMode() {
     // Try to locate a fullscreen button on the page and click it.
     _setupVideoElement();
     if (!_video_element)
       return;
     var button = _locateFullscreenButton();
-    if (!button) {
+    if (button) {
+      // We don't know which layer goes fullscreen, so we add callback to all
+      // layers along the path from the video element to html body.
+      var cur = _video_element;
+      while (cur) {
+        _addFullscreenChangeListener(cur);
+        cur = cur.parentNode;
+      }
+      button.click();
+    } else {
       // If we fail to locate a fullscreen button, call requestFullscreen()
       // directly on the video element's parent node.
-      startFullscreenModeAlt();
-      return;
+      _video_element.style.width = "100%";
+      _video_element.style.height = "100%";
+      var container = _video_element.parentNode;
+      _addFullscreenChangeListener(container);
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      }
     }
-    // We don't know which layer goes fullscreen, so we add callback to all
-    // layers along the path from the video element to html body.
-    var cur = _video_element;
-    while (cur) {
-      cur.addEventListener("fullscreenchange", function() {
-        _video_in_fullscreen = true;
-      });
-      cur.addEventListener("webkitfullscreenchange", function() {
-        _video_in_fullscreen = true;
-      });
-      cur = cur.parentNode;
-    }
-    button.click();
   }
 """
 
@@ -349,6 +341,21 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # chromeperf.appspot.com.
     logging.info("Results: %s", str(results))
 
+  def _SetupVideo(self, fullscreen, underlay):
+    self.tab.action_runner.WaitForJavaScriptCondition(
+      'waitForVideoToPlay()', timeout=30)
+    if fullscreen:
+      self.tab.action_runner.ExecuteJavaScript(
+        'startFullscreenMode();', user_gesture=True)
+      try:
+        self.tab.action_runner.WaitForJavaScriptCondition(
+          'isVideoInFullscreen()', timeout=5)
+      except py_utils.TimeoutException:
+        self.fail('requestFullscreen() fails to work, possibly because '
+                  '|user_gesture| is not set.')
+    if underlay:
+      self.tab.action_runner.ExecuteJavaScript('startUnderlayMode();')
+
   #########################################
   # Actual test functions
 
@@ -373,19 +380,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     url = self.UrlOfStaticFilePath(test_path)
     self.tab.Navigate(
       url, script_to_evaluate_on_commit=_VIDEO_TEST_SCRIPT)
-    self.tab.action_runner.WaitForJavaScriptCondition(
-      'waitForVideoToPlay()', timeout=30)
-    if fullscreen:
-      self.tab.action_runner.ExecuteJavaScript(
-        'startFullscreenModeAlt();', user_gesture=True)
-      try:
-        self.tab.action_runner.WaitForJavaScriptCondition(
-          'isVideoInFullscreen()', timeout=5)
-      except py_utils.TimeoutException:
-        self.fail('requestFullscreen() fails to work, possibly because '
-                  '|user_gesture| is not set.')
-    if underlay:
-      self.tab.action_runner.ExecuteJavaScript('startUnderlayMode();')
+    self._SetupVideo(fullscreen=fullscreen, underlay=underlay)
 
     PowerMeasurementIntegrationTest._MeasurePowerWithIPG(bypass_ipg)
 
@@ -409,19 +404,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         logging.info("Iteration %d", iteration)
       self.tab.action_runner.Navigate(test_path, _VIDEO_TEST_SCRIPT)
       self.tab.WaitForDocumentReadyStateToBeComplete()
-      self.tab.action_runner.WaitForJavaScriptCondition(
-        'waitForVideoToPlay()', timeout=30)
-      if fullscreen:
-        self.tab.action_runner.ExecuteJavaScript(
-          'startFullscreenMode();', user_gesture=True)
-        try:
-          self.tab.action_runner.WaitForJavaScriptCondition(
-            'isVideoInFullscreen()', timeout=5)
-        except py_utils.TimeoutException:
-          self.fail('requestFullscreen() fails to work, possibly because '
-                    '|user_gesture| is not set.')
-      if underlay:
-        self.tab.action_runner.ExecuteJavaScript('startUnderlayMode();')
+      self._SetupVideo(fullscreen=fullscreen, underlay=underlay)
 
       if bypass_ipg:
         logging.info("Bypassing Intel Power Gadget")
