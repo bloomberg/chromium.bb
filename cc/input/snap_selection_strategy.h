@@ -11,6 +11,8 @@
 
 namespace cc {
 
+enum class SnapStopAlwaysFilter { kIgnore, kRequire };
+
 // This class represents an abstract strategy that decide which snap selection
 // should be considered valid. There are concrete implementations for three core
 // scrolling types: scroll with end position only, scroll with direction only,
@@ -25,7 +27,8 @@ class CC_EXPORT SnapSelectionStrategy {
       bool scrolled_y);
   static std::unique_ptr<SnapSelectionStrategy> CreateForDirection(
       gfx::ScrollOffset current_position,
-      gfx::ScrollOffset step);
+      gfx::ScrollOffset step,
+      SnapStopAlwaysFilter filter = SnapStopAlwaysFilter::kIgnore);
   static std::unique_ptr<SnapSelectionStrategy> CreateForEndAndDirection(
       gfx::ScrollOffset current_position,
       gfx::ScrollOffset displacement);
@@ -47,8 +50,13 @@ class CC_EXPORT SnapSelectionStrategy {
   // Returns true if the selection strategy considers the given snap offset
   // valid for the current axis.
   virtual bool IsValidSnapPosition(SearchAxis axis, float position) const = 0;
+  virtual bool IsValidSnapArea(SearchAxis axis, const SnapAreaData& data) const;
 
   virtual bool HasIntendedDirection() const;
+
+  // Returns true if a snap area with scroll-snap-stop:always should not be
+  // bypassed.
+  virtual bool ShouldRespectSnapStop() const;
 
   // Returns the best result according to snap selection strategy. This method
   // is called at the end of selection process to make the final decision.
@@ -116,8 +124,11 @@ class EndPositionStrategy : public SnapSelectionStrategy {
 class DirectionStrategy : public SnapSelectionStrategy {
  public:
   DirectionStrategy(const gfx::ScrollOffset& current_position,
-                    const gfx::ScrollOffset& step)
-      : SnapSelectionStrategy(current_position), step_(step) {}
+                    const gfx::ScrollOffset& step,
+                    SnapStopAlwaysFilter filter)
+      : SnapSelectionStrategy(current_position),
+        step_(step),
+        snap_stop_always_filter_(filter) {}
   ~DirectionStrategy() override = default;
 
   bool ShouldSnapOnX() const override;
@@ -127,6 +138,8 @@ class DirectionStrategy : public SnapSelectionStrategy {
   gfx::ScrollOffset base_position() const override;
 
   bool IsValidSnapPosition(SearchAxis axis, float position) const override;
+  bool IsValidSnapArea(SearchAxis axis,
+                       const SnapAreaData& area) const override;
 
   const base::Optional<SnapSearchResult>& PickBestResult(
       const base::Optional<SnapSearchResult>& closest,
@@ -135,6 +148,7 @@ class DirectionStrategy : public SnapSelectionStrategy {
  private:
   // The default step for this DirectionStrategy.
   const gfx::ScrollOffset step_;
+  SnapStopAlwaysFilter snap_stop_always_filter_;
 };
 
 // Examples for intended direction and end position scrolls include
@@ -159,6 +173,8 @@ class EndAndDirectionStrategy : public SnapSelectionStrategy {
   gfx::ScrollOffset base_position() const override;
 
   bool IsValidSnapPosition(SearchAxis axis, float position) const override;
+
+  bool ShouldRespectSnapStop() const override;
 
   const base::Optional<SnapSearchResult>& PickBestResult(
       const base::Optional<SnapSearchResult>& closest,
