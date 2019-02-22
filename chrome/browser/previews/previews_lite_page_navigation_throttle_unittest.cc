@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -13,6 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/http/http_util.h"
@@ -24,7 +26,8 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
     std::string previews_host;
     std::string original_url;
     std::string expected_previews_url;
-    std::string experiment;
+    std::string experiment_variation;
+    std::string experiment_cmd_line;
   };
   const TestCase kTestCases[]{
       // Use https://play.golang.org/p/HUM2HxmUTOW to compute
@@ -35,6 +38,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
           "",
       },
       {
@@ -52,6 +56,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "previews.host.com/p?u=https%3A%2F%2Foriginal.host.com%3A1443"
           "%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
           "",
+          "",
       },
       {
           "https://previews.host.com:1443",
@@ -60,6 +65,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "previews.host.com:1443/p?u="
           "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
           "",
+          "",
       },
       {
           "https://previews.host.com:1443",
@@ -67,6 +73,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://mil6oxtqb4zpsbmutm4d7wrx5nlr6tzlxjp7y44u55zqhzsdzjpq."
           "previews.host.com:1443/p?u=https%3A%2F%2Foriginal.host.com%3A1443"
           "%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
+          "",
           "",
       },
       {
@@ -77,6 +84,7 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
           "#fragment",
           "",
+          "",
       },
       {
           "https://previews.host.com",
@@ -84,8 +92,21 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
           "previews.host.com/p?u="
           "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
-          "&x=enable_HTCPCP",
-          "enable_HTCPCP",
+          "&x=variation_experiment",
+          "variation_experiment",
+          "",
+      },
+      {
+          // Ensure that the command line experiment takes precedence over the
+          // one provided by variations.
+          "https://previews.host.com",
+          "https://original.host.com/path/path/path?query=yes",
+          "https://shta44dh4bi7rc6fnpjnkrtytwlabygjhk53v2trlot2wddylwua."
+          "previews.host.com/p?u="
+          "https%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
+          "&x=cmdline_experiment",
+          "variation_experiment",
+          "cmdline_experiment",
       },
       {
           "https://previews.host.com",
@@ -93,15 +114,20 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "https://2ikmbopbfxagkb7uer2vgfxmbzu2vw4qq3d3ixe3h2hfhgcabvua."
           "previews.host.com/p?u=https%3A%2F%2F%5B%3A%3A1%5D%3A12345%2F",
           "",
+          "",
       },
   };
 
   for (const TestCase& test_case : kTestCases) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment,
+        test_case.experiment_cmd_line);
+
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews,
         {{"previews_host", test_case.previews_host},
-         {"lite_page_preview_experiment", test_case.experiment}});
+         {"lite_page_preview_experiment", test_case.experiment_variation}});
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                   GURL(test_case.original_url)),
