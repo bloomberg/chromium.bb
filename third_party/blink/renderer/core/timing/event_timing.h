@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ class Event;
 // input latency.
 // See also: https://github.com/wicg/event-timing
 class CORE_EXPORT EventTiming final {
+  USING_FAST_MALLOC(EventTiming);
+
  public:
   explicit EventTiming(LocalDOMWindow*);
 
