@@ -8,16 +8,16 @@
 #include "base/macros.h"
 #include "content/public/renderer/content_renderer_client.h"
 
-class WebRunnerContentRendererClient : public content::ContentRendererClient {
+class WebEngineContentRendererClient : public content::ContentRendererClient {
  public:
-  WebRunnerContentRendererClient();
-  ~WebRunnerContentRendererClient() override;
+  WebEngineContentRendererClient();
+  ~WebEngineContentRendererClient() override;
 
   // content::ContentRendererClient overrides.
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerContentRendererClient);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineContentRendererClient);
 };
 
 #endif  // FUCHSIA_ENGINE_RENDERER_WEB_ENGINE_CONTENT_RENDERER_CLIENT_H_

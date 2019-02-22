@@ -12,32 +12,32 @@
 #include "fuchsia/engine/browser/web_engine_browser_main_parts.h"
 #include "fuchsia/engine/browser/web_engine_devtools_manager_delegate.h"
 
-WebRunnerContentBrowserClient::WebRunnerContentBrowserClient(
+WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {}
 
-WebRunnerContentBrowserClient::~WebRunnerContentBrowserClient() = default;
+WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
 content::BrowserMainParts*
-WebRunnerContentBrowserClient::CreateBrowserMainParts(
+WebEngineContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   DCHECK(context_channel_);
-  main_parts_ = new WebRunnerBrowserMainParts(std::move(context_channel_));
+  main_parts_ = new WebEngineBrowserMainParts(std::move(context_channel_));
   return main_parts_;
 }
 
 content::DevToolsManagerDelegate*
-WebRunnerContentBrowserClient::GetDevToolsManagerDelegate() {
+WebEngineContentBrowserClient::GetDevToolsManagerDelegate() {
   DCHECK(main_parts_);
   DCHECK(main_parts_->browser_context());
   return new WebEngineDevToolsManagerDelegate(main_parts_->browser_context());
 }
 
-std::string WebRunnerContentBrowserClient::GetProduct() const {
+std::string WebEngineContentBrowserClient::GetProduct() const {
   return version_info::GetProductNameAndVersionForUserAgent();
 }
 
-std::string WebRunnerContentBrowserClient::GetUserAgent() const {
+std::string WebEngineContentBrowserClient::GetUserAgent() const {
   return content::BuildUserAgentFromProduct(
       version_info::GetProductNameAndVersionForUserAgent());
 }

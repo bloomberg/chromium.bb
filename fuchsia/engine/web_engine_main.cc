@@ -32,7 +32,7 @@ int main(int argc, const char** argv) {
       return ContextProviderMain();
   }
 
-  WebRunnerMainDelegate delegate(std::move(context_channel));
+  WebEngineMainDelegate delegate(std::move(context_channel));
   content::ContentMainParams params(&delegate);
 
   // Repeated base::CommandLine::Init() is ignored, so it's safe to pass null

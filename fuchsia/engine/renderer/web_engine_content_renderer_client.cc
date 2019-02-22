@@ -10,13 +10,13 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
-WebRunnerContentRendererClient::WebRunnerContentRendererClient() = default;
+WebEngineContentRendererClient::WebEngineContentRendererClient() = default;
 
-WebRunnerContentRendererClient::~WebRunnerContentRendererClient() = default;
+WebEngineContentRendererClient::~WebEngineContentRendererClient() = default;
 
-void WebRunnerContentRendererClient::RenderFrameCreated(
+void WebEngineContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-  // Add WebRunner services to the new RenderFrame.
+  // Add WebEngine services to the new RenderFrame.
   // The objects' lifetimes are bound to the RenderFrame's lifetime.
   new OnLoadScriptInjector(render_frame);
 }

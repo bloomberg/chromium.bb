@@ -19,10 +19,10 @@ namespace display {
 class Screen;
 }
 
-class WebRunnerBrowserMainParts : public content::BrowserMainParts {
+class WebEngineBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit WebRunnerBrowserMainParts(zx::channel context_channel);
-  ~WebRunnerBrowserMainParts() override;
+  explicit WebEngineBrowserMainParts(zx::channel context_channel);
+  ~WebEngineBrowserMainParts() override;
 
   ContextImpl* context() const { return context_service_.get(); }
   content::BrowserContext* browser_context() const {
@@ -38,13 +38,13 @@ class WebRunnerBrowserMainParts : public content::BrowserMainParts {
   zx::channel context_channel_;
 
   std::unique_ptr<display::Screen> screen_;
-  std::unique_ptr<WebRunnerBrowserContext> browser_context_;
+  std::unique_ptr<WebEngineBrowserContext> browser_context_;
   std::unique_ptr<ContextImpl> context_service_;
   std::unique_ptr<fidl::Binding<chromium::web::Context>> context_binding_;
 
   base::OnceClosure quit_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerBrowserMainParts);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineBrowserMainParts);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_BROWSER_MAIN_PARTS_H_

@@ -18,15 +18,15 @@ namespace net {
 class FileNetLogObserver;
 }  // namespace net
 
-class WebRunnerNetLog : public net::NetLog {
+class WebEngineNetLog : public net::NetLog {
  public:
-  explicit WebRunnerNetLog(const base::FilePath& log_path);
-  ~WebRunnerNetLog() override;
+  explicit WebEngineNetLog(const base::FilePath& log_path);
+  ~WebEngineNetLog() override;
 
  private:
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerNetLog);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineNetLog);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_NET_LOG_H_

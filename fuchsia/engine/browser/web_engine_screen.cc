@@ -6,10 +6,10 @@
 
 #include "ui/display/display.h"
 
-WebRunnerScreen::WebRunnerScreen() {
+WebEngineScreen::WebEngineScreen() {
   const int64_t kDefaultDisplayId = 1;
   display::Display display(kDefaultDisplayId);
   ProcessDisplayChanged(display, /*is_primary=*/true);
 }
 
-WebRunnerScreen::~WebRunnerScreen() = default;
+WebEngineScreen::~WebEngineScreen() = default;

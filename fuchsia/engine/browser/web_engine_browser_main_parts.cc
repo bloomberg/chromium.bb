@@ -18,15 +18,15 @@
 #include "ui/aura/screen_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 
-WebRunnerBrowserMainParts::WebRunnerBrowserMainParts(
+WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {}
 
-WebRunnerBrowserMainParts::~WebRunnerBrowserMainParts() {
+WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
 }
 
-void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
+void WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   DCHECK(!screen_);
 
   auto platform_screen = ui::OzonePlatform::GetInstance()->CreateScreen();
@@ -35,13 +35,13 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   } else {
     // Use dummy display::Screen for Ozone platforms that don't provide
     // PlatformScreen.
-    screen_ = std::make_unique<WebRunnerScreen>();
+    screen_ = std::make_unique<WebEngineScreen>();
   }
 
   display::Screen::SetScreenInstance(screen_.get());
 
   DCHECK(!browser_context_);
-  browser_context_ = std::make_unique<WebRunnerBrowserContext>(
+  browser_context_ = std::make_unique<WebEngineBrowserContext>(
       base::CommandLine::ForCurrentProcess()->HasSwitch(kIncognitoSwitch));
 
   context_service_ = std::make_unique<ContextImpl>(browser_context_.get());
@@ -64,12 +64,12 @@ void WebRunnerBrowserMainParts::PreMainMessageLoopRun() {
   content::RenderFrameHost::AllowInjectingJavaScript();
 }
 
-void WebRunnerBrowserMainParts::PreDefaultMainMessageLoopRun(
+void WebEngineBrowserMainParts::PreDefaultMainMessageLoopRun(
     base::OnceClosure quit_closure) {
   quit_closure_ = std::move(quit_closure);
 }
 
-void WebRunnerBrowserMainParts::PostMainMessageLoopRun() {
+void WebEngineBrowserMainParts::PostMainMessageLoopRun() {
   // The service and its binding should have already been released by the error
   // handler.
   DCHECK(!context_service_);

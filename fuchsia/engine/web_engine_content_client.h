@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "content/public/common/content_client.h"
 
-class WebRunnerContentClient : public content::ContentClient {
+class WebEngineContentClient : public content::ContentClient {
  public:
-  WebRunnerContentClient();
-  ~WebRunnerContentClient() override;
+  WebEngineContentClient();
+  ~WebEngineContentClient() override;
 
   // content::ContentClient implementation.
   base::string16 GetLocalizedString(int message_id) const override;
@@ -23,7 +23,7 @@ class WebRunnerContentClient : public content::ContentClient {
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebRunnerContentClient);
+  DISALLOW_COPY_AND_ASSIGN(WebEngineContentClient);
 };
 
 #endif  // FUCHSIA_ENGINE_WEB_ENGINE_CONTENT_CLIENT_H_

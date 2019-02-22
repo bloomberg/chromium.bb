@@ -17,7 +17,7 @@
 
 namespace {
 
-std::unique_ptr<base::DictionaryValue> GetWebRunnerConstants() {
+std::unique_ptr<base::DictionaryValue> GetWebEngineConstants() {
   std::unique_ptr<base::DictionaryValue> constants_dict =
       net::GetNetConstants();
 
@@ -35,16 +35,16 @@ std::unique_ptr<base::DictionaryValue> GetWebRunnerConstants() {
 
 }  // namespace
 
-WebRunnerNetLog::WebRunnerNetLog(const base::FilePath& log_path) {
+WebEngineNetLog::WebEngineNetLog(const base::FilePath& log_path) {
   if (!log_path.empty()) {
     net::NetLogCaptureMode capture_mode = net::NetLogCaptureMode::Default();
     file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
-        log_path, GetWebRunnerConstants());
+        log_path, GetWebEngineConstants());
     file_net_log_observer_->StartObserving(this, capture_mode);
   }
 }
 
-WebRunnerNetLog::~WebRunnerNetLog() {
+WebEngineNetLog::~WebEngineNetLog() {
   if (file_net_log_observer_)
     file_net_log_observer_->StopObserving(nullptr, base::OnceClosure());
 }
