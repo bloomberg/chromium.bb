@@ -5329,7 +5329,10 @@ the Bookmarks menu.">
           Saved passwords for <ph name="domain">$1<ex>example.com</ex></ph>
         </message>
         <message name="IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK" desc="The text of the link in the password sheet that opens the password management section.">
-          Manage passwords...
+          Manage passwords
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE" desc="Text for the button used to generate a password.">
+          Suggest strong password
         </message>
       </if>
 
